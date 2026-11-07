@@ -9,6 +9,9 @@ settles the points that the editors who applied ruling 37 left open.
 Every row is a choice made by the coordinator from text that was already accepted. The owner
 can strike any of them.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 ## The nineteen behaviors
 
 | ID | Behavior the older text accepted | How the specification states it | Layer |
@@ -58,3 +61,6 @@ can strike any of them.
   result contract derived by default; a combined create-and-start; per-request required
   features; replaceable package dependencies; exporting an instance; and the check of an
   expected ID on an update. They are listed in the plan audit.
+
+Since settled: ruling 38, point 2, dropped the six behaviors ([record](../ruling-38/README.md)),
+and ruling 41 settled GP3, written in [secrets.yaml](../../../spec/promises/secrets.yaml).

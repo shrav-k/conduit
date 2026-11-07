@@ -20,8 +20,8 @@
 # constituents alone, and added CON-031, of the layer `convention`: a Conduit either of whose
 # ends is retired is not opened. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed CON-008, CON-022, CON-028, CON-030 and CON-031: a graph written in
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed CON-008, CON-022, CON-028, CON-030 and CON-031: a graph written in
 # place supports a requirement where the implementations of its steps do, and CON-031 is about a
 # Conduit that is not open. It removed none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
@@ -29,21 +29,51 @@
 # `supports`, wherever it is written.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # CON-004, CON-008 and CON-024: a declared Conduit that is made from a composite template is
 # opened as a whole or not at all. It added none and removed none.
 # The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
 # of the same file, which are the coordinator's too, changed CON-004, CON-008 and CON-022: the
 # opening of a composite declared Conduit is decided for every component before any is opened,
 # and nothing is closed where one cannot be.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review (docs/proposals/principles-review/README.md), removed CON-003, CON-019 and
+# CON-029, on composite Conduit templates (decision 5): a template that needs two capabilities
+# of one target declares two Conduits, and nothing else replaces them; CON-026, on renaming a
+# Conduit (decision 10): a name is fixed once the object is made, under OBJ-011; and CON-030, on
+# a requirement that does not narrow (C20): a requirement of the core package is applied by the
+# engine and any other is a filter, under CON-018. It changed CON-001, CON-002, CON-004,
+# CON-007, CON-008, CON-016, CON-018, CON-020, CON-022, CON-024, CON-028 and CON-031: CON-004
+# now carries what GRA-022 and GRA-003 said of declared Conduits, and a closed Conduit is
+# removed. It added none. What changed is in docs/proposals/ruling-41/log-G3.md. The removed
+# IDs are not reused.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md, changed CON-008: the record of a
+# closing names the invocation within which the Conduit was closed, or states the cause, and
+# the engine reads a secret through a retired consumer's Conduit for a connection that the
+# consumer's retirement makes. It added and removed none. The owner's answer D6 keeps
+# CON-008's refused for a request to a retired target. What changed is in
+# docs/proposals/ruling-42/log-secrets.md.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in CON-007 and CON-008. It
+# removed none and added none.
+# The editorial fixes of ruling 42 (the vocabulary audit's E19; log
+# docs/proposals/ruling-42/log-editorial.md) changed CON-007, whose observable says "after it",
+# where it said "after the event". It removed none and added none.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed CON-008:
+# a Conduit whose consumer is unregistered is closed, under LIF-017 (M41); and CON-022, whose
+# observable says that an implementation sent an argument that its version of the requirement
+# does not declare cannot apply the filter (M45). It added none and removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed CON-006, which rejects a shared-host requirement where an end runs
+# nothing (V2-01); CON-022, on an input that a later release adds with no `default` (V2-02); and
+# CON-031, on a consumer that is unregistered (V2-09). It added none and removed none.
 
 - id: CON-001
   layer: language
@@ -54,10 +84,9 @@
     Each resulting Conduit has exactly one consumer, exactly one target and exactly one
     capability.
   observable: >-
-    Resolving yields one Conduit, or for a composite template one Conduit per component under
-    CON-003, each with one consumer reference, one target reference and one capability. A
-    document that supplies more or fewer of any of them is rejected with a diagnostic, and no
-    Conduit is produced.
+    Resolving yields one Conduit, with one consumer reference, one target reference and one
+    capability. A document that supplies more or fewer of any of them is rejected with a
+    diagnostic, and no Conduit is produced.
   vectors: []
 
 - id: CON-002
@@ -66,83 +95,37 @@
   when: >-
     A template that declares Conduits is instantiated.
   then: >-
-    One Conduit is instantiated for each declared Conduit, or one for each component where the
-    declared Conduit is made from a composite template, with the new instance as its consumer.
+    One Conduit is instantiated for each declared Conduit, with the new instance as its
+    consumer.
   observable: >-
     The resolved objects contain the new instance and those Conduits, each naming the new
     instance as consumer.
-  vectors: []
-
-- id: CON-003
-  layer: language
-  level: must
-  when: >-
-    A composite Conduit template is instantiated.
-  then: >-
-    One Conduit is instantiated for each component, and no instance represents the composite
-    itself. Each component Conduit is named by the name given to, or generated for, the instance
-    document or nested instantiation that names the composite template, then a hyphen, then the
-    component's name.
-  observable: >-
-    The resolved objects contain one Conduit per component and no additional Conduit. Each
-    component Conduit can be inspected and referenced on its own, by that name. An instance
-    document named `review`, from a template whose components are `read` and `write`, yields the
-    Conduits `review-read` and `review-write`. Where the instance document gives no name, and
-    for a nested instantiation, which has none, the name is generated as OBJ-003 generates one
-    for an instance, and the hyphen and the component's name follow it. Where a component is
-    itself made from a composite template, the rule applies again to its components, with the
-    name so formed in place of the given or generated one. A component Conduit's name is never
-    longer than 63 characters. Where the part before the hyphen was generated, the template's
-    part of it is shortened further than OBJ-003 alone requires, so that the whole name fits.
-    Where no shortening of a generated part makes the whole name fit, or an instance document
-    gave that part, and the whole name would be longer than 63 characters, the Conduit is not
-    instantiated, under CON-029.
   vectors: []
 
 - id: CON-004
   layer: convention
   level: must
   when: >-
-    Setup runs for an instance that declares Conduits.
+    An instance that declares Conduits is set up.
   then: >-
-    The step that GRA-022 gives each declared Conduit opens the Conduit made for it if its state
-    is registered. Where the Conduit is already open nothing is dispatched, and the step is left
-    as succeeded. For a declared Conduit that is made from a composite template, the one step
-    opens every component Conduit whose state is registered: the opening is decided for every
-    one of them before any is opened. Where the opening of any component Conduit would not be
-    dispatched, no request for `open.v1` is made, none is opened, nothing is closed, and the
-    step reports that component's reason. Otherwise one request for `open.v1` is made for each
-    of them. Setup instantiates no Conduit.
+    The opening of each declared Conduit is a part of the setup, under the declared Conduit's
+    name. Where the Conduit made for it is in the state registered, the part is a request for
+    `open.v1` that names that Conduit, made by the instance that sent the request to set up,
+    under ACC-005. Where that Conduit is open, nothing is dispatched and the part counts as
+    succeeded. Where the nested instantiation has no Conduit that is not retired, the part
+    reports conflict. Setup instantiates no Conduit.
   observable: >-
     After setup runs a second time, inspection shows the same Conduit IDs and the same number of
-    Conduits as before. A replacement registered under LIF-009 is in the state registered, so
-    the next setup opens it. Whose Conduit to `access` authorizes the step is ACC-005.
-    For a composite, the opening of each component Conduit is decided as a request of the
-    sending instance to open that Conduit is decided, under ACC-005 and ACC-006: the bound of
-    that instance's Conduit to `access` covers its target and names every operation it lists. A
-    component Conduit that is closed is not opened again, under LIF-015, so the step then
-    reports conflict, as LIF-008 has it until a replacement is registered. Where the opening of
-    more than one component Conduit would not be dispatched, OPS-023 says which reason the step
-    reports, and a diagnostic names each of those components. A step that reports a reason has
-    not succeeded: GRA-003 keeps the setup from succeeding where the declared Conduit is
-    required, and has it reported as not opened where it is optional. No component Conduit has
-    changed state, so nothing is closed and LIF-027 needs no exception. Where the opening of
-    every one of them would be dispatched, the engine makes, for the step, one request for
-    `open.v1` for each component Conduit whose state is registered. Each is an invocation of its
-    own, with its own ID and its own outcome, as a request to open one Conduit is under ACC-006,
-    and each carries an operation identity of its own, which the engine derives as OPS-028 has
-    it derive a step's, and from the component's name as well. The step has succeeded once every
-    one of those invocations has succeeded. For the outcome of the setup, each of them counts
-    under OPS-022 as a step does. Where the outcome of one of them is failed or unknown, the
-    state of its Conduit is as it was, under LIF-004, a Conduit that another of them opened
-    stays open, under LIF-027, and an invocation whose outcome is unknown is reconciled by
-    itself, for its one Conduit, under LIF-028. A component Conduit that was open before the
-    step is left as it was, and where every one is already open nothing is dispatched and the
-    step is left as succeeded. That every opening is decided before any is made is the rule for
-    the step of a setup, and for nothing else. After setup each component Conduit is a Conduit
-    like any other: it is an instance of its own under CON-003, and an actor may open or close
-    it by itself, with a request for `open.v1` or for `close.v1` that names that one Conduit,
-    under ACC-006 and ACC-012.
+    Conduits as before. A declared Conduit whose Conduit was closed has none that is not
+    retired, since a closed Conduit is removed under LIF-035, so its part reports conflict until
+    a replacement is registered under LIF-009, as LIF-008 states. That replacement is in the
+    state registered, so the next setup opens it. Whose Conduit to `access` authorizes the part
+    is ACC-005. A part that reports a reason, or whose request has the outcome failed or
+    unknown, has not succeeded. Where the declared Conduit is not marked optional, the setup
+    then does not succeed, under OPS-022. A declared Conduit marked optional that is not opened
+    does not keep the setup from succeeding, and the setup reports it as not opened. These parts
+    come first in a setup: the run is asked for, and the setup hook dispatched, only once each
+    of them that is not marked optional has succeeded, under TPL-012.
   vectors: []
 
 - id: CON-006
@@ -150,26 +133,29 @@
   level: must
   when: >-
     A Conduit carries a shared-host requirement and its consumer or its target is an instance
-    that has no placement.
+    that has no placement, or one for which no item that is run is selected.
   then: >-
     The document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the Conduit, the requirement and the end that has no
-    placement, and produces no objects.
+    placement or runs nothing, and produces no objects. The requirement says that the two ends
+    run on one machine, and an end for which no item that is run is selected, such as an Agent
+    that a client drives under IFC-042 or an instance reached only by `remote`, runs on none,
+    whatever its placement: PLC-002 places it on `local` because it runs nothing, so comparing
+    its node's hostname under PLC-013 would say nothing of where it runs.
   vectors: []
 
 - id: CON-007
   layer: convention
   level: must
   when: >-
-    Anything happens to the consumer of an open Conduit other than its being retired or
-    declared lost, including a crash, a condition its type defines such as paused, or its
-    location becoming unreachable.
+    Anything happens to the consumer of an open Conduit other than its being retired or declared
+    lost, including a crash, a condition its type defines such as paused, or the machine of its
+    node being reported unreachable, under PLC-023.
   then: >-
     The Conduit stays open.
   observable: >-
-    Inspecting the Conduit after the event reports the state ready and the same operations as
-    before.
+    Inspecting the Conduit after it reports the state ready and the same operations as before.
   vectors: []
 
 - id: CON-008
@@ -180,24 +166,33 @@
     or declared lost.
   then: >-
     The Conduit is closed. A Conduit whose target is retired, or either of whose ends is
-    declared lost, is closed at once. A Conduit whose consumer is retired is closed once the
-    consumer's shutdown is confirmed. From the moment the retirement of a target is dispatched,
-    a request to that target is a request through a closed Conduit: it is not dispatched, and
-    reports refused.
+    declared lost or is placed on a machine that is reported gone, under PLC-024, is closed at
+    once. A Conduit whose consumer is retired is closed once the consumer's shutdown is
+    confirmed, or once a request to unregister the consumer removes it, under LIF-017. From the
+    moment the retirement of a target is dispatched, a request to that
+    target is a request through a closed Conduit: it is not dispatched, and reports refused. A
+    closed Conduit is removed, under LIF-035.
   observable: >-
-    Inspecting the Conduit reports the state retired and which of those events closed it, and
-    reports its shutdown as confirmed, however it was closed, under LIF-024. A request to a
-    retired target has no open Conduit to be made through, which is the case ACC-001 and ACC-011
-    state. A consumer's shutdown is confirmed as LIF-024 states: when an invocation of
-    `retire.v1` for it succeeds, at once where no setup of it was ever dispatched, or when a
-    reconciliation records that its retirement occurred, under LIF-028. It is not confirmed
-    while the outcome of a start of one of its runtimes is unknown, or while it holds a runtime.
-    From the moment the consumer is retired until then, the Conduit's state is as it was, and
-    the Conduit permits only the requests of the consumer's retirement, as ACC-039 states: a
-    step of the consumer's `retire` graph can make a request through the consumer's own Conduit,
-    in a further retirement under LIF-026 as in the first. Where the consumer's shutdown stays
-    pending or unknown, the Conduit stays so until the shutdown is confirmed, the consumer is
-    declared lost, or an actor closes the Conduit under ACC-012.
+    A Conduit's shutdown is confirmed when it is closed, however it was closed, under LIF-024,
+    so it is removed at once: a request that names it afterwards, to inspect it among others,
+    reports invalid under OPS-029, and its records are kept as LIF-019 states. The record of its
+    closing names, under REC-002, the invocation within which it was closed and that
+    invocation's caller: the close itself, the target's retirement, the invocation of
+    `declare-lost.v1` for the node of an end, the invocation of `retire.v1` or
+    `reconcile.v1` that confirmed the consumer's shutdown, or that of `unregister.v1`
+    that removed the consumer; where it was closed within no invocation, as under
+    PLC-024, the record states the cause. A request to a retired target has
+    no open Conduit to be made through, which is the case ACC-001 and ACC-011 state. A
+    consumer's shutdown is confirmed as LIF-024 states: when an invocation of `retire.v1` for it
+    succeeds, at once where no setup of it was ever dispatched, or when a reconciliation records
+    that its retirement occurred, under LIF-028. From the moment the consumer is retired until
+    then, the Conduit's state is as it was, and the Conduit permits only the requests of the
+    consumer's retirement, as ACC-039 states: the consumer's retire hook can make an onward
+    request through the consumer's own Conduit, and the engine can read a secret through it for
+    a run that the retirement asks for, or a connection that it makes, in a further retirement
+    under LIF-026 as in the first. Where the consumer's shutdown stays pending or unknown, the
+    Conduit stays so until the shutdown is confirmed, the consumer is declared lost or
+    unregistered, or an actor closes the Conduit under ACC-012.
   vectors: []
 
 - id: CON-011
@@ -262,14 +257,13 @@
   when: >-
     The `spec` of a Conduit template is read.
   then: >-
-    It may hold `inputs`, and it holds either `capability`, `operations` and `requirements`, or
-    `components`. There are no other keys. A template that is not a composite requires
-    `capability`. It requires `operations` unless one of its inputs has `operations` as a
-    destination, and it may leave out `requirements`, and then applies none.
+    It may hold `inputs`, `capability`, `operations` and `requirements`, and no other key. It
+    requires `capability`. It requires `operations` unless one of its inputs has `operations` as
+    a destination, and it may leave out `requirements`, and then applies none.
   observable: >-
-    A Conduit template with both `capability` and `components`, or with neither, is rejected. So
-    is one that has `capability`, no `operations` and no input whose destination is
-    `/operations`. What is required of an `operations` that an input fills is INS-023.
+    A Conduit template with no `capability` is rejected. So is one that has no `operations` and
+    no input whose destination is `/operations`. What is required of an `operations` that an
+    input fills is INS-023.
   vectors: []
 
 - id: CON-017
@@ -293,29 +287,19 @@
     A Conduit template applies requirements.
   then: >-
     They are a map under `requirements`. Each item has a name and holds `requirement`, which is
-    the selection of a Requirement contract, and may hold `arguments`. A filter and the
-    shared-host requirement are both written there.
+    the selection of a Requirement contract, and may hold `arguments`. A filter, the shared-host
+    requirement and a bound are all written there. A requirement of the core package is applied
+    by the engine itself and never sent; every other requirement is a filter, which the target's
+    implementations apply.
   observable: >-
     An item with no `requirement` is rejected with a diagnostic naming the item. An item with no
-    `arguments` supplies none, as NAM-019 states. Whether a requirement may be applied to a
-    Conduit at all is decided by its contract, under CTR-005. The shared-host requirement is
-    `github.com/shrav-k/conduit/core#shared-host.v1`, and the bound of a Conduit to `access` is
-    written there too, under ACC-029. A requirement that does not narrow requests and is not a
-    composition is applied to a Conduit, itself or as a constituent, only where it is a contract
-    of the core package, as the shared-host requirement is, under CON-030.
-  vectors: []
-
-- id: CON-019
-  layer: language
-  level: must
-  when: >-
-    A Conduit template is a composite.
-  then: >-
-    Its `components` is a map of nested instantiations of Conduit templates, and each component
-    Conduit takes the consumer and the target given to the composite.
-  observable: >-
-    A composite that reaches itself through its components is rejected with a diagnostic naming
-    the templates in the cycle.
+    `arguments` supplies none, as NAM-019 states. A requirement is applied only to a Conduit,
+    under CTR-005. The shared-host requirement is
+    `github.com/shrav-k/conduit/core#shared-host.v1`, which the engine decides when the Conduit
+    is instantiated, under PLC-013, and the bound of a Conduit to `access` is
+    `github.com/shrav-k/conduit/core#bound.v1`, which the engine applies to each request through
+    that Conduit, under ACC-029. A filter is sent to the target's implementations under IFC-018,
+    and they apply it under IFC-019; CON-022 says which of them must support it.
   vectors: []
 
 - id: CON-020
@@ -327,10 +311,9 @@
     The template is rejected. A consumer and a target are supplied only when a Conduit is
     instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the key. A declared Conduit or a component that names
-    a consumer, and a component that names a target, are rejected under OBJ-014: the consumer of
-    a declared Conduit is always the instance being instantiated, and a component takes the ends
-    given to the composite.
+    Resolving returns a diagnostic naming the key. A declared Conduit that names a consumer is
+    rejected under OBJ-014: the consumer of a declared Conduit is always the instance being
+    instantiated.
   vectors: []
 
 - id: CON-021
@@ -350,45 +333,30 @@
   layer: language
   level: must
   when: >-
-    A Conduit is instantiated that carries a filter, and an implementation that must support the
-    filter's requirement does not support it.
+    A Conduit is instantiated that applies a filter, and an implementation that the target has
+    selected for an operation the Conduit lists does not state the filter's requirement in
+    `supports`.
   then: >-
-    The Conduit is not instantiated. An implementation that is reached by `command` or `url`
-    supports a requirement where it states the requirement in `supports`. The requirement is
-    matched by the address and the export name of the package that originally exports it: an
-    item of `supports` states it where it names that package, or any package that re-exports the
-    requirement from it. No graph states `supports`, wherever it is written: a graph supports a
-    requirement where the implementation selected for each of its steps that has no `conduit`
-    supports it.
+    The Conduit is not instantiated. An implementation that is reached by `command`, `package`
+    or `remote` supports a requirement where it states the requirement in `supports`, which
+    matches the requirement by its address and its export name.
   observable: >-
     Resolving returns a diagnostic naming the filter, the operation and the implementation. It
     is decided from the manifest under PKG-019, without starting anything. The implementations
-    that the target has selected for the operations the Conduit lists must always support the
-    requirement: they are sent every filter on the Conduit under IFC-018, and apply it under
-    IFC-019. Where the filter obliges the consumer, under CTR-005, every implementation selected
-    for the consumer must support it too, and IFC-034 says how it is told which filters it is to
-    keep to. A filter obliges the consumer where `obliges` in its requirement's contract names
-    `consumer` or, for a composition, where the contract of any of its constituents that narrows
-    requests does. `obliges` never takes the obligation from the target. An implementation
-    supports a composed requirement where its `supports` lists the composition or every one of
-    its constituents. An implementation marked `plain` states no `supports` under PKG-020, so no
-    Conduit is instantiated with a filter that an instance it serves must apply. The rule for a
-    graph holds for one written in place as a value of an `implementation` map and for one that
-    an implementation item of a manifest gives as `graph`, which is rejected under PKG-019 where
-    it states `supports`: the implementations selected, for the graph's own instance, for the
-    operations of its steps that have no `conduit` are what is checked, and where one of those
-    is again a graph the rule applies to its steps. Where another promise says that an
-    implementation states a requirement in `supports`, it means, for a graph, that the graph
-    supports the requirement in this sense. A requirement is matched by its origin, as ACC-029
-    has a bound name an operation: a reference to the package that originally exports it and a
-    reference to a re-export of it resolve to one requirement, under PKG-013, on either side. It
-    is matched by that address and that export name alone: the contract's own version is the
-    last segment of that name, and the version of the package plays no part, because a later
-    release may only add optional inputs under NAM-024. A step with `conduit` is an onward
-    request to another target, and is not counted here: it carries the filter under ACC-017, and
-    ACC-015 checks it against the implementation that its own target has selected. A graph that
-    has no step without `conduit` supports every requirement, because no implementation of its
-    instance is invoked through it.
+    that the target has selected for the operations the Conduit lists are sent every filter on
+    the Conduit under IFC-018, and apply it under IFC-019, so each of them must support it. An
+    implementation marked `plain` states no `supports` under PKG-020, so no Conduit is
+    instantiated with a filter that an instance it serves must apply. Nor does `engine`, the
+    implementation of the core package, under MAN-012, so no Conduit is instantiated that
+    applies a filter and lists an operation for which its target has selected `engine`. A
+    requirement is matched by that address and that export name alone: the contract's own
+    version is the last segment of that name, and the version of the package does not count,
+    because a later release may only add optional inputs that state no `default`, under
+    NAM-024, which are sent only where a document writes them, and an implementation
+    that is sent an argument for an input that its version of the requirement does not declare
+    cannot apply the filter, under IFC-019, so the request reports unavailable and nothing is
+    performed. A filter that an onward request or a hook carries is not counted here: ACC-015
+    checks it against the implementation that the request or the hook would be dispatched to.
   vectors: []
 
 - id: CON-023
@@ -417,10 +385,8 @@
   observable: >-
     The target's implementation receives no call for such a request while the target's state is
     registered. A request made once the target is ready is decided as any other. A management
-    verb is an operation of the core package other than its two controls and the one tool that
-    the engine always presents, `retrieve-result.v1`. That is every operation of
-    `object-management.v1`, `access-control.v1` and `pool-management.v1`, `inspect.v1` and
-    `purge.v1` among them, under OPS-019. The ones that ACC-033 authorizes
+    verb is an operation of `object-management.v1`, `access-control.v1` or `pool-management.v1`,
+    `inspect.v1` and `purge.v1` among them, under OPS-019. The ones that ACC-033 authorizes
     against a Pool, such as setting up a Resource the Pool owns, are dispatched while the Pool's
     state is registered, so that a Pool's own setup can set up its entries. A control is not a
     management verb.
@@ -439,24 +405,6 @@
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decisions F5 and F20 of the
 # --- re-audit).
-
-- id: CON-026
-  layer: convention
-  level: must
-  when: >-
-    An actor asks to rename a Conduit, and under the new name one of the tool names it would
-    have under IFC-012 is longer than 128 characters, or equals the name of another tool that
-    the engine presents, or would present once its Conduit is opened, to the same consumer.
-  then: >-
-    The request is not dispatched, and reports conflict.
-  observable: >-
-    The Conduit keeps its name, and every tool presented to the consumer keeps its name. A
-    rename of a Conduit that was instantiated on its own onto the local name of one of its
-    consumer's declared Conduits reports conflict in this way where the two would have a tool
-    name in common. So does a rename of a component Conduit to a name long enough to take one of
-    its tool names past the limit. The same collision, and the same length, when a Conduit is
-    instantiated is IFC-014.
-  vectors: []
 
 - id: CON-027
   layer: language
@@ -488,58 +436,7 @@
   observable: >-
     Resolving returns a diagnostic naming the template or the Conduit, and each item of its
     `requirements` that applies `github.com/shrav-k/conduit/core#bound.v1`. A bound is carried
-    only by a Conduit to `access`, and such a Conduit carries at most one. `bound.v1` is applied
-    only by an item of `requirements` that names it: it is never a constituent of a composition,
-    under CTR-011, so no composition applies a second bound, or a bound on a Conduit to another
-    target, out of sight of this rule.
-  vectors: []
-
-# --- Added by the conversion of the older text (decision DA3 of the docs audit; point GQ4 of
-# --- docs/proposals/docs-audit/GAPS.md).
-
-- id: CON-029
-  layer: language
-  level: must
-  when: >-
-    The name that CON-003 gives a component Conduit would be longer than 63 characters, and
-    shortening a generated part of it cannot make it fit: an instance document gave the part
-    before the components' names, or the components' names alone are too long, as those of a
-    composite inside a composite can be.
-  then: >-
-    The Conduit is not instantiated.
-  observable: >-
-    Resolving returns a diagnostic naming the component and the name it would have, and the
-    document that would make the Conduit is rejected. No component's name and no given name is
-    shortened. This holds even when nothing in the name was generated.
-  vectors: []
-
-# --- Added by the last pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 7 of "The closing pass, and what it
-# --- left" in DECISIONS.md).
-
-- id: CON-030
-  layer: language
-  level: must
-  when: >-
-    A Conduit template applies, in its `requirements`, a requirement that is not a composition,
-    does not narrow requests and is not a contract of the core package, or a composition that
-    has such a requirement among its constituents, directly or through other compositions.
-  then: >-
-    The template is rejected.
-  observable: >-
-    Resolving returns a diagnostic naming the item of `requirements` and the requirement. The
-    engine itself checks only the requirements it knows, which are those of the core package, as
-    it checks `shared-host.v1` under PLC-013. Every other requirement on a Conduit is applied by
-    implementations, and they are sent only the requirements that narrow requests, under
-    IFC-018, so one that does not narrow would be applied by nothing. Nothing else is rejected
-    here. A composition is judged by its constituents alone: one made only of requirements of
-    the core package that do not narrow, such as one whose single constituent is
-    `shared-host.v1`, is accepted, and the engine checks each such constituent. `shared-host.v1`
-    may be applied itself, and may be a constituent of any composition. The other requirement of
-    the core package, `bound.v1`, is never a constituent, under CTR-011. Where the template was
-    registered while the requirement's package was not installed, as PKG-006 allows, the check
-    is made when a Conduit is instantiated from it, under INS-022. The requirement of a policy
-    narrows requests too, under ACC-031.
+    only by a Conduit to `access`, and such a Conduit carries at most one.
   vectors: []
 
 # --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;
@@ -556,14 +453,16 @@
     The request is not dispatched, and reports conflict.
   observable: >-
     This holds whatever the shutdown of the retired end reports. A Conduit whose target is
-    retired is closed already, under CON-008, and a request to open a closed Conduit reports
-    conflict under LIF-015. A Conduit in the state registered whose consumer is retired stays
-    registered until CON-008 closes it, once the consumer's shutdown is confirmed, and is never
-    opened: CON-025 does not instantiate a Conduit for a retired end, and this is the same rule
-    for opening one. This promise is about a Conduit that is not open. A Conduit that was open
-    when its consumer was retired is still open, as ACC-039 states, and a request to open it
-    changes nothing and has the outcome succeeded, as for any open Conduit under ACC-006. The
-    step of a setup that would open a declared Conduit of a retired consumer does not arise,
-    because a request to set up a retired instance reports conflict under LIF-015. Where the
-    actor is not permitted, OPS-023 gives refused first.
+    retired is closed already, under CON-008, and so removed, under LIF-035: a request to open
+    it names a Conduit that no longer exists, and reports invalid under OPS-029. A Conduit in
+    the state registered whose consumer is retired stays registered until CON-008 closes it,
+    once the consumer's shutdown is confirmed or a request to unregister the consumer removes
+    it, under LIF-017, and is never opened: CON-025 does not instantiate
+    a Conduit for a retired end, and this is the same rule for opening one. This promise is
+    about a Conduit that is not open. A Conduit that was open when its consumer was retired is
+    still open, as ACC-039 states, and a request to open it changes nothing and has the outcome
+    succeeded, as for any open Conduit under ACC-006. The part of a setup that would open a
+    declared Conduit of a retired consumer does not arise, because a request to set up a retired
+    instance reports conflict under LIF-015. Where the actor is not permitted, OPS-023 gives
+    refused first.
   vectors: []

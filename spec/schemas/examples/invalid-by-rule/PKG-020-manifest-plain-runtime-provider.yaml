@@ -1,0 +1,22 @@
+# Example. One manifest, valid against `manifest.v1`, that must be rejected:
+# a plain implementation implements no operation of `runtime-provider.v1`,
+# `machine-provider.v1` or `package-source.v1` (PKG-020). The engine reaches those operations
+# only by provider calls, which carry Conduit's keys and declare its extension (PRV-005,
+# IFC-037), and a plain server reads none of them. This manifest marks an existing Docker
+# server plain and has it implement the three operations of a runtime provider. The rule
+# matches the operations by their qualified references in the core package.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/plain-docker
+implementations:
+  docker-mcp:
+    implements:
+      - github.com/shrav-k/conduit/core#run.v1
+      - github.com/shrav-k/conduit/core#stop.v1
+      - github.com/shrav-k/conduit/core#inspect-run.v1
+    command: [docker-mcp]
+    plain: true
+    tools:
+      github.com/shrav-k/conduit/core#run.v1: run_container
+      github.com/shrav-k/conduit/core#stop.v1: stop_container
+      github.com/shrav-k/conduit/core#inspect-run.v1: inspect_container

@@ -1,7 +1,11 @@
-# Example. A contract of the project itself. The engine keeps the contracts of a submitted
-# project as an unpublished package (SUB-008), and its documents refer to one as `#name`
-# (NAM-022), in a `$ref` as anywhere else (SCH-015). The template `reviewer` in
-# templates.yaml checks its input `model` against this schema.
+# Example. The contracts of the project itself. Its documents refer to one as `#name`
+# (NAM-022), in a `$ref` as anywhere else (SCH-015), and outside the project each is named
+# `example.org/review-desk#name`, by the address its manifest states (SUB-008). The template
+# `reviewer` in templates.yaml checks its input `model` against `model-name.v1`.
+# The names of ruling 42 (docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1`
+# to `secret-provider.v1` and `reveal-secret.v1` to `get-secret.v1`. Its editorial fix E17
+# (docs/proposals/ruling-42/log-editorial.md) says the type of a secret Resource, where it said
+# a secret store's type.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -10,3 +14,83 @@ metadata:
   description: The name of a model that an Agent of this project may run.
 spec:
   enum: [standard, careful]
+---
+# A runtime provider's type (PRV-001): a Resource that offers the core package's capability
+# `runtime-provider.v1`, configured with the Docker context it uses. Its type gives the
+# default implementation of each of the capability's three operations, which state none of
+# their own.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: docker-runtime.v1
+  description: Runs implementation items in Docker containers, in one Docker context.
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      context: {type: string, minLength: 1}
+    required: [context]
+    additionalProperties: false
+  offers:
+    - github.com/shrav-k/conduit/core#runtime-provider.v1
+  implementation:
+    github.com/shrav-k/conduit/core#run.v1: '#docker-runner'
+    github.com/shrav-k/conduit/core#stop.v1: '#docker-runner'
+    github.com/shrav-k/conduit/core#inspect-run.v1: '#docker-runner'
+---
+# The type of a secret Resource (SEC-005): it offers `secret-provider.v1`, its schema is the
+# form of its locator, and it lists no control, so a secret Resource's locator is fixed once it
+# is made.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: keychain-secret.v1
+  description: A secret kept in the macOS keychain, located by its service and its account.
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      service: {type: string, minLength: 1}
+      account: {type: string, minLength: 1}
+    required: [service, account]
+    additionalProperties: false
+  offers:
+    - github.com/shrav-k/conduit/core#secret-provider.v1
+  implementation:
+    github.com/shrav-k/conduit/core#get-secret.v1: '#keychain-store'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: mirror.sync.v1
+  description: Fetch the remote repository into the mirror, and return the commit it now holds.
+spec:
+  outputSchema:
+    type: object
+    properties:
+      commit: {type: string, minLength: 1}
+    required: [commit]
+  effect: Updates the mirror from its remote.
+  implementation: '#git-mirror-server'
+---
+# A type whose configuration holds a secret reference (SEC-001): `token` holds a reference to
+# a secret Resource, never the token itself. The type requires both places, so the item's
+# `environment` may point to them (MAN-017).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: git-mirror.v1
+  description: A mirror of a Git repository that needs a token to fetch.
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      remote: {type: string, format: uri}
+      token: {$ref: github.com/shrav-k/conduit/core#secret-reference.v1}
+    required: [remote, token]
+    additionalProperties: false
+  requires:
+    - '#mirror.sync.v1'

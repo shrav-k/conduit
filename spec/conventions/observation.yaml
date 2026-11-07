@@ -8,15 +8,31 @@
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed OBS-004 and OBS-005 and added OBS-007.
 # No promise of this file has been removed. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed OBS-003 and OBS-007: the stop that the engine dispatches for a
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed OBS-003 and OBS-007: the stop that the engine dispatches for a
 # runtime restored without leave carries no caller. It removed none.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, removed OBS-005 (decision 2: restoring a runtime goes, and a runtime
+# provider's own restart of a run is PRV-010) and OBS-007 (decision 2: the stop for no actor
+# goes, and nothing replaces it); changed OBS-002 and OBS-003, which an inspection reports as
+# conditions (decision 24b), and OBS-004 (decision 2b); and added none. What changed is in
+# docs/proposals/ruling-41/log-G1.md. Those IDs are not reused. The integration of the
+# rewrite (docs/proposals/ruling-41/log-integration.md) reworded OBS-004 in PRV-010's terms.
+# The names of ruling 42 (the vocabulary audit's N2 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node and the machines provider
+# to the machine provider in OBS-003. It removed none and added none.
+# The names of ruling 42 (the vocabulary audit's N14 and N20; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed origin to source in OBS-002, whose `source`
+# is a URI-reference that the engine names, as it names a record's, and "its own setting for
+# restarts" to its own restart policy in OBS-004. It removed none and added none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
+# work across machines (docs/proposals/multi-machine/README.md), changed OBS-004, whose
+# observable says that the engine runs a provider again after it restarts only for a provider
+# call that it must make, under PRV-026, and not because of a difference (Q3). It added none
+# and removed none. What changed is in docs/proposals/ruling-43/log-secrets.md.
 
 - id: OBS-001
   layer: convention
@@ -37,23 +53,26 @@
   when: >-
     An observation is reported.
   then: >-
-    It carries the time it was made and its origin, which is where it was made.
+    It carries the time it was made and its source, the context in which it was made.
   observable: >-
-    Every observation in an inspection result has both.
+    Every observation in an inspection result has both. An observation is reported as a
+    condition of LIF-011, its time in `lastHeartbeatTime` and its source in `source`, a
+    URI-reference that the engine names, as it names the `source` of a record under REC-005.
   vectors: []
 
 - id: OBS-003
   layer: convention
   level: must
   when: >-
-    Something about an instance cannot be observed now, for example because its location cannot
-    be reached.
+    Something about an instance cannot be observed now, for example because the machine
+    provider reports its machine unreachable, under PLC-023.
   then: >-
-    It is reported as unknown, with the time of the last successful observation of it.
+    It is reported as unknown, as a condition whose `status` is `Unknown`, with the time of the
+    last successful observation of it in `lastHeartbeatTime`.
   observable: >-
     The earlier value is not shown as current. Where it was never observed, the inspection
-    result says unknown with no time. When a location cannot be reached, this holds for every
-    instance placed on it, and instances on other locations report as before.
+    result says unknown with no time. When a machine is reported unreachable, this holds for
+    every instance placed on its node, and instances on other nodes report as before.
   vectors: []
 
 - id: OBS-004
@@ -62,27 +81,14 @@
   when: >-
     What is observed of an instance differs from what is declared for it.
   then: >-
-    Anything acts to remove the difference without an explicit request, other than an
-    implementation restoring its own runtime, which OBS-005 and OBS-007 govern.
+    Anything acts to remove the difference without an explicit request.
   observable: >-
     The difference appears in the instance's status and stays until an actor asks for an
-    operation that removes it. No setup, control, open or retire is dispatched because of it.
-  vectors: []
-
-- id: OBS-005
-  layer: convention
-  level: must not
-  when: >-
-    An implementation restores its own runtime, as its type contract allows.
-  then: >-
-    The handle the instance holds for the runtime stops being valid, or the engine invokes the
-    runtime's `start` operation again, or any invocation is dispatched again because of it.
-  observable: >-
-    Restoring a runtime means that the implementation keeps alive what is behind the handle the
-    instance holds. A type contract allows it by stating `restoresRuntimes: true`, under
-    CTR-004. Afterwards the same handle is accepted, and no record shows a `start` or any other
-    operation dispatched because of the restoring. That it starts no model work is IMP-002. What
-    follows where the type contract does not allow the restoring is OBS-007.
+    operation that removes it. No setup, control, open or retire is dispatched because of it. A
+    runtime provider that restarts a run does so under its own restart policy, under
+    PRV-010, and the engine dispatches nothing because of it. Once the engine has restarted, it
+    runs a provider whose run ended with it again only when it must make a provider call to
+    that provider, under PRV-026, and not because the run is seen to have stopped.
   vectors: []
 
 - id: OBS-006
@@ -96,28 +102,4 @@
     Inspecting leaves every instance's status and every Conduit as it was, and that actor's
     requests are permitted or refused exactly as before. That it starts no model work is
     IMP-002.
-  vectors: []
-
-# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
-# --- the points known before the round).
-
-- id: OBS-007
-  layer: convention
-  level: must
-  when: >-
-    An implementation restores its own runtime although its type contract does not state
-    `restoresRuntimes: true`.
-  then: >-
-    The engine treats the handle as no longer held: the runtime is stopped under its `stop`
-    operation, and the instance is reported as not holding it. The engine dispatches that stop
-    for no actor: the request carries no caller, and its record says that the engine dispatched
-    it under this promise for no actor.
-  observable: >-
-    The engine invokes the runtime's `stop` operation with the handle. The request that the
-    implementation receives holds no `io.github.shrav-k.conduit/caller`, which IFC-006 excepts,
-    no `io.github.shrav-k.conduit/conduit` and an empty list of restrictions, because it came
-    through no Conduit and serves no invocation. The record of the stop holds no caller, under
-    REC-002. Inspecting the instance afterwards does not list the runtime as held, and a later
-    step that names the runtime starts it under TPL-007. No `start` operation is dispatched
-    because of the restoring.
   vectors: []

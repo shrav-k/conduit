@@ -6,6 +6,19 @@
 # come from the repository. To change them, run `python3 tools/set_names.py` with the new
 # values; it rewrites every occurrence and this file together, and moves the old values to
 # `retired`, which the check then refuses anywhere under spec/.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on Q1, added the names of what
+# `identity` carries; the log is docs/proposals/ruling-43/log-core.md. Its integration
+# (docs/proposals/ruling-43/log-integration.md) worded their comment below so that it cites
+# Kubernetes' own files without writing their names, which a change of these names rewrites.
+# Its verification (docs/proposals/ruling-43/log-integration.md, "Verification") added two
+# files of `identity`: the keys that check a token, beside the root certificates, since a
+# SPIFFE trust bundle carries both, so that a gate written once checks the engine's token; and
+# the ID by which a credential names the engine, so that a gate admits the engine and no
+# instance. It coined their names, for the owner to strike.
+# Round 5 of the re-audit (M86; docs/proposals/reaudit/round-5/DECISIONS.md) renamed the key
+# `trustBundleFile` to `x509BundleFile`, SPIFFE's name for the part of a trust bundle that the
+# file holds beside the JWT bundle of `jwtBundleFile`: the trust bundle is both files. No name
+# changed.
 
 # Where the specification lives. The other names are derived from it.
 repository: github.com/shrav-k/conduit
@@ -19,6 +32,28 @@ apiVersion: github.com/shrav-k/conduit/v0
 # The prefix of the keys Conduit adds to a Model Context Protocol request's and result's
 # `_meta`. Reverse-DNS, as the protocol's own keys are.
 metaPrefix: io.github.shrav-k.conduit/
+
+# The names of what the input `identity` of `run.v1` carries, fixed once so that a run, or a
+# runtime provider's gate, written once works under any engine (plan-audit ruling 43, Q1): the
+# variable that holds the engine's address; the variable that names the directory in which the
+# run finds its files, as systemd's `CREDENTIALS_DIRECTORY` does; and those files, named as
+# Kubernetes names the token and the root certificate that it mounts in a Pod and the
+# certificate and the key of a TLS Secret: the trust bundle, as root certificates and as the
+# JWK Set of the keys that check a token, as a SPIFFE trust bundle holds its X.509 and its JWT
+# authorities and OpenID Connect publishes the second at its `jwks_uri`; the ID by which a
+# credential names the engine, in plain text, as Kubernetes writes a Pod's namespace beside its
+# token; a token in the form of a JWT-SVID; and a certificate in the form of an X509-SVID with
+# its private key (PRV-022, DL13). The editors of ruling 43 coined them, for the owner to strike
+# (docs/proposals/ruling-43/log-core.md, docs/proposals/ruling-43/log-integration.md). To
+# change one, run `python3 tools/set_names.py --identity <key>=<value>`.
+engineUrlVariable: CONDUIT_URL
+identityDirVariable: CONDUIT_IDENTITY_DIR
+x509BundleFile: ca.crt
+jwtBundleFile: jwks.json
+engineIdFile: engine-id
+tokenFile: token
+certificateFile: tls.crt
+keyFile: tls.key
 
 # Names used before, one per line. None may appear anywhere under spec/.
 retired:

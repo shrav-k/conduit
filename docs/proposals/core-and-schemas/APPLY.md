@@ -5,6 +5,9 @@ accepted as drafted, with the changes below. This file tells whoever edits `spec
 means for each item. The rules for editing promises, and the vocabulary, are in
 [the consolidation instructions](../reaudit/CONSOLIDATION.md).
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 ## What is accepted as written
 
 - Every choice C1 to C56 and every name N1 to N42 in section (b) of the record.

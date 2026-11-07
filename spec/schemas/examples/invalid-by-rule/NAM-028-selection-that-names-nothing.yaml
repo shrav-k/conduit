@@ -2,8 +2,9 @@
 # a selection names nothing where everything that could give it a meaning is at hand. The
 # first template selects a type that the package `example.org/files`, which is in
 # ../valid/files-package/, does not export. The second writes `#notebook.v1`, and no document
-# of its own project has that name. Only a package that is not installed defers the check
-# (PKG-006). A schema cannot tell: what a package exports is in another document.
+# of its own project has that name. Nothing defers the check: a registration whose manifest
+# lists a package that is not installed is rejected (PKG-006). A schema cannot tell: what a
+# package exports is in another document.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

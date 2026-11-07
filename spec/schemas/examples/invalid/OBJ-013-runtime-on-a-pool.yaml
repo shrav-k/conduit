@@ -1,0 +1,10 @@
+# Example. It must be rejected:
+# `runtime` is a standard argument of an Agent and of a Resource alone (OBJ-013, PRV-006). A
+# Pool runs nothing, so its document gives no `runtime`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: team
+from: workspace
+runtime: docker

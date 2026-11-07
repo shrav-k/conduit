@@ -1,6 +1,6 @@
 # Example. It must be rejected:
-# a Conduit template that is not a composite writes `operations`, unless an input fills it, and
-# this one declares no inputs.
+# a Conduit template writes `operations`, unless an input fills it, and this one declares no
+# inputs (CON-016).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

@@ -5,14 +5,14 @@
 after [PR #3](https://github.com/shrav-k/conduit/pull/3) merged the behavior/structure review.
 The original record follows with its title changed and relative links relocated. Its dated status
 and recommendations retain their historical context; this archive does not ratify illustrative syntax.
-Current behavior lives in the [protocol reference](../../protocol/README.md), ongoing work in
-[current review](../../REVIEW.md), and naming references in the [vocabulary map](../../VOCABULARY.md).
+Current behavior lives in the [protocol reference](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md), ongoing work in
+[current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md), and naming references in the [vocabulary map](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md).
 
 ---
 
 Updated: 2026-11-04, after the protocol-documentation migration. This is the only active review queue.
 The five-family model and completed conceptual/implementation rulings remain accepted in the
-[protocol reference](../../protocol/README.md). The migration did not settle new semantics or approve syntax.
+[protocol reference](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md). The migration did not settle new semantics or approve syntax.
 
 The post-migration review is complete. M1–M3 and the initial owner decisions are settled or explicitly
 deferred below. Early delivery stays lightweight; contexts fit the existing Resource/Pool/Conduit
@@ -26,7 +26,7 @@ closing this review, and an open detail in an older report is not automatically 
 All other Conduit-owned terms and field spellings are temporary, including names provisionally
 selected in earlier rulings. Accepted meanings and structures remain intact. Continue logical and
 structural review with consistent working names; vocabulary work must not block it. See the
-[protocol boundary](../../protocol/MODEL.md#vocabulary-review-boundary).
+[protocol boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#vocabulary-review-boundary).
 
 After the logical/structural questions are resolved, use a separate PR to review the vocabulary
 together, term by term. For each term, show its responsibility, how it differs from nearby concepts,
@@ -79,19 +79,19 @@ authorization once that checkpoint is met. This does not authorize starting runt
 - **M1 accepted:** no backward-compatibility promises or obligation to maintain legacy compatibility
   code. Users can pin a working set. Early delivery prioritizes a working protocol; strict release
   coordination, exact packaging and installers are not prerequisites. Claims about particular
-  contracts and retained implementation identity still apply. See [compatibility](../../protocol/CONFIGURATION.md#release-compatibility).
+  contracts and retained implementation identity still apply. See [compatibility](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#release-compatibility).
 - **M2 accepted direction/scope:** language/contracts, a minimal reference implementation, and small
   authoring examples with conformance checks using the accepted Experiment 002 scope. Bundled
   capabilities are replaceable and do not become a universal standard library. A documented working
   source checkout can suffice initially. Individual package contents and artifacts will be refined
   with the authoring slice; no detailed catalog or release format was selected. See
-  [initial delivery](../../implementation/README.md#delivery-and-evidence).
+  [initial delivery](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/implementation/README.md#delivery-and-evidence).
 - **M3 resolved through the existing model:** contexts can be ordinary Resources exposing specific
   plugin capabilities. A Pool owns the Resource, and Conduits supply its permitted access and
   dependencies. No universal Context layer or owning-context hierarchy is added. A filtered Conduit
   suffices when no separate Resource behavior/lifecycle is needed. Record identity, revisions,
   provenance and sharing remain capability contracts; exposed source records retain their ownership.
-  See [memory and evidence](../../protocol/RESOURCES.md#retained-memory-and-evidence).
+  See [memory and evidence](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/RESOURCES.md#retained-memory-and-evidence).
 
 ## Owner decisions before public distribution
 
@@ -124,11 +124,11 @@ return for a conceptual ruling only if an example exposes a real behavior choice
 
 | Seam | Preserve while refining | Source |
 | --- | --- | --- |
-| Controls spanning multiple settings/effects | Declared partial confirmation is accepted, subject to validation of the complete resulting stored configuration. Retain uncertainty, revision checks and target coordination; coupled settings may require whole-change confirmation. No implied atomicity/rollback. | [Configuration updates](../../protocol/CONFIGURATION.md#configuration-updates), [controls](../../protocol/LIFECYCLE.md). |
-| Composite results, cancellation and recovery | Deliberate public outputs, retained effects/evidence, valid child progress, retirement duties and other participants. Custom recovery hooks/evidence formats remain unselected. | [Composition](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families), [retirement](../../protocol/LIFECYCLE.md#retirement-and-unregistration). |
-| Connection/composite readiness | Required preparation gates, independent later work, per-consumer participation and ready Pool Resources are distinct. Describe observable partial state without one universal lifecycle enum. | [Pools](../../protocol/POOLS.md), [Conduits](../../protocol/CONDUITS.md). |
-| Independent MCP access and client enrollment | Familiar provider tools plus current authority, caller identity and evidence. A directly accessible component still needs verifiable authority; no offline grants or bypass is implied. | [Independent components](../../protocol/MODEL.md#plugins-and-independently-accessible-mcp-components). |
-| Foundational repair and credential interaction | Locally verifiable owner recovery, retained identities/progress and adapter-guided enrollment. No automatic reset, secret logging or duplicate execution when state is unknown. | [Interface workflow](../../protocol/MODEL.md#interfaces-and-the-user-workflow), [authentication](../../protocol/POOLS.md#shared-access-and-authentication). |
+| Controls spanning multiple settings/effects | Declared partial confirmation is accepted, subject to validation of the complete resulting stored configuration. Retain uncertainty, revision checks and target coordination; coupled settings may require whole-change confirmation. No implied atomicity/rollback. | [Configuration updates](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#configuration-updates), [controls](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md). |
+| Composite results, cancellation and recovery | Deliberate public outputs, retained effects/evidence, valid child progress, retirement duties and other participants. Custom recovery hooks/evidence formats remain unselected. | [Composition](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#authoring-concepts-beneath-the-object-families), [retirement](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#retirement-and-unregistration). |
+| Connection/composite readiness | Required preparation gates, independent later work, per-consumer participation and ready Pool Resources are distinct. Describe observable partial state without one universal lifecycle enum. | [Pools](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/POOLS.md), [Conduits](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONDUITS.md). |
+| Independent MCP access and client enrollment | Familiar provider tools plus current authority, caller identity and evidence. A directly accessible component still needs verifiable authority; no offline grants or bypass is implied. | [Independent components](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#plugins-and-independently-accessible-mcp-components). |
+| Foundational repair and credential interaction | Locally verifiable owner recovery, retained identities/progress and adapter-guided enrollment. No automatic reset, secret logging or duplicate execution when state is unknown. | [Interface workflow](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#interfaces-and-the-user-workflow), [authentication](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/POOLS.md#shared-access-and-authentication). |
 
 ## Later authoring and conformance pass
 
@@ -136,12 +136,12 @@ The [research comparison](../../research/language-protocol-foundations/README.md
 [worked cases](../../research/language-protocol-foundations/WALKTHROUGHS.md) now inform this pass.
 They recommend separating contract imports, graph value bindings and authorized live connections;
 they do not decide reference spellings, a new expression language or a runtime dependency.
-Twenty [library probes](../../../experiments/003-language-probes/README.md) expose validation pitfalls;
+Twenty [library probes](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/README.md) expose validation pitfalls;
 they are not Conduit conformance results. Research recommendations remain in these four batches,
 without reopening settled concepts or creating a second question queue.
 
-The [authoring packet](../../proposals/authoring-syntax/README.md) preserves the examples for review.
-The authoring review accepts [package-local scope and explicit dependency bindings](../../protocol/MODEL.md#package-scope-and-public-bindings):
+The [authoring packet](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/README.md) preserves the examples for review.
+The authoring review accepts [package-local scope and explicit dependency bindings](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#package-scope-and-public-bindings):
 caller aliases do not override package internals, and replacements use explicitly exposed bindings.
 Replaceable dependencies may declare default implementation bindings. Compatible explicit replacements
 take precedence; invalid selections report errors without fallback. These decisions do not accept
@@ -149,47 +149,47 @@ take precedence; invalid selections report errors without fallback. These decisi
 V0 imports also require an export's explicit support for the requested contract identity and exact
 version, alongside existing compatibility checks. Cross-version mappings are deferred; implementation
 release versions remain independent, with no obligation to maintain old contracts or compatibility code.
-The [configuration foundation](../../protocol/CONFIGURATION.md#configuration-language) is accepted:
+The [configuration foundation](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#configuration-language) is accepted:
 constrained YAML 1.2 for human authoring, equivalent JSON input/interchange, and JSON Schema
 2020-12 for data contracts, with one shared value model. Conduit defines lifecycle, authorization
 and other behavioral semantics separately. The [comparison](../../research/language-protocol-foundations/FORMATS.md)
 retains the rationale; detailed schema features and reference syntax remain open.
 
-The [schema-resolution boundary](../../protocol/CONFIGURATION.md#schema-resolution) is accepted:
+The [schema-resolution boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-resolution) is accepted:
 resolve from the selected package and explicitly supplied or declared schema dependencies;
 report missing required definitions without automatic network fetching during validation.
 Explicit acquisition beforehand remains possible, and exact reference syntax is open.
 
-The [schema-keyword rule](../../protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted:
+The [schema-keyword rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted:
 reject unrecognized keywords in Conduit-authored schemas. Reuse standard descriptive annotations
 where applicable, with additional custom metadata in one dedicated map of namespaced entries.
 Custom annotations supply optional tooling hints, not validation, authority or runtime behavior.
 The map keyword, namespace syntax, value schemas and external MCP adapter details remain open.
 
-The [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution) is accepted:
+The [default-conflict rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-default-resolution) is accepted:
 conflicting applicable defaults for an omitted configuration field require an explicit valid
 value or a correction to the defaults. Schema order does not choose a winner, and all applicable
 validation constraints still apply. Exact default-resolution mechanics remain open.
 
-The [format rule](../../protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted: `format` in
+The [format rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted: `format` in
 Conduit-authored schemas is an enforced validation requirement. V0 selects all 19 standard formats
 defined in JSON Schema 2020-12, with offline syntactic checks and conformance tests before support
 claims. Unsupported formats are reported; plugin-defined validators are deferred. Custom operations,
 Resource contracts and requirement checks remain extensible. Provider MCP dialect semantics remain unchanged.
 
-The [provider MCP schema boundary](../../protocol/CONFIGURATION.md#provider-mcp-schemas) is accepted:
+The [provider MCP schema boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#provider-mcp-schemas) is accepted:
 preserve the declared dialect's semantics without automatically imposing Conduit's stricter
 authoring profile. Allowed descriptive annotations do not alone reject a tool; unsupported
 required validation features are reported without stripping constraints or claiming enforcement.
 Exact adapter handling and conformance cases remain open.
 
-The [package-artifact rule](../../protocol/CONFIGURATION.md#implementation-selection) is accepted:
+The [package-artifact rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#implementation-selection) is accepted:
 resolved artifacts retain a content digest alongside package identity and, when released, release
 identity, covering contracts, graphs, templates and any bundled code, including code-free packages.
 The digest identifies content, not publisher trust or remote service code. Hash algorithms,
 bundle boundaries and concrete fields remain open.
 
-The [edit-mode/release boundary](../../protocol/CONFIGURATION.md#implementation-selection) is accepted:
+The [edit-mode/release boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#implementation-selection) is accepted:
 deliberately preserving an implementation for later selection requires intentional versioned
 publication of fixed package contents, identified by a digest and retrievable from a public or
 private distribution source. Conduit resolves/verifies/executes the package without necessarily
@@ -206,12 +206,12 @@ does not itself require retaining executables. Instance retirement does not dele
 release. This does not freeze credentials, Resource data or the host environment. Exact
 publication/acquisition mechanisms, metadata, storage and removal mechanics remain open.
 
-The [package-content rule](../../protocol/CONFIGURATION.md#implementation-selection) is accepted:
+The [package-content rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#implementation-selection) is accepted:
 explicitly declare included files/directories, with directory and pattern rules available.
 Do not capture the whole working directory by default. Unselected files do not contribute to
 the artifact or its digest. Exact syntax, descriptor handling and internal symlink representation remain open.
 
-The [capture-boundary rule](../../protocol/CONFIGURATION.md#implementation-selection) is accepted:
+The [capture-boundary rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#implementation-selection) is accepted:
 one explicit source directory bounds included paths and symlink targets. Outside targets are
 reported rather than silently copied. Authors may stage shared files, choose a wider explicit
 directory or use separate package dependencies. Resource paths and authorized runtime access
@@ -222,85 +222,85 @@ versioned releases. Different edit-mode captures do not become multiple released
 version. Protecting active execution does not require an archive of every development build.
 Contract checks and no silent substitution remain applicable; public registry mechanics remain open.
 
-The [graph-input boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: v0 inputs use
+The [graph-input boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: v0 inputs use
 literals and typed references to configuration or earlier outputs. Plugin operations perform
 calculations and transformations; inline expressions in bindings are deferred. Output bindings
 imply dependencies as already agreed. Exact reference syntax remains open, and branching/loops
 still remain inside plugins initially.
 
-The [reference-recognition boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: recognize
+The [reference-recognition boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: recognize
 references only in explicitly designated binding positions. Literal payloads, ordinary configuration
 and plugin results are not recursively reinterpreted as graph instructions, even when they resemble
 reference notation. Resolving a reference retrieves data, not another instruction to evaluate.
 The accepted single-key forms now distinguish bindings from literal data; reference payload fields remain open.
 
-The [structured-input boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: graphs can
+The [structured-input boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: graphs can
 explicitly assemble object fields and list items from literals, references and nested assemblies
 without a plugin merely to build that structure. Output references still imply dependencies; literal
 payloads remain data. Calculations and other transformations remain plugin operations. No automatic
 merging, string manipulation, loops or inline expressions are introduced. Assembly encoding now uses
 the accepted `object` and `list` form keys below.
 
-The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch provable
+The [input-validation boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch provable
 wiring/type errors before execution, then validate each step's resolved inputs before dispatch.
 No static proof that every possible upstream output satisfies the receiving schema is required.
 A producer permitting integers 1–100 can feed a consumer requiring 1–10, with 5 accepted and 50
 rejected before the receiving step runs. Required schema support remains mandatory; rejection does
 not undo earlier effects. Exact checking algorithms and diagnostics remain open.
 
-The [output-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: validate each
+The [output-validation boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: validate each
 declared plugin output against its producer's contract before downstream use. Withhold invalid
 output and report a contract error while preserving effects and uncertainty. A malformed descriptor
 does not establish that creation had no effect or is safe to replay. Producer-output and receiving-input
 checks remain separate; provider-native schema interpretation is unchanged. Exact result/error
 representation remains open.
 
-The [graph-failure scheduling rule](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: independent
+The [graph-failure scheduling rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: independent
 branches continue when their own prerequisites remain satisfied. Unmet prerequisites block affected
 work, required unfinished setup remains incomplete, and current authority, coordination, cancellation
 and stop rules still apply. Preserve effects and dispatched outcomes without automatic retry or rollback.
 
-The [explicit graph-cancellation rule](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: stop
+The [explicit graph-cancellation rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: stop
 starting ordinary steps and request cancellation of in-flight child operations where supported.
 Track actual outcomes, effects and uncertainty, and perform required cleanup. Preparation's existing
 attachment-release duties still apply; an already-started runtime follows its instance lifecycle.
 A request is not proof of stopped work, rollback or completed cleanup. Exact propagation and
 transport mechanics remain open.
 
-The [configuration-capture rule](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: configuration
+The [configuration-capture rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: configuration
 references within one graph execution use values captured when it begins. Later executions capture
 the then-current settings. The instance still has one stored configuration map; captured inputs do
 not establish current runtime state. Authority, dependency validity and control-application revision
 checks remain current, and retry/recovery must revalidate retained results. Exact representation and
 recovery mechanics remain open.
 
-The [reusable-operation input boundary](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
+The [reusable-operation input boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
 is accepted: caller configuration is supplied through declared typed inputs, with no implicit
 inheritance of the caller's configuration namespace. A template graph passes its captured limit
 into the reusable operation's `limit` input. Scoped invocation context and explicitly authorized
 Resource access remain available under their contracts. Exact input/context syntax remains open.
 
-The [package entry-document rule](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
+The [package entry-document rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
 is accepted: one explicit entry document declares public exports and dependencies, with definitions
 inline or referenced in package-local files. It may be handwritten or generated; inspecting it
 requires no plugin execution or directory-based export discovery. Provider-native catalogs remain
 dynamic. Filenames, fields and reference syntax remain open. The
-[complete package walkthrough](../../proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md) illustrates both
+[complete package walkthrough](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md) illustrates both
 single-file and multi-file declarations.
 
-The [public export-name rule](../../protocol/MODEL.md#package-scope-and-public-bindings) is accepted:
+The [public export-name rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#package-scope-and-public-bindings) is accepted:
 names are unique across contribution kinds within a package, including inline and referenced
 definitions. Selecting the package and export name identifies one contribution; resolution still
 checks its expected kind and contract. Internal names, contract identities and registry object
 naming remain separate. Exact name grammar and reference notation remain open.
 
-The [explicit re-export rule](../../protocol/MODEL.md#package-scope-and-public-bindings) is accepted:
+The [explicit re-export rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#package-scope-and-public-bindings) is accepted:
 a package may expose a declared dependency's public contribution under its own export name without
 copying or wrapping it. Preserve the original definition, contract, internal reference scope and
 resolved dependency identities. Export-name uniqueness and kind/contract checks still apply; the
 alias adds no behavior or access. Exact declaration and resolution notation remain open.
 
-The [template implementation-selection structure](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
+The [template implementation-selection structure](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
 is accepted: one named dependency map, with setup operations, runtime drivers and control handlers
 selecting an alias plus a public export name. There is no primary alias; each use checks the expected
 kind and contract. Package-internal scope and retained implementation identities remain unchanged.
@@ -318,14 +318,14 @@ The shared format set is accepted above. The [format-set follow-up](../../resear
 retains the rationale; the decision does not select UUID object IDs, graph-reference notation or
 network access, and no runtime support is claimed by recording it.
 
-The [portable integer boundary](../../protocol/CONFIGURATION.md#numeric-interoperability) is accepted:
+The [portable integer boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#numeric-interoperability) is accepted:
 Conduit-declared integer configuration, inputs and outputs in v0 use −9,007,199,254,740,991 through
 9,007,199,254,740,991. A contract needing a larger exact integer can explicitly use a decimal string;
 there is no automatic conversion or rounding into range. Core revision/ID encodings and
 provider-native schemas remain separate. The [number-portability follow-up](../../research/language-protocol-foundations/FORMATS.md#number-portability-follow-up)
 retains the rationale.
 
-The [fractional-number boundary](../../protocol/CONFIGURATION.md#numeric-interoperability) is accepted:
+The [fractional-number boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#numeric-interoperability) is accepted:
 ordinary fractional configuration, inputs and outputs use finite binary64 (double-precision)
 semantics, including normal representational rounding. Exact decimal quantities use explicit
 decimal-string or scaled-integer contracts; integer limits remain strict. This refines the earlier
@@ -333,7 +333,7 @@ blanket precision wording. The [follow-up](../../research/language-protocol-foun
 retains the rationale; detailed validation/serialization fixtures remain engineering and conformance
 work, with any newly exposed public behavior choice returned for review.
 
-The [batch submission boundary](../../protocol/CONFIGURATION.md#batch-configuration-submissions) is accepted:
+The [batch submission boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#batch-configuration-submissions) is accepted:
 v0 supports multi-object configuration submissions as a convenience over ordinary checked writes,
 with per-object outcomes and retained partial successes. No atomic batch guarantee or rollback is
 implied. Explicit create/update intent, update preconditions, Pool ownership and instance-control
@@ -416,21 +416,21 @@ the accepted rules. Review authoring costs, transformation granularity and failu
 field layout. This is research guidance, not a new ruling or an automatic reopening of accepted
 contracts. Identify any proposed revision explicitly; the protocol reference remains authoritative.
 
-The first [guided directory walkthrough](../../proposals/authoring-syntax/AUTHORING.md#guided-directory-walkthrough)
+The first [guided directory walkthrough](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/AUTHORING.md#guided-directory-walkthrough)
 now traces configuration, plugin/graph bindings, Pool-owned instantiation, subsequent Agent access and
 failure/retry. It is an illustrative recipe with a required setup-time layout check, not an executed
 deployment or a new ruling. Its authoring costs and distinctions can be compared with the authenticated
 MCP and database cases. The direct-field reference layout is now accepted; the example does not
 settle the remaining selector encoding or vocabulary.
 
-The second [guided authenticated MCP walkthrough](../../proposals/authoring-syntax/AUTHORING.md#guided-authenticated-mcp-walkthrough)
+The second [guided authenticated MCP walkthrough](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/AUTHORING.md#guided-authenticated-mcp-walkthrough)
 now traces Pool composition, a shared authentication Resource, a service Resource's setup outputs,
 separately authorized Agent attachments and ongoing refresh/reconnect. It introduces the producer
 contracts before the reference fragment and distinguishes graph results from usable credentials
 and current permission. This is an assumed compatible integration, not verified Linear support or
 a runtime test; no new behavior or field layout is approved by this walkthrough.
 
-The third [guided database/migration walkthrough](../../proposals/authoring-syntax/AUTHORING.md#guided-database-and-migration-walkthrough)
+The third [guided database/migration walkthrough](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/AUTHORING.md#guided-database-and-migration-walkthrough)
 now covers instance-managed startup, an explicit migration-success prerequisite for verification,
 retained runtime/backing after failure, unknown effects, valid-progress retry and independent Pool
 work. The candidate ordering field is illustrative. No database was started, and no automatic
@@ -744,7 +744,7 @@ authority or fixed-definition rules. Multiple plugin contributions can fulfill t
 without a primary implementation. Type-contract versions remain independent of the common object
 contract and implementation releases. This chooses a shared structural model, not final type
 names, grouping for the other families, field spellings, a type catalog or another object family.
-See the [Experiment 001 contract guide](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/CONTRACTS.md#draft-syntax).
+See the [Experiment 001 contract guide](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/CONTRACTS.md#draft-syntax).
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. The composition walkthrough preserves these
@@ -785,7 +785,7 @@ Crate/module boundaries, helper grouping, the initial transport, SQLite tables/d
 retry budgets, parser/tool choices and website generator remain engineering proposals. Choose them
 against accepted contracts and evidence; elevate a choice when it changes a public guarantee, support
 promise or user-visible scope. No runtime implementation starts during this migration. The
-[implementation packet](../../implementation/README.md) preserves the candidates.
+[implementation packet](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/implementation/README.md) preserves the candidates.
 
 ## Explicitly later scope
 
@@ -818,17 +818,17 @@ The previous cumulative index is preserved below from the same `82e87cd` baselin
 [original file](https://github.com/shrav-k/conduit/blob/82e87cd18eeb000f5277158e8dd3e0cae100eb1c/docs/proposals/authoring-syntax/README.md).
 Its title is omitted and relative links are relocated; its full body remains historical evidence.
 
-Start at [Author with the protocol](../../authoring/README.md) for the accepted semantic path.
-Remaining review work is consolidated in [REVIEW](../../REVIEW.md); this packet preserves examples
+Start at [Author with the protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/authoring/README.md) for the accepted semantic path.
+Remaining review work is consolidated in [REVIEW](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md); this packet preserves examples
 for later syntax discussion and adds no second active question queue.
 
-The [vocabulary boundary](../../protocol/MODEL.md#vocabulary-review-boundary) now makes all
+The [vocabulary boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#vocabulary-review-boundary) now makes all
 Conduit-owned names below the five object families provisional, including earlier selected field
 spellings. Keep using them consistently while reviewing logic and structure; naming has a separate
 future PR and is not a prerequisite for these walkthroughs.
 
 Status: **behavior/structure review complete; concrete schemas and supporting vocabulary remain proposals**,
-2026-11-04. The [current review](../../REVIEW.md#behavior-and-structure-merge-checkpoint) records the
+2026-11-04. The [current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md#behavior-and-structure-merge-checkpoint) records the
 merge boundary and follow-up work; closure does not approve every illustrative field. The
 [conceptual closure review](CONCEPTUAL.md) is complete. The published-contract and no-primary-plugin
 rulings remain accepted. Templates now use one named dependency map and alias-plus-export references
@@ -908,7 +908,7 @@ Packages may explicitly re-export a declared dependency's public contribution un
 name without copying or wrapping it. Preserve the original definition, contract, internal scope and
 resolved dependency identities; the alias adds no behavior or access. Exact notation remains open.
 
-The first authoring ruling now accepts [package-local scope and explicit dependency bindings](../../protocol/MODEL.md#package-scope-and-public-bindings).
+The first authoring ruling now accepts [package-local scope and explicit dependency bindings](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#package-scope-and-public-bindings).
 Caller-local aliases cannot override a package's internal references; replaceable dependencies must
 be explicitly exposed. Those dependencies may supply default implementation bindings, with compatible
 explicit replacements taking precedence and invalid replacements producing errors rather than fallback.
@@ -916,13 +916,13 @@ V0 imports require explicit support for the requested contract identity and exac
 to existing compatibility checks; cross-version mappings are deferred. Implementation release versions
 remain independent and no backward-compatibility maintenance obligation is added.
 Constrained YAML 1.2, equivalent JSON input/interchange and JSON Schema 2020-12 data contracts
-are also accepted in the [configuration foundation](../../protocol/CONFIGURATION.md#configuration-language).
+are also accepted in the [configuration foundation](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#configuration-language).
 The remaining representations and detailed schema profile below are proposals within those boundaries.
 Explicit success prerequisites belong on the dependent step beside its operation and inputs,
 referencing predecessor step names in the same graph. Output bindings still imply dependencies;
 the combined graph retains cycle/missing-step checks and independent scheduling. No separate authored
 edge collection is required. Placement is accepted; supporting field names remain provisional.
-The [graph-input boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is also accepted: v0 inputs
+The [graph-input boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is also accepted: v0 inputs
 use literals and typed references to configuration or earlier outputs, while plugin operations
 perform calculations and transformations. Inline binding expressions are deferred. References are
 recognized only in designated binding positions; literal payloads and resolved plugin results remain
@@ -997,7 +997,7 @@ contract for ownership, resolution and validity. Capability-specific behavior an
 explicit; actual live objects/credentials stay with their owner. Possession grants no access, and
 a stored reference does not prove current availability. This concerns operation values, separately
 from graph reference notation; exact fields and transport remain open.
-The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
+The [input-validation boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
 provable wiring/type errors early and validate actual resolved inputs before each step's dispatch.
 For Conduit-authored operations, prepare unambiguous declared defaults for omitted input fields
 before that validation and invocation. Code and graph implementations receive the same prepared
@@ -1022,14 +1022,14 @@ follows. Detailed scheduling mechanics remain open within this accepted policy.
 Explicit graph cancellation stops new ordinary steps and requests supported cancellation of
 in-flight children. Track actual outcomes and required cleanup; cancellation does not prove effects
 stopped or replace instance lifecycle rules. Exact propagation/transport mechanics remain open.
-The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-resolution) uses
+The accepted [schema-resolution rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-resolution) uses
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.
-Conduit-authored schemas also [reject unrecognized keywords](../../protocol/CONFIGURATION.md#schema-keyword-acceptance),
+Conduit-authored schemas also [reject unrecognized keywords](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-keyword-acceptance),
 with additional custom descriptive annotations in one dedicated map of namespaced entries.
 Reuse standard descriptive annotations where applicable. Custom hints do not implement validation,
 permissions or runtime behavior; the map keyword, namespace syntax and value schemas remain open.
-Provider MCP schemas [retain their declared dialect's semantics](../../protocol/CONFIGURATION.md#provider-mcp-schemas);
+Provider MCP schemas [retain their declared dialect's semantics](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#provider-mcp-schemas);
 allowed descriptive annotations do not alone reject a tool, and unsupported required validation
 features are reported without stripping constraints or claiming enforcement. Adapter details remain open.
 Formats in Conduit-authored schemas are enforced. V0 selects all 19 JSON Schema 2020-12 standard
@@ -1037,7 +1037,7 @@ formats with offline syntactic checks and conformance tests before support claim
 formats are reported; plugin-defined validators are deferred. Supported keywords/reusable schemas
 can still describe custom constraints, and operations, Resource contracts and requirement checks
 remain extensible.
-The accepted [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution)
+The accepted [default-conflict rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-default-resolution)
 requires an explicit valid value or corrected defaults when an omitted field has conflicting
 applicable schema defaults. Traversal order cannot select a winner.
 An omitted optional object without its own applicable default stays absent; child-property defaults
@@ -1054,13 +1054,13 @@ alternatives; composed-default conflict rules and provider-native semantics rema
 Schema acceptance also rejects defaults provably invalid against their own schema after supported
 preparation, without requiring proof across every future composition. Actual prepared payloads still
 validate, and conflicting otherwise-valid defaults retain their explicit-resolution rule.
-The accepted [integer range](../../protocol/CONFIGURATION.md#numeric-interoperability) is
+The accepted [integer range](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#numeric-interoperability) is
 −9,007,199,254,740,991 through 9,007,199,254,740,991 for Conduit-declared configuration, inputs
 and outputs. Larger exact values can use an explicitly string-typed contract; implicit conversion
 and rounding into range are forbidden. Ordinary fractional values use finite binary64 semantics,
 including normal representational rounding. Exact decimals use explicit decimal-string or
 scaled-integer contracts. Core revision/ID encodings and detailed conformance fixtures remain open.
-The accepted [batch boundary](../../protocol/CONFIGURATION.md#batch-configuration-submissions) supports
+The accepted [batch boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#batch-configuration-submissions) supports
 multi-object submissions through ordinary checked writes, with per-object outcomes and retained
 partial successes. Explicit intent and preconditions remain required; no atomicity or automatic setup
 is implied. Complete parsing and schema validation precede all writes; an invalid entry or missing
@@ -1071,7 +1071,7 @@ semantics apply. File order does not supply dependencies and outputs do not cons
 definitions. Only one write per target object is allowed in a batch; duplicate update IDs or create
 kind/name pairs are rejected before writes even if ordered. Multiple distinct instances from one
 template remain supported. Batch notation and detailed conflict diagnostics remain open.
-Resolved package artifacts retain [package identity and a content digest, plus release identity when released](../../protocol/CONFIGURATION.md#implementation-selection),
+Resolved package artifacts retain [package identity and a content digest, plus release identity when released](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#implementation-selection),
 covering declarations and any bundled code, including template-only packages. Digest
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.
 Managed execution of local packages uses retained immutable snapshots, while direct handler tests
@@ -1097,15 +1097,15 @@ their recommendations do not silently amend this packet or the accepted protocol
 
 | Document | Preserve it for |
 | --- | --- |
-| [AUTHORIZATION](../../proposals/authoring-syntax/AUTHORIZATION.md) | Accepted requirements/grants illustrated with unapproved representation and enforcement details, moved here from the runtime packet. |
-| [AUTHORING](../../proposals/authoring-syntax/AUTHORING.md) | Small-handler, managed-capability, code-optional MCP and composite-operation author journeys; illustrative APIs. |
-| [CONTRACTS](../../proposals/authoring-syntax/CONTRACTS.md) | Proposed schemas, graph/output bindings, operation context and managed MCP mappings. |
-| [PACKAGE_WALKTHROUGH](../../proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md) | One history package from publication through setup/runtime/controls, applying accepted package scope while leaving binding/default syntax open. |
+| [AUTHORIZATION](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/AUTHORIZATION.md) | Accepted requirements/grants illustrated with unapproved representation and enforcement details, moved here from the runtime packet. |
+| [AUTHORING](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/AUTHORING.md) | Small-handler, managed-capability, code-optional MCP and composite-operation author journeys; illustrative APIs. |
+| [CONTRACTS](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/CONTRACTS.md) | Proposed schemas, graph/output bindings, operation context and managed MCP mappings. |
+| [PACKAGE_WALKTHROUGH](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md) | One history package from publication through setup/runtime/controls, applying accepted package scope while leaving binding/default syntax open. |
 
-These documents include useful conceptual examples, but the [design](../../protocol/README.md) is the source
+These documents include useful conceptual examples, but the [design](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) is the source
 of accepted semantics. Earlier question sequences remain in Git rather than another active queue.
-The [implementation proposal](../../implementation/README.md) preserves runtime options separately.
-The [post-migration review](../../REVIEW.md) is complete: lightweight delivery, no backward-compatibility
+The [implementation proposal](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/implementation/README.md) preserves runtime options separately.
+The [post-migration review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md) is complete: lightweight delivery, no backward-compatibility
 promise, contexts as ordinary Resources, Apache-2.0, deferred public naming and owner-led authority
 are recorded. These decisions do not approve the package/export/schema spellings in this packet.
 

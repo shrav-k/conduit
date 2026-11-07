@@ -5,12 +5,12 @@
 Reviewed **2026-11-02** after the owner requested a final comparison before committing to the
 serialization and data-schema foundation. The owner subsequently accepted constrained YAML,
 equivalent JSON input/interchange and JSON Schema 2020-12. The accepted
-[configuration foundation](../../protocol/CONFIGURATION.md#configuration-language) records that
+[configuration foundation](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#configuration-language) records that
 ruling. This brief preserves the comparison; remaining profile recommendations are not accepted
-merely by appearing here. The [current review](../../REVIEW.md) owns the remaining decisions.
-The subsequent [schema-resolution ruling](../../protocol/CONFIGURATION.md#schema-resolution)
+merely by appearing here. The [current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md) owns the remaining decisions.
+The subsequent [schema-resolution ruling](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-resolution)
 also accepts supplied/declared schema dependencies with no automatic fetching during validation.
-The owner also accepted [rejecting unrecognized schema keywords](../../protocol/CONFIGURATION.md#schema-keyword-acceptance)
+The owner also accepted [rejecting unrecognized schema keywords](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#schema-keyword-acceptance)
 in Conduit-authored contracts. A subsequent ruling selects one dedicated map of namespaced custom
 descriptive annotations, reusing standard descriptive annotations where applicable. Its keyword,
 namespace syntax and detailed value schemas remain open; custom hints do not implement validation,
@@ -139,7 +139,7 @@ These are parts of making the chosen foundation precise, not reasons to design a
   composition, defaults, references and cross-client interpretation. Preserve useful source
   locations for author diagnostics.
 
-The existing [20 probes](../../../experiments/003-language-probes/README.md) already demonstrate
+The existing [20 probes](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/README.md) already demonstrate
 several of these traps. They remain Python library observations, not evidence that a Rust parser,
 Conduit runtime or arbitrary client conforms. No additional runtime implementation was tested in
 this comparison. Sources were rechecked through official web documentation; this brief does not

@@ -1,7 +1,7 @@
 # Simplification pass
 
 Status: reviewer feedback on the [candidates](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/CANDIDATES.md), 2026-11-05. Nothing here is adopted;
-rulings still go through the [vocabulary map](../../VOCABULARY.md#review-and-migration-procedure).
+rulings still go through the [vocabulary map](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md#review-and-migration-procedure).
 This proposes fewer names for the same accepted behavior. It does not merge any behavior.
 
 **Outcome.** The owner adopted this pass as the base of the final vocabulary on 2026-11-05
@@ -66,7 +66,7 @@ flowchart LR
   class impl,export,pkg,vb,sel,rid,pol,join,useex,conn,gref,handle,effect,route,setup,inv,io,pol2,req,grant,handle2,load,gone keep;
 ```
 
-With pattern 1 applied, the plugin-versus-implementation question in [V05](../../protocol/MODEL.md#v05)
+With pattern 1 applied, the plugin-versus-implementation question in [V05](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#v05)
 mostly goes away. "Plugin" can stay as a casual word for "a package with implementations," but not as
 a separate primitive.
 

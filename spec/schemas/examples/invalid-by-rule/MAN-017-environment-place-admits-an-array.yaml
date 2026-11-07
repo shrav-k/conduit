@@ -1,0 +1,29 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# an item's `environment` points at no place at which the type's schema admits an object or
+# an array (MAN-017), because a variable holds a string. `files-server`, the default
+# implementation of `example.org/files#directory.read.v1` in ../valid/files-package/, gives
+# its variable `FILES_ROOT` the place `/path`, and the type `tagged-directory.v1` requires
+# `path` but gives it `type: array`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: tagged-directory.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      path:
+        type: array
+        items: {type: string, minLength: 1}
+    required: [path]
+  requires:
+    - example.org/files#directory.read.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: tagged-folder
+spec:
+  type: '#tagged-directory.v1'

@@ -1,0 +1,13 @@
+# Example. It must be rejected:
+# the `url` of a `remote` item is a URI reached over Streamable HTTP (MAN-010), and a host
+# name alone is not one.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  legacy-reader:
+    implements: ['#directory.read.v1']
+    remote:
+      type: streamable-http
+      url: files.example.org

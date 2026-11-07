@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Check or change the names the specification assigns.
 
-The names (the core package's address, a document's `apiVersion`, and the prefix of Conduit's
-`_meta` keys) are defined once, in spec/names.yaml, and written out in full wherever the
-specification uses them. This tool keeps the two in step.
+The names (the core package's address, a document's `apiVersion`, the prefix of Conduit's
+`_meta` keys, and, since ruling 43, the names of what the input `identity` of `run.v1` carries)
+are defined once, in spec/names.yaml, and written out in full wherever the specification uses
+them. This tool keeps the two in step.
 
     python3 tools/set_names.py --check
         Verify that spec/ agrees with spec/names.yaml. Exit 1 if not. It reports:
@@ -15,7 +16,9 @@ specification uses them. This tool keeps the two in step.
             `apiVersion`'s does, or that begins with the repository, and is neither; and a
             key under the prefix, or a prefix close to it, that the specification does not
             define;
-          - a name that appears nowhere.
+          - a name that appears nowhere;
+          - a variable whose name begins as those of `identity` do, with `CONDUIT_`, and that
+            is neither of them.
         The check reads text and knows nothing of YAML. It takes a token of the form
         `<dotted name>/<key>` to be a `_meta` key, and an address whose last part is the
         core package's last part to be meant as the core package.
@@ -23,8 +26,14 @@ specification uses them. This tool keeps the two in step.
     python3 tools/set_names.py --domain example.org
     python3 tools/set_names.py --github owner/repo
     python3 tools/set_names.py --core-package A --api-version B --meta-prefix C
+    python3 tools/set_names.py --identity certificateFile=cert.pem
         Show what would change. Add --write to rewrite every file under the given roots
-        (default: spec, conformance, reference-model) and spec/names.yaml itself.
+        (default: spec, conformance, reference-model) and spec/names.yaml itself. A variable
+        of `identity` is rewritten wherever it stands as a whole word; a file of `identity`
+        only where it is written in backticks, and not under spec/schemas/examples/, whose
+        examples use a word such as `token` for other things. Each line in which a file name
+        would change is shown, since a sentence may name another system's file of that name,
+        such as Kubernetes' own `token`: read them before adding --write.
 
 No third-party modules are needed.
 """
@@ -39,6 +48,20 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 NAMES = ROOT / "spec" / "names.yaml"
 KEYS = ("repository", "corePackage", "apiVersion", "metaPrefix")
+# The names of what the input `identity` of `run.v1` carries (ruling 43, Q1): two variables and
+# the files that the run finds in the directory that the second names.
+VARIABLE_KEYS = ("engineUrlVariable", "identityDirVariable")
+# Round 5 of the re-audit (M86) renamed trustBundleFile to x509BundleFile: the trust bundle is
+# that file and jwtBundleFile's.
+FILE_KEYS = ("x509BundleFile", "jwtBundleFile", "engineIdFile", "tokenFile",
+             "certificateFile", "keyFile")
+IDENTITY_KEYS = VARIABLE_KEYS + FILE_KEYS
+VARIABLE = re.compile(r"[A-Z][A-Z0-9]*_[A-Z0-9_]*[A-Z0-9]")
+FILE_NAME = re.compile(r"[A-Za-z0-9_][A-Za-z0-9._-]*")
+# A file name of `identity` may be a common word, such as `token`, which the examples also use
+# for other things. It is counted and rewritten only where it is written in backticks, and not
+# under this directory.
+EXAMPLES = ROOT / "spec" / "schemas" / "examples"
 DEFAULT_ROOTS = ("spec", "conformance", "reference-model")
 TEXT_SUFFIXES = {".yaml", ".yml", ".md", ".json", ".rs", ".toml", ".txt"}
 # The file that defines Conduit's `_meta` keys. The list of keys is read from it.
@@ -48,7 +71,9 @@ FOREIGN_META_PREFIXES = ("io.modelcontextprotocol/",)
 # A run of characters that can make up a name, a reference or a path.
 TOKEN = re.compile(r"[A-Za-z0-9._/#:-]+")
 DNS_NAME = re.compile(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+")
-WORD = re.compile(r"[A-Za-z][A-Za-z0-9]*")
+# A key, or the name of an extension, after the prefix: a word, or words joined by hyphens,
+# as in the extension `implementation-interface`.
+WORD = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*")
 API_VERSION_VALUE = re.compile(r"\bapiVersion: *['\"]?([^\s,}`'\"]+)")
 # How close a dotted prefix must be to the current one to count as a misspelling of it.
 CLOSE = 0.8
@@ -70,12 +95,24 @@ def read_names() -> tuple[dict[str, str], list[str]]:
         key, value = key.strip(), value.strip()
         if key == "retired":
             in_retired = True
-        elif key in KEYS:
+        elif key in KEYS + IDENTITY_KEYS:
             names[key] = value
-    missing = [k for k in KEYS if not names.get(k)]
+    missing = [k for k in KEYS + IDENTITY_KEYS if not names.get(k)]
     if missing:
         sys.exit(f"{NAMES}: missing {', '.join(missing)}")
     return names, retired
+
+
+def occurrence(key: str, name: str) -> re.Pattern:
+    """Where a name of `identity` stands: a variable as a whole word, not inside a longer one;
+    a file name only in backticks."""
+    if key in VARIABLE_KEYS:
+        return re.compile(r"(?<![A-Za-z0-9_])" + re.escape(name) + r"(?![A-Za-z0-9_])")
+    return re.compile("`" + re.escape(name) + "`")
+
+
+def counts_for(key: str, path: pathlib.Path) -> bool:
+    return key in VARIABLE_KEYS or EXAMPLES not in path.parents
 
 
 def reverse_dns(host_and_path: str) -> str:
@@ -127,7 +164,7 @@ def meta_keys(prefix: str) -> list[str]:
     """The names of Conduit's `_meta` keys: every word the interface file writes after the prefix."""
     if not INTERFACE.exists():
         sys.exit(f"{INTERFACE}: missing; the `_meta` keys are read from it")
-    found = re.findall(re.escape(prefix) + r"([A-Za-z][A-Za-z0-9]*)", INTERFACE.read_text())
+    found = re.findall(re.escape(prefix) + "(" + WORD.pattern + ")", INTERFACE.read_text())
     keys = sorted(set(found))
     if not keys:
         sys.exit(f"{INTERFACE}: no `_meta` key with the prefix {prefix!r}")
@@ -180,6 +217,9 @@ def check(roots: list[str]) -> int:
     keys = meta_keys(names["metaPrefix"])
     errors = []
     seen = {k: 0 for k in ("corePackage", "apiVersion", "metaPrefix")}
+    identity = {k: 0 for k in IDENTITY_KEYS}
+    variables = {names[k] for k in VARIABLE_KEYS}
+    stems = {v.split("_", 1)[0] + "_" for v in variables}
     for p in files(roots):
         if p == NAMES:
             continue
@@ -187,8 +227,16 @@ def check(roots: list[str]) -> int:
         rel = p.relative_to(ROOT)
         for k in seen:
             seen[k] += text.count(names[k])
+        for k in identity:
+            if counts_for(k, p):
+                identity[k] += len(occurrence(k, names[k]).findall(text))
         for n, line in enumerate(text.splitlines(), 1):
             found = []
+            for m in VARIABLE.finditer(line):
+                token = m.group(0)
+                if any(token.startswith(s) for s in stems) and token not in variables:
+                    found.append(f"variable {token!r} begins as those of `identity` do and is "
+                                 f"neither {' nor '.join(sorted(variables))}")
             for old in retired:
                 if old in line:
                     found.append(f"retired name {old!r}")
@@ -201,13 +249,15 @@ def check(roots: list[str]) -> int:
                 found.extend(look_alikes(m.group(0), names, keys, p == INTERFACE))
             for message in dict.fromkeys(found):
                 errors.append(f"{rel}:{n}: {message}")
-    for k, count in seen.items():
+    for k, count in list(seen.items()) + list(identity.items()):
         if count == 0:
             errors.append(f"spec/names.yaml: {k} = {names[k]!r} appears nowhere under {', '.join(roots)}")
     for e in errors:
         print(e)
     print(f"Names: corePackage x{seen['corePackage']}, apiVersion x{seen['apiVersion']}, "
-          f"metaPrefix x{seen['metaPrefix']}. Errors: {len(errors)}")
+          f"metaPrefix x{seen['metaPrefix']}; of `identity`, "
+          + ", ".join(f"{names[k]} x{identity[k]}" for k in IDENTITY_KEYS)
+          + f". Errors: {len(errors)}")
     return 1 if errors else 0
 
 
@@ -215,10 +265,11 @@ def change(new: dict[str, str], roots: list[str], write: bool) -> int:
     old, retired = read_names()
     # Longest first, so that the repository name does not rewrite part of a longer name.
     pairs = sorted(((old[k], new[k]) for k in KEYS if old[k] != new[k]), key=lambda p: -len(p[0]))
-    if not pairs:
+    renamed = [(old[k], new[k]) for k in IDENTITY_KEYS if old[k] != new[k]]
+    if not pairs and not renamed:
         print("Nothing to change.")
         return 0
-    for o, n in pairs:
+    for o, n in pairs + renamed:
         print(f"  {o}  ->  {n}")
     total = 0
     for p in files(roots):
@@ -230,6 +281,18 @@ def change(new: dict[str, str], roots: list[str], write: bool) -> int:
         for o, n in pairs:
             hits += out.count(o)
             out = out.replace(o, n)
+        for k in IDENTITY_KEYS:
+            if old[k] != new[k] and counts_for(k, p):
+                pattern = occurrence(k, old[k])
+                if k in FILE_KEYS:
+                    # A file name may also be another system's, such as Kubernetes' own
+                    # `token`: each line is shown, to be read before --write.
+                    for n, line in enumerate(out.splitlines(), 1):
+                        if pattern.search(line):
+                            print(f"    {p.relative_to(ROOT)}:{n}: {line.strip()}")
+                replacement = new[k] if k in VARIABLE_KEYS else f"`{new[k]}`"
+                out, count = pattern.subn(replacement, out)
+                hits += count
         if out != text:
             total += hits
             print(f"{'rewrote' if write else 'would rewrite'} {p.relative_to(ROOT)} ({hits})")
@@ -237,7 +300,7 @@ def change(new: dict[str, str], roots: list[str], write: bool) -> int:
                 p.write_text(out)
     if write:
         text = NAMES.read_text()
-        for k in KEYS:
+        for k in KEYS + IDENTITY_KEYS:
             text = re.sub(rf"(?m)^{k}: .*$", f"{k}: {new[k]}", text)
         # Retire the old repository name and the old prefix; the longer names contain them.
         # A name that is current again is no longer retired.
@@ -263,13 +326,25 @@ def main() -> int:
     ap.add_argument("--core-package")
     ap.add_argument("--api-version")
     ap.add_argument("--meta-prefix")
+    ap.add_argument("--identity", action="append", default=[], metavar="KEY=VALUE",
+                    help="a name of `identity`: " + ", ".join(IDENTITY_KEYS))
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--roots", nargs="*", default=list(DEFAULT_ROOTS))
     args = ap.parse_args()
     if args.check:
         return check(args.roots)
     old, _ = read_names()
-    return change(derive(args, old), args.roots, args.write)
+    new = derive(args, old)
+    for item in args.identity:
+        key, _, value = item.partition("=")
+        if key not in IDENTITY_KEYS:
+            sys.exit(f"--identity: {key!r} is not one of {', '.join(IDENTITY_KEYS)}")
+        shape = VARIABLE if key in VARIABLE_KEYS else FILE_NAME
+        if not shape.fullmatch(value):
+            what = "variable" if key in VARIABLE_KEYS else "file name"
+            sys.exit(f"--identity: {value!r} is not a {what}")
+        new[key] = value
+    return change(new, args.roots, args.write)
 
 
 if __name__ == "__main__":

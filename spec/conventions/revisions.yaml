@@ -10,22 +10,46 @@
 # REV-013, and its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed REV-010. No
 # promise of this file has been removed.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed REV-010: a control of an instance that no longer exists is
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed REV-010: a control of an instance that no longer exists is
 # reconciled with no revision and no settings. It removed none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed REV-010.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # REV-010: a reconciliation of a control names a revision only where it stores settings. It
 # added none and removed none.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
+# (docs/proposals/ruling-40/README.md) and the principles review
+# (docs/proposals/principles-review/README.md), removed REV-008 (decision 15: a control
+# applies exactly what it is sent and returns no `settings`, so no confirmed settings are left
+# to check; REV-015 checks the values against the type's schema before dispatch in its place).
+# It is the first promise removed from this file, and its ID is not reused. It changed
+# REV-001, REV-003, REV-004, REV-006, REV-007 and REV-010 to REV-013, and added REV-014, on a
+# request to set up, retire or change an instance that is busy, and REV-015, on a control
+# whose values would make the configuration fail the type's schema. What changed is in
+# docs/proposals/ruling-41/log-G4.md.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
+# in docs/proposals/ruling-41/open-decisions.md, changed REV-012 and REV-014: the engine's own
+# retirements of the instances of a location declared lost, and its closings of Conduits at
+# once, dispatch nothing and are not held back; the setups and retirements that the engine
+# dispatches within an actor's invocation count as an actor's; and every repeat answered
+# without a dispatch, OPS-034's among them, is excepted. It added none and removed none. What
+# changed is in docs/proposals/ruling-42/log-conventions.md.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in REV-014. It removed none
+# and added none.
+# The fix pass of the fifth round of the re-audit
+# (docs/proposals/reaudit/round-5/log-fix-F3.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-5/DECISIONS.md, changed REV-007, REV-010 and REV-012, under which
+# a control that ends after its instance was retired, or its reconciliation, records the outcome
+# and stores nothing (M35); and REV-014, which counts a reconciliation of a setup or a
+# retirement as one (M36), and a request for `retire-with-resources.v1` as a retirement of the
+# Pool (M38). It added none and removed none.
 
 - id: REV-001
   layer: convention
@@ -36,7 +60,9 @@
     It has exactly one revision.
   observable: >-
     Inspecting any template or instance returns a single revision value. There is no second
-    counter for its settings.
+    revision for its settings. A revision is an opaque non-empty string, compared only for
+    equality, as an HTTP entity tag is: nothing is read from its form, neither the order of two
+    revisions nor what changed between them.
   vectors: []
 
 - id: REV-002
@@ -55,24 +81,23 @@
   layer: convention
   level: must
   when: >-
-    An object's stored definition, configuration or name changes.
+    An object's stored definition or configuration changes.
   then: >-
     Its revision advances.
   observable: >-
-    The revision after the change differs from the revision before it. A rename is such a
-    change, under OBJ-026.
+    The revision after the change differs from the revision before it.
   vectors: []
 
 - id: REV-004
   layer: convention
   level: must not
   when: >-
-    An object's stored definition, configuration and name do not change.
+    An object's stored definition and configuration do not change.
   then: >-
     Its revision advances.
   observable: >-
-    A change that failed, a change whose outcome is unknown, and a change that confirmed the
-    values already stored each leave the revision as it was.
+    A change that failed, a change whose outcome is unknown, and a control that succeeded with
+    values equal to those already stored each leave the revision as it was.
   vectors: []
 
 - id: REV-005
@@ -98,9 +123,9 @@
     After the control succeeds, every setting whose input was not supplied has the value it had
     before. `revision` is the one input of a control that must always be supplied: a control
     requested without it is not dispatched and reports invalid, under REV-011. Every other input
-    of a control may be left out, whether or not its contract marks it `optional: true`: the
-    rule of OBJ-015 that an unmarked input is required does not hold for a control, and the tool
-    definition of IFC-033 lists `revision` alone as required.
+    of a control may be left out, whether or not the control's `inputSchema` lists it under
+    `required`: the rule of OBJ-015 that an input `required` lists is not optional does not hold
+    for a control, and the tool definition of IFC-033 lists `revision` alone as required.
   vectors: []
 
 - id: REV-007
@@ -109,35 +134,22 @@
   when: >-
     A control succeeds.
   then: >-
-    Its result states the settings it confirmed, in its output `settings`, and exactly those
-    settings are stored. `settings` is a map keyed by the pointers of the control's `changes`.
-    It has one member for each place the control confirmed, which holds the value now stored at
-    that place.
+    It has applied exactly the values it was sent and, unless its instance was retired while it
+    ran, exactly those values are stored, each at the pointer that the control's `changes` gives
+    for its input. It returns no `settings`, and an implementation never applies another value
+    in the place of one it was sent.
   observable: >-
     The stored configuration after the control equals the configuration before it with the
-    confirmed settings applied, and nothing else changed. A control whose confirmed settings
-    cannot be stored has not succeeded: REV-008 gives its outcome. A control whose `changes` is
-    `{limit: /readLimit}` and that confirmed the value 15 for its input `limit` returns
-    `settings: {/readLimit: 15}`. A place of `changes` that the control did not confirm, because
-    its input was not supplied under REV-006, has no member. A setting that is a reference is
-    returned in the resolved form of OBJ-009. Every control declares the input `revision` and
-    the output `settings`, under CTR-006. A `settings` that holds a key which is not a pointer
-    of the control's `changes` is not that output: the control's outcome is unknown under
-    OPS-007, and nothing is stored, as under REV-008.
-  vectors: []
-
-- id: REV-008
-  layer: convention
-  level: must
-  when: >-
-    The settings a control's result confirms would make the stored configuration fail its
-    schema.
-  then: >-
-    The control's outcome is unknown, and nothing is stored.
-  observable: >-
-    The stored configuration and revision are as before. The record of the invocation's end
-    states unknown and that the confirmed settings were not valid, and the settings are reported
-    as REV-009 states.
+    values it was sent applied at those pointers, and nothing else changed. A control whose
+    `changes` is `{limit: /readLimit}` and that was sent the value 20 for its input `limit`
+    stores 20 at `/readLimit`: an implementation that cannot apply 20 does not apply 15 in its
+    place, and the control does not succeed. A place of `changes` whose input was not supplied
+    is left as stored, under REV-006. A setting that is a reference is stored in the resolved
+    form of OBJ-009. Every control declares the input `revision` and no output `settings`, under
+    CTR-006. That the values, applied to the stored configuration, satisfy the type's schema is
+    checked before the control is dispatched, under REV-015. A control that succeeds after its
+    instance was retired, under PLC-017 or PLC-024, stores nothing, and the revision is
+    unchanged, under REV-012.
   vectors: []
 
 - id: REV-009
@@ -163,35 +175,37 @@
   when: >-
     A control whose outcome is unknown is reconciled under OPS-014.
   then: >-
-    A reconciliation that records the control as having taken effect, on an instance that
-    exists, is a request to change that instance: it names the instance's current revision and
-    states the settings that took effect, and exactly those settings are stored. A
-    reconciliation that records that the effect did not occur names no revision, states no
-    settings and stores nothing. Where the instance no longer exists, a reconciliation of the
-    control names no revision and states no settings, whichever way it records the effect: it
-    records the outcome and stores nothing.
+    A reconciliation that records the control as having taken effect, on an instance that exists
+    and is not retired, is a request to change that instance: it names the instance's current
+    revision, and the values the control was sent, which the engine keeps under OPS-008, are
+    stored at the pointers of its `changes`. A reconciliation that records that the effect did
+    not occur names no revision and stores nothing. Where the instance is retired or no longer
+    exists, a reconciliation of the control names no revision, whichever way it records the
+    effect: it records the outcome and stores nothing.
   observable: >-
-    After a reconciliation that stores settings, the stored configuration equals the current
-    configuration with the stated settings applied, whatever other change was stored after the
-    control was dispatched. The revision advances under REV-003 if anything changed, and those
-    settings are no longer reported as unknown. Such a reconciliation is a request to change an
-    object, so REV-002 and REV-011 apply to it as to any other: one that names a revision that
-    is not current reports conflict, and one that names none reports invalid. One whose stated
-    settings do not satisfy the schema is REV-013. A reconciliation that records that the effect
-    did not occur changes no object and so names no revision: the control's outcome becomes
-    failed, and the settings it addressed are no longer reported as unknown. One that names a
-    revision or states settings all the same reports invalid, under OPS-031. In `reconcile.v1`
-    the revision and the settings are the inputs `revision` and `settings`, and `settings` has
-    the shape of the control's output `settings`: a map keyed by the pointers of the control's
-    `changes`. The request is authorized under ACC-033 against the target that manages the
+    After a reconciliation that stores values, the stored configuration equals the current
+    configuration with the values the control was sent applied at those pointers, whatever other
+    change was stored after the control was dispatched. The revision advances under REV-003 if
+    anything changed, and those settings are no longer reported as unknown. Such a
+    reconciliation is a request to change an object, so REV-002 and REV-011 apply to it as to
+    any other: one that names a revision that is not current reports conflict, and one that
+    names none reports invalid. One where those values, applied to the current configuration,
+    would make it fail the type's schema is REV-013. A reconciliation that records that the
+    effect did not occur changes no object and so names no revision: the control's outcome
+    becomes failed, and the settings it addressed are no longer reported as unknown. One that
+    names a revision all the same reports invalid, under OPS-031. In `reconcile.v1` the revision
+    is the input `revision`. The values are not stated in the request: the engine stores those
+    it sent. The request is authorized under ACC-033 against the target that manages the
     instance: the Pool that owns it where it is a Resource, and `management` otherwise, or where
     that Pool is retired. It is not authorized by a Conduit to the instance itself, as the
-    control was. A retired instance takes the reconciliation that stores nothing, and one that
-    would store settings in it reports conflict, under LIF-015. Once the instance has been
-    unregistered there is no current revision to name and no configuration to store settings in:
+    control was. A retired instance takes no change, under LIF-015, so a reconciliation of a
+    control dispatched to it records the outcome alone, whichever way it records the effect, as
+    REV-007 stores nothing for a control that succeeds after its instance was retired, and the
+    settings the control addressed are no longer reported as unknown. Once the instance no
+    longer exists there is no current revision to name and no configuration to store values in:
     the reconciliation is authorized against `management`, under ACC-033, and records that the
-    effect occurred or that it did not, and nothing else. One that names a revision or states
-    settings all the same reports invalid, under OPS-031.
+    effect occurred or that it did not, and nothing else. One that names a revision all the same
+    reports invalid, under OPS-031.
   vectors: []
 
 - id: REV-011
@@ -205,7 +219,7 @@
     The object's stored definition, configuration and revision are unchanged, and the
     implementation receives no call. No change is applied to whatever revision is current. The
     revision is named in `revision`, an input of the operation like any other, as `replace.v1`,
-    `rename.v1`, `unregister.v1` and every control have it.
+    `unregister.v1` and every control have it.
   vectors: []
 
 - id: REV-012
@@ -220,11 +234,17 @@
     that was current when a change was dispatched is still current when its result is stored.
     Setting up and retiring an instance, which for a Conduit are opening and closing it, name no
     revision, change neither its definition nor its configuration, and do not advance its
-    revision. Of several requests to change one object that name the same revision, renames
-    among them, at most one is stored: once it is, the revision has advanced under REV-003, and
-    a request that still names the earlier revision is not dispatched and reports conflict under
-    REV-002. What happens to a request to set up, to retire or to change an instance that
-    arrives while another of them has not ended is DL9 of the implementation-defined list.
+    revision. Of several requests to change one object that name the same revision, at most one
+    is stored: once it is, the revision has advanced under REV-003, and a request that still
+    names the earlier revision is not dispatched and reports conflict under REV-002. A request
+    to set up, to retire or to change an instance that arrives while another of them has not
+    ended is REV-014. The retirements of PLC-017 and PLC-024, and the closing of a Conduit at
+    once under CON-008, dispatch nothing to the instance, so this rule does not hold them back:
+    each takes effect at once, whatever setup, retirement or change of the instance is in
+    progress, and TPL-012 says what a setup in progress then does. A control in progress runs to
+    its end, under ACC-034, and its outcome is recorded, but nothing is stored in the retired
+    instance, under REV-007, and one that ends unknown is reconciled with nothing stored, under
+    REV-010.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decision F11 of the re-audit).
@@ -233,13 +253,70 @@
   layer: convention
   level: must
   when: >-
-    A reconciliation of a control states settings that would make the stored configuration fail
-    its schema.
+    A reconciliation records a control as having taken effect, and the values the control was
+    sent, applied to the current configuration at the pointers of its `changes`, would make that
+    configuration fail the type's schema.
   then: >-
     The reconciliation is not dispatched, and reports invalid.
   observable: >-
     The stored configuration and revision are as before. The control's outcome is still unknown,
-    and the settings it addressed are still reported as unknown under REV-009. A reconciliation
-    whose `settings` holds a key that is not a pointer of the control's `changes` reports
-    invalid in the same way.
+    and the settings it addressed are still reported as unknown under REV-009. It arises where
+    another change was stored after the control was dispatched: REV-015 checked the same values
+    against the configuration as it stood then.
+  vectors: []
+
+# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decisions 23 and 15 of the
+# --- principles review).
+
+- id: REV-014
+  layer: convention
+  level: must
+  when: >-
+    A request to set up, retire or change an instance arrives while another setup, retirement or
+    change of it, the engine's own included, has been dispatched and has not ended, and the
+    request is not a repeat that is answered without a dispatch, under OPS-009, OPS-012, OPS-032
+    or OPS-034.
+  then: >-
+    It is not dispatched, and reports conflict at once.
+  observable: >-
+    The engine neither queues the request nor waits for the other to end: the result is returned
+    at once, the implementation receives no call, and the instance and its revision are as they
+    were. The caller asks again once the other has ended. A control is a change, and so is a
+    reconciliation that stores the values of a control, under REV-010. A reconciliation of a
+    setup or a retirement of the instance, an open or a close among them, under LIF-028, counts
+    as a setup or a retirement of it. The setups and retirements that the engine dispatches
+    within an actor's invocation, such as the parts of a Pool's setup under POOL-013 and the
+    retirements of LIF-021, count as those that actors ask for. A request for
+    `retire-with-resources.v1` is a request to retire the Pool it is requested of, and holds
+    back every other setup, retirement or change of the Pool until it has ended; the invocation
+    of `retire.v1` that it dispatches for the Pool, under LIF-021, is part of it, and is not
+    held back by it. A retirement under PLC-017 or PLC-024 dispatches nothing and is never in
+    progress, and a node's setup under PLC-026 dispatches nothing and ends at once, so neither
+    holds a request back. A repeat that dispatches nothing is answered by its own promise and
+    not by this one: OPS-009 gives the outputs, OPS-012 the state unknown, and OPS-032 or
+    OPS-034 conflict with the engine's ID for the invocation. A repeat that OPS-012 or OPS-024
+    would dispatch as a new attempt reports conflict under this promise while another setup,
+    retirement or change of the instance has not ended. Where the actor is not permitted,
+    OPS-023 gives refused first, and a request that is also invalid reports invalid. This is how
+    setups, retirements and changes of one instance are kept one at a time, under REV-012.
+  vectors: []
+
+- id: REV-015
+  layer: convention
+  level: must
+  when: >-
+    A control is requested, and the values it supplies, applied to the stored configuration at
+    the pointers of its `changes`, would make that configuration fail the type's schema.
+  then: >-
+    It is not dispatched, and reports invalid.
+  observable: >-
+    The implementation receives no call, and the stored configuration and revision are as
+    before. The engine makes the check before dispatch, once the defaults of the supplied values
+    are filled in under OPS-026; a setting whose input was not supplied is checked as it is
+    stored, under REV-006. So a control that succeeds stores a configuration that satisfies the
+    schema, under REV-007, and no implementation has to change a value to make it valid. A
+    control whose `changes` is `{limit: /readLimit}`, of a type whose schema gives `readLimit`
+    the `maximum` 15, requested with 20 for `limit`, reports invalid, and its diagnostic names
+    this promise, under IFC-025. Where the actor is not permitted, OPS-023 gives refused first,
+    and a request that also names a revision that is not current reports invalid, not conflict.
   vectors: []

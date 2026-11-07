@@ -1,5 +1,5 @@
 # Ownership and lifecycle: the one set of states every instance has, what inspecting returns,
-# and how an instance is retired and unregistered.
+# and how an instance is retired and removed.
 # Owner rulings of 2026-11-05 (plan-audit rulings 28, 29, 30, 32 and 33). The states only move
 # forward, as a Kubernetes Pod's phases do; a replacement is a new object. Whether an instance
 # is running, paused or idle is a matter for its type contract. Retirement takes effect at once
@@ -19,8 +19,8 @@
 # whose shutdown is confirmed. The follow-up to that pass changed LIF-009. No promise of this
 # file has been removed. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed LIF-007, LIF-009, LIF-012, LIF-015, LIF-021 and LIF-028, and added
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed LIF-007, LIF-009, LIF-012, LIF-015, LIF-021 and LIF-028, and added
 # LIF-031, on a request that holds the resolved form of a reference, and LIF-032, on a request
 # to set up or to retire a template or a Conduit. It removed none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
@@ -29,7 +29,7 @@
 # is not confirmed, and a retired instance takes the reconciliation of that start.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # LIF-001, LIF-009, LIF-017 to LIF-019, LIF-021 to LIF-024, LIF-027, LIF-028 and LIF-030, and
 # added LIF-033, on a request for a new instance in the place of one that no nested
 # instantiation made, and LIF-034, on the reason that a request to retire, unregister or rename
@@ -39,14 +39,79 @@
 # of the same file, which are the coordinator's too, changed LIF-023, LIF-027 and LIF-028: the
 # exceptions for the component Conduits of a composite declared Conduit were taken out again,
 # because such a Conduit is opened all together or not at all, with nothing closed.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, removed LIF-030 (decision 17: an instance whose shutdown is confirmed is
+# removed under LIF-035, so a request that names it reports invalid under OPS-029); changed
+# LIF-001, LIF-007 to LIF-011, LIF-013, LIF-015, LIF-017 to LIF-029, LIF-031, LIF-033 and
+# LIF-034: runtimes, steps, policies, composite Conduits and renaming go, a retired instance is
+# removed once its shutdown is confirmed, and conditions take the shape of Kubernetes
+# `metav1.Condition`; and added LIF-035, on that removal. What changed is in
+# docs/proposals/ruling-41/log-G1.md. LIF-030 is not reused. The coverage check of the
+# rewrite (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed LIF-014 and
+# LIF-024, which no longer show a removed instance or Conduit as confirmed, LIF-016, which
+# allows the stop of the instance's own run, LIF-021, which retires a Resource before the
+# runtime provider that it names, and LIF-026, which points to PLC-027.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
+# and the owner's answers in docs/proposals/ruling-41/open-decisions.md, changed LIF-009,
+# LIF-013, LIF-017 and LIF-021, and added LIF-036, on the stop asked for once more when an
+# instance whose location was declared lost is unregistered (D11). `retire-with-resources.v1`
+# goes on past a Resource that could not be retired and holds back only the Resources that the
+# order puts after it (R5), which changes decision 5 of round 3 of the re-audit; the status of
+# an instance lists the invocations of unknown outcome not yet reconciled; and a replacement
+# that the machines provider cannot place now reports unavailable. It removed none. What
+# changed is in docs/proposals/ruling-42/log-conventions.md. The integration of ruling 42
+# (docs/proposals/ruling-42/log-integration.md) changed LIF-036 to say, as D11 does, that what a
+# runtime provider does with a stop it cannot carry out now is what its contract states.
+# The names of ruling 42 (the vocabulary audit's N2, N10 and N11; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node and the machines provider
+# to the machine provider in LIF-007, LIF-009, LIF-010, LIF-015, LIF-017, LIF-018, LIF-022 to
+# LIF-024, LIF-026 and LIF-034 to LIF-036, and "stand for" to "represent" in LIF-036; LIF-017
+# says that the engine declared lost a node whose machine was reported gone, where such a node
+# was declared lost "in this sense". It removed none and added none.
+# The names of ruling 42 (the vocabulary audit's N13 and N14; log
+# docs/proposals/ruling-42/log-rename-b.md) took `observedGeneration` out of the fields of a
+# condition in LIF-011, and renamed its `origin` to `source`. It removed none and added none.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed LIF-031, whose observable says an argument or a filter that an implementation is
+# sent, where it said a restriction (the vocabulary audit's N16), and LIF-036, whose observable
+# also names a stop not dispatched because the provider lacks Conduit's extension, and says
+# that a stop the provider never received is not asked for again. It removed none and added
+# none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
+# work across machines (docs/proposals/multi-machine/README.md), changed LIF-036: the stop
+# gives `machine`, from the status of the instance's node, as `run.v1` does, under PRV-027, so
+# that a runtime provider that keeps no state of its runs can act (X10 of
+# docs/proposals/ruling-42/log-integration.md), and a stop that the provider owes outlives a
+# restart of the engine and the provider's retirement (PRV-021). It added none and removed
+# none. What changed is in docs/proposals/ruling-43/log-secrets.md. The verification of ruling
+# 43 (docs/proposals/ruling-43/log-integration.md, "Verification") changed LIF-036's
+# observable: no run of the instance is asked for and no secret is read for it, though the
+# runtime provider may first be run again with reads of its own, under PRV-026.
+# The fix pass of the fifth round of the re-audit
+# (docs/proposals/reaudit/round-5/log-fix-F3.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-5/DECISIONS.md, changed LIF-007, LIF-015, LIF-017, LIF-035 and
+# LIF-036, under which a request to unregister removes any retired instance (M41); LIF-009,
+# LIF-029 and LIF-033, which leave an entry's Resource to POOL-003 (M44); LIF-013, which lists
+# every invocation whose outcome is unknown (M34); LIF-015, under which a reconciliation of a
+# control stores nothing in a retired instance (M35); LIF-021, whose order extends the reverse
+# of POOL-013's (M43); LIF-023, whose exceptions move into its `when` (M33); LIF-024, under
+# which any retirement that succeeded or was reconciled as having occurred confirms the shutdown
+# (M36); LIF-027, which points to ACC-003 in place of DL11 (M69); and LIF-028, under which an
+# open reconciled as having occurred leaves a Conduit whose consumer was retired registered
+# (M37). It added none and removed none.
+# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
+# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed LIF-018, under
+# which any retired instance may be unregistered (M41), and LIF-036, under which PLC-023 does
+# not hold back the stop that a request to unregister asks for, whatever node the instance is on
+# (M41). It added none and removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed LIF-015 and LIF-024, under which a consumer's Conduits are also closed
+# once a request to unregister it removes it (V2-09). It added none and removed none.
 
 - id: LIF-001
   layer: convention
@@ -58,10 +123,8 @@
   observable: >-
     The status of an Interface, Agent, Resource, Pool or Conduit instance holds one of those
     three values and never any other, including unknown. No instance, a Conduit included, has a
-    suspended state: to limit access for a time without ending it, a policy is applied under
-    ACC-031 and later removed.
-    A policy limits requests only where the implementation that the target has selected supports
-    the policy's requirement: ACC-015 says what a request reports where it does not.
+    suspended state: to narrow access, its Conduit is closed and a narrower one opened, under
+    ACC-011.
   vectors: []
 
 - id: LIF-002
@@ -132,12 +195,13 @@
   when: >-
     An instance is retired.
   then: >-
-    It still exists, in the state retired, until it is unregistered.
+    It still exists, in the state retired, until it is removed: under LIF-035 once its shutdown
+    is confirmed, or under LIF-017 by a request to unregister it.
   observable: >-
     The retired instance can still be inspected, and its name cannot be given to another object
-    of its kind, until an unregister operation removes it. A reference to the retired instance
-    by its name still resolves until it is unregistered, so a request can still name it. That a
-    request names an object by a reference is LIF-031.
+    of its kind, until it is removed. A reference to the retired instance by its name still
+    resolves until then, so a request can still name it; a request that names it afterwards
+    reports invalid under OPS-029. That a request names an object by a reference is LIF-031.
   vectors: []
 
 - id: LIF-008
@@ -150,10 +214,10 @@
     Setup, anything else that happens to the instance it belongs to, or anything other than an
     explicit request under LIF-009, makes another instance in its place.
   observable: >-
-    However often setup runs afterwards, the nested instantiation has only the retired instance
-    until a replacement is registered under LIF-009. Until then the step for it reports conflict
-    under LIF-015, a diagnostic names the retired instance, and the consumer of a closed
-    declared Conduit has no access through it.
+    However often setup runs afterwards, the nested instantiation has no instance that is not
+    retired until a replacement is registered under LIF-009. Until then the part of a setup for
+    it reports conflict, under CON-004 or POOL-013, a diagnostic names the retired instance, and
+    the consumer of a closed declared Conduit has no access through it.
   vectors: []
 
 - id: LIF-009
@@ -161,32 +225,31 @@
   level: must
   when: >-
     An actor explicitly asks for a new instance for a nested instantiation whose instance is
-    retired.
+    retired or has been removed.
   then: >-
     A new instance is instantiated from the nested instantiation as the instance it belongs to
     holds it in its resolved definition, with a new ID, in the state registered. It is made from
     the template that the `from` of the nested instantiation names, as that template stands when
     the request is made. The retired instance is not changed. The request is a registration: it
     is authorized under ACC-033 as registering that instance would be, and it sets nothing up
-    and opens nothing. It is the operation `register-replacement.v1`, and it names the retired
-    instance. Where a rule on instantiation does not make the new instance, as where that
-    template no longer exists, the request is not dispatched, and reports invalid, as the
-    registration of a document that the same rule rejects does under OBJ-023.
+    and opens nothing. It is the operation `register-replacement.v1`, which names, in
+    `instance`, the instance that holds the nested instantiation and, in `nested`, the name of
+    the declared Conduit or the entry. Where a rule on instantiation does not make the new
+    instance, as where that template no longer exists, the request is not dispatched, and
+    reports invalid, as the registration of a document that the same rule rejects does under
+    OBJ-023.
   observable: >-
-    Inspection shows two instances for the nested instantiation: the earlier one retired with
-    its original ID, and a later one with a different ID. Instances that held the retired one's
-    ID still hold it. The nested instantiation is a declared Conduit, a component of a composite
-    that a declared Conduit names, or a Pool's entry, and the consumer or the Pool holds it. A
-    component Conduit that an instance document of a composite template made belongs to no
-    instance, and cannot be replaced: a request that names it reports invalid under LIF-033, as
-    one that names any instance that no nested instantiation made does, and a new Conduit is
-    instantiated by a new document. The new instance is named as OBJ-003 and CON-003 name a
-    nested instance, with a newly generated name, because the retired instance keeps its own.
-    The local name of a declared Conduit does not change, so the tool name of each operation
-    that the new Conduit still lists is the one it had, under IFC-012. A replacement for the
-    Resource of an entry is owned by the same Pool. A replacement for a declared Conduit is
-    opened by a separate request to `access`, or by a later setup of its consumer under CON-004.
-    The instance holds the nested instantiation in its own resolved definition, so replacing or
+    Inspection shows a later instance for the nested instantiation, with a different ID, and the
+    earlier one, retired with its original ID, until that one is removed. Instances that held
+    the retired one's ID still hold it and, once it is removed, report it missing under LIF-019.
+    The nested instantiation is a declared Conduit or a Pool's entry, and the consumer or the
+    Pool holds it. The new instance is named as OBJ-003 names a nested instance, with a newly
+    generated name, because the retired instance keeps its own until it is removed. The local
+    name of a declared Conduit does not change, so the tool name of each operation that the new
+    Conduit still lists is the one it had, under IFC-012. A replacement for the Resource of an
+    entry is owned by the same Pool. A replacement for a declared Conduit is opened by a
+    separate request to `access`, or by a later setup of its consumer under CON-004. The
+    instance holds the nested instantiation in its own resolved definition, so replacing or
     unregistering the template from which that instance was made changes none of this, under
     INS-020. The template that the `from` of the nested instantiation names is another matter:
     the instance holds a reference to it, in the resolved form where the template is one that
@@ -199,27 +262,30 @@
     version is no longer installed the request reports invalid, as PKG-007 rejects the document.
     The rules on instantiation are applied to the nested instantiation as the instance holds it,
     with its references already resolved, and as the objects stand when the request is made. So
-    a request for a new declared Conduit whose target is retired, under CON-025, or has been
-    unregistered, under OBJ-009, reports invalid, and so does one for a new Resource for an
-    entry whose stored placement is a retired location, under PLC-018, or for which PLC-004
-    chooses no placement. The result carries the diagnostic that resolving returned, as IFC-025
-    states. A request made while the instance is not retired is LIF-029, and a request for a new
-    Resource for an entry of a retired Pool is POOL-017.
+    a request for a new declared Conduit whose target is retired, under CON-025, or no longer
+    exists, under OBJ-009, reports invalid, and so does one for a new Resource for an entry
+    whose stored placement is a retired node, under PLC-018, for which no node matches,
+    under PRV-015, or whose stored `runtime` names a retired runtime provider, under PRV-006.
+    One for which the machine provider cannot place the Resource now, as where the provider is
+    not ready, or names no machine while the machine of a matching node is reported
+    unreachable or omitted, reports unavailable, under PRV-015, and can be made again. The
+    result carries the diagnostic that resolving returned, as IFC-025 states. A request made
+    while the instance is not retired is LIF-029 for a declared Conduit and POOL-003 for an
+    entry, and a request for a new Resource for an entry of a retired Pool is POOL-017.
   vectors: []
 
 - id: LIF-010
   layer: convention
   level: must
   when: >-
-    What an instance is doing cannot be observed, for example because its location cannot be
-    reached.
+    What an instance is doing cannot be observed, for example because the machine provider
+    reports its machine unreachable, under PLC-023.
   then: >-
     Its lifecycle state is unchanged.
   observable: >-
     Inspection shows the same lifecycle state and the same placement as before, with what could
-    not be observed reported as unknown under OBS-003. Instances on other locations report as
-    before. What a request to an instance on such a location reports meanwhile is DL5 of the
-    implementation-defined list.
+    not be observed reported as unknown under OBS-003. Instances on other nodes report as
+    before. What a request to such an instance reports is PLC-023.
   vectors: []
 
 - id: LIF-011
@@ -229,11 +295,13 @@
     A type contract defines further conditions of its instances, such as running, paused or
     idle.
   then: >-
-    They are reported in the instance's status beside its lifecycle state, and never change
-    that state.
+    They are reported in `conditions` in the instance's status, beside its lifecycle state, each
+    in the shape of Kubernetes `metav1.Condition` (`type`, `status`, `reason`, `message`,
+    `lastTransitionTime`) with `lastHeartbeatTime` and `source`, which are Conduit's additions,
+    as the core schema `condition.v1` gives it. They never change the lifecycle state.
   observable: >-
-    An Agent whose type reports it paused, or whose process has ended, is still ready. Only
-    setup and retirement change the lifecycle state.
+    An Agent whose type reports it paused, or whose run is reported stopped, under PRV-009, is
+    still ready. Only setup and retirement change the lifecycle state.
   vectors: []
 
 - id: LIF-012
@@ -259,10 +327,16 @@
   observable: >-
     The declared part is the resolved definition and configuration, in which a reference is
     shown in the resolved form of OBJ-009. The status holds the lifecycle state and what has
-    been observed. The records are those that name the instance. In the result of `inspect.v1`
-    the three parts are the outputs `declared`, `status` and `records`, and they stand beside
-    the object's `id`, its `revision` and `packages`, the list of the packages it holds in the
-    form NAM-009 gives.
+    been observed, with its conditions in `conditions`, under LIF-011. It also lists, in
+    `unreconciled`, the engine's ID for each invocation whose outcome is unknown, that was
+    dispatched to the instance, its setup hook and its retire hook among them, or that
+    names it in an input or as its target, its setups and retirements among them. The list is
+    read from the state that OPS-008 keeps, so a purge under REC-004 does not shorten it, and an
+    actor finds there an invocation to reconcile under OPS-014 whose ID it never held or has
+    lost. The records are those that name the instance. In the result of `inspect.v1` the three
+    parts are the outputs `declared`, `status` and `records`, `records` being a list in the form
+    `record.v1`, under REC-002, and they stand beside the object's `id`, its `revision` and
+    `packages`, the list of the packages it holds in the form NAM-009 gives.
   vectors: []
 
 # --- Retirement and unregistration (plan-audit rulings 30 and 32).
@@ -275,8 +349,9 @@
   then: >-
     Its status reports its shutdown as exactly one of confirmed, pending or unknown.
   observable: >-
-    Inspecting any retired instance shows one of those three values against its shutdown, and
-    never any other. Which of them it is follows LIF-024.
+    Inspecting a retired instance shows pending or unknown against its shutdown, and never any
+    other value: a confirmed shutdown removes the instance, under LIF-035, so confirmed is seen
+    only in the result and the record of what confirmed it. Which of them it is follows LIF-024.
   vectors: []
 
 - id: LIF-015
@@ -288,17 +363,15 @@
     The request is not dispatched, and reports conflict.
   observable: >-
     The instance is as it was. The only requests that address a retired instance and can be
-    dispatched are to inspect it, to retire it again under LIF-026 or LIF-030, to reconcile its
-    setup or its retirement under LIF-028, to reconcile the start or the stop of one of its
-    runtimes under TPL-015, which for a start that occurred stores the handle, to reconcile any
-    other invocation that was dispatched to it where the reconciliation stores nothing in it, to
-    unregister it, to ask under LIF-009 for a new instance in its place where a nested
-    instantiation made it, and to declare it lost under PLC-017 where it is a location. A
-    reconciliation of a control that would store settings in a retired instance, under REV-010,
-    is a request to change it. Requests through the Conduits of which it was the target are
+    dispatched are to inspect it, to retire it again under LIF-026, to reconcile its setup or
+    its retirement under LIF-028, to reconcile any other invocation that was dispatched to it,
+    to unregister it under LIF-017, to ask under LIF-009 for a new instance in its place where a
+    nested instantiation made it, and to declare it lost under PLC-017 where it is a node. A
+    reconciliation of a control dispatched to it stores nothing in it, whichever way it records
+    the effect, under REV-010. Requests through the Conduits of which it was the target are
     requests through closed Conduits, which ACC-011 covers. The Conduits of which it is the
-    consumer are closed once its shutdown is confirmed, under CON-008, and ACC-039 says what
-    they permit until then.
+    consumer are closed once its shutdown is confirmed, or once a request to unregister it
+    removes it, under CON-008 and LIF-017, and ACC-039 says what they permit until then.
   vectors: []
 
 - id: LIF-016
@@ -308,7 +381,7 @@
     An instance is retired.
   then: >-
     Anything is stopped or released other than what the instance itself holds, as its type
-    contract defines.
+    contract defines, and its own run, which its retirement stops under PRV-008.
   observable: >-
     An external service, a shared Resource and every other instance are as they were, apart from
     the Conduits of which the retired instance is an end. CON-008 closes those of which it is
@@ -321,15 +394,22 @@
   when: >-
     An actor asks to unregister an instance.
   then: >-
-    The request is dispatched only if the instance is retired and either its shutdown is
-    confirmed or its location was declared lost.
+    The request is dispatched only where the instance is retired, and it removes the instance.
     Otherwise it is not dispatched, and reports conflict.
   observable: >-
-    After a request to unregister a registered or ready instance, or a retired one whose
-    shutdown is pending or unknown and whose location was not declared lost, the instance still
-    exists. An instance that holds a runtime, or one of whose runtimes has a start of unknown
-    outcome, is among them, because LIF-024 keeps its shutdown from being confirmed. Like any
-    change, the request names the object's current revision.
+    After a request to unregister a registered or ready instance, the instance still exists. A
+    retired instance that still exists is one whose shutdown is pending or unknown, under
+    LIF-035: a retirement of it failed or ended unknown, or its node was declared lost, under
+    PLC-017, as the engine declares lost a node whose machine the machine provider reported
+    gone, under PLC-024. The request asserts that the shutdown is settled in another way, as
+    removing a finalizer by hand does, under PLC-027: no retire hook is dispatched, and before
+    the instance is removed the engine asks its runtime provider once more to stop its run,
+    under LIF-036. Once it is removed, the Conduits of which it was the consumer are closed,
+    under CON-008. A request made while a retirement of the instance has not ended reports
+    conflict, under REV-014. An instance whose shutdown is confirmed has been removed already,
+    under LIF-035, so a request that names it reports invalid under OPS-029. Like any change,
+    the request names the object's current revision. A request for `unregister.v1` that names a
+    template is LIF-012.
   vectors: []
 
 - id: LIF-018
@@ -339,26 +419,23 @@
     The shutdown of a retired instance can never be confirmed by its implementation.
   then: >-
     It stays unknown until an actor reconciles, under OPS-014, the invocation of `retire.v1`
-    whose outcome is unknown, or a further retirement under LIF-026 succeeds. Where it is
-    unknown because the outcome of a start of one of the instance's runtimes is unknown, under
-    LIF-024, it stays unknown until that start is reconciled. The reconciliation is authorized
-    against the target that authorized the retirement, as ACC-033 states.
+    whose outcome is unknown, or a further retirement under LIF-026 succeeds. The reconciliation
+    is authorized against the target that authorized the retirement, as ACC-033 states.
   observable: >-
-    After a reconciliation that records the retirement as having occurred, the status reports
-    confirmed and the instance can be unregistered, as LIF-028 states. Where the instance still
-    holds a runtime, as after a stop whose outcome is unknown, that reconciliation is not
-    dispatched and reports conflict under LIF-024: the stop is reconciled first, under TPL-015,
-    or a further retirement stops the runtime. Nothing confirms it by the passing of time. An
-    instance whose location was declared lost may have no such invocation to reconcile, and is
-    unregistered under LIF-017 while its shutdown is still unknown. A Conduit's shutdown is
-    confirmed when it is closed, under LIF-024, and waits for no reconciliation.
+    After a reconciliation that records the retirement as having occurred, the shutdown is
+    confirmed and the instance is removed, under LIF-035, as LIF-028 states. Whether the run
+    was stopped, the actor can tell from the condition `Running`, under PRV-009. Nothing
+    confirms the shutdown by the passing of time. An instance whose node was declared lost may
+    have no such invocation to reconcile; it, like any retired instance, may be removed by a
+    request to unregister it, under LIF-017, while its shutdown is still unknown. A Conduit's
+    shutdown is confirmed when it is closed, under LIF-024, and waits for no reconciliation.
   vectors: []
 
 - id: LIF-019
   layer: convention
   level: must not
   when: >-
-    An object is unregistered.
+    An object is unregistered or removed.
   then: >-
     Records, backing files or service data are erased, or any object that refers to it is
     changed, retired or unregistered.
@@ -374,8 +451,7 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to retire a Pool that owns a Resource whose shutdown is not confirmed, or to
-    unregister a Pool that owns a Resource that still exists.
+    An actor asks to retire a Pool that owns a Resource whose shutdown is not confirmed.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-
@@ -393,14 +469,17 @@
     owns.
   then: >-
     The Resources are retired in the reverse of the order of setup: the retirement of a Resource
-    has ended before that of any Resource that it refers to, or to which it is the consumer of a
-    Conduit, is dispatched, among the Resources the Pool owns. Among Resources that depend on
+    is dispatched only once the shutdown of every Resource that the order puts before it is
+    confirmed. The order puts a Resource before each Resource that it refers to, names in
+    `runtime`, or to which it is the consumer of a Conduit, among the Resources the Pool owns,
+    and so before every Resource that those are before in turn. Among Resources that depend on
     each other in a cycle, the order is the engine's. The request dispatches a retirement for
     each Resource that the Pool owns and whose shutdown is not confirmed. For one that is
     already retired it is a further retirement, decided as LIF-026 decides one. It dispatches
-    none for a Resource whose shutdown is confirmed. Once a retirement that the request
-    dispatched has ended without the shutdown of its Resource confirmed, the request dispatches
-    no further retirement. The request to retire the Pool is dispatched only once the shutdown
+    none for a Resource whose shutdown is confirmed. A retirement that ends without the shutdown
+    of its Resource confirmed, or that reports a reason in place of being dispatched, holds back
+    only the Resources that the order puts after that Resource: the retirement of every other
+    Resource is dispatched. The request to retire the Pool is dispatched only once the shutdown
     of every one of those Resources is confirmed.
   observable: >-
     If the shutdown of any Resource is not confirmed, no request to retire the Pool has been
@@ -411,22 +490,34 @@
     whose outcome is failed holds no outputs, under IFC-025. Where the shutdown of every
     Resource is confirmed, the Pool's retirement is dispatched as an invocation of `retire.v1`
     of its own, to which LIF-024 applies, and the outcome of the request is the outcome of that
-    retirement. Retirements that did succeed are not undone. A Resource that an earlier request
-    left retired with its shutdown pending or unknown is retired again by this one, as a further
-    invocation of `retire.v1` under LIF-026, so a request made again after the cause was removed
-    can finish what the first could not. What stops the request is a retirement that it
-    dispatched itself: one that ended before the request was made, with its shutdown not
-    confirmed, does not. A Resource whose shutdown is confirmed gets no invocation of
-    `retire.v1`, where a request that named it would get one that changes nothing under LIF-030.
-    The order is the reverse of the one POOL-013 gives a Pool's setup, and it holds for every
-    Resource the Pool owns, whether or not an entry made it: a step of a Resource's `retire`
-    graph that names a declared Conduit to another Resource of the Pool finds that Conduit open,
-    because CON-008 closes it only when its target is retired. Two Resources can each be the
-    consumer of a Conduit to the other, or refer to each other in their configuration, and no
-    order then satisfies the rule: the order among them, like the order among Resources that
-    neither relation joins, is DL1 of the implementation-defined list. The retirement of each
-    Resource is an invocation of `retire.v1` of its own, with its own outcome, and one whose
-    outcome is unknown is reconciled as that invocation, under OPS-014. The operation is
+    retirement. Retirements that did succeed are not undone. A Resource that cannot be retired,
+    as where its machine is reported unreachable, keeps back only the Resources that the order
+    puts after it, which it may still be using: every other Resource is retired. A Resource that
+    an earlier request left retired with its shutdown pending or unknown is retired again by
+    this one, as a further invocation of `retire.v1` under LIF-026, so a request made again
+    after the cause was removed finishes what the first could not. What holds back a Resource is
+    a retirement that this request dispatched or would dispatch: one that ended before the
+    request was made, with its shutdown not confirmed, does not, since the request retires that
+    Resource again. A Resource whose shutdown is confirmed has been removed, under LIF-035, and
+    gets no invocation of `retire.v1`. Where a setup, retirement or change of a Resource has
+    been dispatched and has not ended, the retirement of it that the request would dispatch is
+    not dispatched and reports conflict, under REV-014: it has not ended, so it holds back the
+    Resources that the order puts after that Resource, and the Pool is not retired by the
+    request. The retirement of a runtime provider that an instance which exists still names,
+    inside the Pool or outside it, is not dispatched and reports conflict in the same way, under
+    PRV-020. The order extends the reverse of the one POOL-013 gives a Pool's setup, which comes
+    from the references among the entries alone, and it holds for every Resource the Pool owns,
+    whether or not an entry made it: an onward request of a Resource's retire hook through a
+    Conduit to another Resource of the Pool finds that Conduit open, because CON-008 closes it
+    only when its target is retired. Two Resources can each be the consumer of a Conduit to the
+    other, or refer to each other in their configuration, and no order then satisfies the rule:
+    the order among them, like the sequence in which Resources that neither relation joins are
+    retired, is DL1 of the implementation-defined list. A Resource that neither relation joins
+    to another holds back none. The retirement of each Resource is an invocation of `retire.v1`
+    of its own, with its own outcome, and one whose outcome is unknown is reconciled as that
+    invocation, under OPS-014. A cancellation of the request under OPS-027 is passed on to the
+    retirements in progress, and no further retirement is dispatched; each retirement in
+    progress still asks for its stop, under TPL-009. The operation is
     `retire-with-resources.v1`, requested of the Pool, and the retirements it dispatches are
     part of it: the actor's Conduit to the Pool need list only `retire-with-resources.v1`, and
     need not list `retire.v1` as well.
@@ -436,31 +527,31 @@
   layer: convention
   level: must not
   when: >-
-    An actor asks to retire, to unregister or to rename a first-start object, which is the Pool
-    `system`, the location `local`, the Resource `management`, the Resource `access` or the
-    Interface `root`, or asks to declare the location `local` lost, or asks to rename one of the
-    two Conduits of `root` that FST-002 lists.
+    An actor asks to retire or to unregister a first-start object, which is the Pool `system`,
+    the node `local`, the Resource `management`, the Resource `access` or the Interface
+    `root`, or asks to declare the node `local` lost.
   then: >-
-    The object is retired, unregistered or renamed.
+    The object is retired or unregistered.
   observable: >-
     The request reports refused under LIF-034, whoever makes it, and the object is as it was.
-    The two Conduits of `root` are not first-start objects, and a request to rename one of them
-    is refused as a request to rename a first-start object is. Closing a Conduit of `root` is
-    refused under ACC-024.
+    Closing a Conduit of `root` is refused under ACC-024.
   vectors: []
 
 - id: LIF-023
   layer: convention
   level: must not
   when: >-
-    No actor has asked for it.
+    No actor has asked for the retirement of an instance, and the instance is none of these: a
+    Conduit whose consumer or target is retired or declared lost, under CON-008; a node declared
+    lost, or an instance placed on one, under PLC-017 or PLC-024; a Resource that a Pool owns,
+    retired with the Pool under LIF-021.
   then: >-
-    An instance is retired or unregistered.
+    The instance is retired.
   observable: >-
-    The only retirements without a request naming the instance are those of a Conduit whose
-    consumer or target is retired or declared lost, of the instances on a location that is
-    declared lost, and of the Resources that a Pool owns when it is retired together with them
-    under LIF-021. Nothing is collected for being unused, unreferenced or old.
+    Those are the only retirements without a request naming the instance: the engine declares a
+    node lost, with no request, where the machine provider reports its machine gone, under
+    PLC-024. Nothing is collected for being unused, unreferenced or old. The removal of an
+    instance whose shutdown is confirmed is LIF-035, and is not a retirement.
   vectors: []
 
 # --- Split from LIF-014 by consolidation pass 1 (plan-audit ruling 32, decision G12).
@@ -472,51 +563,31 @@
     The shutdown of a retired instance is reported.
   then: >-
     A Conduit's shutdown is confirmed when it is closed, however it was closed: it holds nothing
-    to shut down. The shutdown of any other instance is never confirmed while the instance holds
-    a runtime, or while the outcome of a start of one of its runtimes is unknown, whatever its
-    retirements reported. Otherwise it is confirmed once an invocation of `retire.v1` for it has
-    succeeded, and at once for an instance for which no setup was ever dispatched, under
-    LIF-025. A shutdown that is not confirmed is unknown where the outcome of a start of one of
-    the instance's runtimes is unknown, where the outcome of the latest invocation of
-    `retire.v1` for the instance is unknown, and for an instance for which a setup was
-    dispatched and whose location was declared lost, under PLC-017. It is pending otherwise. A
-    reconciliation that would record as having occurred the retirement of an instance that holds
-    a runtime is not dispatched, and reports conflict: the runtime is first stopped by a further
-    retirement under LIF-026, or its stop is reconciled under TPL-015.
+    to shut down. The shutdown of any other instance is confirmed once an invocation of
+    `retire.v1` for it has succeeded, and at once for an instance for which no setup was ever
+    dispatched, under LIF-025. A shutdown that is not confirmed is unknown where the outcome of
+    the latest invocation of `retire.v1` for the instance is unknown, and for an instance for
+    which a setup was dispatched and whose node was declared lost, under PLC-017, or whose
+    machine the machine provider reported gone, under PLC-024. It is pending otherwise.
   observable: >-
     The status reports pending while the latest invocation of `retire.v1` has not ended and
     after it failed. An instance may be retired more than once, under LIF-026, and it is the
-    latest invocation that counts, unless an earlier one succeeded. A runtime that the instance
-    holds, and a start of unknown outcome, keep the shutdown from being confirmed whichever
-    invocation succeeded. An instance that was retired by a request, with its shutdown pending
-    or unknown, and whose location is then declared lost reports unknown, as PLC-017 states for
-    every instance placed on the location. What an invocation of `retire.v1` does is TPL-009. A
-    Conduit that CON-008 closed without a request, and one whose `close.v1` ended with whatever
-    outcome, report confirmed, and each can be unregistered under LIF-017. A Conduit whose
-    consumer is retired is closed by that once the consumer's shutdown is confirmed, or at once
-    where the consumer is declared lost, under CON-008: until then it is not retired, so it
-    reports no shutdown, and from the moment it is closed it reports confirmed. A start whose
-    outcome is unknown may have left a runtime running that the instance does not hold, and that
-    no retirement stops. So a retired instance with such a start reports unknown even after an
-    invocation of `retire.v1` for it succeeded: it is not unregistered under LIF-017, and the
-    Conduits of which it is the consumer are not closed under CON-008, until the start is
-    reconciled or its location is declared lost. Reconciled as not having occurred, the start no
-    longer counts, and the shutdown is as the instance's retirements give it. Reconciled as
-    having occurred, with its handle under TPL-015, it leaves the instance holding the runtime:
-    the shutdown is not confirmed, it reports unknown where the outcome of the latest invocation
-    of `retire.v1` is unknown and pending otherwise, and a further retirement under LIF-026
-    stops the runtime and can confirm it. An invocation of `retire.v1` that succeeds has stopped
-    every runtime the instance held, under TPL-009, so an instance with a retirement that
-    succeeded comes to hold a runtime only by such a reconciliation. An instance also still
-    holds a runtime after a retirement in which the stop of it failed or ended unknown, under
-    TPL-007. Where the outcome of that retirement is unknown, a reconciliation that would record
-    it as having occurred reports conflict while the runtime is held, and the invocation's
-    outcome stays unknown: the actor first reconciles the stop as having occurred, which ends
-    the holding under TPL-015, or reconciles the retirement as not having occurred and retires
-    the instance again. So in whatever order a start, a stop and a retirement are reconciled,
-    the status never reports confirmed for an instance that holds a runtime, no such instance is
-    unregistered under LIF-017 unless its location was declared lost, and LIF-030 never finds a
-    runtime to stop. What a reconciliation of a setup or a retirement changes is LIF-028.
+    latest invocation that counts for a shutdown that is not confirmed: any invocation of
+    `retire.v1` that succeeded, or that a reconciliation records as having occurred, under
+    LIF-028, confirms the shutdown, whatever a later one ended with. An instance that was
+    retired by a request, with its shutdown pending or unknown, and whose node is then declared
+    lost reports unknown, as PLC-017 states for every instance placed on the node. What an
+    invocation of `retire.v1` does is TPL-009: it stops the instance's run, under PRV-008,
+    whether or not the run is reported running, so one that succeeds leaves no run of the
+    instance running. The shutdown of a Conduit that CON-008 closed without a request, and of
+    one whose `close.v1` ended with whatever outcome, is confirmed when it is closed, and the
+    Conduit is then removed, under LIF-035, so no inspection shows it. A Conduit whose consumer
+    is retired is closed by that once the consumer's shutdown is confirmed, at once where the
+    consumer is declared lost, or once a request to unregister the consumer removes it, under
+    CON-008 and LIF-017: until then it is not retired, so it reports no
+    shutdown, and from the moment it is closed its shutdown is confirmed. A confirmed shutdown
+    removes the instance, under LIF-035. What a reconciliation of a setup or a retirement
+    changes is LIF-028.
   vectors: []
 
 - id: LIF-025
@@ -525,10 +596,12 @@
   when: >-
     An instance for which no setup was ever dispatched is retired.
   then: >-
-    Its `retire` graph does not run, and its shutdown is confirmed at once.
+    Its retire hook is not dispatched, no stop of a run is asked for, and its shutdown is
+    confirmed at once.
   observable: >-
-    No implementation receives a call because of the retirement. The status reports the state
-    retired and the shutdown confirmed.
+    No implementation receives a call because of the retirement, and no runtime provider is
+    asked to stop a run. The status reports the state retired and the shutdown confirmed, and
+    the instance is then removed, under LIF-035.
   vectors: []
 
 - id: LIF-026
@@ -541,15 +614,18 @@
     it.
   observable: >-
     A request to retire an instance whose shutdown is pending or unknown can be dispatched, as a
-    further invocation of `retire.v1`. OPS-021 and DL1 of the implementation-defined list decide
-    which of its steps are dispatched again, and the status then reports the shutdown under
-    LIF-024. It is the way from a shutdown that is pending, after a retirement that failed, to
-    one that is confirmed. The Conduits of which the instance is the consumer are not closed by
-    its retirement while its shutdown is not confirmed, under CON-008, so a step of the further
-    retirement that names one of them under `conduit` is permitted as in the first, under
-    ACC-039. Where the instance was declared lost, or an actor closed the Conduit, the Conduit
-    is closed, and such a step reports refused under ACC-011. A request to retire an instance
-    whose shutdown is confirmed is LIF-030.
+    further invocation of `retire.v1`. Its retire hook is dispatched again only as OPS-021 and
+    OPS-028 allow, and the stop of its run is asked for again, which succeeds where nothing
+    runs, under PRV-008; the status then reports the shutdown under LIF-024. It is the way from
+    a shutdown that is pending, after a retirement that failed, to one that is confirmed. The
+    Conduits of which the instance is the consumer are not closed by its retirement while its
+    shutdown is not confirmed, under CON-008, so an onward request of the retire hook through
+    one of them is permitted as in the first, under ACC-039. Where the instance was declared
+    lost, or an actor closed the Conduit, the Conduit is closed, and such a request reports
+    refused under ACC-011; where its node was declared lost, the retire hook is not
+    dispatched at all, and no run is asked for, under PLC-027. A request that names an instance
+    whose shutdown is confirmed reports invalid under OPS-029, because that instance has been
+    removed, under LIF-035.
   vectors: []
 
 # --- Added by the conversion of the older text (decision DA3 of the docs audit; row GP18 of
@@ -561,14 +637,14 @@
   when: >-
     An instance's setup does not succeed: it fails, has an unknown outcome or is not dispatched.
   then: >-
-    A Conduit that the setup opened is closed, or an instance that it set up is retired, because
-    of it.
+    A Conduit that the setup opened is closed, an instance that it set up is retired, or a run
+    that it asked for is stopped, because of it.
   observable: >-
-    After a setup that did not succeed, each declared Conduit it opened is still open, and each
-    Resource of an entry that it set up is still ready. The instance's own state is unchanged
-    under LIF-004. A later setup leaves what is already open or ready as it is, under CON-004
-    and POOL-013. What the consumer of only some of its Conduits may do meanwhile is DL11 of the
-    implementation-defined list.
+    After a setup that did not succeed, each declared Conduit it opened is still open, each
+    Resource of an entry that it set up is still ready, and a run that it asked for is not
+    stopped. The instance's own state is unchanged under LIF-004. A later setup leaves what is
+    already open, ready or running as it is, under CON-004, POOL-013 and PRV-007. Meanwhile the
+    consumer may make the requests that its open Conduits permit, under ACC-003, and no other.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
@@ -581,71 +657,38 @@
     An actor reconciles, under OPS-014, an invocation of `set-up.v1`, `open.v1`, `retire.v1` or
     `close.v1` whose outcome is unknown.
   then: >-
-    Recording that a setup or an open occurred makes the instance ready or the Conduit open.
-    Recording that a retirement or a close occurred confirms the shutdown, unless the outcome of
-    a start of one of the instance's runtimes is still unknown, under LIF-024. A reconciliation
-    that would record as having occurred the retirement of an instance that holds a runtime is
-    not dispatched, and reports conflict, as LIF-024 states. Recording that it did not occur
-    gives the outcome failed, and changes nothing else.
+    Recording that a setup or an open occurred makes the instance ready or the Conduit open,
+    unless the instance, or the Conduit's consumer, has been retired. Recording that a
+    retirement or a close occurred confirms the shutdown. Recording that it did not occur gives
+    the outcome failed, and changes nothing else.
   observable: >-
     After a reconciliation that records a setup as having occurred, inspecting the instance
     reports the state ready, as after a setup that succeeded under LIF-003; an instance that was
-    retired in the meantime stays retired, under LIF-006. After one that records a retirement as
-    having occurred, the status reports the shutdown confirmed, and the instance can be
-    unregistered under LIF-017, unless a start of unknown outcome keeps the shutdown unknown.
-    The retirement of an instance that holds a runtime is not recorded so: the request reports
-    conflict, the invocation's outcome is still unknown, and the actor first reconciles the stop
-    of the runtime under TPL-015 or retires the instance again under LIF-026. After one that
-    records that a setup did not occur, the state is as LIF-004 leaves it. After one that
-    records that a retirement did not occur, the shutdown is as LIF-024 gives it after a
-    retirement that failed, which is pending unless a start of unknown outcome keeps it unknown,
-    and LIF-026 lets the instance be retired again. A Conduit's shutdown is confirmed already,
-    under LIF-024. Once a reconciliation confirms the shutdown of an instance, the Conduits of
-    which it is the consumer are closed, under CON-008, as they are when a retirement succeeds.
-    What the reconciliation of the start or the stop of a runtime changes is TPL-015. Each of
-    the four is a management verb, so the reconciliation is authorized against the target that
-    authorized the request being reconciled, as ACC-033 states. An invocation of `open.v1` is of
-    one Conduit: where the step of a composite declared Conduit made a request for each of its
-    component Conduits, under CON-004, each of those invocations is reconciled by itself, and
-    changes the state of its own Conduit alone.
+    retired in the meantime stays retired, under LIF-006. After one that records an open as
+    having occurred, a Conduit whose consumer was retired in the meantime stays registered,
+    under CON-031, until CON-008 closes it. After one that records a retirement as having
+    occurred, the shutdown is confirmed, and the instance is removed under LIF-035. After
+    one that records that a setup did not occur, the state is as LIF-004 leaves it. After one
+    that records that a retirement did not occur, the shutdown is as LIF-024 gives it after a
+    retirement that failed, and LIF-026 lets the instance be retired again. A Conduit's shutdown
+    is confirmed already, under LIF-024. Once a reconciliation confirms the shutdown of an
+    instance, the Conduits of which it is the consumer are closed, under CON-008, as they are
+    when a retirement succeeds. Each of the four is a management verb, so the reconciliation is
+    authorized against the target that authorized the request being reconciled, as ACC-033
+    states.
   vectors: []
 
 - id: LIF-029
   layer: convention
   level: must
   when: >-
-    An actor asks under LIF-009 for a new instance for a nested instantiation while the instance
-    made for it is not retired.
+    An actor asks under LIF-009 for a new Conduit for a declared Conduit while the Conduit made
+    for it is not retired.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-
-    The nested instantiation has one instance before and after the request. This holds for a
-    declared Conduit and for a component as it does for a Pool's entry, which is POOL-003.
-  vectors: []
-
-# --- Added by the last pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 3 of "The closing pass, and what it
-# --- left" in DECISIONS.md).
-
-- id: LIF-030
-  layer: convention
-  level: must
-  when: >-
-    An actor asks to retire an instance that is retired and whose shutdown is confirmed.
-  then: >-
-    The request is decided like any other request to retire the instance, changes nothing and
-    has the outcome succeeded. No step of the instance's `retire` graph is dispatched, and no
-    runtime is stopped.
-  observable: >-
-    No implementation receives a call because of the request, and the instance's status is the
-    same before and after it. An instance whose shutdown is confirmed holds no runtime, under
-    LIF-024, so there is none to stop. The effect that `retire.v1` describes has occurred, as it
-    has for a request to close a Conduit that is already closed, under ACC-012, and for a
-    request to open one that is already open, under ACC-006. An actor that is not permitted
-    reports refused under ACC-033. Being decided like any other, the request is not dispatched
-    where another promise has a request to retire that instance not dispatched: it reports
-    refused under LIF-022, and conflict under LIF-020 or PLC-011. A request to retire an
-    instance whose shutdown is pending or unknown is LIF-026.
+    The declared Conduit has one Conduit before and after the request. A request for a new
+    Resource for a Pool's entry whose Resource is not retired is POOL-003.
   vectors: []
 
 # --- Added by the fix pass of the third round of the re-audit
@@ -666,18 +709,15 @@
     The implementation receives no call, whether or not an object of that kind has that ID.
     Every reference schema accepts the resolved form, under OBJ-009, so no schema makes this
     check: the engine does. The rule is for a request that an actor makes on its own behalf, and
-    for no other. A step of a graph, and an onward request, may hold the resolved form, because
-    the engine handed it to them: a value reference with the source `config` yields a reference
-    in that form, under OBJ-021, and an argument or a restriction that an implementation is sent
-    holds it under IFC-018. So a step whose argument reads a reference from the configuration is
-    dispatched, and so is an onward request that passes on a reference its instance was sent,
-    and the engine takes the object by its ID. A call to `retrieve-result.v1` that names a
-    served invocation, under IFC-024, is made for that invocation's caller and not on the
-    instance's own behalf, so it may hold the resolved form in `target`: an implementation holds
-    only that form of the target it called. An invocation and a policy are not objects:
-    `reconcile.v1` and `remove-policy.v1` name each by the ID the engine gave it. A request that
-    names an object by a reference that resolves to nothing reports invalid too, under OPS-029.
-    Where the actor is not permitted, OPS-023 gives refused first.
+    for no other. An onward request may hold the resolved form, because the engine handed it to
+    the instance: the configuration that an implementation receives in `_meta` under IFC-006
+    holds each reference in that form, under OBJ-021, and an argument or a filter that an
+    implementation is sent holds it under IFC-018. So an onward request that passes on a
+    reference from its instance's configuration, or one its instance was sent, is dispatched,
+    and the engine takes the object by its ID. An invocation is not an object: `reconcile.v1`
+    names it by the ID the engine gave it. A request that names an object by a reference that
+    resolves to nothing reports invalid too, under OPS-029. Where the actor is not permitted,
+    OPS-023 gives refused first.
   vectors: []
 
 - id: LIF-032
@@ -704,31 +744,28 @@
   layer: convention
   level: must
   when: >-
-    An actor asks, with `register-replacement.v1`, for a new instance, and the instance that the
-    request names was made by no nested instantiation that an instance holds: a document of its
-    own made it, as one made a component Conduit of a composite template that was instantiated
-    by an instance document, or it is a first-start object.
+    An actor asks, with `register-replacement.v1`, for a new instance, and the request names, in
+    `instance` and `nested`, a nested instantiation that the named instance does not hold, or
+    names a first-start object in `instance`.
   then: >-
     The request is not dispatched, and reports invalid.
   observable: >-
-    No instance holds a nested instantiation from which a new one could be made. This holds
-    whatever the state of the instance that is named: a retired Agent that a document of its own
-    made is followed by registering a new document, and so is a component Conduit that an
-    instance document of a composite template made, which belongs to no instance. A request that
-    names a template reports invalid in the same way: the thing exists, and is not one the
-    operation addresses, as LIF-032 has it for `set-up.v1`. LIF-009 covers the instances that a
-    declared Conduit, a component of a composite that a declared Conduit names, or a Pool's
-    entry made, and LIF-029 a request for one of those that is not retired. A request that names
-    nothing reports invalid under OPS-029. Where the actor is not permitted, OPS-023 gives
-    refused first.
+    No instance holds a nested instantiation from which a new one could be made. An instance
+    that a document of its own made, such as a retired Agent, is followed by registering a new
+    document: no instance holds a nested instantiation that made it. A request that names a
+    template reports invalid in the same way: the thing exists, and is not one the operation
+    addresses, as LIF-032 has it for `set-up.v1`. LIF-009 covers the instances that a declared
+    Conduit or a Pool's entry made, and LIF-029 and POOL-003 a request for one of those that is
+    not retired. A request that names nothing reports invalid under OPS-029. Where the actor is
+    not permitted, OPS-023 gives refused first.
   vectors: []
 
 - id: LIF-034
   layer: convention
   level: must
   when: >-
-    An actor asks to retire, to unregister or to rename a first-start object, to declare the
-    location `local` lost, or to rename one of the two Conduits of `root` that FST-002 lists.
+    An actor asks to retire or to unregister a first-start object, or to declare the node
+    `local` lost.
   then: >-
     The request is not dispatched, and reports refused.
   observable: >-
@@ -738,4 +775,68 @@
     has placed on it, would make the request report conflict under LIF-017, LIF-020 or PLC-011,
     as OPS-023 orders the reasons. A request to close one of the two Conduits of `root` reports
     refused under ACC-012.
+  vectors: []
+
+# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decision 17 of the principles
+# --- review). It is of the layer `convention`.
+
+- id: LIF-035
+  layer: convention
+  level: must
+  when: >-
+    The shutdown of a retired instance is confirmed, under LIF-024.
+  then: >-
+    The instance is removed: it no longer exists, and its records are kept as LIF-019 states. A
+    Conduit is so removed when it is closed.
+  observable: >-
+    No request is needed to remove it, and its removal is not a retirement, under LIF-023. The
+    removal is recorded, under REC-001. Afterwards a request that names the instance reports
+    invalid under OPS-029, its name can be given to another object of its kind, under OBJ-002,
+    and the objects that held its ID report it missing, under LIF-019. An instance whose
+    shutdown is pending or unknown is not removed: it stays, retired, until its shutdown is
+    confirmed or a request to unregister it removes it, under LIF-017.
+  vectors: []
+
+# --- Added by ruling 42 (docs/proposals/ruling-42/README.md; the owner's answer to D11 in
+# --- docs/proposals/ruling-41/open-decisions.md, "One more stop, and the provider's
+# --- contract").
+
+- id: LIF-036
+  layer: convention
+  level: must
+  when: >-
+    A request to unregister an instance is dispatched, under LIF-017, and an implementation item
+    that is run is selected for the instance.
+  then: >-
+    Before it removes the instance, the engine asks the instance's runtime provider once more to
+    stop its run, with `stop.v1` naming the instance's ID and giving, in `machine`, the machine
+    of the instance's node as the node's status holds it, under PRV-027, as PRV-008 asks it in a
+    retirement.
+  observable: >-
+    The stop is asked for whether or not the run is reported running, so a run left on a machine
+    that was cut off, and that has come back or may come back, is asked to stop. PLC-023 does
+    not hold this stop back, whatever the machine provider reports: a node declared lost is
+    retired and represents no machine, under PLC-026, and for an instance on any other node the
+    request is the last time the stop is asked for, so it is asked for even while the machine is
+    reported unreachable or omitted. The stop is a provider call, under PRV-005, made within the
+    invocation of `unregister.v1` and for its caller, and its record names the instance in its
+    `subject`, under REC-002. Where the node was declared lost, it is retired, but its status
+    still holds the labels last reported for its machine, so the stop names the machine as
+    `run.v1` did, and a runtime provider that keeps no state of its runs can still find it. What
+    a runtime provider that cannot carry out the stop now, as where the machine is cut off, does
+    with it is what its contract states, such as carry it out once it can, under PRV-021. The
+    instance is removed once the stop has ended, or has not been dispatched because the runtime
+    provider is not ready or its result of `server/discover` lacks Conduit's extension, under
+    PRV-005, whatever came of it: the request to unregister asserts that the instance's shutdown
+    is settled in another way, and the outcome of the request is that of the removal. The engine
+    asks for no further stop once the instance is removed, and keeps no state of the run, so a
+    stop that the provider never received, as where its server was not running, is not asked for
+    again. A runtime provider that an instance names is not retired while the instance exists,
+    under PRV-020, so the engine has one to ask, and a stop that the provider owes outlives the
+    engine's restart, on its machine or on another, and the provider's own retirement, kept
+    where its contract states, under PRV-021. No retire hook is dispatched, no run of the
+    instance is asked for and no secret is read for it, as under PLC-027; after the engine
+    restarts, the runtime provider may first be run again, with reads of its own, under PRV-026.
+    An instance with no item that is run, such as one reached only by `remote`, has no run to
+    stop, and nothing is asked for.
   vectors: []

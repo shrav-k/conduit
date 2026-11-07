@@ -1,0 +1,14 @@
+# Example. It must be rejected:
+# a `remote` item holds one Remote of server.json whose `type` is `streamable-http`
+# (MAN-010). server.json also describes a Remote reached over `sse`, which an engine is not
+# asked to reach.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  legacy-reader:
+    implements: ['#directory.read.v1']
+    remote:
+      type: sse
+      url: https://files.example.org/sse

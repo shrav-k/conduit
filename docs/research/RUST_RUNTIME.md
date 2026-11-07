@@ -5,10 +5,10 @@
 Research date: 2026-11-01. This report proposes implementation choices for the accepted
 [specification](../OVERVIEW.md), using Xerj and Pi as source references. It does not select new
 dependencies or change the five-family model. The proposed
-[runtime experiment](../../experiments/002-runtime-plugins/README.md) separates hypotheses from
+[runtime experiment](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/002-runtime-plugins/README.md) separates hypotheses from
 validation. No runtime implementation or live provider tests were performed for this report.
 
-The subsequent [implementation proposal](../implementation/README.md) specifies
+The subsequent [implementation proposal](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/implementation/README.md) specifies
 processes, storage, contracts, crate boundaries and milestones in detail, with a grouped pending
 review. It builds on this report without treating recommendations as accepted choices.
 Subsequent I4 review selected a minimal public persistence plugin contract, one bundled SQLite
@@ -27,8 +27,8 @@ connection failures. Production topology remains open; remote support needs two-
 **Accepted extension follow-up:** the design now permits published contracts backed by authored
 code, existing MCP services or both, plus independently accessible component capabilities. The
 worker recommendations below apply where Conduit supplies executable code, not to every plugin.
-See [current contracts](../protocol/MODEL.md#plugins-and-independently-accessible-mcp-components) and the
-[revised experiment](../../experiments/002-runtime-plugins/README.md). Source findings remain
+See [current contracts](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#plugins-and-independently-accessible-mcp-components) and the
+[revised experiment](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/002-runtime-plugins/README.md). Source findings remain
 research evidence; this update reports no new runtime tests or provider validation.
 
 ## Recommendation
@@ -337,7 +337,7 @@ unbounded queue in an Agent's execution path.
 
 ## Next implementation experiment
 
-The [second experiment](../../experiments/002-runtime-plugins/README.md) proposes a local fake
+The [second experiment](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/002-runtime-plugins/README.md) proposes a local fake
 service, one Rust worker and a minimal supervisor to test artifact pinning, cancellation,
 effect uncertainty, graph recovery and Interface catch-up before involving credentials.
 

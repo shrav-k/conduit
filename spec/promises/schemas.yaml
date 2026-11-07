@@ -9,15 +9,28 @@
 # SCH-008. No promise of this file has been removed. Draft: no vector exists yet.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # SCH-009: the default of a property is filled in every value that a schema governs, before the
 # value is validated or compared. It added none and removed none.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
+# (docs/proposals/ruling-40/README.md) and the principles review
+# (docs/proposals/principles-review/README.md), changed SCH-008 and SCH-009, since the profile
+# now holds JSON Schema's applicator vocabulary and a `default` is rejected under its
+# conditional keywords too (decision 20), and SCH-019, since an Operation contract's input
+# states its `default` in its `inputSchema` (decision 16a). It removed none and added none. The
+# log is docs/proposals/ruling-41/log-G6.md.
+# The editorial fixes of ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06; the
+# vocabulary audit's E12, log docs/proposals/ruling-42/log-editorial.md) changed SCH-015, under
+# which a qualified reference or a `#name` references the schema that is the contract's `spec`,
+# as JSON Schema says of `$ref`, where it said that it stands for it. It removed none and added
+# none.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed SCH-009, whose observable says the `arguments` of a filter that an implementation is
+# sent, where it said a restriction, since only filters are sent (the vocabulary audit's N16).
+# It removed none and added none.
 
 - id: SCH-001
   layer: language
@@ -115,13 +128,15 @@
     directly, reached through `$ref`, or be the schema that `items` gives.
   then: >-
     The document that holds the schema is rejected, when its package is installed or when it is
-    submitted. Whether a `default` is allowed is judged where it is written, in the schema that
-    holds it.
+    submitted, and so is one whose `default` stands on such a property inside `allOf`, `anyOf`,
+    `oneOf`, `not`, `if`, `then`, `else` or `dependentSchemas`. Whether a `default` is allowed
+    is judged where it is written, in the schema that holds it.
   observable: >-
     A `default` is accepted where the schema that states it is written as a member of
-    `properties` and is not inside `allOf`, `anyOf` or `oneOf`. A `default` inside `allOf`,
-    `anyOf` or `oneOf`, and a `default` on `items` itself, each produce a diagnostic naming its
-    position. A `default` on a property of a map inside `items` is accepted, as Kubernetes
+    `properties` and is not inside any of those eight keywords. A `default` inside one of them,
+    and a `default` on `items` itself, each produce a diagnostic naming its position. A
+    `default` under a conditional keyword would apply only where its condition holds, so none is
+    accepted there. A `default` on a property of a map inside `items` is accepted, as Kubernetes
     structural defaulting accepts it. A `default` that a member of `$defs` states on itself is
     rejected, even where the only `$ref` to that member is written as a property: what refers to
     a schema does not change whether its `default` is allowed.
@@ -136,28 +151,28 @@
     the `config` of a template that is instantiated, or that of an input of a template, of an
     Operation contract or of a Requirement contract, for an argument.
   then: >-
-    The property takes its default.
-    It is filled before the value is validated against the schema and before the value is
-    compared with another, and the filled value is what is stored or sent.
+    The property takes its default. It is filled before the value is validated against the
+    schema and before the value is compared with another, and the filled value is what is stored
+    or sent.
   observable: >-
     The resolved instance holds the default value there, and so does the request that an
-    implementation receives and the `arguments` of a restriction that it is sent. This is one
+    implementation receives and the `arguments` of a filter that it is sent. This is one
     rule for every schema that governs a supplied value: the configuration of an instance, the
-    argument of a template's input under INS-006, the argument of an applied requirement or of a
-    policy under NAM-019 and ACC-042, and the argument of an operation's input, whether a
-    request or a step of a graph supplies it, under OPS-026. With the schema `{type: object,
-    properties: {depth: {type: integer, default: 1}}, required: [depth]}`, the supplied value
-    `{}` is valid, is equal under SCH-007 to a supplied `{depth: 1}`, and is stored or sent as
-    `{depth: 1}`. An absent map is not made in order to hold its properties' defaults. A map
-    that is an item of a list is present when the list holds it: each such item takes the
-    defaults of its own properties, and no item is added to a list. The `config` of a template
-    that writes none is present and empty, under INS-024, so the defaults of the type's schema
-    apply to it. A `default` that is reached only through a `$ref` written inside `allOf`,
-    `anyOf` or `oneOf` is not applied: SCH-008 accepts it where it is written, and none of those
-    three keywords gives a default. The `default` of an input that is left out altogether is
-    another rule: INS-007 for a template's input, OPS-026 for an operation's and NAM-019 for a
-    requirement's, and SCH-010 says what then holds for a default that is a map. An output is
-    not a supplied value, and no default is filled into a result.
+    argument of a template's input under INS-006, the argument of an applied requirement under
+    NAM-019, and the argument of an operation's input in a request, under OPS-026. With the
+    schema `{type: object, properties: {depth: {type: integer, default: 1}}, required:
+    [depth]}`, the supplied value `{}` is valid, is equal under SCH-007 to a supplied `{depth:
+    1}`, and is stored or sent as `{depth: 1}`. An absent map is not made in order to hold its
+    properties' defaults. A map that is an item of a list is present when the list holds it:
+    each such item takes the defaults of its own properties, and no item is added to a list. The
+    `config` of a template that writes none is present and empty, under INS-024, so the defaults
+    of the type's schema apply to it. A `default` that is reached only through a `$ref` written
+    inside `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else` or `dependentSchemas` is not
+    applied: SCH-008 accepts it where it is written, and none of those eight keywords gives a
+    default. The `default` of an input that is left out altogether is another rule: INS-007 for
+    a template's input, OPS-026 for an operation's and NAM-019 for a requirement's, and SCH-010
+    says what then holds for a default that is a map. An output is not a supplied value, and no
+    default is filled into a result.
   vectors: []
 
 - id: SCH-010
@@ -234,8 +249,8 @@
     Its value is one of three: `#` followed by a JSON Pointer into the same schema, such as
     `#/$defs/name`; a qualified reference, which resolves to a Schema contract that a package
     exports; or `#` followed by a name, which resolves under NAM-022 to a Schema contract of the
-    same project or package as the document that holds the schema. Each of the last two stands
-    for the schema that is that contract's `spec`.
+    same project or package as the document that holds the schema. Each of the last two
+    references the schema that is that contract's `spec`.
   observable: >-
     The three cannot be confused: a JSON Pointer is empty or starts with `/`, and a name starts
     with a letter. A `$ref` of any other form, such as an `https` address, is rejected like a
@@ -303,12 +318,14 @@
   observable: >-
     Installation or resolving returns a diagnostic naming the default and the part of the schema
     it fails. A property declared `{type: integer, minimum: 1, maximum: 100, default: 0}` is
-    rejected. So is an input of a template, of an Operation contract or of a Requirement
-    contract that states `schema: {type: integer, minimum: 1}` beside `default: 0`. Supplying a
-    valid argument on every use does not make such a document acceptable. A `default` that is a
-    map is checked after the defaults of its own properties are filled in, as SCH-010 fills
-    them: `default: {}` is accepted for a schema that requires a property which states a
-    `default` of its own.
+    rejected. So is an input of a template or of a Requirement contract that states `schema:
+    {type: integer, minimum: 1}` beside `default: 0`. The `default` of an Operation contract's
+    input is the `default` of its property in the contract's `inputSchema`, and is checked as
+    any `default` is, against the schema that states it, so a property written there as `{type:
+    integer, minimum: 1, default: 0}` is rejected in the same way. Supplying a valid argument on
+    every use does not make such a document acceptable. A `default` that is a map is checked
+    after the defaults of its own properties are filled in, as SCH-010 fills them: `default: {}`
+    is accepted for a schema that requires a property which states a `default` of its own.
   vectors: []
 
 - id: SCH-020

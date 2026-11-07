@@ -9,6 +9,9 @@ row words something that a decision left open, the wording is the editor's, and 
 [second check against the Model Context Protocol](mcp-recheck.md). The rules were those of
 [CONSOLIDATION.md](../CONSOLIDATION.md).
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 Edited: files under `spec/`, `tools/check_schemas.py` and `docs/OVERVIEW.md`. Nothing else
 under `docs/` was edited apart from this log. Nothing was committed or staged. No sub-reader
 was started: the read-through at the end was the editor's own.

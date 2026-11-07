@@ -6,6 +6,9 @@ covers. Finding numbers (A1 to E) are that report's. Nothing under `spec/` was e
 record's decisions or examples were rewritten: each change is a banner, a status line or a note
 beside the text it concerns.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 ## What changed
 
 ### `docs/protocol/` (8 files)

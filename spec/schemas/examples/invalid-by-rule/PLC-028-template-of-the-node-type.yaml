@@ -1,0 +1,15 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# no template but the core package's `node` has the type `node.v1` (PLC-028). A
+# node is made only by the engine, for each machine that the machine provider reports
+# (PLC-026), and a project's own template of that type would let an actor register one by
+# hand. A schema cannot tell: only the template's name and package say which template it is.
+# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed this file from
+# PLC-028-template-of-the-location-type.yaml, the type `location.v1` to `node.v1`, the template
+# `location` to `node` and the machines provider to the machine provider.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: build-box
+spec:
+  type: github.com/shrav-k/conduit/core#node.v1

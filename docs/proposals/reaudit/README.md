@@ -5,14 +5,22 @@ decision below as recommended (plan-audit ruling 32). They are applied by
 [consolidation pass 1](CONSOLIDATION.md).
 
 This page is the record of round 1. Round 2, with four readers, is done and has
-[its own record](round-2/README.md), as do [round 3](round-3/README.md) and [round 4](round-4/README.md). Counts of promises on this page are as they stood when
-each pass ended; the current counts are in the
+[its own record](round-2/README.md), as do [round 3](round-3/README.md) and
+[round 4](round-4/README.md). [Round 5](round-5/README.md) was the first to read the
+specification as rulings 40 to 43 rewrote it. Six readers reported 119 findings, ten of them
+unsafe, which the coordinator merged into 111 items: 110 were fixed and 1 rejected. Two
+verifiers then checked the fixes and reported 29 findings, none unsafe: 28 were fixed, and 1
+waits for the owner. Counts of promises on this page are as they stood when each pass ended;
+the current counts are in the
 [contents table of the specification](../../../spec/README.md#contents).
 
 This is the record of a ruling. Where it and the specification differ, the specification
 governs. Rounds 2 to 4 changed some of what ruling 32 accepted, by decisions of the coordinator
 that the owner has not ruled on; the tracker lists them under
 [later amendments](../../AUDIT.md#later-amendments).
+
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
 
 After the last batch of rulings (ruling 31) the owner asked for the promises to be consolidated
 and put back through the audit. Three cold readers each read all of `spec/`, and nothing else,
@@ -122,8 +130,9 @@ These four steps were written when the findings were recorded. Each now has its 
    ([record](../core-and-schemas/README.md)).
 4. A second round of cold readers. Done: [round 2](round-2/README.md), which was not clean.
    [Round 3](round-3/README.md) is done and was not clean either, and
-   [round 4](round-4/README.md) is done and was not clean. The done-when of action A59 asks for two
-   rounds in a row with no finding. Ruling 38 later withdrew that done-when and
+   [round 4](round-4/README.md) is done and was not clean, nor was
+   [round 5](round-5/README.md), which read the rewritten text. The done-when of action A59
+   asks for two rounds in a row with no finding. Ruling 38 later withdrew that done-when and
    restated the readiness condition G7 ([record](../ruling-38/README.md)).
 
 ## Consolidation pass 1

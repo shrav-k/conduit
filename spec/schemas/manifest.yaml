@@ -1,53 +1,112 @@
-# The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
-# core package and the manifest's promises; the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since rests on the coordinator's logged decisions, which the owner has
-# not ruled on, apart from those that ruling 38 accepted or made; spec/README.md says which.
+# Plan-audit ruling 37 (2026-11-05) first accepted this file, with the core package and the
+# manifest's promises; the record is docs/proposals/core-and-schemas/README.md. What the docs
+# audit, rounds 2 to 4 of the re-audit and ruling 38 changed since is logged in the records
+# that README.md in this directory names.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, changed `manifest.v1` (`exports` lists names alone, with no re-export;
+# `version` only beside `address`; `fetch` is a URI reference; the keys of `packages` and of
+# `implementations` are stated with `propertyNames`) and `implementation-item.v1` (reached by
+# exactly one of `command`, `package` and `remote`, with `digest`, `environment`, `arguments`
+# and `headers`, and a label selector as `placement`; no `url` and no `graph`), and added
+# `server-package.v1` and `server-remote.v1`, under decisions 1, 8a, 9, 11, 20, 21 and 25.
+# The log is docs/proposals/ruling-41/log-core.md. The coverage check of the rewrite
+# (docs/proposals/ruling-41/log-integration.md, "Coverage check") took the transport `sse` out
+# of `server-package.v1` (MAN-010).
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying row 35 of the
+# coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, said in the
+# description of `implementation-item.v1` that `arguments` names a named argument by its
+# `name` and a positional one by its `valueHint`, and never one that states a fixed `value`.
+# The log is docs/proposals/ruling-42/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N8 and N9; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of
+# `implementation-item.v1` and of an item of the core form of `manifest.v1` to `nodeSelector`,
+# of the schema `labels.v1`, which was `label-selector.v1`.
+# The names of ruling 42 (the vocabulary audit's N6 and N7; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed the key `arguments` of
+# `implementation-item.v1` to `packageArguments`, which binds only an argument of the Package's
+# own `packageArguments`, and removed its `digest`: a Package is pinned by its own `fileSha256`,
+# which the item now requires, or, where its `registryType` is `oci`, by a digest at the end of
+# its `identifier`.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on Q1 as tightened, made
+# `implementation-item.v1` reject an item reached by `remote` and not marked `plain` that names
+# `Authorization`, in any case, in its `headers` (IFC-043), and said in its description that a
+# template whose item binds a variable of `identity` (MAN-018), or sends a header that carries
+# a secret to an `http` URL (SEC-024), is rejected. The log is
+# docs/proposals/ruling-43/log-core.md. Its verification
+# (docs/proposals/ruling-43/log-integration.md, "Verification") made `implementation-item.v1`
+# reject an item reached by `remote` and not marked `plain` whose Remote's `url` is not an
+# `https` URL (IFC-044).
+# The integration of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fixes.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, said in the
+# description of `server-remote.v1` that no item binds a variable of a Remote's URL, and that a
+# `url` that holds one is rejected (M23); said in that of `implementation-item.v1` that SEC-024
+# also covers an item selected for `get-secret.v1` and a loopback host (M01, M02); and named
+# PKG-030 among what is not expressed here (M25).
 #
-# The manifest of a project or a package, and one item of its `implementations`. The file's
-# name, its keys and the layout of an archive are promised in spec/promises/manifest.yaml.
-# JSON Schema 2020-12, within spec/schema-profile.md.
+# The manifest of a project or a package, one item of its `implementations`, and the two
+# shapes of the Model Context Protocol Registry's server.json that an item may hold. The
+# file's name, its keys and the layout of an archive are promised in
+# spec/promises/manifest.yaml. JSON Schema 2020-12, within spec/schema-profile.md.
 #
 # Promises encoded:
 #   manifest.v1             MAN-003 (`apiVersion`; no `kind`, `metadata` or `spec`), MAN-004
-#                           (the keys; `address` and `version` together), MAN-005
-#                           (`packages` is a map by address; each item holds `version`,
-#                           `digest` and perhaps `fetch`), MAN-007 and MAN-008 (`exports`, and
-#                           a re-export), MAN-009 (`implementations` is a map by name),
-#                           MAN-012 (the core package's own items), NAM-006, PKG-001,
-#                           PKG-004, PKG-017, PKG-018
+#                           (the keys; `version` only beside `address`), MAN-005 (`packages`
+#                           is a map by address; each item holds `version`, `digest` and
+#                           perhaps `fetch`), MAN-006 (`fetch` is a URI reference with no user
+#                           information), MAN-007 (each item of `exports` is a name),
+#                           MAN-009 (`implementations` is a map by name), MAN-012 (the core
+#                           package's own items), NAM-001, NAM-004, NAM-006, PKG-001,
+#                           PKG-004, PKG-012, PKG-017
 #   implementation-item.v1  MAN-009 and MAN-010 (the keys and their values; exactly one of
-#                           `command`, `url` and `graph`), PKG-019, PKG-020 (a plain item
-#                           gives `tools` and no `supports`, an item that is not plain
-#                           gives no `tools`, and an item that states `graph` is never
-#                           plain and states no `supports`), TPL-003
+#                           `command`, `package` and `remote`; a Package pinned by `fileSha256`,
+#                           or an `oci` one by a digest in its `identifier`; `environment` with
+#                           `command` or `package`, `packageArguments` with `package` and
+#                           `headers` with `remote`), PKG-019, PKG-020 (a plain item gives
+#                           `tools` and no `supports`, and an item that is not plain gives no
+#                           `tools`), OBJ-016, TPL-003, IFC-043 (an item that is not plain
+#                           names no `Authorization` in its `headers`), IFC-044 (an item that
+#                           is not plain and is reached by `remote` stands at an `https` URL)
+#   server-package.v1       MAN-010 (one Package of server.json, schema 2025-12-11, whose
+#                           transport is `stdio` or `streamable-http`), IFC-017
+#   server-remote.v1        MAN-010 (one Remote of that schema, whose `type` is
+#                           `streamable-http`), IFC-041
 #
-# The first form below is a manifest that states neither `address` nor `version`, and the
-# second one that states both. A package's manifest states both (PKG-017). The manifest of a
-# submitted project may state both or neither, and the two keys change nothing there
-# (MAN-004). The third form is the core package's own manifest, whose implementations are the
-# engine itself and so state no `command`, `url` or `graph`, the exception to PKG-019 that
-# MAN-012 states. It is for that one manifest, which is built into the engine: a manifest that
-# is handed over for registration and states the core package's address as its own is
-# rejected, and so is a package installed at that address (NAM-021).
+# The first form below is the manifest of a project or a package. A package's manifest states
+# both `address` and `version` (PKG-017), and a submitted project's states `address` where
+# MAN-015 requires it, and may state `version` beside it (MAN-004). The second form is the
+# core package's own manifest, whose implementations are the engine itself and so state none
+# of `command`, `package` and `remote` and no `supports`, the exception that MAN-012 states.
+# It is for that one manifest, which is built into the engine: a manifest that is handed
+# over for registration and states the core package's address as its own is rejected, and so
+# is a package installed at that address (NAM-021).
 #
-# Not expressed here, and checked by the engine: the rule for a key of `packages` and of
-# `implementations` (NAM-001, NAM-004), and for a key of an item's `placement` (MAN-010,
-# OBJ-022), because the profile has no keyword that constrains the keys of a map; that a
-# package holds no instance document (MAN-011); that `fetch` is a URI reference (MAN-006),
-# because the profile has no format for one, so the schema accepts any string that is not
-# empty; that a relative `fetch` or program has a directory to be resolved against, which a
-# manifest handed over as a value has not (MAN-006, MAN-010); that the core package's address
-# is not listed, and is not stated as its own by a manifest that is handed over (NAM-021); that
-# a manifest handed to `replace.v1` holds `packages` alone (SUB-009); that the address a
-# package states is the one it was listed or fetched under (PKG-017); that every export names a
-# document of the package (PKG-018), though `uniqueItems` does reject a name that `exports`
-# writes twice (PKG-012); that a re-export names something the other package exports
-# (NAM-028); re-export cycles (PKG-014); that a plain item's `tools` has a key for
-# each operation in `implements` (PKG-020); that a `graph` item implements exactly the one
-# operation it lists (GRA-014); that no two documents of the project or package share a name
-# (NAM-027); everything about digests and installed packages (PKG-003, PKG-021, PKG-022); and
-# that there is one manifest, in the right place (MAN-001, MAN-002).
+# Open, as OBJ-019 exempts: everything inside an item's `package` or `remote`, whose keys
+# server.json defines. The two transcriptions below are as open as server.json's own schema
+# is, and leave out its descriptions, its examples and its defaults: a `default` there would
+# be applied under SCH-009, which server.json does not intend, and some stand inside `allOf`,
+# where SCH-008 rejects one.
+#
+# Not expressed here, and checked by the engine: that a package holds no instance document
+# (MAN-011); that a relative `fetch` or program has a directory to be resolved against, which a
+# manifest handed over as a value has not (MAN-006, MAN-010); that the core package's address is
+# not listed, and is not stated as its own by a manifest that is handed over (NAM-021); that a
+# submitted project that holds a contract or lists an implementation states `address` (MAN-015),
+# and not that of an installed package (MAN-016); that a manifest handed to `replace.v1` holds
+# `packages` alone (SUB-009); that the address a package states is the one it was listed or
+# fetched under (PKG-017); that every export names a document of the package (PKG-018, MAN-007),
+# though `uniqueItems` does reject a name that `exports` writes twice (PKG-012); that a plain
+# item's `tools` has a key for each operation in `implements`, and that a plain item implements
+# no operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PKG-020),
+# and that an item reached by `remote` implements none either (PKG-030), which
+# tools/check_schemas.py also checks; that a name in `environment`, `packageArguments` or
+# `headers` is one that the Package or the Remote declares, and that an argument named in
+# `packageArguments` is declared once in the Package's `packageArguments` and states no fixed
+# `value` (MAN-010); that no two documents of the project or package share a name (NAM-027);
+# everything about digests and installed packages (PKG-003, PKG-021, PKG-022); and that there is
+# one manifest, in the right place (MAN-001, MAN-002).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -58,41 +117,31 @@ metadata:
     selects is for the core package's own manifest alone.
 spec:
   anyOf:
-    - $ref: '#/$defs/project'
-    - $ref: '#/$defs/package'
+    - $ref: '#/$defs/manifest'
     - $ref: '#/$defs/core'
   $defs:
+    fetch:
+      type: string
+      format: uri-reference
+      minLength: 1
+      not:
+        pattern: '^([A-Za-z][A-Za-z0-9+.-]*:)?//[^/?#]*@'
     packages:
       type: object
+      propertyNames: {$ref: github.com/shrav-k/conduit/core#address.v1}
       additionalProperties:
         type: object
         properties:
           version: {$ref: github.com/shrav-k/conduit/core#version.v1}
           digest: {$ref: github.com/shrav-k/conduit/core#digest.v1}
-          fetch: {type: string, minLength: 1}
+          fetch: {$ref: '#/$defs/fetch'}
         required: [version, digest]
         additionalProperties: false
     exports:
       type: array
-      items:
-        anyOf:
-          - $ref: github.com/shrav-k/conduit/core#export-name.v1
-          - $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+      items: {$ref: github.com/shrav-k/conduit/core#export-name.v1}
       uniqueItems: true
-    implementations:
-      type: object
-      additionalProperties:
-        $ref: github.com/shrav-k/conduit/core#implementation-item.v1
-    project:
-      type: object
-      properties:
-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
-        packages: {$ref: '#/$defs/packages'}
-        exports: {$ref: '#/$defs/exports'}
-        implementations: {$ref: '#/$defs/implementations'}
-      required: [apiVersion]
-      additionalProperties: false
-    package:
+    manifest:
       type: object
       properties:
         apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
@@ -100,8 +149,14 @@ spec:
         version: {$ref: github.com/shrav-k/conduit/core#version.v1}
         packages: {$ref: '#/$defs/packages'}
         exports: {$ref: '#/$defs/exports'}
-        implementations: {$ref: '#/$defs/implementations'}
-      required: [apiVersion, address, version]
+        implementations:
+          type: object
+          propertyNames: {$ref: github.com/shrav-k/conduit/core#export-name.v1}
+          additionalProperties:
+            $ref: github.com/shrav-k/conduit/core#implementation-item.v1
+      required: [apiVersion]
+      dependentRequired:
+        version: [address]
       additionalProperties: false
     core:
       type: object
@@ -112,94 +167,259 @@ spec:
         exports: {$ref: '#/$defs/exports'}
         implementations:
           type: object
+          propertyNames: {$ref: github.com/shrav-k/conduit/core#export-name.v1}
           additionalProperties:
             type: object
             properties:
-              implements: {$ref: '#/$defs/references'}
-              supports: {$ref: '#/$defs/references'}
-              placement:
-                type: object
-                additionalProperties:
-                  $ref: github.com/shrav-k/conduit/core#applied-requirement.v1
+              implements:
+                type: array
+                items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+              nodeSelector: {$ref: github.com/shrav-k/conduit/core#labels.v1}
             required: [implements]
             additionalProperties: false
       required: [apiVersion, address, version]
       additionalProperties: false
-    references:
-      type: array
-      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: implementation-item.v1
   description: >-
-    One member of a manifest's `implementations`. It is reached by exactly one of `command`,
-    `url` and `graph`. An existing server that knows nothing of this specification is marked
-    `plain: true`, gives `tools` and states no `supports`; it is reached by `command` or `url`,
-    and an item that states `graph` is never plain, gives no `tools` and states no `supports`: a
-    graph supports a requirement where the implementation selected for each of its steps that
-    has no `conduit` does. `supports` and `placement` may each be left out. An implementation
-    supports a composed requirement when its `supports` lists the composition or every one of
-    its constituents.
+    One member of a manifest's `implementations`. It is reached by exactly one of `command`, a
+    program and its arguments; `package`, one server.json Package, pinned by its `fileSha256`
+    or, where its `registryType` is `oci`, by a digest in its `identifier`; and `remote`, one
+    server.json Remote reached over Streamable HTTP. `environment`, for a `command` or `package`
+    item, maps the name of a variable, `packageArguments`, for a `package` item, an argument
+    that the Package declares in its own `packageArguments`, named by its `name` where it is a
+    named argument and by its `valueHint` where it is positional, and never one that states a
+    fixed `value`, and `headers`, for a `remote` item, the name of a header the Remote declares,
+    each to a JSON Pointer into the instance's configuration that supplies the value; no key
+    binds the Package's `runtimeArguments`. An existing server that knows nothing of this
+    specification is marked `plain: true`, gives `tools` and states no `supports`; an item that
+    is not plain gives no `tools`, and, where it is reached by `remote`, stands at an `https`
+    URL, since the engine connects to no other, and names no `Authorization`, in any case of
+    its letters, in `headers`, since the engine presents its own proof in that header.
+    `supports` and `nodeSelector`, a label selector, may each be left out. A template is
+    rejected where an item selected for it binds in `environment` a variable that `identity`
+    carries in `run.v1`, or where a `remote` item selected for it carries a secret, in a header
+    or as the value of `get-secret.v1`, to an `http` URL that the engine does not accept for
+    one, or stands at a loopback host that the engine does not accept; none is in this schema,
+    since each needs the template.
 spec:
-  oneOf:
-    - type: object
-      properties:
-        implements: {$ref: '#/$defs/references'}
-        command: {$ref: '#/$defs/command'}
-        plain: {const: false}
-        supports: {$ref: '#/$defs/references'}
-        placement: {$ref: '#/$defs/placement'}
-      required: [implements, command]
-      additionalProperties: false
-    - type: object
-      properties:
-        implements: {$ref: '#/$defs/references'}
-        url: {$ref: '#/$defs/url'}
-        plain: {const: false}
-        supports: {$ref: '#/$defs/references'}
-        placement: {$ref: '#/$defs/placement'}
-      required: [implements, url]
-      additionalProperties: false
-    - type: object
-      properties:
-        implements: {$ref: '#/$defs/references'}
-        graph: {$ref: github.com/shrav-k/conduit/core#graph.v1}
-        plain: {const: false}
-        placement: {$ref: '#/$defs/placement'}
-      required: [implements, graph]
-      additionalProperties: false
-    - type: object
-      properties:
-        implements: {$ref: '#/$defs/references'}
-        command: {$ref: '#/$defs/command'}
-        plain: {const: true}
-        tools: {$ref: '#/$defs/tools'}
-        placement: {$ref: '#/$defs/placement'}
-      required: [implements, command, plain, tools]
-      additionalProperties: false
-    - type: object
-      properties:
-        implements: {$ref: '#/$defs/references'}
-        url: {$ref: '#/$defs/url'}
-        plain: {const: true}
-        tools: {$ref: '#/$defs/tools'}
-        placement: {$ref: '#/$defs/placement'}
-      required: [implements, url, plain, tools]
-      additionalProperties: false
-  $defs:
-    references:
-      type: array
-      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+  type: object
+  properties:
+    implements: {$ref: '#/$defs/references'}
     command:
       type: array
       items: {type: string, minLength: 1}
       minItems: 1
-    url: {type: string, format: uri}
+    package: {$ref: github.com/shrav-k/conduit/core#server-package.v1}
+    remote: {$ref: github.com/shrav-k/conduit/core#server-remote.v1}
+    plain: {type: boolean}
+    supports: {$ref: '#/$defs/references'}
     tools:
       type: object
+      propertyNames: {$ref: github.com/shrav-k/conduit/core#selection.v1}
       additionalProperties: {type: string, minLength: 1}
-    placement:
+    nodeSelector: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+    environment: {$ref: '#/$defs/bindings'}
+    packageArguments: {$ref: '#/$defs/bindings'}
+    headers: {$ref: '#/$defs/bindings'}
+  required: [implements]
+  additionalProperties: false
+  oneOf:
+    - required: [command]
+    - required: [package]
+    - required: [remote]
+  dependentRequired:
+    packageArguments: [package]
+    headers: [remote]
+  dependentSchemas:
+    environment:
+      not: {required: [remote]}
+    package:
+      properties:
+        package:
+          if:
+            properties:
+              registryType: {const: oci}
+            required: [registryType]
+          then:
+            properties:
+              identifier: {pattern: '@sha256:[a-f0-9]{64}$'}
+          else:
+            required: [fileSha256]
+  if:
+    properties:
+      plain: {const: true}
+    required: [plain]
+  then:
+    required: [tools]
+    not: {required: [supports]}
+  else:
+    not: {required: [tools]}
+    properties:
+      remote:
+        properties:
+          url: {pattern: '^https://'}
+      headers:
+        propertyNames:
+          not: {pattern: '^[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]$'}
+  $defs:
+    references:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+    bindings:
       type: object
-      additionalProperties: {$ref: github.com/shrav-k/conduit/core#applied-requirement.v1}
+      propertyNames: {minLength: 1}
+      additionalProperties: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: server-package.v1
+  description: >-
+    One Package, as the schema of the Model Context Protocol Registry's server.json, version
+    2025-12-11, gives it: the registry that holds the package, its identifier and version,
+    the transport over which the server it starts is reached, the arguments it takes and the
+    environment variables it reads. The transport is limited to `stdio` and `streamable-http`,
+    over which alone the engine reaches a run. `isSecret` marks a value that is a secret, and
+    the client supplies each value.
+spec:
+  type: object
+  properties:
+    registryType: {type: string}
+    registryBaseUrl: {type: string, format: uri}
+    identifier: {type: string}
+    version:
+      type: string
+      minLength: 1
+      not: {const: latest}
+    fileSha256:
+      type: string
+      pattern: '^[a-f0-9]{64}$'
+    runtimeHint: {type: string}
+    transport:
+      anyOf:
+        - type: object
+          properties:
+            type: {const: stdio}
+          required: [type]
+        - type: object
+          properties:
+            type: {const: streamable-http}
+            url: {type: string, pattern: '^https?://[^\s]+$'}
+            headers:
+              type: array
+              items: {$ref: '#/$defs/keyValueInput'}
+          required: [type, url]
+    runtimeArguments:
+      type: array
+      items: {$ref: '#/$defs/argument'}
+    packageArguments:
+      type: array
+      items: {$ref: '#/$defs/argument'}
+    environmentVariables:
+      type: array
+      items: {$ref: '#/$defs/keyValueInput'}
+  required: [registryType, identifier, transport]
+  $defs:
+    input:
+      type: object
+      properties:
+        description: {type: string}
+        isRequired: {type: boolean}
+        format: {enum: [string, number, boolean, filepath]}
+        value: {type: string}
+        isSecret: {type: boolean}
+        default: {type: string}
+        placeholder: {type: string}
+        choices:
+          type: array
+          items: {type: string}
+    inputWithVariables:
+      allOf:
+        - $ref: '#/$defs/input'
+        - type: object
+          properties:
+            variables:
+              type: object
+              additionalProperties: {$ref: '#/$defs/input'}
+    keyValueInput:
+      allOf:
+        - $ref: '#/$defs/inputWithVariables'
+        - type: object
+          properties:
+            name: {type: string}
+          required: [name]
+    argument:
+      anyOf:
+        - allOf:
+            - $ref: '#/$defs/inputWithVariables'
+            - type: object
+              properties:
+                type: {const: positional}
+                valueHint: {type: string}
+                isRepeated: {type: boolean}
+              required: [type]
+              anyOf:
+                - required: [valueHint]
+                - required: [value]
+        - allOf:
+            - $ref: '#/$defs/inputWithVariables'
+            - type: object
+              properties:
+                type: {const: named}
+                name: {type: string}
+                isRepeated: {type: boolean}
+              required: [type, name]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: server-remote.v1
+  description: >-
+    One Remote, as the schema of the Model Context Protocol Registry's server.json, version
+    2025-12-11, gives it, limited to the transport `streamable-http`: the URL of a server
+    reached over the protocol's Streamable HTTP transport, the headers it takes and the
+    variables of its URL, which no implementation item binds. `url` is also a URI as RFC 3986
+    gives one, so one that holds a variable is rejected (MAN-010).
+spec:
+  type: object
+  properties:
+    type: {const: streamable-http}
+    url:
+      type: string
+      format: uri
+      pattern: '^https?://[^\s]+$'
+    headers:
+      type: array
+      items: {$ref: '#/$defs/keyValueInput'}
+    variables:
+      type: object
+      additionalProperties: {$ref: '#/$defs/input'}
+  required: [type, url]
+  $defs:
+    input:
+      type: object
+      properties:
+        description: {type: string}
+        isRequired: {type: boolean}
+        format: {enum: [string, number, boolean, filepath]}
+        value: {type: string}
+        isSecret: {type: boolean}
+        default: {type: string}
+        placeholder: {type: string}
+        choices:
+          type: array
+          items: {type: string}
+    keyValueInput:
+      allOf:
+        - $ref: '#/$defs/input'
+        - type: object
+          properties:
+            name: {type: string}
+            variables:
+              type: object
+              additionalProperties: {$ref: '#/$defs/input'}
+          required: [name]

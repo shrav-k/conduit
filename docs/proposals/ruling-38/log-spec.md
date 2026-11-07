@@ -5,6 +5,9 @@ Date: 2026-11-06. This log is the account of how the work order in
 is the owner's. The wording that carries it out is the editor's and the coordinator's, and
 stands unless the owner strikes it.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 An editor session began the work and stopped partway, at a usage limit, with no log. The
 coordinator finished it and wrote this log from the difference between the specification
 before the ruling (commit `ff91aa5`) and after it.

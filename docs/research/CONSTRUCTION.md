@@ -3,8 +3,8 @@
 > Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 Research synthesis, updated 2026-10-31. The accepted contracts live in
-[DESIGN.md](../protocol/LIFECYCLE.md#establishment-contracts-and-instance-state). The
-[concrete YAML packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) replaces the earlier partial
+[DESIGN.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#establishment-contracts-and-instance-state). The
+[concrete YAML packet](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) replaces the earlier partial
 Pool/Agent examples. This report preserves the reasoning and source comparisons; it is not
 another schema or review queue.
 
@@ -92,5 +92,5 @@ its syntax until the individual contracts work. Detailed supporting research rem
 - A frontend disconnects: retain operation evidence and supported work independently, then show
   the same outcomes when a frontend reattaches.
 
-The [experiment](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) owns the acceptance sequence.
+The [experiment](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) owns the acceptance sequence.
 Filesystem, account and database specifics remain in [establishment](ESTABLISHMENT.md).

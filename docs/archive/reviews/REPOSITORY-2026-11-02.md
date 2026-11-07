@@ -3,7 +3,7 @@
 Historical proposal preserved in full. The documentation migration described here has now been
 performed; see its [record](../migrations/2026-11-protocol-framing.md). Its earlier status statements
 and candidate trees describe the proposal at the time. Unresolved publication decisions were carried
-to [current review](../../REVIEW.md); archiving does not approve its remaining recommendations.
+to [current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md); archiving does not approve its remaining recommendations.
 
 Status: **repository boundary and common package envelope accepted; remaining proposals under review**, 2026-11-02.
 One main repository under a Conduit GitHub organization and a common package envelope are accepted. The organization name/transfer,
@@ -107,7 +107,7 @@ eventual `docs/reference/` should replace the relevant design reference, never d
 
 `crates/` divides implementation responsibilities. Start with the smallest tested vertical slice;
 extract more crates when an actual build, dependency or consumer boundary warrants it. The earlier
-[crate table](../../implementation/ORGANIZATION.md#2-crate-contracts-and-dependency-direction) is a useful
+[crate table](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/implementation/ORGANIZATION.md#2-crate-contracts-and-dependency-direction) is a useful
 candidate allocation, not a requirement to create every crate. Separate management and execution
 authority remains required even when both use shared Rust libraries.
 
@@ -144,7 +144,7 @@ and the packed installation format are distinct decisions.
 while reusing an MCP adapter; a history package can ship an implementation and operation tests; a
 template-only workflow package can compose their available contributions. All use the same outer
 package contract for identity, version, typed contents and dependencies. Each contribution retains its
-own validation and behavior. The [canonical model](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
+own validation and behavior. The [canonical model](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
 records this boundary. Exact fields, dependency references, archive layout and source-tree conventions
 remain open. Automatic dependency resolution stays deferred, and installation establishes no instances,
 provider authentication or grants.

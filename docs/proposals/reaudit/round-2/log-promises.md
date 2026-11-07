@@ -7,6 +7,9 @@ Written by Editor P, 2026-11-06. It covers every YAML file under `spec/promises/
 [reader 2](reader-2.md) and [reader 3](reader-3.md). The pass on `spec/core/`, `spec/schemas/`,
 `spec/promises/manifest.yaml` and the checker is Editor S's.
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 ## Result
 
 - 406 promises, 11 more than before. No promise was removed and no ID was reused.

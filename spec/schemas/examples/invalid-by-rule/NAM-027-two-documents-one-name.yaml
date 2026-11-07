@@ -10,7 +10,6 @@ spec:
   family: Resource
   offers:
     - '#directory.v1'
-  placement: {}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability

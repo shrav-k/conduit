@@ -5,6 +5,9 @@ rules of [CONSOLIDATION.md](../CONSOLIDATION.md). Editor S owns `spec/core/`,
 `spec/schemas/` with its examples, `spec/promises/manifest.yaml` and
 `tools/check_schemas.py`. No other file was edited, except this one, which is new.
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 Finding IDs: `R1-n.m` is section and item of [reader 1](reader-1.md); `R2-Tn`, `R2-Sn`,
 `R2-Cn`, `R2-Gn` and `R2-Stn` are the term, shape, core package, guess and standards findings
 of [reader 2](reader-2.md); `R3-n` is finding n of [reader 3](reader-3.md). "Known point" is a

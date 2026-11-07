@@ -10,6 +10,9 @@ the owner's, and the owner can strike any of them. The editors of the closing pa
 last pass also started three readers of their own, whose findings are rows of those two logs
 and are not among the 125. Round 3 is [next](../round-3/README.md).
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 | Step | Record |
 | --- | --- |
 | The decisions on the findings, and on what each later pass left | [DECISIONS.md](DECISIONS.md) |

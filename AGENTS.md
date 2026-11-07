@@ -19,13 +19,15 @@ started. See [independent builds](docs/implementation/INDEPENDENT_BUILDS.md).
 
 The language is the core and the engine keeps its promises. Conduit is a configuration language,
 not a behavioral specification: the language fully determines what a set of documents means,
-and behavior beyond a few shared conventions belongs to type contracts and a runtime profile. See
-the layered claim in [docs/AUDIT.md](docs/AUDIT.md#layered-claim). Work that makes the language more
-concise, concrete and provable comes first.
+and behavior beyond a few shared conventions belongs to type contracts, providers and a
+conformance document. See the layered claim in [docs/AUDIT.md](docs/AUDIT.md#layered-claim).
+Work that makes the language more concise, concrete and provable comes first.
 
 The relationship is the product: an agent decides for itself, so the language declares what it may
-reach, under which limits, and who answers for what it did. Check any change against the purpose
-and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
+reach, under which limits, and who answers for what it did. Conduit innovates only on connection
+and access (ruling 40): everything else is a provider behind a contract that any existing tool
+can implement, and a design that invents infrastructure instead is wrong. Check any change
+against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
 
 ## What binds and what does not
 
@@ -33,60 +35,73 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
   the shared conventions and the implementation interface, as numbered promises. It is a draft:
   every area is written, and no conformance vector exists yet.
 - A behavior that is missing from `spec/` is a gap in `spec/`. No older document supplies it.
-- Nothing under `docs/protocol/` binds. It is the design as it stood before the specification,
-  kept as source material for the type contracts still to be written.
+- The design as it stood before the specification, under `docs/protocol/`, and the other
+  documents that the specification superseded were removed from the tree by ruling 39. The
+  [archive's index](docs/archive/README.md#removed-from-the-tree) lists each, with a link to
+  its last version. They are source material for the type contracts still to be written, and
+  bind nothing.
 - The records under `docs/proposals/` say what was decided, by whom and why: the owner's
-  rulings, and for the documents audit and rounds 2 to 4 of the re-audit the decisions of the
-  coordinating session under ruling 37. Where a record and the
-  specification differ, the specification governs.
+  rulings, and for the documents audit and the rounds of the re-audit the decisions of the
+  coordinating session under ruling 37. Ruling 39 accepted those made before it. Those made
+  after it, the coordinator's decisions and the editors' choices since the rewrite under ruling
+  41, can each be struck by the owner; [who decides what](docs/AUDIT.md#who-decides-what) lists
+  where they are logged. Where a record and the specification differ, the specification
+  governs.
 - If you were asked to read or audit this repository cold, start at
   [for the next reader](docs/AUDIT.md#for-the-next-reader): what to read, what is known to be
   open, what to look at first, and where findings go.
-- Also not binding: `docs/OVERVIEW.md`, `docs/REVIEW.md`, `docs/VOCABULARY.md`,
-  `docs/authoring/`, `docs/proposals/authoring-syntax/`, `docs/implementation/`,
-  `docs/research/`, `docs/archive/` and everything under `experiments/`. Most predate the
-  specification and say so in a note under their title. The files under `docs/archive/` are
-  the exception: only the archive's index, `docs/archive/README.md`, carries the note. An
-  archived file that calls the protocol topics the active reference, or the review queue
-  current, describes the time it was written.
+- Also not binding: `docs/OVERVIEW.md`, `docs/implementation/`, `docs/research/`,
+  `docs/archive/` and everything under `experiments/`. Most predate the specification and say
+  so in a note under their title. The files under `docs/archive/` are the exception: only the
+  archive's index, `docs/archive/README.md`, carries the note. An archived file that calls the
+  protocol topics the active reference, or the review queue current, describes the time it
+  was written.
 - The vocabulary is ruled (rulings 17, 18 and 27 to 29). The terms in force are in
   [spec/definitions.md](spec/definitions.md); write new text in them. Older documents keep the
-  earlier words; do not mass-rename them.
+  earlier words; do not mass-rename them. Ruling 42 accepted the twenty names of the
+  [vocabulary audit](docs/proposals/vocabulary-audit/README.md) that ruling 41 asked for, and
+  [spec/definitions.md](spec/definitions.md#words-the-promises-do-not-use) lists each old name
+  with its new one.
 
 ## Where things go
 
 - An owner ruling: the ruling log in `docs/AUDIT.md`, with its record under `docs/proposals/`,
   then the documents it affects.
 - Accepted behavior: a promise in `spec/`, in the terms of `spec/definitions.md`. It changes
-  by a logged ruling. Under ruling 37, as the owner confirmed it in ruling 38, the session that coordinates the
-  re-audit may also settle a cold reader's finding without a ruling on it, and logs each such decision under
-  `docs/proposals/reaudit/` as its own and not the owner's
-  ([who decides what](docs/AUDIT.md#who-decides-what-since-ruling-37)).
+  by a logged ruling. Under ruling 37, as the owner confirmed it in ruling 38, the session that
+  coordinates the re-audit may also settle a cold reader's finding without a ruling on it, and
+  logs each such decision under `docs/proposals/reaudit/` as its own
+  ([who decides what](docs/AUDIT.md#who-decides-what)). Ruling 39 accepted every such
+  decision made before it.
 - A defect in the language: fix it in the language, not around it. Findings against `spec/` are
   recorded under `docs/proposals/reaudit/`. `docs/LANGUAGE_DEFECTS.md` is the register of the
-  first sweep, which read `docs/protocol/`.
+  first sweep, which read the protocol topics that ruling 39 removed.
 - Evidence: its own directory under `experiments/`, with dated results. Never present an
   expected outcome as a result.
 
 ## Rules
 
-- Any code is Rust, in its own directory under `experiments/` with a `Cargo.lock`, a pinned
-  toolchain and ignored build output. The only exceptions are the Python checkers in `tools/`
-  and Experiment 003, which is Python and predates the rule.
+- Any code is Rust, with a `Cargo.lock`, a pinned toolchain and ignored build output: a probe or
+  an evaluation in its own directory under `experiments/`, and a provider package, one crate per
+  provider, under `packages/` (ruling 40). The only exception is the Python checkers in `tools/`.
 - The owner makes the rulings. When a choice changes behavior, present the options with a
   recommendation and wait; do not record your recommendation as accepted.
-- Do not edit `docs/archive/`, the content of `docs/research/`, or the topic files under
-  `docs/protocol/`.
+- Do not edit what `docs/archive/` holds or the content of `docs/research/`: they are records
+  of their time. New material may be added to the archive, with a line in its index. Ruling 39
+  made one exception, to remove the names of two private repositories.
 - Do not edit the sibling directories of this repository that hold reference clones, if
   present. They are on the owner's machine, to consult only. Nothing in this repository
   needs them.
 - Commit or push only when asked, and work on a branch. One standing instruction exists, and it
   is for the sessions the owner has asked to write the language, not for a reviewer or any
-  other session: the owner's instruction of 2026-11-05 is that this work is tracked on
-  [pull request #6](https://github.com/shrav-k/conduit/pull/6) (ruling 36). The coordinating
-  session reads that as committing and pushing to its branch at each milestone, and the owner
-  confirmed that reading in ruling 38. Pull request 6 was merged by squashing after ruling 38;
-  later work of those sessions goes on a new branch with its own pull request.
+  other session: the owner's instruction of 2026-11-05 is that this work is tracked on a pull
+  request (ruling 36), and the owner confirmed in ruling 38 that those sessions commit and push
+  to its branch at each milestone. Pull request 6 was merged by squashing after ruling 38. Pull
+  request 7, on the branch `docs/pre-codex`, carries the work of rulings 39 to 43, the rewrite
+  of the specification around provider contracts, the vocabulary audit, work across machines
+  and [round 5](docs/proposals/reaudit/round-5/README.md) of the readers. It was merged by
+  squashing on 2026-11-07. Work after it goes on a new branch, with its own pull request. Merges to `main` are
+  squashed, with a message written by hand.
 
 ## Checks
 
@@ -121,9 +136,13 @@ What each check needs:
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
 
-The names the specification assigns (the core package's address, `apiVersion` and the prefix of
-its `_meta` keys) are defined once, in `spec/names.yaml`. Never edit one by hand. Run
+The names the specification assigns (the core package's address, `apiVersion`, the prefix of
+its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,
+in `spec/names.yaml`. Never edit one by hand. Run
 `python3 tools/set_names.py` with the new values to see what would change, and add `--write` to
-rewrite every occurrence together.
+rewrite every occurrence under `spec/` together, and under `conformance/` and `reference-model/`
+once they exist. The tool does not change a document outside them that quotes a name, such as
+the example in `docs/OVERVIEW.md`: update it once the tool has run.
 
-Run `cargo test --release` in each Rust experiment directory you change.
+Run `cargo test --release` in each Rust directory you change, under `experiments/` or
+`packages/`.

@@ -21,24 +21,41 @@
 # as `from` in a submitted project. No promise of this file has been removed. Draft: no vector
 # exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed NAM-022, whose `then` now states the exception for `#name` written
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed NAM-022, whose `then` now states the exception for `#name` written
 # as `from`. It removed none.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # NAM-009, NAM-019, NAM-021 to NAM-023 and NAM-026, and added NAM-028, on a selection that names
 # nothing where the package is at hand. A manifest that is handed over for registration and
 # states the core package's address is rejected. It removed none.
 # The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
 # of the same file, which are the coordinator's too, changed NAM-028, which now covers a
 # re-export that names nothing in an installed package.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
+# (docs/proposals/ruling-40/README.md) and the principles review
+# (docs/proposals/principles-review/README.md), changed NAM-008, NAM-009, NAM-012, NAM-018 to
+# NAM-022, NAM-026 and NAM-028: a submitted project's contracts are named `address#name`
+# outside its documents (decision 11), every package a manifest lists is installed before a
+# registration (decision 12), every engine fetches `https:` and `file:` and other schemes are
+# a package-source provider's (decision 21), and graphs, runtimes, re-exports, policies and
+# `url` go (decisions 1, 2, 3a, 9 and 25). It removed none and added none. The log is
+# docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
+# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed NAM-007 and NAM-022,
+# under which the `operations` of a bound are compared as names and may use a project's own
+# address (ACC-029), and NAM-023, which points to OPS-033.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed NAM-009: a
+# template keeps each implementation item of its own submitted project that it selects, with
+# a relative program resolved as its own registration resolved it (M28). It added none and
+# removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed NAM-024: an input that a later release adds to a Requirement contract
+# states no `default` (V2-02). It added none and removed none.
 
 - id: NAM-001
   layer: language
@@ -143,18 +160,23 @@
     The document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the address. A reference to the core package needs no
-    manifest and is not listed in one, under NAM-020 and NAM-021.
+    manifest and is not listed in one, under NAM-020 and NAM-021. An item of the `operations` of
+    a bound does not refer to an address in this sense: it is data, compared as a name and never
+    resolved, under ACC-029.
   vectors: []
 
 - id: NAM-008
   layer: language
   level: must
   when: >-
-    A manifest lists a package that no document in the project refers to.
+    A manifest lists a package, installed at the version and digest that the manifest gives,
+    that no document in the project refers to.
   then: >-
     The submission is accepted, and the unused package is reported.
   observable: >-
-    The result lists the unused address as a diagnostic that did not prevent registration.
+    The result lists the unused address as a diagnostic that did not prevent registration. A
+    listed package that is not installed makes the registration rejected under PKG-006, whether
+    or not a document refers to it.
   vectors: []
 
 - id: NAM-009
@@ -167,13 +189,18 @@
     manifest gave them at that moment. For the core package, which is built into the engine and
     so has no archive and no digest, it keeps the address and the version alone. Where it refers
     to a contract or an implementation of its own submitted project, it keeps in the same way
-    the digest that identifies the unpublished package of SUB-008.
+    the address that the project's manifest states, its version where the manifest states one,
+    and the digest that identifies that submission's contracts under SUB-008, and it keeps each
+    implementation item of that project that it selects, as its own registration gave it, with a
+    program given as a relative path resolved under SUB-010.
   observable: >-
     Inspecting the template lists those packages under `packages`, a list of items that hold
     `address`, `version` and `digest`. The item of the core package has no `digest`, and the
-    item of the unpublished package has `digest` alone, the digest SUB-008 defines. Changing or
-    removing the manifest afterwards, or submitting the project again with other contracts, does
-    not change them.
+    item of its own submitted project has `address`, `digest`, the digest SUB-008 defines, and
+    `version` where the manifest states one. Changing or removing the manifest afterwards, or
+    submitting the project again with other contracts, does not change them. Two submissions
+    with one digest, read from two directories, give their templates the items as each directory
+    resolved them, so the instances made from each run that directory's programs.
   vectors: []
 
 - id: NAM-010
@@ -208,19 +235,30 @@
   layer: language
   level: must
   when: >-
-    An item of a manifest's `packages` gives `fetch`, a place to fetch the package from that
-    differs from the item's address.
+    An item of a manifest's `packages` gives `fetch`, the place to fetch the package's archive
+    from.
   then: >-
     That place is where an installation of the item's package fetches the archive from, and the
-    package is still identified by its address.
+    package is still identified by its address. Every engine accepts a `fetch` whose scheme is
+    `https` or `file`, a relative `fetch` resolving to a `file:` URL under MAN-006, and accepts
+    a `fetch` of any other scheme only where a package-source provider claims the scheme; which
+    of them fetches the archive is PRV-017. An engine may take the same bytes from a cache or
+    from a mirror that the user names. A `fetch` never carries a credential: one that a place
+    needs comes from that scheme's own mechanism.
   observable: >-
-    Documents that refer to the address resolve unchanged whether the package came from the
-    address itself or from the place `fetch` gives, provided the digest matches under PKG-021.
-    What the value of `fetch` is, and how a relative one is resolved, is MAN-006. Reading or
-    registering the manifest fetches nothing and installs nothing: a package is installed only
-    by a request for `install.v1`, which is given the item's address, `version` and `digest`
-    and, in its input `fetch`, the place the item gives. A registration whose manifest lists a
-    package that is not installed is PKG-006.
+    Documents that refer to the address resolve unchanged whether the archive came from the
+    place `fetch` gives, from a cache or from a mirror, provided the digest matches under
+    PKG-021 and PKG-026. What the value of `fetch` is, and how a relative one is resolved, is
+    MAN-006, which rejects a `fetch` that holds user information. Reading or registering the
+    manifest fetches nothing and installs nothing: a package is installed only by a request for
+    `install.v1`, which is given the item's address, `version` and `digest` and, in its input
+    `fetch`, the place the item gives. A request for `install.v1` that gives no `fetch`, for a
+    package that is not installed at that address and version, reports invalid under PKG-023,
+    and so does one whose `fetch` has a scheme that neither the engine nor a package-source
+    provider accepts. A registration whose manifest lists a package that is not installed is
+    rejected under PKG-006. Moving a package's archive to another place, such as from one
+    hosting service to another or to a folder, changes its `fetch`, and nothing else, on every
+    engine.
   vectors: []
 
 - id: NAM-013
@@ -294,15 +332,13 @@
   then: >-
     The selection is a qualified reference, or the form NAM-022 gives for something in the same
     project or package. The selection of an implementation is written under the key
-    `implementation`, whatever it implements, and may instead be a graph written in place, as
-    TPL-003 states.
+    `implementation`, whatever it implements.
   observable: >-
     A selection written as a group, name and version is rejected with a diagnostic naming it.
     The two forms are accepted wherever a promise speaks of the selection of one of the five: a
     template's `type`, a Conduit template's `capability` and `operations`, the `requirement` of
-    an applied requirement or of a constituent, a step's `operation`, the `start` and `stop` of
-    a runtime, the lists in a contract or in an implementation item of a manifest, a default
-    implementation, and the keys of an `implementation`, `controls` or `tools` map.
+    an applied requirement, the lists in a contract or in an implementation item of a manifest,
+    a default implementation, and the keys of an `implementation`, `controls` or `tools` map.
     `#directory.read.v1` selects the operation of that name in the document's own project or
     package. The `from` of an instance or of a nested instantiation names a template and is not
     a selection: its forms are INS-025.
@@ -312,7 +348,7 @@
   layer: language
   level: must
   when: >-
-    A document applies a requirement to a Conduit or to placement.
+    A document applies a requirement to a Conduit.
   then: >-
     It is written as `requirement`, the selection of the requirement, and `arguments`, and the
     arguments are checked against the inputs the requirement declares exactly as in
@@ -322,10 +358,9 @@
     rejected with the diagnostic that instantiation would give. An input that states a `default`
     may be left out and then takes its default, under OBJ-015. An `arguments` map that is left
     out is present and empty, so an input of a Conduit template may have a destination inside it
-    under INS-011. A policy is not written in a document: a request applies it, under ACC-031.
-    A property that has a `default` in the schema of an input, and that is absent from a map
-    which the argument supplies, takes that default before the argument is checked, under
-    SCH-009, and the argument is kept so filled.
+    under INS-011. A property that has a `default` in the schema of an input, and that is absent
+    from a map which the argument supplies, takes that default before the argument is checked,
+    under SCH-009, and the argument is kept so filled.
   vectors: []
 
 - id: NAM-020
@@ -337,9 +372,9 @@
     The reference resolves without an item in the `packages` of any manifest, to the core
     package built into the engine.
   observable: >-
-    A document that refers to `github.com/shrav-k/conduit/core#location` and to nothing else in
-    a package is accepted with no manifest. The Schema contracts the core package exports, its
-    reference schemas among them, resolve in the same way.
+    A document that refers to `github.com/shrav-k/conduit/core#interface.v1` and to nothing else
+    in a package is accepted with no manifest. The Schema contracts the core package exports,
+    its reference schemas among them, resolve in the same way.
   vectors: []
 
 - id: NAM-021
@@ -353,14 +388,14 @@
     The package or the manifest is rejected. The core package cannot be replaced, and no
     manifest but its own, which is built into the engine, states its address.
   observable: >-
-    Installation or resolving returns a diagnostic naming the address.
-    A registration whose manifest states the address as its own reports invalid under OBJ-023,
-    and a request to install a package at it reports invalid under PKG-023. `address` and
-    `version` in the manifest of a submitted project otherwise change nothing, under MAN-004:
-    this is the one address that such a manifest may not state. The schema `manifest.v1` has a
+    Installation or resolving returns a diagnostic naming the address. A registration whose
+    manifest states the address as its own reports invalid under OBJ-023, and a request to
+    install a package at it reports invalid under PKG-023. The `address` of a submitted project
+    names its contracts outside its own documents, under MAN-004 and SUB-008, and may be neither
+    this address nor that of an installed package, under MAN-016. The schema `manifest.v1` has a
     form for the core package's own manifest, whose implementation items state none of
-    `command`, `url` and `graph` under MAN-012. No manifest that is handed over or fetched is
-    read in that form.
+    `command`, `package` and `remote` under MAN-012. No manifest that is handed over or fetched
+    is read in that form.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -379,25 +414,28 @@
   observable: >-
     In a package it reaches a document the package does not export as well as one it does, as
     PKG-018 allows. In a submitted project it reaches a contract of that project, as SUB-008
-    states. It reaches an implementation that the manifest of the project or package lists under
-    `implementations`, as the selection of an implementation under NAM-018 needs. Under NAM-027
-    a name is the name of one document or of one implementation, so the reference reaches at
-    most one thing. Where no document and no implementation of that project or package has the
-    name, the reference is unresolved, and the document that holds it is rejected under NAM-028;
-    it is never looked up among the objects that exist or in another package. The exception for
-    `from` follows from what is registered: a project's templates are registered, unlike its
-    contracts, so in a submitted project `#name` written as `from` reaches a template that an
-    earlier submission registered as well as one of its own, and resolves to nothing only where
-    no template of that kind and name exists. A nested instantiation that writes its `from` so,
-    in a template of such a project or in the document that replaces one, resolves in the same
-    way whenever the template that holds it is instantiated. In the document that replaces a
-    template, which is handed over with no contracts, it reaches a contract or an implementation
-    of the unpublished package that the template being replaced holds under NAM-009, as SUB-009
-    states. A document refers to something in its own project or package in this form and never
-    by a qualified reference: a package's own address is not among the `packages` of its own
-    manifest, so a qualified reference that uses it is rejected under NAM-007. The core
-    package's own documents are the exception: they write its address in full, which resolves
-    under NAM-020.
+    states; outside the project's own documents such a contract is named `address#name`, with
+    the address that the project's manifest states, under SUB-008 and MAN-015. It reaches an
+    implementation that the manifest of the project or package lists under `implementations`, as
+    the selection of an implementation under NAM-018 needs. Under NAM-027 a name is the name of
+    one document or of one implementation, so the reference reaches at most one thing. Where no
+    document and no implementation of that project or package has the name, the reference is
+    unresolved, and the document that holds it is rejected under NAM-028; it is never looked up
+    among the objects that exist or in another package. The exception for `from` follows from
+    what is registered: a project's templates are registered, unlike its contracts, so in a
+    submitted project `#name` written as `from` reaches a template that an earlier submission
+    registered as well as one of its own, and resolves to nothing only where no template of that
+    kind and name exists. A nested instantiation that writes its `from` so, in a template of
+    such a project or in the document that replaces one, resolves in the same way whenever the
+    template that holds it is instantiated. In the document that replaces a template, which is
+    handed over with no contracts, it reaches a contract or an implementation among the
+    contracts and implementations of the submitted project that the template being replaced
+    holds under NAM-009, as SUB-009 states. A document refers to something in its own project or
+    package in this form and never by a qualified reference: a package's own address is not
+    among the `packages` of its own manifest, so a qualified reference that uses it is rejected
+    under NAM-007. The core package's own documents are the exception: they write its address in
+    full, which resolves under NAM-020. So are the `operations` of a bound, which name the
+    project's own operations by its address, under ACC-029.
   vectors: []
 
 - id: NAM-023
@@ -411,10 +449,10 @@
     its result are checked against that version.
     A request whose inputs that version does not accept is not dispatched, and reports invalid.
   observable: >-
-    A request that the target's version of the contract accepts is dispatched whatever the
-    other version says. One that it does not accept reaches no implementation, whatever the
-    other version says. A result whose outputs fail that version has the outcome unknown, under
-    OPS-007.
+    A request that the target's version of the contract accepts is dispatched whatever the other
+    version says. One that it does not accept reaches no implementation, whatever the other
+    version says: this is OPS-033, with the version that the target holds. A result whose
+    outputs fail that version has the outcome unknown, under OPS-007.
   vectors: []
 
 - id: NAM-024
@@ -425,11 +463,17 @@
     that an earlier release at the same address gave it.
   then: >-
     The later contract may add optional things, such as an optional input of an operation or a
-    further operation of a capability. It does not remove or change anything the earlier one
-    held.
+    further operation of a capability, and an input that it adds to a Requirement contract
+    states no `default`. It does not remove or change anything the earlier one held.
   observable: >-
     Comparing the two contracts shows only such additions. Any other change is made as a new
-    contract, under a name with another version segment, as NAM-015 states.
+    contract, under a name with another version segment, as NAM-015 states. An input of a
+    requirement that states a `default` is filled in and sent with every filter of it, under
+    NAM-019 and IFC-018, and an implementation built for the earlier release cannot apply a
+    filter whose `arguments` hold an input that its version does not declare, under IFC-019, so
+    such an input would make every request through a Conduit that applies the filter report
+    unavailable there. An added input that states none is sent only where a document writes
+    it.
   vectors: []
 
 - id: NAM-025
@@ -454,12 +498,10 @@
     The request is not dispatched and reports unavailable.
   observable: >-
     The target's implementation receives no call. The same request to a target that holds a
-    version which includes the operation is decided like any other.
-    Where the version of the operation's package that the target holds has no contract of the
-    operation at all, the engine presents no tool for it, under IFC-033: a consumer's call that
-    names such a tool is answered as a call to any tool that is not presented, and reports
-    refused under IFC-012. A step of a graph that names the Conduit and the operation calls no
-    tool, and reports unavailable under this promise.
+    version which includes the operation is decided like any other. Where the version of the
+    operation's package that the target holds has no contract of the operation at all, the
+    engine presents no tool for it, under IFC-033: a consumer's call that names such a tool is
+    answered as a call to any tool that is not presented, and reports refused under IFC-012.
   vectors: []
 
 # --- Added with the core package (plan-audit ruling 37; change X5 of the ruling on the core
@@ -493,33 +535,28 @@
   layer: language
   level: must
   when: >-
-    A document holds a selection, or a `from` written as a qualified reference, or a manifest
-    holds a re-export among its `exports`, that names nothing which the package at that address
-    exports, in the version through which the document or the manifest resolves it, and that
-    version of the package is installed. Or a document holds a reference written `#name`, other
-    than a `from` in a submitted project, and no document and no implementation of its own
-    project or package has the name.
+    A document holds a selection, or a `from` written as a qualified reference, that names
+    nothing which the package at that address exports, in the version through which the document
+    resolves it, and that version of the package is installed. Or a document holds a reference
+    written `#name`, other than a `from` in a submitted project, and no document and no
+    implementation of its own project or package has the name.
   then: >-
-    The document, or the manifest, is rejected.
+    The document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the reference, and so does installation where the
     document is a package's. Everything that could give the name a meaning is at hand, so
     nothing is deferred: a template whose `type` is `example.org/files#local-folder.v1`, where
     the installed version of `example.org/files` exports no such name, is rejected when it is
     registered, and so is one whose `type` is `#notebook.v1` in a project that holds no document
-    of that name. The same holds for a step's `operation`, a value of an `implementation` map, a
-    `capability`, a `requirement`, a `$ref` under SCH-015 and every other place that NAM-018
-    names, and for the qualified `from` of an instance document or of a nested instantiation.
-    It holds for every reference into an installed package that names nothing there, a re-export
-    included: a manifest whose `exports` lists `example.org/common#rate.v1`, where the version
-    of `example.org/common` that it lists is installed and exports no such name, is rejected,
-    and a package that holds such a manifest is rejected when it is installed. Only a package
-    that is not installed defers the check: PKG-006 registers the template with a diagnostic,
-    and INS-022 makes the check when the template is instantiated. `#name` written as `from` in
-    a submitted project is not covered, because NAM-022 has it resolve among the templates that
-    exist: where none has the name, OBJ-008 registers a template whose nested instantiation
-    writes it, and INS-002 rejects an instance document that writes it. A local reference to an
-    object that does not exist is OBJ-008 too. The registration of a rejected document reports
-    invalid under OBJ-023, and a request to install a package that holds one reports invalid
-    under PKG-023.
+    of that name. The same holds for a value of an `implementation` map, a `capability`, a
+    `requirement`, a `$ref` under SCH-015 and every other place that NAM-018 names, and for the
+    qualified `from` of an instance document or of a nested instantiation. A registration or an
+    installation whose manifest lists a package that is not installed is rejected under PKG-006
+    or PKG-028, so every package a document can name is at hand when the document is resolved.
+    `#name` written as `from` in a submitted project is not covered, because NAM-022 has it
+    resolve among the templates that exist: where none has the name, OBJ-008 registers a
+    template whose nested instantiation writes it, and INS-002 rejects an instance document that
+    writes it. A local reference to an object that does not exist is OBJ-008 too. The
+    registration of a rejected document reports invalid under OBJ-023, and a request to install
+    a package that holds one reports invalid under PKG-023.
   vectors: []

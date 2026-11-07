@@ -1,0 +1,1033 @@
+# Providers: what the engine reaches behind a contract that the user picks.
+# Ruling 40 (docs/proposals/ruling-40/README.md, 2026-11-06): Conduit innovates only on
+# connection and access, and everything else is a provider behind a contract, swappable by the
+# user. Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review (docs/proposals/principles-review/README.md, decisions 2, 8, 21, 26 and 31
+# and alignment C58), added this file, PRV-001 to PRV-018, and removed nothing from it. A
+# provider is a Resource whose type offers one of the core package's provider capabilities:
+# `runtime-provider.v1`, which runs an instance's implementation, stops it and reports its
+# state; `machine-provider.v1`, which reports the machines and places instances on them;
+# `package-source.v1`, which fetches a package's archive for the URL schemes it claims; and
+# `secret-provider.v1`, offered by a secret Resource, whose promises are in secrets.yaml. The
+# user picks one by registering a Resource of its type, configured as it needs. The engine's own
+# runner, its own machine provider and its own fetching of `https:` and `file:` URLs are the
+# built-in implementations of the first three, and serve where the user picks none.
+# Standards followed: the Container Runtime Interface and RuntimeClass of Kubernetes, and the
+# task drivers of Nomad, for the runtime provider; the node lifecycle of Kubernetes and its
+# well-known labels for the machine provider; and Git's remote helpers, picked by the scheme of
+# a URL, for package sources. The names of the provider capabilities and their operations are
+# those that ruling 42 accepted from the vocabulary audit that ruling 41 ordered. The log of the
+# editor who wrote this file is docs/proposals/ruling-41/log-G2.md. The integration of the
+# rewrite (docs/proposals/ruling-41/log-integration.md) changed PRV-001 and PRV-002, which name
+# a secret Resource as secrets.yaml does. Its coverage check (the same log, "Coverage check")
+# changed PRV-003, PRV-006, PRV-007 and PRV-008, and added PRV-019, under which a runtime
+# provider runs an item only on the machine of the instance's location, so the engine's own
+# runner runs only on `local`'s, and PRV-020, under which a runtime provider is not retired
+# while an instance that exists names it. Draft: no vector exists yet.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), accepting the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md and the owner's answers D8, D10, D11
+# and D17, changed PRV-001, which points to SEC-022 for a Type that offers `secret-reveal.v1`
+# and to PKG-020 for a plain implementation; PRV-003, whose runner gives no `endpoint` and
+# passes what PRV-023 says; PRV-004, which is keyed on the operation; PRV-005, under which a
+# provider call declares Conduit's extension and its result is read as a request's; PRV-006,
+# which rejects a retired runtime provider; PRV-007, which gives each value as a string, keys
+# `secrets` by name, gives `identity`, and asks no other runtime provider to run a program at a
+# relative path; PRV-008, under which a request to unregister asks for the stop once more;
+# PRV-009; PRV-011, which delivers a secret under the name it is given; PRV-013 and PRV-014,
+# under which a hostname is reported in canonical form and a location outlives its machines
+# provider; PRV-015, which reports unavailable where the machines provider cannot place now;
+# PRV-018, which points to `identity`; PRV-019; and PRV-020. It added PRV-021, a stop that a
+# runtime provider cannot carry out now (D11), PRV-022, the variables and files of `identity`
+# (D17), and PRV-023, what the engine's own runner passes of the engine's environment (D8). It
+# removed none. Its log is docs/proposals/ruling-42/log-machines.md. The integration of ruling
+# 42 (docs/proposals/ruling-42/log-integration.md) changed PRV-001, whose rule on plain
+# implementations names the three capabilities of PKG-020; PRV-003, under which the engine gives
+# its own runner what `run.v1` would give, `identity` among it, without a call; PRV-015, under
+# which the provider is not asked where the selector would name `kubernetes.io/hostname` twice;
+# and PRV-021, whose `then` takes D11's words: the contract states what the provider does with a
+# stop it cannot carry out now.
+# The names of ruling 42 (the vocabulary audit's N2, N3 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the machines provider to the machine
+# provider, the engine's own machine to the engine's own machine provider, location to node and
+# "stand for" to "represent", in PRV-001 to PRV-003, PRV-006 to PRV-008, PRV-013 to PRV-015 and
+# PRV-018 to PRV-021, and the input `location` of `run.v1` to `machine` in PRV-007 and PRV-019.
+# PRV-014 and PRV-021 write a Kubernetes Node, so that it is not read as a node. It removed none
+# and added none.
+# The names of ruling 42 (the vocabulary audit's N1, N5, N6, N14 to N16, N19 and N20; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`
+# in PRV-001 and PRV-004, and `reveal-secret.v1` to `get-secret.v1` in PRV-001; the output
+# `endpoint` of `run.v1` to `url` in PRV-003, PRV-007 and PRV-018; its input `arguments`, and
+# the item's, to `packageArguments` in PRV-007; the `origin` of a condition to its `source` in
+# PRV-009; the keys `restrictions` and `operationIdentity`, which a provider call does not
+# carry, to `filters` and `idempotencyKey` in PRV-005; "its own setting for restarts" to its own
+# restart policy in PRV-010; and the trust domain of a secret to its domain of trust in PRV-011.
+# It removed none and added none.
+# The editorial fixes of ruling 42 (the vocabulary audit's E9 and E18; log
+# docs/proposals/ruling-42/log-editorial.md) changed PRV-011, and PRV-022 in the same way, whose
+# `when` says a provider call to `run.v1`, where it said a request for it, since a provider call
+# is not a request under PRV-005; and PRV-001, whose observable says that a secret Resource's
+# implementation may be plain, where it said a plain store. It removed none and added none.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# added PRV-024, under which no record, inspection result, observation, diagnostic, result or
+# `_meta` holds any part of `identity`, as the owner's answer D17 has it. It changed PRV-003,
+# whose built-in implementations are no Resource, where it said that none represents them;
+# PRV-018, under which every run is given `identity`, on the engine's own runner too; PRV-021,
+# whose observable says that what becomes of a stop that a provider holds when it is retired is
+# part of what its contract states; PRV-022, under which no provider call carries a refreshed
+# credential and no record holds `identity`, under PRV-024; and PRV-023, which passes a
+# variable of the six only where its value does not begin with `()`, as the SDKs do, passes
+# on an operating system such as Windows the variables that DL16 names in their place, and
+# says that the runner passes no other variable, since a process that runs as the engine's
+# user may still read the engine's environment. It removed none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06) accepted the proposal on work
+# across machines (docs/proposals/multi-machine/README.md), with D5's second part as option b
+# and Q1 tightened, and settled the items of docs/proposals/ruling-42/log-integration.md that
+# waited on it. Applying them, it changed PRV-002 and PRV-003, whose servers and processes the
+# engine reaches over stdio, behind no gate, PRV-003 also saying that a process of the engine's
+# own operating-system user can make the engine's proof (Q5); PRV-007, whose `identity` holds
+# the names that PRV-022 fixes and whose server stands behind a gate; PRV-008 and PRV-009, whose
+# calls give the run's machine under PRV-027, and whose `inspect-run.v1` may report the `url` at
+# which the run is now reached; PRV-011, which carries a secret to another machine only over a
+# channel that authenticates that machine and keeps the value confidential; PRV-012, which also
+# covers a `package` whose transport the provider does not run; PRV-014, under which `gone` is
+# only for a machine that the provider knows no longer exists, in the rule where the observable
+# said it; PRV-018, under which no address, machine, network, runtime provider or run that a
+# request came from establishes the instance; PRV-020 and PRV-021, under which a stop that a
+# provider cannot carry out now is kept where neither a restart of the engine nor the provider's
+# own retirement loses it; PRV-022, which fixes the names of what `identity` holds, carries it
+# as a secret's value, lets the run's gate use it, and says that a credential lasts as long as
+# its instance; and PRV-023, under which a variable of `identity` wins over one of the engine's
+# environment. It added PRV-025, the gate in front of every server that the engine does not run
+# itself (D5); PRV-026, a provider's run made again after the engine restarts (Q3); and PRV-027,
+# the machine given to `stop.v1` and `inspect-run.v1` (X10 of the verification of ruling 42). It
+# removed none. Its log is docs/proposals/ruling-43/log-providers.md. The integration of ruling
+# 43 then had PRV-025's `then` except the provider's own user or group, and state its contract,
+# for a run alone, since a server reached by `remote` is its own gate; and had PRV-022's
+# observable cite Kubernetes' own files without writing their names, so that a change of the
+# names of `identity` by tools/set_names.py leaves the citation true
+# (docs/proposals/ruling-43/log-integration.md).
+# The verification of ruling 43 (docs/proposals/ruling-43/log-integration.md, "Verification")
+# changed PRV-002, PRV-007, PRV-020, PRV-021, PRV-022, PRV-025 and PRV-026: `identity` also
+# holds `jwks.json` and `engine-id`, its variables win over every other source, and every file
+# but `tls.crt` and `tls.key` is given to every run; a gate admits only a credential that names
+# an enforcement point, and no run runs as the user it excepts; a held stop is carried out by
+# something that runs without the provider's server; and a secret Resource that the engine's
+# own runner ran is run again too. It added PRV-028, under which what answers at a run's `url`
+# proves by its certificate that it serves the instance (point 4 of the gate in the proposal).
+# The fix pass of the fifth round of the re-audit
+# (docs/proposals/reaudit/round-5/log-fix-F1.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-5/DECISIONS.md, which no ruling has accepted, changed PRV-002 and
+# PRV-026, under which a secret Resource's process on the engine's own runner ends with the
+# engine (M08), and a provider's run is made again when the part of the engine that held it
+# stops (M09); PRV-003, whose own runner runs a `package` item only over stdio and of a registry
+# type that DL16 states (M07); PRV-004, which also rejects such a Conduit template when it is
+# registered (M04); PRV-005 and PRV-028, which use words in the senses that the definitions give
+# them (M17); PRV-006, under which this version reports every restriction as mediated (M16);
+# PRV-007, which asks for a run only where the runtime provider reports it `stopped`, and asks
+# for none where it reports `unknown` (M03); PRV-012 and PRV-025, under which a run that a
+# provider does not carry out ends failed (M19), PRV-025 also saying when a connection is silent
+# (M11) and that a server treats any disconnect as a cancellation (M15); PRV-014, which reports
+# no hostname longer than 63 characters (M20); PRV-015, which asks the machine provider to place
+# only an instance for which an item that is run is selected (M22); and PRV-022, under which a
+# `CONDUIT_URL` given as the run sees it keeps the engine's address whole (M13, M17), and an
+# `http` URL on loopback is given only to a run on the engine's own runner that ends with an
+# engine that can neither restart on another machine nor run as several parts (M47). It wrote
+# the sentences at the head of this file that describe it as it stands in the names in force
+# (M21). It removed none and added none.
+# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
+# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed PRV-007, whose
+# guard on a program given as a relative path holds whether or not SUB-010 has resolved it
+# (M27), and PRV-008, PRV-020 and PRV-027, under which a request to unregister any retired
+# instance asks for the stop once more (M41). It removed none and added none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed PRV-007, which says what an actor can do where a runtime provider
+# reports a run `unknown` (V5, V2-03); PRV-025, which says why a token that a gate passes on
+# gives the server nothing (V7); and PRV-026, under which a read for the machine provider's run
+# is made whatever its machine's state (V2-04). It added none and removed none.
+
+- id: PRV-001
+  layer: language
+  level: must
+  when: >-
+    A Type contract offers a provider capability: `runtime-provider.v1`, `machine-provider.v1`,
+    `package-source.v1` or `secret-provider.v1`.
+  then: >-
+    Its family is Resource, and it offers no other provider capability. A Type contract that
+    offers one and is of another family, or that offers two, is rejected when its package is
+    installed or its project is submitted.
+  observable: >-
+    Installation or submission returns a diagnostic naming the Type and the capabilities. A
+    provider is therefore a Resource like any other: it has an owner and a placement, it is made
+    by registering its document and set up as any Resource is, and its type may offer other
+    capabilities beside its one provider capability, apart from a Type that offers
+    `secret-provider.v1`, which offers no other, under SEC-022. No plain implementation
+    implements an operation of `runtime-provider.v1`, `machine-provider.v1` or
+    `package-source.v1`, which the engine reaches only by provider calls, under PKG-020; a
+    secret Resource's implementation of `get-secret.v1` may be plain, under SEC-006. The user
+    picks a provider by registering a Resource of its type, configured as that provider needs,
+    such as a Docker context: PRV-006 says how an instance names its runtime provider, PRV-013
+    which machine provider and package-source providers serve, and SEC-005 what the type of a
+    secret Resource is.
+  vectors: []
+
+- id: PRV-002
+  layer: convention
+  level: must
+  when: >-
+    A Resource is instantiated whose type offers `runtime-provider.v1`, `machine-provider.v1` or
+    `package-source.v1`.
+  then: >-
+    Its placement is `local`, whether or not its document gives one, and the engine's own runner
+    runs it. An instance document that gives it another placement or any `runtime`, or an input
+    of a Pool's template that supplies either for its entry, makes the document that gives it
+    rejected.
+  observable: >-
+    Inspecting such a Resource shows `local` as its placement and no `runtime`. The engine's own
+    runner starts the provider's own server, as the kubelet reaches its container runtime at a
+    socket that its configuration names, so no provider is run by another provider and the
+    machine provider is not asked where to place one. The engine reaches the provider's server
+    over stdio, so no gate stands before it, under PRV-025; that server ends when the engine
+    stops, or the part of it that holds the server under DL17, and the engine runs it again when
+    it first needs it, under PRV-026. A secret Resource is not among them: it is placed and run
+    as any other Resource is, and where the engine's own runner runs it, its process too is
+    reached over stdio and ends as that server does, and it is run again under PRV-026.
+  vectors: []
+
+- id: PRV-003
+  layer: convention
+  level: must
+  when: >-
+    No provider of a kind serves: for a run, the instance names no `runtime`; for machines, no
+    machine provider exists that is not retired; for a package whose `fetch` has the scheme
+    `https` or `file`, no package-source provider that is not retired claims that scheme.
+  then: >-
+    The engine's own implementation of that capability serves in its place, and keeps every
+    promise that this file makes of a provider of that kind: its own runner runs the instance's
+    implementation on the machine the engine runs on, and on no other, and runs a `package` item
+    only where its `transport` is of the `type` `stdio` and its `registryType` is one that DL16
+    states, ending the run of any other failed, under PRV-012; its own machine provider reports
+    one machine, the one that `local` represents; and it fetches the archive itself.
+  observable: >-
+    A user who picks no provider gets these. They are part of the engine: no package provides
+    them, they are no Resource, and no Conduit reaches them, so no provider call reaches them.
+    The engine gives its own runner, without a call, what `run.v1` would give, `secrets` and
+    `identity` among it, and that runner delivers them as PRV-011 and PRV-022 have a runtime
+    provider deliver them. It returns no `url`, the one exception to the `url` that `run.v1`
+    requires, and the engine reaches the process it starts over stdio, which reaches no other
+    process, so no gate stands before it, under PRV-025; what it passes to that process of the
+    engine's own environment is PRV-023. That process runs as the operating-system user that
+    DL16 states, which is usually the engine's own and can then read what the engine makes its
+    proof with, so an Agent that is not to be trusted that far names a runtime provider that
+    runs it apart, under PRV-006. Asked to run an instance whose placement is a node other than
+    `local`, it ends the run failed and runs nothing, under PRV-019, and PLC-007 keeps an
+    instance that has an item that is run and names no `runtime` from being placed there, so an
+    instance placed on another machine runs only where it names, under PRV-006, a runtime
+    provider that runs items there. The engine's own machine provider reports the machine the
+    engine runs on, reachable, under the engine's own hostname, under PLC-026, with the labels
+    of PRV-014, and places every instance on `local`. A `fetch` with any other scheme that no
+    provider claims is PKG-023.
+  vectors: []
+
+- id: PRV-004
+  layer: language
+  level: must
+  when: >-
+    A Conduit template is registered, or a Conduit is instantiated, whose capability is
+    `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, or that lists an
+    operation of one of them.
+  then: >-
+    A template is rejected when it is registered, and a Conduit is not instantiated: no Conduit
+    permits an operation of those capabilities.
+  observable: >-
+    Resolving returns a diagnostic naming the template or the Conduit, and the capability or the
+    operation. A template whose `operations` an input fills, under CON-016, is checked for its
+    capability when it is registered, and each Conduit made from it is checked for its
+    operations when it is instantiated, as CON-028 checks at both times. The rule is about the
+    operation, whatever capability lists it, matched by its qualified reference in the core
+    package, so an operation of another package that is also named `run.v1` is not one of them:
+    otherwise a Conduit to a runtime provider, whose type PRV-001 lets offer other capabilities,
+    could run or stop another instance's run. SEC-008, SEC-009 and ACC-032 are keyed on the
+    operation in the same way. The engine alone invokes those operations, by provider calls
+    under PRV-005, so no instance can run, stop or inspect a run, list or place machines, or
+    fetch a package through a Conduit, and no consumer is presented a tool for one. A Conduit
+    whose capability is `secret-provider.v1` is SEC-008 and SEC-009.
+  vectors: []
+
+- id: PRV-005
+  layer: convention
+  level: must
+  when: >-
+    The engine invokes an operation of `runtime-provider.v1`, `machine-provider.v1` or
+    `package-source.v1` of a provider, which is a provider call.
+  then: >-
+    A provider call is not a request: no Conduit permits it, no access decision is made for it
+    and no restriction applies to it. Of Conduit's keys it carries `instance`, `config` and
+    `revision`, which are the provider's own, and `operation`; where it is made within an
+    invocation, `invocation`, the engine's ID for that invocation; and where it is made for a
+    request, that request's `caller`. It declares Conduit's extension, under IFC-037. Its result
+    is read as IFC-009 and OPS-007 read the result of a request to an implementation that
+    carries Conduit's keys, and the error that the provider gives under IFC-008 as OPS-007 gives
+    it. It is recorded under REC-001.
+  observable: >-
+    `run.v1`, `stop.v1` and `inspect-run.v1` are made within the invocation of a setup or a
+    retirement that they serve, and the outcome of such a call counts in the part it serves,
+    under OPS-022; the stop that a request to unregister asks for once more is made within that
+    request's invocation, under LIF-036. `place.v1` and `fetch-package.v1` are made while the
+    engine decides a request to register or to install, before it is dispatched, and so carry
+    its `caller` and no `invocation`. A call that the engine makes of its own accord, such as
+    `list-machines.v1` to learn the machines or `inspect-run.v1` to learn the state of a run, is
+    made for no request and carries neither. A provider call carries no `filters`, no
+    `conduit` and no `idempotencyKey`. `_meta`'s `instance` names the provider, and the input
+    `instance` of `run.v1`, `stop.v1` or `inspect-run.v1` names the instance whose run is meant,
+    which the call's record names in its `subject`; the record holds in `invocation` the
+    invocation within which the call is made, and no `serving`, under REC-002. A provider learns
+    its own configuration from `config`, as any implementation does under IFC-006, and `config`
+    is current on each call, while a run keeps the variables it started with, under PRV-007.
+    Where the provider's result of `server/discover` does not list the extension at `v0`, the
+    call is not dispatched, and its record names the missing extension: the part of a setup or a
+    retirement that needed it reports unavailable, under PRV-007 and PRV-008, and so does a
+    request to install, under PKG-024, or one that needed `place.v1`, under PRV-015; a call that
+    the engine would make of its own accord is not made, and counts as a report not received,
+    under DL5 and PRV-009. The read of a secret is a request, and not a provider call, under
+    SEC-011.
+  vectors: []
+
+- id: PRV-006
+  layer: language
+  level: must
+  when: >-
+    An Agent or a Resource is given `runtime`, the standard argument that names its runtime
+    provider: by its instance document or, for the Resource of a Pool's entry, by an input under
+    POOL-009.
+  then: >-
+    It is a reference to a Resource whose type offers `runtime-provider.v1`, which the instance
+    holds in the resolved form of OBJ-009 for its whole life, and no operation changes it. A
+    `runtime` that names anything else, or a runtime provider that is retired, makes the
+    document that gives it rejected. An instance that is given none runs on the engine's own
+    runner.
+  observable: >-
+    Resolving returns a diagnostic naming the instance and its `runtime`. Inspecting the
+    instance shows its `runtime` in the resolved form, and none where it was given none. A
+    runtime provider that is registered and not yet ready is accepted, as PLC-018 accepts a
+    node that is not ready, and PRV-007 says what a setup then reports. A retired one is
+    rejected because it can never run or stop anything, so the shutdown of an instance that
+    named it could never be confirmed, under LIF-024. The engine's own runner runs only on the
+    machine that `local` represents, under PRV-003 and PRV-019, so an instance that has an item
+    that is run and names no `runtime` is placed only where `local`'s hostname label matches,
+    under PLC-007, as a RuntimeClass's scheduling confines its Pods. An instance names its
+    runtime provider as a Pod names its `runtimeClassName`, and an Interface, a Pool or a
+    Conduit gives no `runtime`, under OBJ-013. Running an instance on another runtime provider
+    means instantiating another instance, as for a placement under PLC-009. A runtime provider
+    whose contract says that it confines what it runs, so that it reaches targets only through
+    the engine, is picked in the same way, and only it could make a restriction enforced,
+    although this version reports every restriction as mediated, under ACC-027. While an
+    instance that exists names a runtime provider, that provider is not retired, under PRV-020.
+  vectors: []
+
+- id: PRV-007
+  layer: convention
+  level: must
+  when: >-
+    A setup of an instance comes to the part that runs it, under TPL-012, or a retirement asks
+    for its run to serve its retire hook, under TPL-018; an implementation item that is run is
+    selected for the instance; and its runtime provider, asked with `inspect-run.v1`, does not
+    report the run running.
+  then: >-
+    Where the runtime provider reports the run `stopped`, the engine asks it for the run with
+    `run.v1`, giving `instance`, the instance's ID, which names the run; `item`, that
+    implementation item; in `packageArguments` and `environment`, under the names that the item
+    gives them, the values that the item's `packageArguments` and `environment` take from the
+    instance's configuration, each as a string: a string as it is, a number in the form that
+    RFC 8785 gives it, and a boolean as `true` or `false`; in `secrets`, apart from them, under
+    its own `environment` and `packageArguments` and by the same names, the values read under
+    SEC-010; in `identity`, what the mechanism of DL13 gives the run, under the names that
+    PRV-022 fixes, every file that PRV-022 names among it but `tls.crt` and `tls.key`, which it
+    gives where DL13 states; and in `machine`, the hostname and the labels of the machine that
+    the instance's node represents. A place that holds null gives no variable and no argument.
+    The engine then reaches the server at the `url` that the run returns or, on its own runner,
+    over the process's stdio. It asks no runtime provider other than its own runner for the run
+    of a `command` item whose program the manifest gives as a relative path, under MAN-010,
+    whether or not SUB-010 has resolved it against a directory: that part ends failed, and
+    nothing is run. Where the runtime provider reports the run `unknown`, the engine asks for no
+    run, and the part is not dispatched and reports unavailable.
+  observable: >-
+    An item is run where it is reached by `command` or `package`; one reached by `remote` is
+    connected to under IFC-041. The run is asked for only once the parts before it in TPL-012
+    have succeeded, so the instance's declared Conduits are open; in a retirement it is asked
+    for only where the retire hook is to be dispatched, under TPL-018. The runtime provider runs
+    the item on the machine of the instance's node, under PRV-019, and its server stands behind
+    a gate, under PRV-025, to which the engine sends nothing until the server's side has proved
+    who it is, under IFC-017. No run is asked for an instance whose machine is reported
+    unreachable or omitted, under PLC-023, or whose node was declared lost, under PLC-027 and
+    TPL-012, so `machine` always holds the machine of a node that is not retired. A name is in
+    `environment` or under `environment` in `secrets`, never both, and a place that holds null
+    is left out of `environment`, `packageArguments` and `secrets` alike; what becomes of an
+    input of the Package that is given no value, its `default` among it, is server.json's,
+    applied by whoever composes the command line. No value of a variable of the engine's own
+    environment is given in the run's inputs, under SEC-020; what the engine's own runner passes
+    to the process beside them is PRV-023. A program at a relative path is a file on the machine
+    the engine runs on, under MAN-010, which another runtime provider would not find. Where the
+    runtime provider reports the run running, nothing is asked for and the part counts as
+    succeeded, so a further setup leaves a running run as it is. Where it reports `unknown`, as
+    where it cannot reach the run's machine while the machine provider still reports that
+    machine reachable, a run may still be running there, and asking for another could start a
+    second that presents as the same instance, as Kubernetes warns that making a Pod again on
+    silence can duplicate one that still runs. No operation settles a run's state: the part of
+    every setup of the instance that asks for the run, and a retire hook that needs it, reports
+    unavailable for as long as the provider so reports. An actor sees it in the condition
+    `Running`, under PRV-009, and may wait until the provider reports the run `running` or
+    `stopped`; retire the instance, whose stop is still asked for under PRV-008, and unregister
+    it under LIF-017; or, where its node is not `local`, declare that node lost under PLC-017.
+    Where the runtime provider is not ready, the part is not dispatched and reports
+    unavailable. A result of a runtime provider that holds no `url` fails
+    validation, and is read under PRV-005: the part ends unknown, since the run may have
+    started, and a retirement's stop ends it, under PRV-008. The run is named by the instance's
+    ID alone, and is asked for only where the provider reports it `stopped`, so one run serves
+    one instance; TPL-019 keeps a template to one item that is run. Each call is a provider call
+    under PRV-005.
+  vectors: []
+
+- id: PRV-008
+  layer: convention
+  level: must
+  when: >-
+    A retirement of an instance for which an implementation item that is run is selected comes
+    to the stop, under TPL-009.
+  then: >-
+    The engine asks the instance's runtime provider to stop its run with `stop.v1`, naming the
+    instance's ID and giving, in `machine`, the machine of the instance's node, under PRV-027.
+    Stopping a run that is not running succeeds.
+  observable: >-
+    The stop comes after the retire hook, whatever the hook's outcome, under TPL-009, and counts
+    under OPS-022 as a part that is not optional. Where the runtime provider cannot tell whether
+    the run stopped, the stop ends unknown, and so does the retirement: an actor settles it by
+    inspecting the instance under PRV-009, and reconciles it under OPS-014. Where the runtime
+    provider is not ready, the stop is not dispatched and reports unavailable, as under PRV-007,
+    and so it is where the instance's machine is reported unreachable or omitted, under PLC-023.
+    The runtime provider that the instance names is not retired while the instance exists, under
+    PRV-020, so there is one to ask while the instance exists. A further retirement under
+    LIF-026 asks for the stop again, and it succeeds where nothing runs. A request to unregister
+    a retired instance asks for the stop once more, under LIF-036, and what a runtime provider
+    does with a stop that it cannot carry out now is PRV-021. For an instance for which no setup
+    was ever dispatched, no stop is asked for, under LIF-025. The call is a provider call under
+    PRV-005.
+  vectors: []
+
+- id: PRV-009
+  layer: convention
+  level: must
+  when: >-
+    An instance for which an implementation item that is run is selected is inspected.
+  then: >-
+    Its status reports a condition whose `type` is `Running` and whose `status` is `True`,
+    `False` or `Unknown` as the state that its runtime provider's `inspect-run.v1` last gave is
+    `running`, `stopped` or `unknown`, with the time of that report in `lastHeartbeatTime` and
+    a `source` that names the runtime provider.
+  observable: >-
+    An actor settles a setup or a retirement of unknown outcome by reading this condition, and
+    reconciles it under OPS-014: the run is named by the instance's ID, and `reconcile.v1` names
+    no handle. Where the runtime provider has not reported the run's state, the condition's
+    `status` is `Unknown` with no time, under OBS-003. How often the engine asks
+    `inspect-run.v1` of its own accord is DL5 of the implementation-defined list, and each call
+    gives the machine of the instance's node beside its ID, under PRV-027. Its result may also
+    give `url`, the URL at which the run's server is reached now, where it has moved since the
+    run began, and the engine then reaches the server there, under IFC-017. The condition never
+    changes the lifecycle state, under LIF-011.
+  vectors: []
+
+- id: PRV-010
+  layer: convention
+  level: may
+  when: >-
+    A run stops without the engine asking for it to stop.
+  then: >-
+    Its runtime provider may restart it under its own restart policy, with the values it
+    was given for that run.
+  observable: >-
+    Whether and when a run is restarted is the runtime provider's own restart policy, as
+    `Restart=` is systemd's, `restart:` Compose's and `restartPolicy` Kubernetes', and the
+    language states none. The engine makes no read of a secret because of a restart, under
+    SEC-014, and dispatches nothing because of it. Inspecting the instance shows the run's state
+    as the provider last gave it, under PRV-009.
+  vectors: []
+
+- id: PRV-011
+  layer: convention
+  level: must
+  when: >-
+    A runtime provider is given values in the `secrets` of a provider call to `run.v1`.
+  then: >-
+    It delivers each value, by its own means, as the variable or the argument under whose name
+    it is given, and carries it to a machine other than the one that its own server runs on
+    only over a channel that authenticates that machine and keeps the value confidential; it
+    puts the value nowhere else; and its contract states where it keeps the value, and that
+    channel.
+  observable: >-
+    Docker keeps such a value in the container's configuration, containerd in the OCI
+    `config.json`, and systemd in the unit. A runtime provider may instead hand the value over
+    as a file, as systemd's `LoadCredential=` and Compose's `secrets:` do, and set the variable
+    from the file. SSH, and TLS that checks the certificate of a Docker daemon, are such
+    channels to a daemon on another machine, as Docker's guidance on protecting its daemon gives
+    them; a daemon's TCP socket without TLS is not. The place where a runtime provider keeps the
+    value is inside the domain of trust of the secret, as the machine that the engine runs on
+    is, and so are the run's machine and its gate, for what the run serves. A restart under
+    PRV-010 reuses the value it holds.
+  vectors: []
+
+- id: PRV-012
+  layer: convention
+  level: must
+  when: >-
+    A runtime provider is asked with `run.v1` to run a `package` item whose `registryType` is
+    not one that its contract says it runs, or whose `transport` is of a `type` that its
+    contract does not say it runs.
+  then: >-
+    The run ends failed, and nothing is run.
+  observable: >-
+    The part of the setup that asked for the run has the outcome failed, under OPS-022. Which
+    registry types a runtime provider runs, such as `npm`, `pypi` or `oci`, is part of its
+    contract, as the task drivers that a Nomad client offers are; a user who needs another picks
+    another runtime provider, under PRV-006. So is which transports it runs: the engine reaches
+    the server of a run that any provider but its own runner makes over Streamable HTTP, under
+    IFC-017, so a provider runs a `package` whose `transport` is of the `type` `stdio` only by
+    bridging it behind its gate, under PRV-025, as ToolHive carries HTTP to a container's
+    standard streams, and otherwise ends its run failed here.
+  vectors: []
+
+- id: PRV-013
+  layer: convention
+  level: must
+  when: >-
+    A Resource would be instantiated whose type offers `machine-provider.v1` or
+    `package-source.v1`, and its owner is not `system`; or, for a machine provider, another
+    machine provider exists that is not retired; or, for a package-source provider, another
+    that is not retired claims one of the schemes that its configuration lists under `schemes`.
+  then: >-
+    It is not instantiated: at any time at most one machine provider, and for each URI scheme
+    at most one package-source provider, is not retired, and each is owned by `system`.
+  observable: >-
+    Resolving returns a diagnostic naming the Resource and, where another provider stands in the
+    way, that provider, and the registration reports invalid under OBJ-023. To change machine
+    provider, an actor retires the one in force and registers another. Retiring it retires no
+    node, under PLC-026. While none is in force, the engine's own machine provider reports only
+    the machine the engine runs on, under PRV-003, so every other node counts as omitted, under
+    PLC-023, until a provider reports its machine. A provider that reports another form of a
+    hostname, short where the earlier one reported it fully qualified, leaves the earlier nodes
+    omitted and registers new ones: an earlier node is retired by an actor once no other
+    instance is placed on it, under PLC-011, or declared lost by the root Interface, under
+    PLC-017. A runtime provider is not limited in this way: several may exist, owned by any
+    Pool, and each instance names its own under PRV-006.
+  vectors: []
+
+- id: PRV-014
+  layer: convention
+  level: must
+  when: >-
+    The engine asks the machine provider for its machines with `list-machines.v1`.
+  then: >-
+    The result gives, for each machine, its `hostname`, in canonical form, trimmed and
+    lowercased; its `labels`, which hold `kubernetes.io/hostname`, whose value is the hostname,
+    and `kubernetes.io/os` and `kubernetes.io/arch`, whose values are those that Go gives `GOOS`
+    and `GOARCH`; and its `state`, which is `reachable`, `unreachable` or `gone`, and `gone`
+    only where the provider knows that the machine no longer exists. It gives no hostname twice
+    and none longer than 63 characters, the most that a label's value holds, and the provider's
+    contract states which name of a machine it reports.
+  observable: >-
+    These are the well-known labels of Kubernetes, so `kubernetes.io/os: linux` and
+    `kubernetes.io/arch: arm64` mean on every machine provider what they mean on a Kubernetes
+    Node. A provider may report other labels too. Labels are reported status and never
+    configuration: no document and no operation sets one. A cloud's API that reports a server
+    deleted is such knowledge, and silence is not: a machine that is only cut off may come back
+    with its runs, as Kubernetes warns that deleting a Pod by force on silence can duplicate a
+    Pod that is still running, and what a machine reported gone retires is PLC-024. One that the
+    provider cannot reach is `unreachable`, and one that a report omits counts as unreachable,
+    under PLC-023. A report that gives one hostname twice is not used, and counts as a report
+    not received, under DL5. The engine's own machine provider reports the machine the engine
+    runs on, reachable, under the engine's own hostname, under PLC-026. How often the engine
+    asks is DL5 of the implementation-defined list; what a machine reported unreachable means is
+    PLC-023, and what one reported gone retires is PLC-024. A machine whose canonical name is
+    longer is reported under a name that fits, as its provider's contract states, such as the
+    part before the first dot, which RFC 1035 keeps to 63 characters as a DNS label. The
+    engine's own machine provider reports the engine's own hostname, under PRV-003, so an engine
+    whose operating system's hostname is longer is configured with another, under PLC-026 and
+    DL5.
+  vectors: []
+
+- id: PRV-015
+  layer: convention
+  level: must
+  when: >-
+    An Agent or a Resource for which an item that is run is selected is instantiated with no
+    placement given, other than one that PRV-002 places on `local`: its instance document gives
+    none or, for the Resource of a Pool's entry, no input supplies one.
+  then: >-
+    The engine asks the machine provider with `place.v1`, giving the instance's ID and the label
+    selector of PLC-007, and the provider names one machine that it reports reachable and whose
+    labels match the selector. The instance's placement is the node that represents that machine
+    under PLC-026. Where the provider names none, the instance is not instantiated, unless a
+    node that is not retired, other than `local`, has labels that match the selector and its
+    machine is reported unreachable or omitted. In that case, and where the machine provider is
+    not ready, its call ends with no result, or it names a machine for which no node represents
+    yet, the request that would instantiate the instance is not dispatched and reports
+    unavailable.
+  observable: >-
+    The call is a provider call under PRV-005, made while the engine decides the request that
+    would instantiate the instance, before it is dispatched. Where the instance is not
+    instantiated, the document that would make it is rejected, and a request under LIF-009 for a
+    replacement reports invalid. Unavailable is reported as PKG-024 has a request to install
+    report it where a package-source provider is not ready, and as the Kubernetes scheduler
+    keeps a Pod pending until it can place it: the same request made later is decided as any
+    other. The provider places only on a machine it has reported, as the Kubernetes scheduler
+    places a Pod only on a Node that has registered. The placement is then checked under PLC-007
+    as any other is, and is fixed for life, under PLC-009. For an instance that has an item that
+    is run and names no `runtime`, the selector holds the hostname of the machine that `local`
+    represents, so the provider names that machine or none; where the type or an item names
+    `kubernetes.io/hostname` with another value, no node matches, under PLC-007, so the provider
+    is not asked, and the instance is not instantiated, as where it names none. A provider of
+    one machine, and the engine's own machine provider, name that machine or none.
+  vectors: []
+
+- id: PRV-016
+  layer: language
+  level: must
+  when: >-
+    A Type contract that offers `package-source.v1` is read.
+  then: >-
+    Its `schema` requires `schemes`, a list of at least one URI scheme. A Type that offers
+    `package-source.v1` and whose `schema` does not require it is rejected when its package is
+    installed or its project is submitted.
+  observable: >-
+    Installation or submission returns a diagnostic naming the Type. A package-source provider
+    claims the schemes that its configuration lists under `schemes`, as Git picks the remote
+    helper `git-remote-<scheme>` for a URL. A scheme is written as RFC 3986 writes one, and is
+    compared with the scheme of a `fetch` without regard to case.
+  vectors: []
+
+- id: PRV-017
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to install a package that is not installed, and the archive is to be fetched
+    from the request's `fetch`.
+  then: >-
+    Where a package-source provider that is not retired claims the scheme of the `fetch`, the
+    engine fetches the archive with that provider's `fetch-package.v1`, giving the package's
+    `address`, `version`, `digest` and `fetch`, and takes the archive from its output `archive`.
+    Where none claims it and the scheme is `https` or `file`, the engine fetches the archive
+    itself. Either way the archive is checked against the digest under PKG-026.
+  observable: >-
+    So moving a package from one server to another, or into a folder, changes one URL, and on
+    every engine. A `fetch` whose scheme neither a provider nor the engine accepts is PKG-023.
+    Where the package-source provider is not ready, or the archive cannot be fetched now, the
+    request reports unavailable under PKG-024. A `fetch` carries no credential: a provider takes
+    one by its scheme's own mechanism, as netrc and Docker's credential helpers give one. The
+    call is a provider call under PRV-005, made before the request to install is dispatched.
+  vectors: []
+
+- id: PRV-018
+  layer: convention
+  level: must not
+  when: >-
+    The engine establishes which instance sent a request, under IFC-022.
+  then: >-
+    It takes the address, the machine, the network, the runtime provider or the run that a
+    request came from as establishing which instance sent it.
+  observable: >-
+    Only what the request presents establishes the instance, by the mechanism of IFC-022, and a
+    request that crosses machines carries cryptographic proof of the instance that sent it.
+    Every run, on the engine's own runner as under any other runtime provider, is given what it
+    presents, and the engine's address, in `identity`, under PRV-022 and PRV-003. A connection
+    from the server at the `url` that a run returned, or from the address of a machine,
+    attributes the request to no instance, and neither does a VPN or a network policy, which
+    names a machine and never a run. A certificate that mutual TLS presents once for a
+    connection is part of what each request on it presents, under IFC-022, and not where the
+    request came from. A runtime provider or a machine provider can so be swapped without
+    changing who may reach what.
+  vectors: []
+
+# --- Added by the coverage check of ruling 41 (docs/proposals/ruling-41/log-integration.md,
+# --- "Coverage check"): an instance runs on the machine of its location, which ruling 40
+# --- (point 3b, revised) keeps among Conduit's own promises, and a runtime provider that an
+# --- instance names is not retired while that instance exists.
+
+- id: PRV-019
+  layer: convention
+  level: must
+  when: >-
+    A runtime provider is asked with `run.v1` to run an item for an instance.
+  then: >-
+    It runs the item on the machine given in `machine`, and on no other. Where it cannot run the
+    item on that machine, the run ends failed, and nothing is run.
+  observable: >-
+    An instance runs on the machine of its placement, so an absolute path in its configuration
+    is a path on that machine, under PLC-020, and two instances whose nodes report one
+    `kubernetes.io/hostname` label run on one machine, as PLC-013 decides. The part of the setup
+    that asked for the run has the outcome failed, under OPS-022. The engine's own runner runs
+    only on the machine the engine runs on, under PRV-003: asked to run an instance placed on
+    any other node, it ends the run failed. On which machines a runtime provider can run items
+    is part of its contract, as which registry types it runs is under PRV-012. The machine
+    provider places an instance under the selector of PLC-007, which, for one that has an item
+    that is run and names no `runtime`, holds the hostname of the machine that `local`
+    represents.
+  vectors: []
+
+- id: PRV-020
+  layer: convention
+  level: must
+  when: >-
+    A retirement of a Resource whose type offers `runtime-provider.v1` would be dispatched, by
+    a request of an actor or within `retire-with-resources.v1`, and an instance that exists
+    names that Resource in `runtime`, retired or not.
+  then: >-
+    The retirement is not dispatched, and reports conflict.
+  observable: >-
+    The runtime provider and the instances that name it are as they were, and a diagnostic in
+    the result names each such instance, as IFC-025 states for what a request that is not
+    dispatched says beyond its reason. An instance names its runtime provider for its whole
+    life, under PRV-006, and every retirement of it, and a request to unregister it, asks that
+    provider to stop its run, under PRV-008 and LIF-036, so the provider is retired only once
+    every instance that names it has been removed or unregistered, as a node is under PLC-011;
+    once it is retired, no new instance names it, under PRV-006. A stop that it still holds
+    then, as for a run on a machine it could not reach, survives its retirement where its
+    contract keeps it, under PRV-021, which only something that runs without the provider's
+    server can then carry out. Kubernetes postpones removing a PersistentVolumeClaim while a Pod
+    that uses it exists; this promise answers conflict instead, as PLC-011 does for a node.
+    Within `retire-with-resources.v1` the Resources that name a runtime provider are retired
+    before it, under LIF-021. Where the actor is not permitted, OPS-023 gives refused first.
+  vectors: []
+
+# --- Added by ruling 42 (docs/proposals/ruling-42/README.md), on the owner's answers D11, D17
+# --- and D8 in docs/proposals/ruling-41/open-decisions.md: what a runtime provider does with a
+# --- stop that it cannot carry out now, how a run reaches the engine and presents itself as its
+# --- instance, and what the engine's own runner passes to a process of the engine's own
+# --- environment.
+
+- id: PRV-021
+  layer: convention
+  level: must
+  when: >-
+    A runtime provider is asked with `stop.v1` to stop a run that it cannot stop now, as where
+    it cannot reach the machine that the run is on.
+  then: >-
+    Its contract states what it does with that stop, such as carry it out once it can reach the
+    machine, whether or not the instance still exists by then, and where it keeps the stop
+    meanwhile, in a place that neither a restart of the engine, on its machine or on another,
+    nor the provider's own retirement loses; and it does what it states.
+  observable: >-
+    The stop ends unknown, since the provider cannot tell whether the run stopped, under
+    PRV-008. Carrying the stop out once the provider reaches the machine again is what the
+    kubelet does with what its Node should no longer run, and a disconnected Nomad client with
+    its allocations: the runtime provider plays the part of their node agents. The engine keeps
+    no memory of a run once its instance is removed: the last stop it asks for is the one that a
+    request to unregister the instance asks for, under LIF-036, so what becomes of a run left on
+    a machine that comes back after its node was declared lost is what the runtime
+    provider's contract states under this promise. The provider's own server runs on the
+    engine's own runner, under PRV-002: it ends when the engine stops, runs again only when the
+    engine next has a call to make of it, under PRV-026, which for a provider that no instance
+    names may be never, and does not run again once the provider is retired, once no instance
+    names it, under PRV-020 and PRV-008. A stop that only that server carries out so waits while
+    the server does not run, and is never carried out once the provider is retired; a contract
+    under which the provider does what it states through both keeps the stop where something
+    that runs without that server carries it out, such as the provider's own part on the run's
+    machine, which stops the run itself once it is cut off for long enough, as a disconnected
+    Nomad client stops its allocations after `stop_on_client_after`, and then keeps nothing on
+    the engine's side. The engine asks no other provider for the stop.
+  vectors: []
+
+- id: PRV-022
+  layer: convention
+  level: must
+  when: >-
+    A runtime provider is given `identity` in a provider call to `run.v1`.
+  then: >-
+    It delivers what `identity` holds, which is under these names and no other: under
+    `environment`, `CONDUIT_URL`, the engine's address, and `CONDUIT_IDENTITY_DIR`, a directory,
+    each to the run as that variable, in place of any value that the variable would take from
+    elsewhere, such as a default that the item's Package declares; and under `files`, keyed by
+    their paths in that directory, `ca.crt` and `jwks.json`, the trust bundle, `engine-id`, the
+    ID by which a credential names the engine, `token`, a signed token in the form of a
+    JWT-SVID, and, where `identity` holds them, `tls.crt` and `tls.key`, a certificate in the
+    form of an X509-SVID and its private key, each as a file at that path, as the run sees it.
+    It puts them nowhere else, apart from the run's gate, which uses them only for its means
+    under PRV-025, and it carries and keeps them as PRV-011 has it carry and keep the value of a
+    secret. Where it gives `CONDUIT_URL` as the run sees it, the value keeps the engine's
+    address whole: its scheme, host, port and path.
+  observable: >-
+    `identity` is what the mechanism of DL13 gives the run so that it reaches the engine's
+    server, presents itself as the instance and, behind a gate, checks the engine's proof and
+    proves who answers, under IFC-022, PRV-025 and PRV-028, as the `envs` and `mounts` of the
+    Container Runtime Interface's `ContainerConfig` carry a container's. The names are fixed so
+    that a harness or a gate written once works under every engine, as Kubernetes fixes the
+    paths of the token and the root certificate that it mounts in a Pod, and the keys of the
+    certificate and the private key of a TLS Secret; a variable names their directory, as
+    systemd's `CREDENTIALS_DIRECTORY` does, so that runs that share a machine, as on the
+    engine's own runner, each have their own. The engine gives every file but `tls.crt` and
+    `tls.key` to every run, and those two where the mechanism uses mutual TLS for the run or the
+    run's server stands behind a gate, under PRV-007 and DL13. The files are in PEM, apart from
+    `token`, which holds the token alone, `engine-id`, which holds the ID alone, and
+    `jwks.json`, a JWK Set of the keys that check a token that the mechanism signs, as a SPIFFE
+    trust bundle carries its JWT authorities beside its X.509 ones. `ca.crt` holds the root
+    certificates from which the mechanism issues every credential, and those from which the
+    certificate at the engine's address is issued where they are others, such as a public
+    certification authority's, under DL13: a run checks who answers at `CONDUIT_URL` by TLS
+    against them and the host of that URL, which no credential of an instance names. A gate
+    checks that the engine's proof names the ID in `engine-id`, under PRV-025, so that no
+    instance's credential passes it. `token` and `tls.crt` name the instance by its ID, under
+    IFC-022, and `token` is what the run sends as the protocol's authorization at the engine's
+    address, under IFC-042. The provider may give the values of both variables as the run sees
+    them, and an address so given keeps the engine's address whole, as a line in a hosts file or
+    a tunnel on the same port does, so that TLS, the token's audience and the protocol's
+    authorization hold as they are: RFC 9728 has a client use protected resource metadata only
+    where its `resource` is identical to the URL that the client used, and the protocol's
+    canonical URI holds the port and the path. For a run on the engine's own runner whose
+    process ends when the engine stops, on an engine that can neither restart on another machine
+    nor run as several parts, `CONDUIT_URL` may be an `http` URL on loopback, as DL13 states,
+    where `ca.crt` checks nothing, so a run there needs no certificate configured. Every other
+    run is given an `https` URL: a run that outlives the engine, or one on an engine that moves,
+    would otherwise send its `token` to whatever program takes that address meanwhile. A
+    template whose item binds the name of either variable, in any case of its letters, is
+    rejected, under MAN-018, and the engine's own runner passes no variable of the engine's
+    environment of either name, under PRV-023, so no configuration sends a run's credential to
+    an address of its choosing. In this version a credential lasts as long as its instance,
+    under DL13, and nothing renews it: no provider call carries new content during a run, and
+    the engine checks on every request that the instance a credential names still exists, under
+    IFC-022 and IFC-032, so it ends a credential's use without renewing it. The run, after a
+    restart under PRV-010 too, presents the credential it was given; replacing a file's content
+    in place while the run lasts, as the kubelet refreshes a projected service account token, is
+    left for renewing a credential on the run's machine, which this version does not do. No
+    record holds a value of `identity`, and no inspection result shows one, under PRV-024. The
+    place where the provider keeps them, and the run's machine, hold a credential that presents
+    as the instance while the instance exists. The engine's own runner delivers them to the
+    process it starts in the same way, under PRV-003.
+  vectors: []
+
+- id: PRV-023
+  layer: convention
+  level: must
+  when: >-
+    The engine's own runner starts the process of a run.
+  then: >-
+    It gives the process the variables that the run is given in `environment` and under
+    `environment` in `secrets`, and of the engine's own environment only these, each where the
+    engine's environment has it: `HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER` or, on
+    an operating system on which a process needs others in their place, such as Windows, those
+    that DL16 names, in either case only where the value does not begin with `()`; and the
+    variables that a list set by the user on the engine's own runner names. Where a variable
+    that the run is given, in `environment`, in `secrets` or in `identity`, has the name of one
+    of these, the run's value is the one given.
+  observable: >-
+    The six are those that the stdio clients of the Model Context Protocol's TypeScript and
+    Python SDKs pass by default on Linux and macOS, and those clients skip a value that begins
+    with `()`, the form in which a shell exports a function; on Windows they pass another set,
+    such as `SYSTEMROOT`, `TEMP` and `USERPROFILE`. The list names further variables as
+    systemd's `PassEnvironment=` does. So the runner passes no token exported in the shell that
+    started the engine, such as `GITHUB_TOKEN`, unless the list names it, and passes a proxy
+    setting, `AWS_PROFILE`, `KUBECONFIG`, `LANG` or `SSH_AUTH_SOCK` only where the list names it
+    or the item binds it. A variable that the list names reaches every process that the runner
+    starts, outside every Conduit. A process that runs as the engine's operating-system user may
+    still read the engine's own environment, where the kernel admits it, so a token belongs in a
+    store and not in the engine's environment. The variables of `identity` are not of the
+    engine's environment, and the runner delivers them under PRV-022: where the list names
+    `CONDUIT_URL` or `CONDUIT_IDENTITY_DIR`, the run still gets the value that `identity` gives,
+    so it reaches the engine that ran it and presents its own credential. The run's inputs hold
+    no value of the engine's environment, under SEC-020. How the user sets the list, which
+    variables the runner passes in place of the six, and the process's working directory, user
+    and login session are DL16 of the implementation-defined list.
+  vectors: []
+
+# --- Added by the verification of ruling 42 (docs/proposals/ruling-42/log-integration.md,
+# --- "Verification"), on the owner's answer D17: what no record holds of `identity`.
+
+- id: PRV-024
+  layer: convention
+  level: must not
+  when: >-
+    The engine gives a run `identity`, in a provider call to `run.v1` under PRV-007, or to its
+    own runner without a call under PRV-003.
+  then: >-
+    It puts what `identity` holds, or any part of it, in a record, an inspection result, an
+    observation, a diagnostic, any result or the `_meta` of any request, whatever the runtime
+    provider's type states under `records`.
+  observable: >-
+    The record of the provider call to `run.v1` holds no part of `identity`, even where the
+    runtime provider's type keeps a call's inputs under `records`, as CTR-004 gives it, and no
+    inspection result, observation or diagnostic shows one. What `identity` holds presents as
+    the instance, under IFC-022, so whoever could read it could act as the instance through its
+    Conduits. SEC-018 holds the value of a secret to the same rule, and the runtime provider
+    keeps `identity` as it keeps such a value, under PRV-022.
+  vectors: []
+
+# --- Added by ruling 43 (docs/proposals/ruling-43/README.md), accepting the proposal on work
+# --- across machines (docs/proposals/multi-machine/README.md): the gate in front of every
+# --- server that the engine does not run itself (D5), the run of a provider made again after
+# --- the engine restarts (Q3), and the machine given to `stop.v1` and `inspect-run.v1`, which
+# --- settles X10 of the verification of ruling 42
+# --- (docs/proposals/ruling-42/log-integration.md).
+
+- id: PRV-025
+  layer: convention
+  level: must
+  when: >-
+    A runtime provider other than the engine's own runner runs an item for an instance, under
+    PRV-007; or an item reached by `remote` that is not `plain` serves an instance, under
+    IFC-041.
+  then: >-
+    The server stands behind a gate, which lets a request reach it only where the request
+    carries cryptographic proof that an enforcement point sent it, a credential that names
+    one, by the mechanism of DL13 or, for a server reached by `remote`, a token obtained
+    with it under IFC-041, in a form that no server that receives that proof can present to
+    another. The gate is the server itself, something between the network and the server or,
+    for a run, the runtime provider's own end of a channel that it holds to the run's machine
+    and that authenticates that machine and keeps what crosses it confidential and unaltered.
+    Nothing on the server's machine reaches the server other than through the gate, apart from
+    root and, for a run, the operating-system user or group that the runtime provider uses there
+    for its own means, which none of its runs runs as or in. For a run, the runtime provider's
+    contract states its gate, that user or group, and how long the gate takes to close a
+    server's stream once the connection that carries requests to the server from the enforcement
+    point has gone silent, which is once the gate's own check of that connection's liveness,
+    such as an HTTP/2 PING or a TCP keepalive that it sends, goes unanswered.
+  observable: >-
+    In this version the engine is the only enforcement point, so only the engine's requests
+    reach such a server. A run's gate finds the ID that the engine's proof names in `engine-id`
+    of `identity`, under PRV-022, and the operator of a server reached by `remote` configures
+    it, under IFC-041; a credential that the mechanism issues to an instance names that
+    instance, and does not pass. The engine sends nothing to such a server until the server's
+    side has proved who it is, under PRV-028 and IFC-041. A server takes `caller`, `filters` and
+    `config` as a request gives them, under IFC-006, so the gate is what makes a Conduit binding
+    on a server that the engine does not run itself, a secret Resource's among them, and keeps
+    an Agent's run from being asked for work outside every Conduit. A request without the proof
+    reaches nothing: under mutual TLS its handshake fails, and under a signed token it is
+    answered with HTTP 401. Existing tools meet it: a mutual TLS proxy beside the server, as
+    ghostunnel admits a certificate by its URI, with the server on a Unix socket that only the
+    proxy's user can open or on loopback in a network namespace that no other run shares; a
+    service mesh in strict mutual TLS; a proxy that checks a token whose audience is the
+    instance's ID, as Envoy's `jwt_authn` checks a configured audience, where it admits a token
+    only on the route to the server of the instance that the token's audience names; for a
+    `remote` server, the protocol's own authorization, with the server's canonical URI as the
+    token's audience; a bridge on the run's machine that checks the proof and writes to the
+    server's standard input; or a container run with its standard input attached over the SSH
+    channel to a Docker daemon, which leaves the server no listener on the run's machine, with
+    the check at the provider's own end, which serves the instance's certificate under PRV-028
+    and ends with the engine, under PRV-002, taking the run's channel with it, so that its
+    contract, in stating its gate, states what then becomes of the run. A tunnel carries a
+    request to one of these and checks nothing. The engine presents its token to every run's
+    gate, under DL13, and a gate may pass it on to the server with the request, as a proxy that
+    checks only a certificate does: its audience is that instance's ID, which no other gate, no
+    item reached by `remote` and not the engine's address admits, so a server that receives it
+    can present it nowhere else. None of these is a gate: a network position,
+    such as an address, a VPN or a network policy, which names a machine and never a run, under
+    PRV-018; a value that is the same for every request, such as a header from configuration,
+    which a server that receives it can send on; an end that admits a request without the proof,
+    as a port that SSH forwards to loopback admits every process on its machine; and loopback
+    that other runs on the machine share. A run that ran as the excepted user or in the excepted
+    group would reach every server on its machine around its gate, which is why none does. A
+    connection on which the engine waits for a long result is not silent, since its HTTP/2 or
+    TCP stack answers the gate's check of itself, as RFC 9113 has every PING answered, and one
+    that a cut has broken is. Once the bound passes, the gate closes the server's stream, which
+    the protocol has the server treat as a cancellation, whether it answers with a stream of
+    events or with one JSON response, though a server may notice it late and run its work to its
+    end meanwhile, under OPS-027. The engine's own runner reaches its processes over stdio,
+    under PRV-003, and is asked for no gate. A runtime provider that runs a `package` item whose
+    `transport` is of the `type` `stdio` bridges it behind its gate or ends its run failed,
+    under PRV-012. A server reached by `remote` that cannot be made to check the engine's proof
+    is used as `plain`, and is sent none of Conduit's keys, under IFC-007. A process that runs
+    as the engine's operating-system user can read what the engine makes its proof with, under
+    PRV-003, so the gate keeps out everything else, and not such a process. What `identity`
+    holds, the gate may use for its means, under PRV-022.
+  vectors: []
+
+- id: PRV-026
+  layer: convention
+  level: must
+  when: >-
+    After the engine restarts, or a part of it that held a provider's run stops while the engine
+    goes on, under DL17, the engine is to make a provider call to a provider whose type offers
+    `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, or to read a secret
+    through a secret Resource, that is not retired and whose run on the engine's own runner,
+    under PRV-002 or PRV-003, ended when the engine or that part stopped, and has not been asked
+    for since.
+  then: >-
+    Before the call or the read, the engine has its own runner run that provider again, as
+    PRV-007 and PRV-003 have it run an item, with each secret that the run needs read again
+    under SEC-010 for the caller of the setup that last asked for the provider's run, decided by
+    the provider's own Conduit to the secret Resource and the filters on that Conduit as they
+    stand when the read is made.
+  observable: >-
+    The servers of the runtime, machine and package-source providers are processes of the
+    engine's own runner, reached over stdio, under PRV-002, so they end when the engine stops,
+    or when the part of the engine that holds them stops, under DL17, and so does the process of
+    a secret Resource that names no `runtime`, under PRV-002 and PRV-003; DL16 leaves each to
+    this promise. The engine runs one again only for a call or a read that it must make, its
+    regular report from the machine provider under DL5 and a read again under SEC-023 among
+    them, and not because the run has ended, under OBS-004, and doing so starts no model work,
+    under IMP-002. An Agent's run on that runner is not run again so: a further setup asks for
+    it, under PRV-007. This is the run's counterpart of SEC-023: each read is a request with its
+    own access decision and record, under SEC-011 and SEC-015, and belongs to the setup that
+    last asked for the provider's run, whose caller it has, although that setup has ended. A run
+    that this promise makes is asked for by no setup, so after a further restart the reads are
+    again for the caller of that setup. Nothing is kept across the restart to stand in for a
+    value, under SEC-017. Where a read does not succeed, as where that Conduit has been closed
+    or a filter on it now refuses the read, nothing is run, under SEC-012, and the call or the
+    read is not made: what needed it reports unavailable, or, for a call that the engine would
+    make of its own accord, counts as a report not received, as where the provider's result of
+    `server/discover` lacks Conduit's extension, under PRV-005. So the secret Resources that a
+    provider reads belong on `local`: one placed on another node is not read for a runtime or a
+    package-source provider while its machine is reported unreachable or omitted, as until the
+    first report after a restart, under PLC-023. One that holds a secret of the machine provider
+    is read all the same, under PLC-023, since that provider's report is what ends that state,
+    and where its machine cannot be reached, no report arrives until the read succeeds. A
+    further setup of the provider leaves a running run as it is,
+    under PRV-007.
+  vectors: []
+
+- id: PRV-027
+  layer: convention
+  level: must
+  when: >-
+    The engine makes a provider call to `stop.v1` or `inspect-run.v1` for an instance's run.
+  then: >-
+    It gives in `instance` the instance's ID and in `machine` the machine of the instance's node
+    as the node's status holds it, whether or not the node is retired: in `labels`, the labels
+    that the status holds, and in `hostname`, the value of their `kubernetes.io/hostname` label.
+  observable: >-
+    `run.v1` is given `machine` in the same form, under PRV-007, since a node that is not
+    retired holds the labels last reported for the machine it represents, under PLC-026. So a
+    runtime provider that keeps no state of its own runs finds the run's machine in each call,
+    and can carry out a stop that it is asked for once more when a retired instance is
+    unregistered, under LIF-036 and PRV-021. A retired node represents no machine, under
+    PLC-026, and its status still holds the labels last reported for the one it represented,
+    under PLC-008. The instance's node exists while the instance does, under PLC-011, so the
+    call always has one to give. The record of the call names the instance in its `subject`,
+    under REC-002.
+  vectors: []
+
+# --- Added by the verification of ruling 43 (docs/proposals/ruling-43/log-integration.md,
+# --- "Verification"), on point 4 of the gate in the proposal on work across machines
+# --- (docs/proposals/multi-machine/README.md#the-gate-in-substance): what answers at a run's
+# --- `url` proves that it serves the instance.
+
+- id: PRV-028
+  layer: convention
+  level: must
+  when: >-
+    A runtime provider other than the engine's own runner reports a `url` for a run, in the
+    result of `run.v1` or of `inspect-run.v1`.
+  then: >-
+    What answers at that `url` proves by TLS, before it is sent anything, that it serves the
+    instance, with the certificate that `identity` holds in `tls.crt` for that run, which names
+    the instance's ID, whether it is the run's gate or the runtime provider's own end of its
+    channel to the run's machine.
+  observable: >-
+    This is the server's side of the check that IFC-017 has the engine make before it sends
+    anything, `server/discover` among it: the engine checks the certificate against the roots of
+    DL13 and the ID that it names, so a server that serves another instance, or a program that
+    has taken the address once the provider's process has ended, as after the engine restarts,
+    is sent nothing. A listener that proves nothing, such as one over unencrypted `http` on
+    loopback, is no proof: the provider's own channel carries a request on from its end to the
+    process it started, and that end presents the certificate. The certificate lasts as long as
+    the instance, under DL13, and the gate may serve it, under PRV-022, as the kubelet serves a
+    certificate that the Kubernetes API server checks under `--kubelet-certificate-authority`.
+    Where nothing at the `url` proves it, the engine sends nothing, and the part or the request
+    reports unavailable, under IFC-017. The engine's own runner returns no `url`, and reaches
+    its process over stdio, under PRV-003.
+  vectors: []

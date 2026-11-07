@@ -1,0 +1,27 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# an item binds no input that its Package marks `isRequired: true` to a place at which the
+# type's schema admits null (MAN-017), since a place that holds null gives no argument.
+# `listing`, the default implementation of `example.org/files#directory.list.v1` in
+# ../valid/files-package/, gives its required argument `--root` the place `/path`, and the
+# type `optional-listing.v1` requires `path` but lets it be null.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: optional-listing.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      path: {type: [string, 'null'], minLength: 1}
+    required: [path]
+  requires:
+    - example.org/files#directory.list.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: nullable-listing
+spec:
+  type: '#optional-listing.v1'

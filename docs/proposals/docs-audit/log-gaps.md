@@ -7,6 +7,9 @@ was edited except `tools/check_schemas.py` and this file, and nothing was commit
 followed are those of the
 [consolidation instructions](../reaudit/CONSOLIDATION.md#rules-for-every-edit).
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 "Row" names the row of GAPS.md that a change applies. "(c)" marks a change made only so that
 one part of the specification agrees with another that a row changed.
 

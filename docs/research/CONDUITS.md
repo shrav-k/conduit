@@ -4,7 +4,7 @@
 
 Updated: 2026-10-31. The five-family template/instance model, exclusive Pool ownership,
 Pool-managed shared service authentication, Pool-only Resource creation, typed handlers and explicit open/join intents are accepted. Broader interaction examples remain research; the current YAML draft is separate from this evidence.
-[DESIGN.md](../protocol/CONDUITS.md#conduits) records contracts; [REVIEW.md](../archive/reviews/CONCEPTUAL.md) records the settled direction and schema boundary.
+[DESIGN.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONDUITS.md#conduits) records contracts; [REVIEW.md](../archive/reviews/CONCEPTUAL.md) records the settled direction and schema boundary.
 No live login, deployment or provider mutation was performed for this research.
 
 The [messaging and networking investigation](#messaging-and-networking-investigation)
@@ -116,15 +116,15 @@ for later participation, with explicit authorized reuse of the same supporting R
 A transport outage while participation remains intact recovers the existing instance. One-time
 transfer completion/detachment details remain part of the communication contract to draft.
 
-Agentwatch demonstrates the separation: its room code persists posts before delivery,
+A private repository demonstrates the separation: its room code persists posts before delivery,
 keeps live membership in memory, and uses per-room ordering independently of the lifetime
 of an empty membership entry. Its explicit history-read tool pages stored messages without
 consuming an agent's inbox. These mechanisms support the distinction; they do not settle
 Conduit's retention, delivery, attention or topology policy. An older opening comment in
 the room module says nothing is stored; the later persistence path and current README
 describe the implemented history behavior.
-[Room implementation](https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/crates/agentwatch-server/src/rooms.rs)
-· [History read](https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/crates/agentwatch-mcp/src/tools/room_read.rs)
+Room implementation · History read: the private repository's room module and history-read
+tool, at commit `04025a6f8e3887b8c1152ea44930e1c429b75948`.
 
 The engine/plugin implementing a flow must identify its authority to access Pool-owned storage.
 A process serving two Agents must not silently use one participant's broader credentials
@@ -748,11 +748,12 @@ does not grant access to another Agent's private context. These are useful adapt
 adopting A2A wholesale or making its fixed task-state vocabulary Conduit's universal vocabulary
 is not necessary. [A2A 1.0 specification, §§3.3, 3.5](https://a2a-protocol.org/v1.0.0/specification/)
 
-**Local evidence.** Agentwatch at `04025a6f8e3887b8c1152ea44930e1c429b75948` persists accepted
-posts before fan-out, separates room history from live membership and bounds live queues. The
-Pi/Chord study contributes typed calls and snapshot/delta observation. Keep the existing source
-analysis rather than treating either as proof of durable Agent execution or adopting its room,
-expiry or wake policy. [Agentwatch room source](https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/crates/agentwatch-server/src/rooms.rs)
+**Local evidence.** A private repository at `04025a6f8e3887b8c1152ea44930e1c429b75948`
+persists accepted posts before fan-out, separates room history from live membership and bounds
+live queues. The Pi/Chord study contributes typed calls and snapshot/delta observation. Keep the
+existing source analysis rather than treating either as proof of durable Agent execution or
+adopting its room, expiry or wake policy. Room source: the private repository's room module, at
+commit `04025a6f8e3887b8c1152ea44930e1c429b75948`
 · [Pi/Chord synthesis](PI_CONNECTORS.md#three-proposed-interaction-families)
 
 Two foundational papers explain why these distinctions recur:
@@ -833,7 +834,7 @@ or special tracker abstraction in the core protocol.
 ## Evaluation cases
 
 The accepted first slice is retained messages and inspection. The
-[experiment packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) owns the current walkthrough.
+[experiment packet](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) owns the current walkthrough.
 MCP is the leading external capability surface; local internals can use in-process calls or IPC.
 This investigation selects no Signal, Matrix, MQTT, AMQP, NATS, Zenoh or A2A dependency.
 

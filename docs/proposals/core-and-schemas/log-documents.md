@@ -6,6 +6,9 @@ everything under `spec/core/` and `spec/schemas/`, `spec/promises/manifest.yaml`
 `tools/check_schemas.py` and the record. No other file was edited, and nothing was committed.
 The promise side is logged in [log-promises.md](log-promises.md).
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 "Item" names the row of APPLY.md, or the choice (C), point (P) or disagreement (D) of the
 record, that the change applies.
 

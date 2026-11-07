@@ -9,6 +9,9 @@ every finding a reader marked as needing a decision, and the unsafe ones. Every 
 is fixed as its reader proposes. Each row is the coordinator's choice and can be struck by the
 owner.
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 The rules for editing promises and the vocabulary are in
 [the consolidation instructions](../CONSOLIDATION.md).
 

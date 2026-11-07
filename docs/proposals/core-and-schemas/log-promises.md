@@ -8,6 +8,9 @@ every promise file under `spec/promises/` except `manifest.yaml`, every file und
 and nothing was committed. `spec/core/`, `spec/schemas/`, `spec/promises/manifest.yaml` and
 `tools/check_schemas.py` belong to Editor S and were only read.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 "Item" names the row of APPLY.md, or the choice (C), name (N), point (P) or disagreement (D) of
 the record, that the change applies. "(b)" marks a change made only so that a promise agrees
 with the accepted batch, as the brief's part (b) asks.

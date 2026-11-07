@@ -3,7 +3,7 @@
 > Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 Research: 2026-10-31. **Source evidence and lifecycle examples; no live provider work.**
-Read [the current construction contract](../protocol/LIFECYCLE.md#establishment-contracts-and-instance-state),
+Read [the current construction contract](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#establishment-contracts-and-instance-state),
 then the cases below and the [filesystem comparison](#filesystem-plugins-and-template-examples).
 This report extends [configuration research](CONFIGURATION.md) and the
 [Pi Durable investigation](PI_RUNTIME.md#pi-durable-in-depth).
@@ -583,7 +583,7 @@ different timeout behavior, and timing out either does not prove cancellation co
 The [review outcomes](../archive/reviews/CONCEPTUAL.md#review-outcomes) define the accepted boundaries.
 These cases illustrate the accepted R2 graph and R3 ownership/lifetime boundaries and support
 the accepted R6 configuration/export profile. Direct complete-instance creation, graph composition
-and the template/plugin/instance responsibility split are already accepted. The [schema packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) should
+and the template/plugin/instance responsibility split are already accepted. The [schema packet](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) should
 render their inputs, waits, outcomes and recovery together rather than reopen those foundations.
 
 ## Evidence gates before implementation and live experiments

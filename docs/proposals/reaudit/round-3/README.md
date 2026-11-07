@@ -31,7 +31,10 @@ Findings are resolved under ruling 37, without a ruling on each, and every choic
 this directory as the coordinator's. The coordinator's own reading of the ruling, which the
 owner has not confirmed, is that a finding goes back to the owner only where settling it would
 change what Conduit is for
-([who decides what](../../../AUDIT.md#who-decides-what-since-ruling-37)).
+([who decides what](../../../AUDIT.md#who-decides-what)).
+
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
 
 ## Known before the round
 

@@ -5,6 +5,9 @@ Owner ruling of 2026-11-05 (plan-audit ruling 32): every decision in the
 how to apply those decisions together with the findings that need no ruling. The log of what
 was done is appended at the end.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 ## Rules for every edit
 
 1. A promise keeps the exact form `id`, `layer`, `level`, `when`, `then`, `observable`,

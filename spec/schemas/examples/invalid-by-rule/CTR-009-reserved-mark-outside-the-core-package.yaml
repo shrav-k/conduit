@@ -8,8 +8,10 @@ metadata:
   name: directory.erase.v1
   description: Remove a directory and everything in it.
 spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
+  inputSchema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+    required: [path]
   effect: Removes the directory.
   reservedToRoot: true

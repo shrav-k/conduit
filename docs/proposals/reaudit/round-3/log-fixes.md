@@ -6,6 +6,9 @@ has not ruled on. The findings are in the reports of [reader 1](reader-1.md),
 [reader 2](reader-2.md), [reader 3](reader-3.md) and [reader 4](reader-4.md). The rules were
 those of [CONSOLIDATION.md](../CONSOLIDATION.md).
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 Edited: files under `spec/`, `tools/check_schemas.py` and `docs/OVERVIEW.md`. Nothing else
 under `docs/` was edited apart from this log. Nothing was committed or staged. No sub-reader
 was started: the read-through at the end was the editor's own.

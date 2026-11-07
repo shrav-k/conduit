@@ -6,6 +6,9 @@ entry points and the tracker. Finding numbers are those of the
 [older-text report](reader-older-text.md). Nothing under `spec/`, `docs/protocol/`,
 `docs/research/`, `docs/archive/`, `docs/authoring/` or the proposal records was edited here.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 ## What changed, by file
 
 | File | What changed | Findings and decisions |

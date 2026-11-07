@@ -1,13 +1,26 @@
-# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
-# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
-# and rounds 2 to 4 of the re-audit changed since rests on the coordinator's logged
-# decisions, which the owner has not ruled on, apart from those that ruling 38 accepted. See
-# README.md in this directory.
+# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
+# re-audit changed since is logged in the records that README.md in this directory names.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, changed the template `system`, which selects `pool.v1`, and `location`,
+# which has no input and no `config` (decision 8), and took `rename.v1` out of
+# `root-management` (decision 10) and the policy operations out of `root-access` (decision
+# 3a). The log is docs/proposals/ruling-41/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N2 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the template `location` to `node`, whose
+# type is `node.v1`, and location to node, "stand for" to "represent" and the machines provider
+# to the machine provider in the descriptions and below.
+# The editorial fixes of ruling 42 (the vocabulary audit's E23; log
+# docs/proposals/ruling-42/log-editorial.md) dropped NAM-020, which names no template, from the
+# promises that the template `node` encodes.
 #
 # The templates that first start instantiates (FST-005): those of the five first-start objects
 # and of the two Conduits of `root`, which are not first-start objects (FST-002). At first start
 # the engine instantiates them under the names FST-001 gives: the Pool `system` from
-# `system`; the location `local` from `location`; the Resources `management` and `access`,
+# `system`; the node `local` from `node`; the Resources `management` and `access`,
 # owned by `system`, from the templates of those names; and the Interface `root` from `root`,
 # whose two declared Conduits are made from `root-management` and `root-access`. The instance
 # documents are written out, as an example, in spec/schemas/examples/valid/first-start/: they
@@ -15,12 +28,12 @@
 # OBJ-002).
 #
 # Promises encoded:
-#   system           FST-001, FST-005, PLC-003 (it holds the default-location setting, which
-#                    names nothing until the control sets it)
-#   location         FST-001, FST-005, PLC-008, NAM-020. The
-#                    argument `facts` sets a location's facts when it is instantiated; after
-#                    that only the control `set-facts.v1` changes them. The template has no
-#                    `controls` map, so every control of its type is available (TPL-010)
+#   system           FST-001, FST-005 (the Pool that owns the nodes, `management` and
+#                    `access`, and every machine provider and package-source provider,
+#                    PRV-013)
+#   node             FST-001, FST-005, PLC-008, PLC-026. The engine instantiates it
+#                    for `local` at first start and for every other machine that the machine
+#                    provider reports, and nothing else does (FST-006)
 #   management       FST-001, FST-005
 #   access           FST-001, FST-005
 #   root             FST-001, FST-002 (one Conduit to `management` and one to `access`),
@@ -28,48 +41,36 @@
 #   root-management  FST-002, ACC-032 (it lists the operations reserved to the root Interface)
 #   root-access      FST-002, ACC-022 (it applies no bound)
 #
-# Each of `system`, `management`, `access` and `root` is instantiated once, at first start:
-# the first-start objects are identified by their IDs, and an instance document whose `from`
-# names one of those four templates is rejected (FST-006). `location` is instantiated for
-# every location.
+# No instance document is made from any of these five templates: `system`, `node`,
+# `management`, `access` and `root` (FST-006). The first-start objects are identified by their
+# IDs, and a name is fixed once its object is made (OBJ-011).
 #
 # A package's templates are not registered (NAM-013), so the template `system` and the Pool
 # `system` do not clash under OBJ-002. The declared Conduits of `root` have the local names
 # `management` and `access`, which gives the root Interface the tools `management.register.v1`,
-# `access.open.v1` and so on under IFC-012. Neither of those two Conduits is renamed
-# (LIF-022).
+# `access.open.v1` and so on under IFC-012.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool
 metadata:
   name: system
   description: >-
-    The template of the `system` Pool, which owns locations and the `management` and `access`
-    Resources.
+    The template of the `system` Pool, which owns nodes, the `management` and `access`
+    Resources, and the machine provider and the package-source providers.
 spec:
-  type: github.com/shrav-k/conduit/core#system-pool.v1
+  type: github.com/shrav-k/conduit/core#pool.v1
   config: {}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource
 metadata:
-  name: location
+  name: node
   description: >-
-    The template of a location. `facts` is what the location states about itself, such as its
-    host and whether it gives access to local paths.
+    The template of a node. The engine instantiates it for each machine that the machine
+    provider reports and that no node represents. It has no input and no configuration:
+    a node's labels are reported status.
 spec:
-  type: github.com/shrav-k/conduit/core#location.v1
-  inputs:
-    facts:
-      schema:
-        type: object
-        properties:
-          host: {type: string, minLength: 1}
-          localPaths: {type: boolean}
-      to: [/config/facts]
-      optional: true
-  config:
-    facts: {}
+  type: github.com/shrav-k/conduit/core#node.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource
@@ -119,7 +120,6 @@ spec:
   operations:
     - github.com/shrav-k/conduit/core#register.v1
     - github.com/shrav-k/conduit/core#replace.v1
-    - github.com/shrav-k/conduit/core#rename.v1
     - github.com/shrav-k/conduit/core#unregister.v1
     - github.com/shrav-k/conduit/core#inspect.v1
     - github.com/shrav-k/conduit/core#set-up.v1
@@ -142,6 +142,4 @@ spec:
   operations:
     - github.com/shrav-k/conduit/core#open.v1
     - github.com/shrav-k/conduit/core#close.v1
-    - github.com/shrav-k/conduit/core#apply-policy.v1
-    - github.com/shrav-k/conduit/core#remove-policy.v1
     - github.com/shrav-k/conduit/core#reconcile.v1

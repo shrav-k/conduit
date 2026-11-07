@@ -1,40 +1,50 @@
-# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
-# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
-# and rounds 2 to 4 of the re-audit changed since rests on the coordinator's logged
-# decisions, which the owner has not ruled on, apart from those that ruling 38 accepted. See
-# README.md in this directory.
+# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
+# re-audit changed since is logged in the records that README.md in this directory names.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, removed `system-pool.v1` and changed `location.v1`, which has no
+# configuration, offers no capability and lists no control (decision 8); took `rename.v1` and
+# the policy operations out of the `requires` of `management.v1` and `access.v1` (decisions 10
+# and 3a); and dropped `placement: {}` from every type, since `placement` is now an optional
+# label selector (decision 8a). The log is docs/proposals/ruling-41/log-core.md.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying row 13 of the
+# coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, said in the
+# description of `location.v1` that a location stands for a hostname in canonical form,
+# whichever machines provider reports it. The log is docs/proposals/ruling-42/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N2, N9 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed `location.v1` to `node.v1`, location to
+# node, "stand for" to "represent", the machines provider to the machine provider and the key
+# `placement` of a type to `nodeSelector`, in the description of `node.v1` and below.
+# The editorial fixes of ruling 42 (the vocabulary audit's E10 and E17; log
+# docs/proposals/ruling-42/log-editorial.md) call `node.v1` the type of every node, where the
+# description and the list below said the node type, which no promise says; and below, that the
+# engine implements no `get-secret.v1`, where it said that the engine serves no secret store.
 #
 # The Type contracts of the core package.
 #
 # Promises encoded:
 #   interface.v1    the basic Interface type (TPL-002: every Interface template has a type);
 #                   the type of `root` (FST-001)
-#   pool.v1         the basic Pool type (TPL-002); ACC-028, ACC-033 (a Pool's own operations);
-#                   CTR-004 (a Type of the family Pool offers `pool-management.v1`)
-#   system-pool.v1  the type of `system` (FST-001); PLC-003, PLC-016 (the default-location
-#                   setting and its control); CTR-006
-#   location.v1     the location type (PLC-008): a location's facts are stored configuration,
-#                   changed only by its control `set-facts.v1` (PLC-021); PLC-007, PLC-013
-#                   (the facts a requirement is checked against); CTR-006
+#   pool.v1         the basic Pool type (TPL-002), and the type of `system` (FST-001);
+#                   ACC-028, ACC-033 (a Pool's own operations); CTR-004 (a Type of the family
+#                   Pool offers `pool-management.v1`)
+#   node.v1         the type of every node (PLC-008): a node has an empty configuration,
+#                   offers no capability and lists no control; its labels are reported status
+#                   (PLC-026), and the engine alone makes one (FST-006)
 #   management.v1   the type of `management` (FST-001, ACC-033, OPS-019)
-#   access.v1       the type of `access` (FST-001, ACC-006, ACC-012, ACC-031); it requires
+#   access.v1       the type of `access` (FST-001, ACC-006, ACC-012); it requires
 #                   `reconcile.v1`, which its capability includes (ACC-033)
 #
-# Every type writes `placement: {}`: none has a requirement on placement (CTR-004). Each
-# lists under `requires` the operations of the capabilities it offers, and each of those
-# operations states the engine as its default implementation (TPL-004). No core type states
-# `restoresRuntimes` or `records`, so each is false (CTR-004): no core type declares a
-# runtime, and the records about its instances need keep neither inputs nor outputs.
-#
-# A location's stored facts are the value of `facts` in its configuration. `host` and
-# `localPaths` are the two facts the core package's schemas name; `facts` is open, so that a
-# location may state others for a requirement on placement to test. The shared-host
-# requirement compares `host`.
-#
-# The value of `defaultLocation` in the configuration of the `system` Pool is a reference,
-# because a reference schema governs it (OBJ-021). The engine stores it in the resolved
-# form, `{kind: Resource, id}`, which that schema accepts, so the stored configuration
-# satisfies the type's schema after a control as it did before (REV-008).
+# No type states `nodeSelector`, so none puts a rule on where its instances are placed
+# (CTR-004). Each lists under `requires` the operations of the capabilities it offers, and
+# each of those operations states the engine as its default implementation (TPL-004). No core
+# type states `records`, so the records about its instances keep neither inputs nor outputs
+# (CTR-004, REC-002). No core type offers a provider capability: the engine's own runner,
+# machine provider and fetching serve where no provider does (PRV-003), and the engine
+# implements no `get-secret.v1` (SEC-020).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -48,13 +58,14 @@ spec:
     additionalProperties: false
   offers: []
   requires: []
-  placement: {}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
   name: pool.v1
-  description: The basic Pool type. It has no settings and offers a Pool's own operations.
+  description: >-
+    The basic Pool type. It has no settings and offers a Pool's own operations. The `system`
+    Pool is of this type.
 spec:
   family: Pool
   schema:
@@ -70,68 +81,23 @@ spec:
     - github.com/shrav-k/conduit/core#retire.v1
     - github.com/shrav-k/conduit/core#retire-with-resources.v1
     - github.com/shrav-k/conduit/core#reconcile.v1
-  placement: {}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
-  name: system-pool.v1
+  name: node.v1
   description: >-
-    The type of the `system` Pool. Beyond the basic Pool type it holds the default-location
-    setting, which its control sets to a location that exists or to nothing.
-spec:
-  family: Pool
-  schema:
-    type: object
-    properties:
-      defaultLocation:
-        anyOf:
-          - $ref: github.com/shrav-k/conduit/core#resource-reference.v1
-          - type: 'null'
-    additionalProperties: false
-  offers:
-    - github.com/shrav-k/conduit/core#pool-management.v1
-    - github.com/shrav-k/conduit/core#system-settings.v1
-  requires:
-    - github.com/shrav-k/conduit/core#register.v1
-    - github.com/shrav-k/conduit/core#register-replacement.v1
-    - github.com/shrav-k/conduit/core#inspect.v1
-    - github.com/shrav-k/conduit/core#set-up.v1
-    - github.com/shrav-k/conduit/core#retire.v1
-    - github.com/shrav-k/conduit/core#retire-with-resources.v1
-    - github.com/shrav-k/conduit/core#reconcile.v1
-    - github.com/shrav-k/conduit/core#set-default-location.v1
-  controls:
-    - github.com/shrav-k/conduit/core#set-default-location.v1
-  placement: {}
----
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Type
-metadata:
-  name: location.v1
-  description: >-
-    The location type. A location is where an Agent or a Resource runs. It is a Resource owned
-    by the `system` Pool, it is its own placement, and its facts are stored configuration,
-    which only the control `set-facts.v1` changes.
+    The type of every node. A node is where an Agent or a Resource runs, and represents one
+    machine that the machine provider reports: for its hostname, trimmed and lowercased,
+    whichever machine provider reports it, so retiring or replacing that provider retires no
+    node. It is a Resource owned by the `system` Pool, it is its own placement, and its
+    configuration is empty: its labels are what the provider last reported for its machine, held
+    in its status. It offers no capability and lists no control, and the engine alone makes one.
 spec:
   family: Resource
   schema:
     type: object
-    properties:
-      facts:
-        type: object
-        properties:
-          host: {type: string, minLength: 1}
-          localPaths: {type: boolean}
-        additionalProperties: true
     additionalProperties: false
-  offers:
-    - github.com/shrav-k/conduit/core#location-settings.v1
-  requires:
-    - github.com/shrav-k/conduit/core#set-facts.v1
-  controls:
-    - github.com/shrav-k/conduit/core#set-facts.v1
-  placement: {}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -148,7 +114,6 @@ spec:
   requires:
     - github.com/shrav-k/conduit/core#register.v1
     - github.com/shrav-k/conduit/core#replace.v1
-    - github.com/shrav-k/conduit/core#rename.v1
     - github.com/shrav-k/conduit/core#unregister.v1
     - github.com/shrav-k/conduit/core#inspect.v1
     - github.com/shrav-k/conduit/core#set-up.v1
@@ -158,15 +123,12 @@ spec:
     - github.com/shrav-k/conduit/core#install.v1
     - github.com/shrav-k/conduit/core#declare-lost.v1
     - github.com/shrav-k/conduit/core#purge.v1
-  placement: {}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
   name: access.v1
-  description: >-
-    The type of the `access` Resource. It stores the policies in force, which inspecting it
-    lists in its status.
+  description: The type of the `access` Resource, which opens and closes Conduits.
 spec:
   family: Resource
   schema:
@@ -177,7 +139,4 @@ spec:
   requires:
     - github.com/shrav-k/conduit/core#open.v1
     - github.com/shrav-k/conduit/core#close.v1
-    - github.com/shrav-k/conduit/core#apply-policy.v1
-    - github.com/shrav-k/conduit/core#remove-policy.v1
     - github.com/shrav-k/conduit/core#reconcile.v1
-  placement: {}

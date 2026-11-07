@@ -1,15 +1,20 @@
-# Example. Invalid: only an input that holds a `schema` may state a `default` (CTR-002). An
-# output states none.
+# Example. It must be rejected:
+# only a property of an Operation contract's `inputSchema` may state a `default`, which the
+# engine fills in where the input is not supplied (CTR-002, OPS-026). An output is not a
+# supplied value, and no property of `outputSchema` states one.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: directory.count.v1
 spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
-  outputs:
-    count:
-      schema: {type: integer, minimum: 0}
-      default: 0
+  inputSchema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+    required: [path]
+  outputSchema:
+    type: object
+    properties:
+      count: {type: integer, minimum: 0, default: 0}
+    required: [count]

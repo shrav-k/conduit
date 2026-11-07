@@ -7,6 +7,9 @@ not applied or applied in part and every point they leave open; the reports of
 [reader 1](reader-1.md), [reader 2](reader-2.md) and [reader 3](reader-3.md); findings A2 and
 B1 of [reader 4](reader-4.md); and the rules of [CONSOLIDATION.md](../CONSOLIDATION.md).
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 Edited: files under `spec/`, `tools/check_schemas.py`, `docs/OVERVIEW.md`, and, for counts and
 the status of round 2 only, `docs/AUDIT.md` and `docs/README.md`. Nothing was committed.
 

@@ -51,7 +51,7 @@ Two findings constrain implementation:
 | Pi providers, auth, history, MCP, loaders, telemetry and Durable | `0441483926f283e42ca44eb7b4a46552e9469d6f`; source, docs and selected offline probes. |
 | Latest fetched Pi main | `26e05e64f0e64f4cbcc1e501fe3da3d4b64a4424`; only Chord changed in the inspected package paths between these revisions. Reference checkout was not switched. |
 | Chord follow-up | `26e05e64f0e64f4cbcc1e501fe3da3d4b64a4424`, particularly `src/next/host`, `remote` and `link`; development-layer docs, not an asserted released API. |
-| agentwatch | Local `04025a6f8e3887b8c1152ea44930e1c429b75948`; README communication/recovery contract. |
+| A private repository | Local `04025a6f8e3887b8c1152ea44930e1c429b75948`; README communication/recovery contract. |
 | Standards and provider documentation | Primary pages accessed October 30; web pages can change independently of pinned Pi source. |
 
 No account enrollment, inference requests, real MCP connections, credential reads, package
@@ -367,7 +367,7 @@ stale/incompatible definitions withhold affected calls pending refresh/reconcili
 alone need not invalidate tool schemas. Detection depends on integration evidence; a rejected call
 may reveal drift for the first time. Do not silently adapt or replay an uncertain write. Automatic
 first-use/background refresh policies are deferred; current access, credential refresh and transport
-recovery remain separate. See [the accepted activation contract](../protocol/AGENT.md#activation-instructions).
+recovery remain separate. See [the accepted activation contract](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/AGENT.md#activation-instructions).
 
 Native skill text can be portable while hooks are not. A Claude model in Conduit's runtime
 does not provide Claude Code's plugin API. A Pi-style terminal does not provide Pi's extension
@@ -429,11 +429,12 @@ safe retries or automatic execution. Chord's jobs additionally illustrate intent
 boundaries, but unsettled-key deduplication is not permanent operation deduplication.
 Conduit must retain its own outcome contract. [Jobs][chord-jobs]
 
-Agentwatch contributes a concrete Rust example of persisted-before-delivered messages,
+A private repository contributes a concrete Rust example of persisted-before-delivered messages,
 sequence-based catch-up and independent claims for concurrent consumers. Its repository-based
 visibility and room/ticket policy are application decisions. Absorb the mechanics without
 bringing back rooms as Conduit's required primitive. Its seven-day expiry also differs from
-Conduit's retain-until-purge policy. [agentwatch README][agentwatch]
+Conduit's retain-until-purge policy. The private repository's README, at commit
+`04025a6f8e3887b8c1152ea44930e1c429b75948`.
 
 ### Three proposed interaction families
 
@@ -465,7 +466,7 @@ Exact names, fan-out, persistence and wake defaults remain proposals.
 | [A2A task lifecycle](https://a2a-protocol.org/latest/topics/life-of-a-task/) | Separate immediate messages, longer work, artifacts and contextual grouping. | Its `contextId` groups interaction; it is not permission to import private model history. Task IDs need not become Linear issue IDs. |
 | [NATS JetStream](https://docs.nats.io/learn/jetstream/pull-consumers) | Pull-based bounded consumption, independent consumers and explicit acknowledgements. | Delivery acknowledgement is not proof an agent completed work. A broker is optional for a local v0. |
 | [Zenoh entities](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html) | Separate publication, query/reply, storage and liveliness behind related addressing. | A live subscription is not retained history; native protocol sessions are not Conduit Agents. |
-| agentwatch / Pi ecosystem | Practical catch-up, attachment claims and integration hooks. | Their attention, expiry and topology policies are not inherited. |
+| A private repository / Pi ecosystem | Practical catch-up, attachment claims and integration hooks. | Their attention, expiry and topology policies are not inherited. |
 
 ### Flows the contract must make unambiguous
 
@@ -514,7 +515,7 @@ The accepted Conduit design makes this evidence intrinsic to the Interface's con
 contract, with a durable inspectable local foundation and pluggable export. Managed components
 produce evidence while no frontend is attached; reconnecting frontends inspect the same underlying
 history/state. An external dashboard is optional, and Linear/Jira integration is unrelated to this
-baseline. See [Interface observability](../protocol/MODEL.md#interface-observability).
+baseline. See [Interface observability](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#interface-observability).
 
 Durable's existing research remains applicable: persist intent, perform the effect, record
 outcome before claiming completion; use ownership and stale-worker fencing; distinguish input
@@ -565,7 +566,7 @@ The next experiment should be specified in this order:
    the local evidence through the Interface and exercise pluggable export; no issue-management
    integration or specific broker is required.
 
-The [experiment packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) now carries the schema and acceptance examples.
+The [experiment packet](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) now carries the schema and acceptance examples.
 R5 settles activation/refresh, R6 configuration/extension resolution, and R7 the first communication
 and Interface-observability slice. Broader research examples remain proposals; this report supplies
 evidence rather than a separate Pi review queue.
@@ -591,7 +592,6 @@ evidence rather than a separate Pi review queue.
 [chord-remote]: https://github.com/earendil-works/pi/blob/26e05e64f0e64f4cbcc1e501fe3da3d4b64a4424/packages/chord/src/next/remote/README.md
 [chord-link]: https://github.com/earendil-works/pi/blob/26e05e64f0e64f4cbcc1e501fe3da3d4b64a4424/packages/chord/src/next/link/README.md
 [chord-jobs]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/chord/src/next/jobs/README.md
-[agentwatch]: https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/README.md
 [p-bedrock]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/providers/amazon-bedrock.ts
 [p-ant]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/providers/ant-ling.ts
 [p-anthropic]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/providers/anthropic.ts

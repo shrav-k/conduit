@@ -1,0 +1,7 @@
+# Build output, including the scratch directory the probe uses for its readers
+# and its throwaway keychains.
+target/
+target/scratch/
+
+# macOS
+.DS_Store

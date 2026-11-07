@@ -2,7 +2,7 @@
 
 This records a documentation migration, not a new set of protocol rulings. Its purpose is to keep
 accepted semantics active and accessible while separating author guidance, reference-implementation
-choices, syntax proposals, research and historical review. [Current review](../../REVIEW.md) contains
+choices, syntax proposals, research and historical review. [Current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md) contains
 the remaining decisions; it is the only active queue.
 
 ## Baselines and preservation
@@ -21,15 +21,15 @@ the remaining decisions; it is the only active queue.
 | Previous source | Current destination | Treatment |
 | --- | --- | --- |
 | `docs/SPEC.md` | [Overview](../../OVERVIEW.md) | Retained summary, accurately titled as an overview rather than a complete released specification. |
-| `docs/DESIGN.md` | [Protocol index](../../protocol/README.md) | Preserved principles and contract map; clarified public semantics versus reference-runtime selections. |
-| `docs/design/*.md` | [Protocol topics](../../protocol/README.md#contract-map) | All seven detailed bodies retained; scope/navigation notes added and stale review pointers corrected where needed. |
+| `docs/DESIGN.md` | [Protocol index](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) | Preserved principles and contract map; clarified public semantics versus reference-runtime selections. |
+| `docs/design/*.md` | [Protocol topics](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md#contract-map) | All seven detailed bodies retained; scope/navigation notes added and stale review pointers corrected where needed. |
 | `docs/REVIEW.md` | [Closed conceptual review](../reviews/CONCEPTUAL.md) | Preserved C1–C3 rulings and rationale. A new `docs/REVIEW.md` holds only current work. |
 | `docs/proposals/implementation-v0/REVIEW.md` | [Closed implementation review](../reviews/IMPLEMENTATION.md) | Preserved I1–I7 references and accepted/deferred boundaries. |
-| `docs/proposals/implementation-v0/{README,ARCHITECTURE,ORGANIZATION}.md` | [Implementation design](../../implementation/README.md) | Retained accepted boundaries and candidate mechanisms, explicitly differentiated. No candidate crate tree was scaffolded. |
-| `docs/proposals/implementation-v0/AUTHORIZATION.md` | [Authorization representation proposal](../../proposals/authoring-syntax/AUTHORIZATION.md) | Keeps mixed semantic examples/unapproved representation work with the later authoring packet. |
+| `docs/proposals/implementation-v0/{README,ARCHITECTURE,ORGANIZATION}.md` | [Implementation design](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/implementation/README.md) | Retained accepted boundaries and candidate mechanisms, explicitly differentiated. No candidate crate tree was scaffolded. |
+| `docs/proposals/implementation-v0/AUTHORIZATION.md` | [Authorization representation proposal](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/AUTHORIZATION.md) | Keeps mixed semantic examples/unapproved representation work with the later authoring packet. |
 | `docs/proposals/COLLABORATOR_REVIEW.md` | [Completed collaborator comparison](../collaborator-proposals/REVIEW.md) | Retained adopted refinements and dissent; corrected an index that incorrectly described the PRs as unmerged. |
 | `docs/proposals/REPOSITORY.md` | [Historical repository proposal](../reviews/REPOSITORY-2026-11-02.md) | Retained all research-derived alternatives and the transition plan. Open release/owner questions moved to the current queue. |
-| `docs/proposals/authoring-syntax/*` | [Authoring proposal packet](../../proposals/authoring-syntax/README.md) | Existing long examples retained; no syntax promoted by relocation. |
+| `docs/proposals/authoring-syntax/*` | [Authoring proposal packet](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/README.md) | Existing long examples retained; no syntax promoted by relocation. |
 | `docs/research/*` | [Research](../../research/README.md) | Reports, external source pins and limitations retained. Index status corrected; no blanket re-verification of sources claimed. |
 | `docs/archive/collaborator-proposals/PR-*` | [Original collaborator proposals](../collaborator-proposals/README.md) | Original arguments/attribution retained; only repository-relative links rebased. |
 | `experiments/*` | [Experiments](../../../experiments/README.md) | Remain outside docs. Markdown links rebased; both YAML fixtures unchanged. No new runtime result claimed. |

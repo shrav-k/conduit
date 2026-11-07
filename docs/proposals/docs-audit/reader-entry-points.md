@@ -278,7 +278,7 @@ E4. Unexplained on first use: "MCP" (README.md:9), "Codex" (AUDIT.md:36). Fix: e
 E5. Instructions that cannot be followed as written:
 - AGENTS.md:6-8, the `build-base` branch (A18)
 - AGENTS.md:71-72, set_names without `--write` (B10)
-- AGENTS.md:58-59 "sibling directories `../agentwatch` and `../pi-reference`" exist only on the owner's machine. Fix: add "if present".
+- AGENTS.md:58-59 "sibling directories [a private repository] and `../pi-reference`" exist only on the owner's machine. Fix: add "if present".
 - CONTRIBUTING.md:60 "From a checkout with Python 3 available": check_schemas also needs two packages (B9).
 
 E6. docs/LANGUAGE_DEFECTS.md — statuses read "implementation-defined: DL1" and DL is defined nowhere in the file; defect text uses handler, plugin, grant, provision, host and join.
@@ -290,7 +290,7 @@ F1. Clean: no personal absolute paths, session identifiers, TODO or FIXME marker
 
 F2. Uncommitted work the log already cites: docs/AUDIT.md is modified and docs/proposals/core-and-schemas/APPLY.md is untracked, yet ruling 37 links it. Commit both before the cold read.
 
-F3. docs/AUDIT.md:530 names a proprietary repository (`jxp-software/agentwatch`) and says its links fail for outsiders; :533-545 lists nine removed clones, one "cited nowhere". Owner decision: keep, or move to docs/research/README.md or the archive.
+F3. docs/AUDIT.md:530 names a proprietary repository and says its links fail for outsiders; :533-545 lists nine removed clones, one "cited nowhere". Owner decision: keep, or move to docs/research/README.md or the archive.
 
 F4. docs/AUDIT.md:501-502 is a note about the branch `implementation/rust-runtime-plugins`, which still exists locally and on origin. Owner decision: delete the branch and the note, or keep both.
 

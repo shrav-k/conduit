@@ -1,0 +1,22 @@
+# Example. It must be rejected:
+# an item reached by `remote` and not marked `plain` names no `Authorization` header, in any
+# case of its letters, in its `headers` (IFC-043). The engine presents its own proof to such an
+# item, and under the token form that proof is the protocol's own authorization, which the
+# `Authorization` header carries (IFC-041); a value from configuration there would be the same
+# for every request. This item names the header in lowercase. A plain item may name it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  keyed-reader:
+    implements: ['#directory.read.v1']
+    remote:
+      type: streamable-http
+      url: https://files.example.org/mcp
+      headers:
+        - name: authorization
+          isRequired: true
+          isSecret: true
+    headers:
+      authorization: /token

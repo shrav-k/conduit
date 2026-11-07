@@ -5,7 +5,9 @@ then ruled on what was open ([ruling 38](../../ruling-38/README.md)): the gate o
 rounds is withdrawn, and the next read is the owner's cold read by Codex
 ([for the next reader](../../../AUDIT.md#for-the-next-reader)). Four cold
 readers read the repository as it stood after [round 3](../round-3/README.md), its fix pass and
-the follow-up, at commit `f583469`.
+the follow-up, at commit `f583469`. Ruling 41 later ordered a fifth round, on the
+specification as rulings 40 and 41 rewrote it, before the read by Codex:
+[round 5](../round-5/DECISIONS.md).
 
 | | Round 2 | Round 3 | Round 4 |
 | --- | --- | --- | --- |
@@ -47,7 +49,10 @@ promises say about the protocol itself, as they stand after the changes of round
 
 Findings are resolved under ruling 37, without a ruling on each, and every choice is logged in
 this directory as the coordinator's and not the owner's
-([who decides what](../../../AUDIT.md#who-decides-what-since-ruling-37)).
+([who decides what](../../../AUDIT.md#who-decides-what)).
+
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
 
 ## Known after the round
 

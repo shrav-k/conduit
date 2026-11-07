@@ -14,16 +14,33 @@
 # (docs/proposals/reaudit/round-2/log-tail.md) changed POOL-004 and added POOL-017, of the layer
 # `convention`: no Resource is registered into a retired Pool. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed POOL-004, which now rejects a Resource document whose owner is a
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed POOL-004, which now rejects a Resource document whose owner is a
 # retired Pool, and POOL-017, which keeps the request under LIF-009 alone and now reports
 # invalid. It removed none.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review (docs/proposals/principles-review/README.md, decisions 1, 5, 8c and 31b),
+# changed POOL-003, POOL-009, POOL-013, POOL-015 and POOL-016: an entry's Resource is set up as
+# a part of the Pool's setup, with no graph; an input may give an entry its runtime provider;
+# and an entry placed by no input is placed by the machines provider. It removed none and added
+# none. Its log is docs/proposals/ruling-41/log-G2.md. The integration of the rewrite
+# (docs/proposals/ruling-41/log-integration.md) changed POOL-012, which names `runtime` among
+# the keys an entry may not carry, as OBJ-014 does. Its coverage check (the same log,
+# "Coverage check") changed POOL-009: an entry given no runtime runs only on `local`'s machine.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), accepting the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md, changed POOL-009: an entry given no
+# runtime that has an item that is run is placed only where `local`'s hostname label matches,
+# and an input whose destination is an entry's `runtime` states no `default`; and POOL-016,
+# which moved from the layer `language` to `convention`, since it calls a provider, and reports
+# unavailable where the machines provider cannot place now. It removed none and added none. Its
+# log is docs/proposals/ruling-42/log-machines.md.
+# The names of ruling 42 (the vocabulary audit's N2 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in POOL-004, the machines
+# provider to the machine provider in POOL-016, and "for which `local` stands" to "that `local`
+# represents" in POOL-009. It removed none and added none.
 
 - id: POOL-001
   layer: language
@@ -61,7 +78,7 @@
   observable: >-
     The Pool owns one Resource for the entry before and after the request. Where the entry's
     Resource is retired, the request is the one LIF-009 describes. LIF-029 states the same for a
-    declared Conduit and a component.
+    declared Conduit.
   vectors: []
 
 - id: POOL-004
@@ -76,7 +93,7 @@
     The Pool owns the new Resource alongside any instantiated from its entries. No entry is
     needed for it. For a retired Pool, resolving returns a diagnostic naming the Resource and
     the Pool and stating that the Pool is retired, and the Pool owns the same Resources as
-    before. A retired Pool gains no Resource, as a retired location is given no instance under
+    before. A retired Pool gains no Resource, as a retired node is given no instance under
     PLC-018 and a retired end no Conduit under CON-025: the three are rules of the language, and
     the registration of a document that one of them rejects reports invalid under OBJ-023. A
     request under LIF-009 for a new Resource for an entry of a retired Pool is POOL-017.
@@ -128,15 +145,21 @@
   layer: language
   level: must
   when: >-
-    A Pool template is registered in which an input has the placement of an entry as a
-    destination.
+    A Pool template is registered in which an input has as a destination the `placement` or the
+    `runtime` of an entry.
   then: >-
-    The template is accepted, and the Resource of that entry takes the placement supplied for
-    the input. An entry's placement is written in no other way.
+    The template is accepted, and the Resource of that entry takes the placement, or the runtime
+    provider, supplied for the input. An entry's placement and its runtime are written in no
+    other way: an entry writes neither key itself.
   observable: >-
-    An entry that itself writes `placement` is rejected under OBJ-014 and PLC-005, with a
-    diagnostic naming the entry. An entry whose placement no input supplies is placed under
-    POOL-016.
+    An entry that itself writes `placement` or `runtime` is rejected under OBJ-014 and PLC-005,
+    with a diagnostic naming the entry, and so is an input with either destination that states a
+    `default`, under PLC-005. A runtime supplied for an entry names a runtime provider that is
+    not retired, as PRV-006 requires of the `runtime` of an instance document. An entry whose
+    placement no input supplies is placed under POOL-016, and one whose runtime no input
+    supplies runs on the engine's own runner, under PRV-006, which runs only on the machine that
+    `local` represents, under PRV-019: where an item that is run is selected for it, it is
+    placed only where `local`'s hostname label matches, under PLC-007.
   vectors: []
 
 - id: POOL-011
@@ -159,8 +182,8 @@
     It is a nested instantiation of a Resource template, in the shape OBJ-014 gives an entry. It
     gives no owner, because its owner is the Pool.
   observable: >-
-    An entry that carries `owner`, or `placement`, is rejected under OBJ-014 with a diagnostic
-    naming it. An entry with no `arguments` supplies none, as OBJ-014 states.
+    An entry that carries `owner`, `placement` or `runtime` is rejected under OBJ-014 with a
+    diagnostic naming it. An entry with no `arguments` supplies none, as OBJ-014 states.
   vectors: []
 
 - id: POOL-013
@@ -169,12 +192,19 @@
   when: >-
     A Pool is set up.
   then: >-
-    The step that GRA-022 gives each entry sets up the Resource of that entry that is not
-    retired, after the Resources of the entries it refers to. For a Resource that is already
-    ready nothing is dispatched, and the step is left as succeeded.
+    The setup of the Resource of each entry is a part of the Pool's setup, under the entry's
+    name, begun only once the parts for the entries it refers to have succeeded. The part sets
+    up that entry's Resource that is not retired, under POOL-015. For a Resource that is already
+    ready nothing is dispatched, and the part counts as succeeded. Where the entry has no
+    Resource that is not retired, the part is not dispatched and reports conflict.
   observable: >-
     After the Pool's setup succeeds, the Resource of every entry not marked optional is ready,
-    and none was set up before a Resource it refers to.
+    and none was set up before a Resource it refers to. An entry marked optional whose Resource
+    is not set up does not keep the setup from succeeding, and is reported as not set up. The
+    order comes from the references among the entries alone, never from the order in which they
+    are written. A further setup leaves a Resource that is ready as it is. A part that reports
+    conflict has not succeeded, as LIF-008 has it until a replacement is registered under
+    LIF-009, and a diagnostic names the retired Resource.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decisions G3 and A1).
@@ -197,41 +227,40 @@
   layer: convention
   level: must
   when: >-
-    A Pool's setup reaches the step that sets up the Resource of an entry.
+    A Pool's setup comes to the part that sets up the Resource of an entry.
   then: >-
-    The step is a request for `set-up.v1` that names that Resource, sent by the instance that
+    The part is a request for `set-up.v1` that names that Resource, sent by the instance that
     sent the request to set up the Pool. It is authorized as any request of that instance to set
     up a Resource the Pool owns: against the Pool under ACC-033, by that instance's own open
     Conduit to the Pool.
   observable: >-
     If that instance is not the consumer of an open Conduit to the Pool that lists `set-up.v1`,
-    the step reports refused, the Resource is not set up and its state is as it was. Where the
+    the part reports refused, the Resource is not set up and its state is as it was. Where the
     request to set up the Pool was an onward request, the Conduit is one of the instance that
-    sent it, and not one of the caller it serves. The steps of the Resource's own setup are
+    sent it, and not one of the caller it serves. The parts of the Resource's own setup are
     authorized in the same way, as ACC-005 states for the opening of a declared Conduit.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decision F15 of the re-audit).
 
 - id: POOL-016
-  layer: language
+  layer: convention
   level: must
   when: >-
     A Pool is instantiated, and no input of its template supplies the placement of one of its
     entries.
   then: >-
-    The Resource of that entry takes its placement under the default rules PLC-002 to PLC-004,
+    The Resource of that entry is placed under PLC-002, by the machine provider under PRV-015,
     like any instance whose document gives no placement.
   observable: >-
-    Where exactly one location exists that is not retired, the Resource is placed on it. Where
-    several do, it is placed on the location the `system` Pool's default-location setting names,
-    and where that setting names none of them the Resource is not instantiated, and so neither
-    is the Pool, under POOL-002. This holds whether the template has no input with that
-    destination or has an optional one that was not supplied. A placement that these rules chose
-    is the Resource's, and is not written into the entry as the Pool holds it under INS-013: a
-    replacement for that entry under LIF-009 is placed by the same rules as they stand when it
-    is made. A placement that an input supplied is part of the entry the Pool holds, and a
-    replacement takes it.
+    Where the machine provider names no machine for it, the Resource is not instantiated, and
+    so neither is the Pool, under POOL-002; where the provider is not ready or cannot place it
+    now, the request that would instantiate the Pool is not dispatched and reports unavailable,
+    under PRV-015. This holds whether the template has no input with that destination or has an
+    optional one that was not supplied. A placement that the provider chose is the Resource's,
+    and is not written into the entry as the Pool holds it under INS-013: a replacement for that
+    entry under LIF-009 is placed by the provider when it is made. A placement that an input
+    supplied is part of the entry the Pool holds, and a replacement takes it.
   vectors: []
 
 # --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;

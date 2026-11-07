@@ -2,12 +2,12 @@
 
 > Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
-Research date: 2026-11-03. This follows the [directory, MCP and database walkthroughs](../proposals/authoring-syntax/AUTHORING.md#guided-directory-walkthrough)
+Research date: 2026-11-03. This follows the [directory, MCP and database walkthroughs](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/AUTHORING.md#guided-directory-walkthrough)
 and the [graph authoring audit](language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
 The owner requested comparative database/cloud research before resolving the next structural question.
 The owner subsequently accepted approach B: ordinary typed operations explicitly bound to declared
 instance runtimes, publishing results with defined guarantees. The
-[lifecycle contract](../protocol/LIFECYCLE.md#lifecycle-protocol) records that ruling. This report
+[lifecycle contract](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol) records that ruling. This report
 preserves its reasoning and alternatives; remaining representation choices are still proposals.
 The follow-up ruling places the runtime target in a declared typed operation input using ordinary
 graph bindings, with explicit forwarding through reusable compositions. Trusted caller/authority
@@ -19,7 +19,7 @@ All Conduit supporting vocabulary and example names remain provisional.
 How should a setup graph address the ongoing runtime declared by its template, supply prepared
 inputs, and receive outputs that let subsequent setup continue?
 
-The [accepted lifecycle contracts](../protocol/LIFECYCLE.md) already establish that:
+The [accepted lifecycle contracts](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md) already establish that:
 
 - Templates declare ongoing behavior; setup graphs supply prepared inputs.
 - Setup can request instance-managed startup before later steps such as database migration.
@@ -299,5 +299,5 @@ and successful completion as the default ordering prerequisite without data. Mul
 declarations are now accepted when the type supports them, with explicit targets and instance-owned
 supervision. This does not add another primary Agent execution or a process-per-declaration rule.
 Target/selector encoding, declaration layout, prerequisite notation and final vocabulary remain open. This report
-does not close the [behavior/structure merge checkpoint](../REVIEW.md#behavior-and-structure-merge-checkpoint)
+does not close the [behavior/structure merge checkpoint](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md#behavior-and-structure-merge-checkpoint)
 or authorize runtime implementation.

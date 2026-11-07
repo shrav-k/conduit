@@ -1,0 +1,16 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a Type that offers a provider capability is of the family Resource and offers no other
+# provider capability (PRV-001). This one is of the family Agent. A schema cannot tell
+# without listing the core package's provider capabilities in `type-spec.v1`, which this
+# tool's rule does instead.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: agent-runner.v1
+spec:
+  family: Agent
+  schema:
+    type: object
+  offers:
+    - github.com/shrav-k/conduit/core#runtime-provider.v1

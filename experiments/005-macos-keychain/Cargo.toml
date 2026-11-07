@@ -1,0 +1,13 @@
+[package]
+name = "macos-keychain-probe"
+version = "0.1.0"
+edition = "2024"
+publish = false
+default-run = "probe"
+
+[dependencies]
+core-foundation = "0.10.1"
+libc = "0.2.191"
+security-framework = "=3.7.0"
+serde_json = "1.0.154"
+sha2 = "0.11.1"

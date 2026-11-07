@@ -1,20 +1,23 @@
 # Example. It must be rejected:
-# the key is `dependsOn`; `depends_on` is not defined.
+# a key that this specification does not define is rejected, and every key it defines is
+# written in camelCase (OBJ-019). An entry of a Pool template holds `from`, `arguments` and
+# `optional` (OBJ-014): the order of a Pool's entries comes from the entries they refer to
+# (POOL-006, POOL-013), so an entry states no dependency of its own, as `depends_on` or
+# otherwise.
 
 apiVersion: github.com/shrav-k/conduit/v0
-kind: Resource
+kind: Pool
 metadata:
-  name: project-directory
+  name: workspace
 spec:
-  type: example.org/files#local-directory.v1
-  setup:
-    steps:
-      establish:
-        operation: example.org/files#directory.establish.v1
-        arguments:
-          path: {literal: /srv/checkout}
-      read:
-        operation: example.org/files#directory.read.v1
-        arguments:
-          path: {literal: /srv/checkout}
-        depends_on: [establish]
+  type: github.com/shrav-k/conduit/core#pool.v1
+  entries:
+    cache:
+      from: project-directory
+      arguments:
+        path: /var/cache/workspace
+    checkout:
+      from: project-directory
+      arguments:
+        path: /srv/checkout
+      depends_on: [cache]

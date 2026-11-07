@@ -8,7 +8,7 @@
 # Proposal: protocol, mesh and a local root agent
 
 **Status: proposal for discussion (2026-11-01).** Nothing here is accepted design.
-[SPEC](../../OVERVIEW.md) and [DESIGN](../../protocol/README.md) still govern.
+[SPEC](../../OVERVIEW.md) and [DESIGN](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) still govern.
 
 Four ideas for where Conduit goes next, and how each lines up with the design on `main`.
 
@@ -109,7 +109,7 @@ matching rules remain open") and matches the fixed account boundary per Agent.
 | --- | --- | --- |
 | Protocol, not tool | "Extensible protocol with a Rust runtime", but bundles Interface frontends and a possible terminal; no wire format yet | Narrow the core to the spec |
 | No skills | Bring-your-own skills in native formats | **Agrees** |
-| Sealmesh messaging | Retained-message capability; research cites agentwatch (Sealmesh's predecessor) at `04025a6` for rooms, catch-up and read positions | Mechanics nearly identical; differs on retention (until purge vs. 7 days) and rooms as a primitive |
+| Sealmesh messaging | Retained-message capability; research cites a private repository (Sealmesh's predecessor) at `04025a6` for rooms, catch-up and read positions | Mechanics nearly identical; differs on retention (until purge vs. 7 days) and rooms as a primitive |
 | Cross-environment | Local only; remote deferred | Brought forward through Sealmesh |
 | Root agent | No central agent; Agents may invoke each other's controls only with grants | New; must fit the grant model |
 | One VM per environment | Native by default; isolated mode with sandbox technology undecided | VM fills the isolated tier |

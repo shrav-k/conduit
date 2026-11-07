@@ -6,6 +6,9 @@ them. "The reader's fix" means the least-change fix that the report proposes for
 One editor applies the rows and logs what it did in [log-fixes.md](log-fixes.md). The counts of
 the round are in the [record](README.md).
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 ## The unsafe findings
 
 | Finding | Decision |

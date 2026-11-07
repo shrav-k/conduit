@@ -4,7 +4,7 @@
 
 Source investigation: 2026-10-30. This report provides source evidence for the current **Interface, Agent, Resource, Pool and
 Conduit** design. Pi's native Session terminology remains in source descriptions. Current contracts live in [SPEC.md](../OVERVIEW.md) and
-[DESIGN.md](../protocol/README.md); review outcomes and deferred work are in [REVIEW.md](../archive/reviews/CONCEPTUAL.md). The report's
+[DESIGN.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md); review outcomes and deferred work are in [REVIEW.md](../archive/reviews/CONCEPTUAL.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
 Subsequent I4 review selected SQLite for the first bundled persistence plugin, loaded as a service
@@ -61,7 +61,7 @@ The frontend/Durable follow-up fetched and inspected a newer development snapsho
 | Initial Pi ecosystem investigation | `f09d01b85e0384647fcab6779d35ab9dabe04be3`, Oct 29 | Provider, MCP, ecosystem comparisons and prior offline probes. Links preserve this revision where applicable. |
 | Release baseline previously inspected | `v1.4.0`, `4a080252f06caf63a525d7873c5d94d3c23887e0` | Release comparison; main's identical package version string does not make development behavior released. |
 | Local pstack-pi | `c87e65f8ed7ee80d9dc38faeabacc103fce14bc7` | Its real-Pi harness targets 0.85.1; compatibility with newer Pi is unverified. |
-| Local jxp-skills / agentwatch | `b49a754de4cbbf595b40c05b77039e8b8b380e52` / `04025a6f8e3887b8c1152ea44930e1c429b75948` | Usage/workflow and Rust communication references; no private configuration reproduced. |
+| Local: a second private repository / a private repository | `b49a754de4cbbf595b40c05b77039e8b8b380e52` / `04025a6f8e3887b8c1152ea44930e1c429b75948` | Usage/workflow and Rust communication references; no private configuration reproduced. |
 
 Durable is explicitly experimental. Its [changelog][durable-changelog] contains substantial
 unreleased changes, including storage publication and observation contracts. The newer
@@ -561,8 +561,8 @@ policies, not Conduit defaults. It also uses Pi runtime services; it is a refere
 for presentation/supervision, not a way to avoid runtime ownership. [Source][chat] ·
 [Environment][chat-env]
 
-Compare these with local Rust agentwatch's project visibility, daemon/MCP separation,
-replay sequences and diagnostics. Choose communication semantics after concrete
+Compare these with the local Rust private repository's project visibility, daemon/MCP
+separation, replay sequences and diagnostics. Choose communication semantics after concrete
 workflows; do not make a durable task graph or a mutable shared scratchpad the default
 merely because a reference offers one.
 

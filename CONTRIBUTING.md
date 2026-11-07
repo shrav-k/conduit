@@ -12,9 +12,9 @@ document. [AGENTS.md](AGENTS.md) states the same rules in short form.
 ## What binds
 
 The specification in [spec/](spec/README.md) alone binds. Nothing under `docs/` or
-`experiments/` does. [docs/protocol/](docs/protocol/README.md) is the design as it stood before
-the specification; it is superseded and is kept as source material for the type contracts still
-to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
+`experiments/` does. The design as it stood before the specification was removed from the tree
+by ruling 39; the [archive's index](docs/archive/README.md#removed-from-the-tree) links its
+last version, as source material for the type contracts still to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
 
 ## Where work belongs
 
@@ -22,29 +22,27 @@ to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
   [spec/definitions.md](spec/definitions.md). A change needs an owner ruling, recorded in the
   [ruling log](docs/AUDIT.md#ruling-log) of the plan audit with its record under
   `docs/proposals/`. The one other way is a decision on a finding of the re-audit, under
-  ruling 37, which is logged as the coordinator's and not the owner's
-  ([who decides what](docs/AUDIT.md#who-decides-what-since-ruling-37)). `docs/protocol/` is no longer edited.
+  ruling 37, which is logged as the coordinator's
+  ([who decides what](docs/AUDIT.md#who-decides-what)).
 - **A proposal for a ruling** is a record under `docs/proposals/`, with the options and a
   recommendation. The owner makes the rulings. Do not record a recommendation as accepted.
 - **A defect in the language** is fixed in the language, not around it. Findings against `spec/`
   are recorded with the [re-audit](docs/proposals/reaudit/README.md). The
-  [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read `docs/protocol/`.
+  [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read the protocol topics that ruling 39 removed.
 - **The state of the work** is tracked in one place, the [plan audit](docs/AUDIT.md).
-  [docs/REVIEW.md](docs/REVIEW.md) is superseded as a work queue.
 - **The build process** for the independent builds, and the brief each builder receives, are in
-  [docs/implementation/](docs/implementation/README.md). The architecture and organization
-  documents there are earlier proposals and do not bind.
+  [docs/implementation/](docs/implementation/INDEPENDENT_BUILDS.md).
 - **Research**, meaning sourced comparisons and the analysis of probe results, goes in
   [docs/research/](docs/research/README.md). Attribute source versions and distinguish inference
   from observed behavior. The content of existing research packets is not edited.
 - **Evidence** goes in its own directory under [experiments/](experiments/README.md), with its
   scope, instructions and dated results. An expected outcome is never presented as a result.
-- **Code** is Rust, in its own directory under [experiments/](experiments/README.md) with a
-  lockfile, a pinned toolchain and ignored build output. The only exceptions are the Python
-  checkers in `tools/` and [Experiment 003](experiments/003-language-probes/README.md), which
-  is Python and predates the rule.
+- **Code** is Rust, with a lockfile, a pinned toolchain and ignored build output: a probe or an
+  evaluation in its own directory under [experiments/](experiments/README.md), and a provider
+  package, one crate per provider, under a top-level `packages/` directory (ruling 40), which
+  does not exist yet. The only exception is the Python checkers in `tools/`.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
-  dissent. It is not edited.
+  dissent. What it holds is not edited; new material may be added, with a line in its index.
 
 ## Review discipline
 
@@ -64,11 +62,14 @@ draft and not a release.
 
 The vocabulary is ruled (rulings 17, 18 and 27 to 29 of the plan audit). The terms in force are
 in [spec/definitions.md](spec/definitions.md). Write new text in them. Changing a term changes
-the specification, so it needs a ruling like any other change.
+the specification, so it needs a ruling like any other change. Ruling 42 accepted the twenty
+names of the [vocabulary audit](docs/proposals/vocabulary-audit/README.md) that ruling 41 asked
+for, and [spec/definitions.md](spec/definitions.md#words-the-promises-do-not-use) lists each old
+name with its new one.
 
-[docs/VOCABULARY.md](docs/VOCABULARY.md) is the map of the working terms from before the
-vocabulary ruling. Its `vxx` anchors are documentation references that other documents link to;
-keep them.
+[docs/VOCABULARY.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md) was the map of the working terms from before the
+vocabulary ruling. Ruling 39 removed it from the tree, and the link is to its last version. Its
+`vxx` anchors are reached through links pinned to that version.
 
 Do not rename terms across the older documents, research or archives. They keep the words they
 were written in. Terms that belong to JSON Schema, YAML or the Model Context Protocol keep
@@ -107,7 +108,8 @@ What each check needs:
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
 
-Run `cargo test --release` in each Rust experiment directory you change.
+Run `cargo test --release` in each Rust directory you change, under `experiments/` or
+`packages/`.
 
 What the checks cover:
 
@@ -116,9 +118,9 @@ What the checks cover:
   does not check that some document links to each file. `--walk` makes it walk the directory
   in a Git working tree too.
 - `set_names.py --check` refuses a retired name, a `_meta` key of Conduit's written with another
-  prefix, and a value that looks like one of the three names of `spec/names.yaml` and differs
-  from it. To change the names, run it with the new values to see what would change, and add
-  `--write` to apply.
+  prefix, a value that looks like one of the three names of `spec/names.yaml` and differs from
+  it, and a variable that begins as those of `identity` do and is neither. To change the names,
+  run it with the new values to see what would change, and add `--write` to apply.
 - `check_schemas.py` checks that the files under `spec/core/` and `spec/schemas/` are strict
   YAML within the schema profile, that every example document is accepted or rejected as its
   directory says, and that the core package agrees with itself. Its own header lists each step.
@@ -170,5 +172,5 @@ formal committee. Governance can evolve through an explicit project decision whe
 
 Public support/security contact details and any additional contribution procedures can be selected
 when distribution needs them. The earlier
-[review](docs/REVIEW.md#owner-decisions-before-public-distribution) records these boundaries.
+[review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md#owner-decisions-before-public-distribution) records these boundaries.
 This guide adds no promise about releases.

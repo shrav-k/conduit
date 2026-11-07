@@ -1,7 +1,7 @@
 # Conceptual closure review
 
-Historical closure record. C1–C3 remain accepted in the [active protocol reference](../../protocol/README.md).
-Use [current review](../../REVIEW.md) for outstanding work; this is not an active ruling queue.
+Historical closure record. C1–C3 remain accepted in the [active protocol reference](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md).
+Use [current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md) for outstanding work; this is not an active ruling queue.
 
 Updated: 2026-11-02. **The current conceptual review is complete: C1–C3 are accepted.** Concrete package,
 plugin-reference, graph-binding and schema syntax is deferred to a future PR. The latest history
@@ -31,7 +31,7 @@ frontend, Rust crate layout or storage engine does not define those public seman
 **Accepted:** conformance describes explicitly supported capabilities. Clients/plugins can support
 limited surfaces; a runtime claiming portable template execution must honor public graph, control,
 lifecycle and recovery semantics. Required executable behavior cannot silently become opaque.
-The [canonical contract](../../protocol/CONFIGURATION.md#declared-capability-conformance) records this ruling.
+The [canonical contract](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#declared-capability-conformance) records this ruling.
 Exact names and syntax remain deferred.
 
 **Accepted evidence threshold:** the first conformance milestone requires an independently authored
@@ -58,7 +58,7 @@ define the enforcement; callers do not need direct grants to every internal back
 For example, search may index Euphony and Demo under its own authority, while an Euphony-only Agent
 cannot retrieve Demo through a query. A shared service credential or dependency grant cannot widen
 that caller's permitted effects/results. This does not introduce issuer ancestry, token forwarding
-or a universal serialized identity chain. The [dependent-call contract](../../protocol/CONDUITS.md#authority-across-dependent-calls)
+or a universal serialized identity chain. The [dependent-call contract](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONDUITS.md#authority-across-dependent-calls)
 records the boundary. C2 is complete; concrete propagation and checking mechanisms remain authoring work.
 
 ### C3 — What does retirement guarantee across connected objects?
@@ -77,12 +77,12 @@ is inferred. Contracts define the duties without one universal lifecycle enum.
 
 For example, retiring Linear access preserves the Agents and shared authentication Resource, while
 an in-flight write keeps its recorded or uncertain outcome. Frontend detachment is distinct from
-Interface retirement. The [canonical lifecycle rule](../../protocol/LIFECYCLE.md#retirement-and-unregistration)
+Interface retirement. The [canonical lifecycle rule](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#retirement-and-unregistration)
 applies alongside existing Agent/Pool checks and separate cleanup/purge contracts. C3 is complete.
 
 ## Review outcomes
 
-Accepted details now live in the [design topic files](../../protocol/README.md#contract-map). Review documents
+Accepted details now live in the [design topic files](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md#contract-map). Review documents
 summarize decisions and link to their authority; they do not repeat a second specification.
 
 | Area | Settled direction |
@@ -112,8 +112,8 @@ names and fixtures follow in the future authoring PR.
 
 ## Initial experiment
 
-[001](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) is a static workflow packet;
-[002](../../../experiments/002-runtime-plugins/README.md) is the accepted synthetic runtime/composition proof.
+[001](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) is a static workflow packet;
+[002](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/002-runtime-plugins/README.md) is the accepted synthetic runtime/composition proof.
 Neither has executed runtime/provider tests. Keep their existing evidence and scope; translate the
 accepted C1–C3 clarifications into conformance cases in the later authoring PR before finalizing syntax. Do not add
 Sealmesh, VMs, a root model, remote deployment or a second full runtime to the experiment silently.
@@ -123,7 +123,7 @@ Native two-Claude/two-Codex account validation remains a separate required goal.
 
 | Work | Treatment |
 | --- | --- |
-| Package maps/aliases, export references, file layout, schema dialect, API identifiers and exact messages | Park in the [authoring proposal](../../proposals/authoring-syntax/README.md); review together in a later authoring/conformance PR. |
+| Package maps/aliases, export references, file layout, schema dialect, API identifiers and exact messages | Park in the [authoring proposal](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/README.md); review together in a later authoring/conformance PR. |
 | Crate organization, worker grouping, queue sizes, retry bounds, storage settings and serialization | Engineering/conformance work within accepted contracts. Bring back only a concrete semantic conflict. |
 | Binding/default name scope, compatibility matching, output/result mapping and typed secret handles | Specify in the authoring pass; tests must preserve fixed bindings, current authority and declared recovery. Syntax cannot decide these accidentally. |
 | Full remote/multi-user support, automatic placement/failover, stronger sandbox drivers | Future extensions with separate deployment evidence. |

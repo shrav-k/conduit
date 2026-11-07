@@ -260,10 +260,10 @@ set up by `open.v1` and retired by `close.v1`.
 | --- | --- | --- | --- | --- | --- |
 | `register.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | SUB-006, ACC-033, PKG-006, MAN-015, MAN-018, SEC-024 |
 | `replace.v1` | `object-management.v1` | required | yes | — | SUB-009, SUB-008, PKG-006, MAN-015, MAN-016 |
-| `unregister.v1` | `object-management.v1` | required | yes | — | LIF-012, LIF-017, LIF-036 |
-| `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013 |
-| `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, TPL-012 |
-| `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009 |
+| `unregister.v1` | `object-management.v1` | required | yes | — | LIF-012, LIF-017, LIF-036, LIF-037 |
+| `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013, LIF-037 |
+| `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, TPL-012, LIF-037 |
+| `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009, LIF-037 |
 | `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1` | for a control that took effect | yes | — | OPS-014, ACC-033, LIF-028, REV-010, OPS-031 |
 | `register-replacement.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | LIF-009, POOL-003 |
 | `install.v1` | `object-management.v1` | — | yes | — | ACC-033, OPS-019, PRV-017 |
@@ -640,10 +640,10 @@ lifecycle state and the labels reported for it (PLC-008).
 | `secret-provider.v1` | Capability | SEC-002, SEC-005, SEC-022, PRV-001 |
 | `register.v1` | Operation | OPS-019, ACC-033, SUB-006 |
 | `replace.v1` | Operation | SUB-009, SUB-007 |
-| `unregister.v1` | Operation | LIF-012, LIF-017, LIF-036 |
-| `inspect.v1` | Operation | LIF-013, ACC-033 |
-| `set-up.v1` | Operation | OPS-019, ACC-033, LIF-003, TPL-012 |
-| `retire.v1` | Operation | OPS-019, ACC-033, LIF-005, TPL-009 |
+| `unregister.v1` | Operation | LIF-012, LIF-017, LIF-036, LIF-037 |
+| `inspect.v1` | Operation | LIF-013, ACC-033, LIF-037 |
+| `set-up.v1` | Operation | OPS-019, ACC-033, LIF-003, TPL-012, LIF-037 |
+| `retire.v1` | Operation | OPS-019, ACC-033, LIF-005, TPL-009, LIF-037 |
 | `reconcile.v1` | Operation | OPS-014, REV-010, OPS-031 |
 | `register-replacement.v1` | Operation | LIF-009, POOL-003 |
 | `install.v1` | Operation | OPS-019, ACC-033 |

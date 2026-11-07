@@ -97,3 +97,14 @@ and 4 above as points the owner may strike.
 Run on the commit of this log: the validation of
 [CONSOLIDATION.md](../CONSOLIDATION.md#validation) (454 promises ok), `check_docs.py`,
 `set_names.py --check`, `check_schemas.py` (Errors: 0) and `git diff --check`, all passing.
+
+## A check of the merge
+
+On 2026-11-07, after this branch was merged into `audit/round-6-codex`, a check of the merge
+found one gap and five small points, all fixed: TPL-004's `then` now says that where a promise
+speaks of the implementation selected for an operation it means the one the template's map or
+TPL-004 gives, the engine among them, so CON-022, ACC-015 and the promises that rely on them
+still reach the engine's operations; `spec/README.md` counts 57 and 34 example files; the checker
+takes the engine first, as TPL-004 does; TPL-017 and TPL-018 say that no Operation contract
+states a default; TPL-003 names the `implementation` map; and the core README's tables cite
+LIF-037 for the four actions. Every check passes, with 454 promises.

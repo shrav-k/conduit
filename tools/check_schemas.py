@@ -1418,9 +1418,9 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                               f"implements"))
 
     # The operations each template of the set must have an implementation for, under TPL-004,
-    # with the implementation it has for each: the key of the template's `implementation`
-    # map, else the default of its type, else the engine, for an operation that `engine`
-    # implements. An Operation contract states no default (CTR-002). Applied where the tool
+    # with the implementation it has for each: the engine, for an operation that `engine`
+    # implements, else the key of the template's `implementation` map, else the default of its
+    # type. An Operation contract states no default (CTR-002). Applied where the tool
     # has the type's contract; a capability or an operation whose contract it does not have
     # is not followed.
     selected = {}
@@ -1458,12 +1458,12 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
         picks = {}
         for key, why in needed.items():
             operation = lookup(key, "Operation")
-            if key in chosen:
+            if key in engine_ops:
+                picks[key] = (core, "engine")
+            elif key in chosen:
                 picks[key] = chosen[key]
             elif key in by_type:
                 picks[key] = by_type[key]
-            elif key in engine_ops:
-                picks[key] = (core, "engine")
             elif operation is not None:
                 found.append(("implementation-selected",
                               f"the template {name} selects no implementation for {key[1]}, "

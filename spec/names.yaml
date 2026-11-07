@@ -15,6 +15,10 @@
 # SPIFFE trust bundle carries both, so that a gate written once checks the engine's token; and
 # the ID by which a credential names the engine, so that a gate admits the engine and no
 # instance. It coined their names, for the owner to strike.
+# Round 5 of the re-audit (M86; docs/proposals/reaudit/round-5/DECISIONS.md) renamed the key
+# `trustBundleFile` to `x509BundleFile`, SPIFFE's name for the part of a trust bundle that the
+# file holds beside the JWT bundle of `jwtBundleFile`: the trust bundle is both files. No name
+# changed.
 
 # Where the specification lives. The other names are derived from it.
 repository: github.com/shrav-k/conduit
@@ -44,7 +48,7 @@ metaPrefix: io.github.shrav-k.conduit/
 # change one, run `python3 tools/set_names.py --identity <key>=<value>`.
 engineUrlVariable: CONDUIT_URL
 identityDirVariable: CONDUIT_IDENTITY_DIR
-trustBundleFile: ca.crt
+x509BundleFile: ca.crt
 jwtBundleFile: jwks.json
 engineIdFile: engine-id
 tokenFile: token

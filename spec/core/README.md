@@ -44,9 +44,9 @@ rewrite then changed the description of `run.v1`, which runs the item only on th
 `location` names, and of `bound.v1`, whose `operations` are compared as names, and no longer
 says that a control requires `revision` alone.
 
-Ruling 42 accepted the decisions that the coordinator settled in the [open questions after the
-rewrite](../../docs/proposals/ruling-41/open-decisions.md) and the owner's answers to most of
-the others, and the [log of that pass](../../docs/proposals/ruling-42/log-core.md) lists what
+Ruling 42 struck none of the decisions that the coordinator settled in the [open questions after
+the rewrite](../../docs/proposals/ruling-41/open-decisions.md) and answered most of the others,
+and the [log of that pass](../../docs/proposals/ruling-42/log-core.md) lists what
 changed here: no export was added or removed. `run.v1` requires `endpoint`, keys its `secrets`
 by name under `environment` and `arguments`, and has a new input, `identity`, which carries what
 a run needs to reach the engine and prove which instance it is; `inspect.v1`'s status lists the
@@ -112,6 +112,32 @@ the descriptions of `run.v1` and `runtime-provider.v1` that what answers at a ru
 itself with the run's certificate (PRV-028), and in that of `secret-provider.v1` that a plain
 store reached by `remote` learns its locator from a header that its item binds; and named here
 the secret Resources that PRV-026 also runs again.
+
+The [decisions of round 5 of the re-audit](../../docs/proposals/reaudit/round-5/DECISIONS.md)
+changed descriptions and two schemas here, as the
+[log of that pass](../../docs/proposals/reaudit/round-5/log-fix-F5.md) lists; no export was
+added or removed. `list-machines.v1` and `place.v1` give a `hostname` of at most 63
+characters (M20). `run.v1` and `inspect-run.v1` say that a provider starts no second run for
+an ID, and reports `stopped` only where it knows that none runs (M03); `unregister.v1` removes
+any retired instance (M41); and the descriptions of `register.v1`, `reconcile.v1`,
+`declare-lost.v1`, `get-secret.v1` and `secret-provider.v1` state what the promises state (M09,
+M18, M35, M37, M80 to M82). The section on providers gives PRV-023's other set of variables
+and its exclusion of values that begin with `()` (M83), and the last section leaves open only
+whether a run on the engine's own runner is given `tls.crt` and `tls.key` (M85). Where this
+page restates the promises on reconciling, removing and running providers again, it follows M09,
+M35, M37 and M41. The
+[integration of that round's fixes](../../docs/proposals/reaudit/round-5/log-fixes.md) then had
+the descriptions of the two hooks say that the implementation learns its configuration from its
+call (M98), and those of `set-up.v1`, `retire.v1` and `retire-hook.v1` that the run is asked for
+where it is reported `stopped` (M03), called what `engine-id` holds the engine's credential ID
+(M97), and said in the section on results when a repeat reports conflict (M32, M39). The
+[verification of those fixes](../../docs/proposals/reaudit/round-5/log-fixes.md#verification)
+restated SEC-024 in the description of `register.v1` and in the section on secrets (V3, V2-10),
+dropped "not yet reconciled" from `inspect.v1` and from this page (V2-05), said in the section
+on results that the answer of -32602 to a call to a tool that is not presented is the baseline
+revision's (V2-06), said that ruling 42 struck none of the coordinator's decisions (V10), and
+had `shared-host.v1` say that a Conduit an end of which runs nothing is not instantiated
+(V2-01).
 
 The promises are the source of truth: where a document here and a promise differ, the document
 is wrong.
@@ -262,18 +288,19 @@ from `run.v1` and `stop.v1`.
   reconciling an invocation. Where the instance of an invocation no longer exists, the
   invocation is reconciled through `management`, and the reconciliation records the outcome
   and stores nothing (ACC-033). Recording that an unknown setup or open occurred makes the
-  instance ready or the Conduit open. Recording that a retirement or a close occurred confirms
-  the shutdown, and the instance is removed (LIF-028, LIF-035). Recording that the effect did
-  not occur gives the outcome failed and changes nothing else. An actor tells whether a run is
-  running from the instance's condition `Running` (PRV-009): no handle is held, and
-  `reconcile.v1` takes none. For a control that took effect, on an instance that exists, the
-  request names `revision`, and the values the control was sent are stored (REV-010). A
+  instance ready or the Conduit open, unless the instance or the Conduit's consumer has been
+  retired. Recording that a retirement or a close occurred confirms the shutdown, and the
+  instance is removed (LIF-028, LIF-035). Recording that the effect did not occur gives the
+  outcome failed and changes nothing else. An actor tells whether a run is running from the
+  instance's condition `Running` (PRV-009): no handle is held, and `reconcile.v1` takes none.
+  For a control that took effect, on an instance that exists and is not retired, the request
+  names `revision`, and the values the control was sent are stored (REV-010). A
   reconciliation that stores nothing names no `revision`, and one that does reports invalid
   (OPS-031). A request that names an invocation whose outcome is not unknown reports conflict
   (OPS-030). A consumer learns the ID that names the invocation from the
   `io.github.shrav-k.conduit/invocation` of its result, or of a repeat of its request (IFC-025,
-  OPS-032, OPS-034), and finds the invocations of unknown outcome that concern an instance,
-  not yet reconciled, in `unreconciled` in its status, which no purge shortens (LIF-013).
+  OPS-032, OPS-034), and finds each invocation whose outcome is unknown and that concerns an
+  instance in `unreconciled` in its status, which no purge shortens (LIF-013).
 - **Defaults.** No input of a core operation states a `default` (CTR-002, OPS-026). An input
   that may be left out is one that `required` does not list. Each input of the requirement
   `bound.v1` states `default: []`, and may be left out for that reason alone (OBJ-015).
@@ -318,14 +345,14 @@ from `run.v1` and `stop.v1`.
   is a further retirement (LIF-026). Once the shutdown of an instance is confirmed it is
   removed, with no request, and its records are kept (LIF-035, LIF-019): a request that names
   it afterwards reports invalid (OPS-029). `unregister.v1` removes a template (LIF-012), or a
-  retired instance whose node was declared lost (LIF-017), and for such an instance asks
-  once more for the stop of its run (LIF-036). The Conduits of which a retired
-  instance is the target are closed at once. Those of which it is the consumer are closed once
-  its shutdown is confirmed, and until then permit only the requests of its retirement
-  (CON-008, ACC-039). `retire-with-resources.v1` retires the Resources in the reverse of the
-  order of setup; where one cannot be retired, only those that the order puts after it wait,
-  every other one is retired and the Pool is not, so a repeat finishes (LIF-021). It declares
-  no output, because a result whose outcome is failed holds none (IFC-025).
+  retired instance (LIF-017), and for such an instance asks once more for the stop of its run
+  (LIF-036). The Conduits of which a retired instance is the target are closed at once. Those
+  of which it is the consumer are closed once its shutdown is confirmed or it is unregistered,
+  and until then permit only the requests of its retirement (CON-008, ACC-039).
+  `retire-with-resources.v1` retires the Resources in the reverse of the order of setup; where
+  one cannot be retired, only those that the order puts after it wait, every other one is
+  retired and the Pool is not, so a repeat finishes (LIF-021). It declares no output, because
+  a result whose outcome is failed holds none (IFC-025).
 - **Installing.** A package is installed only by `install.v1`. A registration installs none
   of the packages its manifest lists, and one whose manifest lists a package that is not
   installed at that version and digest is rejected (PKG-006); so is an installation whose
@@ -359,13 +386,16 @@ where the operation declares no outputs (IFC-025, IFC-033). A result whose outco
 holds its outputs even where the Conduit through which its invocation was dispatched was closed
 before it ended (ACC-034). A repeat of an invocation that has not ended reports conflict, and
 its result holds the engine's ID for the invocation (OPS-032); so does a repeat of one that
-succeeded and whose outputs the engine no longer keeps, and the `ruleId` of the error diagnostic
-tells the two apart (OPS-034). A caller that lost a result repeats its request with the same
-idempotency key (OPS-009). A request through a Conduit that has been closed reports refused,
-and one that names the closed Conduit itself reports invalid (ACC-011, OPS-029). A call that
-names a tool the engine does not present is answered with no tool result: the engine returns the
-protocol's error for invalid parameters, code -32602, whose `data` holds
-`io.github.shrav-k.conduit/reason` with the value refused (IFC-012). A request that the protocol
+succeeded, of an operation that declares outputs, where the engine does not keep its outputs or
+a filter applies to the repeat that the latest attempt was not sent, and the `ruleId` of the
+error diagnostic tells the two apart (OPS-034). A caller that lost a result repeats its request
+with the same idempotency key (OPS-009). A request through a Conduit that has been closed
+reports refused, and one that names the closed Conduit itself reports invalid (ACC-011,
+OPS-029). A call that names a tool the engine does not present is answered as the protocol
+prescribes for an unknown tool at the revision in use. At the baseline revision that is no tool
+result: the engine returns the protocol's error for invalid parameters, code -32602, whose
+`data` holds `io.github.shrav-k.conduit/reason` with the value refused. At a revision at which
+a tool result answers it, that result carries the reason as any other does (IFC-012, IFC-025). A request that the protocol
 has a server reject with an error of its own is answered with that error and no tool result
 (IFC-036).
 
@@ -413,8 +443,8 @@ applies it, named by its qualified reference; for a requirement of the core pack
 shutdown of a retired instance (LIF-014, LIF-024) and `conditions`, each in the shape of
 Kubernetes `metav1.Condition`, `condition.v1` (LIF-011, OBS-002, OBS-003), among them the
 condition `Running` of an instance whose item is run (PRV-009), and `unreconciled`, the engine's
-IDs for the invocations of unknown outcome, not yet reconciled, that were dispatched to the
-instance or that name it (LIF-013). The status of a node holds the labels last reported for
+ID for each invocation whose outcome is unknown and that was dispatched to the instance or names
+it (LIF-013). The status of a node holds the labels last reported for
 its machine (PLC-026). `records` is a list of `record.v1`, each a CloudEvent whose `data` holds
 the fields of a record (REC-002).
 
@@ -439,15 +469,18 @@ whose `kubernetes.io/hostname` its label selector then also holds (PLC-007). A r
 machine provider and a package-source provider run on the engine's own runner, on `local`
 (PRV-002). The engine asks no runtime provider other than its own runner to run a `command` item
 whose program is a relative path (PRV-007). Its own runner passes a process the variables
-`HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER` of the engine's environment, the further
-variables that a list set on the runner names, and what the item binds or `identity` gives,
-which wins, and nothing else of the engine's environment (PRV-023). A runtime provider is given, in `run.v1`'s
+`HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER` of the engine's environment or, on an
+operating system on which a process needs others in their place, such as Windows, those that
+DL16 names, each only where its value does not begin with `()`; the further variables that a
+list set on the runner names; and what the item binds or `identity` gives, which wins; and
+nothing else of the engine's environment (PRV-023). A runtime provider is given, in `run.v1`'s
 `identity`, what the run needs to reach the engine and prove which instance it is, under names
 fixed for every engine: the variables `CONDUIT_URL`, the engine's address, and
 `CONDUIT_IDENTITY_DIR`, a directory, and in that directory the files `ca.crt` and `jwks.json`,
-the trust bundle, `engine-id`, the engine's ID, `token`, a token in the form of a JWT-SVID, and,
-where the forms of proof of DL13 need them or a gate stands before the run, `tls.crt` and
-`tls.key`, a certificate in the form of an X509-SVID and its private key (PRV-022).
+the trust bundle, `engine-id`, the engine's credential ID, `token`, a token in the form of a
+JWT-SVID, and, where the forms of proof of DL13 need them or a gate stands before the run,
+`tls.crt` and `tls.key`, a certificate in the form of an X509-SVID and its private key
+(PRV-022).
 It carries them, and the run's secrets, to the run's machine only over a channel that
 authenticates that machine and keeps them confidential, which its contract names, and keeps
 them as it keeps a secret's value (PRV-011, PRV-022); the engine's own runner delivers them in
@@ -457,17 +490,19 @@ The server of every run that a runtime provider makes stands behind its gate, wh
 request only with the proof of an enforcement point, in this version the engine, and keeps
 everything else on the run's machine from the server; the engine sends nothing to the run's
 `url`, or to the latest one that `inspect-run.v1` reported, until what answers there has proved
-by TLS, with the run's certificate, that it serves the instance (PRV-025, PRV-028, IFC-017). The engine's own runner reaches its process over
-stdio, and no gate stands before it. `stop.v1` and `inspect-run.v1` are given the run's machine
-as `run.v1` is, so that a provider that keeps no state of its own finds the run (PRV-027). What
-a runtime provider does with a stop that it cannot carry out now, such as carry it out once it
-can, its contract states, with where it keeps that stop meanwhile, which neither a restart of
-the engine nor the provider's own retirement loses (PRV-021), and the engine asks for the stop
-once more when an actor unregisters an instance whose node was declared lost (LIF-036). The
-servers of the runtime, machine and package-source providers run on the engine's own runner, so
-they end when the engine does; once it has restarted, the engine runs each again when it first
-needs it, reading its secrets for the caller of the setup that last asked for its run, and so
-it does a secret Resource that its own runner ran, before the first read through it (PRV-026).
+by TLS, with the run's certificate, that it serves the instance (PRV-025, PRV-028, IFC-017).
+The engine's own runner reaches its process over stdio, and no gate stands before it.
+`stop.v1` and `inspect-run.v1` are given the run's machine as `run.v1` is, so that a provider
+that keeps no state of its own finds the run (PRV-027). What a runtime provider does with a
+stop that it cannot carry out now, such as carry it out once it can, its contract states, with
+where it keeps that stop meanwhile, which neither a restart of the engine nor the provider's
+own retirement loses (PRV-021), and the engine asks for the stop once more when an actor
+unregisters a retired instance (LIF-036). The servers of the runtime, machine and
+package-source providers run on the engine's own runner, so they end when the engine does, or
+the part of it that holds them; once it has restarted, or that part has stopped, the engine
+runs each again when it first needs it, reading its secrets for the caller of the setup that
+last asked for its run, and so it does a secret Resource that its own runner ran, before the
+first read through it (PRV-026).
 A provider call declares Conduit's extension (PRV-005, IFC-037), so no plain implementation
 implements an operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`
 (PKG-020).
@@ -482,11 +517,13 @@ sends it as the header (SEC-010, SEC-011, SEC-013); it keeps no copy and puts th
 else (SEC-017, SEC-018). Where the engine has lost a connection's values, as when it restarts,
 it reads again each secret Resource that the setup which made the connection read, for that
 setup's caller, decided by the instance's own Conduit and its filters as they stand then
-(SEC-023). A header that carries a secret goes only to an `https` URL, or to an `http` URL whose
-host is a loopback address on an engine that, as configured, can neither restart on another
-machine nor run as several parts, and a template whose item would send one anywhere else is
-rejected; an engine configured so after such a template was registered sends the header
-nowhere (SEC-024, SEC-013, DL17).
+(SEC-023). A header that carries a secret, and the value that an implementation of
+`get-secret.v1` reached by `remote` returns, cross only to an `https` URL, or to an `http` URL
+whose host is a loopback address on an engine that, as configured, can neither restart on
+another machine nor run as several parts. A template is rejected whose `remote` item would carry
+one anywhere else, or that stands at a loopback host on an engine that can restart on another
+machine or run as several parts, whatever its headers; an engine configured so after such a
+template was registered sends nothing to the item (SEC-024, SEC-013, IFC-041, DL17).
 
 ## First start
 
@@ -645,10 +682,10 @@ lifecycle state and the labels reported for it (PLC-008).
 - How a diagnostic names a document or an object beyond the JSON Pointer of its logical
   location, and the `source` and `type` of a record's CloudEvent: an engine names them.
 - What the engine puts in `run.v1`'s `identity` beyond the names that
-  [spec/names.yaml](../names.yaml) fixes: which of the files a run is given, under the forms of
-  proof the engine offers, the ID by which a credential names the instance, and where the keys
-  that sign it are held. They belong to the engine's mechanism of proof, DL13 of the
-  [implementation-defined list](../implementation-defined.yaml).
+  [spec/names.yaml](../names.yaml) fixes: whether it gives `tls.crt` and `tls.key` to a run on
+  its own runner, under the forms of proof the engine offers, the ID by which a credential
+  names the instance, and where the keys that sign it are held. They belong to the engine's
+  mechanism of proof, DL13 of the [implementation-defined list](../implementation-defined.yaml).
 
 No contract of the core package states `records`, and no core type offers a provider
 capability or declares a run of its own: the engine's own runner, machine provider and fetching

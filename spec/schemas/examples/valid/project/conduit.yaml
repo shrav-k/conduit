@@ -9,6 +9,8 @@
 # The names of ruling 42 (docs/proposals/ruling-42/log-rename-b.md) renamed `reveal-secret.v1`
 # to `get-secret.v1`. Its editorial fix E17 (docs/proposals/ruling-42/log-editorial.md) calls
 # `keychain-store` an implementation of `get-secret.v1`, where it said a secret store's server.
+# Round 5 of the re-audit (M79) marked `git-mirror-server` `plain`, with `tools`: an existing
+# server reads none of Conduit's keys, so unmarked it would serve no request (PKG-020, IFC-037).
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/review-desk
@@ -37,10 +39,12 @@ implementations:
     implements:
       - github.com/shrav-k/conduit/core#get-secret.v1
     command: [bin/keychain-store]
-  # An existing server, found by name, that mirrors a Git repository. Its variables take the
-  # remote and the token from the configuration: `/token` is a place that
-  # `secret-reference.v1` governs, so the engine reads the secret before each run and the
-  # runtime provider sets `GIT_TOKEN` to its value (SEC-010, PRV-011).
+  # An existing server, found by name, that mirrors a Git repository. It was not written for
+  # this specification, so it is marked `plain` and `tools` names the tool that serves
+  # `mirror.sync.v1` (PKG-020). Its variables take the remote and the token from the
+  # configuration: `/token` is a place that `secret-reference.v1` governs, so the engine reads
+  # the secret before each run and the runtime provider sets `GIT_TOKEN` to its value
+  # (SEC-010, PRV-011).
   git-mirror-server:
     implements:
       - '#mirror.sync.v1'
@@ -48,3 +52,6 @@ implementations:
     environment:
       GIT_REMOTE: /remote
       GIT_TOKEN: /token
+    plain: true
+    tools:
+      '#mirror.sync.v1': sync

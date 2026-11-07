@@ -4,15 +4,15 @@
 # Protocol. One baseline revision is required of everyone; either side may support others, and
 # the protocol's own per-request negotiation picks one. Handles follow the protocol's guidance
 # for stateful tools. The protocol's own fields are named as its revision 2026-07-28 names them.
-# Promises here have the layer `interface`, but IFC-014 and IFC-043, rules on documents, have
-# the layer `language`. IFC-026 to IFC-028 were added by the follow-up rulings. The ruling on
-# the core package and the schemas (ruling 37) changed IFC-009, IFC-012, IFC-014, IFC-016,
-# IFC-019 and IFC-024 to IFC-027, which gained three keys of a result's `_meta`: `restriction`,
-# `state` and `withheld`. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed IFC-006, IFC-018, IFC-022, IFC-024 and IFC-025,
-# gave a request the key `package`, and added IFC-030 to IFC-032. The second round of the
-# re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) removed the key `package`, so that a
-# contract of an unpublished package is written `<digest>#<name>`; gave a result the key
+# Promises here have the layer `interface`, but IFC-014, IFC-043 and IFC-044, rules on
+# documents, have the layer `language`. IFC-026 to IFC-028 were added by the follow-up rulings.
+# The ruling on the core package and the schemas (ruling 37) changed IFC-009, IFC-012, IFC-014,
+# IFC-016, IFC-019 and IFC-024 to IFC-027, which gained three keys of a result's `_meta`:
+# `restriction`, `state` and `withheld`. The conversion of the older text (decision DA3 of the
+# docs audit, docs/proposals/docs-audit/GAPS.md) changed IFC-006, IFC-018, IFC-022, IFC-024 and
+# IFC-025, gave a request the key `package`, and added IFC-030 to IFC-032. The second round of
+# the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) removed the key `package`, so that
+# a contract of an unpublished package is written `<digest>#<name>`; gave a result the key
 # `invocation`; changed IFC-006, IFC-010, IFC-012, IFC-016, IFC-018 to IFC-020, IFC-023 to
 # IFC-025, IFC-029 and IFC-032; and added IFC-033. Its closing pass
 # (docs/proposals/reaudit/round-2/log-closing.md) changed IFC-001, IFC-012, IFC-018, IFC-020,
@@ -147,6 +147,54 @@
 # item names, obtained with the engine's own credential, and such an item admits only a
 # credential that names the engine. It added IFC-044, under which an item reached by `remote`
 # that is not plain and is not at an `https` URL is rejected.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F4.md), on the
+# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, named IFC-044 beside
+# IFC-014 and IFC-043 in the layer `language` above (M72), and changed: IFC-001, under which the
+# engine reads an implementation's tool list for `x-mcp-header` and sends a call rejected with
+# -32020 once more, as one invocation (M61); IFC-004, which lists less for a call to a plain
+# implementation (M65); IFC-007 and IFC-037, under which the engine declares no capability but
+# Conduit's extension and the tasks extension (M60), and IFC-037, which reads discovery for each
+# run and connection whatever its caching hints (M68); IFC-012, IFC-013 and IFC-025, under which
+# a call to a tool that is not presented is answered as the protocol prescribes at the revision
+# in use, an error's `content` begins with a text block that states its reason or outcome, and a
+# plain implementation's `content` is passed on (M59, M71, M75); IFC-015, under which an item
+# reached by `remote` makes no onward request (M54); IFC-016, which decides every request of the
+# tasks extension for the task for the instance that began the invocation, answers one that does
+# not proceed with -32602 and relays no input request (M50, M58, M60); IFC-017, under which the
+# engine follows no redirect, checks a `remote` item's certificate against the roots of DL13,
+# and sends nothing where the engine's own runner has no process for the run (M48, M56, M57);
+# IFC-019, under which an implementation cannot apply a filter that holds an argument it does
+# not know (M45); IFC-022 and IFC-042, under which the engine accepts a run's `token` at the
+# `http` loopback address that DL13 gives it (M53), and IFC-022, which says the machine the
+# engine runs on (M90); IFC-026 and IFC-044, which use defined words in their own sense (M17);
+# IFC-032, which leaves to ACC-037 a credential whose instance cannot be read (M55), and IFC-032
+# and IFC-036, on the HTTP status 403 for an `Origin` that the engine does not accept (M77);
+# IFC-033, which gives a tool the contract's description and `readOnlyHint` exactly where no
+# `effect` is stated (M62); IFC-038, on the protocol's rule for a private tool list (M76);
+# IFC-041, which connects to a loopback host only on an engine that can neither restart on
+# another machine nor run as several parts, takes a token only from an authorization server that
+# DL13 states or the user configured for the item's URL, and authenticates to it under RFC 7523
+# alone (M02, M49, M66); and IFC-044, which says where a plain item may stand (M02). It added
+# none and removed none.
+# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
+# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed IFC-017, which
+# cites PRV-007 alone for one run per instance (M03); IFC-037, which reads discovery at each
+# connection that a setup or a retirement makes (M94); and IFC-041, which says the engine's
+# credential ID (M97). It added none and removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed IFC-001, which sends nothing where the tool list cannot be read or
+# lacks the tool (V2-14); IFC-003, IFC-007, IFC-010, IFC-016 and IFC-037, which cite the two
+# promises it added (V2, V9, V2-15); IFC-010, which reads -32021 for a capability the call did
+# not declare as failed (V2-15); IFC-015, which says that the engine gives a `remote` item no
+# means to make an onward request (V2-16); IFC-016 and IFC-025, on a repeat to which a filter
+# applies that the latest attempt was not sent (V4); IFC-017, which excepts the runs that
+# PRV-026 and TPL-018 ask for again and names the stop of a part of the engine (V2-08); IFC-019,
+# on an input that a later release adds with no `default` (V2-02); IFC-022, which lets a request
+# establish neither instance where whether it exists cannot be read, and says where the token
+# goes without TLS (V1, V2-11); IFC-032, whose record holds no caller (V2-13); and IFC-036,
+# which says "response" (V8). It added IFC-045, on the client capabilities that a call declares,
+# and IFC-046, on a call that the engine sends once more after the implementation rejected it
+# before acting on it (V2, V9). It removed none.
 
 - id: IFC-001
   layer: interface
@@ -172,7 +220,16 @@
     and of a server, such as the keys it requires in the `_meta` of every request, what a server
     must implement beside its tools, and what a tool list must carry, binds the engine and an
     implementation as the protocol states it. The same holds for the server that the engine
-    presents to a consumer under IFC-012.
+    presents to a consumer under IFC-012. Over Streamable HTTP the engine mirrors into
+    `Mcp-Param` headers the arguments that the implementation's own tool definition marks with
+    `x-mcp-header`, as the protocol requires of every client, so it reads the implementation's
+    `tools/list` before its first call to each run and to an item reached by `remote` at each
+    connection, as it reads `server/discover` under IFC-037. Where that list cannot be read, or
+    does not hold the tool that a call names, the engine cannot keep that requirement, so
+    nothing is sent: the request, the hook or the part that needed the call is not dispatched
+    and reports unavailable, and its record says why, as under IFC-037. A call that the
+    implementation rejects with the protocol's error -32020, because its headers disagree with
+    its body, is sent once more under IFC-046.
   vectors: []
 
 - id: IFC-002
@@ -201,8 +258,8 @@
     revision.
   observable: >-
     A request that the implementation rejects for its revision, with the protocol's JSON-RPC
-    error for an unsupported version, is sent again at a revision both support, and is one
-    invocation, not two.
+    error for an unsupported version, is sent again at a revision both support, under IFC-046,
+    and is one invocation, not two.
   vectors: []
 
 - id: IFC-004
@@ -211,16 +268,22 @@
   when: >-
     A revision of the protocol is used under IFC-003.
   then: >-
-    It provides what this interface relies on: `tools/call` with a `name` and `arguments`;
-    `_meta` on the request, on the result and on a tool's definition; `structuredContent`;
-    `isError`, the flag that marks a result as an error; a tool's `annotations`; and the
-    negotiation of extensions, by which a server lists the extensions it supports in its result
-    of `server/discover`, a client declares an extension on each request in
-    `io.modelcontextprotocol/clientCapabilities` with `revision` in the extension's settings
-    object, and a server answers with the error -32021 a request that does not declare a
-    capability it requires.
+    It provides what this interface relies on. For a call that carries Conduit's keys, that is
+    `tools/call` with a `name` and `arguments`; `_meta` on the request, on the result and on a
+    tool's definition; `structuredContent`; `isError`, the flag that marks a result as an error;
+    a tool's `annotations`; and the negotiation of extensions, by which a server lists the
+    extensions it supports in its result of `server/discover`, a client declares an extension on
+    each request in `io.modelcontextprotocol/clientCapabilities` with `revision` in the
+    extension's settings object, and a server answers with the error -32021 a request that does
+    not declare a capability it requires. For a call to an implementation marked `plain`, it is
+    `tools/call` with a `name` and `arguments`, `isError`, and `structuredContent` where the
+    operation declares outputs.
   observable: >-
-    A revision that lacks any of these is not used, whatever both sides support.
+    A revision that lacks any of what a call relies on is not used for that call, whatever both
+    sides support. A plain implementation is declared no extension, under IFC-007, so a revision
+    that has no negotiation of extensions, such as 2025-11-25 and those before it, may serve a
+    call to one where both sides support it, under IFC-003 and DL12; a result whose `resultType`
+    is absent, under IFC-010, is a result at such a revision.
   vectors: []
 
 - id: IFC-005
@@ -281,7 +344,10 @@
     The call carries Conduit's keys.
   observable: >-
     The call's `_meta` holds only keys that the protocol itself defines, such as
-    `io.modelcontextprotocol/protocolVersion`.
+    `io.modelcontextprotocol/protocolVersion`. Its `io.modelcontextprotocol/clientCapabilities`
+    declares no extension of Conduit's, and what it declares is IFC-045's, so a server that
+    needs a capability that the call does not declare, such as elicitation, answers with the
+    protocol's error -32021, which IFC-010 reads as failed.
   vectors: []
 
 - id: IFC-008
@@ -332,16 +398,23 @@
     An implementation marked `plain` answers a `tools/call` request.
   then: >-
     A complete result that is not an error is the outcome succeeded. An error on an operation
-    whose contract declares no effect, and a JSON-RPC error for invalid parameters, is failed. A
+    whose contract declares no effect, a JSON-RPC error for invalid parameters, and the
+    protocol's error -32021 for a client capability that the call did not declare, is failed. A
     result whose `resultType` is `input_required` or is a value the engine does not recognize,
-    any other error, and no result at all, is unknown.
+    any other error but one after which the engine sends the call once more under IFC-046, and
+    no result at all, is unknown.
   observable: >-
     A result is complete when its `resultType` is `complete` or absent, and is an error when its
     `isError` is true. A protocol error is a JSON-RPC error. The protocol's code for invalid
     parameters is -32602, and an unknown tool is one case of it; arguments that the tool does
-    not accept, and a request whose parameters are malformed, are others. The outcome the engine
-    records for a plain server follows that table and nothing else, except that a result in
-    which a declared output fails validation is unknown under OPS-007. Where the protocol's
+    not accept, and a request whose parameters are malformed, are others. The protocol has a
+    server answer -32021, naming in `data.requiredCapabilities` what it needs, where acting on
+    the request needs a capability that the request does not declare, so the server did not act
+    on it, as for -32602; the engine declares only what IFC-045 lets it. An error after which
+    the call is sent once more under IFC-046 ends nothing: the outcome is read from the response
+    to the call sent again. The outcome the engine records for a plain server follows that
+    table and nothing else, except that a result in which a declared output fails validation is
+    unknown under OPS-007. Where the protocol's
     tasks extension is used, under IFC-016, the table applies to what the task ended with: the
     result of a task that completed, or the error of one that failed. A task that was cancelled,
     and one that the server no longer holds, is no result at all.
@@ -399,9 +472,12 @@
     engine tells a consumer that its list has changed is IFC-038. A call that names a tool the
     engine does not present to the instance is a request that no open Conduit permits: it
     reports refused under ACC-001, whether the name was never presented or its Conduit has been
-    closed. The engine answers such a call as the protocol prescribes for an unknown tool: with
-    the JSON-RPC error for invalid parameters, code -32602, and with no tool result. The error's
-    `data` holds `io.github.shrav-k.conduit/reason` with the value refused, and the request is
+    closed. The engine answers such a call as the protocol prescribes for an unknown tool at the
+    revision in use, which at the baseline revision is the JSON-RPC error for invalid
+    parameters, code -32602, with no tool result: the error's `message` says that no tool of
+    that name is presented to the instance, and its `data` holds
+    `io.github.shrav-k.conduit/reason` with the value refused. At a revision that has a tool
+    result answer such a call, that result holds the reason as IFC-025 states. The request is
     recorded as refused, under REC-001.
   vectors: []
 
@@ -415,8 +491,7 @@
   observable: >-
     The next tool list that the engine serves to the consumer omits them. A consumer may hold a
     tool list for as long as the protocol lets it. A call to a tool that is no longer presented
-    reports refused under ACC-011, and is answered as IFC-012 states, with the protocol's error
-    for an unknown tool.
+    reports refused under ACC-011, and is answered as IFC-012 states.
   vectors: []
 
 - id: IFC-014
@@ -448,7 +523,12 @@
   observable: >-
     An implementation has no other way to reach another instance through the engine. Its onward
     requests name the invocation they serve under IFC-020, and are decided under ACC-016 and
-    ACC-017.
+    ACC-017. The engine gives an implementation reached by `remote` no `identity` and no
+    credential that names an instance, under IFC-041, so in this version the engine gives it no
+    means to make an onward request: its server may serve several instances, and a credential
+    that named each of them would let it present as any. The onward requests that this
+    specification provides for, a hook's under TPL-017 among them, come from an implementation
+    that is run, with the `token` of its run, under PRV-022.
   vectors: []
 
 - id: IFC-016
@@ -458,23 +538,40 @@
     One invocation outlasts its call: the operation's work finishes after its call returns.
   then: >-
     The protocol's tasks extension, `io.modelcontextprotocol/tasks`, which is an official
-    extension outside the baseline revision, may be used where both sides of a call declare it.
-    A `tasks/get` or a `tasks/cancel` for the invocation's task is decided anew, as a request
-    through the Conduit through which the invocation was dispatched. The extension never stands
-    in for the idempotency key.
+    extension outside the baseline revision, may be used where both sides of a call declare it,
+    and the engine declares it on a call to an implementation only where the request that the
+    call serves declared it. A `tasks/get`, `tasks/update` or `tasks/cancel` for the
+    invocation's task, and a `subscriptions/listen` that names the task in `taskIds`, is decided
+    anew, as a request of the instance whose request began the invocation through the Conduit
+    through which the invocation was dispatched, and from any other instance reports refused.
+    The extension never stands in for the idempotency key.
   observable: >-
     A caller that has no task, or that lost its result, learns the result by repeating its
     request with the same idempotency key through an open Conduit: the repeat reports
     conflict under OPS-032 while the invocation has not ended; once it has succeeded it is
-    answered with the invocation's outputs under OPS-009 while the engine keeps them, and
-    reports conflict under OPS-034 once it no longer does. A `tasks/get` through a Conduit that
+    answered with the invocation's outputs under OPS-009 while the engine keeps them and every
+    filter that applies to the repeat was sent with the latest attempt, and reports conflict
+    under OPS-034 otherwise. A `tasks/get` through a Conduit that
     is no longer open reports refused, as any request through it does: a result that the
     response to the call did not carry is then not delivered, and the caller learns the outcome
     from the records, under ACC-034. This is one invocation, whose result is its own. Until it
     ends it is in progress: the instance that serves it may make onward requests that name it,
     under IFC-020, and they are decided like any other. Once it has ended no request is
     dispatched on its behalf, under ACC-019: no operation arranges, through the engine, work
-    that outlasts its invocation.
+    that outlasts its invocation. A task's ID establishes nothing: the protocol lets a server
+    treat one as a bearer token, and the engine decides each such request for the instance that
+    sent it, under IFC-022. A request of the extension for the task, or a `subscriptions/listen`
+    that names it, that does not proceed, as a `tasks/get` through a Conduit that is no longer
+    open, is answered with the JSON-RPC error for invalid parameters, code -32602, which the
+    extension gives for a task that a server does not hold, and with no result, and the error's
+    `data` holds `io.github.shrav-k.conduit/reason`, as IFC-012 answers a call to a tool that is
+    not presented. The engine sends no `notifications/tasks` for the task to an instance whose
+    `tasks/get` for it would be refused, as once that Conduit is no longer open, so a result
+    that the response to the call did not carry reaches the caller in no notification either,
+    under ACC-034. The engine answers none of the protocol's input requests of an
+    implementation, such as an elicitation in a result whose `resultType` is `input_required` or
+    in a task's `inputRequests`, and passes none on to a consumer: it declares no capability
+    that one needs, under IFC-045, and such a result is read as IFC-009 and IFC-010 read it.
   vectors: []
 
 - id: IFC-017
@@ -491,34 +588,44 @@
     `remote` is reached over Streamable HTTP at the URL of its Remote, under IFC-041. To a run's
     `url`, and to an item reached by `remote` that is not `plain`, the engine sends nothing,
     `server/discover` among it, until the server's side has proved who it is, under PRV-028 for
-    a run and by TLS for the host of its URL for such an item, and it presents on every HTTP
-    request the proof of an enforcement point, by the mechanism of DL13, over a connection that
-    keeps the request and its result confidential and unaltered as far as the side that checks
-    the proof.
+    a run and by TLS for the host of its URL for such an item, it follows no HTTP redirect from
+    either, and it presents on every HTTP request the proof of an enforcement point, by the
+    mechanism of DL13, over a connection that keeps the request and its result confidential and
+    unaltered as far as the side that checks the proof.
   observable: >-
     Toward a run, the server's side proves that it serves that instance by TLS, with the
     certificate that names the instance's ID, under PRV-028, whether the run's gate or the
     runtime provider's own end of its channel to the process that it started serves it, and a
     token in the form of a JWT-SVID names the instance's ID as its audience, never the `url`,
-    which may change. Toward an item reached by `remote`, TLS proves the host of its URL, and
-    the form of the proof is IFC-041's. TLS, or the runtime provider's own channel, which
-    PRV-025 has keep what crosses it confidential and unaltered, carries the request, so a value
-    that a secret Resource's server on another machine returns reaches the engine unread and
-    unaltered. In this version the engine is the only enforcement point, and the proof it
-    presents is its own, never a consumer's, under IFC-030. Where the engine cannot verify who
-    answers, nothing is dispatched: the part of the setup or of the retirement, or the request,
-    that needed the item reports unavailable, and its record says why. A plain item reached by
-    `remote` is sent no proof and none of Conduit's keys, under IFC-007, and is reached as
-    IFC-041 says. Who starts a process, and how, is the runtime provider's, which starts it on
-    the machine of the instance's node, under PRV-019, and one run serves one instance, under
-    PRV-007 and TPL-019, so no two instances share a process. `run.v1` requires `url` of every
-    runtime provider, and what a result that holds none gives is PRV-007. Where the engine's own
-    runner runs the item, how it starts the process is the engine's own, and it runs only on the
-    machine that `local` represents, under PRV-003; stdio reaches only the process it started,
-    so no gate stands before it; which variables of the engine's environment the process
-    receives is PRV-023, how it receives what `identity` holds is PRV-022, and what else it
-    receives is DL16 of the implementation-defined list. The promises of this file hold whatever
-    runtime provider runs the item.
+    which may change. Toward an item reached by `remote`, TLS proves the host of its URL,
+    against the roots that DL13 states for it, and the form of the proof is IFC-041's. TLS, or
+    the runtime provider's own channel, which PRV-025 has keep what crosses it confidential and
+    unaltered, carries the request, so a value that a secret Resource's server on another
+    machine returns reaches the engine unread and unaltered. In this version the engine is the
+    only enforcement point, and the proof it presents is its own, never a consumer's, under
+    IFC-030. Where the engine cannot verify who answers, nothing is dispatched: the part of the
+    setup or of the retirement, or the request, that needed the item reports unavailable, and
+    its record says why. A redirect leads to a server that has proved nothing for the instance,
+    so the engine reads a response that redirects as no result: before anything is dispatched
+    the server cannot be verified, and to a call it is the case of OPS-007 in which no result
+    arrives. A plain item reached by `remote` is sent no proof and none of Conduit's
+    keys, under IFC-007, and is reached as IFC-041 says. Who starts a process, and how, is the
+    runtime provider's, which starts it on the machine of the instance's node, under PRV-019,
+    and one run serves one instance, under PRV-007, so no two instances share a process.
+    `run.v1` requires `url` of every runtime provider, and what a result that holds none gives
+    is PRV-007. Where the engine's own runner runs the item, how it starts the process is the
+    engine's own, and it runs only on the machine that `local` represents, under PRV-003; stdio
+    reaches only the process it started, so no gate stands before it; which variables of the
+    engine's environment the process receives is PRV-023, how it receives what `identity` holds
+    is PRV-022, and what else it receives is DL16 of the implementation-defined list. Where that
+    runner has no process for the instance's run, as once the process has ended, the engine has
+    restarted or the part of the engine that held it has stopped, under DL17, nothing is sent: a
+    request or a hook that needs it is not dispatched and reports unavailable, or its part does,
+    as where the engine cannot verify who answers, until a further setup asks for the run again,
+    under PRV-007. Two runs are asked for again before that: the run of a secret Resource that
+    PRV-026 makes again before a read, and the run that a retirement asks for to serve its
+    retire hook, under TPL-018. The promises of this file hold
+    whatever runtime provider runs the item.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32; decisions U1, U2, U10 and Q7 of the
@@ -561,10 +668,17 @@
     `io.github.shrav-k.conduit/filters` is not empty.
   then: >-
     It applies every filter in the list to what the call asks it to do and to what it returns.
-    If one of them forbids the call, or it cannot apply one of them, it performs nothing and
-    answers with a reason in place of an outcome, as IFC-026 states.
+    If one of them forbids the call, or it cannot apply one of them, which it cannot where the
+    filter's `arguments` hold an argument for an input that the version of the requirement that
+    it supports does not declare, it performs nothing and answers with a reason in place of an
+    outcome, as IFC-026 states.
   observable: >-
-    Nothing that a call asks is performed with a filter it was sent left unapplied. This holds
+    Nothing that a call asks is performed with a filter it was sent left unapplied. A later
+    release may add an optional input to a requirement, which states no `default` and so is sent
+    only where a document writes it, under NAM-024, and CON-022 and ACC-015
+    match a requirement without the version of its package, so an implementation built for an
+    earlier release may be sent an argument that it does not know and that may narrow what the
+    filter permits: it answers unavailable, and never ignores the argument. This holds
     for the call of a setup hook or a retire hook as for that of any request: the filters a hook
     is sent are those of the invocation of `set-up.v1` or `retire.v1` it belongs to, under
     ACC-018. The result gives the reason refused where a filter forbids the call, and
@@ -622,12 +736,13 @@
     request presents and not from the address, machine, network, runtime provider or run it came
     from. The mechanism by which it does so establishes, from what the request presents, exactly
     one instance or none: the instance whose ID it names, while that instance exists, and none
-    once it is removed, even where another instance has since taken its name. Wherever the
-    request crosses machines it does so by a cryptographic proof of the instance that sent it.
-    No consumer can present as another, except a program that can read the credential of another
-    instance's run, as root and every program of the operating-system user that the run runs as
-    can. What a request presents says who is asking and nothing more: the Conduits still decide
-    what the request may do.
+    once it is removed, even where another instance has since taken its name. Where only whether
+    that instance still exists cannot be read, the request establishes neither, and is decided
+    under ACC-037. Wherever the request crosses machines it does so by a cryptographic proof of
+    the instance that sent it. No consumer can present as another, except a program that can
+    read the credential of another instance's run, as root and every program of the
+    operating-system user that the run runs as can. What a request presents says who is asking
+    and nothing more: the Conduits still decide what the request may do.
   observable: >-
     Every request the engine accepts is attributed to exactly one instance, established for that
     request alone and not from an earlier request: under mutual TLS, the certificate with which
@@ -635,21 +750,23 @@
     one consumer is able to present attributes a request to another instance, apart from the
     exception that the `then` states. The two forms of proof of DL13 each count as the
     cryptographic proof: mutual TLS, with certificates in the form of an X509-SVID, and a signed
-    token over TLS in the form of a JWT-SVID, whose audience names the engine's address, which
-    is the protocol's own authorization and which the engine's address at an `https` URL always
-    accepts, under IFC-042. What a request presents, and how the engine
-    establishes the instance from it, is DL13 of the implementation-defined list. A run is given
-    the engine's address and what it presents in the input `identity` of `run.v1`, under
-    PRV-007, under the names that PRV-022 fixes, and its runtime provider delivers them under
-    PRV-022, on another machine as on the engine's own. Which runtime provider ran an instance,
-    or on which machine, establishes nothing, under PRV-018. A run on the engine's own runner
-    runs as the engine's own operating-system user unless DL16 states otherwise, and a program
-    of that user can read the engine's keys and what every such run presents: it is inside the
-    domain of trust, can present as any instance whose run is under that user, and can make the
-    engine's proof to every gate, under PRV-025. An instance that is not to be trusted that far
-    is given a runtime provider that runs it apart, such as in a container, under PRV-006. What
-    a request reports from which no instance can be established is IFC-032, and what the engine
-    does not pass on is IFC-030.
+    token in the form of a JWT-SVID, whose audience names the engine's address, which is the
+    protocol's own authorization and which the engine's address always accepts, over TLS at an
+    `https` URL, and without TLS at an `http` URL on loopback that DL13 gives a run, under
+    IFC-042. What a request presents, and how the engine establishes the instance from it, is
+    DL13 of the implementation-defined list. A run is given the engine's address and what it
+    presents in the input `identity` of `run.v1`, under PRV-007, under the names that PRV-022
+    fixes, and its
+    runtime provider delivers them under PRV-022, on another machine as on the machine the
+    engine runs on. Which runtime provider ran an instance, or on which machine, establishes
+    nothing, under PRV-018. A run on the engine's own runner runs as the engine's own
+    operating-system user unless DL16 states otherwise, and a program of that user can read the
+    engine's keys and what every such run presents: it is inside the domain of trust, can
+    present as any instance whose run is under that user, and can make the engine's proof to
+    every gate, under PRV-025. An instance that is not to be trusted that far is given a runtime
+    provider that runs it apart, such as in a container, under PRV-006. What a request reports
+    from which no instance can be established is IFC-032, and what the engine does not pass on
+    is IFC-030.
   vectors: []
 
 - id: IFC-023
@@ -688,7 +805,11 @@
     its outcome is failed or unknown, and in no other case, and such a result carries none of
     the operation's outputs, `diagnostics` apart. A result whose `isError` is not true holds the
     operation's outputs in its `structuredContent`, which is present on every such result and
-    is an empty map where the operation declares no outputs.
+    is an empty map where the operation declares no outputs. Where its `isError` is true, its
+    `content` holds first one text block that states its reason or its outcome and says nothing
+    that the rest of the result does not say. Where its outcome came from a result of an
+    implementation marked `plain`, its `content` holds that result's `content`, unchanged, after
+    that block where there is one.
   observable: >-
     A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`,
     and a result for one that ended with a reason never carries
@@ -703,8 +824,9 @@
     holds its outputs even where the Conduit through which its invocation was dispatched was
     closed before it ended, under ACC-034: the result of `retire-with-resources.v1`, whose
     Conduit CON-008 closes before it ends, is one. A repeat of an invocation that has not ended
-    reports conflict under OPS-032, and one of an invocation that succeeded and whose outputs
-    the engine no longer keeps reports conflict under OPS-034; the `ruleId` of its error
+    reports conflict under OPS-032, and one of an invocation that succeeded, where the engine no
+    longer keeps its outputs or a filter applies to the repeat that the latest attempt was not
+    sent, reports conflict under OPS-034; the `ruleId` of its error
     diagnostic tells the two apart, and its `isError` is true. What a request that is not
     dispatched says beyond its reason, and beyond the restriction it names, it says there:
     `diagnostics` in the `structuredContent` of its result is a list of diagnostics in the form
@@ -720,14 +842,19 @@
     ACC-014 and ACC-015 require. The ID in `io.github.shrav-k.conduit/invocation` is the one by
     which `reconcile.v1` names the invocation, under OPS-014, so a consumer learns it from the
     result, and a caller that lost a result repeats its request under OPS-009. A call that names
-    a tool the engine does not present is answered with no tool result: the reason is then in
-    the `data` of the protocol's error, as IFC-012 states. IFC-032 names another, and IFC-036
-    the requests that the protocol has a server reject with an error of its own. The `content`
-    member is always present in a tool result, as the protocol requires, and may be an empty
-    list. The protocol recommends that a result with `structuredContent` also carry it
-    serialized in `content`; whether the engine does so, and what else it puts there, is DL12
-    of the implementation-defined list. This specification gives it no meaning: an operation's
-    outputs are in `structuredContent`.
+    a tool the engine does not present is answered as IFC-012 states: at the baseline revision
+    with no tool result, its reason being in the `data` of the protocol's error. IFC-032 names
+    another, and IFC-036 the requests that the protocol has a server reject with an error of its
+    own. The `content` member is always present in a tool result, as the protocol requires, and
+    may be an empty list where the result is not an error and its outcome did not come from a
+    plain implementation. The text block of an error is there because the protocol has a client
+    give its model a tool result that is an error, and lets it keep `_meta`, and a protocol
+    error, from the model. The protocol recommends that a result with `structuredContent` also
+    carry it serialized in `content`; whether the engine does so, and what else it puts there,
+    is DL12 of the implementation-defined list. A plain implementation's `content` is passed on
+    because an existing server answers in text, which no contract can describe, under CTR-012.
+    This specification gives `content` no other meaning: an operation's outputs are in
+    `structuredContent`.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decisions F1 and F7 of the
@@ -752,7 +879,7 @@
     `io.github.shrav-k.conduit/outcome`; one that holds both has the outcome unknown under
     IFC-009. An implementation gives a reason only in those two cases and only with those two
     values, and never after it has performed any part of what the call asks. IFC-019 states the
-    obligation to apply every filter, and this promise the form of the answer where one cannot
+    obligation to apply every filter, and this promise the form of the result where one cannot
     be kept.
   vectors: []
 
@@ -852,8 +979,8 @@
   level: must
   when: >-
     The engine receives a request on a server it presents under IFC-012, other than one that the
-    protocol has a server reject with an error of its own under IFC-036, and cannot establish
-    from what the request presents that it comes from an instance.
+    protocol has a server reject with an error or an HTTP status of its own under IFC-036, and
+    what the request presents establishes no instance, under IFC-022.
   then: >-
     The request is not dispatched, and reports refused.
   observable: >-
@@ -870,7 +997,13 @@
     credential that is missing or invalid, and with no tool result. It is recorded as refused
     all the same. A
     request that the protocol has a server reject with an error of its own, because it cannot be
-    read as a request for a tool, is IFC-036, whoever sent it.
+    read as a request for a tool, is IFC-036, whoever sent it. Where what a request presents is
+    a credential that is valid in every other way, and only whether the instance it names still
+    exists cannot be read, as where the part of the engine that receives it is cut off from the
+    store of the engine's state, under DL17, it has established neither that instance nor none:
+    the request is decided under ACC-037, reports unavailable, and is answered with no 401, so
+    that a client does not discard a credential that is good. Its record holds no caller, under
+    REC-002.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/reader-3.md,
@@ -885,9 +1018,10 @@
     The tool's definition is derived from the Operation contract as the target holds it. Its
     `inputSchema` and `outputSchema` are the contract's own, each `$ref` in them that names a
     Schema contract replaced by that contract's schema; for a control, the `required` of its
-    `inputSchema` lists `revision` alone, under REV-006. Its `annotations` hold `readOnlyHint`
-    true only where the contract states no `effect`, is not a control and does not start model
-    work, and hold `idempotentHint`, `destructiveHint` and `openWorldHint` as the contract
+    `inputSchema` lists `revision` alone, under REV-006. Its `description` is the contract's
+    `metadata.description` where the contract states one. Its `annotations` hold `readOnlyHint`
+    true exactly where the contract states no `effect`, is not a control and does not start
+    model work, and hold `idempotentHint`, `destructiveHint` and `openWorldHint` as the contract
     states them. Where the version of the operation's package that the target holds has no
     contract of the operation, no definition can be derived, and no tool is presented for the
     operation.
@@ -921,19 +1055,21 @@
   level: must
   when: >-
     The engine receives, on a server it presents under IFC-012, a request that the protocol has
-    a server reject with an error of its own: one that lacks a key the protocol requires in its
-    `_meta`, one whose parameters do not have the form of a `tools/call` request, one whose
-    headers on an HTTP transport are missing or disagree with its body, or one that carries any
-    of Conduit's keys and does not declare Conduit's extension, in
-    `io.modelcontextprotocol/clientCapabilities`, at a revision that the engine lists, which the
-    protocol has a server answer with the error -32021, whose `data.requiredCapabilities` names
-    the extension at `v0`.
+    a server reject with an error or an HTTP status of its own: one whose `Origin` header is
+    present and is not one that the engine accepts, which the protocol has a server answer with
+    HTTP 403, one that lacks a key the protocol requires in its `_meta`, one whose parameters do
+    not have the form of a `tools/call` request, one whose headers on an HTTP transport are
+    missing or disagree with its body, or one that carries any of Conduit's keys and does not
+    declare Conduit's extension, in `io.modelcontextprotocol/clientCapabilities`, at a revision
+    that the engine lists, which the protocol has a server answer with the error -32021, whose
+    `data.requiredCapabilities` names the extension at `v0`.
   then: >-
-    The engine answers it as the protocol states, with that error and with no tool result,
-    whoever sent it. Where the engine could establish, under IFC-022, the instance that sent the
-    request, the request is not dispatched, and reports invalid: it is recorded so, and the
-    error's `data` holds `io.github.shrav-k.conduit/reason` with the value invalid. Where it
-    could establish none, the request is not recorded.
+    The engine answers it as the protocol states, with that error or that status and with no
+    tool result, whoever sent it. Where the engine could establish, under IFC-022, the instance
+    that sent the request, the request is not dispatched, and reports invalid: it is recorded
+    so, and the error, where the response carries one, holds in its `data`
+    `io.github.shrav-k.conduit/reason` with the value invalid. Where it could establish none,
+    the request is not recorded.
   observable: >-
     No implementation receives a call. Such a request cannot be read as a request for an
     operation, which is the first case in the order of OPS-023. The error, its code and, on an
@@ -965,27 +1101,29 @@
     or a hook, or to make a provider call under PRV-005 to a provider's implementation item.
   then: >-
     Before its first call to each run of the implementation, and to an item reached by `remote`
-    at each connection, the engine reads the implementation's result of `server/discover`, and
-    it may read it again at any time. It declares Conduit's extension,
-    `io.github.shrav-k.conduit/implementation-interface`, with `revision` at `v0` in its
-    settings object, on each call, in `io.modelcontextprotocol/clientCapabilities`. Where that
-    discovery result does not list the extension at the revision `v0`, the request, the hook or
-    the provider call is not dispatched and reports unavailable, its record names the missing
-    extension, and it is never sent without Conduit's keys.
+    at each connection that a setup or a retirement makes to it under IFC-041, the engine reads
+    the implementation's result of `server/discover`, and it may read it again at any time. It
+    declares Conduit's extension, `io.github.shrav-k.conduit/implementation-interface`, with
+    `revision` at `v0` in its settings object, on each call, in
+    `io.modelcontextprotocol/clientCapabilities`. Where that discovery result does not list the
+    extension at the revision `v0`, the request, the hook or the provider call is not dispatched
+    and reports unavailable, its record names the missing extension, and it is never sent
+    without Conduit's keys.
   observable: >-
     The revision `v0` is that of this version of the specification. The engine never falls back
     to sending such a call as it would to a plain implementation: only an implementation
     marked `plain` is sent none of Conduit's keys, under IFC-007, and the engine declares no
-    extension of Conduit's to it. No plain implementation implements an operation of
+    extension of Conduit's to it. What else a call declares beside the extension is IFC-045's.
+    No plain implementation implements an operation of
     `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, under PKG-020, so every
     provider call declares the extension. A provider whose discovery result lacks the extension
     serves no provider call, as the kubelet registers no Node whose container runtime lacks the
     v1 CRI API; what the part, the request or the call that needed it then reports is PRV-005's.
     The engine's own implementations of PRV-003 are reached by no server of the protocol, and
-    this promise does not cover them. The protocol has a client keep what it learned of a server
-    for the server's process on stdio and for its origin on HTTP, so a discovery result read for
-    one run or one connection is not taken for another. What an implementation answers to a
-    request that declares a revision it does not support is IFC-008.
+    this promise does not cover them. The engine reads it for each run and at each connection,
+    whatever caching hints it carries, so a discovery result read for one run or one connection
+    is not taken for another. What an implementation answers to a request that declares a
+    revision it does not support is IFC-008.
   vectors: []
 
 - id: IFC-038
@@ -1004,11 +1142,11 @@
   observable: >-
     A consumer that asked learns that one of its Conduits was opened or closed without asking
     for the list again. The list depends on the instance for which it is served, so it is
-    private in the protocol's sense, and no cache serves one instance's list to another. The
-    next list that the engine serves is the one IFC-012 gives, whether or not a notification
-    was sent or received.
-    A consumer learns from the discovery result at which revision to declare Conduit's extension
-    on a request that carries Conduit's keys, under IFC-036.
+    private in the protocol's sense, and the protocol forbids a cache to share it across
+    authorization contexts. The next list that the engine serves is the one IFC-012 gives,
+    whether or not a notification was sent or received. A consumer learns from the discovery
+    result at which revision to declare Conduit's extension on a request that carries Conduit's
+    keys, under IFC-036.
   vectors: []
 
 - id: IFC-039
@@ -1053,13 +1191,19 @@
     configuration as it stood when the connection was made, converted as PRV-007 converts a
     value; where that place holds null, the header is not sent. Where that place is one that
     `secret-reference.v1` governs, the value sent is the secret read under SEC-013, or again
-    under SEC-023, and not the reference. To an item that is not `plain`, it connects only at
-    an `https` URL, and every HTTP request of the connection also carries the proof of an
-    enforcement point: by mutual TLS, or as the protocol's own authorization, a token whose
-    audience is the item's canonical URI, either in the form of a JWT-SVID that the mechanism of
-    DL13 signs, or issued to the engine, under the protocol's extension for client credentials,
-    by the authorization server that the item's protected resource metadata names, to which the
-    engine authenticates with its own credential of DL13.
+    under SEC-023, and not the reference. It connects to an item whose Remote's URL has a
+    loopback host, as SEC-024 names them, and sends on a connection to one, only on an engine
+    that, as configured then, can neither restart on another machine nor run as several parts;
+    otherwise it makes no connection and sends nothing, and the part, or the request that was to
+    be sent on the connection, is not dispatched and reports unavailable. To an item that is not
+    `plain`, it connects only at an `https` URL, and every HTTP request of the connection also
+    carries the proof of an enforcement point: by mutual TLS, or as the protocol's own
+    authorization, a token whose audience is the item's canonical URI, either in the form of a
+    JWT-SVID that the mechanism of DL13 signs, or issued to the engine, under the protocol's
+    extension for client credentials, by an authorization server that the item's protected
+    resource metadata names and that is the one DL13 states or one that the user has configured
+    for the item's URL, under DL13, to which the engine authenticates with its own credential of
+    DL13.
   observable: >-
     The connection serves that one instance, so no header's value reaches a request for another
     instance. The connection is the engine's holding of the header values, as SEC-013 states,
@@ -1075,20 +1219,24 @@
     keeps with the connection: a restart changes nothing that a connection carries. An item that
     is not `plain` takes Conduit's keys, so its server is its own gate under PRV-025: it checks
     the engine's proof itself, its operator having configured it to admit only a credential
-    that names the engine's ID, which the engine's conformance document states under DL13, so
-    that no instance's credential passes. Under the protocol's authorization, its protected
-    resource metadata names as its authorization server the one that DL13 states, or one that
-    the user runs and that issues tokens to the engine as a client registered in advance, under
-    the protocol's extension for client credentials; the engine authenticates to that one with
-    its own credential, as a JWT assertion under RFC 7523 or by mutual TLS under RFC 8705, so it
-    holds no client secret outside every Conduit, and the server admits only a token that names
-    the engine as that client. A server that cannot be so configured is used as `plain`, and is
-    sent no proof and none of Conduit's keys. An item that is not `plain` at an `http` URL is
-    rejected, under IFC-044. The names that `headers` may give are those the item's Remote
-    declares, under MAN-010, and an item that is not `plain` names no `Authorization`, under
-    IFC-043. A `remote` item that names no headers is sent none. Beside these headers the engine
-    sends what the protocol and its transport require, and never what a consumer presented to
-    identify itself, under IFC-030.
+    that names the engine's credential ID, which the engine's conformance document states under
+    DL13, so that no instance's credential passes. Under the protocol's authorization, its
+    protected resource metadata names as its authorization server the one that DL13 states, or
+    one that the user runs, has configured for the item's URL and that issues tokens to the
+    engine as a client registered in advance, under the protocol's extension for client
+    credentials, whose flow leaves to the client which server it uses. The engine asks no other
+    server for a token: one that only the metadata names, and that serves another item, could
+    ignore the `resource` that RFC 8707 has the engine send, and issue a token that the other
+    item admits and that the item which received it could present there. The engine
+    authenticates to that server with its own credential, as a JWT assertion under RFC 7523, so
+    it holds no client secret outside every Conduit, and the server admits only a token that
+    names the engine as that client. A server that cannot be so configured is used as `plain`,
+    and is sent no proof and none of Conduit's keys. An item that is not `plain` at an `http`
+    URL is rejected, under IFC-044. The names that `headers` may give are those the item's
+    Remote declares, under MAN-010, and an item that is not `plain` names no `Authorization`,
+    under IFC-043. A `remote` item that names no headers is sent none. Beside these headers the
+    engine sends what the protocol and its transport require, and never what a consumer
+    presented to identify itself, under IFC-030.
   vectors: []
 
 # --- Added by ruling 43 (docs/proposals/ruling-43/README.md; Q1 and D5 of
@@ -1099,12 +1247,14 @@
   layer: interface
   level: must
   when: >-
-    A consumer sends a request to the engine's address at an `https` URL.
+    A consumer sends a request to the engine's address at an `https` URL, or at an `http` URL on
+    loopback that DL13 gives a run in `CONDUIT_URL`.
   then: >-
     The engine accepts, as what the request presents under IFC-022, a signed token in the form
     of a JWT-SVID, sent as the protocol's own authorization in the `Authorization` header, whose
     `sub` names the instance and whose audience is the engine's address as its canonical
-    `https` URI, whatever other form of proof DL13 offers beside it.
+    `https` URI, whatever other form of proof DL13 offers beside it. At such an `http` URL it
+    accepts in the same way the token that the run was given in `token`.
   observable: >-
     So any client of the protocol that supports its authorization, or that can be configured to
     send an `Authorization` header, can connect as an Agent from another machine, with no client
@@ -1120,9 +1270,10 @@
     instance, and the request is answered with the HTTP status 401, under IFC-032. Mutual TLS
     may be accepted beside it, under DL13. The engine establishes nothing from the machine that
     a request came from, under PRV-018, so it accepts the token at its `https` address whichever
-    machine a request comes from; on the engine's own machine DL13 may also give a run an
-    address that is not `https`, such as an `http` URL on loopback, and establish an instance
-    there by other means, under IFC-022.
+    machine a request comes from. Where DL13 gives a run an `http` URL on loopback, under the
+    condition that it states, the engine accepts the run's `token` there too, beside any other
+    means that DL13 offers there, so that a harness that sends `token` to `CONDUIT_URL` works
+    under every engine, under PRV-022.
   vectors: []
 
 - id: IFC-043
@@ -1159,12 +1310,62 @@
     The item is rejected with a diagnostic naming the item and the URL, as MAN-010 rejects an
     item, wherever it is read, whichever engine reads it, and the schema
     `implementation-item.v1` states it. The engine connects to such an item only at an `https`
-    URL, once TLS has proved the host of its URL, under IFC-041 and IFC-017, which plain `http`
-    cannot prove, so no engine could connect to it, and an engine rejects a document that it
-    cannot honor rather than accept it and ignore a part of it. A local server that takes
+    URL, once TLS has proved the host of its URL, under IFC-041 and IFC-017, which unencrypted
+    `http` cannot prove, so no engine could connect to it, and an engine rejects a document that
+    it cannot honor rather than accept it and ignore a part of it. A local server that takes
     Conduit's keys runs as a `command` or `package` item on the engine's own runner, over stdio,
-    which needs neither TLS nor a gate. A plain item may stand at an `http` URL, and a header
-    that carries a secret goes to it only where SEC-024 lets it go, so the `http` URL on
-    loopback that SEC-024 allows, on an engine that, as configured, can neither restart on
-    another machine nor run as several parts, serves a plain server alone.
+    which needs neither TLS nor a gate. A plain item may stand at an `http` URL, where SEC-024
+    lets it: not at one whose host is not a loopback address where it carries a secret, in a
+    header or as the value of `get-secret.v1`, and at no loopback host on an engine that, as
+    configured, can restart on another machine or run as several parts. So an `http` URL on
+    loopback serves a plain server alone, on an engine that can do neither.
+  vectors: []
+
+# --- Added by the verification of round 5 of the re-audit
+# --- (docs/proposals/reaudit/round-5/log-fixes.md, "Verification"): what a call declares to an
+# --- implementation, and the call that the engine sends once more after a rejection.
+
+- id: IFC-045
+  layer: interface
+  level: must
+  when: >-
+    The engine sends a call to an implementation, for a request or a hook, whether or not the
+    call carries Conduit's keys, or makes a provider call under PRV-005.
+  then: >-
+    In the call's `io.modelcontextprotocol/clientCapabilities` it declares no capability but
+    Conduit's extension, where IFC-037 has it declare it, and the tasks extension, where IFC-016
+    lets it.
+  observable: >-
+    A call to an implementation marked `plain` declares no extension of Conduit's, under
+    IFC-007 and IFC-037, so it declares at most the tasks extension. The engine answers none of
+    the protocol's input requests, under IFC-016, so it declares no capability that one needs,
+    such as elicitation. The protocol has a server rely on no capability that a request does
+    not declare, and answer with the error -32021, whose `data.requiredCapabilities` names what
+    it needs, where acting on the request needs one. A server that answers a call so has not
+    acted on it, and the outcome is failed, under IFC-010 for a plain implementation and
+    OPS-007 for any other, as IFC-008 reads the error that names Conduit's extension.
+  vectors: []
+
+- id: IFC-046
+  layer: interface
+  level: must
+  when: >-
+    An implementation rejects a call that the engine sent it with the protocol's error -32020,
+    because the call's `Mcp-Param` headers are missing or disagree with its body, or with the
+    protocol's error for a revision that it does not support, and the engine has not sent that
+    call once more already.
+  then: >-
+    The engine sends the call once more: after -32020, once it has read the implementation's
+    `tools/list` again, and after an error for the revision, at a revision that both support,
+    where there is one. The two are one call, and what it ends with is read from the response
+    to the second.
+  observable: >-
+    The protocol has a server reject such a call before acting on it, and has a client read the
+    tool list again and send the call again after -32020, and send it again at another revision
+    after a version error, under IFC-001 and IFC-003. A call for a request or a hook sent so is
+    one dispatch of one attempt, under IMP-007, and one invocation, not two: its first error is
+    read neither as an outcome, under IFC-010 and OPS-007, nor as a reason. Where no revision
+    is supported by both, or the second call is rejected again, nothing more is sent, and that
+    error is read as IFC-010 and OPS-007 read any other. A provider call sent so is one
+    provider call, under PRV-005.
   vectors: []

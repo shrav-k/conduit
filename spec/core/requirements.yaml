@@ -21,6 +21,9 @@
 # The names of ruling 42 (the vocabulary audit's N10; log
 # docs/proposals/ruling-42/log-rename-a.md) renamed location to node in this comment and in the
 # description of `shared-host.v1`.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") said in the description of `shared-host.v1` that a Conduit an end of which
+# runs nothing is not instantiated, under CON-006 (V2-01).
 #
 # The two Requirement contracts of the core package.
 #
@@ -103,5 +106,6 @@ metadata:
     The consumer and the target of the Conduit run on one machine: the
     `kubernetes.io/hostname` labels reported for their two nodes are equal. Decided once,
     when the Conduit is instantiated: a Conduit for which they differ, or either is absent, is
-    not instantiated.
+    not instantiated, and neither is one an end of which has no placement or is one for which
+    no item that is run is selected, since such an end runs on no machine.
 spec: {}

@@ -156,6 +156,13 @@ Each is this pass's, and the coordinator or the owner can strike it.
 
 ## Needs a decision
 
+Added in round 5 (M104): items 1, 3 and 4 were settled in the record's
+[After the ruling](README.md#after-the-ruling); item 2, and in item 5 the stop that a retired
+provider holds and SEC-023's read that keeps failing, in
+[the items that waited on ruling 43](../ruling-43/log-integration.md#the-items-that-waited-on-this-ruling).
+MAN-017's check, which round 5 fixes (M30), and the other small points of item 5 were not taken
+up there.
+
 1. **A retire hook on a `remote` item after the engine restarts.** Where a connection made by a
    setup lasts and the engine has lost its values, TPL-018 makes no new connection, since one
    lasts; SEC-023 then reads again, for the setup's caller, through the instance's own Conduit,
@@ -301,6 +308,13 @@ from item 5: whether SEC-023 stops trying a read that keeps failing before the n
 MAN-017's check of a place whose schema states none of `type`, `enum` and `const`.
 
 ### Still needs a decision
+
+Added in round 5 (M104): items 1, 2, 4, 5 and 6 were settled in
+[the items that waited on ruling 43](../ruling-43/log-integration.md#the-items-that-waited-on-this-ruling);
+item 3 in the record's [After the ruling](README.md#after-the-ruling), which keeps LIF-036; and
+item 7 by ruling 43's Q5: programs of the engine's own operating-system user are inside the
+domain of trust, an Agent not trusted that far runs under a runtime provider that isolates it,
+and the user a process runs as stays each engine's (DL16), so no hardening is required.
 
 1. **A variable named both in `identity` and in what the item binds** (F2, X3). The item's value
    cannot win: D17 has `identity` carry the engine's address, and IFC-022 has no consumer present

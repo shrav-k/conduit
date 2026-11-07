@@ -48,6 +48,14 @@
 # (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed NAM-007 and NAM-022,
 # under which the `operations` of a bound are compared as names and may use a project's own
 # address (ACC-029), and NAM-023, which points to OPS-033.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed NAM-009: a
+# template keeps each implementation item of its own submitted project that it selects, with
+# a relative program resolved as its own registration resolved it (M28). It added none and
+# removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed NAM-024: an input that a later release adds to a Requirement contract
+# states no `default` (V2-02). It added none and removed none.
 
 - id: NAM-001
   layer: language
@@ -182,13 +190,17 @@
     so has no archive and no digest, it keeps the address and the version alone. Where it refers
     to a contract or an implementation of its own submitted project, it keeps in the same way
     the address that the project's manifest states, its version where the manifest states one,
-    and the digest that identifies that submission's contracts under SUB-008.
+    and the digest that identifies that submission's contracts under SUB-008, and it keeps each
+    implementation item of that project that it selects, as its own registration gave it, with a
+    program given as a relative path resolved under SUB-010.
   observable: >-
     Inspecting the template lists those packages under `packages`, a list of items that hold
     `address`, `version` and `digest`. The item of the core package has no `digest`, and the
     item of its own submitted project has `address`, `digest`, the digest SUB-008 defines, and
     `version` where the manifest states one. Changing or removing the manifest afterwards, or
-    submitting the project again with other contracts, does not change them.
+    submitting the project again with other contracts, does not change them. Two submissions
+    with one digest, read from two directories, give their templates the items as each directory
+    resolved them, so the instances made from each run that directory's programs.
   vectors: []
 
 - id: NAM-010
@@ -451,11 +463,17 @@
     that an earlier release at the same address gave it.
   then: >-
     The later contract may add optional things, such as an optional input of an operation or a
-    further operation of a capability. It does not remove or change anything the earlier one
-    held.
+    further operation of a capability, and an input that it adds to a Requirement contract
+    states no `default`. It does not remove or change anything the earlier one held.
   observable: >-
     Comparing the two contracts shows only such additions. Any other change is made as a new
-    contract, under a name with another version segment, as NAM-015 states.
+    contract, under a name with another version segment, as NAM-015 states. An input of a
+    requirement that states a `default` is filled in and sent with every filter of it, under
+    NAM-019 and IFC-018, and an implementation built for the earlier release cannot apply a
+    filter whose `arguments` hold an input that its version does not declare, under IFC-019, so
+    such an input would make every request through a Conduit that applies the filter report
+    unavailable there. An added input that states none is sent only where a document writes
+    it.
   vectors: []
 
 - id: NAM-025

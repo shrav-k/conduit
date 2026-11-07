@@ -42,6 +42,12 @@
 # two submissions may state one address, each told apart by its digest, and a package may be
 # installed at the address once no template or instance holds a submission there (rows 10 and
 # 36). It added none and removed none.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed SUB-008,
+# under which each template keeps its own items where two submissions share a digest, and
+# which no longer provides for a project with no manifest (M28, M31), and SUB-010, under which
+# a program resolved against the directory is still one given as a relative path (M27). It
+# added none and removed none.
 
 - id: SUB-001
   layer: language
@@ -159,8 +165,7 @@
     one map with two members: `documents`, a list of the project's contract documents ordered by
     `kind` and then by `metadata.name`, each compared by the bytes of its UTF-8 string, and
     `manifest`, the project's manifest as it was handed over, before any relative `fetch` and
-    any program given as a relative path is resolved, which is left out when the project has
-    none.
+    any program given as a relative path is resolved.
   observable: >-
     A document of the same submitted project can refer to such a contract as `#name` under
     NAM-022. No object exists for the contract after the submission, and no document outside the
@@ -170,7 +175,9 @@
     NAM-007 and PKG-006 for the project's contracts. Two submissions may state one address,
     whether one project is submitted again or two projects state it: each is told apart by its
     digest, which every template that resolved against it keeps under NAM-009, so a template and
-    its instances reach only their own submission. On the wire, in records and in the
+    its instances reach only their own submission; where two submissions share a digest, read
+    from two directories, each template also keeps the items it selects as its own registration
+    resolved them, under NAM-009. On the wire, in records and in the
     `operations` of a bound, an operation is `address#name` whichever submission holds it, as in
     every version of one package, so a record does not tell the submissions apart, an
     implementation tells requests apart by the instance that IFC-006 names, and a bound covers
@@ -254,7 +261,8 @@
     It takes the directory. It reads the directory as MAN-001 and MAN-011 state, and registers
     what it reads as one submission, with the same result as a request for `register.v1` that is
     given the values read, once each relative `fetch` and each program given as a relative path
-    is resolved against the directory. It installs no package. The digest that identifies the
+    is resolved against the directory, save that a program so resolved is still, under PRV-007,
+    one given as a relative path. It installs no package. The digest that identifies the
     project's contracts is taken as SUB-008 states, from the manifest as it was read.
   observable: >-
     The objects that exist afterwards, and the diagnostics, are those that `register.v1` gives
@@ -263,10 +271,12 @@
     under MAN-001. The rules on a file are applied as the files are read, under SUB-005. A
     relative `fetch` or program is resolved against the directory, under MAN-006 and MAN-010,
     before the values are compared with what `register.v1` takes: a registration that hands over
-    values has no directory, and rejects a relative one. The one thing that does not follow the
-    resolved values is the digest that identifies the project's contracts: SUB-008 hashes the
+    values has no directory, and rejects a relative one. Two things do not follow the resolved
+    values. One is the digest that identifies the project's contracts: SUB-008 hashes the
     manifest as the file writes it, so one directory gives one digest wherever it lies, and a
-    conformance vector can state it. Every engine can be handed a directory, and not only values
+    conformance vector can state it. The other is PRV-007's guard: a program given as a relative
+    path names a file on the machine the engine runs on, so once resolved it is still run by the
+    engine's own runner alone. Every engine can be handed a directory, and not only values
     through `register.v1`, because the rules on files are promises of the language and a
     conformance vector is made of files. How a directory is handed to an engine, such as by a
     command or a call, is DL7 of the implementation-defined list. Being handed a directory

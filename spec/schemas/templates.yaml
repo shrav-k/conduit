@@ -24,6 +24,12 @@
 # what the engine checks: no selected item binds a variable of `identity` (MAN-018), and no
 # selected `remote` item sends a header that carries a secret to an `http` URL that the engine
 # does not accept for one (SEC-024). The log is docs/proposals/ruling-43/log-core.md.
+# The integration of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fixes.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed only the
+# comment below on what the engine checks: an Interface or a Pool selects no item that is run
+# (TPL-019, M06), a bound place confines its value to a string, a number, a boolean or null
+# (MAN-017, M30), and SEC-024 covers an item selected for `get-secret.v1` and a loopback host
+# on an engine that can move (M01, M02).
 #
 # A template document, and the parts of a template's `spec`.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -81,14 +87,15 @@
 # parent is present (INS-010, INS-011); that, where a Conduit template writes no `operations`,
 # the destination of one of its inputs is `/operations` (CON-016); that an implementation
 # implements the operation it is selected for (TPL-005); default implementations (TPL-004); that
-# the selected implementations include at most one item that is run (TPL-019), that their label
-# selectors agree with the type's and with each other's (PLC-025) and that their pointers name
-# places the type's schema requires, at which it admits no object or array (MAN-017); that no
-# selected item binds in its `environment` a variable that `identity` carries (MAN-018), and
-# that no selected `remote` item sends a header that carries a secret to an `http` URL whose
-# host is not a loopback address, or, on an engine that can restart on another machine or run
-# as several parts, to any `http` URL (SEC-024); that a control is one the type lists and an
-# input one the control declares (TPL-010); that an operation is in the capability (CON-017);
+# the selected implementations include at most one item that is run, and none for an Interface
+# or a Pool (TPL-019), that their label selectors agree with the type's and with each other's
+# (PLC-025) and that their pointers name places the type's schema requires and confines to a
+# string, a number, a boolean or null (MAN-017); that no selected item binds in its
+# `environment` a variable that `identity` carries (MAN-018), and that no selected `remote` item
+# sends a header that carries a secret, or serves `get-secret.v1`, at an `http` URL whose host
+# is not a loopback address, or, on an engine that can restart on another machine or run as
+# several parts, stands at a loopback host (SEC-024); that a control is one the type lists and
+# an input one the control declares (TPL-010); that an operation is in the capability (CON-017);
 # that a requirement's arguments fit its inputs (NAM-019); that a Conduit template applies the
 # bound of a right to open at most once, which is checked when the template is registered
 # (CON-028); that no Conduit lists an operation of a provider capability other than

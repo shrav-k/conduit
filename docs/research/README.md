@@ -14,7 +14,7 @@ The [research on work across machines](MULTI_MACHINE.md), of 2026-11-06, was wri
 ruling 42, which asked for more research on D5 and D20: how Kubernetes, Nomad, SPIFFE, service
 meshes and MCP gateways prove identity across machines, ship programs, enforce access on each
 machine and behave when a machine is cut off. It informs the
-[multi-machine proposal](../proposals/multi-machine/README.md), which is not ruled.
+[multi-machine proposal](../proposals/multi-machine/README.md), which ruling 43 accepted.
 
 The behavior/structure review is complete. The [language/protocol foundations](language-protocol-foundations/README.md)
 and [worked comparisons](language-protocol-foundations/WALKTHROUGHS.md) preserve the primary sources

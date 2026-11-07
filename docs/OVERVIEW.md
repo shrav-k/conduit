@@ -2,8 +2,9 @@
 
 Not binding. This is a short tour of the language in ordinary words, written from
 [spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md). It was
-last read against the specification on 2026-11-06, as
-[ruling 43](proposals/ruling-43/README.md) left it: with the names that
+last read against the specification on 2026-11-07, as
+[ruling 43](proposals/ruling-43/README.md) and the fixes of
+[round 5](proposals/reaudit/round-5/DECISIONS.md) of the re-audit left it: with the names that
 [ruling 42](proposals/ruling-42/README.md) accepted from the vocabulary audit (among them node,
 machine provider, `nodeSelector`, idempotency key, source and conformance document) and its
 editorial fixes, and with ruling 43's answer on work across machines, which
@@ -57,8 +58,9 @@ A document is one template, instance or contract written out, in YAML or the equ
 - An **instance** is one identified object made from a template. Its document has `from`, which
   names the template, and the standard arguments of its family: `owner` for a Resource,
   `placement` and `runtime` for an Agent and a Resource, and `consumer` and `target` for a
-  Conduit. `owner`, `consumer` and `target` are required. `placement` may be left out, and the
-  machine provider then places the instance. `runtime` may be left out, and the engine's own
+  Conduit. `owner`, `consumer` and `target` are required. `placement` may be left out: the
+  machine provider then places an instance that has a program to run, and one that has none is
+  placed on `local` (PLC-002). `runtime` may be left out, and the engine's own
   runner then runs it (OBJ-013). The document may have `arguments`, which supply values for the
   template's inputs. It has no `spec`. Every instance comes from a template.
 - A template of any family but Conduit selects a **type**: a contract that states the schema of
@@ -101,8 +103,9 @@ Resource owned by the Pool `system` that represents one machine, and the engine 
 `local` for the machine it runs on at first start, and one for each other machine that the machine
 provider reports (PLC-026). What is known of a machine is its labels, such as
 `kubernetes.io/os: linux`, which the provider reports and nothing else sets (PRV-014). Where a
-document gives no placement, the machine provider chooses a machine; with none, everything is
-placed on `local` (PLC-002, PRV-015). A type or an implementation may state a label selector
+document gives no placement, the machine provider chooses a machine for an instance that has a
+program to run; an instance that has none, and every instance where no machine provider exists,
+is placed on `local` (PLC-002, PRV-015). A type or an implementation may state a label selector
 under `nodeSelector`, which the node's labels must match (PLC-007). An instance runs on the
 machine of its node: its runtime provider runs it there, or the run fails and nothing runs
 (PRV-019). The engine's own runner runs only on the engine's machine, so an instance placed on
@@ -285,11 +288,12 @@ every instance placed on it without their shutdown being confirmed: only `root` 
 (PLC-017), and the engine does it where the node's machine is reported gone (PLC-024).
 
 Once a retired instance's shutdown is confirmed, it is removed: it no longer exists, its name
-is free again, and its records are kept (LIF-035). One whose node was declared lost is
-removed by unregistering it, which asks its runtime provider once more to stop its program
-(LIF-017, LIF-036). What the provider does with a stop that it cannot carry out then, such as
-carry it out once the machine comes back, is what its contract states, and it keeps that stop
-where neither a restart of the engine nor its own retirement loses it (PRV-021).
+is free again, and its records are kept (LIF-035). One whose shutdown is not confirmed, as where
+its node was declared lost or its retire hook keeps failing, may be removed by unregistering it,
+which asks its runtime provider once more to stop its program (LIF-017, LIF-036). What the
+provider does with a stop that it cannot carry out then, such as carry it out once the machine
+comes back, is what its contract states, and it keeps that stop where neither a restart of the
+engine nor its own retirement loses it (PRV-021).
 
 Whether an instance is running, paused or idle is not a lifecycle state. Such conditions are
 reported beside the state, in the shape that Kubernetes gives a condition, and the engine
@@ -326,11 +330,11 @@ A caller may attach an idempotency key to a request so that a repeat is recogniz
 key is scoped to the caller, the target and the instance that sent the request, and at most one
 invocation exists for one of each and one key (OPS-008). Nothing is dispatched
 again unless the caller repeats the request (IMP-007). A repeat of a request whose invocation
-succeeded is answered with its outputs for as long as the engine keeps them, and reports
-conflict once it no longer does (OPS-009, OPS-034); a repeat of one that has not ended reports
-conflict too (OPS-032). Each conflict carries the engine's ID for the invocation, and its
-diagnostic names the promise that tells the two apart. A caller that lost a result repeats its
-request.
+succeeded is answered with its outputs for as long as the engine keeps them, where every filter
+that applies to the repeat was sent with the invocation, and otherwise reports conflict
+(OPS-009, OPS-034); a repeat of one that has not ended reports conflict too (OPS-032). Each
+conflict carries the engine's ID for the invocation, and its diagnostic names the promise that
+tells the two apart. A caller that lost a result repeats its request.
 
 What follows an unknown outcome is fixed. A repeat of the request is dispatched as a new
 attempt only if the operation's contract declares `deduplicates: true` and the implementation
@@ -342,8 +346,8 @@ invocation of a management verb, that Conduit is to the target that authorized t
 being reconciled. For any other invocation it is to the target that manages the instance the
 invocation was dispatched to: the Pool that owns it where it is a Resource, and `management`
 otherwise, or where that Pool is retired or the instance no longer exists (ACC-033). An actor
-finds the invocations of unknown outcome that concern an instance, and are not yet reconciled,
-in `unreconciled` in the instance's status, even after the records are purged (LIF-013).
+finds each invocation whose outcome is unknown and that concerns an instance in `unreconciled`
+in the instance's status, even after the records are purged (LIF-013).
 
 A control is an operation that changes stored settings. It applies exactly the values it is
 sent, or fails (REV-007). A request to change an object names the object's current revision,
@@ -431,8 +435,9 @@ owned by `system`: one machine provider at a time, and one package-source provid
 scheme (PRV-013). A runtime provider is not retired while an instance names it (PRV-020). A
 user who picks none gets the engine's own (PRV-003). The servers of the runtime, machine and
 package-source providers run on the engine's own runner, on the engine's machine (PRV-002), so
-they stop when the engine stops; after it restarts, the engine runs each again when it first
-needs to call it, reading its secrets for the caller of the setup that last ran it (PRV-026).
+they stop when the engine stops, or the part of it that runs them; after that, the engine runs
+each again when it first needs to call it, reading its secrets for the caller of the setup that
+last ran it (PRV-026).
 
 The engine's own runner passes a program it starts, of the engine's own environment, only
 `HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER`, as the stdio clients of the Model
@@ -444,13 +449,14 @@ engine's machine (PRV-007, MAN-010).
 
 The engine calls a provider itself. A provider call is not a request: no Conduit permits it, no
 Conduit may list its operations, and it is recorded (PRV-004, PRV-005). It declares Conduit's
-extension, and no server marked `plain` implements a runtime provider, a machine provider or a
-package-source provider (PRV-005, PKG-020). A program's run is named by the instance's
-ID, so one run serves one instance (PRV-007). Which runtime provider ran an instance, or on
-which machine, never establishes who sent a request: only what the request presents does, by a
-cryptographic proof wherever it crosses machines (PRV-018, IFC-022). What a run presents, and
-the engine's address, are given to it in `identity`, which the runtime provider keeps as it
-keeps a secret (PRV-022); [work across machines](#work-across-machines) says more.
+extension, and no server marked `plain`, and none reached at a URL, implements a runtime
+provider, a machine provider or a package-source provider (PRV-005, PKG-020, PKG-030). A
+program's run is named by the instance's ID, so one run serves one instance (PRV-007). Which
+runtime provider ran an instance, or on which machine, never establishes who sent a request:
+only what the request presents does, by a cryptographic proof wherever it crosses machines
+(PRV-018, IFC-022). What a run presents, and the engine's address, are given to it in
+`identity`, which the runtime provider keeps as it keeps a secret (PRV-022);
+[work across machines](#work-across-machines) says more.
 
 ## Secrets
 
@@ -477,16 +483,18 @@ value is fixed for the life of that run, so a value rotated in its store arrives
 later run (SEC-014). A read that fails stops the run, and requests to the instance report
 unavailable (SEC-012).
 
-A header that carries a secret is sent only over `https`, or over `http` to a loopback
-address, such as `localhost`, on an engine that neither moves to another machine nor runs as
-several parts. A template whose item would send one anywhere else is rejected when it is
-registered (SEC-024).
+A header that carries a secret goes, and the server of a secret Resource reached at a URL
+stands, only at an `https` URL, or at an `http` URL on a loopback address, such as `localhost`;
+and on an engine that can move to another machine or run as several parts, no server reached at
+a URL stands at a loopback address at all. A template whose item would break this is rejected
+when it is registered (SEC-024).
 
-After the engine restarts, on its machine or on another, it no longer holds the header values
-of a connection to a remote server. Before it next sends a request on that connection it reads
-them again, for the caller of the setup that made the connection, as the instance's Conduit to
-the secret Resource decides then, so closing that Conduit stops the read (SEC-023). It reads a
-provider's secrets in the same way before it runs that provider again (PRV-026).
+After the engine restarts, on its machine or on another, or the part of it that holds a
+connection to a remote server stops, it no longer holds the header values of that connection.
+Before it next sends a request on that connection it reads them again, for the caller of the
+setup that made the connection, as the instance's Conduit to the secret Resource decides then,
+so closing that Conduit stops the read (SEC-023). It reads a provider's secrets in the same way
+before it runs that provider again (PRV-026).
 
 The server of a secret Resource that a runtime provider other than the engine's own runner
 runs, or that is reached at a URL and takes Conduit's keys, stands behind a gate like any other
@@ -536,21 +544,22 @@ instance and nothing renews it. Once the instance is removed the credential open
 because the engine checks on every request that the instance still exists (DL13, IFC-032).
 
 **The gate.** A server believes what a request says about who is asking and under which
-limits. So every server that the engine does not run itself stands behind a gate: the server of
-a run that any runtime provider but the engine's own runner makes, and a remote server that
-takes Conduit's keys (PRV-025). The gate lets a request through only with proof that the engine
-sent it, in a form that the server cannot replay to another, and nothing else on that machine
-reaches the server, apart from root and the operating-system user or group that the provider
-uses there. Before it sends anything, the engine checks that the server answering is the one it
-asked for, and the request and its result cross confidential and unaltered (IFC-017). Conduit
-ships no gate. The runtime provider builds one from existing tools and its contract names them:
-a mutual TLS proxy such as ghostunnel, a service mesh, a proxy that checks tokens, a bridge to
-the server's standard input, or `docker run -i` over SSH with the check at the provider's own
-end. An address, a VPN, a password that is the same for every request, and loopback that other
-programs share are not gates. A remote server that takes Conduit's keys is its own gate: it
-checks the engine's proof itself and is reached only over `https`, and one that cannot do so is
-used as `plain` (IFC-041, IFC-044). So a local server that takes Conduit's keys runs over stdio
-on the engine's own runner, and only a plain one is reached at an `http` URL on loopback.
+limits. So every server that the engine does not run itself, a plain one reached at a URL apart,
+stands behind a gate: the server of a run that any runtime provider but the engine's own runner
+makes, and a remote server that takes Conduit's keys (PRV-025). The gate lets a request through
+only with proof that the engine sent it, in a form that the server cannot replay to another, and
+nothing else on that machine reaches the server, apart from root and the operating-system user
+or group that the provider uses there. Before it sends anything, the engine checks that the
+server answering is the one it asked for, and the request and its result cross confidential and
+unaltered (IFC-017). Conduit ships no gate. The runtime provider builds one from existing tools
+and its contract names them: a mutual TLS proxy such as ghostunnel, a service mesh, a proxy that
+checks tokens, a bridge to the server's standard input, or `docker run -i` over SSH with the
+check at the provider's own end. An address, a VPN, a password that is the same for every
+request, and loopback that other programs share are not gates. A remote server that takes
+Conduit's keys is its own gate: it checks the engine's proof itself and is reached only over
+`https`, and one that cannot do so is used as `plain` (IFC-041, IFC-044). So a local server that
+takes Conduit's keys runs over stdio on the engine's own runner, and only a plain one is reached
+at an `http` URL on loopback, on an engine that can neither move nor run as several parts.
 
 **What needs none of it.** On one machine, where no runtime provider is named, the engine's own
 runner starts each program and talks to it over stdio. Nothing else can reach that channel, so
@@ -604,9 +613,10 @@ outside them, and neither binds other engines:
 
 A claim of conformance names a version of the specification and one of three levels
 ([conformance](../spec/README.md#conformance)). An engine claims the Language level, which
-covers the layer `language`, or the Engine level, which adds the other two layers and a
-conformance document. An implementation, which is not an engine, claims the Implementation
-level: every promise of the layer `interface` whose obligation falls on the implementation.
+covers the layer `language`, or the Engine level, which adds what the other two layers ask of
+the engine, and a conformance document. An implementation, which is not an engine, a provider's
+among them, claims the Implementation level: every promise whose obligation falls on the
+implementation, whatever its layer, such as a runtime provider's gate (PRV-025).
 
 For everything that is not connection and access, such as schemas, packages, the wire and what
 the providers do, the specification adopts existing standards

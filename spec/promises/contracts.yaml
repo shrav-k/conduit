@@ -51,6 +51,9 @@
 # docs/proposals/ruling-42/log-editorial.md) changed CTR-002, whose observable says that
 # `deduplicates` is not the Model Context Protocol's `idempotentHint`. It removed none and
 # added none.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed CTR-012,
+# whose observable says a map where it said an object (M17). It added none and removed none.
 
 - id: CTR-001
   layer: language
@@ -275,7 +278,7 @@
     `{type: object, properties: {path: {type: string}}, required: [path]}` is accepted.
     `type: object` is required at both roots: the protocol requires it of a tool's
     `inputSchema`, and IFC-001 makes the outputs the members of `structuredContent`, keyed by
-    name, so without it the root's `properties` would admit a result that is not an object,
+    name, so without it the root's `properties` would admit a result that is not a map,
     although the protocol lets an `outputSchema` be any schema. The root
     is limited so that each property is one input or one output, as the Model Context Protocol's
     tool definition names them, and so that the `default` of an input stands on its property,

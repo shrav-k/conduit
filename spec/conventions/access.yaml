@@ -88,6 +88,16 @@
 # exception is the read for a provider's run that the engine asks for again once it has
 # restarted (Q3, PRV-026). It added none and removed none. What changed is in
 # docs/proposals/ruling-43/log-secrets.md.
+# The fix pass of the fifth round of the re-audit
+# (docs/proposals/reaudit/round-5/log-fix-F3.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-5/DECISIONS.md, changed ACC-019, whose second exception also
+# covers a provider's run that ended with the part of the engine that held it (M09); ACC-033,
+# under which a request to unregister any retired instance is authorized (M41); and ACC-037,
+# which also takes a request whose credential names an instance whose existence cannot be read
+# (M55). It added none and removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed ACC-039, under which the Conduit also ends once a request to
+# unregister its consumer removes it (V2-09). It added none and removed none.
 
 - id: ACC-001
   layer: convention
@@ -405,7 +415,8 @@
     that the invocation's operation arranged, other than the read of a secret that SEC-023 makes
     again, for the caller of the setup that made a connection, once that connection's values are
     lost, and the read of a secret for a provider's run that PRV-026 asks for again once the
-    engine has restarted, for the caller of the setup that last asked for that run.
+    engine has restarted, or the part of it that held that run has stopped, for the caller of
+    the setup that last asked for that run.
   observable: >-
     In this version no operation arranges, through the engine, work that outlasts its
     invocation. Once an invocation has ended, a request that names it in
@@ -424,12 +435,13 @@
     on another: SEC-023 then reads again, for the caller of the setup that made the connection,
     as the instance's own Conduit to the secret Resource and the filters on it decide when the
     read is made, so closing that Conduit stops it; or where a provider's run ended with the
-    engine and the engine first needs the provider again: PRV-026 then asks for the run anew,
-    with reads for the caller of the setup that last asked for it, decided in the same way,
-    under SEC-011. None is made when a runtime provider restarts a run of its own accord, under
-    PRV-010. An invocation that outlasts its call has not ended: IFC-016 says how its result is
-    read, and until it ends its onward requests are decided under ACC-016 and ACC-017, like any
-    other. A new attempt is dispatched only for a repeat that the caller makes, under IMP-007.
+    engine, or with the part of it that held the run, and the engine first needs the provider
+    again: PRV-026 then asks for the run anew, with reads for the caller of the setup that last
+    asked for it, decided in the same way, under SEC-011. None is made when a runtime provider
+    restarts a run of its own accord, under PRV-010. An invocation that outlasts its call has
+    not ended: IFC-016 says how its result is read, and until it ends its onward requests are
+    decided under ACC-016 and ACC-017, like any other. A new attempt is dispatched only for a
+    repeat that the caller makes, under IMP-007.
   vectors: []
 
 - id: ACC-022
@@ -596,9 +608,9 @@
   level: must
   when: >-
     An actor asks to register, replace, inspect, set up or retire an object, to unregister a
-    template or an instance whose node was declared lost, to retire a Pool together with the
-    Resources it owns, to install a package, for an operation reserved to the root Interface, to
-    reconcile an invocation, to open or close a Conduit, or for a control.
+    template or a retired instance, to retire a Pool together with the Resources it owns, to
+    install a package, for an operation reserved to the root Interface, to reconcile an
+    invocation, to open or close a Conduit, or for a control.
   then: >-
     The request is authorized by an open Conduit from the actor that lists the operation, to a
     target fixed as follows. Registering, replacing and unregistering any object are authorized
@@ -732,7 +744,8 @@
   level: must
   when: >-
     A request is to be decided, and the state of the Conduits that the decision needs cannot be
-    established.
+    established, or whether the instance that an otherwise valid credential of the request names
+    still exists cannot be, under IFC-032.
   then: >-
     The request is not dispatched, and reports unavailable. Nothing else about the request is
     examined or reported.
@@ -797,9 +810,10 @@
     that serves it, and so is the engine's read of a secret through the Conduit before the run
     that the retirement asks for, or the connection that it makes, to serve that hook. This
     holds for a further retirement under LIF-026 as for the first. It ends when the Conduit is
-    closed: once the consumer's shutdown is confirmed or the consumer is declared lost, under
-    CON-008, or by a request of an actor under ACC-012. Every other check of a request through
-    the Conduit is made as for any request. The same holds for an onward request that is made
+    closed: once the consumer's shutdown is confirmed, the consumer is declared lost or a
+    request to unregister it removes it, under CON-008 and LIF-017, or by a request of an actor
+    under ACC-012. Every other check of a request through the Conduit is made as for any
+    request. The same holds for an onward request that is made
     through another Conduit. Where a Resource serves an invocation that a request of an Agent
     began, and the Agent is retired while the invocation is in progress, an onward request of
     the Resource that names that invocation, or that names an invocation which serves it through

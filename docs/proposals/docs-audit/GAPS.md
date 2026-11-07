@@ -61,3 +61,6 @@ logged decision of the coordinator and choice of an editor.
   result contract derived by default; a combined create-and-start; per-request required
   features; replaceable package dependencies; exporting an instance; and the check of an
   expected ID on an update. They are listed in the plan audit.
+
+Since settled: ruling 38, point 2, dropped the six behaviors ([record](../ruling-38/README.md)),
+and ruling 41 settled GP3, written in [secrets.yaml](../../../spec/promises/secrets.yaml).

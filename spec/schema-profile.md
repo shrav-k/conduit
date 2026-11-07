@@ -14,10 +14,10 @@ what this page says of when a `default` is applied.
 JSON Schema 2020-12's applicator vocabulary and its validation vocabulary less `multipleOf`
 (decision 20), added the format `uri-reference`, and added the standards of server.json,
 SARIF, CloudEvents and Kubernetes conditions (decisions 21, 24 and 25).
-[Ruling 42](../docs/proposals/ruling-42/README.md), of the same day, accepted the decisions that
-the coordinator settled on the questions the rewrite left open; two of them changed this page,
-which now says how a value bound by an implementation item is converted to a string, with
-RFC 8785 for a number, and how an argument of a Package is named. Its names, which the
+[Ruling 42](../docs/proposals/ruling-42/README.md), of the same day, struck none of the
+decisions that the coordinator settled on the questions the rewrite left open; two of them
+changed this page, which now says how a value bound by an implementation item is converted to
+a string, with RFC 8785 for a number, and how an argument of a Package is named. Its names, which the
 [vocabulary audit](../docs/proposals/vocabulary-audit/README.md) proposed, then changed what
 this page says of an item's keys, `packageArguments` in place of `arguments`, of a Package's
 `fileSha256`, which pins it in place of the item's `digest`, and of a condition, whose
@@ -27,7 +27,13 @@ this page says of an item's keys, `packageArguments` in place of `arguments`, of
 changed what this page says of an implementation item, which binds no variable by a name that
 `identity` carries and, reached by `remote` and not plain, names no `Authorization` header,
 and of a `remote` URL, to which a header that carries a secret is bound only where SEC-024 lets
-it go, as the [log of its docs editor](../docs/proposals/ruling-43/log-docs.md) says.
+it go, as the [log of its docs editor](../docs/proposals/ruling-43/log-docs.md) says. The
+[integration of the fixes of round 5](../docs/proposals/reaudit/round-5/log-fixes.md) changed
+what it says of a `remote` URL, which holds no variable and to which an item selected for
+`get-secret.v1` is bound only where SEC-024 lets it stand, and of the place an item binds,
+which is confined to a string, a number, a boolean or null. Its
+[verification](../docs/proposals/reaudit/round-5/log-fixes.md#verification) said above that
+ruling 42 struck none of the coordinator's decisions (V10).
 
 Schemas are not what distinguishes Conduit. This part of the specification invents nothing: it
 selects existing standards and narrows them. Where a standard defines a meaning, that meaning
@@ -53,8 +59,8 @@ Schema contract `schema.v1` in [schemas/schema.yaml](schemas/schema.yaml), and
 | `uri` | RFC 3986 | Format grammar. |
 | `uri-reference` | RFC 3986, section 4.1 | Format grammar. `fetch` is checked by it (MAN-006). |
 | `fetch` | RFC 3986; `file:` URLs, RFC 8089 | `fetch` in an item of a manifest's `packages` is a URI reference, with no user information. A relative one is resolved against the directory the manifest was read from to a `file:` URL, and is rejected where the manifest was handed over without a directory (MAN-006). Every engine fetches `https:` and `file:` URLs; another scheme is fetched by a package-source provider that claims it (NAM-012, PRV-017). |
-| An implementation's `remote` URL | RFC 3986 | The `url` of a `remote` item is a URI, reached over the protocol's Streamable HTTP transport (MAN-010). A template whose item binds a header to a secret is rejected unless that URL is `https`, or, on an engine that can neither restart on another machine nor run as several parts, `http` with the host `localhost`, an IPv4 address in `127.0.0.0/8` or `[::1]`; the scheme and the host are compared without regard to case, as RFC 3986 has them, and no other host counts, a name that resolves to a loopback address among them (SEC-024). An item that is not plain is connected to only at an `https` URL (IFC-041). |
-| Implementation items | The Model Context Protocol Registry's server.json, schema 2025-12-11 | A `package` item holds one server.json Package, pinned by its `fileSha256` or, for an `oci` image, by a digest in its `identifier`, and a `remote` item one server.json Remote whose `type` is `streamable-http`, each as that schema gives it (MAN-010). An argument of the Package's `packageArguments` is named by its `name`, or by its `valueHint` where it is positional, as server.json labels one, and binding one that states a fixed `value` is rejected; no key binds its `runtimeArguments` (MAN-010). A variable, an argument or a header holds a string, so the place it is bound to admits no object or array (MAN-017); a boolean is given as `true` or `false`, as server.json gives one, and a place that holds null gives nothing (PRV-007, IFC-041). A template is rejected whose item's `environment` binds a variable by a name that `identity` carries, which [names.yaml](names.yaml) fixes (MAN-018), and an item reached by `remote` that is not plain names no `Authorization` in its `headers`, in any case of its letters (IFC-043). |
+| An implementation's `remote` URL | RFC 3986 | The `url` of a `remote` item is a URI, reached over the protocol's Streamable HTTP transport, so one that holds a variable of the Remote in braces is rejected, and no key binds such a variable (MAN-010). A template whose item binds a header to a secret, or is selected for `get-secret.v1`, is rejected unless that URL is `https`, or, on an engine that can neither restart on another machine nor run as several parts, `http` with the host `localhost`, an IPv4 address in `127.0.0.0/8` or `[::1]`, and on an engine that can do either, any item at such a host is rejected; the scheme and the host are compared without regard to case, as RFC 3986 has them, and no other host counts, a name that resolves to a loopback address among them (SEC-024). An item that is not plain is connected to only at an `https` URL (IFC-041). |
+| Implementation items | The Model Context Protocol Registry's server.json, schema 2025-12-11 | A `package` item holds one server.json Package, pinned by its `fileSha256` or, for an `oci` image, by a digest in its `identifier`, and a `remote` item one server.json Remote whose `type` is `streamable-http`, each as that schema gives it (MAN-010). An argument of the Package's `packageArguments` is named by its `name`, or by its `valueHint` where it is positional, as server.json labels one, and binding one that states a fixed `value` is rejected; no key binds its `runtimeArguments` (MAN-010). A variable, an argument or a header holds a string, so the place it is bound to is confined to a string, a number, a boolean or null (MAN-017); a boolean is given as `true` or `false`, as server.json gives one, and a place that holds null gives nothing (PRV-007, IFC-041). A template is rejected whose item's `environment` binds a variable by a name that `identity` carries, which [names.yaml](names.yaml) fixes (MAN-018), and an item reached by `remote` that is not plain names no `Authorization` in its `headers`, in any case of its letters (IFC-043). |
 | `uuid` | RFC 9562 | Format grammar. JSON Schema 2020-12 cites RFC 4122 for this format; the grammar cited here is the one that is checked (SCH-004). |
 | Package versions | Semantic Versioning 2.0.0 | The grammar of a version (PKG-001). Two versions are the same when neither precedes the other, so build metadata is set aside; the digest decides whether two archives are the same package (PKG-003, PKG-021). |
 | Digests | SHA-256, FIPS 180-4 | The digest of a package's archive, written as `sha256:` followed by the hash in lowercase hexadecimal (PKG-004). The digest that identifies the contracts of one submission of a project is written in the same way (SUB-008). A server.json Package states the hash of its package file in `fileSha256`, alone, in lowercase hexadecimal, and an `oci` image is pinned by a digest written `@sha256:` and the hash at the end of its `identifier` (MAN-010). |

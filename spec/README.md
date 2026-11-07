@@ -18,18 +18,20 @@ specification as it stands is that rewrite. The logs of its editors, beside the 
 in `docs/proposals/ruling-41/`, list every change, the choices that the editors made beyond
 the work order, which the coordinator confirms or strikes, and the questions they left open.
 A [coverage check](../docs/proposals/ruling-41/log-integration.md#coverage-check) then read
-the rewrite against every decision; its log lists what it fixed and what waits on a decision.
-[Ruling 42](../docs/proposals/ruling-42/README.md), of the same day, accepted the decisions
-that the coordinator settled on the
-[questions the rewrite left open](../docs/proposals/ruling-41/open-decisions.md), and the
-owner's answers to seven of the nine put to the owner; the logs of its editors are beside its
-record. The other two, D5 and D20, are about work across machines, which the owner asked to
-have researched further; ruling 43 has since ruled them, as the end of this paragraph says. The
-secret type is ruled: its promises are [promises/secrets.yaml](promises/secrets.yaml), and the
-[secrets proposal](../docs/proposals/secrets/README.md) is the reasoning behind it. The names
-that the review and the work order coined are settled: ruling 42 also accepted the names and
-the editorial fixes that the [vocabulary audit](../docs/proposals/vocabulary-audit/README.md)
-proposes. The names are applied, and so are the editorial fixes, as the
+the rewrite against every decision; its log lists what it fixed, and the questions it left were
+settled in the [open questions after the rewrite](../docs/proposals/ruling-41/open-decisions.md)
+and by rulings 42 and 43. [Ruling 42](../docs/proposals/ruling-42/README.md), of the same day,
+struck none of the decisions that the coordinator settled on the
+[questions the rewrite left open](../docs/proposals/ruling-41/open-decisions.md), and accepted
+the recommended answers to seven of the nine put to the owner; the logs of its editors are
+beside its record. The other two, D5 and D20, are about work across machines, which the owner
+asked to have researched further; ruling 43 has since ruled them, as the end of this paragraph
+says. The secret type is ruled: its promises are [promises/secrets.yaml](promises/secrets.yaml),
+and the [secrets proposal](../docs/proposals/secrets/README.md) is the reasoning behind it. The
+names that the review and the work order coined are settled: ruling 42 also accepted the names
+and the editorial fixes that the
+[vocabulary audit](../docs/proposals/vocabulary-audit/README.md) proposes. The names are
+applied, and so are the editorial fixes, as the
 [log of the editorial fixes](../docs/proposals/ruling-42/log-editorial.md) lists. The audit's
 names for machines and placement, N2, N3 and N8 to N11, are as the
 [log of their renames](../docs/proposals/ruling-42/log-rename-a.md) lists: a node, of the type
@@ -45,24 +47,37 @@ the filters a request carries are sent in `io.github.shrav-k.conduit/filters`, u
 extension `io.github.shrav-k.conduit/implementation-interface`; and an engine documents its
 choices in its conformance document. A
 [verification](../docs/proposals/ruling-42/log-integration.md#verification) of the result then
-fixed what three readers found that follows from ruling 42, and lists what still needs a
-decision. [Ruling 43](../docs/proposals/ruling-43/README.md), of the same day, then accepted
-the [proposal on work across machines](../docs/proposals/multi-machine/README.md), with two
+fixed what three readers found that follows from ruling 42; what it left was settled in the
+[record of ruling 42](../docs/proposals/ruling-42/README.md#after-the-ruling) and in
+[the items that waited on ruling 43](../docs/proposals/ruling-43/log-integration.md#the-items-that-waited-on-this-ruling),
+apart from the few points that the tracker lists
+[for the next reader](../docs/AUDIT.md#for-the-next-reader).
+[Ruling 43](../docs/proposals/ruling-43/README.md), of the same day, then accepted the
+[proposal on work across machines](../docs/proposals/multi-machine/README.md), with two
 revisions, which rules D5 and D20 and five smaller questions and settles what that verification
 left for it. The logs of its editors, and the
 [log of its integration](../docs/proposals/ruling-43/log-integration.md), are beside its record;
 the [verification](../docs/proposals/ruling-43/log-integration.md#verification) at the end of
-that log fixed what three readers found that follows from the ruling, and lists what still
-needs a decision.
+that log fixed what three readers found that follows from the ruling; what it left was settled
+in the record's section
+[After the ruling](../docs/proposals/ruling-43/README.md#after-the-ruling).
 
 The records under `docs/proposals/` say who decided what and when: the owner's rulings, listed
 in the [ruling log](../docs/AUDIT.md#ruling-log), and the decisions of the session that
 coordinates the re-audit ([who decides what](../docs/AUDIT.md#who-decides-what)), logged in
 [GAPS.md](../docs/proposals/docs-audit/GAPS.md) and in the decisions of
 [round 2](../docs/proposals/reaudit/round-2/DECISIONS.md), of
-[round 3](../docs/proposals/reaudit/round-3/DECISIONS.md) and of
-[round 4](../docs/proposals/reaudit/round-4/DECISIONS.md). The comment at the head of each
-file says which pass changed which promise. Later work is left out of this version
+[round 3](../docs/proposals/reaudit/round-3/DECISIONS.md), of
+[round 4](../docs/proposals/reaudit/round-4/DECISIONS.md) and of
+[round 5](../docs/proposals/reaudit/round-5/DECISIONS.md), with the choices that its
+[fix log](../docs/proposals/reaudit/round-5/log-fixes.md) records, and since ruling 39 also in the
+[open questions after the rewrite](../docs/proposals/ruling-41/open-decisions.md) and in the
+sections "After the ruling" of the records of
+[ruling 42](../docs/proposals/ruling-42/README.md#after-the-ruling) and
+[ruling 43](../docs/proposals/ruling-43/README.md#after-the-ruling). The owner can strike any
+decision or choice made since ruling 39 ([who decides what](../docs/AUDIT.md#who-decides-what)
+lists where they are). The comment at the head of each file says which pass changed which
+promise. Later work is left out of this version
 ([ruling 38](../docs/proposals/ruling-38/README.md)). The specification is still a draft,
 because it has no conformance vectors and no reference model; it stays one until it has them,
 the reference model agrees with it, and a round of readers finds nothing unsafe in it
@@ -97,11 +112,13 @@ X509-SVID, and signed tokens in the form of a JWT-SVID, which the engine's addre
 `https` URL always accepts as the protocol's own authorization (IFC-022, IFC-042, DL13).
 A run is given what it presents, and the engine's address, in the input `identity` of `run.v1`,
 under names fixed for every engine (PRV-022). Every server that the engine does not run itself,
-the server of a run that a runtime provider makes and a `remote` server that takes Conduit's
-keys, stands behind a gate that admits only the proof of an enforcement point, which in this
-version the engine alone makes, and the engine sends it nothing until it has proved who it is
-(PRV-025, PRV-028, IFC-017, IFC-041). Whether a restriction is enforced
-is picked with the runtime provider (ACC-027).
+other than a `plain` server reached by `remote`, stands behind a gate: the server of a run that
+a runtime provider makes, and a `remote` server that takes Conduit's keys. That gate admits only
+the proof of an enforcement point, which in this version the engine alone makes, and the engine
+sends it nothing until it has proved who it is (PRV-025, PRV-028, IFC-017, IFC-041). A `plain`
+server reached by `remote` takes none of Conduit's keys, and whatever can reach its URL reaches
+it (IFC-007, IFC-041). Whether a restriction can be enforced depends on the runtime provider;
+this version reports every restriction as mediated (ACC-027).
 
 The specification has three layers, and every promise says in its `layer` field which one it
 belongs to.
@@ -118,8 +135,8 @@ provider's type must state, how an instance names its runtime provider and which
 reach a provider are `language`, as in PRV-001, PRV-004, PRV-006, SEC-005 and SEC-022; what
 the engine asks of a provider, by a provider call or by a read of a secret, and what a provider
 must do are `convention`, as in PRV-005, PRV-007, PRV-011, PRV-022 and SEC-010; and what an
-implementation of `get-secret.v1` must do with a secret is `interface`, as in SEC-006 and
-SEC-019.
+implementation of `get-secret.v1` must do with a secret, and what any implementation that is
+given one must not do with it, are `interface`, as in SEC-006 and SEC-019.
 
 Two things are deliberately outside it. How one type behaves, such as the conditions it defines
 (running or paused, for example) or a directory's edge cases, belongs to that type's contract;
@@ -152,14 +169,14 @@ run ended with it, for the setup that last asked for that run (PRV-026).
 | [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, hooks, retirement and controls | Draft; 14 promises; no vectors |
 | [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 10 promises; no vectors |
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; no vectors |
-| [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 21 promises; no vectors |
+| [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 22 promises; no vectors |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, `conduit.yml` or `conduit.json`, its keys, implementation items, which variables of a run they may not bind, which files of a project are its documents, and the layout of a package's archive | Draft; 17 promises; no vectors |
 | [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, and that every engine takes a directory | Draft; 10 promises; no vectors |
 | [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 15 promises; no vectors |
 | [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: nodes, machines, labels and placement by the provider, and values tied to a node | Draft; 21 promises; no vectors |
 | [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 22 promises; no vectors |
 | [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 5 promises; no vectors |
-| [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a provider's run made again after the engine restarts | Draft; 28 promises; no vectors |
+| [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself, other than a `plain` server reached by `remote`, and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a provider's run made again after the engine restarts | Draft; 28 promises; no vectors |
 | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; no vectors |
 | [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 102 documents exported and 1 implementation, which is also an export |
 | [core/conduit.yaml](core/conduit.yaml) | The core package's manifest: its address, its version, its exports and its one implementation, the engine itself | Draft |
@@ -181,7 +198,7 @@ run ended with it, for the setup that last asked for that run (PRV-026).
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions, digests, IDs, revisions and label selectors | Draft; 13 contracts |
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
 | [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 56 files |
-| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 28 files |
+| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 30 files |
 | [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes | Draft; 35 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 29 promises; no vectors |
 | [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 31 promises; no vectors |
@@ -189,11 +206,11 @@ run ended with it, for the setup that last asked for that run (PRV-026).
 | [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 5 promises; no vectors |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; no vectors |
 | [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 5 promises; no vectors |
-| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 41 promises; no vectors |
-| [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 16 items |
+| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 43 promises; no vectors |
+| [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 15 items |
 
-Every area has been written as promises, 449 in all: 202 of the layer `language`, 206 of the
-layer `convention` and 41 of the layer `interface`. The rulings of the
+Every area has been written as promises, 452 in all: 202 of the layer `language`, 207 of the
+layer `convention` and 43 of the layer `interface`. The rulings of the
 [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the decisions of the
 [re-audit](../docs/proposals/reaudit/README.md), the
 [ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the
@@ -207,8 +224,10 @@ the [decisions of its third round](../docs/proposals/reaudit/round-3/DECISIONS.m
 [ruling 40](../docs/proposals/ruling-40/README.md),
 [ruling 41](../docs/proposals/ruling-41/README.md),
 [ruling 42](../docs/proposals/ruling-42/README.md), with the names and the editorial fixes of
-the vocabulary audit, and [ruling 43](../docs/proposals/ruling-43/README.md) have been applied
-to them. The JSON Schemas of
+the vocabulary audit, [ruling 43](../docs/proposals/ruling-43/README.md) and the
+[decisions of the fifth round of the re-audit](../docs/proposals/reaudit/round-5/DECISIONS.md),
+with the [verification of its fixes](../docs/proposals/reaudit/round-5/log-fixes.md#verification),
+have been applied to them. The JSON Schemas of
 documents, contracts and manifests, the core package as documents and the manifest's file
 format now exist: they are `schemas/`, `core/` and `promises/manifest.yaml`. Still to come: the
 conformance vectors, and a reference model.
@@ -263,13 +282,14 @@ The `layer` field lets coverage be counted by layer.
 A claim of conformance names a version of this specification and one of three levels. A
 version is named by the `apiVersion` that [names.yaml](names.yaml) states for it. An engine
 claims the Language level or the Engine level. Something that is not an engine, which is an
-implementation, claims the Implementation level.
+implementation, a provider's or a store's among them, claims the Implementation level, whatever
+the layer of the promises that bind it.
 
 | Level | Who claims it | What it covers |
 | --- | --- | --- |
 | Language | An engine | Every promise whose layer is `language`: documents in, resolved objects or diagnostics out. |
-| Engine | An engine | The Language level, plus every promise whose layer is `convention` or `interface`, plus a conformance document that documents a choice for every item of the implementation-defined list. |
-| Implementation | An implementation | Every promise whose layer is `interface` and that binds an implementation: one whose obligation falls on the implementation and not on the engine, such as IFC-008, IFC-009, IFC-019, IFC-026, IFC-031, SEC-006 and SEC-019. |
+| Engine | An engine | The Language level, plus every promise whose layer is `convention` or `interface` and whose obligation falls on the engine, plus a conformance document that documents a choice for every item of the implementation-defined list. The promises on providers count among these where the engine's own runner, machine provider and fetching keep them because no provider serves (PRV-003). |
+| Implementation | An implementation, a provider's among them | Every promise, whatever its layer, whose obligation falls on the implementation and not on the engine. Examples are IFC-008, IFC-009, IFC-019, IFC-026, IFC-031, SEC-006 and SEC-019. For a provider's implementation this includes the promises that bind the provider, which have the layer `convention`, such as PRV-010 to PRV-012, PRV-014, PRV-019, PRV-021, PRV-022, PRV-025 and PRV-028. For a server reached by `remote` that is not plain, it includes PRV-025. |
 
 An engine that is given a document it cannot honor rejects the document and says why in a
 diagnostic. It never accepts a document and ignores part of it.
@@ -302,24 +322,32 @@ ruling 42 accepted and from ruling 43.
 - An Agent's model that can run commands can read its own credential, and only the root
   Interface's choice of which Conduits to a secret Resource it opens limits which secret
   reaches an Agent's process through the engine (SEC-008).
-- Only an enforcement point reaches the server of a secret Resource that the engine does not
-  run itself, and the request and the value it returns cross between them confidential and
-  unaltered (PRV-025, PRV-028, IFC-017, SEC-006). For a server reached by `remote`, which is
-  its own gate, this holds as far as its operator has configured it to admit only the engine's
-  proof (IFC-041). What the gate still admits on the server's machine,
-  and who can make the engine's proof, are the points on the gate and on the engine's
-  operating-system user.
+- Only an enforcement point reaches the server of a secret Resource that the engine does not run
+  itself, other than a `plain` implementation of `get-secret.v1` reached by `remote`, and the
+  request and the value it returns cross between them confidential and unaltered (PRV-025,
+  PRV-028, IFC-017, SEC-006). For a server reached by `remote` that is not `plain`, which is its
+  own gate, this holds as far as its operator has configured it to admit only the engine's proof
+  (IFC-041). A `plain` one stands behind no gate: whatever can reach its URL can send it a
+  locator of its own choosing and read every secret that its store's credential reaches, and
+  SEC-024 keeps it at an `https` URL, or at an `http` URL on loopback on an engine that can
+  neither restart on another machine nor run as several parts (SEC-006, SEC-024). What the gate
+  still admits on the server's machine, and who can make the engine's proof, are the points on
+  the gate and on the engine's operating-system user.
 - A copy that a store's package keeps is outside the engine (SEC-006, SEC-017).
 - A value that an implementation returns or sends is data from then on (SEC-019).
 - Opening a Conduit that lists `get-secret.v1` also trusts the secret Resource's locator,
   which any actor that may register that Resource writes (SEC-005).
 - A secret bound to an argument is in the arguments of the process, which process listings
   show (PRV-007, SEC-010).
-- A value rotated in its store reaches an instance's implementation only in a later run, which
-  a further setup asks for once the run has ended, and a `remote` item only at the next setup
-  (SEC-014, SEC-013). No operation ends the run of an instance that is ready, so through Conduit
-  alone a running instance gets the new value only in another instance made in its place once
-  it is retired (LIF-009), and retiring it closes the Conduits of which it is an end (CON-008).
+- A value rotated in its store reaches an instance's implementation only in a later run, one
+  that a further setup, or a retirement that is to send the retire hook, asks for once the run
+  has ended, or one that PRV-026 makes again for a provider after the engine restarts, or the
+  part of it that held the run stops. It reaches a `remote` item only at a later connection,
+  which a further setup or such a retirement makes, or at the read again of SEC-023 once the
+  engine has lost a connection's values, as after it restarts (SEC-014, SEC-013, SEC-023,
+  PRV-026, TPL-018). No operation ends the run of an instance that is ready, so through Conduit
+  alone a running instance gets the new value only in another instance made in its place once it
+  is retired (LIF-009), and retiring it closes the Conduits of which it is an end (CON-008).
 - The engine's own runner passes a process it starts, of the engine's environment, only `HOME`,
   `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER`, or on an operating system such as Windows the
   variables that DL16 names in their place, each only where its value does not begin with `()`,
@@ -343,16 +371,20 @@ ruling 42 accepted and from ruling 43.
   it reads again the secret Resources that the setup which made the connection read for its
   headers, after that setup has ended, for that setup's caller, as the instance's own Conduit
   and its filters decide then; closing that Conduit stops it (SEC-023). Once it has restarted,
-  it reads in the same way the secrets of a provider whose run ended with it, a secret Resource
-  that its own runner ran among them, before it runs that provider again (PRV-026).
-- A header that carries a secret goes only to an `https` URL, or to an `http` URL whose host is
-  a loopback address on an engine that, as configured, can neither restart on another machine
-  nor run as several parts; once an engine is configured so, it sends such a header to no
-  `http` URL, whenever the template was registered (SEC-024, SEC-013, DL17). There it crosses
-  the loopback of the machine that the engine runs on in clear, on every HTTP request of the
-  connection, to whatever listens at that address, a process of another operating-system user
-  among them. Only a plain server stands at an `http` URL (IFC-044): a local server that takes
-  Conduit's keys runs over stdio on the engine's own runner.
+  or the part of it that held a provider's run has stopped, it reads in the same way the secrets
+  of a provider whose run ended with it, a secret Resource that its own runner ran among them,
+  before it runs that provider again (PRV-026).
+- A header that carries a secret, and the value that an implementation of `get-secret.v1`
+  reached by `remote` returns, cross only an `https` URL, or an `http` URL whose host is a
+  loopback address on an engine that, as configured, can neither restart on another machine nor
+  run as several parts. An engine that can do either rejects every `remote` item at a loopback
+  host, and once an engine is configured so, it sends nothing to such an item, and no such
+  header to an `http` URL, whenever the template was registered (SEC-024, SEC-013, IFC-041,
+  DL17). There each crosses the loopback of the machine that the engine runs on in clear, on
+  every HTTP request of the connection, to whatever listens at that address, a process of
+  another operating-system user among them. Only a plain server stands at an `http` URL
+  (IFC-044): a local server that takes Conduit's keys runs over stdio on the engine's own
+  runner.
 - A gate keeps out everything on a run's machine but root and the operating-system user or
   group that the runtime provider uses there for its own means, which its contract names and
   as which, or in which, no run runs (PRV-025).

@@ -42,9 +42,11 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   bind nothing.
 - The records under `docs/proposals/` say what was decided, by whom and why: the owner's
   rulings, and for the documents audit and the rounds of the re-audit the decisions of the
-  coordinating session under ruling 37. Ruling 39 accepted those made before it; the choices
-  of the editors of the rewrite under ruling 41 came after it, and the owner can strike any of
-  them. Where a record and the specification differ, the specification governs.
+  coordinating session under ruling 37. Ruling 39 accepted those made before it. Those made
+  after it, the coordinator's decisions and the editors' choices since the rewrite under ruling
+  41, can each be struck by the owner; [who decides what](docs/AUDIT.md#who-decides-what) lists
+  where they are logged. Where a record and the specification differ, the specification
+  governs.
 - If you were asked to read or audit this repository cold, start at
   [for the next reader](docs/AUDIT.md#for-the-next-reader): what to read, what is known to be
   open, what to look at first, and where findings go.
@@ -92,12 +94,14 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   needs them.
 - Commit or push only when asked, and work on a branch. One standing instruction exists, and it
   is for the sessions the owner has asked to write the language, not for a reviewer or any
-  other session: the owner's instruction of 2026-11-05 is that this work is tracked on a pull request
-  (ruling 36), and the owner confirmed in ruling 38 that those sessions commit and push to its
-  branch at each milestone. Pull request 6 was merged by squashing after ruling 38. Pull
-  request 7, on the branch `docs/pre-codex`, carries the work of rulings 39 to 42, the
-  rewrite of the specification around provider contracts and the vocabulary audit; round 5 of
-  the readers comes before it is merged. Merges to `main` are squashed, with a message written by hand.
+  other session: the owner's instruction of 2026-11-05 is that this work is tracked on a pull
+  request (ruling 36), and the owner confirmed in ruling 38 that those sessions commit and push
+  to its branch at each milestone. Pull request 6 was merged by squashing after ruling 38. Pull
+  request 7, on the branch `docs/pre-codex`, carries the work of rulings 39 to 43, the rewrite
+  of the specification around provider contracts, the vocabulary audit, work across machines
+  and [round 5](docs/proposals/reaudit/round-5/README.md) of the readers. It was merged by
+  squashing on 2026-11-07. Work after it goes on a new branch, with its own pull request. Merges to `main` are
+  squashed, with a message written by hand.
 
 ## Checks
 
@@ -136,7 +140,9 @@ The names the specification assigns (the core package's address, `apiVersion`, t
 its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,
 in `spec/names.yaml`. Never edit one by hand. Run
 `python3 tools/set_names.py` with the new values to see what would change, and add `--write` to
-rewrite every occurrence together.
+rewrite every occurrence under `spec/` together, and under `conformance/` and `reference-model/`
+once they exist. The tool does not change a document outside them that quotes a name, such as
+the example in `docs/OVERVIEW.md`: update it once the tool has run.
 
 Run `cargo test --release` in each Rust directory you change, under `experiments/` or
 `packages/`.

@@ -73,6 +73,15 @@
 # so the reads for the hook belong to the retirement, as row 9 of the open questions has it,
 # and none is the read again of SEC-023 that ACC-039 would refuse. It removed none and added
 # none.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed TPL-018,
+# which asks for a run to serve the retire hook only where the hook's implementation is the
+# item that is run and its runtime provider reports the run `stopped`, and does not dispatch
+# the hook where it reports `unknown` (M03, M29), and TPL-019, under which an Interface or a
+# Pool selects no item that is run (M06). It added none and removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed TPL-017, which no longer implies that a hook reached by `remote` makes
+# onward requests (V2-16). It added none and removed none.
 
 - id: TPL-001
   layer: language
@@ -309,8 +318,10 @@
     for the caller of the setup, with the idempotency key that OPS-028 gives it.
   observable: >-
     The hook is dispatched only once the declared Conduits are open, or the entries set up, and
-    the run asked for or the `remote` item connected, under TPL-012, so its onward requests,
-    which are onward requests under ACC-016, go through Conduits that are open. It carries the
+    the run asked for or the `remote` item connected, under TPL-012, so the onward requests of a
+    hook whose implementation is an item that is run, which are onward requests under ACC-016,
+    go through Conduits that are open; one reached by `remote` is given no means to make any,
+    under IFC-015. It carries the
     filters of the invocation of `set-up.v1` that it belongs to, under ACC-018, and no
     `conduit`. In a further setup the hook is dispatched again only as OPS-021 and OPS-028
     allow. Its outcome counts in the setup's as OPS-022 states. A template selects the hook in
@@ -334,8 +345,9 @@
     idempotency key that OPS-028 gives it, where the hook is to be dispatched: where no
     earlier invocation of it exists for the instance, or where OPS-012 or OPS-024 would dispatch
     a new attempt of the earlier one, under OPS-021 and OPS-028. Where the hook is to be
-    dispatched, an item that is run is selected for the instance and its runtime provider does
-    not report the run running, the engine first asks for the run, under PRV-007. Where the hook
+    dispatched, its implementation is an item that is run and its runtime provider reports the
+    run `stopped`, the engine first asks for the run, under PRV-007; where it reports the run's
+    state `unknown`, the hook is not dispatched and its part reports unavailable. Where the hook
     is to be dispatched, its implementation is a `remote` item and no connection to it lasts
     whose values the engine holds, the engine first connects to it, under IFC-041 and SEC-013.
     Where the hook is not to be dispatched, no run is asked for, no connection is made, and the
@@ -374,13 +386,17 @@
   when: >-
     A template is registered whose selected implementations, in its `implementation` map or by
     default under TPL-004, include two different implementation items that are reached by
-    `command` or by `package`.
+    `command` or by `package`, or, where the template is of an Interface or a Pool, include one.
   then: >-
-    The template is rejected: an instance has at most one item that is run.
+    The template is rejected: an Agent or a Resource has at most one item that is run, and an
+    Interface or a Pool none.
   observable: >-
-    Resolving returns a diagnostic naming the two items. An item reached by `command` or
-    `package` is one that is run, and a run is named by the instance's ID, under PRV-007, so one
-    run serves one instance. One item that implements several of the selected operations is one
-    run, which serves them all. An item reached by `remote`, and one reached by none of the
-    three, as `engine` is under MAN-012, is not run and does not count.
+    Resolving returns a diagnostic naming the two items, or the one item of an Interface or a
+    Pool. An item reached by `command` or `package` is one that is run, and a run is named by
+    the instance's ID, under PRV-007, so one run serves one instance. One item that implements
+    several of the selected operations is one run, which serves them all. An item reached by
+    `remote`, and one reached by none of the three, as `engine` is under MAN-012, is not run and
+    does not count. An Interface or a Pool has no placement and no `runtime`, under PLC-006 and
+    OBJ-013, so there is no machine on which to run an item for it, under PRV-019, or to give in
+    `machine`, under PRV-007: its implementations are `engine` or reached by `remote`.
   vectors: []

@@ -42,6 +42,15 @@
 # changed OBJ-021, whose observable says the `arguments` of a filter under IFC-018, where it
 # said a restriction, since only filters are sent (the vocabulary audit's N16). It removed none
 # and added none.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed OBJ-019,
+# which leaves to the author the names under `dependentRequired` and `dependentSchemas` and
+# the patterns under `patternProperties` (M24), and OBJ-021, under which a reference schema
+# reached through any number of `$ref`s governs the place (M26). It added none and removed
+# none.
+# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
+# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed OBJ-024, whose
+# names include those of what `identity` carries (M91). It added none and removed none.
 
 - id: OBJ-001
   layer: language
@@ -344,7 +353,8 @@
   when: >-
     A document contains a key that this specification does not define, other than: a key inside
     `config`, `annotations` or the value of an input's `default`; inside a schema, a name the
-    author gives a member of `properties` or of `$defs`, and a key inside a value the schema
+    author gives a member of `properties`, `dependentRequired`, `dependentSchemas` or `$defs`, a
+    pattern that keys a member of `patternProperties`, and a key inside a value the schema
     states under `const`, `enum`, `default` or `examples`; a key inside the `arguments` of an
     instance, a nested instantiation or an applied requirement; a name that keys a member of a
     map this specification says is keyed by name, such as `inputs` or `conduits`; a label that
@@ -361,8 +371,8 @@
     rejected in this way. An input's `default` is a literal value whether a template or a
     Requirement contract declares the input, and an Operation contract's input states its
     `default` inside its `inputSchema`, so a key inside a `default` that is a map is the
-    author's. Inside a schema only the names are the author's: its keywords are closed by the
-    profile, and one outside it is rejected under SCH-002.
+    author's. Inside a schema only the names and the patterns are the author's: its keywords are
+    closed by the profile, and one outside it is rejected under SCH-002.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -391,7 +401,8 @@
     reference schemas, which are Schema contracts that package exports. A reference schema
     governs a place where it is the schema of that place directly, where it is the `items` of a
     list that holds the value, or where it is a branch of `anyOf` or `oneOf` that the value
-    satisfies. Any other value is data.
+    satisfies, a `$ref` in each of these standing for the schema it leads to, through any number
+    of `$ref`s. Any other value is data.
   observable: >-
     A value governed by a reference schema is resolved under OBJ-009, and the instance stores
     the resolved form, `{kind: <Kind>, id: <ID>}`, in its place. That stored form is the one an
@@ -399,7 +410,11 @@
     `config` of Conduit's keys under IFC-006, and the one inspecting shows. Each item of a list
     whose `items` is `github.com/shrav-k/conduit/core#pool-reference.v1` is a reference, and
     under `anyOf` with a reference schema and the type null, a name is a reference and null is
-    not. A map with the keys `kind` and `name` in a place governed by any other schema is kept
+    not. Where a project's Schema contract `token.v1` has the `spec` `{$ref:
+    github.com/shrav-k/conduit/core#secret-reference.v1}`, a place whose schema is `{$ref:
+    '#token.v1'}` is governed by `secret-reference.v1`, as `$ref` means under SCH-001, and so is
+    one whose schema is a `$ref` to a member of `$defs` that holds that `$ref`. A map with the
+    keys `kind` and `name` in a place governed by any other schema is kept
     exactly as written, and is never rewritten. The core schema `secret-reference.v1` is a
     reference schema too, and a place it governs is under the narrower rule of SEC-001: it holds
     only a reference, never the secret itself.
@@ -452,8 +467,9 @@
     A version of this specification is published.
   then: >-
     It states its names in `names.yaml`: the address of the core package, the value of
-    `apiVersion`, and the prefix of the keys Conduit adds to `_meta`. Only a new version may
-    change them, and a document's `apiVersion` says which version's names apply to it.
+    `apiVersion`, the prefix of the keys Conduit adds to `_meta`, and the names of what
+    `identity` carries, under PRV-022. Only a new version may change them, and a document's
+    `apiVersion` says which version's names apply to it.
   observable: >-
     An engine that supports two versions loads a document written for either, and resolves the
     core package at the address the document's own version states. A document that uses one

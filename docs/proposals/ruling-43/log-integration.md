@@ -353,16 +353,29 @@ the rows say, and stands unless the coordinator or the owner strikes it.
 6. **No run runs as the user or group that a gate excepts** (MX-02).
 7. **MAN-018 compares names without regard to case** (C9).
 8. **The engine authenticates to an authorization server that the user runs with its own
-   credential** of DL13, by RFC 7523 or RFC 8705 (F6, MX-13).
+   credential** of DL13, by RFC 7523 or RFC 8705 (F6, MX-13). Changed in round 5 (M66, dated
+   2026-11-07): IFC-041 drops RFC 8705, since the protocol's extension for client credentials
+   does not allow mutual TLS, so the engine authenticates by a JWT assertion under RFC 7523
+   alone, and DL13 states only its key and client identifier.
 9. **DL17's consequences**: one machine for the runner at a time, one part for each server of
    a provider and each connection, the machine left shut down before the runner runs elsewhere,
    and the invocations of a part that stops ended unknown (MX-04, MX-09, MX-10).
-10. **IFC-042 names the address at an `https` URL** (C8, MX-08).
+10. **IFC-042 names the address at an `https` URL** (C8, MX-08). Changed in round 5 (M53,
+    dated 2026-11-07): IFC-042 also accepts a run's `token` at the `http` loopback address that
+    DL13 gives a run, under the condition that DL13 states (M47).
 11. **SEC-013's guard** (C1, MX-05): an engine configured to move sends a secret header to no
     `http` URL, whenever the template was registered.
 12. **A provider's own secret Resources belong on `local`**, stated as guidance (MX-11).
+13. Added in round 5 (M109), which found it missing here: **PRV-022 no longer gives leave to
+    replace a file of `identity` in place** (MX-21). In this version a credential lasts as long
+    as its instance (DL13), as the proposal has it, so the leave that ruling 42's D17 gave is
+    left, in PRV-022's observable, for renewal on the run's machine in v1 (A65).
 
 ### Still needs a decision
+
+Added in round 5 (M104): N1 to N4, and items 6 to 8 of Needs a decision, were settled by the
+coordinator in the record's [After the ruling](README.md#after-the-ruling), and item 9, the
+coined names, is listed there for the owner to strike.
 
 Open, for the coordinator or the owner. Items 6 to 9 of [Needs a decision](#needs-a-decision)
 above also still stand.

@@ -82,6 +82,35 @@
 # header that carries a secret off `http` for a template registered before, end unknown the
 # invocations of a part that stops, keep one run for each instance and fence the machine the
 # engine left.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F4.md), on the
+# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, removed DL11, on
+# Conduits during setup, because ACC-003 and ACC-036 decide what it left open; nothing replaces
+# it, and DL11 is not reused (M69). It changed DL4, now on access decisions that cannot be made
+# under ACC-037 (M73); DL10, which adds the `ttlMs` of a tool list (M76); DL12, on what IFC-025
+# leaves of `content` and on the values of `Origin` that the engine accepts (M59, M71, M77);
+# DL13, under which the engine presents both forms of proof to a run's gate, a token toward a
+# run names the instance as the run's own `token` does, the engine's address accepts the token
+# at an `http` loopback address, which only a run on the engine's own runner that ends with the
+# engine is given, on an engine that can neither restart on another machine nor run as several
+# parts, and which states the roots for an item reached by `remote`, how the user configures an
+# authorization server for one, and the issuer of the mechanism's tokens (M47, M49, M51 to M53,
+# M57, M67); and DL17, which fences every run of an instance on `local` whichever provider made
+# it, commits a decision among competing changes against the state it read, says what the
+# engine's credential bounds, reads a `file:` URL as one file, rejects a `remote` item at a
+# loopback host, and has the instances made from a rejected template replaced too (M02, M46,
+# M63, M64, M70, M74). It added none. DL14 is not reused.
+# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
+# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed DL10, under
+# which no outputs of an invocation whose outcome a reconciliation set are kept (M39); DL13,
+# which says the engine's credential ID (M97); DL16, which states the registry types that the
+# engine's own runner runs (M07); and DL17, which cites PRV-007 for one run per instance (M03)
+# and counts a part that stops as a restart for the runs of providers that it held (M09). It
+# added none and removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed DL13, which leaves to the engine only the key and the client
+# identifier of its assertion under RFC 7523 (V2-12), lets a request establish neither instance
+# where whether it exists cannot be read (V1), and says where the token goes without TLS
+# (V2-11). It added none and removed none.
 
 - id: DL1
   subject: Order of a Pool's Resources
@@ -103,10 +132,10 @@
     until it ends, a repeat of its request reports conflict under OPS-032, and one for which the
     engine stops waiting has the outcome OPS-007 gives where no result arrives.
 - id: DL4
-  subject: Unreachable `access` or `management`
+  subject: Access decisions that cannot be made
   document: >-
-    Whether a request is not dispatched at once, reporting unavailable, or waits, and for how
-    long.
+    Whether a request whose access decision cannot be made, under ACC-037, is not dispatched at
+    once, reporting unavailable, or waits, and for how long.
 - id: DL5
   subject: Reports of providers
   document: >-
@@ -144,65 +173,84 @@
 - id: DL10
   subject: Limits
   document: >-
-    Sizes, counts, the time allowed for a call, a retire hook's among them, after which its part
-    ends unknown and the stop is asked for under TPL-009; how long the outputs of a succeeded
-    invocation are kept for a repeat under OPS-009, after which a repeat reports conflict under
-    OPS-034; and behavior when storage is exhausted.
-- id: DL11
-  subject: Conduits during setup
-  document: >-
-    What a consumer with only some of its Conduits open may do.
+    Sizes, counts, the `ttlMs` of a tool list that the engine serves, under IFC-038, the time
+    allowed for a call, a retire hook's among them, after which its part ends unknown and the
+    stop is asked for under TPL-009; how long the outputs of a succeeded invocation, other than
+    one whose outcome a reconciliation set, are kept for a repeat under OPS-009, after which a
+    repeat reports conflict under OPS-034; and behavior when storage is exhausted.
 - id: DL12
-  subject: Protocol revisions and `content`
+  subject: Protocol revisions, `content` and `Origin`
   document: >-
     Which revisions of the Model Context Protocol are supported beyond the baseline, and what
-    the engine puts in the `content` member of a result it returns to a consumer: among it,
-    whether a result that holds `structuredContent` also carries it serialized there, as the
-    protocol recommends.
+    the engine puts in the `content` member of a result it returns to a consumer beyond what
+    IFC-025 fixes: among it, whether a result that holds `structuredContent`, and whose outcome
+    did not come from a plain implementation, also carries it serialized there, as the protocol
+    recommends. Also which values of the `Origin` header the engine's server accepts, under
+    IFC-036.
 - id: DL13
   subject: Proof of who is who
   document: >-
     The mechanism by which the engine establishes, under IFC-022, which instance a request comes
     from, and by which it proves itself, as an enforcement point, to a gate, under PRV-025 and
     IFC-017: one root of trust that issues every credential, for both directions. What a request
-    presents, and how the engine establishes from it exactly one instance or none, by a
-    cryptographic proof of the instance that sent it wherever the request crosses machines. Its
-    two forms of proof: a signed token over TLS in the form of a JWT-SVID, whose `sub` names the
-    sender and whose `aud` names the receiver, which the engine's address at an `https` URL
-    always accepts, under IFC-042, and which toward a run names the instance's ID as its
-    audience; and mutual TLS, with X.509 certificates that name their holder in exactly one URI
-    and serve both as client and as server, as an X509-SVID does, which the engine's address may
-    accept beside the token. Which of the two, one or both, the engine presents to a gate and to
-    an item reached by `remote`, and which a run presents to it. The ID by which a credential
-    names the engine's role, and that by which it names each instance, which is by the
-    instance's ID, and how an ID fits the characters that its form allows. SPIFFE's form is
-    recommended and not required: `spiffe://<trust domain>/conduit/engine` for the engine's
-    role, and `spiffe://<trust domain>/conduit/instance/<id>` for an instance. The mechanism
-    issues a credential that names the engine's ID, a certificate that names the host of the
-    engine's address, and a token whose audience is anything but the engine's address, to the
-    engine alone. Where the signing keys are held, such as with an issuer outside the engine, in
-    a key management service or in the store of the engine's own state, each of which, with its
-    backups and operators, is then inside the domain of trust; where the keys that check a
-    credential are published, so that a credential can be checked without the engine; the
-    authorization server that the protected resource metadata at the engine's address names,
-    under IFC-042, the grants of the protocol's authorization that it supports for a consumer,
-    and how it decides which instance a token that it issues names; and how the engine
-    authenticates, with its own credential, to an authorization server that the user runs and
-    that an item reached by `remote` names, under IFC-041. The roots from which the certificate
-    at the engine's address is issued: the mechanism's own, or others, such as those of a public
-    certification authority. What the mechanism puts in the input `identity` of `run.v1`, under
-    PRV-007, for every run, on the engine's own runner as under any runtime provider, under the
-    names and in the files that PRV-022 fixes: the content of each; the engine's address that it
-    gives a run, which on the engine's own machine may be an `http` URL on loopback; and where
-    it gives `tls.crt` and `tls.key`, which it gives for every run whose server stands behind a
-    gate. A run's credential, and the certificate that its gate serves, last as long as its
-    instance: none is renewed during a run in this version, the time at which it lapses, its
-    `exp` or its `notAfter`, is set so far ahead that it does not lapse while the instance
-    exists, and the engine's check on every request that the instance still exists is the only
-    revocation. Each root, and each key in `jwks.json`, is kept for as long as a run that holds
-    it lasts. On an engine of several parts, under DL17, the engine's own credential is
-    short-lived, and the conformance document states its lifetime; on any other engine it may
-    be.
+    presents, and how the engine establishes from it exactly one instance or none, or neither
+    where whether that instance still exists cannot be read, under ACC-037, by a cryptographic
+    proof of the instance that sent it wherever the request crosses machines. Its two forms of
+    proof: a signed token in the form of a JWT-SVID, whose `sub` names the sender and whose
+    `aud` names the receiver, which the engine's address always accepts, over TLS at an `https`
+    URL and, without TLS, at an `http` URL on loopback that it gives a run, under
+    IFC-042, and which toward a run names as its audience the instance's ID exactly as the `sub`
+    of that run's own `token` names it, so that a gate finds in `identity` the audience to
+    admit; and mutual TLS, with X.509 certificates that name their holder in exactly one URI and
+    serve both as client and as server, as an X509-SVID does, which the engine's address may
+    accept beside the token. To a run's gate the engine presents both: its certificate, to a
+    gate that asks for one in the TLS handshake, and its token, in the `Authorization` header,
+    so that a gate written once to check either works under every engine, under PRV-025. Which
+    of the two, one or both, it presents to an item reached by `remote`, under IFC-041, and
+    which a run presents to the engine beside the token that IFC-042 has it accept. The ID by
+    which a credential names the engine's role, and that by which it names each instance, which
+    is by the instance's ID, and how an ID fits the characters that its form allows. SPIFFE's
+    form is recommended and not required: `spiffe://<trust domain>/conduit/engine` for the
+    engine's role, and `spiffe://<trust domain>/conduit/instance/<id>` for an instance. A
+    credential whose IDs are in another form has the shape of an SVID without being one, so a
+    gate that admits only SPIFFE IDs works only with an engine that uses that form, and one that
+    admits the ID that `engine-id` holds works under every engine, under PRV-025. The mechanism
+    issues a credential that names the engine's credential ID, a certificate that names the host
+    of the engine's address, and a token whose audience is anything but the engine's address, to
+    the engine alone. Where the signing keys are held, such as with an issuer outside the
+    engine, in a key management service or in the store of the engine's own state, each of
+    which, with its backups and operators, is then inside the domain of trust; where the keys
+    that check a credential are published, so that a credential can be checked without the
+    engine; the authorization server that the protected resource metadata at the engine's
+    address names, under IFC-042, the grants of the protocol's authorization that it supports
+    for a consumer, and how it decides which instance a token that it issues names; and how the
+    user configures, for the URL of an item reached by `remote`, an authorization server that
+    the user runs, and the key and the client identifier of the JWT assertion under RFC 7523
+    with which the engine authenticates to it with its own credential, under IFC-041. The
+    issuer that the `iss` of every token that the mechanism signs names is an
+    authorization server that the protected resource metadata at the engine's address lists, and
+    is the one that an item reached by `remote` names where the engine sends it such a token,
+    under IFC-041, since the protocol has a client send a server only tokens that the server's
+    authorization server issued. The roots from which the certificate at the engine's address is
+    issued: the mechanism's own, or others, such as those of a public certification authority.
+    The roots against which the engine checks the certificate of an item reached by `remote`,
+    under IFC-017, such as the operating system's store or roots that the user configures. What
+    the mechanism puts in the input `identity` of `run.v1`, under PRV-007, for every run, on the
+    engine's own runner as under any runtime provider, under the names and in the files that
+    PRV-022 fixes: the content of each; the engine's address that it gives a run, which is an
+    `https` URL, or an `http` URL on loopback only for a run on the engine's own runner whose
+    process ends when the engine stops, on an engine that, as configured, can neither restart on
+    another machine nor run as several parts, under DL17, since a run that sends its `token` to
+    that address while the engine does not hold it, as during a restart, gives the token to
+    whatever program has taken it; and where it gives `tls.crt` and `tls.key`, which it gives
+    for every run whose server stands behind a gate. A run's credential, and the certificate
+    that its gate serves, last as long as its instance: none is renewed during a run in this
+    version, the time at which it lapses, its `exp` or its `notAfter`, is set so far ahead that
+    it does not lapse while the instance exists, and the engine's check on every request that
+    the instance still exists is the only revocation. Each root, and each key in `jwks.json`, is
+    kept for as long as a run that holds it lasts. On an engine of several parts, under DL17,
+    the engine's own credential is short-lived, and the conformance document states its
+    lifetime; on any other engine it may be.
 - id: DL15
   subject: Generated names
   document: >-
@@ -220,15 +268,18 @@
     systemd's `PassEnvironment=` is set on a unit; on an operating system on which a process
     needs other variables in place of `HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER`,
     such as Windows, which it passes in their place, as the stdio clients of the Model Context
-    Protocol's SDKs pass `SYSTEMROOT`, `TEMP` and `USERPROFILE` there; the runner's restart
-    policy, under PRV-010; and what becomes of the processes it started when the engine stops
-    and when it starts again, apart from the servers of the runtime, machine and package-source
-    providers, and the processes of the secret Resources that it runs, which PRV-026 has the
-    engine run again when it first needs each. A process that
-    runs as the engine's own operating-system user can read the engine's keys and what every run
-    under that user presents, so it is inside the domain of trust and can get past every gate,
-    under IFC-022. The engine's own runner is the runtime provider here, so this item is the
-    contract that PRV-011 and SEC-020 leave to a runtime provider.
+    Protocol's SDKs pass `SYSTEMROOT`, `TEMP` and `USERPROFILE` there; which registry types of a
+    `package` item it runs, such as `npm` or `pypi`, as a runtime provider's contract states
+    them under PRV-012; it runs one only where its `transport` is of the `type` `stdio`, and
+    ends the run of any other failed, under PRV-003; the runner's restart policy, under PRV-010;
+    and what becomes of the processes it started when the engine stops and when it starts again,
+    apart from the servers of the runtime, machine and package-source providers, and the
+    processes of the secret Resources that it runs, which PRV-026 has the engine run again when
+    it first needs each. A process that runs as the engine's own operating-system user can read
+    the engine's keys and what every run under that user presents, so it is inside the domain of
+    trust and can get past every gate, under IFC-022. The engine's own runner is the runtime
+    provider here, so this item is the contract that PRV-011 and SEC-020 leave to a runtime
+    provider.
 - id: DL17
   subject: An engine that restarts on another machine or runs as several parts
   document: >-
@@ -239,25 +290,42 @@
     etcd does. At most one part of the engine acts on any one invocation, and the store of the
     engine's own state enforces it, as a compare-and-set on the invocation's state does, and
     never a part's timing alone; several parts may then serve at once, as several Kubernetes API
-    servers do, or one may lead under a lease, as its controller manager does. An invocation in
-    progress on a part that stops ends unknown, as under IMP-007, although the engine as a whole
-    goes on. A part that pauses after it has acted and sends later may still land an effect
-    late, as a request on a connection that was cut may, under OPS-027; the engine's own
-    credential, which DL13 makes short-lived on an engine of several parts, bounds how late.
-    What the promises say of the engine's own runner, of the servers of providers and of
-    connections holds of the whole: the processes of that runner run on one machine at a time;
-    each server of a provider, and each connection to an item reached by `remote`, is held by
-    one part at a time; and one run serves one instance, under TPL-019, so before the runner
-    runs anything on another machine, every process that it started on the machine the engine
-    left has ended, as Kubernetes has a node that stopped answering shut down before it is
-    marked out of service and its Pods are made again elsewhere. The engine's address in
-    `identity` keeps reaching an engine after a move, as a Pod reaches the Kubernetes API server
-    at `kubernetes.default.svc`. The signing keys of DL13 survive the move, and so do the stops
-    that a runtime provider owes, under PRV-021. `local` keeps representing one hostname, under
-    PLC-026: the engine moves only to a machine that takes its hostname, under DL5, and that
-    holds what the instances on `local` need of their machine, such as the providers' own
-    configuration and every file that such an instance names, under PLC-020; no other node
-    represents those machines. Such an engine rejects a template whose item would send a header
-    that carries a secret to an `http` URL, under SEC-024, and sends no such header for one
-    registered before it was so configured, whose part reports unavailable, under SEC-013, until
-    the template is replaced; no other document needs to change.
+    servers do, or one may lead under a lease, as its controller manager does. A decision that
+    admits one of several competing changes, such as a name under OBJ-002, an idempotency key
+    under OPS-008, a change of an instance under REV-014 or a provider under PRV-013, is
+    committed against the state that it read, as an etcd transaction compares a key's revision
+    before it writes, so that two parts that read the same state do not both commit. An
+    invocation in progress on a part that stops ends unknown, as under IMP-007, although the
+    engine as a whole goes on. A part that stops so counts as a restart for the runs that it
+    held of providers and of secret Resources on the engine's own runner: they end with it, and
+    PRV-026 runs each again before the engine next needs it. A part that pauses after it has
+    acted and sends later may still land an effect late, as a request on a connection that was
+    cut may, under OPS-027; the engine's own credential, which DL13 makes short-lived on an
+    engine of several parts, bounds how late only where what receives the request checks that
+    credential on the request itself, as a gate checks the `exp` of a token; a request on a
+    connection that mutual TLS checked before the credential lapsed, or one that carries a token
+    that an authorization server issued under IFC-041, is bounded by that connection or by that
+    token instead. What the promises say of the engine's own runner, of the servers of providers
+    and of connections holds of the whole: the processes of that runner run on one machine at a
+    time; each server of a provider, and each connection to an item reached by `remote`, is held
+    by one part at a time; and one run serves one instance, under PRV-007, so the runs of the
+    instances on `local`, whichever runtime provider made them, the processes of its own runner
+    among them, are on one machine at a time: before the engine asks for the run of any such
+    instance on another machine, or stops, inspects or reaches one there, every run on the
+    machine that held them has ended, as Kubernetes has a node that stopped answering shut down
+    before it is marked out of service and its Pods are made again elsewhere. The engine's own
+    fetching of a `file:` URL, under PRV-003, reads one file whichever part makes it: every
+    machine that may run the engine holds each file that an install names, or one part alone
+    fetches them. The engine's address in `identity` keeps reaching an engine after a move, as a
+    Pod reaches the Kubernetes API server at `kubernetes.default.svc`. The signing keys of DL13
+    survive the move, and so do the stops that a runtime provider owes, under PRV-021. `local`
+    keeps representing one hostname, under PLC-026: the engine moves only to a machine that
+    takes its hostname, under DL5, and that holds what the instances on `local` need of their
+    machine, such as the providers' own configuration and every file that such an instance
+    names, under PLC-020; no other node represents those machines. Such an engine rejects a
+    template whose item would send a header that carries a secret to an `http` URL, or is
+    reached by `remote` at a loopback host, under SEC-024, and, for one registered before it was
+    so configured, sends no such header and connects to no such item, whose part reports
+    unavailable, under SEC-013 and IFC-041, until the template is replaced and each instance
+    made from it before then has been replaced by one made from it since, because an instance
+    keeps the item it resolved, under INS-020; no document but such a template needs to change.

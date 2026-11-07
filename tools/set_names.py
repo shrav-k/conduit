@@ -51,7 +51,9 @@ KEYS = ("repository", "corePackage", "apiVersion", "metaPrefix")
 # The names of what the input `identity` of `run.v1` carries (ruling 43, Q1): two variables and
 # the files that the run finds in the directory that the second names.
 VARIABLE_KEYS = ("engineUrlVariable", "identityDirVariable")
-FILE_KEYS = ("trustBundleFile", "jwtBundleFile", "engineIdFile", "tokenFile",
+# Round 5 of the re-audit (M86) renamed trustBundleFile to x509BundleFile: the trust bundle is
+# that file and jwtBundleFile's.
+FILE_KEYS = ("x509BundleFile", "jwtBundleFile", "engineIdFile", "tokenFile",
              "certificateFile", "keyFile")
 IDENTITY_KEYS = VARIABLE_KEYS + FILE_KEYS
 VARIABLE = re.compile(r"[A-Z][A-Z0-9]*_[A-Z0-9_]*[A-Z0-9]")

@@ -149,6 +149,10 @@ Each is consistent with the other files; the coordinator confirms or strikes it.
 
 ### Needs a decision
 
+Added in round 5 (M104): R1 was settled by the coverage check (row 10), and R2 to R27 in the
+[open questions after the rewrite](open-decisions.md), by the coordinator or by rulings 42 and
+43; R28, the check against the protocol, was [left for round 5](open-decisions.md#left-for-round-5).
+
 Gathered from the seven logs, merged where two logs raise one question, with the integrator's
 own findings marked. None is decided in the text.
 
@@ -336,6 +340,11 @@ decision that the rulings do not make; its number in the next list says which.
 | 45 | The head comment of `secrets.yaml` says "the engine's host" (8) | Fixed | It says "the machine that the engine runs on" |
 
 ### Still needs a decision
+
+Added in round 5 (M104): every row was settled in the
+[open questions after the rewrite](open-decisions.md), by the coordinator, or by the owner in
+[ruling 42](../ruling-42/README.md) (D6, D8, D10, D11, D12, D17) and
+[ruling 43](../ruling-43/README.md) (D5, D20).
 
 | # | Rows | Question |
 | --- | --- | --- |

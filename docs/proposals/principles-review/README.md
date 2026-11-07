@@ -2,7 +2,7 @@
 
 > **Ruled.** The owner accepted this review as recommended in [ruling 41](../ruling-41/README.md).
 
-Status: **proposed, not ruled.** Dated 2026-11-06. The owner asked for the whole design to be
+Was: **proposed, not ruled.** Dated 2026-11-06. The owner asked for the whole design to be
 gone through against the principles below, in the owner's words "with a fine tooth comb aligning
 on these principles", and for the outstanding decisions to be brought back. This is that record.
 Nothing here is part of the specification until the owner rules; where this record and `spec/`

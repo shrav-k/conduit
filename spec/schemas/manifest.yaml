@@ -39,6 +39,12 @@
 # (docs/proposals/ruling-43/log-integration.md, "Verification") made `implementation-item.v1`
 # reject an item reached by `remote` and not marked `plain` whose Remote's `url` is not an
 # `https` URL (IFC-044).
+# The integration of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fixes.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, said in the
+# description of `server-remote.v1` that no item binds a variable of a Remote's URL, and that a
+# `url` that holds one is rejected (M23); said in that of `implementation-item.v1` that SEC-024
+# also covers an item selected for `get-secret.v1` and a loopback host (M01, M02); and named
+# PKG-030 among what is not expressed here (M25).
 #
 # The manifest of a project or a package, one item of its `implementations`, and the two
 # shapes of the Model Context Protocol Registry's server.json that an item may hold. The
@@ -94,7 +100,8 @@
 # though `uniqueItems` does reject a name that `exports` writes twice (PKG-012); that a plain
 # item's `tools` has a key for each operation in `implements`, and that a plain item implements
 # no operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PKG-020),
-# which tools/check_schemas.py also checks; that a name in `environment`, `packageArguments` or
+# and that an item reached by `remote` implements none either (PKG-030), which
+# tools/check_schemas.py also checks; that a name in `environment`, `packageArguments` or
 # `headers` is one that the Package or the Remote declares, and that an argument named in
 # `packageArguments` is declared once in the Package's `packageArguments` and states no fixed
 # `value` (MAN-010); that no two documents of the project or package share a name (NAM-027);
@@ -194,9 +201,10 @@ metadata:
     its letters, in `headers`, since the engine presents its own proof in that header.
     `supports` and `nodeSelector`, a label selector, may each be left out. A template is
     rejected where an item selected for it binds in `environment` a variable that `identity`
-    carries in `run.v1`, or where a header of a `remote` item selected for it carries a secret
-    to an `http` URL that the engine does not accept for one; neither is in this schema, since
-    each needs the template.
+    carries in `run.v1`, or where a `remote` item selected for it carries a secret, in a header
+    or as the value of `get-secret.v1`, to an `http` URL that the engine does not accept for
+    one, or stands at a loopback host that the engine does not accept; none is in this schema,
+    since each needs the template.
 spec:
   type: object
   properties:
@@ -374,7 +382,8 @@ metadata:
     One Remote, as the schema of the Model Context Protocol Registry's server.json, version
     2025-12-11, gives it, limited to the transport `streamable-http`: the URL of a server
     reached over the protocol's Streamable HTTP transport, the headers it takes and the
-    variables of its URL. `url` is also a URI as RFC 3986 gives one.
+    variables of its URL, which no implementation item binds. `url` is also a URI as RFC 3986
+    gives one, so one that holds a variable is rejected (MAN-010).
 spec:
   type: object
   properties:

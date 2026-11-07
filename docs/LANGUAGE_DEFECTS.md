@@ -38,8 +38,8 @@ by one reader; an assignment can be challenged like any other entry.
 | Runtime | 50 | Decided for the reference engine, recorded and tested there. |
 
 So 87 of the 167 are defects in the language in the strict sense. Since ruling 41, 13 of those
-87 are closed and 74 are ruled. Of the 50 in the runtime profile, 5 are closed, 14 are ruled and
-31 are answered by an item of the implementation-defined list. The 30 in the type layer are
+87 are closed and 74 are ruled. Of the 50 in the runtime profile, 5 are closed, 16 are ruled and
+29 are answered by an item of the implementation-defined list. The 30 in the type layer are
 open. None has a vector.
 
 The triage applied these readings of the layer decisions:
@@ -83,9 +83,10 @@ another, the row cites the one that holds the rule now. The comment at the head 
 under `spec/` says where each removed identifier went, and the
 [specification's README](../spec/README.md#promise-files-that-rulings-removed) lists the
 identifiers of each file that a ruling removed whole. Where an item of the implementation-defined
-list no longer covers a row, as ruling 41 narrowed DL1, DL5 and DL9, the row cites the promise
-that decides it now. Where ruling 41 removed the feature a row is about, the row is closed and
-names the item of the [principles review](proposals/principles-review/README.md) that removed it.
+list no longer covers a row, as ruling 41 narrowed DL1, DL5 and DL9 and round 5 of the re-audit
+removed DL11, the row cites the promise that decides it now. Where ruling 41 removed the feature
+a row is about, the row is closed and names the item of the
+[principles review](proposals/principles-review/README.md) that removed it.
 
 ## Sweep rounds
 
@@ -106,6 +107,7 @@ and some of the promises in those ranges were later folded into others.
 | — | 2026-11-05 | Remaining conventions ruled (ruling 30) | 0 | No new defect. The conventions on ownership and lifecycle, declared against observed state, records, and nothing implicit are written. 255 promises, none with a vector. |
 | — | 2026-11-05 | Last batch ruled (ruling 31) | 0 | The 50 defects assigned to the runtime profile are resolved: 49 are answered by an entry of the [implementation-defined list](../spec/implementation-defined.yaml), which each engine must document, and L158 is ruled by LIF-021. The shapes of documents and contracts and the implementation interface are written. 312 promises, none with a vector. |
 | — | 2026-11-06 | Removals of ruling 41 applied | 0 | No new defect. Ruling 41 removed graphs, runtimes declared in templates, policies, composite Conduits, re-exports, renaming and the retrieval of results, and narrowed DL1, DL5 and DL9 of the implementation-defined list. 15 rows whose feature went are closed and name the item of the [principles review](proposals/principles-review/README.md) that removed it: 10 in the language and shared conventions, and 5 in the runtime profile. 18 rows now cite the promises that hold their rule: 5 in the first two layers, and 13 in the runtime profile that no item of the list answers any longer. 432 promises, none with a vector. |
+| — | 2026-11-07 | [Round 5](proposals/reaudit/round-5/DECISIONS.md) of the re-audit removed DL11 (M69) | 0 | No new defect. L155 and L156, which named DL11, are ruled by the promises that decide them: L155 by ACC-003 and ACC-036, as M69 has it, and L156 by CON-004 and ACC-006, which have decided it since the last pass of round 2 took the later opening of an optional Conduit out of DL11. In the runtime profile 16 rows are ruled and 29 are answered by an item of the list. 452 promises, none with a vector. |
 
 ## Defects
 
@@ -265,8 +267,8 @@ and some of the promises in those ranges were later folded into others.
 | L152 | U | Type | Communication | What advances a read position: retrieval or explicit acknowledgement; whether the position skips or blocks at a message withheld by an access check. | Define the advance trigger and the withheld-message rule. | open |
 | L153 | U | Type | Communication | Whether a read position is keyed by Agent and history or by participation, so that it survives a leave and rejoin. | Name the key and the reset rules. | open |
 | L154 | U | Type | Communication | Notice semantics: one coalesced notice or one per post, repeated until read or once, whether own posts count. | Define the notice as a function of unread count at turn start, excluding own posts, with a repetition rule. | open |
-| L155 | U | Runtime | Conduits | What an "unprepared but partly connected" consumer may do: run, use the attached connection, be used by others. | Define the operations permitted in the unprepared state. | implementation-defined: DL11 |
-| L156 | U | Runtime | Conduits | What attaches an optional connection that failed at preparation once its target becomes ready, given that no background reconciler exists. | State the trigger. | implementation-defined: DL11 |
+| L155 | U | Runtime | Conduits | What an "unprepared but partly connected" consumer may do: run, use the attached connection, be used by others. | Define the operations permitted in the unprepared state. | ruled: ACC-003, ACC-036 (DL11 removed by round 5 of the re-audit, M69); vector pending |
+| L156 | U | Runtime | Conduits | What attaches an optional connection that failed at preparation once its target becomes ready, given that no background reconciler exists. | State the trigger. | ruled: CON-004, ACC-006; vector pending |
 | L157 | U | Convention | Retirement | A provider Resource retired while a consumer holds a required connection to it: whether the Conduit ends and whether the consumer stays prepared. | Specify the Conduit state and consumer preparation state after the target is unregistered. | ruled: CON-008, CON-011; vector pending |
 | L158 | U | Runtime | Retirement | Bulk Pool retirement when one Resource's shutdown is uncertain: order, continue or stop, and what the Pool and Resources admit meanwhile. | Define the order (consumers first), continue-on-failure and admission states. | ruled: LIF-021; vector pending |
 | L159 | C/D | Convention | Retirement | Declare-lost conflicts with "no permission to bypass an unresolved shutdown duty"; its effects on the Pool, Conduits and grants are undefined. | Add the exception to the retirement rule and define the effects. | ruled: CON-008, CON-011; vector pending |

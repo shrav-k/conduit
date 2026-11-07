@@ -1,0 +1,21 @@
+# Example. One manifest, valid against `manifest.v1`, that must be rejected: an item reached by
+# `remote` implements no operation of `runtime-provider.v1`, `machine-provider.v1` or
+# `package-source.v1` (PKG-030). The engine reaches those operations only by provider calls, to
+# a provider whose server its own runner runs on `local` and reaches over stdio (PRV-002,
+# PRV-005), and an item reached by `remote` is connected to and never run (PRV-007), so no such
+# provider could be run. This manifest has a hosted runner, reached at an `https` URL, implement
+# the three operations of a runtime provider. A provider that works through a service
+# elsewhere is a `command` or `package` item whose server reaches that service itself. The rule
+# matches the operations by their qualified references in the core package.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/hosted-runner
+implementations:
+  hosted-runner:
+    implements:
+      - github.com/shrav-k/conduit/core#run.v1
+      - github.com/shrav-k/conduit/core#stop.v1
+      - github.com/shrav-k/conduit/core#inspect-run.v1
+    remote:
+      type: streamable-http
+      url: https://runner.example.org/mcp

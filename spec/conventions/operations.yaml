@@ -76,6 +76,21 @@
 # (docs/proposals/ruling-43/log-integration.md, "Verification") changed the observables of
 # OPS-014, on what an actor can check of an invocation dispatched to a machine that is cut off,
 # and of OPS-027, on the gate's bound.
+# The fix pass of the fifth round of the re-audit
+# (docs/proposals/reaudit/round-5/log-fix-F3.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-5/DECISIONS.md, changed OPS-007, which tells the error -32021 of
+# IFC-008 apart by `data.requiredCapabilities` (M60); OPS-008, OPS-009 and OPS-034, under which
+# a repeat is answered from the stored outputs only where every filter that applies to it was
+# sent with the latest attempt, and no outputs are kept of an invocation whose outcome a
+# reconciliation set (M32, M39); OPS-021 and OPS-028, since no hook declares
+# `deduplicates: true` (M42); OPS-022, which counts the connection to a `remote` item as a part
+# with no effect (M40); OPS-030, under which a reconciliation settles the latest attempt (M34);
+# and OPS-031, on a control whose instance is retired (M35). It added none and removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed OPS-005, on a repeat to which a filter applies that the latest attempt
+# was not sent (V4), and OPS-007, which excepts -32021 for a capability that the call did not
+# declare and an error after which the call is sent once more under IFC-046 (V2, V2-15). It
+# added none and removed none.
 
 - id: OPS-001
   layer: convention
@@ -143,7 +158,8 @@
     states: a result that reports invalid or conflict carries among them an error diagnostic
     whose `ruleId` is the ID of the promise that decided it. A repeat of an invocation that has
     not ended is not dispatched and reports conflict, under OPS-032, and so does a repeat of one
-    that succeeded and whose outputs the engine no longer keeps, under OPS-034. A call that
+    that succeeded, where the engine no longer keeps its outputs or a filter applies to the
+    repeat that the latest attempt was not sent, under OPS-034. A call that
     names a tool the engine does not present is answered with no result: its reason, refused, is
     in the protocol's error, as IFC-012 states. So is a request that the protocol has the engine
     reject with an error of its own: where the engine could establish the instance that sent it,
@@ -168,12 +184,15 @@
   layer: convention
   level: must
   when: >-
-    No result arrives, other than the protocol's error -32021 with which IFC-008 has an
-    implementation say that it performed nothing; the implementation stops before returning one;
-    a result from an implementation that carries Conduit's keys states neither an outcome nor a
-    reason under IFC-026, or states both; such a result states an outcome with which its
-    `isError` disagrees; or a declared output fails validation in a result that would otherwise
-    have the outcome succeeded, whether or not the implementation is marked `plain`.
+    No result arrives, other than the protocol's error -32021, whose `data.requiredCapabilities`
+    names Conduit's extension, with which IFC-008 has an implementation say that it performed
+    nothing, or names a capability that the call did not declare, under IFC-045, and other than
+    an error after which the engine sends the call once more under IFC-046; the implementation
+    stops before returning one; a result from an implementation that carries Conduit's keys
+    states neither an outcome nor a reason under IFC-026, or states both; such a result states
+    an outcome with which its `isError` disagrees; or a declared output fails validation in a
+    result that would otherwise have the outcome succeeded, whether or not the implementation
+    is marked `plain`.
   then: >-
     The invocation's outcome is unknown.
   observable: >-
@@ -181,12 +200,16 @@
     `isError` disagrees with its outcome where it is true beside succeeded, or not true beside
     failed or unknown, as IFC-009 states. It states succeeded or failed only when the
     implementation's result stated it, when the implementation answered with the error of
-    IFC-008, which gives failed, or, for an implementation marked `plain`, when IFC-010 gives
-    it. An output that the contract's `outputSchema` lists under `required` and that the
-    result does not hold fails validation in this sense: a plain server that returns a complete
-    result that is not an error, and no `structuredContent`, for an operation with such an
-    output has the outcome unknown. A result that states failed or unknown, and an error of a
-    plain server, hold no outputs to validate, under IFC-009 and IFC-010.
+    IFC-008, or with -32021 for a capability that the call did not declare, under IFC-045,
+    which each give failed, or, for an implementation marked `plain`, when IFC-010 gives it.
+    After an error on which the call is sent once more under IFC-046, the outcome is read from
+    the response to the call sent again. An output that the contract's `outputSchema` lists
+    under `required` and that the result does not hold fails validation in this sense: a plain
+    server
+    that returns a complete result that is not an error, and no `structuredContent`, for an
+    operation with such an output has the outcome unknown. A result that states failed or
+    unknown, and an error of a plain server, hold no outputs to validate, under IFC-009 and
+    IFC-010.
   vectors: []
 
 - id: OPS-008
@@ -202,8 +225,9 @@
     from the records, what repeats and reconciliations need, for every invocation: its
     idempotency key where it carries one, the engine's ID for it, its state, a digest of its
     contents, its operation, its caller, the instance it was dispatched to, the Conduit it was
-    dispatched through where it went through one, the target that authorized it and, for a
-    control, the values it was sent. No purge touches that state.
+    dispatched through where it went through one, the filters that its latest attempt was sent,
+    the target that authorized it and, for a control, the values it was sent. No purge touches
+    that state.
   observable: >-
     A repeat of the request, from the instance that sent it, for that caller and to that target,
     is answered from that one invocation however many times the request was sent, under OPS-009,
@@ -227,7 +251,8 @@
   when: >-
     A request arrives from the instance that sent an earlier request, with the same caller,
     target, idempotency key and contents as that request; the invocation that request began
-    succeeded; and the engine still keeps its outputs.
+    succeeded; and the operation declares no outputs, or the engine still keeps the invocation's
+    outputs and every filter that applies to the request was sent with its latest attempt.
   then: >-
     The request is a repeat, not a new request. Nothing is dispatched, and the result is that
     invocation's: the outcome succeeded and its outputs.
@@ -239,14 +264,16 @@
     left out, and that of a property that is absent from a map that was supplied. A request that
     supplies `{}` for an input whose schema gives a property a `default`, and one that supplies
     the map with that default written out, have the same contents. The engine keeps the outputs
-    of an invocation that succeeded for as long as DL10 of the implementation-defined list says.
+    of an invocation that succeeded for as long as DL10 of the implementation-defined list says,
+    and keeps none of one whose outcome a reconciliation set, since `reconcile.v1` takes none.
     An operation that declares no outputs has none to lose: a repeat of an invocation of it that
     succeeded is always answered so, with an empty map as its `structuredContent`. A repeat of
     an invocation that has not ended reports conflict under OPS-032, and one of an invocation
-    that succeeded and whose outputs the engine no longer keeps under OPS-034; a repeat of one
-    whose outcome is unknown is OPS-012, and of one that failed OPS-024. A repeat is a request
-    through a Conduit, and the access decision is made for it like any other, under ACC-036: a
-    repeat sent through a Conduit that has been closed reports refused under ACC-011.
+    that succeeded, where the engine does not keep its outputs or a filter applies to the repeat
+    that its latest attempt was not sent, under OPS-034; a repeat of one whose outcome is
+    unknown is OPS-012, and of one that failed OPS-024. A repeat is a request through a Conduit,
+    and the access decision is made for it like any other, under ACC-036: a repeat sent through
+    a Conduit that has been closed reports refused under ACC-011.
   vectors: []
 
 - id: OPS-010
@@ -415,12 +442,10 @@
     That hook is not dispatched again, except as a new attempt of the same invocation where
     OPS-012 dispatches one, with the idempotency key that OPS-028 gave it.
   observable: >-
-    A hook whose outcome is unknown, and whose operation does not declare `deduplicates: true`
-    or whose implementation is plain, receives no further call however often the instance is set
-    up or retired, until it is reconciled under OPS-014. One whose operation declares it, and
-    whose implementation is not plain, is dispatched as a new attempt on the conditions of
-    OPS-012, with the idempotency key it carried before, so its implementation recognizes it. A
-    hook that succeeded is not dispatched again, and one that failed is dispatched as a new
+    A hook whose outcome is unknown receives no further call however often the instance is set
+    up or retired, until it is reconciled under OPS-014: neither `setup-hook.v1` nor
+    `retire-hook.v1` declares `deduplicates: true`, so OPS-012 dispatches no new attempt of it.
+    A hook that succeeded is not dispatched again, and one that failed is dispatched as a new
     attempt under OPS-024, as OPS-028 states. The other parts of a further setup leave what is
     done already as it is: an open Conduit, a ready Resource and a running run are left as they
     are, under CON-004, POOL-013 and PRV-007.
@@ -442,13 +467,16 @@
     failed if every part that was dispatched either failed, was answered with a reason in place
     of an outcome under IFC-026, or is of an operation whose contract states no `effect`, and is
     unknown if any part succeeded with an effect or ended unknown on an operation that has one.
-    A further retirement under LIF-026, or a further setup, in which a hook is left with the
-    outcome unknown under OPS-021 has the outcome unknown, even where it dispatched nothing: for
-    a retirement the shutdown then reports unknown under LIF-024, until the hook is reconciled
-    under OPS-014. A part that succeeded before, that CON-004 or POOL-013 counts as succeeded
-    because what it does is done already, or that was reconciled as having occurred counts as
-    succeeded, so a further setup or retirement can succeed without dispatching it again, and
-    one that failed and is not dispatched again counts as failed.
+    The connection to a `remote` item counts as a part of an operation whose contract states no
+    `effect`: it is the engine's own holding of the values of the item's `headers`, under
+    IFC-041, and changes nothing outside the engine. A further retirement under LIF-026, or a
+    further setup, in which a hook is left with the outcome unknown under OPS-021 has the
+    outcome unknown, even where it dispatched nothing: for a retirement the shutdown then
+    reports unknown under LIF-024, until the hook is reconciled under OPS-014. A part that
+    succeeded before, that CON-004 or POOL-013 counts as succeeded because what it does is done
+    already, or that was reconciled as having occurred counts as succeeded, so a further setup
+    or retirement can succeed without dispatching it again, and one that failed and is not
+    dispatched again counts as failed.
   vectors: []
 
 - id: OPS-023
@@ -611,17 +639,18 @@
   observable: >-
     The hook's implementation receives the idempotency key in
     `io.github.shrav-k.conduit/idempotencyKey` under IFC-006, whether or not the caller of
-    the setup or the retirement supplied one of its own. An implementation whose operation
-    declares `deduplicates: true` therefore recognizes the new attempt that OPS-021 dispatches
-    when a setup or a retirement runs again, and the effect is applied once. The setup hook and
-    the retire hook of one instance have different idempotency keys, because their operations
-    differ. A further setup that another actor sends finds the hook's earlier invocation all the
-    same, and does not run a hook that succeeded a second time. An implementation marked `plain`
-    receives no idempotency key, under IFC-007, and is never sent a new attempt, under OPS-012.
-    The record of each attempt names its own caller, under REC-002, and the records of earlier
-    attempts keep theirs. An onward request that names the invocation, made by an earlier
-    attempt still running on a machine that was cut off, is decided for the latest caller: a
-    limit of this version.
+    the setup or the retirement supplied one of its own. An implementation therefore recognizes
+    the new attempt of a hook that failed, which a further setup or retirement dispatches under
+    OPS-021 and OPS-024. Neither hook's contract declares `deduplicates: true`, so a hook whose
+    outcome is unknown is not dispatched again until it is reconciled, under OPS-021. The setup
+    hook and the retire hook of one instance have different idempotency keys, because their
+    operations differ. A further setup that another actor sends finds the hook's earlier
+    invocation all the same, and does not run a hook that succeeded a second time. An
+    implementation marked `plain` receives no idempotency key, under IFC-007, and is never sent
+    a new attempt, under OPS-012. The record of each attempt names its own caller, under
+    REC-002, and the records of earlier attempts keep theirs. An onward request that names the
+    invocation, made by an earlier attempt still running on a machine that was cut off, is
+    decided for the latest caller: a limit of this version.
   vectors: []
 
 # --- Added by the last pass of the second round of the re-audit
@@ -669,16 +698,18 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to reconcile an invocation whose outcome is not unknown: it is in progress, it
-    has ended with the outcome succeeded or failed, or it has been reconciled already.
+    An actor asks to reconcile an invocation whose outcome is not unknown: it is in progress, or
+    it has ended with the outcome succeeded or failed.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-
     The invocation's state is as it was, and no record of a reconciliation is added. A second
     reconciliation of one invocation reports conflict in this way, whichever way the first
-    recorded the effect. One that names an ID which the engine gave to no invocation reports
-    invalid, under OPS-029. Where the actor is not permitted under OPS-014, OPS-023 gives
-    refused first.
+    recorded the effect, unless a new attempt dispatched since, under OPS-024, has ended
+    unknown: a reconciliation settles the outcome of the invocation's latest attempt, and a
+    later attempt whose outcome is unknown is reconciled in its turn, under OPS-014. One that
+    names an ID which the engine gave to no invocation reports invalid, under OPS-029. Where the
+    actor is not permitted under OPS-014, OPS-023 gives refused first.
   vectors: []
 
 - id: OPS-031
@@ -686,21 +717,24 @@
   level: must
   when: >-
     An actor asks to reconcile an invocation, and the request states `revision` where it does
-    not belong: where the invocation is not of a control, where the instance of the control no
-    longer exists, or where the request records the control as not having taken effect.
+    not belong: where the invocation is not of a control, where the instance of the control is
+    retired or no longer exists, or where the request records the control as not having taken
+    effect.
   then: >-
     The request is not dispatched, and reports invalid.
   observable: >-
     The invocation's outcome is still unknown, and nothing is stored. `revision` belongs to the
-    reconciliation that records a control as having taken effect on an instance that exists, and
-    so stores the values the control was sent, under REV-010: stated for a setup, a retirement,
-    a hook or any other invocation that is not of a control, it makes the request invalid. A
-    reconciliation that stores nothing states no revision: one that records that the effect did
-    not occur, and one of an invocation whose instance no longer exists, which records the
-    outcome alone under ACC-033. What a reconciliation that records a control as having taken
-    effect reports where it names no revision is REV-011, where the revision it names is not
-    current REV-002, and where the values the control was sent would make the configuration fail
-    the type's schema REV-013. Where the actor is not permitted, OPS-023 gives refused first.
+    reconciliation that records a control as having taken effect on an instance that exists and
+    is not retired, and so stores the values the control was sent, under REV-010: stated for a
+    setup, a retirement, a hook or any other invocation that is not of a control, it makes the
+    request invalid. A reconciliation that stores nothing states no revision: one that records
+    that the effect did not occur, one of a control whose instance is retired, which records the
+    outcome alone under REV-010, and one of an invocation whose instance no longer exists, which
+    records the outcome alone under ACC-033. What a reconciliation that records a control
+    as having taken effect reports where it names no revision is REV-011, where the revision it
+    names is not current REV-002, and where the values the control was sent would make the
+    configuration fail the type's schema REV-013. Where the actor is not permitted, OPS-023
+    gives refused first.
   vectors: []
 
 # --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decision 6b of the principles
@@ -761,7 +795,9 @@
   level: must
   when: >-
     A request arrives that matches, as OPS-009 describes a match, the request of an invocation
-    that succeeded and whose outputs the engine no longer keeps.
+    that succeeded, of an operation that declares outputs, where the engine does not keep those
+    outputs or a filter applies to the request that the invocation's latest attempt was not
+    sent.
   then: >-
     It is a repeat. Nothing is dispatched, and it reports conflict. Its result's `_meta` holds
     the engine's ID for that invocation.
@@ -770,11 +806,19 @@
     is unchanged. The result carries the reason conflict and no outcome, holds
     `io.github.shrav-k.conduit/invocation` and no outputs, and its `isError` is true, under
     IFC-025. The error diagnostic that IFC-025 requires has the `ruleId` OPS-034, which tells
-    this case from OPS-032: the effect has occurred, every later repeat reports conflict too,
-    and the outcome succeeded is in the records of the invocation, under REC-002. How long the
-    engine keeps the outputs is DL10 of the implementation-defined list. Only an operation that
-    declares outputs reaches this promise: a repeat of an invocation of one that declares none,
-    and that succeeded, is answered from its outcome under OPS-009. A repeat is decided like any
+    this case from OPS-032: the effect has occurred, and the outcome succeeded is in the records
+    of the invocation, under REC-002. How long the engine keeps the outputs is DL10 of the
+    implementation-defined list, and it keeps none of an invocation whose outcome a
+    reconciliation set, under OPS-014, since `reconcile.v1` takes none; once they are not kept,
+    every later repeat reports conflict too. A filter counts as sent where the
+    `io.github.shrav-k.conduit/filters` of the latest attempt held an item with its
+    `requirement` and with `arguments` equal under SCH-007, under IFC-018. Where one that
+    applies to the repeat was not sent, as where the Conduit that the invocation was dispatched
+    through was closed and one that applies a further filter was opened in its place, under
+    ACC-011, the outputs were made without that filter, which only an implementation applies,
+    under IFC-019, and none of them is given through it. Only an operation that declares outputs
+    reaches this promise: a repeat of an invocation of one that declares none, and that
+    succeeded, is answered from its outcome under OPS-009. A repeat is decided like any
     other request, under ACC-036: one sent through a Conduit that has been closed reports
     refused under ACC-011, which OPS-023 puts first.
   vectors: []

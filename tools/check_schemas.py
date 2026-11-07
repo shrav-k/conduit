@@ -168,6 +168,10 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # secret-header-https reject an `http` URL whose host is a variable of the Remote, and checks
 # that `run.v1` holds exactly the files of `identity`, and requires every one but the
 # certificate and its key.
+# Round 5 of the re-audit (M86) reads the key x509BundleFile of spec/names.yaml, which was
+# trustBundleFile. Its integration (docs/proposals/reaudit/round-5/log-fixes.md) added
+# remote-provider (PKG-030, M25), and made item-place-required reject a place whose schema does
+# not confine its value to a string, a number, a boolean or null (MAN-017, M30).
 RULES = {
     "one-name": "NAM-027",
     "bound-once": "CON-028",
@@ -190,6 +194,7 @@ RULES = {
     "provider-family": "PRV-001",
     "provider-conduit": "PRV-004",
     "plain-provider": "PKG-020",
+    "remote-provider": "PKG-030",
     "secret-only": "SEC-022",
     "identity-name": "MAN-018",
     "secret-header-https": "SEC-024",
@@ -300,7 +305,7 @@ def names():
 # The names of what the input `identity` of `run.v1` carries, which spec/names.yaml fixes
 # (ruling 43, Q1): its two variables, and its files.
 IDENTITY_VARIABLE_KEYS = ("engineUrlVariable", "identityDirVariable")
-IDENTITY_FILE_KEYS = ("trustBundleFile", "jwtBundleFile", "engineIdFile", "tokenFile",
+IDENTITY_FILE_KEYS = ("x509BundleFile", "jwtBundleFile", "engineIdFile", "tokenFile",
                       "certificateFile", "keyFile")
 # The files of `identity` that a run is not always given (PRV-022, DL13).
 IDENTITY_OPTIONAL_FILE_KEYS = ("certificateFile", "keyFile")
@@ -1067,6 +1072,30 @@ def admits(node, kinds, secret):
     return any(admits(b, kinds, secret) for b in branches)
 
 
+SCALAR_TYPES = ("string", "number", "integer", "boolean", "null")
+
+
+def confined(node, secret):
+    """Whether a schema confines a value to a string, a number, a boolean or null by its
+    `type`, its `enum` or its `const`, in itself or in each branch of its `anyOf` or `oneOf`
+    (MAN-017). True for a place that `secret-reference.v1` governs, which SEC-001 lets hold the
+    reference, and for a `$ref`, which this tool does not follow."""
+    if not isinstance(node, dict):
+        return False
+    if holds_secret(node, secret) or "$ref" in node:
+        return True
+    named_types = node.get("type")
+    named_types = [named_types] if isinstance(named_types, str) else named_types or []
+    if named_types and all(t in SCALAR_TYPES for t in named_types):
+        return True
+    values = list(node.get("enum") or []) + ([node["const"]] if "const" in node else [])
+    if ("enum" in node or "const" in node) and not any(isinstance(v, (dict, list))
+                                                       for v in values):
+        return True
+    branches = [b for k in BRANCHES[1:] for b in (node.get(k) or [])]
+    return bool(branches) and all(confined(b, secret) for b in branches)
+
+
 def holds_secret(node, secret):
     """Whether `secret-reference.v1` governs a place: the schema at the place is that `$ref`,
     or a branch of its `anyOf` or `oneOf` is (SEC-001)."""
@@ -1082,8 +1111,8 @@ def secret_may_go(url):
     address in 127.0.0.0/8 or the IPv6 address ::1, which an engine that can restart on
     another machine or run as several parts still rejects; False for any other `http` URL; None
     where the URL cannot be read, and the tool cannot tell. A host written as a variable of the
-    Remote is none of the loopback hosts, since SEC-024 compares the URL as the Remote writes
-    it. Scheme and host are compared without regard to case (RFC 3986)."""
+    Remote is none of the loopback hosts, and such a URL is not a URI, under MAN-010. Scheme
+    and host are compared without regard to case (RFC 3986)."""
     if not isinstance(url, str):
         return None
     try:
@@ -1427,10 +1456,11 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
 
         # item-place-required (MAN-017): each pointer of a selected item's `environment`,
         # `packageArguments` or `headers` names a place that the type's schema requires, with
-        # every member on the way required; the schema at that place admits no object or array,
-        # by `type`, `enum` or `const`, unless `secret-reference.v1` governs it; and where the
-        # Package or the Remote marks the input `isRequired: true`, it admits no null. A
-        # `$ref` on the way, or at the place, is not followed.
+        # every member on the way required; the schema at that place confines the value, by
+        # `type`, `enum` or `const`, in itself or in each branch of its `anyOf` or `oneOf`, to a
+        # string, a number, a boolean or null, unless `secret-reference.v1` governs it; and
+        # where the Package or the Remote marks the input `isRequired: true`, it admits no
+        # null. A `$ref` on the way, or at the place, is not followed.
         for key, item in chosen_items.items():
             for binding in ("environment", "packageArguments", "headers"):
                 for var, place in members(item.get(binding)):
@@ -1442,12 +1472,12 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                                       f"require"))
                         continue
                     at = schema_at(body.get("schema"), place)
-                    if admits(at, ("object", "array"), secret):
+                    if at is not None and not confined(at, secret):
                         found.append(("item-place-required",
                                       f"the template {name} selects {key[1]}, whose "
                                       f"`{binding}` gives {var} the place {place}, at which "
-                                      f"the schema of its type {named(type_doc)} admits an "
-                                      f"object or an array"))
+                                      f"the schema of its type {named(type_doc)} admits more "
+                                      f"than a string, a number, a boolean or null"))
                     declared = declared_input(item, binding, var)
                     if isinstance(declared, dict) and declared.get("isRequired") is True \
                             and admits(at, ("null",), secret):
@@ -1564,14 +1594,16 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
 
 def manifest_rules(manifest, core, holds_contracts=False):
     """Return (rule, message) for each rule on manifests that one manifest breaks. There are
-    three. core-address (NAM-021): a manifest neither lists the core package under `packages`
+    four. core-address (NAM-021): a manifest neither lists the core package under `packages`
     nor states its address as its own. project-address (MAN-015): a manifest that lists an
     implementation, or that belongs to a project that holds a contract, states `address`.
     plain-provider (PKG-020): an item marked `plain: true` implements no operation of
     `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, which the engine
     reaches only by provider calls, and a provider call carries Conduit's keys; matched by the
-    operation's qualified reference in the core package. The core package's own manifest,
-    which is built into the engine, is not given to this function."""
+    operation's qualified reference in the core package. remote-provider (PKG-030): nor does
+    an item reached by `remote`, since the engine's own runner runs every such provider. The
+    core package's own manifest, which is built into the engine, is not given to this
+    function."""
     found = []
     if not isinstance(manifest, dict):
         return found
@@ -1587,15 +1619,22 @@ def manifest_rules(manifest, core, holds_contracts=False):
         found.append(("project-address", f"the manifest {why} and states no `address`"))
     items = manifest.get("implementations")
     for name, item in (items.items() if isinstance(items, dict) else ()):
-        if not isinstance(item, dict) or item.get("plain") is not True:
+        if not isinstance(item, dict):
             continue
         for ref in item.get("implements") if isinstance(item.get("implements"), list) else ():
-            if isinstance(ref, str) and ref.partition("#")[0] == core \
-                    and ref.partition("#")[2] in CALLED_OPERATIONS:
+            if not (isinstance(ref, str) and ref.partition("#")[0] == core
+                    and ref.partition("#")[2] in CALLED_OPERATIONS):
+                continue
+            if item.get("plain") is True:
                 found.append(("plain-provider",
                               f"the plain implementation {name} implements {ref}, which the "
                               f"engine invokes only by a provider call, and a plain server "
                               f"reads none of Conduit's keys"))
+            if "remote" in item:
+                found.append(("remote-provider",
+                              f"the implementation {name}, reached by `remote`, implements "
+                              f"{ref}, whose provider the engine's own runner runs, and an "
+                              f"item reached by `remote` is never run"))
     return found
 
 

@@ -65,6 +65,15 @@
 # The editorial fixes of ruling 42 (the vocabulary audit's E19; log
 # docs/proposals/ruling-42/log-editorial.md) changed CON-007, whose observable says "after it",
 # where it said "after the event". It removed none and added none.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed CON-008:
+# a Conduit whose consumer is unregistered is closed, under LIF-017 (M41); and CON-022, whose
+# observable says that an implementation sent an argument that its version of the requirement
+# does not declare cannot apply the filter (M45). It added none and removed none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed CON-006, which rejects a shared-host requirement where an end runs
+# nothing (V2-01); CON-022, on an input that a later release adds with no `default` (V2-02); and
+# CON-031, on a consumer that is unregistered (V2-09). It added none and removed none.
 
 - id: CON-001
   layer: language
@@ -124,12 +133,16 @@
   level: must
   when: >-
     A Conduit carries a shared-host requirement and its consumer or its target is an instance
-    that has no placement.
+    that has no placement, or one for which no item that is run is selected.
   then: >-
     The document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the Conduit, the requirement and the end that has no
-    placement, and produces no objects.
+    placement or runs nothing, and produces no objects. The requirement says that the two ends
+    run on one machine, and an end for which no item that is run is selected, such as an Agent
+    that a client drives under IFC-042 or an instance reached only by `remote`, runs on none,
+    whatever its placement: PLC-002 places it on `local` because it runs nothing, so comparing
+    its node's hostname under PLC-013 would say nothing of where it runs.
   vectors: []
 
 - id: CON-007
@@ -155,7 +168,8 @@
     The Conduit is closed. A Conduit whose target is retired, or either of whose ends is
     declared lost or is placed on a machine that is reported gone, under PLC-024, is closed at
     once. A Conduit whose consumer is retired is closed once the consumer's shutdown is
-    confirmed. From the moment the retirement of a target is dispatched, a request to that
+    confirmed, or once a request to unregister the consumer removes it, under LIF-017. From the
+    moment the retirement of a target is dispatched, a request to that
     target is a request through a closed Conduit: it is not dispatched, and reports refused. A
     closed Conduit is removed, under LIF-035.
   observable: >-
@@ -164,9 +178,10 @@
     reports invalid under OPS-029, and its records are kept as LIF-019 states. The record of its
     closing names, under REC-002, the invocation within which it was closed and that
     invocation's caller: the close itself, the target's retirement, the invocation of
-    `declare-lost.v1` for the node of an end, or the invocation of `retire.v1` or
-    `reconcile.v1` that confirmed the consumer's shutdown; where it was closed within no
-    invocation, as under PLC-024, the record states the cause. A request to a retired target has
+    `declare-lost.v1` for the node of an end, the invocation of `retire.v1` or
+    `reconcile.v1` that confirmed the consumer's shutdown, or that of `unregister.v1`
+    that removed the consumer; where it was closed within no invocation, as under
+    PLC-024, the record states the cause. A request to a retired target has
     no open Conduit to be made through, which is the case ACC-001 and ACC-011 state. A
     consumer's shutdown is confirmed as LIF-024 states: when an invocation of `retire.v1` for it
     succeeds, at once where no setup of it was ever dispatched, or when a reconciliation records
@@ -176,8 +191,8 @@
     request through the consumer's own Conduit, and the engine can read a secret through it for
     a run that the retirement asks for, or a connection that it makes, in a further retirement
     under LIF-026 as in the first. Where the consumer's shutdown stays pending or unknown, the
-    Conduit stays so until the shutdown is confirmed, the consumer is declared lost, or an actor
-    closes the Conduit under ACC-012.
+    Conduit stays so until the shutdown is confirmed, the consumer is declared lost or
+    unregistered, or an actor closes the Conduit under ACC-012.
   vectors: []
 
 - id: CON-011
@@ -336,9 +351,12 @@
     applies a filter and lists an operation for which its target has selected `engine`. A
     requirement is matched by that address and that export name alone: the contract's own
     version is the last segment of that name, and the version of the package does not count,
-    because a later release may only add optional inputs under NAM-024. A filter that an onward
-    request or a hook carries is not counted here: ACC-015 checks it against the implementation
-    that the request or the hook would be dispatched to.
+    because a later release may only add optional inputs that state no `default`, under
+    NAM-024, which are sent only where a document writes them, and an implementation
+    that is sent an argument for an input that its version of the requirement does not declare
+    cannot apply the filter, under IFC-019, so the request reports unavailable and nothing is
+    performed. A filter that an onward request or a hook carries is not counted here: ACC-015
+    checks it against the implementation that the request or the hook would be dispatched to.
   vectors: []
 
 - id: CON-023
@@ -438,7 +456,8 @@
     retired is closed already, under CON-008, and so removed, under LIF-035: a request to open
     it names a Conduit that no longer exists, and reports invalid under OPS-029. A Conduit in
     the state registered whose consumer is retired stays registered until CON-008 closes it,
-    once the consumer's shutdown is confirmed, and is never opened: CON-025 does not instantiate
+    once the consumer's shutdown is confirmed or a request to unregister the consumer removes
+    it, under LIF-017, and is never opened: CON-025 does not instantiate
     a Conduit for a retired end, and this is the same rule for opening one. This promise is
     about a Conduit that is not open. A Conduit that was open when its consumer was retired is
     still open, as ACC-039 states, and a request to open it changes nothing and has the outcome

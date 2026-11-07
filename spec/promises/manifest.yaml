@@ -85,6 +85,11 @@
 # docs/proposals/ruling-43/log-secrets.md. The verification of ruling 43
 # (docs/proposals/ruling-43/log-integration.md, "Verification") changed MAN-018, which compares
 # a variable's name without regard to case, as Windows does.
+# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed MAN-010,
+# under which a Remote's `url` that holds a variable is rejected (M23), and MAN-017, under
+# which the schema of a bound place confines its value to a string, a number, a boolean or
+# null (M17, M30). It added none and removed none.
 
 - id: MAN-001
   layer: language
@@ -270,10 +275,14 @@
     argument of the Package's `packageArguments`, that names more than one, or that names one
     that states a fixed `value`, which server.json says should not be configurable by end users,
     and so is an item that states `environment` beside `remote`, `packageArguments` beside
-    anything but `package`, or `headers` beside anything but `remote`. A key of
-    `packageArguments` is the name by which server.json refers to an argument from a Package's
-    transport URL, and a variable inside an argument's `value` is not bound by the map. No key
-    binds the Package's `runtimeArguments`, which go to the runtime command, such as `npx` or
+    anything but `package`, or `headers` beside anything but `remote`. A `url` that
+    holds a variable, written in braces as server.json writes one, such as
+    `https://{tenant}.example.com/mcp`, is not a URI and is so rejected: no key
+    binds a variable of a Remote, so the item writes its URL whole, and a Remote's
+    `variables` are never used. A key of `packageArguments` is the name by which
+    server.json refers to an argument from a Package's transport URL, and a
+    variable inside an argument's `value` is not bound by the map. No key binds the
+    Package's `runtimeArguments`, which go to the runtime command, such as `npx` or
     `docker`, and so are the runtime provider's, under PRV-012. The item states its artifact's
     hash once, in the Package, as server.json writes it. `plain: false` means the same as
     leaving `plain` out. A key of `nodeSelector` is a label and not a name, under OBJ-022. A
@@ -413,10 +422,11 @@
     A template selects an implementation item, by its `implementation` map or by default, whose
     `environment`, `packageArguments` or `headers` gives a JSON Pointer to a place in the
     configuration that the schema of the template's type does not require, with every member on
-    the way to it required, or at which that schema admits an object or an array, by `type`,
-    `enum` or `const`, unless `secret-reference.v1` governs the place under SEC-001; or the item
-    binds an input that the Package or the Remote marks `isRequired: true` to a place whose
-    schema admits null.
+    the way to it required, or that this schema does not confine, by `type`, `enum` or `const`,
+    to a string, a number, a boolean or null, in itself or in each branch of its `anyOf` or
+    `oneOf`, a `$ref` standing for the schema it leads to, unless `secret-reference.v1` governs
+    the place under SEC-001; or the item binds an input that the Package or the Remote marks
+    `isRequired: true` to a place whose schema admits null.
   then: >-
     The template is rejected.
   observable: >-
@@ -426,7 +436,9 @@
     pointer into a member that is not itself required, so every instance of the template has a
     value at each place the item reads. A type that states no `schema` requires nothing, so a
     template of it that selects an item with a pointer is rejected. A pointer to `/tags` where
-    the schema gives `{type: array}` is rejected too: a variable, an argument or a header holds
+    the schema gives `{type: array}` is rejected too, and so is one to a place whose schema is
+    `{}`, or that `required` names and neither `properties` nor `additionalProperties`
+    describes, since either admits a map or a list: a variable, an argument or a header holds
     a string, and the formats that server.json gives an input are string, number, boolean and
     filepath. How a number, a boolean or null is given is PRV-007. A place may hold null where
     its schema admits it, and the variable, the argument or the header is then left out, under

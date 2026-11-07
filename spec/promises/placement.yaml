@@ -1,10 +1,10 @@
 # Placement: where an Agent or Resource runs.
 # Owner rulings of 2026-11-05 (plan-audit rulings 7, 8, 17, 28, 29, 32 and 33). Since ruling 41,
-# a location stands for a machine that the machines provider reports
-# (spec/promises/providers.yaml), and what a type or an implementation needs of a location is a
-# label selector, matched against the labels reported for it, as a Kubernetes `nodeSelector`
-# is. Removed by consolidation pass 1: PLC-010 was folded into OBS-003 and LIF-010, and PLC-014
-# into CTR-004. PLC-011 was split into PLC-011 and PLC-017.
+# a node represents a machine that the machine provider reports (spec/promises/providers.yaml),
+# and what a type or an implementation needs of a node is a label selector, matched against the
+# labels reported for it, as a Kubernetes `nodeSelector` is. Removed by consolidation pass 1:
+# PLC-010 was folded into OBS-003 and LIF-010, and PLC-014 into CTR-004. PLC-011 was split into
+# PLC-011 and PLC-017.
 # The follow-up rulings removed nothing. The ruling on the core package and the schemas (ruling
 # 37) changed PLC-008 and PLC-016. The conversion of the older text (decision DA3 of the docs
 # audit, docs/proposals/docs-audit/GAPS.md) added PLC-020. The second round of the re-audit
@@ -67,6 +67,25 @@
 # ruling 42), and PLC-023, whose observable says that after a restart the engine runs the
 # machine provider again for its next report, under PRV-026 (Q3). It removed none and added
 # none. Its log is docs/proposals/ruling-43/log-providers.md.
+# The fix pass of the fifth round of the re-audit
+# (docs/proposals/reaudit/round-5/log-fix-F1.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-5/DECISIONS.md, which no ruling has accepted, changed PLC-002,
+# under which an instance for which no item that is run is selected is placed on `local` (M22),
+# and PLC-023, under which every machine but the one that `local` represents counts as omitted
+# until the machine provider's first report after the engine starts (M12). It wrote the sentence
+# at the head of this file that describes it as it stands in the names in force (M21). It
+# removed none and added none.
+# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
+# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed PLC-023, which
+# does not hold back the stop that a request to unregister an instance asks for, since M41 lets
+# an instance on a node that is not lost be unregistered. It removed none and added none.
+# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
+# "Verification") changed PLC-013, which cites CON-006 for an end that runs nothing (V2-01), and
+# PLC-023, which does not hold back a read of a secret that PRV-026 makes to run the machine
+# provider again (V2-04). It added none and removed none.
+# The coordinator's decision on V6 of that verification changed PLC-007, whose selector is
+# empty for an instance for which no item that is run is selected, and PLC-002. It added none
+# and removed none.
 
 - id: PLC-001
   layer: language
@@ -89,15 +108,22 @@
     none or, for the Resource of a Pool's entry, no input of the Pool's template supplies one,
     under POOL-016.
   then: >-
-    Its placement is the node that represents the machine that the machine provider names
-    for it under PRV-015. Where no machine provider exists that is not retired, the engine's
-    own machine provider serves under PRV-003, and that node is `local`.
+    Where no item that is run is selected for it, its placement is `local`, and no machine
+    provider is asked. Otherwise its placement is the node that represents the machine that the
+    machine provider names for it under PRV-015; where no machine provider exists that is not
+    retired, the engine's own machine provider serves under PRV-003, and that node is `local`.
   observable: >-
     The resolved instance holds that node's ID. A Resource whose type offers
     `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` is placed on `local`
     under PRV-002, and no machine provider is asked. A retired node is never chosen: a
     node represents a machine only until it is retired, under PLC-026. The placement is
-    chosen once, when the instance is instantiated, and never changes, under PLC-009.
+    chosen once, when the instance is instantiated, and never changes, under PLC-009. An
+    instance for which no item that is run is selected, such as one reached only by `remote`, or
+    an Agent that a client drives from another machine under IFC-042, runs nothing on any
+    machine, so it is placed where the engine is, as a provider is under PRV-002, and a machine
+    reported unreachable or gone makes it neither unavailable nor retired, under PLC-023 and
+    PLC-024; PLC-007 checks no label of its type or its items against `local`, since a
+    `nodeSelector` says where a workload runs and nothing of it runs.
   vectors: []
 
 - id: PLC-005
@@ -134,11 +160,12 @@
   level: must
   when: >-
     An Agent or a Resource would be instantiated with a placement, and the labels reported for
-    that node do not hold each label of the instance's label selector with the value it
-    gives. That selector is the union of the `nodeSelector` that the instance's type and each
-    implementation item selected for it state and, where an item that is run is selected for the
-    instance and it names no `runtime`, the label `kubernetes.io/hostname` with the value that
-    `local`'s status holds.
+    that node do not hold each label of the instance's label selector with the value it gives.
+    Where an item that is run is selected for the instance, that selector is the union of the
+    `nodeSelector` that the instance's type and each implementation item selected for it state
+    and, where the instance names no `runtime`, the label `kubernetes.io/hostname` with the
+    value that `local`'s status holds. Where no item that is run is selected for it, the
+    selector is empty, since nothing of the instance runs.
   then: >-
     The instance is not instantiated.
   observable: >-
@@ -150,7 +177,8 @@
     runner, no node matches. The label of the engine's own runner is added as Kubernetes
     merges the `scheduling.nodeSelector` of a Pod's RuntimeClass into the Pod's own, because
     that runner runs only on the machine that `local` represents, under PRV-003 and PRV-006. An
-    instance with no item that is run, such as one reached only by `remote`, gets no such label.
+    instance with no item that is run, such as one reached only by `remote`, gets no such label,
+    and its type's and items' `nodeSelector` are not checked, as round 5's V6 settled.
     The selector is decided from the documents and the labels that the node's status holds
     under PLC-026, without reaching the machine, when the instance is instantiated and not
     again: a later report of other labels changes no instance placed on the node. A
@@ -229,7 +257,8 @@
     The Conduit is not instantiated.
   observable: >-
     Resolving returns a diagnostic naming the Conduit, the requirement and the two nodes. A
-    Conduit one of whose ends has no placement is rejected under CON-006. It is decided once: a
+    Conduit one of whose ends has no placement, or is one for which no item that is run is
+    selected, is rejected under CON-006. It is decided once: a
     node represents one machine, which its hostname names, and a placement never changes,
     under PLC-009, so neither the opening of the Conduit nor a request through it is checked
     again. The requirement is applied by the engine itself and is never sent to an
@@ -336,10 +365,13 @@
   level: must
   when: >-
     A machine other than the one that `local` represents is reported unreachable by the
-    machine provider, or is omitted from its latest report while a node represents it, and
-    a request, or a setup hook or retire hook, would be dispatched to the implementation of an
-    instance placed on the node that represents that machine, or the engine would ask that
-    instance's runtime provider for its run or its stop.
+    machine provider, or, while a node represents it, is omitted from the provider's latest
+    report or no report has been received since the engine last started, and a request, or a
+    setup hook or retire hook, would be dispatched to the implementation of an instance placed
+    on the node that represents that machine, other than a read of a secret that PRV-026 makes
+    to run the machine provider again, or the engine would ask that instance's runtime provider
+    for its run or its stop, other than the stop that a request to unregister the instance asks
+    for under LIF-036.
   then: >-
     It is not dispatched, or not asked for, and reports unavailable, and no secret is read for a
     run that is not asked for. Nothing is retired because a machine is unreachable or omitted.
@@ -356,11 +388,17 @@
     implementation-defined list gives, every machine but the one that `local` represents counts
     as omitted. How often the engine asks the machine provider is DL5 too; after the engine
     restarts, it runs the machine provider again to ask for its next report, under PRV-026,
-    rather than wait for an actor to set it up. A report that the machine that `local`
-    represents is unreachable, or that omits it, makes nothing unavailable: the engine runs on
-    that machine, and `management` and `access` are placed there at first start, and every
-    provider other than a secret Resource under PRV-002. Where the actor is not permitted,
-    OPS-023 gives refused first.
+    rather than wait for an actor to set it up; a report received before the engine last started
+    counts for nothing, so until the first report after it every machine but the one that
+    `local` represents counts as omitted. A read of a secret that the machine provider's run
+    needs is dispatched all the same, wherever its secret Resource is placed: that provider's
+    report is what gives a machine a state again, so holding the read back would keep every
+    machine but that one omitted after every restart. Where the read cannot reach its machine,
+    it does not succeed, and the report counts as not received, under PRV-026. A report that
+    the machine that `local` represents is unreachable, or that omits it, makes nothing
+    unavailable: the engine runs on that machine, and `management` and `access` are placed there
+    at first start, and every provider other than a secret Resource under PRV-002. Where the
+    actor is not permitted, OPS-023 gives refused first.
   vectors: []
 
 - id: PLC-024

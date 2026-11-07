@@ -40,6 +40,12 @@
 # gate's bound on the connection from the enforcement point, and in the second that a store
 # reached by `remote` that cannot check the engine's proof is used as plain and learns its
 # locator from a header that its item binds.
+# Round 5 of the re-audit (docs/proposals/reaudit/round-5/DECISIONS.md; log
+# docs/proposals/reaudit/round-5/log-fix-F5.md) said in the description of `secret-provider.v1`
+# that a secret Resource's server is reached only with the engine's proof where another runtime
+# provider runs it or it is a `remote` item that is not plain, and that a plain one stands
+# behind no gate (M81); and calls what is reached by `remote` there an implementation of
+# `get-secret.v1`, where it said a store (M18).
 #
 # The Capability contracts of the core package: what `management`, `access` and a Pool offer
 # through a Conduit (OPS-019, CTR-003), and the provider capabilities (PRV-001). The
@@ -222,10 +228,12 @@ metadata:
     package that lists or writes secrets does so through another Type, whose Resources are not
     secret Resources. The engine reads a secret for an instance through that instance's own
     open Conduit that lists `get-secret.v1`, and no actor's request for it is dispatched. A
-    secret Resource's server is reached only with the engine's proof, as any server that the
-    engine does not run itself is. A store reached by `remote` that cannot check that proof is
-    marked `plain`: it is then reached as before, with no proof, takes none of Conduit's keys,
-    and learns its locator only through a header that its item binds.
+    secret Resource's server, where a runtime provider other than the engine's own runner runs
+    it, or where it is reached by `remote` and is not `plain`, is reached only with the engine's
+    proof, as any such server is. An implementation of `get-secret.v1` reached by `remote` that
+    cannot check that proof is marked `plain`: it then stands behind no gate, is reached as
+    before, with no proof, takes none of Conduit's keys, and learns its locator only through a
+    header that its item binds.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#get-secret.v1

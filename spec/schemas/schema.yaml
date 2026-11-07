@@ -10,6 +10,10 @@
 # vocabulary and its validation vocabulary less `multipleOf`, with the format `uri-reference`,
 # and a `default` is rejected under `not`, `if`, `then`, `else` and `dependentSchemas` too
 # (decision 20). The log is docs/proposals/ruling-41/log-core.md.
+# The integration of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fixes.md), on
+# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, named under
+# OBJ-019 below the names under `dependentRequired` and `dependentSchemas` and the patterns
+# under `patternProperties` (M24).
 #
 # The schema of a schema: what spec/schema-profile.md permits, written within that profile.
 # Every place in a document that holds a schema refers to this contract. JSON Schema 2020-12.
@@ -26,8 +30,9 @@
 #            project or package (NAM-022). The forms cannot be confused: a pointer is empty
 #            or starts with `/`, and a name starts with a letter
 #   CTR-008  the `spec` of a Schema contract is a schema under the profile
-#   OBJ-019  the names under `properties` and `$defs`, and the values of `const`, `enum`,
-#            `default` and `examples`, are the author's and are not checked
+#   OBJ-019  the names under `properties`, `dependentRequired`, `dependentSchemas` and
+#            `$defs`, the patterns under `patternProperties`, and the values of `const`,
+#            `enum`, `default` and `examples`, are the author's and are not checked
 #
 # Three definitions carry SCH-008. `schema` is a schema in a place where `default` is not
 # accepted. `property` is a schema that is a member of `properties`, where it is. `combined`

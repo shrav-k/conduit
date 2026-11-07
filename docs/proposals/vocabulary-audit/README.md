@@ -1,6 +1,8 @@
 # Vocabulary audit before the Codex read
 
-Status: proposed 2026-11-06, for the owner. [Ruling 41](../ruling-41/README.md) asked for it:
+> **Ruled.** [Ruling 42](../ruling-42/README.md) accepted the twenty names, N1 to N20, and left the editorial fixes, E1 to E23, to the coordinator, who applied them. The text below is the audit as it was put to the owner.
+
+Was: proposed 2026-11-06, for the owner. [Ruling 41](../ruling-41/README.md) asked for it:
 "I don't necessarily like the name secret reveal for the contract, we should do another vocab
 audit as well". This is a proposal. Nothing in it is ruled.
 

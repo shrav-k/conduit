@@ -40,9 +40,9 @@ of the rewrite then limited a Package's transport to `stdio` and `streamable-htt
 this tool from requiring that a control's `inputSchema` list `revision` alone, and added the
 rule for PLC-028 and its example.
 
-Ruling 42 accepted the decisions that the coordinator settled in the [open questions after the
-rewrite](../../docs/proposals/ruling-41/open-decisions.md) and the owner's answers to most of
-the others, and the [log of that pass](../../docs/proposals/ruling-42/log-core.md) lists what
+Ruling 42 struck none of the decisions that the coordinator settled in the [open questions after
+the rewrite](../../docs/proposals/ruling-41/open-decisions.md) and answered most of the others,
+and the [log of that pass](../../docs/proposals/ruling-42/log-core.md) lists what
 changed here. No schema changed shape. The description of `implementation-item.v1` says how
 `arguments` names a positional argument. This tool's rule for PLC-025 also compares the items a
 template selects with each other, its rule for MAN-017 also rejects a place at which the type's
@@ -83,8 +83,26 @@ Remote's `url` is not an `https` URL (IFC-044), with an example under examples/i
 the example for SEC-024 a plain item, since only a plain item stands at an `http` URL; made the
 rule for MAN-018 compare names without regard to case, and that for SEC-024 reject an `http`
 URL whose host is a variable of the Remote; and has this tool check that `run.v1`'s `identity`
-holds exactly the files that `spec/names.yaml` fixes. The promises are the source of truth:
-where a schema and a promise differ, the schema is wrong.
+holds exactly the files that `spec/names.yaml` fixes. The
+[decisions of round 5 of the re-audit](../../docs/proposals/reaudit/round-5/DECISIONS.md)
+marked the example project's `git-mirror-server` plain, with `tools` (M79); said in the rows
+on `record.v1` and `object.v1` under "Choices the schemas encode" that a record's `data` also
+holds `serving`, `inputs` and `outputs`, and that `nested` gives an ID where
+`register-replacement.v1` takes a reference (M84); and had this tool read the key
+`x509BundleFile` of `spec/names.yaml`, which was `trustBundleFile` (M86). The
+[log of that pass](../../docs/proposals/reaudit/round-5/log-fix-F5.md) lists each change. Its
+[integration](../../docs/proposals/reaudit/round-5/log-fixes.md) then said in the row for
+SEC-024 that an item selected for `get-secret.v1` stands at no `http` URL off loopback, and no
+`remote` item at a loopback host on an engine that can move (M01, M02), and struck its clause on
+a host written as a variable of the Remote, whose URL MAN-010 rejects (M23); in the row for
+TPL-019, that an Interface or a Pool selects no item that is run (M06); in the row on a schema,
+that the names under `dependentRequired` and `dependentSchemas` and the patterns under
+`patternProperties` are the author's (M24); added the rule `remote-provider`, for PKG-030, with
+an example (M25); and had the rule for MAN-017 require that a bound place confine its value to a
+string, a number, a boolean or null, with an example (M30). The
+[verification of those fixes](../../docs/proposals/reaudit/round-5/log-fixes.md#verification)
+said above that ruling 42 struck none of the coordinator's decisions (V10). The promises are
+the source of truth: where a schema and a promise differ, the schema is wrong.
 
 ## What this is
 
@@ -208,7 +226,7 @@ The schemas are open where OBJ-019 exempts:
 | `arguments` of an instance, of a nested instantiation and of an applied requirement | Any map. The inputs of the template or of the requirement check it. One that is left out is present and empty, as a `config` that is not written is (INS-011, INS-024) |
 | `annotations` | Any map of strings |
 | The value of the `default` of a template's input or of a Requirement's input | Any value. It is a literal value, which OBJ-019 exempts. The input's own schema checks it (SCH-019) |
-| A schema, `inputSchema` and `outputSchema` among them | The names under `properties` and `$defs`, and the values of `const`, `enum`, `default` and `examples`, are the author's. The keywords are not: SCH-002 rejects one outside the profile, and `schema.v1` does |
+| A schema, `inputSchema` and `outputSchema` among them | The names under `properties`, `dependentRequired`, `dependentSchemas` and `$defs`, the patterns under `patternProperties`, and the values of `const`, `enum`, `default` and `examples`, are the author's. The keywords are not: SCH-002 rejects one outside the profile, and `schema.v1` does |
 | An item's `package` and `remote` | As open as server.json's own schema is, which governs them (MAN-010), save that the `url` of the `remote` of an item that is not `plain` begins with `https://` (IFC-044) |
 | The keys of an item's `environment`, `packageArguments` and `headers` | Any non-empty string: they are the names that the Package or the Remote declares, or for a `command` a variable's name. The schema rejects one key alone: `Authorization`, in any case, among the `headers` of an item that is not `plain` (IFC-043) |
 
@@ -244,12 +262,12 @@ documents in front of it show, in its step 6; an example under
 | That each key of a control's `changes` is an input the control declares and each pointer a place its type's schema describes; that its `inputSchema` lists `revision` under `required` and that it declares no output `settings` | CTR-006 | It relates the control to its type, which lists it | In step 5, for a control whose contract is in this repository |
 | That `{entry: name}` is written only in an entry of a Pool template | POOL-005 | A reference schema governs an entry's argument and every other place alike | Only in the `placement`, `runtime`, `consumer` and `target` of an instance document and the `target` of a declared Conduit |
 | That every operation which a template's type requires, which a capability the type offers includes, or which the type lists as a control has an implementation: one the template selects, or a default of the type or of the operation's contract | TPL-004 | It needs the type's contract, the capabilities' and the operations' | Yes, where the tool has the type's contract, for each operation whose contract it has |
-| That the implementations a template selects include at most one item that is run | TPL-019 | It needs the type's contract and the manifests of the implementations | Yes, where the tool has the type's contract and the manifests |
+| That the implementations a template selects include at most one item that is run, and none for an Interface or a Pool | TPL-019 | It needs the type's contract and the manifests of the implementations | Yes, for two items, where the tool has the type's contract and the manifests |
 | That a selected item's `nodeSelector` names no label that its type's `nodeSelector`, or another selected item's, names with another value | PLC-025 | It needs the type's contract and the items' manifests | Yes, as far as the tool has them |
-| That a selected item's `environment`, `packageArguments` and `headers` point at places that the type's schema requires, with every member on the way required; at which it admits no object or array, by `type`, `enum` or `const`, unless `secret-reference.v1` governs the place; and, for an input that the Package or the Remote marks `isRequired: true`, no null | MAN-017 | It needs the type's schema and the item's manifest | Yes, following `properties` and `required`, and the branches of `anyOf` and `oneOf` at the place, and not a `$ref` |
+| That a selected item's `environment`, `packageArguments` and `headers` point at places that the type's schema requires, with every member on the way required; which it confines, by `type`, `enum` or `const`, in itself or in each branch of its `anyOf` or `oneOf`, to a string, a number, a boolean or null, unless `secret-reference.v1` governs the place; and, for an input that the Package or the Remote marks `isRequired: true`, no null | MAN-017 | It needs the type's schema and the item's manifest | Yes, following `properties` and `required`, and the branches of `anyOf` and `oneOf` at the place, and not a `$ref` |
 | That a name in an item's `environment`, `packageArguments` or `headers` is one that its Package or its Remote declares | MAN-010 | The profile cannot relate the keys of one map to the values inside another | — |
 | That no item that a template selects binds, in its `environment`, a variable that `identity` carries, compared without regard to case | MAN-018 | The item alone is not rejected: the rule is on the template that selects it | Yes, with the names that [spec/names.yaml](../names.yaml) fixes, for each item the tool has |
-| That a header that carries a secret goes only to an `https` URL, or to an `http` URL whose host is `localhost`, an IPv4 address in `127.0.0.0/8` or the IPv6 address `::1`, and the second only on an engine that can neither restart on another machine nor run as several parts | SEC-024, DL17 | Which place holds a secret is in the type's schema, the URL in the manifest, and whether the engine can move in its conformance document | Yes, for an `http` URL whose host is not a loopback address, a host written as a variable of the Remote among them, finding the place as MAN-017's rule does |
+| That a header that carries a secret goes, and an item that a template selects for `get-secret.v1` stands, only at an `https` URL, or at an `http` URL whose host is `localhost`, an IPv4 address in `127.0.0.0/8` or the IPv6 address `::1`; and that on an engine that can restart on another machine or run as several parts, no `remote` item stands at such a host | SEC-024, DL17 | Which place holds a secret is in the type's schema, the URL in the manifest, and whether the engine can move in its conformance document | Yes, for a header that carries a secret at an `http` URL whose host is not a loopback address, finding the place as MAN-017's rule does |
 | That the implementations the target has selected support a filter, by stating it in `supports` | CON-022, PKG-019 | It needs the target's type, the implementations selected and their manifests | — |
 | That no instance document is made from the core package's templates `system`, `node`, `management`, `access` or `root` | FST-006 | Only resolving `from` says which template it names | Yes, for a `from` that is a qualified reference into the core package. Not for the documents of [examples/valid/first-start](examples/valid/first-start), which show what first start makes and are valid against the schemas for that reason |
 | That `secret-reference.v1` governs a place only as its own schema, as `items`, or beside `{type: null}` under `anyOf` or `oneOf` | SEC-001 | The profile cannot say which schemas stand beside a `$ref` to a given contract | Yes, for every schema a document writes; a `$ref` to a definition that holds it is not followed |
@@ -258,6 +276,7 @@ documents in front of it show, in its step 6; an example under
 | That a Type that offers a provider capability is of the family Resource and offers no other | PRV-001 | The profile could state it with `if` and `contains`; `type-spec.v1` leaves the core package's provider capabilities to this tool's rule | Yes |
 | That a Type that offers `secret-provider.v1` offers no other capability | SEC-022 | The profile could state it with `if`, `contains` and `maxItems`; `type-spec.v1` leaves the core package's capabilities to this tool's rule | Yes |
 | That a plain implementation implements no operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` | PKG-020 | The profile could state it with `if` and `contains`; `implementation-item.v1` leaves the core package's operations to this tool's rule | Yes, for the manifests of the valid examples and those in `examples/invalid-by-rule` |
+| That an item reached by `remote` implements no operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` | PKG-030 | As for PKG-020 | Yes, for the manifests of the valid examples and those in `examples/invalid-by-rule` |
 | That a Type that offers `secret-provider.v1` lists no control, and that one that offers `package-source.v1` requires `schemes` | SEC-005, PRV-016 | The profile could state each with `if` and `contains`; `type-spec.v1` does not yet | — |
 | That no Conduit lists an operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, and that one that lists `get-secret.v1` has no Interface as its consumer | PRV-004, SEC-009 | Which capability is a provider capability is in the core package, and the consumer is in another document | PRV-004, for a Conduit template |
 | That a runtime provider, the machine provider and a package-source provider are given no placement but `local` and no `runtime`, and that `runtime` names a runtime provider that is not retired | PRV-002, PRV-006 | It needs the template's type and the object that `runtime` resolves to | — |
@@ -296,19 +315,19 @@ The work of ruling 41 made these choices where the promises left the shape open;
 | An operation with no inputs, or with no outputs, states no `inputSchema` or no `outputSchema` | `operation-spec.v1` | CTR-002, IFC-033 |
 | `server-package.v1` and `server-remote.v1` are server.json's Package and Remote with their descriptions, examples and defaults left out; the Remote's `url` is also a `uri` | `server-package.v1`, `server-remote.v1` | MAN-010 |
 | A diagnostic's `ruleId` is a promise ID in form, and a logical location's `fullyQualifiedName` is a JSON Pointer | `diagnostic.v1` | IFC-025 |
-| A record's `data` holds the fields of REC-002 under the names that IFC-006 gives Conduit's keys, with `consumer`, `target`, `outcome` and `reason` beside them, and the record's time is the CloudEvent's `time` | `record.v1` | REC-002 |
-| `nested` in a result names the instance that holds the nested instantiation and its name, as `register-replacement.v1` takes them | `object.v1` | LIF-009 |
+| A record's `data` holds the fields of REC-002 under the names that IFC-006 gives Conduit's keys, with `consumer`, `target`, `outcome` and `reason` beside them, the invocation served in `serving`, as IFC-020 names its key, and the inputs and outputs that the type's `records` keeps in `inputs` and `outputs`; the record's time is the CloudEvent's `time` | `record.v1` | REC-002, IFC-020, CTR-004 |
+| `nested` in a result gives the ID of the instance that holds the nested instantiation and the instantiation's name; an actor names that instance in `register-replacement.v1` by its reference, and never by that ID | `object.v1` | LIF-009, LIF-031 |
 | A label's key and value have the syntax of Kubernetes's label keys and values | `labels.v1` | PLC-007, PRV-014 |
 
 ## Examples
 
 | Path | What |
 | --- | --- |
-| [examples/valid/project](examples/valid/project) | A small submitted project, whose manifest states `address` because it holds contracts and lists implementations: a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input and a narrowed control, which selects a setup hook; a Pool template with two entries, one referring to the other, whose input supplies their placement, and whose items, a program inside a package, run on the engine's own runner; a Conduit template with the shared-host requirement and a filter; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open, naming an operation of the project by its address; a runtime provider's type and template; the type of a secret Resource, a secret Resource and the Conduit through which it is read; a type whose configuration holds a secret reference, with a `command` item whose `environment` binds it; and instance documents of every family, an Agent that names its `runtime` among them |
+| [examples/valid/project](examples/valid/project) | A small submitted project, whose manifest states `address` because it holds contracts and lists implementations: a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input and a narrowed control, which selects a setup hook; a Pool template with two entries, one referring to the other, whose input supplies their placement, and whose items, a program inside a package, run on the engine's own runner; a Conduit template with the shared-host requirement and a filter; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open, naming an operation of the project by its address; a runtime provider's type and template; the type of a secret Resource, a secret Resource and the Conduit through which it is read; a type whose configuration holds a secret reference, with a plain `command` item whose `environment` binds it; and instance documents of every family, an Agent that names its `runtime` among them |
 | [examples/valid/files-package](examples/valid/files-package) | A package: a manifest with `address`, `version`, `exports` and three implementations, reached by `command`, by a server.json `package` pinned by its `fileSha256` and by a plain `remote`, each binding a value of the configuration, the `command` and the `remote` with label selectors that name one label with different values; and one contract of each of the five kinds, two of which use a `$ref` written `#name`. Among them are Operation contracts in `inputSchema` form, one with a `default` and one with a hint, two with a handle, a control whose `changes` maps its input to a setting, a Type with a label selector, a default implementation and `records`, and a Requirement that is a filter |
 | [examples/valid/first-start](examples/valid/first-start) | The instance documents of the five first-start objects, written out to show what first start makes. Each is valid against the schemas. The engine makes these objects itself and is handed no such document: submitting them is rejected, under FST-006 for the five made from the templates `system`, `node`, `management`, `access` and `root`, and under OBJ-002 because the five names are taken |
 | [examples/invalid](examples/invalid) | 56 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
-| [examples/invalid-by-rule](examples/invalid-by-rule) | 28 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Three files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. Two others hold, beside their documents, the manifest of their project, a document with no `kind`, whose items their templates select. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
+| [examples/invalid-by-rule](examples/invalid-by-rule) | 30 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Four files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. Two others hold, beside their documents, the manifest of their project, a document with no `kind`, whose items their templates select. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
 
 Every name under `example.org` is invented, and every digest and hash in an example is
 illustrative. Each directory under `examples/valid` is one project, with its documents beside
@@ -328,12 +347,13 @@ package agrees with itself, that each control's `changes` maps inputs the contro
 places its type's schema describes and that its `inputSchema` requires `revision`, and that the
 tables of this page and of the core package's page list what there is. It then applies the rules
 the table above marks, to the core package and the valid examples, which must break none, and to
-each set in `examples/invalid-by-rule`, which the rule its file is named for must reject. Three
-rules are on manifests, for NAM-021, MAN-015 and PKG-020, and are applied to the manifests of
-the valid examples and to the manifests in `examples/invalid-by-rule`. The rules that follow a
-template's selections into an implementation item, for TPL-019, PLC-025, MAN-017, MAN-018 and
-SEC-024, read the items from the manifests of the core package and of the valid examples, and
-from the manifest that a set in `examples/invalid-by-rule` holds beside its documents. One of
+each set in `examples/invalid-by-rule`, which the rule its file is named for must reject. Four
+rules are on manifests, for NAM-021, MAN-015, PKG-020 and PKG-030, and are applied to the
+manifests of the valid examples and to the manifests in `examples/invalid-by-rule`. The rules
+that follow a template's selections into an implementation item, for TPL-019, PLC-025, MAN-017,
+MAN-018 and SEC-024, read the items from the manifests of the core package and of the valid
+examples, and from the manifest that a set in `examples/invalid-by-rule` holds beside its
+documents. One of
 the rules, for SCH-019, validates each `default` against its schema, and is applied only where
 jsonschema is importable; where it is not, the report says that the rule was not applied. Its
 report says of each rejection whether a schema or one of its own rules made it. It also checks

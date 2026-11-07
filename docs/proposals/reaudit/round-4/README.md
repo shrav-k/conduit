@@ -5,7 +5,9 @@ then ruled on what was open ([ruling 38](../../ruling-38/README.md)): the gate o
 rounds is withdrawn, and the next read is the owner's cold read by Codex
 ([for the next reader](../../../AUDIT.md#for-the-next-reader)). Four cold
 readers read the repository as it stood after [round 3](../round-3/README.md), its fix pass and
-the follow-up, at commit `f583469`.
+the follow-up, at commit `f583469`. Ruling 41 later ordered a fifth round, on the
+specification as rulings 40 and 41 rewrote it, before the read by Codex:
+[round 5](../round-5/DECISIONS.md).
 
 | | Round 2 | Round 3 | Round 4 |
 | --- | --- | --- | --- |

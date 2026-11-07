@@ -75,3 +75,33 @@ date for the next reader, and merges pull request 7.
 | 40 (point 3e) | A request that crosses machines carries proof of its sender. | It also binds what the engine sends to a server it does not run itself, and the server checks it (D5). |
 | 41 (decision 4c), as ruling 42 amended it | Every read of a secret belongs to a request in progress, or is SEC-023's read again for a connection. | Also the read before a provider's run made again after a restart (Q3). |
 | 42 | D5 and D20 wait on research. | Ruled here. |
+
+## After the ruling
+
+The ruling was applied to `spec/` on 2026-11-06 and 2026-11-07. The logs are beside this record:
+[providers](log-providers.md), [interface](log-interface.md), [secrets](log-secrets.md),
+[core](log-core.md), [docs](log-docs.md) and the [integration](log-integration.md), whose
+section "Verification" answers 43 findings of three verifiers: coverage of the ruling, cost on
+one machine and for the Model Context Protocol, and scenarios across machines. The
+specification then held 449 promises.
+
+The coordinator's decisions on what the logs left open, under rulings 37 and 38, each as the
+log recommends:
+
+- A secret Resource on the engine's own runner is run again after a restart as a provider is
+  (PRV-026), so that a single machine needs no setup by hand after a restart.
+- Every run gets the trust bundle and `engine-id` (N1). The guard at send time alone keeps a
+  secret header off `http` once the engine is able to move (N2). On an engine of several parts
+  the engine's own credential is short-lived, its lifetime in the conformance document (N3,
+  DL13). An engine address that a provider gives as the run sees it keeps the host of the
+  engine's address (N4, PRV-022).
+- Kept as written: IFC-043, under which an item that is not `plain` may not name
+  `Authorization`, since the engine's token takes that header; "not from the run it came from"
+  in IFC-022, beside DL13's identification over stdio by the channel the engine itself made;
+  SEC-024's rejection of `http` to any host that is not a loopback address; MAN-018 rejecting
+  the template; the IDs PRV-027, PRV-028, IFC-043 and IFC-044 that the editors added.
+
+Coined names, for the owner to strike: the variables `CONDUIT_URL` and `CONDUIT_IDENTITY_DIR`;
+the files `ca.crt`, `jwks.json`, `engine-id`, `token`, `tls.crt` and `tls.key`; the terms gate,
+enforcement point, decision point and the engine's ID. `spec/names.yaml` holds the names of
+`identity`, and `tools/set_names.py` changes them together.

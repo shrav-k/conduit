@@ -30,6 +30,15 @@
 # own `packageArguments`, and removed its `digest`: a Package is pinned by its own `fileSha256`,
 # which the item now requires, or, where its `registryType` is `oci`, by a digest at the end of
 # its `identifier`.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on Q1 as tightened, made
+# `implementation-item.v1` reject an item reached by `remote` and not marked `plain` that names
+# `Authorization`, in any case, in its `headers` (IFC-043), and said in its description that a
+# template whose item binds a variable of `identity` (MAN-018), or sends a header that carries
+# a secret to an `http` URL (SEC-024), is rejected. The log is
+# docs/proposals/ruling-43/log-core.md. Its verification
+# (docs/proposals/ruling-43/log-integration.md, "Verification") made `implementation-item.v1`
+# reject an item reached by `remote` and not marked `plain` whose Remote's `url` is not an
+# `https` URL (IFC-044).
 #
 # The manifest of a project or a package, one item of its `implementations`, and the two
 # shapes of the Model Context Protocol Registry's server.json that an item may hold. The
@@ -51,7 +60,9 @@
 #                           `command` or `package`, `packageArguments` with `package` and
 #                           `headers` with `remote`), PKG-019, PKG-020 (a plain item gives
 #                           `tools` and no `supports`, and an item that is not plain gives no
-#                           `tools`), OBJ-016, TPL-003
+#                           `tools`), OBJ-016, TPL-003, IFC-043 (an item that is not plain
+#                           names no `Authorization` in its `headers`), IFC-044 (an item that
+#                           is not plain and is reached by `remote` stands at an `https` URL)
 #   server-package.v1       MAN-010 (one Package of server.json, schema 2025-12-11, whose
 #                           transport is `stdio` or `streamable-http`), IFC-017
 #   server-remote.v1        MAN-010 (one Remote of that schema, whose `type` is
@@ -178,8 +189,14 @@ metadata:
     each to a JSON Pointer into the instance's configuration that supplies the value; no key
     binds the Package's `runtimeArguments`. An existing server that knows nothing of this
     specification is marked `plain: true`, gives `tools` and states no `supports`; an item that
-    is not plain gives no `tools`. `supports` and `nodeSelector`, a label selector, may each be
-    left out.
+    is not plain gives no `tools`, and, where it is reached by `remote`, stands at an `https`
+    URL, since the engine connects to no other, and names no `Authorization`, in any case of
+    its letters, in `headers`, since the engine presents its own proof in that header.
+    `supports` and `nodeSelector`, a label selector, may each be left out. A template is
+    rejected where an item selected for it binds in `environment` a variable that `identity`
+    carries in `run.v1`, or where a header of a `remote` item selected for it carries a secret
+    to an `http` URL that the engine does not accept for one; neither is in this schema, since
+    each needs the template.
 spec:
   type: object
   properties:
@@ -233,6 +250,13 @@ spec:
     not: {required: [supports]}
   else:
     not: {required: [tools]}
+    properties:
+      remote:
+        properties:
+          url: {pattern: '^https://'}
+      headers:
+        propertyNames:
+          not: {pattern: '^[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]$'}
   $defs:
     references:
       type: array

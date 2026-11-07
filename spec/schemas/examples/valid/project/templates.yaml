@@ -5,6 +5,9 @@
 # of `workspace` to `node`.
 # The names of ruling 42 (docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1`
 # to `secret-provider.v1` and `reveal-secret.v1` to `get-secret.v1`.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on D20, took the input `runtime`
+# out of `workspace`: its entries run `bin/files-server`, a program inside a package, which only
+# the engine's own runner runs (PRV-007). The log is docs/proposals/ruling-43/log-core.md.
 
 # A Resource template with an input and a narrowed control, which selects a setup hook. The
 # hook's implementation is `files-server`, the item that its type's operations already
@@ -38,9 +41,11 @@ spec:
           schema: {maximum: 50}
 ---
 # A Pool template with two entries, one of which refers to the other (POOL-005). The input
-# `node` supplies the placement of both entries, and the input `runtime` the runtime
-# provider of one (POOL-009); an entry whose runtime no input supplies runs on the engine's
-# own runner.
+# `node` supplies the placement of both entries (POOL-009). No input supplies a runtime
+# provider: the item of both entries is `bin/files-server`, a program inside the package
+# `example.org/files`, which only the engine's own runner runs (PRV-007), so both run there. A
+# server meant to run under another runtime provider is published as a `package` item, pinned
+# by its digest (MAN-010).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool
 metadata:
@@ -52,10 +57,6 @@ spec:
     node:
       schema: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
       to: [/entries/cache/placement, /entries/checkout/placement]
-      optional: true
-    runtime:
-      schema: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
-      to: [/entries/checkout/runtime]
       optional: true
   entries:
     cache:

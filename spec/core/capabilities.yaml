@@ -31,6 +31,15 @@
 # The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
 # says in that description that each kind of store is its own Type, as SEC-005 does, where it
 # said each store, which a store, the system outside the engine, is not.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on D5, says in the descriptions
+# of `runtime-provider.v1` and `secret-provider.v1` that the server of every run of a runtime
+# provider stands behind its gate (PRV-025), and that a secret Resource's server is reached
+# only with the engine's proof. The log is docs/proposals/ruling-43/log-core.md. Its
+# verification (docs/proposals/ruling-43/log-integration.md, "Verification") says in the first
+# that what answers at a run's `url` proves itself with the run's certificate and words the
+# gate's bound on the connection from the enforcement point, and in the second that a store
+# reached by `remote` that cannot check the engine's proof is used as plain and learns its
+# locator from a header that its item binds.
 #
 # The Capability contracts of the core package: what `management`, `access` and a Pool offer
 # through a Conduit (OPS-019, CTR-003), and the provider capabilities (PRV-001). The
@@ -51,7 +60,8 @@
 #                         ACC-028 (a Pool's own operations), LIF-021, LIF-009, CTR-004 (a
 #                         Type of the family Pool that does not offer it is rejected, so
 #                         every Pool offers it)
-#   runtime-provider.v1   PRV-001, PRV-006 to PRV-012 (run, stop and the state of a run)
+#   runtime-provider.v1   PRV-001, PRV-006 to PRV-012 (run, stop and the state of a run),
+#                         PRV-025 (the gate in front of every run's server)
 #   machine-provider.v1   PRV-001, PRV-013 to PRV-015 (the machines, their labels and their
 #                         states, and placing an instance)
 #   package-source.v1     PRV-001, PRV-013, PRV-016, PRV-017 (fetching an archive for the
@@ -157,8 +167,13 @@ metadata:
     What a runtime provider offers: running an instance's implementation item, as a run named
     by the instance's ID, stopping that run and reporting its state. An Agent or a Resource
     names the runtime provider that runs it by its standard argument `runtime`; with none, the
-    engine's own runner runs it. No Conduit lists these operations: the engine alone invokes
-    them.
+    engine's own runner runs it. The server of every run that a runtime provider makes stands
+    behind its gate, which admits a request only with the proof of an enforcement point and
+    keeps everything else on the run's machine from the server, and what answers at the run's
+    `url` proves by TLS, with the run's certificate, that it serves the instance; its contract
+    names the means, and how long the gate takes to close a server's stream once the connection
+    from the enforcement point has gone silent. No Conduit lists these operations: the engine
+    alone invokes them.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#run.v1
@@ -206,7 +221,11 @@ metadata:
     another is rejected when its package is installed or its project is submitted. A store
     package that lists or writes secrets does so through another Type, whose Resources are not
     secret Resources. The engine reads a secret for an instance through that instance's own
-    open Conduit that lists `get-secret.v1`, and no actor's request for it is dispatched.
+    open Conduit that lists `get-secret.v1`, and no actor's request for it is dispatched. A
+    secret Resource's server is reached only with the engine's proof, as any server that the
+    engine does not run itself is. A store reached by `remote` that cannot check that proof is
+    marked `plain`: it is then reached as before, with no proof, takes none of Conduit's keys,
+    and learns its locator only through a header that its item binds.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#get-secret.v1

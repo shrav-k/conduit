@@ -81,6 +81,13 @@
 # ACC-001, ACC-003, ACC-005 and ACC-006, and the key `io.github.shrav-k.conduit/restrictions` to
 # `io.github.shrav-k.conduit/filters` in ACC-017 and ACC-018, which with ACC-009 now say filters
 # where only filters are carried or sent. It removed none and added none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
+# work across machines (docs/proposals/multi-machine/README.md), changed ACC-027, under which a
+# restriction is mediated by an enforcement point, which in this version is the engine alone,
+# and enforced where the consumer reaches targets only through one; and ACC-019, whose second
+# exception is the read for a provider's run that the engine asks for again once it has
+# restarted (Q3, PRV-026). It added none and removed none. What changed is in
+# docs/proposals/ruling-43/log-secrets.md.
 
 - id: ACC-001
   layer: convention
@@ -397,7 +404,8 @@
     `io.github.shrav-k.conduit/serving`, or one that the engine makes itself because of work
     that the invocation's operation arranged, other than the read of a secret that SEC-023 makes
     again, for the caller of the setup that made a connection, once that connection's values are
-    lost.
+    lost, and the read of a secret for a provider's run that PRV-026 asks for again once the
+    engine has restarted, for the caller of the setup that last asked for that run.
   observable: >-
     In this version no operation arranges, through the engine, work that outlasts its
     invocation. Once an invocation has ended, a request that names it in
@@ -415,11 +423,13 @@
     connection that lasts has lost its values, as after the engine restarts, on its machine or
     on another: SEC-023 then reads again, for the caller of the setup that made the connection,
     as the instance's own Conduit to the secret Resource and the filters on it decide when the
-    read is made, so closing that Conduit stops it. None is made when a runtime provider
-    restarts a run of its own accord, under PRV-010. An invocation that outlasts its call has
-    not ended: IFC-016 says how its result is read, and until it ends its onward requests are
-    decided under ACC-016 and ACC-017, like any other. A new attempt is dispatched only for a
-    repeat that the caller makes, under IMP-007.
+    read is made, so closing that Conduit stops it; or where a provider's run ended with the
+    engine and the engine first needs the provider again: PRV-026 then asks for the run anew,
+    with reads for the caller of the setup that last asked for it, decided in the same way,
+    under SEC-011. None is made when a runtime provider restarts a run of its own accord, under
+    PRV-010. An invocation that outlasts its call has not ended: IFC-016 says how its result is
+    read, and until it ends its onward requests are decided under ACC-016 and ACC-017, like any
+    other. A new attempt is dispatched only for a repeat that the caller makes, under IMP-007.
   vectors: []
 
 - id: ACC-022
@@ -469,10 +479,14 @@
   then: >-
     For each restriction on it, the inspection result states whether the restriction is enforced
     or only mediated. A restriction is enforced only where the runtime provider that runs the
-    consumer confines it so that it reaches targets only through the engine, as that provider's
-    contract states. In this version every restriction is reported as mediated.
+    consumer confines it so that it reaches targets only through an enforcement point, as that
+    provider's contract states. In this version every restriction is reported as mediated.
   observable: >-
-    Each restriction in the inspection result carries one of those two values. Such confinement
+    Each restriction in the inspection result carries one of those two values. A restriction
+    is mediated in that it applies to the requests that pass through an enforcement point,
+    which in this version is the engine alone. The gate of PRV-025 keeps other callers from a
+    target's server, but a consumer that is not confined may still reach by its own means what
+    the target's implementation reaches, so the restriction is not enforced. Such confinement
     is opted into through the language, by giving the consumer, as its `runtime` under PRV-006,
     a runtime provider whose contract confines it. This version reports mediated for every
     restriction, whatever the consumer's runtime provider is.

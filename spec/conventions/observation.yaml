@@ -28,6 +28,11 @@
 # docs/proposals/ruling-42/log-rename-b.md) renamed origin to source in OBS-002, whose `source`
 # is a URI-reference that the engine names, as it names a record's, and "its own setting for
 # restarts" to its own restart policy in OBS-004. It removed none and added none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
+# work across machines (docs/proposals/multi-machine/README.md), changed OBS-004, whose
+# observable says that the engine runs a provider again after it restarts only for a provider
+# call that it must make, under PRV-026, and not because of a difference (Q3). It added none
+# and removed none. What changed is in docs/proposals/ruling-43/log-secrets.md.
 
 - id: OBS-001
   layer: convention
@@ -81,7 +86,9 @@
     The difference appears in the instance's status and stays until an actor asks for an
     operation that removes it. No setup, control, open or retire is dispatched because of it. A
     runtime provider that restarts a run does so under its own restart policy, under
-    PRV-010, and the engine dispatches nothing because of it.
+    PRV-010, and the engine dispatches nothing because of it. Once the engine has restarted, it
+    runs a provider whose run ended with it again only when it must make a provider call to
+    that provider, under PRV-026, and not because the run is seen to have stopped.
   vectors: []
 
 - id: OBS-006

@@ -67,6 +67,15 @@
 # `operationIdentity` to `idempotencyKey`, in OPS-008 to OPS-012, OPS-018, OPS-019, OPS-021,
 # OPS-024, OPS-025 and OPS-028, and the convention to that of idempotency keys and outcomes, in
 # the first line of this comment. It removed none and added none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
+# work across machines (docs/proposals/multi-machine/README.md), changed OPS-027, whose
+# observable says that a connection the engine sees drop cancels the invocation for the
+# engine, and that whether and when the implementation learns of it is its transport's and its
+# gate's, under PRV-025. It added none and removed none. What changed is in
+# docs/proposals/ruling-43/log-secrets.md. The verification of ruling 43
+# (docs/proposals/ruling-43/log-integration.md, "Verification") changed the observables of
+# OPS-014, on what an actor can check of an invocation dispatched to a machine that is cut off,
+# and of OPS-027, on the gate's bound.
 
 - id: OPS-001
   layer: convention
@@ -333,8 +342,13 @@
     under PRV-009. An actor may reconcile a retirement whose retire hook ended unknown, which
     confirms the shutdown under LIF-028 although the hook's outcome is still unknown; otherwise
     every further retirement ends unknown until the hook itself is reconciled, under OPS-021 and
-    OPS-022, and so does every further setup while a setup hook is unknown. OPS-031 says which
-    input of `reconcile.v1` makes a request invalid where it does not belong.
+    OPS-022, and so does every further setup while a setup hook is unknown. What an actor checks
+    of an invocation dispatched to an instance on a machine that is cut off may be out of date
+    until the machine is back and the run is inspected, under PRV-009: the work may still run to
+    its end there, under OPS-027, and a gate closes a server's stream only where the server
+    answers with one, under PRV-025, so an effect may land after the actor has recorded that it
+    did not occur. OPS-031 says which input of `reconcile.v1` makes a request invalid where it
+    does not belong.
   vectors: []
 
 - id: OPS-018
@@ -548,25 +562,30 @@
     whole or in part. Asking for a cancellation never makes an outcome failed by itself. No
     other form of confirmation is defined, and the protocol has a receiver that stops send no
     response to the request, so a cancelled invocation is usually unknown until it is reconciled
-    under OPS-014, as OPS-013 states. A connection over Streamable HTTP that drops while the
-    request is in progress closes its stream, and so cancels the invocation. A `tasks/cancel` is
-    decided under the Conduit the invocation was dispatched through, as IFC-016 states. Where
-    the engine itself implements the invocation in parts, as it does `set-up.v1`, `retire.v1`
-    and `retire-with-resources.v1`, it passes the cancellation on to each part in progress: by
-    the protocol's means for a call that it sent, such as a hook, a read of a secret or a
-    provider call other than a stop, and, for a part whose implementation is `engine`, such as
-    an `open.v1` under CON-004, an entry's setup under POOL-013 or a Resource's retirement under
-    LIF-021, by cancelling that invocation as this promise cancels one. A cancelled part has not
-    succeeded, so no later part begins, under TPL-012, and `retire-with-resources.v1` dispatches
-    no further retirement, under LIF-021. Every retirement still asks for its stop, under
-    TPL-009, and a stop in progress is not cancelled: the instance is retired from the moment
-    its retirement was dispatched, under LIF-005, so leaving out the stop gains nothing, and the
-    protocol lets a receiver ignore what it cannot cancel. Parts that have ended are not undone.
-    The outcome of a setup or a retirement is then OPS-022's, and that of
-    `retire-with-resources.v1` LIF-021's. A cancelled part's invocation ends when the
-    cancellation is sent, with the outcome that this promise gives it, so an onward request that
-    names it is refused from then on, under ACC-019. How long the engine waits for a result is
-    DL3 and DL10 of the implementation-defined list.
+    under OPS-014, as OPS-013 states. A connection over Streamable HTTP that the engine sees
+    drop while the request is in progress closes its stream, and so cancels the invocation,
+    whose outcome is then unknown for the engine. Whether and when the implementation learns of
+    the cancellation is its transport's and, behind a gate, the gate's, whose provider's
+    contract states how soon it closes a server's stream once the connection from the
+    enforcement point has gone silent, under PRV-025: a cut in which packets are dropped closes
+    nothing that either side sees at once, so it may reach the implementation late or never, and
+    the work may run to its end meanwhile. A `tasks/cancel` is decided under the Conduit the
+    invocation was dispatched through, as IFC-016 states. Where the engine itself implements the
+    invocation in parts, as it does `set-up.v1`, `retire.v1` and `retire-with-resources.v1`, it
+    passes the cancellation on to each part in progress: by the protocol's means for a call that
+    it sent, such as a hook, a read of a secret or a provider call other than a stop, and, for a
+    part whose implementation is `engine`, such as an `open.v1` under CON-004, an entry's setup
+    under POOL-013 or a Resource's retirement under LIF-021, by cancelling that invocation as
+    this promise cancels one. A cancelled part has not succeeded, so no later part begins, under
+    TPL-012, and `retire-with-resources.v1` dispatches no further retirement, under LIF-021.
+    Every retirement still asks for its stop, under TPL-009, and a stop in progress is not
+    cancelled: the instance is retired from the moment its retirement was dispatched, under
+    LIF-005, so leaving out the stop gains nothing, and the protocol lets a receiver ignore what
+    it cannot cancel. Parts that have ended are not undone. The outcome of a setup or a
+    retirement is then OPS-022's, and that of `retire-with-resources.v1` LIF-021's. A cancelled
+    part's invocation ends when the cancellation is sent, with the outcome that this promise
+    gives it, so an onward request that names it is refused from then on, under ACC-019. How
+    long the engine waits for a result is DL3 and DL10 of the implementation-defined list.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;

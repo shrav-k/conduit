@@ -4,7 +4,7 @@
 # Protocol. One baseline revision is required of everyone; either side may support others, and
 # the protocol's own per-request negotiation picks one. Handles follow the protocol's guidance
 # for stateful tools. The protocol's own fields are named as its revision 2026-07-28 names them.
-# Promises here have the layer `interface`, except IFC-014, which is a rule on documents and has
+# Promises here have the layer `interface`, but IFC-014 and IFC-043, rules on documents, have
 # the layer `language`. IFC-026 to IFC-028 were added by the follow-up rulings. The ruling on
 # the core package and the schemas (ruling 37) changed IFC-009, IFC-012, IFC-014, IFC-016,
 # IFC-019 and IFC-024 to IFC-027, which gained three keys of a result's `_meta`: `restriction`,
@@ -119,6 +119,34 @@
 # form, and is not dispatched where the implementation's discovery result lacks Conduit's
 # extension; IFC-026 also says filter where it said restriction, as N16 has it. It removed none
 # and added none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06) accepted the proposal on work
+# across machines (docs/proposals/multi-machine/README.md), with D5's second part as option b
+# and Q1 tightened. Applying it, it changed IFC-017: the engine reaches a run at the `url` last
+# reported, sends nothing to a run's server, or to a `remote` item that is not plain, until
+# the server's side has proved who it is behind its gate (PRV-025), and presents the proof of
+# an enforcement point; IFC-022: an instance is established not from the address, machine,
+# network, runtime provider or run that a request came from, a credential names an instance by
+# its ID and none once it is removed, and the exception for a program that can read another
+# run's credential is stated (Q5); IFC-030, under which the proof the engine presents is its
+# own; IFC-032, under which a credential of a removed instance establishes none; and IFC-041:
+# a `remote` item that is not plain is reached only over `https` with the engine's proof, the
+# values of its headers are those taken when the connection was made, and a header that
+# carries a secret goes only where SEC-024 lets it go. It added IFC-042, under which the
+# engine's address accepts a token in the form of a JWT-SVID from another machine (Q1), and
+# IFC-043, under which a `remote` item that is not plain names no `Authorization` header. It
+# removed none. What changed is in docs/proposals/ruling-43/log-interface.md. The integration
+# of ruling 43 then had IFC-017 keep the request and its result confidential and unaltered as
+# far as the side that checks the proof (point 4 of the gate in the proposal's section 3), and
+# IFC-022 say, as IFC-042 does, that the engine's address accepts the token form from every
+# consumer on another machine (docs/proposals/ruling-43/log-integration.md).
+# The verification of ruling 43 (docs/proposals/ruling-43/log-integration.md, "Verification")
+# changed IFC-017, under which what answers at a run's `url` proves itself by the certificate
+# of PRV-028; IFC-022 and IFC-042, under which the engine's address at an `https` URL always
+# accepts the token form, whichever machine a request comes from; and IFC-041, under which the
+# engine's proof to a `remote` item may also be a token from the authorization server that the
+# item names, obtained with the engine's own credential, and such an item admits only a
+# credential that names the engine. It added IFC-044, under which an item reached by `remote`
+# that is not plain and is not at an `https` URL is rejected.
 
 - id: IFC-001
   layer: interface
@@ -457,20 +485,40 @@
     `remote`, to send it requests for an instance.
   then: >-
     An item reached by `command` or `package` is run for the instance under PRV-007, and the
-    engine reaches it at the `url` that its run returns, over Streamable HTTP; only the
-    engine's own runner returns none, and the engine reaches the process it starts over stdio.
-    An item reached by `remote` is reached over Streamable HTTP at the URL of its Remote, under
-    IFC-041.
+    engine reaches it over Streamable HTTP at the `url` that its runtime provider last reported
+    for the run, in the result of `run.v1` or of `inspect-run.v1`; only the engine's own runner
+    returns none, and the engine reaches the process it starts over stdio. An item reached by
+    `remote` is reached over Streamable HTTP at the URL of its Remote, under IFC-041. To a run's
+    `url`, and to an item reached by `remote` that is not `plain`, the engine sends nothing,
+    `server/discover` among it, until the server's side has proved who it is, under PRV-028 for
+    a run and by TLS for the host of its URL for such an item, and it presents on every HTTP
+    request the proof of an enforcement point, by the mechanism of DL13, over a connection that
+    keeps the request and its result confidential and unaltered as far as the side that checks
+    the proof.
   observable: >-
-    Who starts a process, and how, is the runtime provider's, which starts it on the machine of
-    the instance's node, under PRV-019, and one run serves one instance, under PRV-007 and
-    TPL-019, so no two instances share a process. `run.v1` requires `url` of every runtime
-    provider, and what a result that holds none gives is PRV-007. Where the engine's own runner
-    runs the item, how it starts the process is the engine's own, and it runs only on the
-    machine that `local` represents, under PRV-003; which variables of the engine's environment
-    the process receives is PRV-023, how it receives what `identity` holds is PRV-022, and what
-    else it receives is DL16 of the implementation-defined list. The promises of this file hold
-    whatever runtime provider runs the item.
+    Toward a run, the server's side proves that it serves that instance by TLS, with the
+    certificate that names the instance's ID, under PRV-028, whether the run's gate or the
+    runtime provider's own end of its channel to the process that it started serves it, and a
+    token in the form of a JWT-SVID names the instance's ID as its audience, never the `url`,
+    which may change. Toward an item reached by `remote`, TLS proves the host of its URL, and
+    the form of the proof is IFC-041's. TLS, or the runtime provider's own channel, which
+    PRV-025 has keep what crosses it confidential and unaltered, carries the request, so a value
+    that a secret Resource's server on another machine returns reaches the engine unread and
+    unaltered. In this version the engine is the only enforcement point, and the proof it
+    presents is its own, never a consumer's, under IFC-030. Where the engine cannot verify who
+    answers, nothing is dispatched: the part of the setup or of the retirement, or the request,
+    that needed the item reports unavailable, and its record says why. A plain item reached by
+    `remote` is sent no proof and none of Conduit's keys, under IFC-007, and is reached as
+    IFC-041 says. Who starts a process, and how, is the runtime provider's, which starts it on
+    the machine of the instance's node, under PRV-019, and one run serves one instance, under
+    PRV-007 and TPL-019, so no two instances share a process. `run.v1` requires `url` of every
+    runtime provider, and what a result that holds none gives is PRV-007. Where the engine's own
+    runner runs the item, how it starts the process is the engine's own, and it runs only on the
+    machine that `local` represents, under PRV-003; stdio reaches only the process it started,
+    so no gate stands before it; which variables of the engine's environment the process
+    receives is PRV-023, how it receives what `identity` holds is PRV-022, and what else it
+    receives is DL16 of the implementation-defined list. The promises of this file hold whatever
+    runtime provider runs the item.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32; decisions U1, U2, U10 and Q7 of the
@@ -571,22 +619,37 @@
     The engine receives a request on a server it presents to a consumer under IFC-012.
   then: >-
     The engine establishes which instance the consumer is for that request, from what that
-    request presents and not from the connection it arrived on. No consumer can present as
-    another. The mechanism by which it does so establishes, from what the request presents,
-    exactly one instance or none, and wherever the request crosses machines it does so by a
-    cryptographic proof of the instance that sent it. What a request presents says who is asking
-    and nothing more: the Conduits still decide what the request may do.
+    request presents and not from the address, machine, network, runtime provider or run it came
+    from. The mechanism by which it does so establishes, from what the request presents, exactly
+    one instance or none: the instance whose ID it names, while that instance exists, and none
+    once it is removed, even where another instance has since taken its name. Wherever the
+    request crosses machines it does so by a cryptographic proof of the instance that sent it.
+    No consumer can present as another, except a program that can read the credential of another
+    instance's run, as root and every program of the operating-system user that the run runs as
+    can. What a request presents says who is asking and nothing more: the Conduits still decide
+    what the request may do.
   observable: >-
     Every request the engine accepts is attributed to exactly one instance, established for that
-    request alone and not from an earlier request on the same connection. Nothing that one
-    consumer is able to present attributes a request to another instance. Mutual TLS, SPIFFE's
-    identity documents and the protocol's own authorization are each one such mechanism. What a
-    request presents, and how the engine establishes the instance from it, is DL13 of the
-    implementation-defined list. A run is given the engine's address and what it presents in the
-    input `identity` of `run.v1`, under PRV-007, which its runtime provider delivers under
+    request alone and not from an earlier request: under mutual TLS, the certificate with which
+    the request's TLS connection was made is part of what that request presents. Nothing that
+    one consumer is able to present attributes a request to another instance, apart from the
+    exception that the `then` states. The two forms of proof of DL13 each count as the
+    cryptographic proof: mutual TLS, with certificates in the form of an X509-SVID, and a signed
+    token over TLS in the form of a JWT-SVID, whose audience names the engine's address, which
+    is the protocol's own authorization and which the engine's address at an `https` URL always
+    accepts, under IFC-042. What a request presents, and how the engine
+    establishes the instance from it, is DL13 of the implementation-defined list. A run is given
+    the engine's address and what it presents in the input `identity` of `run.v1`, under
+    PRV-007, under the names that PRV-022 fixes, and its runtime provider delivers them under
     PRV-022, on another machine as on the engine's own. Which runtime provider ran an instance,
-    or on which machine, establishes nothing, under PRV-018. What a request reports from which
-    no instance can be established is IFC-032, and what the engine does not pass on is IFC-030.
+    or on which machine, establishes nothing, under PRV-018. A run on the engine's own runner
+    runs as the engine's own operating-system user unless DL16 states otherwise, and a program
+    of that user can read the engine's keys and what every such run presents: it is inside the
+    domain of trust, can present as any instance whose run is under that user, and can make the
+    engine's proof to every gate, under PRV-025. An instance that is not to be trusted that far
+    is given a runtime provider that runs it apart, such as in a container, under PRV-006. What
+    a request reports from which no instance can be established is IFC-032, and what the engine
+    does not pass on is IFC-030.
   vectors: []
 
 - id: IFC-023
@@ -764,6 +827,8 @@
     and an implementation marked `plain` is told nothing of it. Nothing that a request presents
     under IFC-022, whatever DL13 of the implementation-defined list makes it, appears in the
     `arguments`, in the `_meta` or in what the transport carries to the implementation.
+    The proof that the engine presents to an implementation's gate, under IFC-017 and IFC-041,
+    is the engine's own as an enforcement point, and never what a consumer presented.
     A provider call is not a request, under PRV-005: the input `identity` of `run.v1` carries
     what a run is to present, and its runtime provider keeps it under PRV-022.
   vectors: []
@@ -797,10 +862,13 @@
     reports refused, and no implementation receives a call. The engine presents no tool to such
     a client, so it answers each call as IFC-012 states for a tool that is not presented. The
     record of such a request holds no caller, and says that none could be established, under
-    REC-002. Where what a request presents is a credential of the protocol's own authorization
-    on an HTTP transport, a request whose credential is missing or invalid is answered as the
-    protocol requires, with the HTTP status it prescribes, which is 401 for a credential that is
-    missing or invalid, and with no tool result. It is recorded as refused all the same. A
+    REC-002. A credential that names an instance that has been removed establishes none, under
+    IFC-022, so a run left on a machine after its instance was removed reaches nothing through
+    the engine. Where what a request presents is a credential of the protocol's own
+    authorization on an HTTP transport, a request whose credential is missing or invalid is
+    answered as the protocol requires, with the HTTP status it prescribes, which is 401 for a
+    credential that is missing or invalid, and with no tool result. It is recorded as refused
+    all the same. A
     request that the protocol has a server reject with an error of its own, because it cannot be
     read as a request for a tool, is IFC-036, whoever sent it.
   vectors: []
@@ -981,19 +1049,122 @@
     under TPL-018.
   then: >-
     On every HTTP request of that connection, it sends each header that the item's `headers`
-    names, with the value at the place in the instance's configuration that `headers` gives for
-    it, converted as PRV-007 converts a value; where that place holds null, the header is not
-    sent. Where that place is one that `secret-reference.v1` governs, the value sent is the
-    secret read under SEC-013, or again under SEC-023, and not the reference.
+    names, with the value at the place that `headers` gives for it in the instance's
+    configuration as it stood when the connection was made, converted as PRV-007 converts a
+    value; where that place holds null, the header is not sent. Where that place is one that
+    `secret-reference.v1` governs, the value sent is the secret read under SEC-013, or again
+    under SEC-023, and not the reference. To an item that is not `plain`, it connects only at
+    an `https` URL, and every HTTP request of the connection also carries the proof of an
+    enforcement point: by mutual TLS, or as the protocol's own authorization, a token whose
+    audience is the item's canonical URI, either in the form of a JWT-SVID that the mechanism of
+    DL13 signs, or issued to the engine, under the protocol's extension for client credentials,
+    by the authorization server that the item's protected resource metadata names, to which the
+    engine authenticates with its own credential of DL13.
   observable: >-
     The connection serves that one instance, so no header's value reaches a request for another
     instance. The connection is the engine's holding of the header values, as SEC-013 states,
     and a failed HTTP request does not end it. A secret's value is sent only to that item's URL
-    and held only for that connection, under SEC-013, and where the read does not succeed no
-    connection is made, under SEC-012. Where the engine has lost the values that a connection
-    held, as after it restarts, on its machine or on another, it reads the secrets again under
-    SEC-023 before it sends them. The names that `headers` may give are those the item's Remote
-    declares, under MAN-010. A `remote` item that names no headers is sent none. Beside these
-    headers the engine sends what the protocol and its transport require, and never what a
-    consumer presented to identify itself, under IFC-030.
+    and held only for that connection, under SEC-013, and only where SEC-024 lets it go on the
+    engine as it is configured when the value is sent: to an `https` URL, or to an `http` URL
+    whose host is a loopback address on an engine that, as configured, can neither restart on
+    another machine nor run as several parts, under DL17. Where the read does not succeed no
+    connection is made, under SEC-012. Where the engine has lost the values that
+    a connection held, as after it restarts, on its machine or on another, it reads the secrets
+    again under SEC-023 before it sends them, by the references that the setup which made the
+    connection read, and sends every other header with the value that the setup took, which it
+    keeps with the connection: a restart changes nothing that a connection carries. An item that
+    is not `plain` takes Conduit's keys, so its server is its own gate under PRV-025: it checks
+    the engine's proof itself, its operator having configured it to admit only a credential
+    that names the engine's ID, which the engine's conformance document states under DL13, so
+    that no instance's credential passes. Under the protocol's authorization, its protected
+    resource metadata names as its authorization server the one that DL13 states, or one that
+    the user runs and that issues tokens to the engine as a client registered in advance, under
+    the protocol's extension for client credentials; the engine authenticates to that one with
+    its own credential, as a JWT assertion under RFC 7523 or by mutual TLS under RFC 8705, so it
+    holds no client secret outside every Conduit, and the server admits only a token that names
+    the engine as that client. A server that cannot be so configured is used as `plain`, and is
+    sent no proof and none of Conduit's keys. An item that is not `plain` at an `http` URL is
+    rejected, under IFC-044. The names that `headers` may give are those the item's Remote
+    declares, under MAN-010, and an item that is not `plain` names no `Authorization`, under
+    IFC-043. A `remote` item that names no headers is sent none. Beside these headers the engine
+    sends what the protocol and its transport require, and never what a consumer presented to
+    identify itself, under IFC-030.
+  vectors: []
+
+# --- Added by ruling 43 (docs/proposals/ruling-43/README.md; Q1 and D5 of
+# --- docs/proposals/multi-machine/README.md): the token form at the engine's own address, and
+# --- the header that the engine's proof takes toward a `remote` item that is not plain.
+
+- id: IFC-042
+  layer: interface
+  level: must
+  when: >-
+    A consumer sends a request to the engine's address at an `https` URL.
+  then: >-
+    The engine accepts, as what the request presents under IFC-022, a signed token in the form
+    of a JWT-SVID, sent as the protocol's own authorization in the `Authorization` header, whose
+    `sub` names the instance and whose audience is the engine's address as its canonical
+    `https` URI, whatever other form of proof DL13 offers beside it.
+  observable: >-
+    So any client of the protocol that supports its authorization, or that can be configured to
+    send an `Authorization` header, can connect as an Agent from another machine, with no client
+    certificate, which many clients cannot present. A run finds its token in the file of
+    `identity` that PRV-022 names for it, which every run is given, under PRV-007. A consumer
+    that follows the protocol's authorization gets its token from the authorization server that
+    DL13 states, by a grant that DL13 states, which names the instance that DL13 decides and has
+    the engine's address as its audience, and no consumer is issued one for another receiver,
+    under DL13. The engine's address, as a consumer on another machine reaches it, is an `https`
+    URL, and the server there publishes the protected resource metadata of RFC 9728 that the
+    protocol's authorization requires, naming that authorization server. A token whose audience
+    is another receiver, or that names an instance that has been removed, establishes no
+    instance, and the request is answered with the HTTP status 401, under IFC-032. Mutual TLS
+    may be accepted beside it, under DL13. The engine establishes nothing from the machine that
+    a request came from, under PRV-018, so it accepts the token at its `https` address whichever
+    machine a request comes from; on the engine's own machine DL13 may also give a run an
+    address that is not `https`, such as an `http` URL on loopback, and establish an instance
+    there by other means, under IFC-022.
+  vectors: []
+
+- id: IFC-043
+  layer: language
+  level: must
+  when: >-
+    An implementation item reached by `remote` and not marked `plain` names `Authorization`, in
+    any case of its letters, in its `headers`.
+  then: >-
+    The item is rejected.
+  observable: >-
+    The item is rejected with a diagnostic naming the item and the header, as MAN-010 rejects
+    an item, wherever it is read, whichever engine reads it. The engine presents its own proof
+    to such an item under IFC-041, and in the form of a token that proof is the protocol's own
+    authorization, which the `Authorization` header carries; a value from configuration there
+    would be the same for every request, and proves nothing of who sent it. A plain item may
+    name the header, since the engine presents it no proof, and a header that carries a secret
+    goes only where SEC-024 lets it go.
+  vectors: []
+
+# --- Added by the verification of ruling 43 (docs/proposals/ruling-43/log-integration.md,
+# --- "Verification"): an item reached by `remote` that is not plain stands at an `https` URL,
+# --- since the engine connects to no other, and an engine rejects a document it cannot honor.
+
+- id: IFC-044
+  layer: language
+  level: must
+  when: >-
+    An implementation item reached by `remote` and not marked `plain` has a Remote whose `url`
+    is not an `https` URL.
+  then: >-
+    The item is rejected.
+  observable: >-
+    The item is rejected with a diagnostic naming the item and the URL, as MAN-010 rejects an
+    item, wherever it is read, whichever engine reads it, and the schema
+    `implementation-item.v1` states it. The engine connects to such an item only at an `https`
+    URL, once TLS has proved the host of its URL, under IFC-041 and IFC-017, which plain `http`
+    cannot prove, so no engine could connect to it, and an engine rejects a document that it
+    cannot honor rather than accept it and ignore a part of it. A local server that takes
+    Conduit's keys runs as a `command` or `package` item on the engine's own runner, over stdio,
+    which needs neither TLS nor a gate. A plain item may stand at an `http` URL, and a header
+    that carries a secret goes to it only where SEC-024 lets it go, so the `http` URL on
+    loopback that SEC-024 allows, on an engine that, as configured, can neither restart on
+    another machine nor run as several parts, serves a plain server alone.
   vectors: []

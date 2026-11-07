@@ -1,0 +1,17 @@
+# Example. It must be rejected:
+# an item reached by `remote` and not marked `plain` stands at an `https` URL (IFC-044). The
+# engine connects to such an item only at an `https` URL, once TLS has proved the host of its
+# URL, and presents its own proof there (IFC-041, IFC-017), so no engine could connect to this
+# item at `http://127.0.0.1:8080/mcp`. A local server that takes Conduit's keys runs as a
+# `command` or `package` item on the engine's own runner, over stdio; a plain item may stand at
+# an `http` URL.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  local-reader:
+    implements: ['#directory.read.v1']
+    remote:
+      type: streamable-http
+      url: http://127.0.0.1:8080/mcp

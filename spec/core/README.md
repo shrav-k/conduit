@@ -3,8 +3,9 @@
 Status: **accepted by the owner as it stands at
 [ruling 39](../../docs/proposals/ruling-39/README.md)** (2026-11-06), which accepted every
 logged decision of the coordinator and choice of an editor, and **changed by
-[ruling 41](../../docs/proposals/ruling-41/README.md)** and
-**[ruling 42](../../docs/proposals/ruling-42/README.md)** of the same day; see
+[ruling 41](../../docs/proposals/ruling-41/README.md)**,
+**[ruling 42](../../docs/proposals/ruling-42/README.md)** and
+**[ruling 43](../../docs/proposals/ruling-43/README.md)** of the same day; see
 [the specification's README](../README.md). Plan-audit ruling 37 first accepted it on
 2026-11-05, as one batch with [the schemas](../schemas/README.md) and
 [the manifest's promises](../promises/manifest.yaml). It was written for decision G1 of the
@@ -83,6 +84,34 @@ and dropped NAM-020, which names no template, from its row of the export table (
 where the descriptions here and in `capabilities.yaml`, `operations.yaml` and `types.yaml` said
 secret store (E17). `types.yaml` calls `node.v1` the type of every node where it said the node
 type (E10).
+
+Ruling 43 accepted the
+[proposal on work across machines](../../docs/proposals/multi-machine/README.md), with D5's
+second part as option b and Q1 tightened, and settled the items that the verification of
+ruling 42 left for it; the [log of that pass](../../docs/proposals/ruling-43/log-core.md) lists
+what changed here. No export was added or removed. `run.v1` requires `identity`, which
+holds what a run needs under names fixed for every engine, as
+[spec/names.yaml](../names.yaml) defines them: `CONDUIT_URL`, the engine's address, and
+`CONDUIT_IDENTITY_DIR`, the directory that holds the files `ca.crt`, the trust bundle,
+`token`, `tls.crt` and `tls.key`; and its server stands behind its runtime provider's gate.
+`stop.v1` and `inspect-run.v1` take `machine`, as `run.v1` does, so that a provider that keeps
+no state of its own finds the run, and `inspect-run.v1` may report the `url` at which the run
+is reached now. The schema `implementation-item.v1` rejects an item reached by `remote` and
+not marked `plain` that names `Authorization` in its `headers` (IFC-043). The descriptions of
+`register.v1`, `get-secret.v1`, `runtime-provider.v1` and `secret-provider.v1` follow the
+ruling. The [log of its integration](../../docs/proposals/ruling-43/log-integration.md) then
+named, in the section on providers, the three kinds of provider that PRV-026 runs again and the
+variables of `identity` that win over the runner's list. Ruling 43 kept the name `identity`;
+`serving` and `unreconciled` are still working names. The
+[verification of ruling 43](../../docs/proposals/ruling-43/log-integration.md#verification) then
+added two files to `identity`, `jwks.json`, which with `ca.crt` is the trust bundle, and
+`engine-id`, the engine's ID, and closed `run.v1`'s `identity.files` to the six names, every one
+required but `tls.crt` and `tls.key`; had `implementation-item.v1` reject an item reached by
+`remote` and not marked `plain` whose Remote's `url` is not an `https` URL (IFC-044); said in
+the descriptions of `run.v1` and `runtime-provider.v1` that what answers at a run's `url` proves
+itself with the run's certificate (PRV-028), and in that of `secret-provider.v1` that a plain
+store reached by `remote` learns its locator from a header that its item binds; and named here
+the secret Resources that PRV-026 also runs again.
 
 The promises are the source of truth: where a document here and a promise differ, the document
 is wrong.
@@ -164,7 +193,7 @@ set up by `open.v1` and retired by `close.v1`.
 
 | Operation | Included in | `revision` input | `deduplicates` | Reserved to `root` | Promise |
 | --- | --- | --- | --- | --- | --- |
-| `register.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | SUB-006, ACC-033, PKG-006, MAN-015 |
+| `register.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | SUB-006, ACC-033, PKG-006, MAN-015, MAN-018, SEC-024 |
 | `replace.v1` | `object-management.v1` | required | yes | — | SUB-009 |
 | `unregister.v1` | `object-management.v1` | required | yes | — | LIF-012, LIF-017, LIF-036 |
 | `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013 |
@@ -185,13 +214,13 @@ set up by `open.v1` and retired by `close.v1`.
 | --- | --- | --- | --- |
 | `setup-hook.v1` | No capability: a template selects it | The engine, as the last part of a setup, through no Conduit | TPL-017, OPS-028 |
 | `retire-hook.v1` | No capability: a template selects it | The engine, within a retirement, before the stop | TPL-018, OPS-028 |
-| `run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-007, PRV-011, PRV-012, PRV-022 |
-| `stop.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-008, PRV-021, LIF-036 |
-| `inspect-run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-009 |
+| `run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-007, PRV-011, PRV-012, PRV-022, PRV-025, PRV-028 |
+| `stop.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-008, PRV-021, PRV-027, LIF-036 |
+| `inspect-run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-009, PRV-027, PRV-028, IFC-017 |
 | `list-machines.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-014 |
 | `place.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-015 |
 | `fetch-package.v1` | `package-source.v1` | The engine, by a provider call | PRV-017 |
-| `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023 |
+| `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023, PRV-026 |
 
 None of these nine states a default implementation, and `engine` implements none of them
 (MAN-012, SEC-020): a template selects an implementation for each that it needs, or its type's
@@ -364,6 +393,15 @@ the engine does not send it on. A contract of a package, or of a submitted proje
 the wire by its qualified reference, and a submitted project's is `address#name` with the
 address its manifest states (SUB-008). A provider call carries the keys that PRV-005 names.
 
+To a run's `url`, and to an item reached by `remote` that is not `plain`, the engine sends
+nothing, `server/discover` among it, until the server's side has proved who it is, and it
+presents on every HTTP request the proof of an enforcement point: to such a `remote` item, only
+at an `https` URL, by mutual TLS or by the protocol's own authorization, which no such item may
+also name among its `headers` (IFC-017, IFC-041, IFC-043, PRV-025, PRV-028); such an item
+stands at an `https` URL, which `implementation-item.v1` states (IFC-044). The engine's own
+address at an `https` URL always accepts a token as the protocol's authorization, whichever
+machine the request comes from (IFC-042).
+
 `inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records` (LIF-013).
 `packages` is a list. A package's item has `address`, `version` and `digest`; the core package's
 item has no `digest`; and the item of a submitted project has `address`, the digest that
@@ -402,16 +440,37 @@ machine provider and a package-source provider run on the engine's own runner, o
 (PRV-002). The engine asks no runtime provider other than its own runner to run a `command` item
 whose program is a relative path (PRV-007). Its own runner passes a process the variables
 `HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER` of the engine's environment, the further
-variables that a list set on the runner names, and what the item binds, which wins, and nothing
-else of the engine's environment (PRV-023). A runtime provider is given, in `run.v1`'s
-`identity`, the variables and the files by which the run reaches the engine and proves which
-instance it is, and delivers and keeps them as it keeps the run's secrets; the engine's own
-runner delivers them in the same way (PRV-022, DL13). What a runtime provider does with a stop
-that it cannot carry out now, such as carry it out once it can, its contract states (PRV-021),
-and the engine asks for the stop once more
-when an actor unregisters an instance whose node was declared lost (LIF-036). A provider
-call declares Conduit's extension (PRV-005, IFC-037), so no plain implementation implements an
-operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PKG-020).
+variables that a list set on the runner names, and what the item binds or `identity` gives,
+which wins, and nothing else of the engine's environment (PRV-023). A runtime provider is given, in `run.v1`'s
+`identity`, what the run needs to reach the engine and prove which instance it is, under names
+fixed for every engine: the variables `CONDUIT_URL`, the engine's address, and
+`CONDUIT_IDENTITY_DIR`, a directory, and in that directory the files `ca.crt` and `jwks.json`,
+the trust bundle, `engine-id`, the engine's ID, `token`, a token in the form of a JWT-SVID, and,
+where the forms of proof of DL13 need them or a gate stands before the run, `tls.crt` and
+`tls.key`, a certificate in the form of an X509-SVID and its private key (PRV-022).
+It carries them, and the run's secrets, to the run's machine only over a channel that
+authenticates that machine and keeps them confidential, which its contract names, and keeps
+them as it keeps a secret's value (PRV-011, PRV-022); the engine's own runner delivers them in
+the same way. A credential lasts as long as its instance, and nothing renews it in this version
+(DL13). No template selects an item that binds either variable in its `environment` (MAN-018).
+The server of every run that a runtime provider makes stands behind its gate, which admits a
+request only with the proof of an enforcement point, in this version the engine, and keeps
+everything else on the run's machine from the server; the engine sends nothing to the run's
+`url`, or to the latest one that `inspect-run.v1` reported, until what answers there has proved
+by TLS, with the run's certificate, that it serves the instance (PRV-025, PRV-028, IFC-017). The engine's own runner reaches its process over
+stdio, and no gate stands before it. `stop.v1` and `inspect-run.v1` are given the run's machine
+as `run.v1` is, so that a provider that keeps no state of its own finds the run (PRV-027). What
+a runtime provider does with a stop that it cannot carry out now, such as carry it out once it
+can, its contract states, with where it keeps that stop meanwhile, which neither a restart of
+the engine nor the provider's own retirement loses (PRV-021), and the engine asks for the stop
+once more when an actor unregisters an instance whose node was declared lost (LIF-036). The
+servers of the runtime, machine and package-source providers run on the engine's own runner, so
+they end when the engine does; once it has restarted, the engine runs each again when it first
+needs it, reading its secrets for the caller of the setup that last asked for its run, and so
+it does a secret Resource that its own runner ran, before the first read through it (PRV-026).
+A provider call declares Conduit's extension (PRV-005, IFC-037), so no plain implementation
+implements an operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`
+(PKG-020).
 
 A secret Resource's type is its store's own Type, whose schema is the form of the locator, which
 lists no control (SEC-005) and which offers no other capability (SEC-022). A place that
@@ -421,8 +480,13 @@ before each connection to a `remote` item whose headers carry one, through that 
 open Conduit to the secret Resource, and passes the value in the run's `secrets` or
 sends it as the header (SEC-010, SEC-011, SEC-013); it keeps no copy and puts the value nowhere
 else (SEC-017, SEC-018). Where the engine has lost a connection's values, as when it restarts,
-it reads again for the caller of the setup that made the connection, decided by the instance's
-own Conduit and its filters as they stand then (SEC-023).
+it reads again each secret Resource that the setup which made the connection read, for that
+setup's caller, decided by the instance's own Conduit and its filters as they stand then
+(SEC-023). A header that carries a secret goes only to an `https` URL, or to an `http` URL whose
+host is a loopback address on an engine that, as configured, can neither restart on another
+machine nor run as several parts, and a template whose item would send one anywhere else is
+rejected; an engine configured so after such a template was registered sends the header
+nowhere (SEC-024, SEC-013, DL17).
 
 ## First start
 
@@ -495,13 +559,13 @@ lifecycle state and the labels reported for it (PLC-008).
 | `close.v1` | Operation | ACC-012 |
 | `setup-hook.v1` | Operation | TPL-017, TPL-003 |
 | `retire-hook.v1` | Operation | TPL-018, TPL-003 |
-| `run.v1` | Operation | PRV-007, PRV-011, PRV-022 |
-| `stop.v1` | Operation | PRV-008, PRV-021, LIF-036 |
-| `inspect-run.v1` | Operation | PRV-009 |
+| `run.v1` | Operation | PRV-007, PRV-011, PRV-022, PRV-025, PRV-028 |
+| `stop.v1` | Operation | PRV-008, PRV-021, PRV-027, LIF-036 |
+| `inspect-run.v1` | Operation | PRV-009, PRV-027, IFC-017 |
 | `list-machines.v1` | Operation | PRV-014 |
 | `place.v1` | Operation | PRV-015 |
 | `fetch-package.v1` | Operation | PRV-017 |
-| `get-secret.v1` | Operation | SEC-005, SEC-006, SEC-010, SEC-023 |
+| `get-secret.v1` | Operation | SEC-005, SEC-006, SEC-010, SEC-023, PRV-026 |
 | `bound.v1` | Requirement | ACC-029, ACC-030, CON-028 |
 | `shared-host.v1` | Requirement | PLC-013, CON-006 |
 | `reference.v1` | Schema, a reference schema | OBJ-021, OBJ-006 |
@@ -558,7 +622,7 @@ lifecycle state and the labels reported for it (PLC-008).
 | `requirement-spec.v1` | Schema of a document's part | CTR-005 |
 | `applied-requirement.v1` | Schema of a document's part | NAM-019, CON-018 |
 | `manifest.v1` | Schema of the manifest | NAM-006, NAM-021, PKG-017 to PKG-020, MAN-003 to MAN-012 |
-| `implementation-item.v1` | Schema of the manifest's part | PKG-019, PKG-020, MAN-009, MAN-010 |
+| `implementation-item.v1` | Schema of the manifest's part | PKG-019, PKG-020, MAN-009, MAN-010, IFC-043, IFC-044 |
 | `server-package.v1` | Schema of the manifest's part | MAN-010, PKG-019 |
 | `server-remote.v1` | Schema of the manifest's part | MAN-010, IFC-041 |
 | `document.v1` | Schema of a document | OBJ-020, SUB-005 |
@@ -580,10 +644,11 @@ lifecycle state and the labels reported for it (PLC-008).
   conformance vectors: what a vector compares fixes the shape.
 - How a diagnostic names a document or an object beyond the JSON Pointer of its logical
   location, and the `source` and `type` of a record's CloudEvent: an engine names them.
-- What the engine puts in `run.v1`'s `identity`: the name of the variable that holds its
-  address, the path of the file that holds the credential, and whether and when that file is
-  refreshed in place. They belong to the engine's mechanism for identifying consumers, DL13 of
-  the [implementation-defined list](../implementation-defined.yaml).
+- What the engine puts in `run.v1`'s `identity` beyond the names that
+  [spec/names.yaml](../names.yaml) fixes: which of the files a run is given, under the forms of
+  proof the engine offers, the ID by which a credential names the instance, and where the keys
+  that sign it are held. They belong to the engine's mechanism of proof, DL13 of the
+  [implementation-defined list](../implementation-defined.yaml).
 
 No contract of the core package states `records`, and no core type offers a provider
 capability or declares a run of its own: the engine's own runner, machine provider and fetching

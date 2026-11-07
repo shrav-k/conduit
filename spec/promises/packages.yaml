@@ -61,6 +61,11 @@
 # pinned, where it said that the item states `digest`; renamed the item's `arguments` to
 # `packageArguments` in PKG-019 and PKG-020; and renamed `reveal-secret.v1` to `get-secret.v1`
 # in PKG-020. It removed none and added none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
+# work across machines (docs/proposals/multi-machine/README.md), changed PKG-020, whose
+# observable says that a plain server reached by `remote` stands behind no gate and is reached
+# as before (D5). It added none and removed none. What changed is in
+# docs/proposals/ruling-43/log-secrets.md.
 
 - id: PKG-001
   layer: language
@@ -259,6 +264,9 @@
     are the operation's inputs under their own names, as IFC-001 states. A plain server reads
     none of Conduit's keys, so it learns its instance's configuration only through the values
     that its item's `environment`, `packageArguments` or `headers` take from it, under MAN-010.
+    For the same reason a plain server reached by `remote` stands behind no gate and is reached
+    as before, under PRV-025, and a `remote` server that cannot check an enforcement point's
+    proof is used as plain, under IFC-041.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).

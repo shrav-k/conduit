@@ -82,6 +82,16 @@
 # also names a stop not dispatched because the provider lacks Conduit's extension, and says
 # that a stop the provider never received is not asked for again. It removed none and added
 # none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
+# work across machines (docs/proposals/multi-machine/README.md), changed LIF-036: the stop
+# gives `machine`, from the status of the instance's node, as `run.v1` does, under PRV-027, so
+# that a runtime provider that keeps no state of its runs can act (X10 of
+# docs/proposals/ruling-42/log-integration.md), and a stop that the provider owes outlives a
+# restart of the engine and the provider's retirement (PRV-021). It added none and removed
+# none. What changed is in docs/proposals/ruling-43/log-secrets.md. The verification of ruling
+# 43 (docs/proposals/ruling-43/log-integration.md, "Verification") changed LIF-036's
+# observable: no run of the instance is asked for and no secret is read for it, though the
+# runtime provider may first be run again with reads of its own, under PRV-026.
 
 - id: LIF-001
   layer: convention
@@ -769,24 +779,32 @@
     that is run is selected for the instance.
   then: >-
     Before it removes the instance, the engine asks the instance's runtime provider once more to
-    stop its run, with `stop.v1` naming the instance's ID, as PRV-008 asks it in a retirement.
+    stop its run, with `stop.v1` naming the instance's ID and giving, in `machine`, the machine
+    of the instance's node as the node's status holds it, under PRV-027, as PRV-008 asks it in a
+    retirement.
   observable: >-
     The stop is asked for whether or not the run is reported running, so a run left on a machine
-    that was cut off, and that has come back or may come back, is asked to stop. A node
-    declared lost is retired and represents no machine, under PLC-026, so PLC-023 does not hold
-    the stop back, whatever the machine provider reports. The stop is a provider call, under
-    PRV-005, made within the invocation of `unregister.v1` and for its caller, and its record
-    names the instance in its `subject`, under REC-002. What a runtime provider that cannot
-    carry out the stop now, as where the machine is cut off, does with it is what its contract
-    states, such as carry it out once it can, under PRV-021. The instance is removed once the
-    stop has ended, or has not been dispatched because the runtime provider is not ready or its
-    result of `server/discover` lacks Conduit's extension, under PRV-005, whatever came of it:
-    the request to unregister asserts that the instance's shutdown is settled in another way,
-    and the outcome of the request is that of the removal. The engine asks for no further stop
-    once the instance is removed, and keeps no state of the run, so a stop that the provider
-    never received, as where its server was not running, is not asked for again. A
-    runtime provider that an instance names is not retired while the instance exists, under
-    PRV-020, so the engine has one to ask. No retire hook is dispatched, no run is asked for and
-    no secret is read, as under PLC-027. An instance with no item that is run, such as one
-    reached only by `remote`, has no run to stop, and nothing is asked for.
+    that was cut off, and that has come back or may come back, is asked to stop. A node declared
+    lost is retired and represents no machine, under PLC-026, so PLC-023 does not hold the stop
+    back, whatever the machine provider reports. The stop is a provider call, under PRV-005,
+    made within the invocation of `unregister.v1` and for its caller, and its record names the
+    instance in its `subject`, under REC-002. The node is retired, but its status still holds
+    the labels last reported for its machine, so the stop names the machine as `run.v1` did, and
+    a runtime provider that keeps no state of its runs can still find it. What a runtime
+    provider that cannot carry out the stop now, as where the machine is cut off, does with it
+    is what its contract states, such as carry it out once it can, under PRV-021. The instance
+    is removed once the stop has ended, or has not been dispatched because the runtime provider
+    is not ready or its result of `server/discover` lacks Conduit's extension, under PRV-005,
+    whatever came of it: the request to unregister asserts that the instance's shutdown is
+    settled in another way, and the outcome of the request is that of the removal. The engine
+    asks for no further stop once the instance is removed, and keeps no state of the run, so a
+    stop that the provider never received, as where its server was not running, is not asked for
+    again. A runtime provider that an instance names is not retired while the instance exists,
+    under PRV-020, so the engine has one to ask, and a stop that the provider owes outlives the
+    engine's restart, on its machine or on another, and the provider's own retirement, kept
+    where its contract states, under PRV-021. No retire hook is dispatched, no run of the
+    instance is asked for and no secret is read for it, as under PLC-027; after the engine
+    restarts, the runtime provider may first be run again, with reads of its own, under PRV-026.
+    An instance with no item that is run, such as one reached only by `remote`, has no run to
+    stop, and nothing is asked for.
   vectors: []

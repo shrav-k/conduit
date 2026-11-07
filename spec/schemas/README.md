@@ -3,8 +3,9 @@
 Status: **accepted by the owner as it stands at
 [ruling 39](../../docs/proposals/ruling-39/README.md)** (2026-11-06), which accepted every
 logged decision of the coordinator and choice of an editor, and **changed by
-[ruling 41](../../docs/proposals/ruling-41/README.md)** and
-**[ruling 42](../../docs/proposals/ruling-42/README.md)** of the same day; see
+[ruling 41](../../docs/proposals/ruling-41/README.md)**,
+**[ruling 42](../../docs/proposals/ruling-42/README.md)** and
+**[ruling 43](../../docs/proposals/ruling-43/README.md)** of the same day; see
 [the specification's README](../README.md). Plan-audit ruling 37 first accepted it on
 2026-11-05, as one batch with [the core package](../core/README.md) and
 [the manifest's promises](../promises/manifest.yaml). It was written for decision G1 of the
@@ -61,8 +62,29 @@ which two new examples under examples/invalid show. This tool's rule for MAN-017
 [log of the editorial fixes](../../docs/proposals/ruling-42/log-editorial.md) lists, says the
 type of a secret Resource, where the description of the example project and the message of
 this tool's rule for SEC-022 said a secret store's type, and renamed that rule's example to
-`SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml`. The promises are the
-source of truth: where a schema and a promise differ, the schema is wrong.
+`SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml`.
+
+Ruling 43 accepted the
+[proposal on work across machines](../../docs/proposals/multi-machine/README.md), and the
+[log of that pass](../../docs/proposals/ruling-43/log-core.md) lists what changed here.
+`implementation-item.v1` rejects an item reached by `remote` and not marked `plain` that names
+`Authorization`, in any case, in its `headers` (IFC-043), with an example under
+examples/invalid. This tool has two new rules, each with an example: for MAN-018, a template
+whose selected item binds in its `environment` a variable that `identity` carries, as
+[spec/names.yaml](../names.yaml) names them; and for SEC-024, a template whose selected `remote`
+item sends a header that carries a secret to an `http` URL whose host is not a loopback
+address. A set under examples/invalid-by-rule may now hold its project's manifest, from which
+the rules read the items its templates select. The example project's Pool template
+`workspace` no longer routes a runtime provider to an entry whose item is a program inside a
+package, which only the engine's own runner runs (D20). The
+[verification of ruling 43](../../docs/proposals/ruling-43/log-integration.md#verification) then
+made `implementation-item.v1` reject an item reached by `remote` and not marked `plain` whose
+Remote's `url` is not an `https` URL (IFC-044), with an example under examples/invalid; made
+the example for SEC-024 a plain item, since only a plain item stands at an `http` URL; made the
+rule for MAN-018 compare names without regard to case, and that for SEC-024 reject an `http`
+URL whose host is a variable of the Remote; and has this tool check that `run.v1`'s `identity`
+holds exactly the files that `spec/names.yaml` fixes. The promises are the source of truth:
+where a schema and a promise differ, the schema is wrong.
 
 ## What this is
 
@@ -187,8 +209,8 @@ The schemas are open where OBJ-019 exempts:
 | `annotations` | Any map of strings |
 | The value of the `default` of a template's input or of a Requirement's input | Any value. It is a literal value, which OBJ-019 exempts. The input's own schema checks it (SCH-019) |
 | A schema, `inputSchema` and `outputSchema` among them | The names under `properties` and `$defs`, and the values of `const`, `enum`, `default` and `examples`, are the author's. The keywords are not: SCH-002 rejects one outside the profile, and `schema.v1` does |
-| An item's `package` and `remote` | As open as server.json's own schema is, which governs them (MAN-010) |
-| The keys of an item's `environment`, `packageArguments` and `headers` | Any non-empty string: they are the names that the Package or the Remote declares, or for a `command` a variable's name |
+| An item's `package` and `remote` | As open as server.json's own schema is, which governs them (MAN-010), save that the `url` of the `remote` of an item that is not `plain` begins with `https://` (IFC-044) |
+| The keys of an item's `environment`, `packageArguments` and `headers` | Any non-empty string: they are the names that the Package or the Remote declares, or for a `command` a variable's name. The schema rejects one key alone: `Authorization`, in any case, among the `headers` of an item that is not `plain` (IFC-043) |
 
 `envelope.v1` is the one schema of a document that is not closed. It states only what all ten
 kinds share, and is always used together with the closed schema of one kind. The helper schemas
@@ -226,6 +248,8 @@ documents in front of it show, in its step 6; an example under
 | That a selected item's `nodeSelector` names no label that its type's `nodeSelector`, or another selected item's, names with another value | PLC-025 | It needs the type's contract and the items' manifests | Yes, as far as the tool has them |
 | That a selected item's `environment`, `packageArguments` and `headers` point at places that the type's schema requires, with every member on the way required; at which it admits no object or array, by `type`, `enum` or `const`, unless `secret-reference.v1` governs the place; and, for an input that the Package or the Remote marks `isRequired: true`, no null | MAN-017 | It needs the type's schema and the item's manifest | Yes, following `properties` and `required`, and the branches of `anyOf` and `oneOf` at the place, and not a `$ref` |
 | That a name in an item's `environment`, `packageArguments` or `headers` is one that its Package or its Remote declares | MAN-010 | The profile cannot relate the keys of one map to the values inside another | — |
+| That no item that a template selects binds, in its `environment`, a variable that `identity` carries, compared without regard to case | MAN-018 | The item alone is not rejected: the rule is on the template that selects it | Yes, with the names that [spec/names.yaml](../names.yaml) fixes, for each item the tool has |
+| That a header that carries a secret goes only to an `https` URL, or to an `http` URL whose host is `localhost`, an IPv4 address in `127.0.0.0/8` or the IPv6 address `::1`, and the second only on an engine that can neither restart on another machine nor run as several parts | SEC-024, DL17 | Which place holds a secret is in the type's schema, the URL in the manifest, and whether the engine can move in its conformance document | Yes, for an `http` URL whose host is not a loopback address, a host written as a variable of the Remote among them, finding the place as MAN-017's rule does |
 | That the implementations the target has selected support a filter, by stating it in `supports` | CON-022, PKG-019 | It needs the target's type, the implementations selected and their manifests | — |
 | That no instance document is made from the core package's templates `system`, `node`, `management`, `access` or `root` | FST-006 | Only resolving `from` says which template it names | Yes, for a `from` that is a qualified reference into the core package. Not for the documents of [examples/valid/first-start](examples/valid/first-start), which show what first start makes and are valid against the schemas for that reason |
 | That `secret-reference.v1` governs a place only as its own schema, as `items`, or beside `{type: null}` under `anyOf` or `oneOf` | SEC-001 | The profile cannot say which schemas stand beside a `$ref` to a given contract | Yes, for every schema a document writes; a `$ref` to a definition that holds it is not followed |
@@ -280,11 +304,11 @@ The work of ruling 41 made these choices where the promises left the shape open;
 
 | Path | What |
 | --- | --- |
-| [examples/valid/project](examples/valid/project) | A small submitted project, whose manifest states `address` because it holds contracts and lists implementations: a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input and a narrowed control, which selects a setup hook; a Pool template with two entries, one referring to the other, whose inputs supply their placement and a runtime provider; a Conduit template with the shared-host requirement and a filter; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open, naming an operation of the project by its address; a runtime provider's type and template; the type of a secret Resource, a secret Resource and the Conduit through which it is read; a type whose configuration holds a secret reference, with a `command` item whose `environment` binds it; and instance documents of every family, an Agent that names its `runtime` among them |
+| [examples/valid/project](examples/valid/project) | A small submitted project, whose manifest states `address` because it holds contracts and lists implementations: a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input and a narrowed control, which selects a setup hook; a Pool template with two entries, one referring to the other, whose input supplies their placement, and whose items, a program inside a package, run on the engine's own runner; a Conduit template with the shared-host requirement and a filter; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open, naming an operation of the project by its address; a runtime provider's type and template; the type of a secret Resource, a secret Resource and the Conduit through which it is read; a type whose configuration holds a secret reference, with a `command` item whose `environment` binds it; and instance documents of every family, an Agent that names its `runtime` among them |
 | [examples/valid/files-package](examples/valid/files-package) | A package: a manifest with `address`, `version`, `exports` and three implementations, reached by `command`, by a server.json `package` pinned by its `fileSha256` and by a plain `remote`, each binding a value of the configuration, the `command` and the `remote` with label selectors that name one label with different values; and one contract of each of the five kinds, two of which use a `$ref` written `#name`. Among them are Operation contracts in `inputSchema` form, one with a `default` and one with a hint, two with a handle, a control whose `changes` maps its input to a setting, a Type with a label selector, a default implementation and `records`, and a Requirement that is a filter |
 | [examples/valid/first-start](examples/valid/first-start) | The instance documents of the five first-start objects, written out to show what first start makes. Each is valid against the schemas. The engine makes these objects itself and is handed no such document: submitting them is rejected, under FST-006 for the five made from the templates `system`, `node`, `management`, `access` and `root`, and under OBJ-002 because the five names are taken |
-| [examples/invalid](examples/invalid) | 54 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
-| [examples/invalid-by-rule](examples/invalid-by-rule) | 26 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Three files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
+| [examples/invalid](examples/invalid) | 56 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
+| [examples/invalid-by-rule](examples/invalid-by-rule) | 28 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Three files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. Two others hold, beside their documents, the manifest of their project, a document with no `kind`, whose items their templates select. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
 
 Every name under `example.org` is invented, and every digest and hash in an example is
 illustrative. Each directory under `examples/valid` is one project, with its documents beside
@@ -307,9 +331,12 @@ the table above marks, to the core package and the valid examples, which must br
 each set in `examples/invalid-by-rule`, which the rule its file is named for must reject. Three
 rules are on manifests, for NAM-021, MAN-015 and PKG-020, and are applied to the manifests of
 the valid examples and to the manifests in `examples/invalid-by-rule`. The rules that follow a
-template's selections into an implementation item, for TPL-019, PLC-025 and MAN-017, read the
-items from the manifests of the core package and of the valid examples. One of those rules, for
-SCH-019, validates each `default` against its schema, and is applied only where jsonschema is
-importable; where it is not, the report says that the rule was not applied. Its report says of
-each rejection whether a schema or one of its own rules made it. It does not do anything else
-the table leaves to an engine.
+template's selections into an implementation item, for TPL-019, PLC-025, MAN-017, MAN-018 and
+SEC-024, read the items from the manifests of the core package and of the valid examples, and
+from the manifest that a set in `examples/invalid-by-rule` holds beside its documents. One of
+the rules, for SCH-019, validates each `default` against its schema, and is applied only where
+jsonschema is importable; where it is not, the report says that the rule was not applied. Its
+report says of each rejection whether a schema or one of its own rules made it. It also checks
+that `run.v1` holds the names of `identity` that `spec/names.yaml` fixes, its files closed to
+them. It does not do
+anything else the table leaves to an engine.

@@ -38,17 +38,24 @@ What it checks, and reports under these numbers:
      spec/promises/manifest.yaml is the ID of a promise that exists. A directory under
      examples/valid/ whose manifest states `address` and `version` is a package (PKG-017),
      whose exports the others may refer to; one that holds a contract or lists an
-     implementation and states no `address` breaks MAN-015.
+     implementation and states no `address` breaks MAN-015. The input `identity` of `run.v1`
+     holds exactly the variables and the files, and its description names the files, that
+     spec/names.yaml fixes (ruling 43, Q1).
   6. Rules that no schema can express and that this tool applies itself, each named in RULES
      below with the promise it comes from. The core package and every directory under
      examples/valid/ break none of them. Every file under examples/invalid-by-rule/ is one
      set of documents, each of them valid against the schemas, that the rule its file is
      named for rejects. A file there with `-manifest-` in its name holds a manifest, which is
-     valid against `manifest.v1` and which a rule on manifests rejects. The rule for SCH-019
+     valid against `manifest.v1` and which a rule on manifests rejects. Any other file there
+     may also hold the manifest of its set's project, a document with no `kind`, valid against
+     `manifest.v1`, from which the rules read the items that the set's templates select as
+     `#name`. The rule for SCH-019
      validates a `default` against its schema, so it needs jsonschema; without it the rule is
      not applied, and the tool says so. The rules that follow a template's selections into
      an implementation item read the items from the manifests of the core package and of the
      directories under examples/valid/, and from the set's own manifest where it has one.
+     The rule for MAN-018 reads the names of the variables of `identity` from
+     spec/names.yaml, and compares them without regard to case.
      examples/valid/first-start/ writes out the documents that first start makes, which no
      submission may hold (FST-006), so the rule for FST-006 is not applied to it.
 
@@ -68,11 +75,13 @@ share.
 """
 import copy
 import decimal
+import ipaddress
 import math
 import os
 import pathlib
 import re
 import sys
+import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FALLBACK = "/usr/bin/python3"
@@ -151,6 +160,14 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # secret Resource, where it said a secret store's Type, and renamed its example to
 # SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml; E12 made the docstring
 # of bundle say that a reference references the `spec` of a contract, as SCH-015 now says.
+# Ruling 43 (2026-11-06, docs/proposals/ruling-43/log-core.md) added identity-name (MAN-018)
+# and secret-header-https (SEC-024), let a set under examples/invalid-by-rule/ hold its
+# project's manifest, and checks that `run.v1` holds the names of `identity` that
+# spec/names.yaml fixes. Its verification (docs/proposals/ruling-43/log-integration.md,
+# "Verification") made identity-name compare names without regard to case, made
+# secret-header-https reject an `http` URL whose host is a variable of the Remote, and checks
+# that `run.v1` holds exactly the files of `identity`, and requires every one but the
+# certificate and its key.
 RULES = {
     "one-name": "NAM-027",
     "bound-once": "CON-028",
@@ -174,6 +191,8 @@ RULES = {
     "provider-conduit": "PRV-004",
     "plain-provider": "PKG-020",
     "secret-only": "SEC-022",
+    "identity-name": "MAN-018",
+    "secret-header-https": "SEC-024",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -276,6 +295,27 @@ def names():
     text = (ROOT / "spec" / "names.yaml").read_text()
     keys = ("corePackage", "apiVersion")
     return {k: re.search(rf"(?m)^{k}: *(\S+)", text).group(1) for k in keys}
+
+
+# The names of what the input `identity` of `run.v1` carries, which spec/names.yaml fixes
+# (ruling 43, Q1): its two variables, and its files.
+IDENTITY_VARIABLE_KEYS = ("engineUrlVariable", "identityDirVariable")
+IDENTITY_FILE_KEYS = ("trustBundleFile", "jwtBundleFile", "engineIdFile", "tokenFile",
+                      "certificateFile", "keyFile")
+# The files of `identity` that a run is not always given (PRV-022, DL13).
+IDENTITY_OPTIONAL_FILE_KEYS = ("certificateFile", "keyFile")
+
+
+def identity_names():
+    text = (ROOT / "spec" / "names.yaml").read_text()
+
+    def value(key):
+        found = re.search(rf"(?m)^{key}: *(\S+)", text)
+        if not found:
+            sys.exit(f"spec/names.yaml: no {key}. NOTHING WAS CHECKED.")
+        return found.group(1)
+    return ([value(k) for k in IDENTITY_VARIABLE_KEYS], [value(k) for k in IDENTITY_FILE_KEYS],
+            [value(k) for k in IDENTITY_FILE_KEYS if k not in IDENTITY_OPTIONAL_FILE_KEYS])
 
 
 def profile():
@@ -1027,6 +1067,50 @@ def admits(node, kinds, secret):
     return any(admits(b, kinds, secret) for b in branches)
 
 
+def holds_secret(node, secret):
+    """Whether `secret-reference.v1` governs a place: the schema at the place is that `$ref`,
+    or a branch of its `anyOf` or `oneOf` is (SEC-001)."""
+    if not isinstance(node, dict):
+        return False
+    branches = [b for k in BRANCHES[1:] for b in (node.get(k) or []) if isinstance(b, dict)]
+    return node.get("$ref") in secret or any(b.get("$ref") in secret for b in branches)
+
+
+def secret_may_go(url):
+    """Whether a header that carries a secret may go to a Remote's URL on every engine
+    (SEC-024): True for an `https` URL and for an `http` URL whose host is `localhost`, an IPv4
+    address in 127.0.0.0/8 or the IPv6 address ::1, which an engine that can restart on
+    another machine or run as several parts still rejects; False for any other `http` URL; None
+    where the URL cannot be read, and the tool cannot tell. A host written as a variable of the
+    Remote is none of the loopback hosts, since SEC-024 compares the URL as the Remote writes
+    it. Scheme and host are compared without regard to case (RFC 3986)."""
+    if not isinstance(url, str):
+        return None
+    try:
+        parts = urllib.parse.urlsplit(url)
+        host = parts.hostname
+    except ValueError:
+        return None
+    scheme = parts.scheme.lower()
+    if scheme == "https":
+        return True
+    if scheme != "http":
+        return None
+    if "{" in parts.netloc:
+        return False
+    if host is None:
+        return None
+    if host == "localhost":
+        return True
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return False
+    if address.version == 4:
+        return address in ipaddress.ip_network("127.0.0.0/8")
+    return address == ipaddress.ip_address("::1")
+
+
 def declared_input(item, binding, key):
     """The input of server.json that an item's binding names by `key`: a variable of the
     Package's `environmentVariables`, an argument of its `packageArguments`, by `name` where it
@@ -1084,6 +1168,7 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
     submission, and the rule for FST-006 is then not applied."""
     found = []
     items = items or {}
+    identity_variables = [v.upper() for v in identity_names()[0]]
     docs = [d for d in docs if isinstance(d, dict)]
     templates = {(d.get("kind"), named(d)): d for d in docs
                  if d.get("kind") in FAMILIES and "from" not in d}
@@ -1371,6 +1456,35 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                                       f"{var} `isRequired: true`, and whose `{binding}` gives "
                                       f"it the place {place}, at which the schema of its type "
                                       f"{named(type_doc)} admits null"))
+
+        # identity-name (MAN-018): no selected item's `environment` binds a variable that has
+        # the name of one that `identity` carries, as spec/names.yaml fixes them.
+        for key, item in chosen_items.items():
+            for var, place in members(item.get("environment")):
+                if isinstance(var, str) and var.upper() in identity_variables:
+                    found.append(("identity-name",
+                                  f"the template {name} selects {key[1]}, whose `environment` "
+                                  f"binds {var}, a variable that `identity` carries, to the "
+                                  f"place {place}"))
+
+        # secret-header-https (SEC-024): a selected `remote` item whose `headers` gives a header
+        # a place that `secret-reference.v1` governs, by the type's schema, has an `https` URL,
+        # or an `http` URL whose host is a loopback address. The place is found as MAN-017's is,
+        # and not through a `$ref`. Whether the engine can restart on another machine or run as
+        # several parts, which makes it reject the second too, is not in the documents. A host
+        # written as a variable of the Remote is not a loopback address.
+        for key, item in chosen_items.items():
+            remote = item.get("remote") if isinstance(item.get("remote"), dict) else None
+            if remote is None:
+                continue
+            for header, place in members(item.get("headers")):
+                if holds_secret(schema_at(body.get("schema"), place), secret) \
+                        and secret_may_go(remote.get("url")) is False:
+                    found.append(("secret-header-https",
+                                  f"the template {name} selects {key[1]}, whose header "
+                                  f"{header} carries the secret at {place}, and whose URL "
+                                  f"{remote.get('url')} is `http` to a host that is not a "
+                                  f"loopback address"))
 
     # secret-branch (SEC-001): `secret-reference.v1` stands only as the schema of a place, as
     # `items`, or under `anyOf` or `oneOf` beside `{type: null}`. Applied to every schema that
@@ -1696,6 +1810,28 @@ def main():
         if "revision" not in outputs or "revision" not in listed:
             fail(f"core package: {name} does not declare the output `revision` under "
                  f"`required`, which SUB-009 has it return")
+    # The input `identity` of `run.v1` holds exactly the variables that spec/names.yaml fixes,
+    # each required, and the description of `run.v1` names each of the files there.
+    variables, identity_files, required_files = identity_names()
+    run_spec = (operations.get("run.v1") or {}).get("spec") or {}
+    identity = ((run_spec.get("inputSchema") or {}).get("properties") or {}).get("identity")
+    environment = ((identity or {}).get("properties") or {}).get("environment") or {}
+    if set(environment.get("properties") or {}) != set(variables) \
+            or set(environment.get("required") or []) != set(variables):
+        fail(f"core package: run.v1's `identity.environment` does not hold and require exactly "
+             f"{', '.join(variables)}, the variables spec/names.yaml fixes")
+    files = ((identity or {}).get("properties") or {}).get("files") or {}
+    if set(files.get("properties") or {}) != set(identity_files) \
+            or set(files.get("required") or []) != set(required_files) \
+            or files.get("additionalProperties") is not False:
+        fail(f"core package: run.v1's `identity.files` does not hold exactly "
+             f"{', '.join(identity_files)}, the files spec/names.yaml fixes, closed, and require "
+             f"{', '.join(required_files)}")
+    described = ((operations.get("run.v1") or {}).get("metadata") or {}).get("description", "")
+    for name in identity_files:
+        if f"`{name}`" not in described:
+            fail(f"core package: run.v1's description does not name the file `{name}` of "
+                 f"`identity`, which spec/names.yaml fixes")
     controls = check_controls("core package", [d for _, ds in core_files for d in ds],
                               package_docs, core)
     for directory, files in by_dir.items():
@@ -1797,9 +1933,16 @@ def main():
             print(f"   NOT RUN {path.name}: the rule for {promise} needs jsonschema")
             continue
         is_manifest = "-manifest-" in path.name
+        # A set may hold its project's manifest, a document with no `kind`, from which the
+        # rules read the items that its templates select.
+        own_manifests = [] if is_manifest else [d for d in docs
+                                                 if isinstance(d, dict) and "kind" not in d]
+        held = docs if is_manifest else [d for d in docs
+                                         if not (isinstance(d, dict) and "kind" not in d)]
         if validating:
             for index, doc in enumerate(docs):
-                why = validate(bundled, doc, is_manifest)
+                why = validate(bundled, doc, is_manifest or not (isinstance(doc, dict)
+                                                                 and "kind" in doc))
                 if why:
                     fail(f"{rel(path)} document {index + 1}: not valid against the schemas, "
                          f"so no rule is what rejects it: {why}")
@@ -1808,12 +1951,14 @@ def main():
         if is_manifest:
             found = [fault for doc in docs for fault in manifest_rules(doc, core)]
         else:
-            scope = checker.add(None, docs) if checker else None
+            scope = checker.add(None, held) if checker else None
             if checker:
                 checker.close()
-            found = apply_rules(docs, False, core, package_docs, checker, scope, items)
-            kinds, _ = kinds_in([(path, docs)])
-            for doc in docs:
+            own = dict(items)
+            own[None] = next((m.get("implementations") or {} for m in own_manifests), {})
+            found = apply_rules(held, False, core, package_docs, checker, scope, own)
+            kinds, _ = kinds_in([(pathlib.Path("conduit.yaml"), own_manifests), (path, held)])
+            for doc in held:
                 if isinstance(doc, dict):
                     found += check_references(role_of(doc, False), doc, packages, kinds,
                                               {"checked": 0, "skipped": 0})

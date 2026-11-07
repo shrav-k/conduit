@@ -60,6 +60,13 @@
 # gives the label, where it named the source of the label, since source is now the term for a
 # record's context (the vocabulary audit's N14), and PLC-017, whose observable says that the
 # declaration asks for no stop. It removed none and added none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), accepting the proposal on work
+# across machines (docs/proposals/multi-machine/README.md), changed PLC-026, whose observable
+# says that an engine that restarts on another machine, or runs as several parts, keeps its
+# hostname under DL17, so `local` represents one hostname (Q2; X7 of the verification of
+# ruling 42), and PLC-023, whose observable says that after a restart the engine runs the
+# machine provider again for its next report, under PRV-026 (Q3). It removed none and added
+# none. Its log is docs/proposals/ruling-43/log-providers.md.
 
 - id: PLC-001
   layer: language
@@ -347,11 +354,13 @@
     until a report gives it a state, as Kubernetes sets a Node's condition `Ready` to `Unknown`
     once its kubelet stops reporting; where no report arrives within the time that DL5 of the
     implementation-defined list gives, every machine but the one that `local` represents counts
-    as omitted. How often the engine asks the machine provider is DL5 too. A report that the
-    machine that `local` represents is unreachable, or that omits it, makes nothing
-    unavailable: the engine runs on that machine, and `management` and `access` are placed there
-    at first start, and every provider other than a secret Resource under PRV-002. Where the
-    actor is not permitted, OPS-023 gives refused first.
+    as omitted. How often the engine asks the machine provider is DL5 too; after the engine
+    restarts, it runs the machine provider again to ask for its next report, under PRV-026,
+    rather than wait for an actor to set it up. A report that the machine that `local`
+    represents is unreachable, or that omits it, makes nothing unavailable: the engine runs on
+    that machine, and `management` and `access` are placed there at first start, and every
+    provider other than a secret Resource under PRV-002. Where the actor is not permitted,
+    OPS-023 gives refused first.
   vectors: []
 
 - id: PLC-024
@@ -425,7 +434,11 @@
     omitted, under PLC-023. An actor may retire the node of a machine that is still reported
     once no other instance is placed on it, under PLC-011, and the next report registers a new
     one. With no machine provider, the engine's own machine provider reports the one machine the
-    engine runs on, under PRV-003, and `local` represents it.
+    engine runs on, under PRV-003, and `local` represents it. An engine that restarts on another
+    machine, or runs as several parts, runs only on machines that take its hostname, under DL17,
+    so `local` represents one hostname whichever of them runs the engine, and an instance placed
+    on `local`, with each value of it that is tied to that node, under PLC-020, keeps its
+    meaning.
   vectors: []
 
 # --- Added by the coverage check of ruling 41 (docs/proposals/ruling-41/log-integration.md,

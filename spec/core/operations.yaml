@@ -57,6 +57,23 @@
 # changed the descriptions of `retire.v1` and `retire-hook.v1`: a retirement connects to the
 # `remote` item first where no connection to it lasts whose values the engine holds, so after a
 # restart its reads belong to it (row 9 of the open questions, TPL-018).
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), accepting the proposal on work
+# across machines with D5's second part as option b and Q1 tightened, changed `run.v1` (its
+# input `identity` is required and holds the names fixed under Q1, `CONDUIT_URL` and
+# `CONDUIT_IDENTITY_DIR` and the files `ca.crt`, `token`, `tls.crt` and `tls.key`; a credential
+# lasts as long as its instance; the run's server stands behind its provider's gate; a
+# `package` of a transport the provider does not run ends failed), `stop.v1` and
+# `inspect-run.v1` (each takes `machine`, as `run.v1` does, X10; the stop a provider cannot
+# carry out now is kept where neither a restart of the engine nor the provider's retirement
+# loses it; `inspect-run.v1` may give `url`), `get-secret.v1` (the read again is of the secret
+# Resources that the setup read, X11; the reads before a provider's run made again after the
+# engine restarts, Q3) and `register.v1` (a template whose item binds a variable of `identity`,
+# X3, or sends a secret header to an `http` URL, D5's second part, is rejected). The log is
+# docs/proposals/ruling-43/log-core.md. Its verification
+# (docs/proposals/ruling-43/log-integration.md, "Verification") closed `identity.files` to the
+# names that spec/names.yaml fixes, added `jwks.json` and `engine-id` among them, and required
+# every one but `tls.crt` and `tls.key`; and said in the description of `run.v1` that the
+# server's side proves itself with the run's certificate (PRV-028).
 #
 # The Operation contracts of the core package: every management verb (OPS-019, CON-024); the
 # two hooks that a template may select (TPL-017, TPL-018); the operations of the provider
@@ -133,8 +150,8 @@
 #   - The operations of `runtime-provider.v1`, `machine-provider.v1` and `package-source.v1`
 #     are invoked by the engine alone, by provider calls, which are not requests (PRV-005):
 #     no Conduit lists one (PRV-004). `get-secret.v1` is invoked by the engine's reads,
-#     which are requests (SEC-010, SEC-011, SEC-023), and no actor's request for it is
-#     dispatched (SEC-007).
+#     which are requests (SEC-010, SEC-011, SEC-023, PRV-026), and no actor's request for it
+#     is dispatched (SEC-007).
 
 # --- Operations of `management`, some of them also operations of a Pool.
 
@@ -164,7 +181,12 @@ metadata:
     instance that the request would make and cannot place it now, as when it is not ready or
     a node that matches represents a machine reported unreachable, the registration is not
     dispatched and reports unavailable; for want of a machine it is rejected only where no
-    node matches.
+    node matches. A template is rejected where an item selected for it binds, in its
+    `environment`, a variable that `identity` carries in `run.v1`; and where an item reached
+    by `remote` that is selected for it sends a header that carries a secret to an `http` URL
+    whose host is not `localhost`, an IPv4 address in `127.0.0.0/8` or the IPv6 address `::1`,
+    or, on an engine that, as configured, can restart on another machine or run as several
+    parts, to any `http` URL.
 spec:
   inputSchema:
     type: object
@@ -727,21 +749,38 @@ metadata:
     holds apart from them, under `environment` and `packageArguments` and by the same names, the
     value of each secret the engine read for the run, which the provider delivers as the
     variable or the argument of that name, puts nowhere else, and keeps where its contract
-    says; a name is in `environment` or in `secrets.environment`, never both. `identity` holds
+    says; a name is in `environment` or in `secrets.environment`, never both, and neither holds
+    a variable of `identity`, which no item that a template selects binds. `identity` holds
     what the engine's mechanism for the identity of a run gives it, to reach the engine and to
-    prove which instance it is: in `environment`, variables such as the engine's address,
-    which the provider may give as the run sees it; and in `files`, under the path at which
-    the run finds each, files such as a credential, which the provider may refresh in place
-    where the mechanism rotates it. The provider delivers and keeps them as it does the values
-    of `secrets`. `machine` is the hostname and the labels of the machine the instance's
-    node represents, on which the provider runs the item, and on no other. `url` is
-    the Streamable HTTP URL at which the engine then reaches the server, and every runtime
-    provider returns it; the engine's own runner, which no provider call reaches, gives none,
-    and reaches its process over stdio. A provider that cannot run the item on that machine,
-    as the engine's own runner cannot on any machine but its own, or that is asked to run a
-    `package` whose `registryType` its contract does not list, ends the run failed and runs
-    nothing. The engine invokes it by a provider call, which is not a request, and no Conduit
-    lists it. The record of the call holds no value of `secrets` and nothing of `identity`.
+    prove which instance it is, under names fixed for every engine and no other: in
+    `environment`, `CONDUIT_URL`, the engine's address, and `CONDUIT_IDENTITY_DIR`, a
+    directory, whose values the provider may give as the run sees them; and in `files`, keyed
+    by their paths in that directory, which are their names, `ca.crt` and `jwks.json`, the
+    trust bundle: the root certificates by which the run checks who answers at the engine's
+    address and a gate checks the engine's certificate, and the JWK Set of the keys that check
+    a token that the mechanism signs; `engine-id`, the ID by which a credential names the
+    engine, which a gate admits; `token`, a token in the form of a JWT-SVID, which the run
+    sends as the protocol's authorization at the engine's address; and, where the mechanism
+    uses mutual TLS for the run or its server stands behind a gate, `tls.crt` and `tls.key`, a
+    certificate in the form of an X509-SVID and its private key, which the run's gate also
+    serves. The credential names the instance by its ID and lasts as long as the instance, and
+    so does the certificate that its gate serves: nothing renews either in this version. The
+    provider carries `secrets` and `identity` to the run's machine only over a channel that
+    authenticates that machine and keeps them confidential, which its contract names; it
+    delivers and keeps `identity` as it does the values of `secrets`, and its gate may use what
+    `identity` holds for its means and for nothing else. `machine` is the hostname and the
+    labels of the machine the instance's node represents, on which the provider runs the item,
+    and on no other. `url` is the Streamable HTTP URL at which the engine then reaches the
+    server, behind the provider's gate, which admits only the proof of an enforcement point, and
+    every runtime provider returns it; the engine sends nothing there until what answers has
+    proved by TLS, with the run's certificate, that it serves the instance. The engine's own
+    runner, which no provider call reaches, gives none, and reaches its process over stdio. A
+    provider that cannot run the item on that machine, as the engine's own runner cannot on any
+    machine but its own, or that is asked to run a `package` whose `registryType`, or the `type`
+    of whose `transport`, its contract does not list, ends the run failed and runs nothing: it
+    runs a `package` whose transport is `stdio` only by bridging it behind its gate. The engine
+    invokes it by a provider call, which is not a request, and no Conduit lists it. The record
+    of the call holds no value of `secrets` and nothing of `identity`.
 spec:
   inputSchema:
     type: object
@@ -768,18 +807,31 @@ spec:
         properties:
           environment:
             type: object
-            additionalProperties: {type: string}
+            properties:
+              CONDUIT_URL: {type: string, format: uri}
+              CONDUIT_IDENTITY_DIR: {type: string, minLength: 1}
+            required: [CONDUIT_URL, CONDUIT_IDENTITY_DIR]
+            additionalProperties: false
           files:
             type: object
-            propertyNames: {minLength: 1}
-            additionalProperties: {type: string}
+            properties:
+              ca.crt: {type: string, minLength: 1}
+              jwks.json: {type: string, minLength: 1}
+              engine-id: {type: string, minLength: 1}
+              token: {type: string, minLength: 1}
+              tls.crt: {type: string, minLength: 1}
+              tls.key: {type: string, minLength: 1}
+            required: [ca.crt, jwks.json, engine-id, token]
+            additionalProperties: false
+        required: [environment, files]
+        additionalProperties: false
       machine:
         type: object
         properties:
           hostname: {type: string, minLength: 1}
           labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
         required: [hostname, labels]
-    required: [instance, item, machine]
+    required: [instance, item, identity, machine]
   outputSchema:
     type: object
     properties:
@@ -794,18 +846,29 @@ kind: Operation
 metadata:
   name: stop.v1
   description: >-
-    Stop the run that the instance's ID names. Stopping a run that is not running succeeds.
-    Where the provider cannot tell whether the run stopped, the outcome is unknown. What the
-    provider does with a stop that it cannot carry out now, as on a machine it cannot reach, its
-    contract states, such as carry it out once it can. The engine invokes it by a provider call,
-    within a retirement, and once more when an actor unregisters an instance whose node was
-    declared lost; no Conduit lists it.
+    Stop the run that the instance's ID names, on the machine given in `machine`: the hostname
+    and the labels of the machine that the instance's node represents, as `run.v1` gives them,
+    those last reported where the node is retired, so that a provider that keeps no state of
+    its own finds the run. Stopping a run that is not running succeeds. Where the provider
+    cannot tell whether the run stopped, the outcome is unknown. What the provider does with a
+    stop that it cannot carry out now, as on a machine it cannot reach, its contract states,
+    such as carry it out once it can, and where it keeps that stop meanwhile, in a place that
+    neither a restart of the engine, on its machine or on another, nor the provider's own
+    retirement loses. The engine invokes it by a provider call, within a retirement, and once
+    more when an actor unregisters an instance whose node was declared lost; no Conduit lists
+    it.
 spec:
   inputSchema:
     type: object
     properties:
       instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
-    required: [instance]
+      machine:
+        type: object
+        properties:
+          hostname: {type: string, minLength: 1}
+          labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+        required: [hostname, labels]
+    required: [instance, machine]
   effect: Stops the run, where one is running.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -813,19 +876,31 @@ kind: Operation
 metadata:
   name: inspect-run.v1
   description: >-
-    Report the state of the run that the instance's ID names: `running`, `stopped` or
-    `unknown`. The engine reports the latest answer as the instance's condition `Running`. The
-    engine invokes it by a provider call, and no Conduit lists it.
+    Report the state of the run that the instance's ID names, on the machine given in
+    `machine`, as `stop.v1` gives it: `running`, `stopped` or `unknown`. The engine reports the
+    latest answer as the instance's condition `Running`. `url`, which a provider may give, is
+    the Streamable HTTP URL at which the run's server is reached now, where it has moved since
+    `run.v1` returned one, as after the provider restarted the run; the engine reaches the
+    server at the latest URL that the provider reported, once the server's side there has
+    proved that it serves the instance. The engine invokes it by a provider call, and no
+    Conduit lists it.
 spec:
   inputSchema:
     type: object
     properties:
       instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
-    required: [instance]
+      machine:
+        type: object
+        properties:
+          hostname: {type: string, minLength: 1}
+          labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+        required: [hostname, labels]
+    required: [instance, machine]
   outputSchema:
     type: object
     properties:
       state: {enum: [running, stopped, unknown]}
+      url: {type: string, format: uri}
     required: [state]
 
 # --- The operations of the machine provider.
@@ -924,10 +999,16 @@ metadata:
     never from another store. Where the store cannot be read, the outcome is failed and there
     is no value. No actor's request for this operation is dispatched, whatever Conduit lists
     it, and no tool is presented for it: the only requests for it that are dispatched are the
-    engine's reads before a run, or before a connection to a remote server, and, where the
-    engine has lost the values of such a connection, as when it restarts, its read again for
-    the caller of the setup that made the connection, each for an instance and through that
-    instance's own open Conduit to the secret Resource, as it stands when the read is made.
+    engine's reads before a run, or before a connection to a remote server; where the engine
+    has lost the values of such a connection, as when it restarts, its read again, for the
+    caller of the setup that made the connection, of each secret Resource that setup read; and,
+    once the engine has restarted, its reads before it runs again a provider whose run ended
+    with the engine, for the caller of the setup that last asked for that run. Each is made for
+    an instance and through that instance's own open Conduit to the secret Resource, as it
+    stands when the read is made. The server that gives the value is reached only with the
+    engine's proof: its run, where a runtime provider other than the engine's own runner makes
+    it, stands behind that provider's gate, and an item reached by `remote` that is not `plain`
+    checks that proof itself.
 spec:
   outputSchema:
     type: object

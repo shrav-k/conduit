@@ -1,0 +1,59 @@
+# Example. One set of documents, with the manifest of their project. Each is valid alone, and
+# together they must be rejected: a template whose selected item binds, in its `environment`, a
+# variable that `identity` carries is rejected (MAN-018). The item `notes-server` binds
+# `CONDUIT_URL`, the variable that holds the engine's address (PRV-022), to `/engine` in the
+# configuration, and the template `notes` selects it, so whoever writes an instance's
+# configuration could send the run's credential to an address of their choosing. A schema
+# cannot tell: the item is valid alone, and the rule is on the template that selects it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/notes
+implementations:
+  notes-server:
+    implements:
+      - '#notes.read.v1'
+    command: [notes-mcp]
+    environment:
+      CONDUIT_URL: /engine
+      NOTES_ROOT: /path
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: notes.read.v1
+  description: Read one note.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      note: {type: string, minLength: 1}
+    required: [note]
+  outputSchema:
+    type: object
+    properties:
+      text: {type: string}
+    required: [text]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: notebook.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      engine: {type: string, format: uri}
+      path: {type: string, minLength: 1}
+    required: [engine, path]
+  requires:
+    - '#notes.read.v1'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: notes
+spec:
+  type: '#notebook.v1'
+  implementation:
+    '#notes.read.v1': '#notes-server'

@@ -75,6 +75,16 @@
 # Package is pinned by its own `fileSha256`, or an `oci` one by a digest in its `identifier`, in
 # MAN-009 and MAN-010; and renamed `reveal-secret.v1` to `get-secret.v1` in MAN-012. It removed
 # none and added none.
+# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
+# work across machines (docs/proposals/multi-machine/README.md), added MAN-018, under which a
+# template whose item binds a variable that `identity` carries is rejected, since Q1 fixes
+# those names. It changed MAN-010, whose observable says that a server meant for another
+# machine is published as a `package` item, since a relative program runs only on the engine's
+# own runner (D20, A), and that another runtime provider runs a `stdio` package only by
+# bridging it behind its gate (PRV-012, PRV-025). It removed none. What changed is in
+# docs/proposals/ruling-43/log-secrets.md. The verification of ruling 43
+# (docs/proposals/ruling-43/log-integration.md, "Verification") changed MAN-018, which compares
+# a variable's name without regard to case, as Windows does.
 
 - id: MAN-001
   layer: language
@@ -269,13 +279,18 @@
     leaving `plain` out. A key of `nodeSelector` is a label and not a name, under OBJ-022. A
     program given as a relative path is taken from the directory the manifest was read from,
     which for a package is the root of its archive, and only the engine's own runner runs it,
-    under PRV-007; no shell reads the list. Where the manifest was handed over without a
+    under PRV-007, so a server meant to run on another machine is published as a `package` item,
+    pinned as above; no shell reads the list. Where the manifest was handed over without a
     directory, as MAN-006 describes, an item whose program is a relative path is rejected. A
     program is a relative path where it holds a `/` and does not begin with one; one that holds
     no `/` is a name and not a path, and is found as the one who starts it finds programs. The
-    runtime provider runs a `command` or `package` item, under PRV-007, and which places a
-    pointer may name is MAN-017. What a pointer to a place that `secret-reference.v1` governs
-    yields is SEC-010 and SEC-013.
+    runtime provider runs a `command` or `package` item, under PRV-007: one other than the
+    engine's own runner is reached over Streamable HTTP, under IFC-017, so it runs a `package`
+    whose transport is `stdio` only by bridging it behind its gate, under PRV-025, and
+    otherwise ends the run failed, under PRV-012. Which places a pointer may name is MAN-017,
+    and which names `environment` may not bind is MAN-018. What a pointer to a place that
+    `secret-reference.v1` governs yields is SEC-010 and SEC-013, and to which URL a header that
+    carries a secret may go is SEC-024.
   vectors: []
 
 - id: MAN-011
@@ -420,4 +435,35 @@
     sent as a header under IFC-041, and a value at a place that `secret-reference.v1` governs is
     read under SEC-010 or SEC-013. The check is made when the template is registered, against
     the type's schema and the item as the template holds them under NAM-009.
+  vectors: []
+
+# --- Added by ruling 43 (docs/proposals/ruling-43/README.md): under Q1 the names of what
+# --- `identity` carries are fixed, which settles item 2 of "Needs a decision", and X3 of the
+# --- verification, in docs/proposals/ruling-42/log-integration.md.
+
+- id: MAN-018
+  layer: language
+  level: must
+  when: >-
+    A template selects an implementation item, by its `implementation` map or by default, whose
+    `environment` binds a variable that has the name of one that `identity` carries under
+    PRV-022, `CONDUIT_URL` or `CONDUIT_IDENTITY_DIR`, compared without regard to case.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the item and the variable, as MAN-017 has one name the
+    item, the name and the pointer. A run is so never given one name both in `identity` and in
+    `environment` or under `environment` in `secrets`, and no configuration sets a variable of
+    `identity`, the engine's address or the directory of its files: whoever writes an instance's
+    configuration need not be who may act as the instance, and a value of its choosing could
+    send the run's credential to an address of its own, against IFC-022. The names are fixed, as
+    Kubernetes fixes the paths of the token and the root certificate that it mounts in a Pod, so
+    the check needs no choice that an engine makes under DL13: it is made when the template is
+    registered, against the item as the template holds it under NAM-009, as MAN-017's is. Names
+    are compared without regard to case, since on an operating system such as Windows a
+    variable's name is, and `conduit_url` there is the same variable. A name that the item does
+    not bind is not covered, and neither is an argument or a header, which `identity` does not
+    carry; a default that the item's Package declares for such a name is not given, since the
+    runtime provider gives the value of `identity` in its place, under PRV-022. The engine's own
+    runner passes no variable of the engine's environment by such a name either, under PRV-023.
   vectors: []

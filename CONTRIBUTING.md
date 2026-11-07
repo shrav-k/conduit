@@ -118,9 +118,9 @@ What the checks cover:
   does not check that some document links to each file. `--walk` makes it walk the directory
   in a Git working tree too.
 - `set_names.py --check` refuses a retired name, a `_meta` key of Conduit's written with another
-  prefix, and a value that looks like one of the three names of `spec/names.yaml` and differs
-  from it. To change the names, run it with the new values to see what would change, and add
-  `--write` to apply.
+  prefix, a value that looks like one of the three names of `spec/names.yaml` and differs from
+  it, and a variable that begins as those of `identity` do and is neither. To change the names,
+  run it with the new values to see what would change, and add `--write` to apply.
 - `check_schemas.py` checks that the files under `spec/core/` and `spec/schemas/` are strict
   YAML within the schema profile, that every example document is accepted or rejected as its
   directory says, and that the core package agrees with itself. Its own header lists each step.

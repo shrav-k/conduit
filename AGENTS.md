@@ -132,8 +132,9 @@ What each check needs:
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
 
-The names the specification assigns (the core package's address, `apiVersion` and the prefix of
-its `_meta` keys) are defined once, in `spec/names.yaml`. Never edit one by hand. Run
+The names the specification assigns (the core package's address, `apiVersion`, the prefix of
+its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,
+in `spec/names.yaml`. Never edit one by hand. Run
 `python3 tools/set_names.py` with the new values to see what would change, and add `--write` to
 rewrite every occurrence together.
 

@@ -59,8 +59,8 @@ records are the history of a rule. The rule itself is in `spec/`, and you need n
 - Do not key any behavior on a vector's identifier or contents. Additional vectors you have not
   seen will be run against your implementation.
 - Do not add behavior the language does not promise in order to be helpful. Where the language
-  says a behavior is implementation-defined, choose one and document it in your runtime profile
-  (see Deliverables).
+  says a behavior is implementation-defined, choose one and document it in your conformance
+  document (see Deliverables).
 
 ## What to build
 
@@ -82,7 +82,7 @@ Put everything under `impl/` as one Cargo workspace, with a pinned toolchain fil
 5. **Your own tests**, runnable offline with `cargo test`.
 
 Out of scope, and not to be built: anything the language assigns to a type contract or to a
-provider's contract, anything it leaves to the runtime profile beyond the choices your minimal
+provider's contract, anything it leaves to the conformance document beyond the choices your minimal
 engine needs, user interfaces, integrations with real models or other external services, and
 performance work. If a promise seems to need one of these, record it as a defect.
 
@@ -128,7 +128,7 @@ On your branch, under `impl/`:
 - The workspace, building and passing its tests offline from a clean checkout.
 - The conformance adapter.
 - `DEFECTS.md`, `ASSUMPTIONS.md`, `DEPENDENCIES.md` and `LOG.md`.
-- `PROFILE.md`: your runtime profile. It states your choice for every item of
+- `PROFILE.md`: your conformance document. It states your choice for every item of
   `spec/implementation-defined.yaml`. Where your minimal engine never reaches an item, say so.
 - `REPORT.md` at each milestone: which vectors pass, which fail and why, which promises are not
   yet implemented, and how many defects you logged.

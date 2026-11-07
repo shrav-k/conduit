@@ -20,14 +20,14 @@ Neither checks the other's work. Each covers three things:
 | Part | What it is | How the two are compared |
 | --- | --- | --- |
 | Language layer | Documents in; resolved objects and diagnostics out. A pure function with no effects. | On the public and held-out vectors, and on generated documents, where any difference in output is a finding. |
-| Shared conventions | A minimal engine that honors the seven conventions: operation identity and outcomes, revision-checked change, access, declared against observed state, ownership and lifecycle, records, and that nothing starts model work or repeats an effect implicitly. | On convention vectors. |
+| Shared conventions | A minimal engine that honors the seven conventions: idempotency keys and outcomes, revision-checked change, access, declared against observed state, ownership and lifecycle, records, and that nothing starts model work or repeats an effect implicitly. | On convention vectors. |
 | Implementation interface | The shared wire between an engine and an implementation. | The same test implementations must work unchanged against both engines. |
 
 Every place where a builder has to ask, guess or disagree with the other on these three parts is
 a defect in the language, and is fixed in the language.
 
-The builds are not full engines. Behavior that belongs to a type contract or to the runtime
-profile is outside them; it is built once, in the reference engine, and may legitimately differ
+The builds are not full engines. Behavior that belongs to a type contract or to the conformance
+document is outside them; it is built once, in the reference engine, and may legitimately differ
 in any other engine. What a provider does behind its contract is outside them too (ruling 40):
 the first providers are built apart, as packages (action A63 of the plan audit).
 
@@ -83,7 +83,7 @@ exist. The others are proposed and do not exist yet.
 | `reference-model/` | The executable reference model in Rust | No | No |
 | `packages/` | The first providers, one Rust crate per provider (ruling 40) | No | No |
 | `docs/`, `experiments/` | Explanation, research, history, proposals, exploratory code | Yes | No |
-| The reference engine, its standard library of type contracts and its runtime profile | The one full engine | No | No |
+| The reference engine, its standard library of type contracts and its conformance document | The one full engine | No | No |
 
 ## Rules
 
@@ -132,12 +132,12 @@ The assessment was made and confirmed before rulings 40 and 41, of the same day,
 as the owner confirmed it. It has not been made again since the specification was rewritten
 under those rulings. These changes since bear on the rows below: the secret type is ruled and
 written, in [secrets.yaml](../../spec/promises/secrets.yaml), which settles point 1 of ruling
-39 (G1, G2, G8, G9); `spec/` holds 432 promises, 38 of them in
+39 (G1, G2, G8, G9); `spec/` holds 440 promises, 38 of them in
 [interface/implementation.yaml](../../spec/interface/implementation.yaml) (G2, G9); a
 diagnostic is SARIF's `result`, reduced, and a condition and a record have core schemas, so
 only the full shape of an inspection result is left to the vectors (G2, G8); ruling 41 closed
 action A19, and with it E8 and D6 (G8); a runtime provider runs an implementation and its run
-returns the endpoint at which it is reached, or the engine's own runner reaches it over stdio
+returns the URL at which it is reached, or the engine's own runner reaches it over stdio
 (PRV-007), so DL12 no longer leaves to each engine who starts a process or over which transport
 it is reached (G9); the schemas cover `from` and two nested instantiations, not three
 (G3); the experiment program has ten scenarios, S1 to S10 (G3); of the 87 defects in the
@@ -147,7 +147,7 @@ not been read cold (G7).
 | # | State | Evidence | What would meet it |
 | --- | --- | --- | --- |
 | G1 | Partly met | The [contents list](../../spec/README.md#contents) names every file under `spec/` other than `spec/README.md`, the file that holds the list: each of the others lies under a path the list gives. Nothing outside `spec/` binds ([spec/README.md](../../spec/README.md); decision DA1 of the [documents audit](../proposals/docs-audit/README.md)), and ruling 39, point 9, removed the superseded material from the tree. Not satisfied in full: behavior the owner accepted on secrets is stated only outside `spec/`. The older text's rule that secrets never appear in configuration, records or events is GP3 of the [conversion list](../proposals/docs-audit/GAPS.md), still unconverted; [ruling 38](../proposals/ruling-38/README.md), point 1, ruled that a secret is referred to and never written as a literal; and points 2 to 4 of ruling 39 are accepted as a direction that is written into `spec/` only once point 1 is ruled. Action A32, whose done-when is this condition, is in progress for that reason ([action items](../AUDIT.md#action-items)). | The secret type ruled, after the research that ruling 39, point 1, asks for ([proposal](../proposals/secrets/README.md)), and written into `spec/` with GP3, ruling 38, point 1, and ruling 39, points 2 to 4, with the contents list naming any file it adds. Or the owner reads behavior that is accepted and not yet written as a gap in `spec/`, as `spec/README.md` reads any missing behavior, rather than as normative text outside it; G1 is then met as it stands. |
-| G2 | Not met | `spec/` holds 434 promises ([counts](../../spec/README.md#contents)), and every one has an empty `vectors` list: `conformance/` does not exist, and action A39 is open. No coverage report exists. Nor does the register cover the language and the shared conventions in full: it says nothing of secrets (G1), and it fixes no shape of a diagnostic beyond its `message` ([`diagnostic.v1`](../../spec/core/results.yaml)) and not the full shape of an inspection result, both left to be settled with the vectors ([known to be open](../AUDIT.md#for-the-next-reader)). | The conformance vectors (A39), with each promise citing at least one vector or listed on the [implementation-defined list](../../spec/implementation-defined.yaml); a coverage report by promise and layer; the secret type written (G1); and the shapes of a diagnostic and of an inspection result stated, or left to each engine on that list. |
+| G2 | Not met | `spec/` holds 440 promises ([counts](../../spec/README.md#contents)), and every one has an empty `vectors` list: `conformance/` does not exist, and action A39 is open. No coverage report exists. Nor does the register cover the language and the shared conventions in full: it says nothing of secrets (G1), and it fixes no shape of a diagnostic beyond its `message` ([`diagnostic.v1`](../../spec/core/results.yaml)) and not the full shape of an inspection result, both left to be settled with the vectors ([known to be open](../AUDIT.md#for-the-next-reader)). | The conformance vectors (A39), with each promise citing at least one vector or listed on the [implementation-defined list](../../spec/implementation-defined.yaml); a coverage report by promise and layer; the secret type written (G1); and the shapes of a diagnostic and of an inspection result stated, or left to each engine on that list. |
 | G3 | Partly met | The [schemas](../../spec/schemas/README.md) cover the envelope, the template and instance documents of each family, a package's manifest, each of the five kinds of contract, and instantiation: `from` and the three nested instantiations. `tools/check_schemas.py`, run for this assessment, validated the core package and the examples against them with no error. Not satisfied: no schema of a vector exists, since the vectors' format is not defined; no Rust loader exists (A43, its loader open); and none of the scenarios S1 to S9 of the [experiment program](../AUDIT.md#experiment-program) has its documents written. | The vectors' format and its schema (A39); a strict loader in Rust (A43); and the documents of S1 to S9, each validated by that loader, with the negative cases rejected. |
 | G4 | Not met | No reference model exists: `reference-model/` does not exist, action A38 is open, and there is no vector for a model to pass. | The reference model in Rust for the language layer and the shared conventions (A38), passing every vector (G2) with no unhandled case. |
 | G5 | Not met | [Experiment 004](../../experiments/004-stateright-evaluation/README.md) evaluated Stateright on the at-most-once rules as the older text stated them. It evaluated the tool: the promises themselves are not model-checked (actions A13 and A40). No list exists of the safety promises of the conventions, of the configurations to check them in, or of those that cannot be modelled. | A40: the safety promises of the seven conventions listed; each one that can be modelled checked with Stateright in stated configurations, in the ordinary test run; and the rest listed with the reason. |

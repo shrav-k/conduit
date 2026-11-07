@@ -62,8 +62,10 @@ draft and not a release.
 
 The vocabulary is ruled (rulings 17, 18 and 27 to 29 of the plan audit). The terms in force are
 in [spec/definitions.md](spec/definitions.md). Write new text in them. Changing a term changes
-the specification, so it needs a ruling like any other change. Ruling 41 asked for a vocabulary
-audit of the rewritten specification, and the names it proposes wait for the owner's ruling.
+the specification, so it needs a ruling like any other change. Ruling 42 accepted the twenty
+names of the [vocabulary audit](docs/proposals/vocabulary-audit/README.md) that ruling 41 asked
+for, and [spec/definitions.md](spec/definitions.md#words-the-promises-do-not-use) lists each old
+name with its new one.
 
 [docs/VOCABULARY.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md) was the map of the working terms from before the
 vocabulary ruling. Ruling 39 removed it from the tree, and the link is to its last version. Its

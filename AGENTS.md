@@ -19,9 +19,9 @@ started. See [independent builds](docs/implementation/INDEPENDENT_BUILDS.md).
 
 The language is the core and the engine keeps its promises. Conduit is a configuration language,
 not a behavioral specification: the language fully determines what a set of documents means,
-and behavior beyond a few shared conventions belongs to type contracts, providers and a runtime
-profile. See the layered claim in [docs/AUDIT.md](docs/AUDIT.md#layered-claim). Work that makes
-the language more concise, concrete and provable comes first.
+and behavior beyond a few shared conventions belongs to type contracts, providers and a
+conformance document. See the layered claim in [docs/AUDIT.md](docs/AUDIT.md#layered-claim).
+Work that makes the language more concise, concrete and provable comes first.
 
 The relationship is the product: an agent decides for itself, so the language declares what it may
 reach, under which limits, and who answers for what it did. Conduit innovates only on connection
@@ -56,8 +56,10 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   was written.
 - The vocabulary is ruled (rulings 17, 18 and 27 to 29). The terms in force are in
   [spec/definitions.md](spec/definitions.md); write new text in them. Older documents keep the
-  earlier words; do not mass-rename them. Ruling 41 asked for a vocabulary audit of the
-  rewritten specification, and the names it proposes wait for the owner's ruling.
+  earlier words; do not mass-rename them. Ruling 42 accepted the twenty names of the
+  [vocabulary audit](docs/proposals/vocabulary-audit/README.md) that ruling 41 asked for, and
+  [spec/definitions.md](spec/definitions.md#words-the-promises-do-not-use) lists each old name
+  with its new one.
 
 ## Where things go
 

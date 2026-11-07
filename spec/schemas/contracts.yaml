@@ -29,6 +29,9 @@
 # keys of the root for a control, whose `spec` holds `changes` (D14, CTR-012); and said below
 # what the engine checks of a control's pointers (finding 6-1-03, CTR-006) and of the controls
 # of a package-source provider's Type (finding 6-1-05, PRV-016).
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) took `implementation` out of
+# `operation-spec.v1`: an Operation contract states no default implementation (CTR-002).
 #
 # The five kinds of contract document, and an applied requirement.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -225,7 +228,9 @@ metadata:
     is not supplied; no property of `outputSchema` states one, and nor does a handle, a
     property whose schema is the core package's `handle.v1`. An operation reserved to the root
     Interface is marked `reservedToRoot: true`, which only an Operation contract of the core
-    package may be.
+    package may be. An Operation contract states no default implementation: a template's
+    selection or its type's default chooses what runs, and the engine implements the
+    operations that the core package's implementation `engine` lists.
 spec:
   type: object
   properties:
@@ -250,7 +255,6 @@ spec:
         The reserved mark. True for an operation reserved to the root Interface, which is
         dispatched only when the actor is the root Interface. Absent means false. Only an
         Operation contract of the core package is marked.
-    implementation: {$ref: github.com/shrav-k/conduit/core#selection.v1}
     changes:
       type: object
       description: >-

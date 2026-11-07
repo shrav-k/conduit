@@ -1,9 +1,13 @@
 # Example. One set of documents. Each is valid alone, and together they must be rejected:
 # an item's `environment` points at a place in the configuration that the type's schema
-# requires (MAN-017). `files-server`, the default implementation of
-# `example.org/files#directory.read.v1` in ../valid/files-package/, gives its variable
-# `FILES_ROOT` the place `/path`, and the type `loose-directory.v1` does not require `path`,
+# requires (MAN-017). `files-server` in ../valid/files-package/, the default
+# implementation of `example.org/files#directory.read.v1` that the type `loose-directory.v1`
+# states, gives its variable `FILES_ROOT` the place `/path`, and the type does not require
+# `path`,
 # so an instance of the template `loose-folder` could leave the variable with no value.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md): an Operation contract states no default
+# implementation, so the type here states the one that the operation's contract stated.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -17,6 +21,8 @@ spec:
       path: {type: string, minLength: 1}
   requires:
     - example.org/files#directory.read.v1
+  implementation:
+    example.org/files#directory.read.v1: example.org/files#files-server
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

@@ -107,6 +107,13 @@
 # conflict, where a filter applies to it (finding 6-1-02; OPS-009, OPS-034). The descriptions
 # of the two hooks say that a type's default for a hook is used only where the type requires
 # the hook (the first of round 6's four open points, TPL-004).
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) took `implementation` out of the fourteen
+# contracts that stated the engine as their default: the engine implements the operations that
+# `engine` lists in conduit.yaml, with no selection (CTR-002, TPL-004). Ruling 44 (D12, as
+# revised after the ruling; the same log) gave
+# `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` the optional input `expectedId`,
+# which reports conflict where the object named has another ID (LIF-037).
 #
 # The Operation contracts of the core package: every management verb (OPS-019, CON-024); the
 # two hooks that a template may select (TPL-017, TPL-018); the operations of the provider
@@ -158,13 +165,15 @@
 #   - No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
 #     operation, of this package or of any other, arranges through the engine work that
 #     outlasts its invocation, and no contract carries a mark for it (ACC-019, CTR-002).
-#   - Every management verb is implemented by the engine itself, written as the default
-#     implementation `github.com/shrav-k/conduit/core#engine`. The two hooks, the operations
-#     of the provider capabilities and `get-secret.v1` state no default: a template selects
-#     each, or its type's default does (TPL-004), and the engine implements none of them
-#     (MAN-012, SEC-020). No plain implementation implements an operation of
-#     `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, because a provider
-#     call carries Conduit's keys and declares its extension (PKG-020, PRV-005, IFC-037).
+#   - Every management verb is implemented by the engine itself: the core package's
+#     implementation `engine` lists it under `implements` in conduit.yaml, and no template or
+#     type selects it (TPL-003, TPL-004). No Operation contract states a default implementation
+#     (CTR-002). A template selects each of the two hooks, the operations of the provider
+#     capabilities and `get-secret.v1`, or its type's default does (TPL-004), and the engine
+#     implements none of them (MAN-012, SEC-020). No plain implementation implements an
+#     operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, because
+#     a provider call carries Conduit's keys and declares its extension (PKG-020, PRV-005,
+#     IFC-037).
 #   - A request that an actor makes on its own behalf names an object by a reference and
 #     never by an ID: one that holds the resolved form `{kind, id}` in its place reports
 #     invalid (LIF-031). An onward request may hold that form, because the engine handed it
@@ -172,6 +181,11 @@
 #     the engine gave it. A request made through a Conduit that lists the operation, and that
 #     names an object or an invocation that does not exist, reports invalid (OPS-029): an
 #     instance that has been unregistered or removed no longer exists (LIF-035).
+#   - `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` may carry `expectedId`, the ID
+#     that the actor expects the object it names to have, as Kubernetes's `preconditions.uid`
+#     is: it names nothing and grants nothing, and where the reference resolves to an object
+#     with another ID, as when a name was given to another object after the first was removed,
+#     the request reports conflict and changes nothing (LIF-037).
 #   - What a request that is not dispatched says beyond its reason, it says in `diagnostics`
 #     in its result's `structuredContent`, whether or not the operation declares an output
 #     of that name, and one that reports invalid or conflict carries there an error
@@ -189,8 +203,8 @@
 #     afresh; any other reports conflict in place of giving the outputs kept, where it declares
 #     outputs (OPS-034), and is answered from its outcome, where it declares none (OPS-009).
 #     A repeat that is not dispatched is judged by no filter, so where one applies the repeat
-#     gives only an outcome already recorded. A Conduit applies no filter where its target has
-#     selected `engine` for an operation it lists (CON-022), and a request for an operation of
+#     gives only an outcome already recorded. A Conduit applies no filter where the engine
+#     implements an operation it lists (CON-022), and a request for an operation of
 #     the core package that carries a filter reports unavailable (MAN-012, ACC-015).
 #   - The operations of `runtime-provider.v1`, `machine-provider.v1` and `package-source.v1`
 #     are invoked by the engine alone, by provider calls, which are not requests (PRV-005):
@@ -257,7 +271,6 @@ spec:
     Adds the templates and instances that the documents make, and the nested instances of
     those instances, to the objects that exist.
   deduplicates: true
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -311,7 +324,6 @@ spec:
     Changes the stored definition of the template and, where it changed, advances its
     revision.
   deduplicates: true
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -325,19 +337,22 @@ metadata:
     what its contract states, such as carry it out once the machine comes back. A request that
     names an instance that is not retired reports conflict. An instance whose shutdown is
     confirmed has been removed already, without a request, so a request that names it, like one
-    that names any object that does not exist, reports invalid. Authorized against `management`.
+    that names any object that does not exist, reports invalid. Where `expectedId` is given and
+    the object named has another ID, as when its name was given to another object after the
+    first was removed, the request reports conflict and changes nothing. Authorized against
+    `management`.
 spec:
   inputSchema:
     type: object
     properties:
       object: {$ref: github.com/shrav-k/conduit/core#reference.v1}
       revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+      expectedId: {$ref: github.com/shrav-k/conduit/core#id.v1}
     required: [object, revision]
   effect: >-
     Removes the template, or the retired instance, from the objects that exist, and closes the
     Conduits of which that instance is the consumer.
   deduplicates: true
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -360,12 +375,14 @@ metadata:
     ID for each invocation whose outcome is unknown and that was dispatched to the instance or
     names it in an input or as its target, which no purge shortens; the
     status of a node also holds the labels last reported for its machine. `records` holds
-    the records that name the object, each as a CloudEvent.
+    the records that name the object, each as a CloudEvent. Where `expectedId` is given and the
+    object named has another ID, the request reports conflict.
 spec:
   inputSchema:
     type: object
     properties:
       object: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+      expectedId: {$ref: github.com/shrav-k/conduit/core#id.v1}
     required: [object]
   outputSchema:
     type: object
@@ -406,7 +423,6 @@ spec:
         type: array
         items: {$ref: github.com/shrav-k/conduit/core#record.v1}
     required: [id, revision, packages, declared, records]
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -429,18 +445,19 @@ metadata:
     Setting up a Resource is authorized against the Pool that owns it, and setting up an Agent,
     an Interface or a Pool against `management`. A Conduit is set up with `open.v1`: a request
     that names a Conduit or a template reports invalid, and so does one that names an object
-    that does not exist.
+    that does not exist. Where `expectedId` is given and the instance named has another ID, the
+    request reports conflict and nothing is set up.
 spec:
   inputSchema:
     type: object
     properties:
       instance: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+      expectedId: {$ref: github.com/shrav-k/conduit/core#id.v1}
     required: [instance]
   effect: >-
     Runs the setup of the instance: opens its declared Conduits or sets up its entries'
     Resources, asks for its run or connects to its remote server, and dispatches its setup
     hook. When it succeeds the instance's state is ready.
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -464,18 +481,19 @@ metadata:
     `close.v1`: a request that names a Conduit or a template reports invalid, and so does one
     that names an object that does not exist, a removed instance among them. A request to retire
     a Pool that owns a Resource whose shutdown is not confirmed reports conflict, and a
-    diagnostic names each Resource in the way.
+    diagnostic names each Resource in the way. Where `expectedId` is given and the instance
+    named has another ID, the request reports conflict and nothing is retired.
 spec:
   inputSchema:
     type: object
     properties:
       instance: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+      expectedId: {$ref: github.com/shrav-k/conduit/core#id.v1}
     required: [instance]
   effect: >-
     Ends the instance for good: dispatches its retire hook and stops its run. The Conduits of
     which it is the target are closed at once, and those of which it is the consumer once its
     shutdown is confirmed, when the instance is removed.
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -519,7 +537,6 @@ spec:
     confirms the shutdown, which removes the instance. For a control that took effect on an
     instance that exists and is not retired, stores the values it was sent.
   deduplicates: true
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -564,7 +581,6 @@ spec:
     required: [object, diagnostics]
   effect: Adds one instance to the objects that exist.
   deduplicates: true
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -606,7 +622,6 @@ spec:
     required: [diagnostics]
   effect: Adds the package, at that version and digest, to the packages that are installed.
   deduplicates: true
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -629,7 +644,6 @@ spec:
     of them is an end.
   deduplicates: true
   reservedToRoot: true
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -650,7 +664,6 @@ spec:
   effect: Removes records.
   deduplicates: true
   reservedToRoot: true
-  implementation: github.com/shrav-k/conduit/core#engine
 
 # --- Operations of a Pool alone.
 ---
@@ -684,7 +697,6 @@ spec:
   effect: >-
     Retires the Pool, once the shutdown of every Resource it owns is confirmed. The retirement
     of each Resource is an invocation of `retire.v1` of its own, with its own effects.
-  implementation: github.com/shrav-k/conduit/core#engine
 
 # --- Operations of `access`.
 ---
@@ -717,7 +729,6 @@ spec:
     Sets the Conduit's state to ready, so that its consumer may request the operations it
     lists on its target.
   deduplicates: true
-  implementation: github.com/shrav-k/conduit/core#engine
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -744,7 +755,6 @@ spec:
     required: [conduit]
   effect: Closes the Conduit, which ends the access it carried and removes it.
   deduplicates: true
-  implementation: github.com/shrav-k/conduit/core#engine
 
 # --- The two hooks, which a template selects and which are in no capability.
 ---

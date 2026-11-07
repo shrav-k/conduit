@@ -3,15 +3,18 @@
 # that a template's type offers has an implementation when the template is registered
 # (TPL-004). Here the type `notebook.v1` offers `notebook-access.v1`, which includes
 # `notebook.read.v1`. The type does not list that operation under `requires` and states no
-# default for it, the operation's own contract states none, and the template `notes` selects
-# none. A schema cannot tell: it needs the type's contract, the capability's and the
-# operation's.
+# default for it, no Operation contract states one (CTR-002), the engine does not implement it,
+# and the template `notes` selects none. A schema cannot tell: it needs the type's contract,
+# the capability's and the operation's.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) took the default of an Operation contract out
+# of the order of selection, and out of this comment and the operation's description.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: notebook.read.v1
-  description: Read one page of a notebook. It states no default implementation.
+  description: Read one page of a notebook.
 spec:
   inputSchema:
     type: object

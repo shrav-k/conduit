@@ -1,6 +1,6 @@
 # Research
 
-> Not binding. Nothing under `docs/research/` binds. Every packet but the naming research and the secrets research predates the specification in [`spec/`](../../spec/README.md); where a packet says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+> Not binding. Nothing under `docs/research/` binds. Every packet but the naming research, the secrets research and the research on work across machines predates the specification in [`spec/`](../../spec/README.md); where a packet says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 The [plan audit](../AUDIT.md) is the tracker. Statements below about the current queue, the
 current design and the first proof layout are historical.
@@ -8,7 +8,13 @@ current design and the first proof layout are historical.
 The [secrets research](SECRETS.md), of 2026-11-06, was written for ruling 39, point 1: how
 AWS, Kubernetes and the systems around them handle secrets, with every claim checked against
 its source by a second reader. It informs the [secrets proposal](../proposals/secrets/README.md),
-which is not ruled.
+which ruling 41 settled.
+
+The [research on work across machines](MULTI_MACHINE.md), of 2026-11-06, was written for
+ruling 42, which asked for more research on D5 and D20: how Kubernetes, Nomad, SPIFFE, service
+meshes and MCP gateways prove identity across machines, ship programs, enforce access on each
+machine and behave when a machine is cut off. It informs the
+[multi-machine proposal](../proposals/multi-machine/README.md), which is not ruled.
 
 The behavior/structure review is complete. The [language/protocol foundations](language-protocol-foundations/README.md)
 and [worked comparisons](language-protocol-foundations/WALKTHROUGHS.md) preserve the primary sources

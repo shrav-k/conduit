@@ -83,6 +83,7 @@ specification governs.
 | [proposals/ruling-41/](proposals/ruling-41/README.md) | 41 | The ruling on the principles review and the secret type, in the owner's words, and the owner's answer on the planner's choices for the rewrite. With it are the [work order](proposals/ruling-41/PLAN.md) of the rewrite, the logs of its editors and the [integration log](proposals/ruling-41/log-integration.md), whose coverage check lists what waits on a decision. |
 | [proposals/vocabulary-audit/](proposals/vocabulary-audit/README.md) | 42 | The vocabulary audit of the rewritten specification, which ruling 41 asked for: twenty names with their precedents, accepted by ruling 42, and the editorial fixes. |
 | [proposals/ruling-42/](proposals/ruling-42/README.md) | 42 | The ruling on the questions the rewrite left open ([open questions](proposals/ruling-41/open-decisions.md)) and on the names, in the owner's words, with the logs of the pass that applies it. |
+| [proposals/multi-machine/](proposals/multi-machine/README.md) | 42 | How Conduit works across machines: answers to D5 and D20 and five smaller questions, with v0 and v1 kept apart, after the [research on work across machines](research/MULTI_MACHINE.md). Proposed, not ruled. |
 
 ### Process for the builds
 

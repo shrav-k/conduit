@@ -1,9 +1,12 @@
 # Example. One set of documents. Each is valid alone, and together they must be rejected:
 # an item's `environment` points at no place at which the type's schema admits an object or
-# an array (MAN-017), because a variable holds a string. `files-server`, the default
-# implementation of `example.org/files#directory.read.v1` in ../valid/files-package/, gives
-# its variable `FILES_ROOT` the place `/path`, and the type `tagged-directory.v1` requires
-# `path` but gives it `type: array`.
+# an array (MAN-017), because a variable holds a string. `files-server` in
+# ../valid/files-package/, the default implementation of `example.org/files#directory.read.v1`
+# that the type `tagged-directory.v1` states, gives its variable `FILES_ROOT` the place
+# `/path`, and the type requires `path` but gives it `type: array`.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md): an Operation contract states no default
+# implementation, so the type here states the one that the operation's contract stated.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -20,6 +23,8 @@ spec:
     required: [path]
   requires:
     - example.org/files#directory.read.v1
+  implementation:
+    example.org/files#directory.read.v1: example.org/files#files-server
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

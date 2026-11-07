@@ -46,6 +46,10 @@
 # provider runs it or it is a `remote` item that is not plain, and that a plain one stands
 # behind no gate (M81); and calls what is reached by `remote` there an implementation of
 # `get-secret.v1`, where it said a store (M18).
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
+# re-audit (finding 6-1-05; log docs/proposals/reaudit/round-6/log-core.md), says in the
+# description of `package-source.v1` that a provider's Type lists no control that changes its
+# `schemes`, so it claims them for its whole life (PRV-016).
 #
 # The Capability contracts of the core package: what `management`, `access` and a Pool offer
 # through a Conduit (OPS-019, CTR-003), and the provider capabilities (PRV-001). The
@@ -71,7 +75,7 @@
 #   machine-provider.v1   PRV-001, PRV-013 to PRV-015 (the machines, their labels and their
 #                         states, and placing an instance)
 #   package-source.v1     PRV-001, PRV-013, PRV-016, PRV-017 (fetching an archive for the
-#                         schemes the provider claims)
+#                         schemes the provider claims, which no control changes)
 #   secret-provider.v1    SEC-002, SEC-005 (the shared contract of every secret Resource; a
 #                         Resource whose type offers it is a secret Resource), SEC-022 (a
 #                         Type that offers it offers no other capability), PRV-001
@@ -207,10 +211,12 @@ metadata:
   name: package-source.v1
   description: >-
     What a package-source provider offers: fetching the archive of a package from a URL whose
-    scheme it claims, as its configuration lists under `schemes`. Each provider is owned by
-    `system`, and at most one that is not retired claims a scheme; the engine itself fetches
-    `https` and `file` URLs that no provider claims. No Conduit lists this operation: the
-    engine alone invokes it.
+    scheme it claims, as its configuration lists under `schemes`. Its Type lists no control
+    whose `changes` reaches `schemes`, so it claims the schemes it was made with for its whole
+    life; one that is to claim others is a new provider. Each provider is owned by `system`,
+    and at most one that is not retired claims a scheme; the engine itself fetches `https` and
+    `file` URLs that no provider claims. No Conduit lists this operation: the engine alone
+    invokes it.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#fetch-package.v1

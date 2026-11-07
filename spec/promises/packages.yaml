@@ -70,6 +70,10 @@
 # the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, added PKG-030, of
 # the layer `language`: an implementation item reached by `remote` that implements an
 # operation of a provider's capability is rejected (M25). It changed none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
+# (log docs/proposals/reaudit/round-6/log-promises.md), changed PKG-029, which also
+# counts the project that a request to replace a template hands over (D11). It added none and
+# removed none.
 
 - id: PKG-001
   layer: language
@@ -431,9 +435,10 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to install a package at an address that the manifest of a submitted project
-    states as its own `address`, while a template or an instance that exists holds that
-    submission's contracts or implementations under NAM-009 or PKG-005.
+    An actor asks to install a package at an address that the manifest of a submitted project,
+    or of the project that a request to replace a template hands over under SUB-009, states as
+    its own `address`, while a template or an instance that exists holds that project's
+    contracts or implementations under NAM-009 or PKG-005.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-

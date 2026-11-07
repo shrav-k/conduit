@@ -172,6 +172,15 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # trustBundleFile. Its integration (docs/proposals/reaudit/round-5/log-fixes.md) added
 # remote-provider (PKG-030, M25), and made item-place-required reject a place whose schema does
 # not confine its value to a string, a number, a boolean or null (MAN-017, M30).
+# Round 6 of the re-audit, under ruling 44 (2026-11-07; log
+# docs/proposals/reaudit/round-6/log-core.md), added changes-overlap (CTR-006, finding 6-1-03)
+# and fixed-schemes (PRV-016, finding 6-1-05), which compare pointers as reference tokens, and
+# had check_controls read a pointer's tokens with the same function.
+# Ruling 44's D06, as revised after the ruling (docs/proposals/reaudit/round-6/log-d06-d12.md),
+# made implementation-selected read no default from an Operation contract, which the schema
+# now rejects (CTR-002), and take the engine for an operation that the core package's `engine`
+# lists; and added engine-selected (TPL-003), for a template or a Type whose `implementation`
+# map selects an implementation for such an operation.
 RULES = {
     "one-name": "NAM-027",
     "bound-once": "CON-028",
@@ -182,6 +191,7 @@ RULES = {
     "ref": "SCH-015",
     "default-valid": "SCH-019",
     "implementation-selected": "TPL-004",
+    "engine-selected": "TPL-003",
     "names-nothing": "NAM-028",
     "core-address": "NAM-021",
     "first-start-from": "FST-006",
@@ -198,6 +208,8 @@ RULES = {
     "secret-only": "SEC-022",
     "identity-name": "MAN-018",
     "secret-header-https": "SEC-024",
+    "changes-overlap": "CTR-006",
+    "fixed-schemes": "PRV-016",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -402,6 +414,30 @@ def is_pointer(ref):
     return ref == "#" or ref.startswith("#/")
 
 
+def is_place(text):
+    """True for a JSON Pointer in its string form, which is empty or starts with `/`."""
+    return isinstance(text, str) and (text == "" or text.startswith("/"))
+
+
+def tokens(text):
+    """The reference tokens of a JSON Pointer in its string form, each unescaped as RFC 6901
+    says, `~1` to `/` and then `~0` to `~`. The empty pointer, the whole document, has none."""
+    return [t.replace("~1", "/").replace("~0", "~") for t in text.split("/")[1:]]
+
+
+def overlap(first, second):
+    """Whether one of two pointers is the other or lies inside it, compared as their reference
+    tokens: `/limit` and `/limits` do not overlap, nor do `/a~1b` and `/a/b`, and the empty
+    pointer lies over every other (CTR-006, PRV-016)."""
+    one, other = tokens(first), tokens(second)
+    return one[:len(other)] == other or other[:len(one)] == one
+
+
+def shown(text):
+    """A pointer as a message names it: the empty pointer as `""`."""
+    return text if text else '""'
+
+
 def check_profile(label, root, keywords, formats, core, schemas):
     """`schemas` holds the Schema contracts of the package the schema belongs to, which is the
     core package: a qualified reference to it and `#name` resolve among them."""
@@ -527,7 +563,6 @@ EXPECT = (
     ("Type", ("spec", "offers", "*"), "Capability"),
     ("Type", ("spec", "requires", "*"), "Operation"),
     ("Type", ("spec", "controls", "*"), "Operation"),
-    ("Operation", ("spec", "implementation"), "implementation"),
     ("template", ("spec", "type"), "Type"),
     ("template", ("spec", "capability"), "Capability"),
     ("template", ("spec", "operations", "*"), "Operation"),
@@ -687,9 +722,10 @@ def check_controls(label, docs, package_docs, address):
     """For every control that a Type in `docs` lists and whose contract is in this repository:
     it is an Operation with `changes`, a map in which each key is the name of an input the
     control declares and each value is a pointer to a place the type's `schema` describes
-    through `properties`; its `inputSchema` lists `revision` under `required`, and it declares
-    no output `settings` (CTR-006). Other inputs may be listed under `required` too: a control
-    may leave them out all the same (REV-006)."""
+    through `properties`, followed token by token; its `inputSchema` lists `revision` under
+    `required`, and it declares no output `settings` (CTR-006). Other inputs may be listed
+    under `required` too: a control may leave them out all the same (REV-006). That no two
+    pointers of `changes` overlap is the rule changes-overlap of step 6, which has examples."""
     count = 0
     for doc in docs:
         if not isinstance(doc, dict) or doc.get("kind") != "Type":
@@ -719,8 +755,7 @@ def check_controls(label, docs, package_docs, address):
                 if not isinstance(place, str):
                     continue               # not a pointer: reported by step 3
                 schema = spec.get("schema")
-                for token in place.split("/")[1:]:
-                    token = token.replace("~1", "/").replace("~0", "~")
+                for token in tokens(place):
                     schema = (schema.get("properties") or {}).get(token) \
                         if isinstance(schema, dict) else None
                     if schema is None:
@@ -1362,11 +1397,32 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
 
     secret = {core + "#secret-reference.v1"} | ({"#secret-reference.v1"} if is_core else set())
 
+    # The operations that the core package's implementation `engine` implements (MAN-012): the
+    # engine implements each with no selection (TPL-004), and no template or Type selects an
+    # implementation for one (TPL-003).
+    engine_item = (items.get(core) or {}).get("engine")
+    engine_ops = {canon(ref, core) for ref in (engine_item or {}).get("implements") or ()
+                  if isinstance(engine_item, dict)}
+    engine_ops.discard(None)
+    for doc in docs:
+        kind = doc.get("kind")
+        if kind not in FAMILIES and kind != "Type" or "from" in doc:
+            continue
+        body = doc.get("spec") if isinstance(doc.get("spec"), dict) else {}
+        home = here if kind != "Type" or is_core else None
+        for key, _ in members(body.get("implementation")):
+            if canon(key, home) in engine_ops:
+                found.append(("engine-selected",
+                              f"the {what(doc) if kind != 'Type' else 'Type'} {named(doc)} "
+                              f"selects an implementation for {key}, which the engine "
+                              f"implements"))
+
     # The operations each template of the set must have an implementation for, under TPL-004,
-    # with the implementation it has for each: the key of the template's `implementation`
-    # map, else the default of its type, else the default of the operation's own contract.
-    # Applied where the tool has the type's contract; a capability or an operation whose
-    # contract it does not have is not followed.
+    # with the implementation it has for each: the engine, for an operation that `engine`
+    # implements, else the key of the template's `implementation` map, else the default of its
+    # type. An Operation contract states no default (CTR-002). Applied where the tool
+    # has the type's contract; a capability or an operation whose contract it does not have
+    # is not followed.
     selected = {}
     for (kind, name), template in templates.items():
         spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
@@ -1402,17 +1458,17 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
         picks = {}
         for key, why in needed.items():
             operation = lookup(key, "Operation")
-            if key in chosen:
+            if key in engine_ops:
+                picks[key] = (core, "engine")
+            elif key in chosen:
                 picks[key] = chosen[key]
             elif key in by_type:
                 picks[key] = by_type[key]
-            elif operation is not None and "implementation" in (operation.get("spec") or {}):
-                picks[key] = canon(operation["spec"]["implementation"], key[0])
             elif operation is not None:
                 found.append(("implementation-selected",
                               f"the template {name} selects no implementation for {key[1]}, "
-                              f"and neither its type {named(type_doc)} nor the operation's "
-                              f"contract states a default; {why}"))
+                              f"its type {named(type_doc)} states no default, and the engine "
+                              f"does not implement it; {why}"))
         selected[name] = (type_doc, picks)
 
     for name, (type_doc, picks) in selected.items():
@@ -1562,6 +1618,46 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                           f"the Type contract {named(doc)} offers secret-provider.v1 and also "
                           f"{' and '.join(others)}, and the type of a secret Resource offers "
                           f"no other capability"))
+
+    # changes-overlap (CTR-006): no two pointers of a control's `changes` are equal, and none
+    # lies inside another, as INS-010 says of two destinations; the empty pointer lies over
+    # every other. Pointers are compared as their reference tokens. Applied to every Operation
+    # contract of the set that holds `changes`, whether or not a Type of the set lists it.
+    for doc in docs:
+        spec = doc.get("spec") if doc.get("kind") == "Operation" else None
+        changes = spec.get("changes") if isinstance(spec, dict) else None
+        pairs = sorted((source, place) for source, place in members(changes) if is_place(place))
+        for index, (source, place) in enumerate(pairs):
+            for other, there in pairs[index + 1:]:
+                if overlap(place, there):
+                    how = (f"the same pointer, {shown(place)}" if tokens(place) == tokens(there)
+                           else f"the pointers {shown(place)} and {shown(there)}, one of which "
+                                f"lies inside the other")
+                    found.append(("changes-overlap",
+                                  f"the control {named(doc)} gives its inputs {source} and "
+                                  f"{other} {how}, in its `changes`"))
+
+    # fixed-schemes (PRV-016): a Type that offers `package-source.v1` lists no control whose
+    # `changes` holds `/schemes`, a pointer inside it or the empty pointer, which lies over
+    # it, so that a package-source provider claims the schemes it was made with for its whole
+    # life. Applied where the tool has the control's contract, comparing reference tokens.
+    for doc in docs:
+        spec = doc.get("spec") if doc.get("kind") == "Type" else None
+        if not isinstance(spec, dict):
+            continue
+        offers = spec.get("offers") if isinstance(spec.get("offers"), list) else []
+        if (core, "package-source.v1") not in {canon(o, here) for o in offers}:
+            continue
+        listed = spec.get("controls") if isinstance(spec.get("controls"), list) else []
+        for ref in listed:
+            control = lookup(canon(ref, here), "Operation")
+            body = control.get("spec") if isinstance(control, dict) else None
+            for source, place in members((body or {}).get("changes")):
+                if is_place(place) and overlap(place, "/schemes"):
+                    found.append(("fixed-schemes",
+                                  f"the Type contract {named(doc)} offers package-source.v1 "
+                                  f"and lists the control {ref}, whose input {source} sets "
+                                  f"{shown(place)}, which reaches the claimed `/schemes`"))
 
     # provider-conduit (PRV-004): no Conduit template's capability is one whose operations the
     # engine alone invokes, and none lists one of those operations.

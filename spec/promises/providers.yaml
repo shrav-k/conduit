@@ -144,6 +144,11 @@
 # reports a run `unknown` (V5, V2-03); PRV-025, which says why a token that a gate passes on
 # gives the server nothing (V7); and PRV-026, under which a read for the machine provider's run
 # is made whatever its machine's state (V2-04). It added none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
+# (log docs/proposals/reaudit/round-6/log-promises.md), changed PRV-016: the Type of a
+# package-source provider lists no control that changes `/schemes`, so the schemes it claims
+# are fixed for its life (finding 6-1-05); and PRV-013, whose observable says so. It added none
+# and removed none.
 
 - id: PRV-001
   layer: language
@@ -515,8 +520,10 @@
     hostname, short where the earlier one reported it fully qualified, leaves the earlier nodes
     omitted and registers new ones: an earlier node is retired by an actor once no other
     instance is placed on it, under PLC-011, or declared lost by the root Interface, under
-    PLC-017. A runtime provider is not limited in this way: several may exist, owned by any
-    Pool, and each instance names its own under PRV-006.
+    PLC-017. The schemes that a package-source provider claims never change, under PRV-016, so
+    the check made when it is instantiated keeps one provider to a scheme at any time. A runtime
+    provider is not limited in this way: several may exist, owned by any Pool, and each instance
+    names its own under PRV-006.
   vectors: []
 
 - id: PRV-014
@@ -593,14 +600,24 @@
   when: >-
     A Type contract that offers `package-source.v1` is read.
   then: >-
-    Its `schema` requires `schemes`, a list of at least one URI scheme. A Type that offers
-    `package-source.v1` and whose `schema` does not require it is rejected when its package is
-    installed or its project is submitted.
+    Its `schema` requires `schemes`, a list of at least one URI scheme, and it lists no control
+    whose `changes` holds the pointer `/schemes`, a pointer inside it or the empty pointer. A
+    Type that offers `package-source.v1` and whose `schema` does not require `schemes`, or that
+    lists such a control, is rejected when its package is installed or its project is submitted.
   observable: >-
-    Installation or submission returns a diagnostic naming the Type. A package-source provider
-    claims the schemes that its configuration lists under `schemes`, as Git picks the remote
-    helper `git-remote-<scheme>` for a URL. A scheme is written as RFC 3986 writes one, and is
-    compared with the scheme of a `fetch` without regard to case.
+    Installation or submission returns a diagnostic naming the Type, and the control where one
+    is the cause. A package-source provider claims the schemes that its configuration lists
+    under `schemes`, as Git picks the remote helper `git-remote-<scheme>` for a URL. A scheme is
+    written as RFC 3986 writes one, and is compared with the scheme of a `fetch` without regard
+    to case. Pointers are compared by their reference tokens, as CTR-006 compares them, so
+    `/schemes/0` lies inside `/schemes`, `/schemesExtra` does not, and the empty pointer, the
+    whole configuration, lies over it. With no such control nothing changes the schemes that a
+    provider claims, for its whole life, as Kubernetes makes the `handler` of a RuntimeClass
+    immutable: PRV-013 decides the claim once, when the provider is registered, and no control
+    that has not ended, or whose outcome is unknown, can later make two providers claim one
+    scheme. A scheme is added by registering another provider that claims it, and is moved by
+    retiring the provider that claims it and then registering one that does, as the machine
+    provider is changed under PRV-013.
   vectors: []
 
 - id: PRV-017

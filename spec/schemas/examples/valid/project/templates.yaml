@@ -8,11 +8,19 @@
 # Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on D20, took the input `runtime`
 # out of `workspace`: its entries run `bin/files-server`, a program inside a package, which only
 # the engine's own runner runs (PRV-007). The log is docs/proposals/ruling-43/log-core.md.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
+# re-audit (D07; log docs/proposals/reaudit/round-6/log-core.md), says below what the tool
+# presented for the narrowed control shows.
 
 # A Resource template with an input and a narrowed control, which selects a setup hook. The
 # hook's implementation is `files-server`, the item that its type's operations already
 # select, so an instance has one item that is run (TPL-019). The engine dispatches the hook
-# once the instance's run is asked for (TPL-012, TPL-017).
+# once the instance's run is asked for (TPL-012, TPL-017). The control `set-read-limit.v1`
+# keeps the contract's `limit`, from 1 to 100, and narrows it to at most 50: the tool for it
+# that a consumer of a Conduit to an instance of this template is presented gives `limit` the
+# schema `allOf` of the contract's, `#read-limit.v1`, and `{maximum: 50}`, so the consumer sees
+# the limit that the engine enforces (IFC-033). A control of the type that `controls` did not
+# list would have no tool (IFC-012).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource
 metadata:

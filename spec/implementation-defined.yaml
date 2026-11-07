@@ -111,6 +111,14 @@
 # identifier of its assertion under RFC 7523 (V2-12), lets a request establish neither instance
 # where whether it exists cannot be read (V1), and says where the token goes without TLS
 # (V2-11). It added none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on finding 6-1-04 of round 6 of
+# the re-audit (docs/proposals/reaudit/round-6/reader-1.md; log
+# docs/proposals/reaudit/round-6/log-interface.md), added to DL12, now also on the schemas of
+# tools, which `$ref` in a tool's schemas the engine replaces by the schema of the contract it
+# names, where IFC-033 lets it. It added none and removed none. The verification of round 6
+# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") added to DL10 that a
+# repeat that OPS-024 dispatches does not report conflict once outputs are no longer kept
+# (R-06).
 
 - id: DL1
   subject: Order of a Pool's Resources
@@ -177,16 +185,19 @@
     allowed for a call, a retire hook's among them, after which its part ends unknown and the
     stop is asked for under TPL-009; how long the outputs of a succeeded invocation, other than
     one whose outcome a reconciliation set, are kept for a repeat under OPS-009, after which a
-    repeat reports conflict under OPS-034; and behavior when storage is exhausted.
+    repeat reports conflict under OPS-034, unless OPS-024 dispatches it; and behavior when
+    storage is exhausted.
 - id: DL12
-  subject: Protocol revisions, `content` and `Origin`
+  subject: Protocol revisions, `content`, `Origin` and the schemas of tools
   document: >-
     Which revisions of the Model Context Protocol are supported beyond the baseline, and what
     the engine puts in the `content` member of a result it returns to a consumer beyond what
     IFC-025 fixes: among it, whether a result that holds `structuredContent`, and whose outcome
     did not come from a plain implementation, also carries it serialized there, as the protocol
     recommends. Also which values of the `Origin` header the engine's server accepts, under
-    IFC-036.
+    IFC-036; and, in the definition of a tool that it presents, which `$ref` to a Schema
+    contract whose schema holds no `$ref` it replaces by that schema rather than point to the
+    contract's copy, where IFC-033 lets it.
 - id: DL13
   subject: Proof of who is who
   document: >-

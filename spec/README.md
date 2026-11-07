@@ -2,86 +2,15 @@
 
 Status: draft, begun 2026-11-05. Incomplete, and not a release. Every area has been written as
 promises, and the core package, the JSON Schemas of documents and the manifest's format have
-been written as documents; the parts still to come are listed under [Contents](#contents).
+been written as documents; the parts still to come are listed under [Contents](#contents). It
+is still a draft because it has no conformance vectors and no reference model, and it stays one
+until it has them, the reference model agrees with it, and a round of readers finds nothing
+unsafe in it (ruling 38, point 4).
 
-The owner accepted the specification as it stood at
-[ruling 39](../docs/proposals/ruling-39/README.md), of 2026-11-06, which accepted every
-decision of the coordinator and every choice of an editor that the records log, before and
-since ruling 37. [Ruling 40](../docs/proposals/ruling-40/README.md) and
-[ruling 41](../docs/proposals/ruling-41/README.md), of the same day, then changed it: Conduit
-innovates only on connection and access, and everything else is a provider behind a contract
-that the user picks. At ruling 41 the owner accepted, as recommended, every decision of the
-[principles review](../docs/proposals/principles-review/README.md), and the secret type as its
-section 4 reduces it, and then the planner's choices of the
-[work order](../docs/proposals/ruling-41/PLAN.md) that applies them, with one changed. The
-specification as it stands is that rewrite. The logs of its editors, beside the work order
-in `docs/proposals/ruling-41/`, list every change, the choices that the editors made beyond
-the work order, which the coordinator confirms or strikes, and the questions they left open.
-A [coverage check](../docs/proposals/ruling-41/log-integration.md#coverage-check) then read
-the rewrite against every decision; its log lists what it fixed, and the questions it left were
-settled in the [open questions after the rewrite](../docs/proposals/ruling-41/open-decisions.md)
-and by rulings 42 and 43. [Ruling 42](../docs/proposals/ruling-42/README.md), of the same day,
-struck none of the decisions that the coordinator settled on the
-[questions the rewrite left open](../docs/proposals/ruling-41/open-decisions.md), and accepted
-the recommended answers to seven of the nine put to the owner; the logs of its editors are
-beside its record. The other two, D5 and D20, are about work across machines, which the owner
-asked to have researched further; ruling 43 has since ruled them, as the end of this paragraph
-says. The secret type is ruled: its promises are [promises/secrets.yaml](promises/secrets.yaml),
-and the [secrets proposal](../docs/proposals/secrets/README.md) is the reasoning behind it. The
-names that the review and the work order coined are settled: ruling 42 also accepted the names
-and the editorial fixes that the
-[vocabulary audit](../docs/proposals/vocabulary-audit/README.md) proposes. The names are
-applied, and so are the editorial fixes, as the
-[log of the editorial fixes](../docs/proposals/ruling-42/log-editorial.md) lists. The audit's
-names for machines and placement, N2, N3 and N8 to N11, are as the
-[log of their renames](../docs/proposals/ruling-42/log-rename-a.md) lists: a node, of the type
-`node.v1`, represents a machine that the machine provider reports; a Type or an implementation
-item states its label selector as `nodeSelector`, of the schema `labels.v1`; `run.v1` gives the
-machine in its input `machine`; and the engine declares a node lost when its machine is
-reported gone. The others, N1, N5 to N7 and N12 to N20, are as the
-[log of the other renames](../docs/proposals/ruling-42/log-rename-b.md) lists: a secret
-Resource's type offers `secret-provider.v1`, whose operation is `get-secret.v1`; `run.v1`
-returns `url`; a `package` item binds `packageArguments` and is pinned by its Package's
-`fileSha256` or, for an `oci` image, by a digest in its `identifier`; a caller attaches an idempotency key; a record and a condition name their source;
-the filters a request carries are sent in `io.github.shrav-k.conduit/filters`, under Conduit's
-extension `io.github.shrav-k.conduit/implementation-interface`; and an engine documents its
-choices in its conformance document. A
-[verification](../docs/proposals/ruling-42/log-integration.md#verification) of the result then
-fixed what three readers found that follows from ruling 42; what it left was settled in the
-[record of ruling 42](../docs/proposals/ruling-42/README.md#after-the-ruling) and in
-[the items that waited on ruling 43](../docs/proposals/ruling-43/log-integration.md#the-items-that-waited-on-this-ruling),
-apart from the few points that the tracker lists
-[for the next reader](../docs/AUDIT.md#for-the-next-reader).
-[Ruling 43](../docs/proposals/ruling-43/README.md), of the same day, then accepted the
-[proposal on work across machines](../docs/proposals/multi-machine/README.md), with two
-revisions, which rules D5 and D20 and five smaller questions and settles what that verification
-left for it. The logs of its editors, and the
-[log of its integration](../docs/proposals/ruling-43/log-integration.md), are beside its record;
-the [verification](../docs/proposals/ruling-43/log-integration.md#verification) at the end of
-that log fixed what three readers found that follows from the ruling; what it left was settled
-in the record's section
-[After the ruling](../docs/proposals/ruling-43/README.md#after-the-ruling).
-
-The records under `docs/proposals/` say who decided what and when: the owner's rulings, listed
-in the [ruling log](../docs/AUDIT.md#ruling-log), and the decisions of the session that
-coordinates the re-audit ([who decides what](../docs/AUDIT.md#who-decides-what)), logged in
-[GAPS.md](../docs/proposals/docs-audit/GAPS.md) and in the decisions of
-[round 2](../docs/proposals/reaudit/round-2/DECISIONS.md), of
-[round 3](../docs/proposals/reaudit/round-3/DECISIONS.md), of
-[round 4](../docs/proposals/reaudit/round-4/DECISIONS.md) and of
-[round 5](../docs/proposals/reaudit/round-5/DECISIONS.md), with the choices that its
-[fix log](../docs/proposals/reaudit/round-5/log-fixes.md) records, and since ruling 39 also in the
-[open questions after the rewrite](../docs/proposals/ruling-41/open-decisions.md) and in the
-sections "After the ruling" of the records of
-[ruling 42](../docs/proposals/ruling-42/README.md#after-the-ruling) and
-[ruling 43](../docs/proposals/ruling-43/README.md#after-the-ruling). The owner can strike any
-decision or choice made since ruling 39 ([who decides what](../docs/AUDIT.md#who-decides-what)
-lists where they are). The comment at the head of each file says which pass changed which
-promise. Later work is left out of this version
-([ruling 38](../docs/proposals/ruling-38/README.md)). The specification is still a draft,
-because it has no conformance vectors and no reference model; it stays one until it has them,
-the reference model agrees with it, and a round of readers finds nothing unsafe in it
-(ruling 38, point 4).
+This page describes the specification as it stands now. How it came to stand so, ruling by
+ruling, and where the record of each decision is, are under [History](#history) at the end.
+The latest change is [ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, which
+settled [round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit.
 
 The specification alone binds. Nothing under [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) binds:
 it is the design as it stood before the specification, superseded, and kept as source material
@@ -156,6 +85,88 @@ secret: the read again for a connection that a setup made, once the engine has l
 (SEC-023), and, once the engine has restarted, the reads before it runs again a provider whose
 run ended with it, for the setup that last asked for that run (PRV-026).
 
+## Reading paths
+
+Begin with [definitions.md](definitions.md): its first table gives the core terms in one line
+each and links the section that holds each one's full row. [names.yaml](names.yaml) holds the
+names this version assigns. Then follow the path for what you do. Each path reads the rules as
+they stand, and none needs the records under `docs/proposals/`. Every promise is in the
+[Contents](#contents) table's files; a path only orders them.
+
+### An author of documents
+
+Someone who writes templates, instances and a project's manifest, registers them and acts
+through Conduits.
+
+1. The shape of a document, its names and references, and schemas:
+   `promises/objects.yaml`, `promises/schemas.yaml` and [schema-profile.md](schema-profile.md).
+   The JSON Schema of each document is in [schemas/](schemas/README.md), and the
+   [example project](schemas/examples/valid/project/) shows each shape.
+2. Templates and instances: `promises/instantiation.yaml` and `promises/templates.yaml`.
+3. Ownership, placement and the Conduits: `promises/pools.yaml`, `promises/placement.yaml` and
+   `promises/conduits.yaml`.
+4. Who may reach what: `conventions/access.yaml`, whose ACC-033 lists the target that
+   authorizes each management request; then
+   [what access does not narrow](#what-access-does-not-narrow).
+5. Handing over a project: `promises/submissions.yaml`, `promises/manifest.yaml` and
+   `promises/naming.yaml`, and `promises/packages.yaml` for installing a package.
+6. What a request does and how it ends: `conventions/lifecycle.yaml` for setup, retirement and
+   removal; `conventions/operations.yaml` for outcomes, idempotency keys, repeats and
+   reconciling an unknown outcome; and `conventions/revisions.yaml` for controls.
+7. Secrets: `promises/secrets.yaml`, then
+   [what the guarantee for secrets covers](#what-the-guarantee-for-secrets-covers).
+
+What an Agent sees of its access is its tools, IFC-012 and IFC-033; the rest of `interface/`
+is for the other two paths.
+
+### A writer of contracts and providers
+
+Someone who writes Type, Capability, Operation, Requirement or Schema contracts, an
+implementation of them, or a provider's package.
+
+1. The author's path to its step 2.
+2. The contracts: `promises/contracts.yaml`, controls among them (CTR-006), then
+   `promises/naming.yaml` for names and what a later release may add, `promises/packages.yaml`
+   and `promises/manifest.yaml` for a package, its implementation items, `plain` and
+   `supports`.
+3. The wire: `interface/implementation.yaml`, for what a call carries (IFC-006), how a filter is
+   applied (IFC-019), what a result states (IFC-009, IFC-025, IFC-026), what the answers of a
+   plain server mean (IFC-010), what a tool's definition holds (IFC-033), and the gate and the
+   proof of who is who (IFC-017, IFC-041).
+4. For a provider: `promises/providers.yaml`, and `promises/secrets.yaml` for a store's package.
+   The provider capabilities and their operations are in
+   [core/capabilities.yaml](core/capabilities.yaml) and
+   [core/operations.yaml](core/operations.yaml).
+5. [Conformance](#conformance) says, at the Implementation level, which promises bind what you
+   write.
+
+### An engine builder
+
+Someone who builds an engine and claims a level of [conformance](#conformance). Read the files
+in the order of the Contents table, which is an order a reader of the Language level can follow:
+
+1. The shape of a document and of a schema: `promises/objects.yaml`, `promises/schemas.yaml`
+   and [schema-profile.md](schema-profile.md). The JSON Schema of each shape is in
+   [schemas/](schemas/README.md), and can be read beside the promises it encodes.
+2. Templates and what they are made of: `promises/instantiation.yaml`,
+   `promises/templates.yaml` and `promises/contracts.yaml`.
+3. Packages and submissions: `promises/naming.yaml`, `promises/packages.yaml`,
+   `promises/manifest.yaml` and `promises/submissions.yaml`.
+4. The families and how they relate: `promises/pools.yaml`, `promises/placement.yaml`,
+   `promises/conduits.yaml` and `promises/first-start.yaml`.
+5. What the engine reaches behind contracts: `promises/providers.yaml`, then
+   `promises/secrets.yaml`.
+6. The core package: [core/README.md](core/README.md), which lists every export with the
+   promise that needs it, and then the files of `core/`. The first-start objects are instances
+   of its templates, and the management verbs of the conventions are its operations.
+
+A reader of the Engine level goes on to the conventions, beginning with
+`conventions/lifecycle.yaml` and `conventions/access.yaml`, then to
+`interface/implementation.yaml`, and last to
+[implementation-defined.yaml](implementation-defined.yaml), each of whose items its
+conformance document states a choice for. [Limits of this version](#limits-of-this-version)
+says what the promises leave open.
+
 ## Contents
 
 | Path | Part | State |
@@ -197,40 +208,23 @@ run ended with it, for the setup that last asked for that run (PRV-026).
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item; and `server-package.v1` and `server-remote.v1`: a Package and a Remote of server.json | Draft; 4 contracts |
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions, digests, IDs, revisions and label selectors | Draft; 13 contracts |
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
-| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 56 files |
-| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 30 files |
-| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes | Draft; 35 promises; no vectors |
+| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 57 files |
+| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 34 files |
+| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes, and the expected ID that a lifecycle action may carry | Draft; 36 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 29 promises; no vectors |
 | [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 31 promises; no vectors |
 | [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 14 promises; no vectors |
 | [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 5 promises; no vectors |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; no vectors |
 | [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 5 promises; no vectors |
-| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 43 promises; no vectors |
+| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 44 promises; no vectors |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 15 items |
 
-Every area has been written as promises, 452 in all: 202 of the layer `language`, 207 of the
-layer `convention` and 43 of the layer `interface`. The rulings of the
-[consolidation audit](../docs/proposals/consolidation/README.md#rulings), the decisions of the
-[re-audit](../docs/proposals/reaudit/README.md), the
-[ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the
-[decisions of the docs audit](../docs/proposals/docs-audit/GAPS.md), which converted the
-behaviors that the older text accepted and the specification did not state, the
-[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md),
-the [decisions of its third round](../docs/proposals/reaudit/round-3/DECISIONS.md), the
-[decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md),
-[ruling 38](../docs/proposals/ruling-38/README.md),
-[ruling 39](../docs/proposals/ruling-39/README.md),
-[ruling 40](../docs/proposals/ruling-40/README.md),
-[ruling 41](../docs/proposals/ruling-41/README.md),
-[ruling 42](../docs/proposals/ruling-42/README.md), with the names and the editorial fixes of
-the vocabulary audit, [ruling 43](../docs/proposals/ruling-43/README.md) and the
-[decisions of the fifth round of the re-audit](../docs/proposals/reaudit/round-5/DECISIONS.md),
-with the [verification of its fixes](../docs/proposals/reaudit/round-5/log-fixes.md#verification),
-have been applied to them. The JSON Schemas of
-documents, contracts and manifests, the core package as documents and the manifest's file
-format now exist: they are `schemas/`, `core/` and `promises/manifest.yaml`. Still to come: the
-conformance vectors, and a reference model.
+Every area has been written as promises, 454 in all: 202 of the layer `language`, 208 of the
+layer `convention` and 44 of the layer `interface`. The JSON Schemas of documents, contracts and
+manifests, the core package as documents and the manifest's file format exist: they are
+`schemas/`, `core/` and `promises/manifest.yaml`. Still to come: the conformance vectors, and a
+reference model. [History](#history) lists the rulings and decisions applied to the promises.
 
 The core package is one package kept in two directories. `core/` holds its manifest and
 everything a promise says it exports. `schemas/` holds the schemas of documents, which are
@@ -289,12 +283,61 @@ the layer of the promises that bind it.
 | --- | --- | --- |
 | Language | An engine | Every promise whose layer is `language`: documents in, resolved objects or diagnostics out. |
 | Engine | An engine | The Language level, plus every promise whose layer is `convention` or `interface` and whose obligation falls on the engine, plus a conformance document that documents a choice for every item of the implementation-defined list. The promises on providers count among these where the engine's own runner, machine provider and fetching keep them because no provider serves (PRV-003). |
-| Implementation | An implementation, a provider's among them | Every promise, whatever its layer, whose obligation falls on the implementation and not on the engine. Examples are IFC-008, IFC-009, IFC-019, IFC-026, IFC-031, SEC-006 and SEC-019. For a provider's implementation this includes the promises that bind the provider, which have the layer `convention`, such as PRV-010 to PRV-012, PRV-014, PRV-019, PRV-021, PRV-022, PRV-025 and PRV-028. For a server reached by `remote` that is not plain, it includes PRV-025. |
+| Implementation | An implementation, a provider's among them | Every promise, whatever its layer, whose obligation falls on the implementation and not on the engine. Examples are IFC-008, IFC-009, IFC-019, IFC-026, IFC-031, IFC-047, SEC-006 and SEC-019. For a provider's implementation this includes the promises that bind the provider, which have the layer `convention`, such as PRV-010 to PRV-012, PRV-014, PRV-019, PRV-021, PRV-022, PRV-025 and PRV-028. For a server reached by `remote` that is not plain, it includes PRV-025. |
 
 An engine that is given a document it cannot honor rejects the document and says why in a
-diagnostic. It never accepts a document and ignores part of it.
+diagnostic. It never accepts a document and ignores part of it unsaid: where a promise leaves
+a part of an accepted document unused, the promise says so, as SCH-009 does a `default` reached
+only through a conditional keyword, or through a `$ref` at the root of an operation's schema.
+A type's default for a hook that the type does not require is also named, when the type is
+read, in a diagnostic that does not reject (CTR-004, TPL-004).
 
-## What the guarantee for secrets covers
+## Limits of this version
+
+The two sections below state what the promises leave open. They are statements, not promises,
+and nothing tests them; each point cites the promises that state its parts. The first is what
+[ruling 44](../docs/proposals/ruling-44/README.md) accepted on delegation and on access to
+`management` (D03 and D04 of round 6). The second is section 4 of the principles review. Work
+that outlasts its invocation is left out, as [What this is](#what-this-is) says.
+
+### What access does not narrow
+
+- A bound limits a right to open by Pools, targets and operations, and never by filters
+  (ACC-029, ACC-030). Its consumer may open, for any consumer, a Conduit that lists any
+  operation that the bound names, to any target that the bound covers, with no filter but those
+  that the Conduit's own template applies. A filter limits only the requests through its own
+  Conduit, and the onward requests and hooks that carry it (ACC-009, ACC-017, ACC-018). So an
+  actor that reads a directory through a Conduit that applies a filter, and that is also the
+  consumer of a Conduit to `access` whose bound covers the directory and names its read
+  operation, can open for itself a Conduit that reads the directory with no filter.
+- A bound that names a Pool covers every Resource that the Pool owns, those instantiated after
+  the Conduit that carries the bound was opened among them (ACC-029). Closing an actor's own
+  Conduit to `access` closes none of the Conduits that the actor opened (ACC-030): each is
+  closed by its own request, or as its ends are retired (CON-008).
+- Access to `management` cannot be narrowed to one template, nor to less than whole operations.
+  A Conduit to `management` carries no bound (CON-028), and the engine, which implements the
+  operations of `management`, supports no filter, so no Conduit that lists one of them and
+  applies a filter is instantiated (CON-022, MAN-012). A Conduit to `management` that lists
+  `register.v1` or `replace.v1` trusts its consumer to register, or to replace, any object that
+  ACC-033 authorizes against `management` alone (ACC-030). Since `replace.v1` hands over the
+  project of its document (SUB-009), a Conduit that lists it trusts its consumer, as one that
+  lists `register.v1` does, to choose the contracts and the implementation items, programs and
+  `remote` URLs among them, of the instances made from the template afterwards (ACC-030).
+  Registering a Resource into a Pool that exists and is not retired also needs a Conduit to that
+  Pool (ACC-033), which narrows by owner and never by template.
+- Narrower access to `management` goes through a broker: a Resource with a trusted operation
+  whose own contract allows only what it should, such as registering instances of one approved
+  template. The actor is the consumer of a Conduit to the broker that
+  lists that operation, and of none to `management`; the broker's implementation makes the
+  onward request through the broker's own Conduit to `management`, which authorizes it (ACC-016,
+  ACC-033). The narrowing is then the broker's, kept by its implementation and not by the
+  engine, and the broker's own Conduit to `management` is as wide as any. The actor's Conduit to
+  the broker applies no filter: the onward request would carry it, `management` cannot apply it,
+  and the request would report unavailable (ACC-017, ACC-015). The scenarios S1 and S2 measure
+  whether this is good enough; where it is clumsy, a focused constraint, such as a list of the
+  templates that a Conduit to `management` allows, comes back to the owner (ruling 44).
+
+### What the guarantee for secrets covers
 
 This is a statement of the limit of the promises on secrets, not a promise, and nothing tests
 it. It is section 4 of the [principles review](../docs/proposals/principles-review/README.md),
@@ -442,28 +485,143 @@ a service mesh or the protocol's authorization, as each provider's contract stat
 PRV-025). [schema-profile.md](schema-profile.md) lists what is relied on for documents, and the
 comment at the head of each promise file names the standards that its promises follow.
 
-## Reading order
+## History
 
-Read [definitions.md](definitions.md) first, with [names.yaml](names.yaml) beside it. Then read
-the files in the order of the Contents table, which is an order a reader of the Language level
-can follow:
+This section is the record of how the specification came to stand as the sections above
+describe it. Nothing in it binds that the promises do not state.
 
-1. The shape of a document and of a schema: `promises/objects.yaml`, `promises/schemas.yaml`
-   and [schema-profile.md](schema-profile.md). The JSON Schema of each shape is in
-   [schemas/](schemas/README.md), and can be read beside the promises it encodes.
-2. Templates and what they are made of: `promises/instantiation.yaml`,
-   `promises/templates.yaml` and `promises/contracts.yaml`.
-3. Packages and submissions: `promises/naming.yaml`, `promises/packages.yaml`,
-   `promises/manifest.yaml` and `promises/submissions.yaml`.
-4. The families and how they relate: `promises/pools.yaml`, `promises/placement.yaml`,
-   `promises/conduits.yaml` and `promises/first-start.yaml`.
-5. What the engine reaches behind contracts: `promises/providers.yaml`, then
-   `promises/secrets.yaml`.
-6. The core package: [core/README.md](core/README.md), which lists every export with the
-   promise that needs it, and then the files of `core/`. The first-start objects are instances
-   of its templates, and the management verbs of the conventions are its operations.
+The owner accepted the specification as it stood at
+[ruling 39](../docs/proposals/ruling-39/README.md), of 2026-11-06, which accepted every
+decision of the coordinator and every choice of an editor that the records log, before and
+since ruling 37. [Ruling 40](../docs/proposals/ruling-40/README.md) and
+[ruling 41](../docs/proposals/ruling-41/README.md), of the same day, then changed it: Conduit
+innovates only on connection and access, and everything else is a provider behind a contract
+that the user picks. At ruling 41 the owner accepted, as recommended, every decision of the
+[principles review](../docs/proposals/principles-review/README.md), and the secret type as its
+section 4 reduces it, and then the planner's choices of the
+[work order](../docs/proposals/ruling-41/PLAN.md) that applies them, with one changed. The
+specification as it stands is that rewrite. The logs of its editors, beside the work order
+in `docs/proposals/ruling-41/`, list every change, the choices that the editors made beyond
+the work order, which the coordinator confirms or strikes, and the questions they left open.
+A [coverage check](../docs/proposals/ruling-41/log-integration.md#coverage-check) then read
+the rewrite against every decision; its log lists what it fixed, and the questions it left were
+settled in the [open questions after the rewrite](../docs/proposals/ruling-41/open-decisions.md)
+and by rulings 42 and 43. [Ruling 42](../docs/proposals/ruling-42/README.md), of the same day,
+struck none of the decisions that the coordinator settled on the
+[questions the rewrite left open](../docs/proposals/ruling-41/open-decisions.md), and accepted
+the recommended answers to seven of the nine put to the owner; the logs of its editors are
+beside its record. The other two, D5 and D20, are about work across machines, which the owner
+asked to have researched further; ruling 43 has since ruled them, as the end of this paragraph
+says. The secret type is ruled: its promises are [promises/secrets.yaml](promises/secrets.yaml),
+and the [secrets proposal](../docs/proposals/secrets/README.md) is the reasoning behind it. The
+names that the review and the work order coined are settled: ruling 42 also accepted the names
+and the editorial fixes that the
+[vocabulary audit](../docs/proposals/vocabulary-audit/README.md) proposes. The names are
+applied, and so are the editorial fixes, as the
+[log of the editorial fixes](../docs/proposals/ruling-42/log-editorial.md) lists. The audit's
+names for machines and placement, N2, N3 and N8 to N11, are as the
+[log of their renames](../docs/proposals/ruling-42/log-rename-a.md) lists: a node, of the type
+`node.v1`, represents a machine that the machine provider reports; a Type or an implementation
+item states its label selector as `nodeSelector`, of the schema `labels.v1`; `run.v1` gives the
+machine in its input `machine`; and the engine declares a node lost when its machine is
+reported gone. The others, N1, N5 to N7 and N12 to N20, are as the
+[log of the other renames](../docs/proposals/ruling-42/log-rename-b.md) lists: a secret
+Resource's type offers `secret-provider.v1`, whose operation is `get-secret.v1`; `run.v1`
+returns `url`; a `package` item binds `packageArguments` and is pinned by its Package's
+`fileSha256` or, for an `oci` image, by a digest in its `identifier`; a caller attaches an idempotency key; a record and a condition name their source;
+the filters a request carries are sent in `io.github.shrav-k.conduit/filters`, under Conduit's
+extension `io.github.shrav-k.conduit/implementation-interface`; and an engine documents its
+choices in its conformance document. A
+[verification](../docs/proposals/ruling-42/log-integration.md#verification) of the result then
+fixed what three readers found that follows from ruling 42; what it left was settled in the
+[record of ruling 42](../docs/proposals/ruling-42/README.md#after-the-ruling) and in
+[the items that waited on ruling 43](../docs/proposals/ruling-43/log-integration.md#the-items-that-waited-on-this-ruling),
+apart from the few points that the tracker lists
+[for the next reader](../docs/AUDIT.md#for-the-next-reader).
+[Ruling 43](../docs/proposals/ruling-43/README.md), of the same day, then accepted the
+[proposal on work across machines](../docs/proposals/multi-machine/README.md), with two
+revisions, which rules D5 and D20 and five smaller questions and settles what that verification
+left for it. The logs of its editors, and the
+[log of its integration](../docs/proposals/ruling-43/log-integration.md), are beside its record;
+the [verification](../docs/proposals/ruling-43/log-integration.md#verification) at the end of
+that log fixed what three readers found that follows from the ruling; what it left was settled
+in the record's section
+[After the ruling](../docs/proposals/ruling-43/README.md#after-the-ruling).
 
-A reader of the Engine level goes on to the conventions, beginning with
-`conventions/lifecycle.yaml` and `conventions/access.yaml`, then to
-`interface/implementation.yaml`, and last to
-[implementation-defined.yaml](implementation-defined.yaml).
+The records under `docs/proposals/` say who decided what and when: the owner's rulings, listed
+in the [ruling log](../docs/AUDIT.md#ruling-log), and the decisions of the session that
+coordinates the re-audit ([who decides what](../docs/AUDIT.md#who-decides-what)), logged in
+[GAPS.md](../docs/proposals/docs-audit/GAPS.md) and in the decisions of
+[round 2](../docs/proposals/reaudit/round-2/DECISIONS.md), of
+[round 3](../docs/proposals/reaudit/round-3/DECISIONS.md), of
+[round 4](../docs/proposals/reaudit/round-4/DECISIONS.md) and of
+[round 5](../docs/proposals/reaudit/round-5/DECISIONS.md), with the choices that its
+[fix log](../docs/proposals/reaudit/round-5/log-fixes.md) records, and of
+[round 6](../docs/proposals/reaudit/round-6/DECISIONS.md), with the choices that the logs beside
+it record, and since ruling 39 also in the
+[open questions after the rewrite](../docs/proposals/ruling-41/open-decisions.md) and in the
+sections "After the ruling" of the records of
+[ruling 42](../docs/proposals/ruling-42/README.md#after-the-ruling) and
+[ruling 43](../docs/proposals/ruling-43/README.md#after-the-ruling). The owner can strike any
+decision or choice made since ruling 39 ([who decides what](../docs/AUDIT.md#who-decides-what)
+lists where they are). The comment at the head of each file says which pass changed which
+promise. Later work is left out of this version
+([ruling 38](../docs/proposals/ruling-38/README.md)).
+
+The rulings of the [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the
+decisions of the [re-audit](../docs/proposals/reaudit/README.md), the
+[ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the
+[decisions of the docs audit](../docs/proposals/docs-audit/GAPS.md), which converted the
+behaviors that the older text accepted and the specification did not state, the
+[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md),
+the [decisions of its third round](../docs/proposals/reaudit/round-3/DECISIONS.md), the
+[decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md),
+[ruling 38](../docs/proposals/ruling-38/README.md),
+[ruling 39](../docs/proposals/ruling-39/README.md),
+[ruling 40](../docs/proposals/ruling-40/README.md),
+[ruling 41](../docs/proposals/ruling-41/README.md),
+[ruling 42](../docs/proposals/ruling-42/README.md), with the names and the editorial fixes of
+the vocabulary audit, [ruling 43](../docs/proposals/ruling-43/README.md), the
+[decisions of the fifth round of the re-audit](../docs/proposals/reaudit/round-5/DECISIONS.md),
+with the [verification of its fixes](../docs/proposals/reaudit/round-5/log-fixes.md#verification),
+and [ruling 44](../docs/proposals/ruling-44/README.md), on its sixth round, have been applied to
+the promises.
+
+[Ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, then settled
+[round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit, the owner's cold read by
+Codex of `main` at `c4d7d33`, whose two reports are six findings and a critique of whether
+Conduit is simple and useful. As the ruling accepted them: an error -32021 for a client
+capability that a call did not declare is read as any other error, unless Conduit's own contract
+binds the server to have done nothing, as the new IFC-047 binds an implementation that carries
+Conduit's keys (IFC-010, IFC-045, IFC-047, OPS-007); a repeat to which a filter applies is never
+answered with outputs that the filter has not judged, and one of an operation that states no
+effect, is not a control and starts no model work is dispatched again so that the filter decides
+afresh (OPS-009, OPS-024, OPS-034, ACC-008); no two pointers of a control's `changes` overlap
+(CTR-006); the schema of a tool that the engine presents is a self-contained bundle (IFC-033);
+the schemes that a package-source provider claims are fixed for its life (PRV-016); and the
+entry points no longer say that a point of round 5 waits for the owner. Of the four points that
+were left open, a type's default for a hook that it does not require is not used, and a
+diagnostic reports it (TPL-004, CTR-004); the tracker keeps the other three. Of the critique's
+simplifications, a tool shows the narrowing and the controls of the target's template (D07;
+IFC-033, IFC-012), replacing a template resolves the project handed over with it as registration
+does (D11; SUB-009), and an ordinary Operation's schemas may use the whole profile at their root
+(D14; CTR-012). The access convention states, as limits of this version, that a bound does not
+limit filters and that access to `management` cannot be narrowed to one template, with the
+broker that narrows it (ACC-029, ACC-030;
+[What access does not narrow](#what-access-does-not-narrow); D03, D04); ACC-033 lists its
+routing as one decision list, with no change of behavior (D18); and this page puts the current
+design first, with [reading paths](#reading-paths) (D21). Two further simplifications, as the
+owner revised them after the ruling
+([After the ruling](../docs/proposals/ruling-44/README.md#after-the-ruling)), are applied, as
+[their log](../docs/proposals/reaudit/round-6/log-d06-d12.md) lists: no Operation contract
+states a default implementation, a template's selection or its type's default chooses what
+runs, and the engine implements the operations that the core package's implementation `engine`
+lists, with no selection (D06; CTR-002, TPL-003, TPL-004); and names stay the only address,
+LIF-031 unchanged, while `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take an
+optional `expectedId`, which reports conflict where the object named has another ID (D12;
+LIF-037). Round 6's [decisions](../docs/proposals/reaudit/round-6/DECISIONS.md) list
+what changed for each item, and the logs of its editors, with
+[the integration](../docs/proposals/reaudit/round-6/log-integration.md) that made their files
+agree, are beside them; the integration's
+[verification](../docs/proposals/reaudit/round-6/log-integration.md#verification) lists what two
+further readers of the result found and what was fixed.

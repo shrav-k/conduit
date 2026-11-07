@@ -1,0 +1,49 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# a Type that offers `package-source.v1` lists no control whose `changes` reaches the schemes
+# its provider claims (PRV-016), so a package-source provider claims the schemes it was made
+# with for its whole life, and PRV-013 decides that claim once, when it is registered. The type
+# `git-source.v1` lists `set-schemes.v1`, which sets `/schemes`. A control that set
+# `/schemes/0`, or the whole configuration with the empty pointer, would be rejected too. A
+# provider that is to claim other schemes is a new instance. A schema cannot follow a Type's
+# controls into their contracts, so this tool's rule does, comparing reference tokens.
+# Added by round 6 of the re-audit, under ruling 44 (finding 6-1-05; log
+# docs/proposals/reaudit/round-6/log-core.md).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-schemes.v1
+  description: A control. Change the URI schemes that the provider claims.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      schemes:
+        type: array
+        items: {type: string, minLength: 1}
+        minItems: 1
+      revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+    required: [revision]
+  effect: Changes the schemes that the provider claims.
+  changes:
+    schemes: /schemes
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: git-source.v1
+  description: A package-source provider that fetches archives from Git servers.
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      schemes:
+        type: array
+        items: {type: string, minLength: 1}
+        minItems: 1
+    required: [schemes]
+  offers:
+    - github.com/shrav-k/conduit/core#package-source.v1
+  controls:
+    - '#set-schemes.v1'

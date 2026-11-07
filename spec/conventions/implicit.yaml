@@ -37,6 +37,11 @@
 # The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
 # "Verification") changed IMP-007, under which a call sent once more under IFC-046 is part of
 # the same dispatch (V2). It added none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit
+# (docs/proposals/reaudit/round-6/), changed IMP-007, which now covers an invocation that
+# succeeded, of which OPS-024 dispatches a new attempt for a repeat of an operation with no
+# effect to which a filter applies (6-1-02). It added none and removed none. What changed is in
+# docs/proposals/reaudit/round-6/log-conventions.md.
 
 - id: IMP-001
   layer: convention
@@ -82,17 +87,19 @@
   layer: convention
   level: must not
   when: >-
-    An invocation fails, has an unknown outcome or was in progress when the engine restarted.
+    An invocation has ended, whatever its outcome, or was in progress when the engine restarted.
   then: >-
     It is dispatched again without a repeat of the request from its caller.
   observable: >-
     An invocation is dispatched at most once per attempt, and a new attempt is made only for a
-    repeat that OPS-012 or OPS-024 dispatches. A call that the implementation rejected before
-    acting on it, and that the engine sends once more under IFC-046, is part of the same
-    dispatch, not a second. For a setup hook or a retire hook, the further
-    setup or retirement that dispatches a new attempt under OPS-021 is the repeat, and its
-    caller is the attempt's caller, under OPS-028. An invocation that was in progress across a
-    restart has the outcome unknown.
+    repeat that OPS-012 or OPS-024 dispatches: of an invocation whose outcome is unknown or
+    failed, or, where a filter applies to the repeat, of one that succeeded, whose operation's
+    contract states no `effect`, that is not a control and whose contract is not marked
+    `startsModelWork: true`. A call that the implementation rejected before acting on it, and
+    that the engine sends once more under IFC-046, is part of the same dispatch, not a second.
+    For a setup hook or a retire hook, the further setup or retirement that dispatches a new
+    attempt under OPS-021 is the repeat, and its caller is the attempt's caller, under OPS-028.
+    An invocation that was in progress across a restart has the outcome unknown.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32; decision U3 of the re-audit).

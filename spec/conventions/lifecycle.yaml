@@ -112,6 +112,10 @@
 # The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
 # "Verification") changed LIF-015 and LIF-024, under which a consumer's Conduits are also closed
 # once a request to unregister it removes it (V2-09). It added none and removed none.
+# Ruling 44 (D12, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) added LIF-037: a lifecycle action that
+# carries `expectedId` reports conflict where the object named has another ID. LIF-031 is
+# unchanged. It changed none and removed none.
 
 - id: LIF-001
   layer: convention
@@ -839,4 +843,32 @@
     restarts, the runtime provider may first be run again, with reads of its own, under PRV-026.
     An instance with no item that is run, such as one reached only by `remote`, has no run to
     stop, and nothing is asked for.
+  vectors: []
+
+# --- Added by ruling 44 (docs/proposals/ruling-44/README.md; D12, as revised after the
+# --- ruling). Names stay the only address, and an expected ID is a precondition, as
+# --- Kubernetes's `preconditions.uid` is.
+
+- id: LIF-037
+  layer: convention
+  level: must
+  when: >-
+    A request for `set-up.v1`, `retire.v1`, `inspect.v1` or `unregister.v1` carries the input
+    `expectedId`, and the object that its reference resolves to has another ID.
+  then: >-
+    The request is not dispatched, and reports conflict, with an error diagnostic that names the
+    ID it expected and the ID of the object its reference resolves to. Nothing is changed.
+  observable: >-
+    `expectedId` is a precondition and not an address: it names nothing and grants nothing, so
+    the request names its object by a reference, under LIF-031, and every check of kind,
+    existence and access applies to it as to a request without it. It is compared only after the
+    access decision, and after every check that gives invalid, as OPS-023 orders the reasons: a
+    request that is not permitted reports refused and says nothing of the object or its ID, and
+    one whose reference resolves to nothing reports invalid under OPS-029, whatever ID it
+    expected, as Kubernetes answers a precondition on an object that does not exist with Not
+    Found. So the ID it reveals is that of an object the request was permitted to act on. Where
+    the name was given to another object after the first was removed, under LIF-035 and OBJ-002,
+    a request that expects the first object's ID reaches neither, as Kubernetes's
+    `preconditions.uid` fails with 409 Conflict. Where the IDs agree, the request is decided as
+    one without `expectedId`.
   vectors: []

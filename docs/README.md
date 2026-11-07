@@ -14,9 +14,17 @@ batch under [proposals/](#records-of-rulings).
 
 ## Reading paths
 
+These paths give the design as it stands first. The history of how it got here comes last, in
+the records of rulings, and no path needs it. The paths through the specification itself are
+in [its reading paths](../spec/README.md#reading-paths), and the rows below link them rather
+than repeat them.
+
 | Goal | Path |
 | --- | --- |
 | Understand Conduit | [README](../README.md) → [spec/README.md](../spec/README.md) → [spec/definitions.md](../spec/definitions.md). The [overview](OVERVIEW.md) is a plain-language tour, and [spec/schemas/examples/](../spec/schemas/examples/) holds worked documents. |
+| Write documents, as an author | The [overview](OVERVIEW.md) → the specification's [path for an author of documents](../spec/README.md#an-author-of-documents), with [what access does not narrow](../spec/README.md#what-access-does-not-narrow). |
+| Write a contract or a provider | The specification's [path for a writer of contracts and providers](../spec/README.md#a-writer-of-contracts-and-providers). |
+| Implement the specification: the reference model, the vectors or a first provider | The specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch (next row). |
 | Learn the state of the work | [Where things stand](AUDIT.md#where-things-stand) → [action items](AUDIT.md#action-items) in the plan audit. |
 | Understand a ruling | [Ruling log](AUDIT.md#ruling-log) → the [record](#records-of-rulings) of that batch → [research](research/README.md) for the evidence. |
 | Contribute | [AGENTS.md](../AGENTS.md) → [contributor guide](../CONTRIBUTING.md). |
@@ -69,7 +77,7 @@ specification governs.
 | [proposals/consolidation/](proposals/consolidation/README.md) | 27 to 29 | The audit for one idea with several notations, or one key with several meanings: 26 findings, the owner's rulings on all of them, and the choices made while writing them. Applied to the specification. |
 | [proposals/conventions/](proposals/conventions/README.md) | 30 | The four remaining shared conventions: fourteen decisions. Accepted; written as promises under `spec/conventions/`. |
 | [proposals/schemas-and-interface/](proposals/schemas-and-interface/README.md) | 31 | The shape of documents and contracts, the implementation interface and the implementation-defined list. Accepted, with the owner's amendment on protocol revisions. Its runtimes declared in templates and its `retire` graph were replaced under rulings 40 and 41, by a runtime provider and a retire hook. |
-| [proposals/reaudit/](proposals/reaudit/README.md) | 32, 33 | The re-audit of the whole specification, round 1, by three cold readers: their reports, the 37 decisions of ruling 32, the follow-up decisions of ruling 33, and the logs of the passes that applied them. Rounds 2 to 5 are rows of this table, below. |
+| [proposals/reaudit/](proposals/reaudit/README.md) | 32, 33 | The re-audit of the whole specification, round 1, by three cold readers: their reports, the 37 decisions of ruling 32, the follow-up decisions of ruling 33, and the logs of the passes that applied them. Rounds 2 to 6 are rows of this table, below. |
 | [proposals/core-and-schemas/](proposals/core-and-schemas/README.md) | 37 | The core package as documents, the JSON Schemas of every document, and the manifest's format. Accepted with five changes; [how each is applied](proposals/core-and-schemas/APPLY.md). |
 | [proposals/docs-audit/](proposals/docs-audit/README.md) | 37 | The audit of the documents outside `spec/`, asked for in ruling 37: two readers' reports and the thirteen decisions taken to make the repository ready for a cold read, all applied. With it are the [list](proposals/docs-audit/GAPS.md) of the behaviors that the older text accepted and the specification lacked, and the logs of the edits: [entry points](proposals/docs-audit/log-entry-points.md), [older text](proposals/docs-audit/log-older-text.md) and [the specification](proposals/docs-audit/log-gaps.md). |
 | [proposals/reaudit/round-2/](proposals/reaudit/round-2/README.md) | 30, 37 | Round 2 of the re-audit, done, with its fixes applied. Ruling 30 asked for the specification to be audited again, and ruling 37 says how the findings are resolved. Four cold readers, three of the specification alone and one of the whole repository: their reports, the decisions, the logs of what was done about them, and the check of the interface against the Model Context Protocol. |
@@ -86,6 +94,8 @@ specification governs.
 | [proposals/multi-machine/](proposals/multi-machine/README.md) | 42 | How Conduit works across machines: answers to D5 and D20 and five smaller questions, with v0 and v1 kept apart, after the [research on work across machines](research/MULTI_MACHINE.md). Accepted, with two revisions the coordinator made in explaining it, by ruling 43. |
 | [proposals/ruling-43/](proposals/ruling-43/README.md) | 43 | The ruling on work across machines, in the owner's words, with the logs of the pass that applies it. |
 | [proposals/reaudit/round-5/](proposals/reaudit/round-5/README.md) | 37, 38, 41 | Round 5 of the re-audit, which ruling 41 ordered: six readers of the specification as rulings 40 to 43 rewrote it, among them one of the whole repository and one who checked the interface against the Model Context Protocol. Their reports, the coordinator's decisions, the logs of the fix pass and the verification of the fixes. No ruling has accepted its decisions, and the owner can strike any of them. |
+| [proposals/reaudit/round-6/](proposals/reaudit/round-6/README.md) | 37, 38, 44 | Round 6 of the re-audit, the owner's cold read by Codex: one reader of the whole repository at `c4d7d33`, with six findings and a critique of the design's simplicity and usefulness in 22 points. With them are the coordinator's [decisions](proposals/reaudit/round-6/DECISIONS.md), which ruling 44 accepted, and the logs of the pass that applied them. |
+| [proposals/ruling-44/](proposals/ruling-44/README.md) | 44 | The ruling on round 6 and on building next, in the owner's words: the next milestone is the first build, and the coordinator's recommendations on the findings and the critique are accepted. |
 
 ### Process for the builds
 

@@ -6,7 +6,8 @@
 # `set-read-limit.v1` each state an input with `#read-limit.v1`.
 #
 # It also shows: Operation contracts written as the Model Context Protocol writes a tool,
-# with `inputSchema` and `outputSchema` (CTR-002, CTR-012), one of them with a hint; an
+# with `inputSchema` and `outputSchema` (CTR-002, CTR-012), one of them with a hint and one
+# with `oneOf` at the root of its `inputSchema`, saying which of two inputs is given; an
 # input with a `default`, which the engine fills in where the input is not supplied
 # (OPS-026); an output and an input that are handles, whose schema is the core package's
 # `handle.v1` (IFC-011); a control, whose `changes` maps its input to the setting that input
@@ -15,6 +16,12 @@
 # Requirement, which a Conduit applies as a filter (CTR-005).
 # The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement`
 # of `local-directory.v1` to `nodeSelector`, and location to node in its description.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
+# re-audit (D14; log docs/proposals/reaudit/round-6/log-core.md), added `directory.find.v1`,
+# an Operation that is not a control and whose `inputSchema` holds `oneOf` at its root, beside
+# `type: object` (CTR-012).
+# Ruling 44 (D06, as revised; log docs/proposals/reaudit/round-6/log-d06-d12.md) took
+# `implementation` out of every Operation contract here, and `local-directory.v1` states it.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -49,7 +56,6 @@ spec:
   effect: Creates the directory if it is absent.
   deduplicates: true
   destructiveHint: false
-  implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -72,16 +78,15 @@ spec:
         type: array
         items: {type: string}
     required: [entries]
-  implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: directory.list.v1
   description: >-
-    List a directory, recursively. Its default implementation is `listing`; the type
-    `local-directory.v1` states `files-server` as its own default, which comes first
-    (TPL-004).
+    List a directory, recursively. `files-server` and `listing` each implement it. The
+    contract chooses neither (CTR-002): the type `local-directory.v1` states `files-server` as
+    its default, and a template may select another (TPL-004).
 spec:
   inputSchema:
     type: object
@@ -95,7 +100,32 @@ spec:
         type: array
         items: {type: string}
     required: [entries]
-  implementation: '#listing'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.find.v1
+  description: >-
+    Find the entries of a directory by their exact name, or by a pattern, and not by both. The
+    root of `inputSchema` says so with `oneOf`, whose branches only say which input is present,
+    as the Model Context Protocol advises; this operation is not a control, so its root may hold
+    any keyword of the profile beside `type: object` (CTR-012).
+spec:
+  inputSchema:
+    type: object
+    properties:
+      name: {type: string, minLength: 1}
+      pattern: {type: string, minLength: 1}
+    oneOf:
+      - required: [name]
+      - required: [pattern]
+  outputSchema:
+    type: object
+    properties:
+      entries:
+        type: array
+        items: {type: string}
+    required: [entries]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -116,7 +146,6 @@ spec:
       watcher: {$ref: github.com/shrav-k/conduit/core#handle.v1}
     required: [watcher]
   effect: Starts watching the directory.
-  implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -130,7 +159,6 @@ spec:
       watcher: {$ref: github.com/shrav-k/conduit/core#handle.v1}
     required: [watcher]
   effect: Stops watching the directory.
-  implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -152,7 +180,6 @@ spec:
     limit: /readLimit
   deduplicates: true
   idempotentHint: true
-  implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability
@@ -201,10 +228,14 @@ spec:
     - '#directory.read.v1'
     - '#directory.list.v1'
     - '#set-read-limit.v1'
-  # The type's default comes before the one the operation's contract states (TPL-004), so an
-  # instance has `files-server` alone as its item that is run (TPL-019).
+  # An Operation contract states no default implementation (CTR-002), so the type states one
+  # for each operation it requires, offers or lists as a control (TPL-004). Each is
+  # `files-server`, so an instance has it alone as its item that is run (TPL-019).
   implementation:
+    '#directory.establish.v1': '#files-server'
+    '#directory.read.v1': '#files-server'
     '#directory.list.v1': '#files-server'
+    '#set-read-limit.v1': '#files-server'
   controls:
     - '#set-read-limit.v1'
   # A label selector (PLC-007): an instance is placed only on a node whose machine is

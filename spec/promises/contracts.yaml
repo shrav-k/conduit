@@ -54,6 +54,21 @@
 # The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
 # the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed CTR-012,
 # whose observable says a map where it said an object (M17). It added none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
+# (log docs/proposals/reaudit/round-6/log-promises.md), changed CTR-006: no two pointers of a
+# control's `changes` are equal or lie one inside another, compared by their reference tokens
+# (finding 6-1-03); and CTR-012: the root of an Operation contract that is not a control may
+# hold any keyword of the profile beside `type: object`, and a control's keeps the four keys
+# (D14). It added none and removed none. The verification of round 6
+# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed CTR-004, under
+# which a type's default for a hook that it does not require is reported in a diagnostic that
+# does not reject (C-05, R-10); CTR-005, whose filter is applied to each call for a request
+# (R-05); and CTR-012, under which a `default` that the root reaches only through a keyword
+# beside its `properties` fills nothing (C-03, R-09). It added none and removed none.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) changed CTR-002: an Operation contract states
+# no `implementation`, and the engine implements the operations that the core package's
+# `engine` lists. It added none and removed none.
 
 - id: CTR-001
   layer: language
@@ -85,30 +100,33 @@
     further hold `effect`, a statement of what it changes outside itself; `startsModelWork`;
     `deduplicates`, the mark of an operation whose implementation recognizes an idempotency key
     that it has already been sent and applies the effect at most once for it; `reservedToRoot`,
-    the mark of an operation reserved to the root Interface; `implementation`,
-    its default implementation, which is one selection; for a control, `changes`, as CTR-006
-    states; and the booleans `idempotentHint`, `destructiveHint` and `openWorldHint`.
+    the mark of an operation reserved to the root Interface; for a control, `changes`, as
+    CTR-006 states; and the booleans `idempotentHint`, `destructiveHint` and `openWorldHint`.
   observable: >-
     An operation with no `effect` changes nothing outside itself. `startsModelWork`,
     `deduplicates` and `reservedToRoot` are booleans, and one that is absent is false; IMP-003
     and ACC-032 state what the first and the last of them mean, OPS-012 and OPS-021 say what the
     engine does with a repeat where `deduplicates` is declared, and CTR-009 says where
     `reservedToRoot` may be written. `idempotentHint`, `destructiveHint` and `openWorldHint` may
-    each be left out, and IFC-033 says what they become in the definition of a tool.
-    `deduplicates` is not the Model Context Protocol's `idempotentHint`, which hints that
-    calling the tool again with the same arguments has no further effect: the engine passes that
-    hint into the tool's `annotations`, under IFC-033, and never decides a new attempt by it,
-    under OPS-012. No key marks an operation as arranging work that is to start or to run after
-    its own invocation has ended, because no operation arranges such work through the engine,
-    under ACC-019: a contract whose `spec` holds a key that this promise does not name, such as
-    `inputs` or `outputs`, is rejected, as OBJ-019 rejects any key that this specification does
-    not define. A property name such as `maxResults` or `max_results` is accepted, as is any
-    other non-empty string: the rule OBJ-022 gives for other names a document chooses does not
-    apply to these. A property whose name is the empty string, a property of `outputSchema` that
-    states a `default`, and a handle that states one, are each rejected when the contract's
-    package is installed or its project is submitted. An input is optional where `inputSchema`
-    does not list it under `required`, under OBJ-015; what the `default` of an input then does
-    is OPS-026, and SCH-019 rejects one that fails the schema of its property.
+    each be left out, and IFC-033 says what they become in the definition of a tool. An
+    Operation contract states no default implementation, so one whose `spec` holds
+    `implementation` is rejected: what runs for an operation is a template's selection or its
+    type's default, under TPL-004, and the engine implements, with no selection, each operation
+    that the core package's implementation `engine` lists under MAN-012. `deduplicates` is not
+    the Model Context Protocol's `idempotentHint`, which hints that calling the tool again with
+    the same arguments has no further effect: the engine passes that hint into the tool's
+    `annotations`, under IFC-033, and never decides a new attempt by it, under OPS-012. No key
+    marks an operation as arranging work that is to start or to run after its own invocation has
+    ended, because no operation arranges such work through the engine, under ACC-019: a contract
+    whose `spec` holds a key that this promise does not name, such as `inputs` or `outputs`, is
+    rejected, as OBJ-019 rejects any key that this specification does not define. A property
+    name such as `maxResults` or `max_results` is accepted, as is any other non-empty string:
+    the rule OBJ-022 gives for other names a document chooses does not apply to these. A
+    property whose name is the empty string, a property of `outputSchema` that states a
+    `default`, and a handle that states one, are each rejected when the contract's package is
+    installed or its project is submitted. An input is optional where `inputSchema` does not
+    list it under `required`, under OBJ-015; what the `default` of an input then does is
+    OPS-026, and SCH-019 rejects one that fails the schema of its property.
   vectors: []
 
 - id: CTR-003
@@ -150,11 +168,14 @@
     schema `type-spec.v1` states that rule too. A type that states no `schema` puts no rule on
     the configuration of its instances, and so can list no control under CTR-006. One that
     states no `offers` offers no capability, one that states no `requires` requires no
-    operation, and one that states no `implementation`, `controls` or `conditions` has none. One
-    that states no `nodeSelector`, or an empty one, puts no rule on where its instances are
-    placed. `records` and each of its two members may be left out, and one that is left out is
-    false. What a record holds is REC-002, and what a Type that offers a provider capability
-    must be is PRV-001.
+    operation, and one that states no `implementation`, `controls` or `conditions` has none. A
+    default that `implementation` states for `setup-hook.v1` or `retire-hook.v1`, where
+    `requires` does not list that hook, is used by no template, under TPL-004: the type is not
+    rejected, and installation or resolving returns a diagnostic, which does not reject, naming
+    the type and the hook. One that states no `nodeSelector`, or an empty one, puts no rule on
+    where its instances are placed. `records` and each of its two members may be left out, and
+    one that is left out is false. What a record holds is REC-002, and what a Type that offers a
+    provider capability must be is PRV-001.
   vectors: []
 
 - id: CTR-005
@@ -168,7 +189,7 @@
     the `requirements` of a Conduit template. A requirement of the core package is applied by
     the engine itself and is never sent to an implementation. Any other is a filter: the
     implementations that the target has selected for the operations the Conduit lists apply it
-    to each request through the Conduit.
+    to each call that they receive for a request through the Conduit, under IFC-019.
   observable: >-
     A Requirement contract whose `spec` holds a key that this promise does not name, such as
     `appliesTo`, `narrows`, `obliges`, `constituents` or `schema`, is rejected when its package
@@ -180,7 +201,8 @@
     requirements apply to one Conduit, each is an item of its template's `requirements` and each
     applies, and none permits what the Conduit does not, under ACC-008: a bundle of limits is
     written as several items side by side. Which implementation applies a requirement on an open
-    Conduit is reported under ACC-038.
+    Conduit is reported under ACC-038. A repeat that is not dispatched reaches no
+    implementation, so no filter judges it, under ACC-008.
   vectors: []
 
 - id: CTR-006
@@ -193,18 +215,26 @@
     its inputs to a JSON Pointer into the configuration, which is the setting that input sets.
     Its `inputSchema` lists `revision` under `required`, and it declares no output `settings`. A
     Type contract lists it under `controls`, and each pointer in its `changes` addresses a place
-    in the configuration that the type's `schema` describes.
+    in the configuration that the type's `schema` describes. No two pointers of its `changes`
+    are equal, and none lies inside another.
   observable: >-
     A type that lists a control whose `changes` addresses a place its schema does not describe,
     or that lists under `controls` an operation with no `changes`, one whose `inputSchema` does
     not require `revision`, or one that declares an output `settings`, is rejected when the
     package is installed or the project is submitted. So is a control in which a key of
-    `changes` is not the name of one of its inputs. An instance has only the controls its type
-    lists. `changes: {limit: /readLimit}` says that the input `limit` sets the setting at
-    `/readLimit`. `revision` is the input that REV-006 and REV-011 require of a control. A
-    control applies exactly the values it is sent, or fails, and what is then stored is REV-007;
-    the engine checks those values against the type's schema before it dispatches, under
-    REV-015.
+    `changes` is not the name of one of its inputs, and so is one in which two pointers are
+    equal or one lies inside another, with a diagnostic naming both inputs and both pointers, as
+    INS-010 names two destinations that overlap: `{a: /limit, b: /limit}` and `{o: /options, a:
+    /options/limit}` are each rejected. So each setting is set by one input alone, and what
+    REV-006 leaves as stored never differs from what REV-007 stores. Two pointers are compared
+    by their reference tokens, as RFC 6901 splits a pointer, each with `~1` and `~0` unescaped:
+    `/limit` and `/limits` do not overlap, `/a~1b` is the one member `a/b` and does not lie
+    inside `/a`, and the empty pointer, the whole configuration, lies over every other pointer.
+    An instance has only the controls its type lists. `changes: {limit: /readLimit}` says that
+    the input `limit` sets the setting at `/readLimit`. `revision` is the input that REV-006 and
+    REV-011 require of a control. A control applies exactly the values it is sent, or fails, and
+    what is then stored is REV-007; the engine checks those values against the type's schema
+    before it dispatches, under REV-015.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -266,22 +296,38 @@
   layer: language
   level: must
   when: >-
-    An Operation contract's `inputSchema` or `outputSchema` holds at its root a keyword other
-    than `type`, `properties`, `required` and `additionalProperties`, or holds no `type` there,
-    or a `type` other than `object`.
+    An Operation contract's `inputSchema` or `outputSchema` holds no `type` at its root, or a
+    `type` other than `object`; or the contract is a control's, whose `spec` holds `changes`,
+    and either root holds a keyword other than `type`, `properties`, `required` and
+    `additionalProperties`.
   then: >-
     The contract is rejected: a package that holds it is rejected when it is installed, and a
     project that holds it is rejected when it is submitted.
   observable: >-
     Installation or resolving returns a diagnostic naming the contract and the keyword. An
-    `inputSchema` with `$ref`, `oneOf` or `if` at its root, or with `type: array`, is rejected;
-    `{type: object, properties: {path: {type: string}}, required: [path]}` is accepted.
-    `type: object` is required at both roots: the protocol requires it of a tool's
-    `inputSchema`, and IFC-001 makes the outputs the members of `structuredContent`, keyed by
-    name, so without it the root's `properties` would admit a result that is not a map,
-    although the protocol lets an `outputSchema` be any schema. The root
-    is limited so that each property is one input or one output, as the Model Context Protocol's
-    tool definition names them, and so that the `default` of an input stands on its property,
-    where SCH-008 accepts it. Inside a property every keyword of the profile may be used, under
-    SCH-002. What a property that is a handle holds is CTR-002.
+    `inputSchema` with `type: array` is rejected; `{type: object, properties: {path: {type:
+    string}}, required: [path]}` is accepted. `type: object` is required at both roots: the
+    protocol requires it of a tool's `inputSchema`, and IFC-001 makes the outputs the members of
+    `structuredContent`, keyed by name, so without it the root's `properties` would admit a
+    result that is not a map, although the protocol lets an `outputSchema` be any schema. Beside
+    `type: object`, the root of an Operation contract that is not a control's may hold any
+    keyword of the profile, under SCH-002, as the protocol's tool definition lets an
+    `inputSchema` hold any keyword of JSON Schema 2020-12 beside `type` and an `outputSchema` be
+    any schema: `{type: object, properties: {path: {type: string}, uri: {type: string}}, oneOf:
+    [{required: [path]}, {required: [uri]}]}` is accepted, and takes a path or a URI and not
+    both. The inputs and the outputs are still the members of the root's `properties`, under
+    CTR-002, as the protocol advises a schema that uses composition to declare `properties` at
+    its root and to keep its branches to presence assertions such as `required`: a keyword
+    beside them, `$ref` and `oneOf` among them, constrains the arguments or the outputs as a
+    whole and adds no input and no output. A `default` stands on a property, where SCH-008
+    accepts it, and never inside `oneOf`, `if` or another of the keywords that SCH-008 names, at
+    the root or below it. A `default` that the root reaches only through a keyword beside its
+    `properties`, such as one on a property of the schema that a `$ref` written at the root
+    refers to, fills no argument, under SCH-009 and OPS-026, and no output, under SCH-009, as
+    that keyword adds no input and no output. A control's root is held to the four keywords, so
+    `oneOf` or `$ref` at the root of its `inputSchema` is rejected: every input of a control but
+    `revision` may be left out, under REV-006, and a keyword at the root such as `oneOf:
+    [{required: [a]}, {required: [b]}]` would make one of them required all the same. Inside a
+    property every keyword of the profile may be used, under SCH-002. What a property that is a
+    handle holds is CTR-002.
   vectors: []

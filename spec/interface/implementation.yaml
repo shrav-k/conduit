@@ -195,6 +195,31 @@
 # which says "response" (V8). It added IFC-045, on the client capabilities that a call declares,
 # and IFC-046, on a call that the engine sends once more after the implementation rejected it
 # before acting on it (V2, V9). It removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit
+# (docs/proposals/reaudit/round-6/reader-1.md and design-critique.md; log
+# docs/proposals/reaudit/round-6/log-interface.md), changed IFC-007, IFC-010 and IFC-045: the
+# error -32021 for a client capability that a call did not declare is read as any other error,
+# failed for an operation that declares no effect and otherwise unknown, which reverses V2-15 of
+# round 5 (finding 6-1-01); IFC-033: a tool's schemas hold one copy of each Schema contract they
+# refer to, under the `$defs` of the root, with every `$ref` rewritten to refer to what it did
+# where it was written (6-1-04), beside the root's own `$defs` that an ordinary operation may
+# now state (D14), and a control's input shows the narrowing of the target's template (D07); and
+# IFC-012: no tool is presented for a control that the target does not have, and a call that
+# names one reports invalid under TPL-013 (D07). It added IFC-047, under which an implementation
+# that carries Conduit's keys answers -32021 for a capability that a call did not declare only
+# where it has performed nothing (6-1-01). It removed none. Its integration
+# (docs/proposals/reaudit/round-6/log-integration.md) changed the observables of IFC-016 and
+# IFC-025, which said when a repeat is answered by the old test of the filters that the latest
+# attempt was sent, and now follow OPS-009, OPS-024 and OPS-034 (6-1-02); IFC-012, whose
+# exception for a control that the target does not have holds where the target holds the
+# control's contract, so that a call for an operation of a later release stays refused under
+# NAM-026 (D07); and IFC-033 and IFC-036, a word each, on the reason in IFC-012's error. The
+# verification of round 6 (docs/proposals/reaudit/round-6/log-integration.md, "Verification")
+# changed IFC-010, whose table reads an error of a plain server as failed only for an operation
+# that states no `effect`, is not a control and starts no model work, as IFC-033 tests, and
+# IFC-007 and IFC-045 to match (C-01, R-12); and IFC-047, under which such an implementation
+# does not begin a call whose processing may come to need a capability that it lacks (R-04). It
+# added none and removed none.
 
 - id: IFC-001
   layer: interface
@@ -347,7 +372,9 @@
     `io.modelcontextprotocol/protocolVersion`. Its `io.modelcontextprotocol/clientCapabilities`
     declares no extension of Conduit's, and what it declares is IFC-045's, so a server that
     needs a capability that the call does not declare, such as elicitation, answers with the
-    protocol's error -32021, which IFC-010 reads as failed.
+    protocol's error -32021, which IFC-010 reads as it reads any other error: failed for an
+    operation whose contract states no `effect`, that is not a control and whose contract is not
+    marked `startsModelWork: true`, and unknown for any other.
   vectors: []
 
 - id: IFC-008
@@ -398,26 +425,34 @@
     An implementation marked `plain` answers a `tools/call` request.
   then: >-
     A complete result that is not an error is the outcome succeeded. An error on an operation
-    whose contract declares no effect, a JSON-RPC error for invalid parameters, and the
-    protocol's error -32021 for a client capability that the call did not declare, is failed. A
-    result whose `resultType` is `input_required` or is a value the engine does not recognize,
-    any other error but one after which the engine sends the call once more under IFC-046, and
-    no result at all, is unknown.
+    whose contract states no `effect`, that is not a control and whose contract is not marked
+    `startsModelWork: true`, as IFC-033 tests for `readOnlyHint`, and a JSON-RPC error for
+    invalid parameters, is failed. A result whose `resultType` is `input_required` or is a value
+    the engine does not recognize, any other error but one after which the engine sends the call
+    once more under IFC-046, and no result at all, is unknown.
   observable: >-
     A result is complete when its `resultType` is `complete` or absent, and is an error when its
     `isError` is true. A protocol error is a JSON-RPC error. The protocol's code for invalid
     parameters is -32602, and an unknown tool is one case of it; arguments that the tool does
-    not accept, and a request whose parameters are malformed, are others. The protocol has a
-    server answer -32021, naming in `data.requiredCapabilities` what it needs, where acting on
-    the request needs a capability that the request does not declare, so the server did not act
-    on it, as for -32602; the engine declares only what IFC-045 lets it. An error after which
-    the call is sent once more under IFC-046 ends nothing: the outcome is read from the response
-    to the call sent again. The outcome the engine records for a plain server follows that
-    table and nothing else, except that a result in which a declared output fails validation is
-    unknown under OPS-007. Where the protocol's
+    not accept, and a request whose parameters are malformed, are others. Invalid parameters
+    apart, an error is failed only where the operation does nothing that the error could leave
+    half done: one that states no `effect` changes nothing outside itself, under CTR-002, but a
+    control applies values to its instance's settings, under CTR-006, and model work is the
+    effect of an operation marked `startsModelWork: true`, under IMP-001, whether or not either
+    states an `effect`. The protocol has a server answer -32021, naming in
+    `data.requiredCapabilities` what it needs, where processing the request needs a capability
+    that the request does not declare, and does not say that the server answers so before it
+    acts: a plain server may have begun the effect by then. So that error is read as any other:
+    failed for an operation that the table reads so, and unknown for any other, whose repeat is
+    then not dispatched to the plain implementation, under OPS-012. The engine declares only
+    what IFC-045 lets it. An error after which the call is sent once more under IFC-046 ends
+    nothing: the outcome is read from the response to the call sent again. The outcome the
+    engine records for a plain server follows that table and nothing else, except that a result
+    in which a declared output fails validation is unknown under OPS-007. Where the protocol's
     tasks extension is used, under IFC-016, the table applies to what the task ended with: the
-    result of a task that completed, or the error of one that failed. A task that was cancelled,
-    and one that the server no longer holds, is no result at all.
+    result of a task that completed, or the error of one that failed, such as -32021 where the
+    task came to need a capability that the call did not declare. A task that was cancelled, and
+    one that the server no longer holds, is no result at all.
   vectors: []
 
 - id: IFC-011
@@ -444,16 +479,22 @@
   then: >-
     The engine presents to that instance a Model Context Protocol server whose tools are exactly
     the operations that its open Conduits list and for which IFC-033 gives a definition, other
-    than `get-secret.v1`, for which no tool is presented, under SEC-007. A tool for an
-    operation is named by the Conduit's local name and the operation's export name, joined by a
-    dot. The local name of a declared Conduit is the name its consumer's template gives it, and
-    that of a Conduit instantiated on its own is the Conduit's own name.
+    than a control that the Conduit's target does not have, under TPL-013, and other than
+    `get-secret.v1`, under SEC-007: for those no tool is presented. A tool for an operation is
+    named by the Conduit's local name and the operation's export name, joined by a dot. The
+    local name of a declared Conduit is the name its consumer's template gives it, and that of
+    a Conduit instantiated on its own is the Conduit's own name.
   observable: >-
     The instance's tool list holds one tool for each operation of each of its open Conduits,
-    apart from an operation whose contract the Conduit's target does not hold, under IFC-033,
-    and from `get-secret.v1`, and nothing else: the engine presents no tool that belongs to no
-    Conduit. A Conduit that lists `get-secret.v1` gives its consumer no tool for it; the
-    engine's own read of a secret goes through that Conduit, under SEC-010. The list that the
+    apart from an operation whose contract the Conduit's target does not hold, under IFC-033, a
+    control that the target does not have, because its type does not list it or its template's
+    `controls` map leaves it out, under TPL-010 and TPL-013, and `get-secret.v1`, and nothing
+    else: the engine presents no tool that belongs to no Conduit. A Conduit may list such a
+    control, because its capability includes it under CON-017, and the instance is shown no tool
+    for it all the same, so its tools show only the controls that its targets have, as IFC-033
+    shows the narrowing of their inputs. A Conduit that lists `get-secret.v1` gives its consumer
+    no tool for it; the engine's own read of a secret goes through that Conduit, under SEC-010.
+    The list that the
     engine serves for a request depends only on the instance established for that request under
     IFC-022 and on which of that instance's Conduits are open when it is served. It depends
     neither on the connection nor on what was sent on it before: once a Conduit is opened or
@@ -472,13 +513,17 @@
     engine tells a consumer that its list has changed is IFC-038. A call that names a tool the
     engine does not present to the instance is a request that no open Conduit permits: it
     reports refused under ACC-001, whether the name was never presented or its Conduit has been
-    closed. The engine answers such a call as the protocol prescribes for an unknown tool at the
-    revision in use, which at the baseline revision is the JSON-RPC error for invalid
-    parameters, code -32602, with no tool result: the error's `message` says that no tool of
-    that name is presented to the instance, and its `data` holds
-    `io.github.shrav-k.conduit/reason` with the value refused. At a revision that has a tool
-    result answer such a call, that result holds the reason as IFC-025 states. The request is
-    recorded as refused, under REC-001.
+    closed. A call that names the tool that an open Conduit would give a control that its target
+    does not have, where the target holds the control's contract, is the one exception: it is a
+    request through that Conduit, and reports invalid under TPL-013, unless OPS-023 gives
+    another reason first. The engine answers such a
+    call as the protocol prescribes for an unknown tool at the revision in use, which at the
+    baseline revision is the JSON-RPC error for invalid parameters, code -32602, with no tool
+    result: the error's `message` says that no tool of that name is presented to the instance,
+    and its `data` holds `io.github.shrav-k.conduit/reason` with the request's reason, which is
+    refused but for that exception. At a revision that has a tool result answer such a call,
+    that result holds the reason as IFC-025 states. The request is recorded with that reason,
+    under REC-001.
   vectors: []
 
 - id: IFC-013
@@ -548,10 +593,13 @@
   observable: >-
     A caller that has no task, or that lost its result, learns the result by repeating its
     request with the same idempotency key through an open Conduit: the repeat reports
-    conflict under OPS-032 while the invocation has not ended; once it has succeeded it is
-    answered with the invocation's outputs under OPS-009 while the engine keeps them and every
-    filter that applies to the repeat was sent with the latest attempt, and reports conflict
-    under OPS-034 otherwise. A `tasks/get` through a Conduit that
+    conflict under OPS-032 while the invocation has not ended. Once it has succeeded, a repeat
+    to which no filter applies is answered with the invocation's outputs under OPS-009 while
+    the engine keeps them, and reports conflict under OPS-034 once it does not. Where a filter
+    applies to the repeat, it is dispatched as a new attempt under OPS-024 where the operation
+    states no `effect`, is not a control and does not start model work, and otherwise reports
+    conflict under OPS-034, or, for an operation that declares no outputs, is answered with
+    the outcome alone under OPS-009. A `tasks/get` through a Conduit that
     is no longer open reports refused, as any request through it does: a result that the
     response to the call did not carry is then not delivered, and the caller learns the outcome
     from the records, under ACC-034. This is one invocation, whose result is its own. Until it
@@ -824,9 +872,10 @@
     holds its outputs even where the Conduit through which its invocation was dispatched was
     closed before it ended, under ACC-034: the result of `retire-with-resources.v1`, whose
     Conduit CON-008 closes before it ends, is one. A repeat of an invocation that has not ended
-    reports conflict under OPS-032, and one of an invocation that succeeded, where the engine no
-    longer keeps its outputs or a filter applies to the repeat that the latest attempt was not
-    sent, reports conflict under OPS-034; the `ruleId` of its error
+    reports conflict under OPS-032, and one of an invocation that succeeded, of an operation
+    that declares outputs, where no filter applies and the engine no longer keeps its outputs,
+    or where a filter applies to the repeat and OPS-024 does not dispatch it, reports conflict
+    under OPS-034; the `ruleId` of its error
     diagnostic tells the two apart, and its `isError` is true. What a request that is not
     dispatched says beyond its reason, and beyond the restriction it names, it says there:
     `diagnostics` in the `structuredContent` of its result is a list of diagnostics in the form
@@ -1016,34 +1065,67 @@
     The engine presents a tool for an operation to a consumer, under IFC-012.
   then: >-
     The tool's definition is derived from the Operation contract as the target holds it. Its
-    `inputSchema` and `outputSchema` are the contract's own, each `$ref` in them that names a
-    Schema contract replaced by that contract's schema; for a control, the `required` of its
-    `inputSchema` lists `revision` alone, under REV-006. Its `description` is the contract's
-    `metadata.description` where the contract states one. Its `annotations` hold `readOnlyHint`
-    true exactly where the contract states no `effect`, is not a control and does not start
-    model work, and hold `idempotentHint`, `destructiveHint` and `openWorldHint` as the contract
-    states them. Where the version of the operation's package that the target holds has no
-    contract of the operation, no definition can be derived, and no tool is presented for the
-    operation.
+    `inputSchema` and `outputSchema` are the contract's own, except that, for a control, the
+    `required` of its `inputSchema` lists `revision` alone, under REV-006, and an input that
+    the target's definition narrows under TPL-010 has the schema `{allOf: [a, b]}`, where `a`
+    is the contract's schema for the input and `b` the schema that the template added. They
+    are made to hold every schema they refer to. Each Schema contract that a `$ref` in them
+    names, directly or through another such contract, has one copy of its schema under the
+    `$defs` of the root, keyed by the contract's qualified reference, with `@` and the version
+    of the package or the project that holds it put after the address where a version is
+    stated. Each `$ref` is rewritten to refer to what it referred to where it was written, as
+    SCH-015 resolves it there: a JSON Pointer to the same place, and a reference to a contract
+    to that contract's copy. Every keyword written beside a `$ref` is kept. A `$ref` to a
+    contract whose schema holds no `$ref`, and beside which no keyword is written, may instead
+    be replaced by that schema, and a copy to which no `$ref` then refers may be left out. Its
+    `description` is the contract's `metadata.description` where the contract states one. Its
+    `annotations` hold `readOnlyHint` true exactly where the contract states no `effect`, is not
+    a control and does not start model work, and hold `idempotentHint`, `destructiveHint` and
+    `openWorldHint` as the contract states them. Where the version of the operation's package
+    that the target holds has no contract of the operation, no definition can be derived, and no
+    tool is presented for the operation.
   observable: >-
     A handle, whose schema is `github.com/shrav-k/conduit/core#handle.v1`, is so given the
-    schema of a string, which is what IFC-011 makes it on the wire. A `$ref` that names a Schema
-    contract, by a qualified reference or as `#name`, is replaced by the schema that the
-    contract's `spec` is, under SCH-015, so the definition can be read with no package at hand.
-    Where the consumer, the Conduit and the target hold different versions of the contract's
-    package, the definition is that of the version the target holds, as NAM-023 states. A result
-    of the tool that is not an error conforms to `outputSchema`, and IFC-025 says which results
-    are errors. Where `readOnlyHint` is not true, and where the contract does not state one of
-    the other three hints, that hint is left out of `annotations`, and the protocol's default
-    for it holds. A Conduit may list an operation that a later release of a package added to a
-    capability, under NAM-024, while its target holds an earlier version that has no contract of
-    that name. No tool is presented for that operation, and a call that names it is answered as
-    IFC-012 answers a call to any tool that is not presented: it reports refused. The tool of an
-    operation that declares no outputs has an `outputSchema` that describes a map with no
-    properties, and a result of it that is not an error holds an empty map, under IFC-025. The
-    tool of an operation whose contract states no `inputSchema`, and so declares no inputs, has
-    the `inputSchema` `{type: object}`, since the protocol requires one of every tool, and its
-    call carries no arguments, under IFC-001.
+    schema of a string, in place or as a copy, which is what IFC-011 makes it on the wire. JSON
+    Schema resolves a `$ref` that is a JSON Pointer against the root of the schema that holds
+    it, so a contract's schema written in the place of a `$ref` would send its own pointers,
+    such as `#/$defs/name`, to the tool's root, and a contract that refers to itself, directly
+    or through others, has no finite form written in place. With one copy of each contract and
+    every `$ref` rewritten, a value is valid against the definition exactly when it is valid
+    against the contract's own schemas under SCH-001 and SCH-015, and, for a control, against
+    the template's too, under TPL-011. The definition can be read with no package at hand, and
+    every `$ref` in it is local, as the protocol lets no implementation dereference on its own a
+    `$ref` that resolves to a network URI. Two contracts of one name, reached through two
+    versions of one package under NAM-014, have two copies, since the key holds the version. A
+    key is not a reference, and no document writes one. A `$ref` to a copy is `#/$defs/` and the
+    key, with `~` written `~0` and `/` written `~1`, as RFC 6901 escapes a reference token, and
+    `#` written `%23`, as a URI fragment needs: the copy of `example.org/acme/files#path.v1`
+    from version 0.3.0 is under the key `example.org/acme/files@0.3.0#path.v1`, and a `$ref` to
+    it is `#/$defs/example.org~1acme~1files@0.3.0%23path.v1`. Where the contract's own schema
+    states `$defs` at its root, as CTR-012 lets an operation that is not a control, its members
+    keep their keys beside the copies. The definition is the engine's, made for the wire:
+    CTR-012 and the profile govern the contract's schemas and not the definition, and the engine
+    checks a request and a result against the contract and the template, under NAM-023 and
+    TPL-011, so the definition changes nothing that the engine accepts. Which `$ref` the engine
+    replaces where it may is DL12. Where a control's contract gives the input `limit` the schema
+    `{type: integer, maximum: 100}` and the target's template adds `{maximum: 50}`, the tool
+    gives `limit` the schema `{allOf: [{type: integer, maximum: 100}, {maximum: 50}]}`, so a
+    caller that follows it does not send 75, which TPL-011 would report invalid. A control that
+    the target does not have has no tool, under IFC-012. Where the consumer, the Conduit and the
+    target hold different versions of the contract's package, the definition is that of the
+    version the target holds, as NAM-023 states. A result of the tool that is not an error
+    conforms to `outputSchema`, and IFC-025 says which results are errors. Where `readOnlyHint`
+    is not true, and where the contract does not state one of the other three hints, that hint
+    is left out of `annotations`, and the protocol's default for it holds. A Conduit may list an
+    operation that a later release of a package added to a capability, under NAM-024, while its
+    target holds an earlier version that has no contract of that name. No tool is presented for
+    that operation, and a call that names it is answered as IFC-012 answers a call to a tool
+    that is not presented: it reports refused. The tool of an operation that declares no outputs
+    has an `outputSchema` that describes a map with no properties, and a result of it that is
+    not an error holds an empty map, under IFC-025. The tool of an operation whose contract
+    states no `inputSchema`, and so declares no inputs, has the `inputSchema` `{type: object}`,
+    since the protocol requires one of every tool, and its call carries no arguments, under
+    IFC-001.
   vectors: []
 
 # --- Added by the fix pass of the fourth round of the re-audit
@@ -1075,7 +1157,7 @@
     operation, which is the first case in the order of OPS-023. The error, its code and, on an
     HTTP transport, the status are the protocol's, and this specification repeats none of them,
     under IFC-001. An error's `data` may hold what the server defines, as it holds the reason
-    refused in the error of IFC-012. IFC-032 is about a request that can be read as the protocol
+    in the error of IFC-012. IFC-032 is about a request that can be read as the protocol
     requires: one that cannot is answered here, whether or not an instance can be established
     from it. Where none can, the error holds no reason of Conduit's, and no record is kept,
     which REC-001 excepts. A request at a revision of the protocol that the engine does not
@@ -1336,14 +1418,18 @@
     Conduit's extension, where IFC-037 has it declare it, and the tasks extension, where IFC-016
     lets it.
   observable: >-
-    A call to an implementation marked `plain` declares no extension of Conduit's, under
-    IFC-007 and IFC-037, so it declares at most the tasks extension. The engine answers none of
-    the protocol's input requests, under IFC-016, so it declares no capability that one needs,
-    such as elicitation. The protocol has a server rely on no capability that a request does
-    not declare, and answer with the error -32021, whose `data.requiredCapabilities` names what
-    it needs, where acting on the request needs one. A server that answers a call so has not
-    acted on it, and the outcome is failed, under IFC-010 for a plain implementation and
-    OPS-007 for any other, as IFC-008 reads the error that names Conduit's extension.
+    A call to an implementation marked `plain` declares no extension of Conduit's, under IFC-007
+    and IFC-037, so it declares at most the tasks extension. The engine answers none of the
+    protocol's input requests, under IFC-016, so it declares no capability that one needs, such
+    as elicitation. The protocol has a server rely on no capability that a request does not
+    declare, and answer with the error -32021, whose `data.requiredCapabilities` names what it
+    needs, where processing the request needs one. It does not say that a server answers so
+    before it acts, so the error shows nothing of an effect by itself: from a plain
+    implementation it is read as IFC-010 reads any other error, failed for an operation whose
+    contract states no `effect`, that is not a control and whose contract is not marked
+    `startsModelWork: true`, and unknown for any other. An implementation that carries Conduit's
+    keys answers so only where it has performed nothing, under IFC-047, so the outcome is then
+    failed under OPS-007, as for the error of IFC-008 that names Conduit's extension.
   vectors: []
 
 - id: IFC-046
@@ -1368,4 +1454,36 @@
     is supported by both, or the second call is rejected again, nothing more is sent, and that
     error is read as IFC-010 and OPS-007 read any other. A provider call sent so is one
     provider call, under PRV-005.
+  vectors: []
+
+# --- Added by ruling 44 (docs/proposals/ruling-44/README.md), on finding 6-1-01 of round 6 of
+# --- the re-audit (docs/proposals/reaudit/round-6/reader-1.md): the error -32021 for a client
+# --- capability that a call did not declare, from an implementation that carries Conduit's
+# --- keys.
+
+- id: IFC-047
+  layer: interface
+  level: must
+  when: >-
+    An implementation that carries Conduit's keys answers a call that the engine sent it with
+    the protocol's error -32021, because processing the call needs a client capability that the
+    call does not declare.
+  then: >-
+    It answers so only where it has performed nothing for the call: it does not begin to perform
+    a call whose processing may come to need a client capability that the call does not declare.
+  observable: >-
+    The protocol has a server answer -32021 where processing a request needs a capability that
+    the request does not declare, and does not say that the server answers so before it acts, so
+    this is Conduit's own obligation on an implementation written for it, as IFC-008's is for
+    the error that names Conduit's extension. The protocol also has a server rely on no
+    capability that a request does not declare, so an implementation keeps both rules, and this
+    promise, only by finding before it acts whether processing the call needs one. It can: the
+    call states what it declares in `io.modelcontextprotocol/clientCapabilities`, which is
+    little under IFC-045, so an implementation written for Conduit relies on nothing beyond it
+    and never comes to need an undeclared capability once it has begun, inside a task or not.
+    One that came to need one after it had begun would break this promise, since the protocol
+    then has it answer -32021. Where it answers so, the outcome of a call for a request or a
+    hook is failed under OPS-007, and a repeat of the request is dispatched as a new attempt
+    under OPS-024. A plain implementation, which carries none of Conduit's keys, is bound by no
+    such promise: IFC-010 reads its -32021 as any other error.
   vectors: []

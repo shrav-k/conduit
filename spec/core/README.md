@@ -139,6 +139,29 @@ revision's (V2-06), said that ruling 42 struck none of the coordinator's decisio
 had `shared-host.v1` say that a Conduit an end of which runs nothing is not instantiated
 (V2-01).
 
+[Ruling 44](../../docs/proposals/ruling-44/README.md) of 2026-11-07 accepted the coordinator's
+decisions on [round 6 of the re-audit](../../docs/proposals/reaudit/round-6/README.md) and
+simplifications that its design critique proposed, and the
+[log of that pass](../../docs/proposals/reaudit/round-6/log-core.md) lists what changed here; no
+export was added or removed. `replace.v1` takes the contract documents of the project submitted
+with the replacing template, in its new input `contracts`, and a whole manifest, and resolves
+the template against that project as a registration does (D11). This page says that the root of
+the schemas of an Operation contract that is not a control may hold any keyword of the profile
+(D14); that the tool presented for an operation holds a copy of each Schema contract it refers
+to (finding 6-1-04), shows a control's input as the target's template narrows it, and is not
+presented for a control that the target does not have (D07); that no two pointers of a
+control's `changes` overlap (finding 6-1-03); when a repeat to which a filter applies is
+dispatched again (finding 6-1-02), as do the notes in `operations.yaml`; and that a
+package-source provider claims its schemes for its whole life, as the description of
+`package-source.v1` does (finding 6-1-05). The descriptions of the two hooks say that a type's
+default for a hook is used only where the type requires the hook, as TPL-004 does. The
+[integration of that round](../../docs/proposals/reaudit/round-6/log-integration.md) made this
+page say that a call naming the tool of a control that the target does not have reports
+invalid, as IFC-012 states. Its
+[verification](../../docs/proposals/reaudit/round-6/log-integration.md#verification) added
+that this holds where the target holds the control's contract (R-07), and that a copy's key
+holds a version where one is stated (R-08).
+
 The promises are the source of truth: where a document here and a promise differ, the document
 is wrong.
 
@@ -194,12 +217,28 @@ No two exports share a name, whatever their kinds (PKG-012). That is why the Typ
 ## The operations
 
 Every Operation contract is written as the Model Context Protocol writes a tool (CTR-002): the
-properties of its `inputSchema` are its inputs and those of its `outputSchema` its outputs,
-an input or an output is optional where `required` does not list it (OBJ-015), and the root of
-each holds `type: object` and may hold `properties`, `required` and `additionalProperties`, and
-nothing else (CTR-012). An operation with no inputs or no outputs states no `inputSchema` or no
-`outputSchema`. The engine derives a
-tool's definition from the contract (IFC-033).
+properties of its `inputSchema` are its inputs and those of its `outputSchema` its outputs, an
+input or an output is optional where `required` does not list it (OBJ-015), and the root of each
+holds `type: object`. The root of an operation that is not a control may hold any other keyword
+of the profile, as the protocol lets a tool's `inputSchema` do, such as a `oneOf` whose branches
+say which inputs are present; that of a control may hold beside `type` only `properties`,
+`required` and `additionalProperties`, so that every input but `revision` may be left out
+(CTR-012, REV-006). The root of every core operation holds no keyword but `type`, `properties`
+and `required`. An operation with no inputs or no outputs states no `inputSchema` or no
+`outputSchema`.
+
+The engine derives a tool's definition from the contract as the target holds it (IFC-033). The
+definition stands alone: where a schema refers to a Schema contract, the definition holds a copy
+of that contract's schema under the `$defs` of its root, keyed by the contract's qualified
+reference and, where one is stated, the version of the package or project that holds it, so that
+no two packages' contracts collide, with each `$ref` rewritten to point to what it pointed to
+where it was written and every keyword beside a `$ref` kept. Each contract is copied once, so
+one that refers to itself, directly or through others, needs no more. A contract whose schema
+holds no `$ref`, referred to with no keyword beside the `$ref`, may stand in place of the
+reference instead. The tools of `register.v1` and `replace.v1`, whose inputs refer to the
+schemas of documents, so hold a `$defs` at their roots. For a control, an input that the
+target's template narrows is given `allOf` of the contract's schema and the template's, and a
+control that the target does not have has no tool (TPL-010, TPL-013, IFC-012).
 
 One contract for one verb. Where a verb applies both to a Resource and to other
 instances, the same contract is included in the capability of a Pool and in the capability of
@@ -220,11 +259,11 @@ set up by `open.v1` and retired by `close.v1`.
 | Operation | Included in | `revision` input | `deduplicates` | Reserved to `root` | Promise |
 | --- | --- | --- | --- | --- | --- |
 | `register.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | SUB-006, ACC-033, PKG-006, MAN-015, MAN-018, SEC-024 |
-| `replace.v1` | `object-management.v1` | required | yes | — | SUB-009 |
-| `unregister.v1` | `object-management.v1` | required | yes | — | LIF-012, LIF-017, LIF-036 |
-| `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013 |
-| `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, TPL-012 |
-| `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009 |
+| `replace.v1` | `object-management.v1` | required | yes | — | SUB-009, SUB-008, PKG-006, MAN-015, MAN-016 |
+| `unregister.v1` | `object-management.v1` | required | yes | — | LIF-012, LIF-017, LIF-036, LIF-037 |
+| `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013, LIF-037 |
+| `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, TPL-012, LIF-037 |
+| `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009, LIF-037 |
 | `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1` | for a control that took effect | yes | — | OPS-014, ACC-033, LIF-028, REV-010, OPS-031 |
 | `register-replacement.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | LIF-009, POOL-003 |
 | `install.v1` | `object-management.v1` | — | yes | — | ACC-033, OPS-019, PRV-017 |
@@ -248,9 +287,9 @@ set up by `open.v1` and retired by `close.v1`.
 | `fetch-package.v1` | `package-source.v1` | The engine, by a provider call | PRV-017 |
 | `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023, PRV-026 |
 
-None of these nine states a default implementation, and `engine` implements none of them
-(MAN-012, SEC-020): a template selects an implementation for each that it needs, or its type's
-default does (TPL-004). A provider call is not a request: no Conduit permits it, no access
+No Operation contract states a default implementation (CTR-002), and `engine` implements none
+of these nine (MAN-012, SEC-020): a template selects an implementation for each that it needs,
+or its type's default does (TPL-004). A provider call is not a request: no Conduit permits it, no access
 decision is made for it, and it is recorded (PRV-005). So no Conduit lists an operation of
 `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PRV-004). A Conduit may
 list `get-secret.v1`, and only the root Interface opens one, for a Resource or an Agent
@@ -271,11 +310,13 @@ from `run.v1` and `stop.v1`.
   changed nothing (SUB-009).
 - **Controls.** The core package has none. A control of another package states `changes`, a
   map from the name of an input to the JSON Pointer, into the configuration, of the setting
-  that input sets; its `inputSchema` lists `revision` under `required`, beside any other
-  input, which may still be left out (REV-006); and it declares no output `settings`
-  (CTR-006). The tool presented for it lists `revision` alone as required (IFC-033). It
-  applies exactly the values it is sent or fails, and the engine checks them against the
-  type's schema before it dispatches (REV-007, REV-015).
+  that input sets, in which no two pointers are equal and none lies inside another, compared
+  as reference tokens, the empty pointer lying over every other; its `inputSchema` lists
+  `revision` under `required`, beside any other input, which may still be left out (REV-006);
+  and it declares no output `settings` (CTR-006). The tool presented for it lists `revision`
+  alone as required, and shows each input that the target's template narrows with both
+  schemas (IFC-033). It applies exactly the values it is sent or fails, and the engine checks
+  them against the type's schema before it dispatches (REV-007, REV-015).
 - **Reconciling.** `reconcile.v1` is in the capability of `management`, of a Pool and of
   `access`, and in no other. A management verb is every operation of the first table
   (CON-024). An invocation of one is reconciled through the target that authorized the request
@@ -320,6 +361,11 @@ from `run.v1` and `stop.v1`.
   the engine gave it. A request made through a Conduit that lists the operation, and that
   names an object or an invocation that does not exist, reports invalid (OPS-029). So does a
   request for `set-up.v1` or `retire.v1` that names a template or a Conduit (LIF-032).
+  `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take the optional input
+  `expectedId`, the ID the actor expects the object it names to have, as Kubernetes's
+  `preconditions.uid`: it names nothing and grants nothing, and where the reference resolves to
+  an object with another ID, as after a name is given to another object (LIF-035), the request
+  reports conflict and changes nothing (LIF-037).
   `register-replacement.v1` names the instance that holds a nested instantiation in
   `instance`, and the name of the declared Conduit or the entry in `nested` (LIF-009, LIF-033).
 - **The resolved form of a reference.** Where a value is a reference, the instance stores
@@ -373,9 +419,10 @@ from `run.v1` and `stop.v1`.
 - No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
   operation arranges, through the engine, work that outlasts its invocation, and no contract
   carries a mark for it (ACC-019, CTR-002).
-- Every management verb states `github.com/shrav-k/conduit/core#engine` as its default
-  implementation. The engine performs it; no process is started and no request crosses the
-  implementation interface.
+- Every management verb is implemented by the engine as a rule: `engine` lists it in
+  conduit.yaml, no Operation contract states a default implementation (CTR-002), and no
+  template or type selects one for it (TPL-003, TPL-004). The engine performs it; no process is
+  started and no request crosses the implementation interface.
 
 ## Results and Conduit's keys
 
@@ -386,18 +433,26 @@ where the operation declares no outputs (IFC-025, IFC-033). A result whose outco
 holds its outputs even where the Conduit through which its invocation was dispatched was closed
 before it ended (ACC-034). A repeat of an invocation that has not ended reports conflict, and
 its result holds the engine's ID for the invocation (OPS-032); so does a repeat of one that
-succeeded, of an operation that declares outputs, where the engine does not keep its outputs or
-a filter applies to the repeat that the latest attempt was not sent, and the `ruleId` of the
-error diagnostic tells the two apart (OPS-034). A caller that lost a result repeats its request
-with the same idempotency key (OPS-009). A request through a Conduit that has been closed
+succeeded, of an operation that declares outputs, where the engine does not keep its outputs,
+and the `ruleId` of the error diagnostic tells the two apart (OPS-034). A caller that lost a
+result repeats its request with the same idempotency key (OPS-009). Where a filter applies to a
+repeat of an invocation that succeeded, the stored outputs are not given: an operation that
+states no `effect`, is not a control and starts no model work is dispatched again as a new
+attempt, so that its filters decide afresh; any other reports conflict where it declares outputs
+(OPS-034), and is answered from its outcome where it declares none (OPS-009). A repeat that is
+not dispatched is judged by no filter. A Conduit applies no filter where the engine implements
+an operation it lists (CON-022), and a request for an operation of the core package
+that carries one reports unavailable (MAN-012). A request through a Conduit that has been closed
 reports refused, and one that names the closed Conduit itself reports invalid (ACC-011,
 OPS-029). A call that names a tool the engine does not present is answered as the protocol
 prescribes for an unknown tool at the revision in use. At the baseline revision that is no tool
 result: the engine returns the protocol's error for invalid parameters, code -32602, whose
-`data` holds `io.github.shrav-k.conduit/reason` with the value refused. At a revision at which
-a tool result answers it, that result carries the reason as any other does (IFC-012, IFC-025). A request that the protocol
-has a server reject with an error of its own is answered with that error and no tool result
-(IFC-036).
+`data` holds `io.github.shrav-k.conduit/reason` with the value refused, or invalid where the
+call names the tool that an open Conduit would give a control that its target does not have,
+where the target holds the control's contract (TPL-013). At a revision at which a tool result
+answers it, that result carries the reason as any other does (IFC-012, IFC-025). A request that
+the protocol has a server reject with an error of its own is answered with that error and no
+tool result (IFC-036).
 
 A result's `_meta` holds `io.github.shrav-k.conduit/outcome` where the request has an outcome,
 and `io.github.shrav-k.conduit/reason` where it ended with a reason, with
@@ -459,7 +514,10 @@ that the Resource's locator names. The user picks one by registering a
 Resource of its type. An Agent or a Resource names the runtime provider that runs it in its
 standard argument `runtime` (PRV-006); the machine provider and the package-source providers
 are owned by `system`, at most one machine provider and one package-source provider for each
-scheme (PRV-013). The engine's own runner, its own machine provider and its own `https:` and
+scheme (PRV-013). A package-source provider claims the schemes it was made with for its whole
+life, because its type lists no control whose `changes` reaches `/schemes` (PRV-016): a
+provider that is to claim other schemes is a new instance, which PRV-013 admits as it admits
+any. The engine's own runner, its own machine provider and its own `https:` and
 `file:` fetching serve where no provider of a kind does (PRV-003); they are part of the engine
 and are not selected as an implementation, so `engine` states none of them. A runtime provider
 runs an item on the machine that `run.v1` gives in `machine`, or ends the run failed, so the
@@ -582,10 +640,10 @@ lifecycle state and the labels reported for it (PLC-008).
 | `secret-provider.v1` | Capability | SEC-002, SEC-005, SEC-022, PRV-001 |
 | `register.v1` | Operation | OPS-019, ACC-033, SUB-006 |
 | `replace.v1` | Operation | SUB-009, SUB-007 |
-| `unregister.v1` | Operation | LIF-012, LIF-017, LIF-036 |
-| `inspect.v1` | Operation | LIF-013, ACC-033 |
-| `set-up.v1` | Operation | OPS-019, ACC-033, LIF-003, TPL-012 |
-| `retire.v1` | Operation | OPS-019, ACC-033, LIF-005, TPL-009 |
+| `unregister.v1` | Operation | LIF-012, LIF-017, LIF-036, LIF-037 |
+| `inspect.v1` | Operation | LIF-013, ACC-033, LIF-037 |
+| `set-up.v1` | Operation | OPS-019, ACC-033, LIF-003, TPL-012, LIF-037 |
+| `retire.v1` | Operation | OPS-019, ACC-033, LIF-005, TPL-009, LIF-037 |
 | `reconcile.v1` | Operation | OPS-014, REV-010, OPS-031 |
 | `register-replacement.v1` | Operation | LIF-009, POOL-003 |
 | `install.v1` | Operation | OPS-019, ACC-033 |
@@ -663,7 +721,7 @@ lifecycle state and the labels reported for it (PLC-008).
 | `server-package.v1` | Schema of the manifest's part | MAN-010, PKG-019 |
 | `server-remote.v1` | Schema of the manifest's part | MAN-010, IFC-041 |
 | `document.v1` | Schema of a document | OBJ-020, SUB-005 |
-| `engine` | Implementation | TPL-004 (every management verb has an implementation), MAN-012 (it states none of `command`, `package` and `remote` and no `supports`) |
+| `engine` | Implementation | TPL-004 (the engine implements every operation it lists, with no selection), TPL-003 (no template or type selects one of them), MAN-012 (it states none of `command`, `package` and `remote` and no `supports`) |
 
 ## What this package does not settle
 

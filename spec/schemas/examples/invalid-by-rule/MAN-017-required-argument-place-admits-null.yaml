@@ -1,9 +1,13 @@
 # Example. One set of documents. Each is valid alone, and together they must be rejected:
 # an item binds no input that its Package marks `isRequired: true` to a place at which the
 # type's schema admits null (MAN-017), since a place that holds null gives no argument.
-# `listing`, the default implementation of `example.org/files#directory.list.v1` in
-# ../valid/files-package/, gives its required argument `--root` the place `/path`, and the
-# type `optional-listing.v1` requires `path` but lets it be null.
+# `listing` in ../valid/files-package/, the default implementation of
+# `example.org/files#directory.list.v1` that the type `optional-listing.v1` states, gives its
+# required argument `--root` the place `/path`, and the type requires `path` but lets it be
+# null.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md): an Operation contract states no default
+# implementation, so the type here states the one that the operation's contract stated.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -18,6 +22,8 @@ spec:
     required: [path]
   requires:
     - example.org/files#directory.list.v1
+  implementation:
+    example.org/files#directory.list.v1: example.org/files#listing
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

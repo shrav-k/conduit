@@ -56,6 +56,15 @@
 # The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
 # "Verification") changed NAM-024: an input that a later release adds to a Requirement contract
 # states no `default` (V2-02). It added none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
+# (log docs/proposals/reaudit/round-6/log-promises.md), changed NAM-022, under which
+# `#name` in a replacing template reaches the project handed over with it (D11). It added
+# none and removed none. Its integration (docs/proposals/reaudit/round-6/log-integration.md)
+# changed a word of NAM-026, whose call is answered as one to a tool that is not presented,
+# since IFC-012 now has one such call, to a control the target does not have, report invalid.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) changed NAM-018, whose default implementation
+# is a type's, since an Operation contract states none. It added none and removed none.
 
 - id: NAM-001
   layer: language
@@ -338,10 +347,10 @@
     The two forms are accepted wherever a promise speaks of the selection of one of the five: a
     template's `type`, a Conduit template's `capability` and `operations`, the `requirement` of
     an applied requirement, the lists in a contract or in an implementation item of a manifest,
-    a default implementation, and the keys of an `implementation`, `controls` or `tools` map.
-    `#directory.read.v1` selects the operation of that name in the document's own project or
-    package. The `from` of an instance or of a nested instantiation names a template and is not
-    a selection: its forms are INS-025.
+    a type's default implementation, and the keys of an `implementation`, `controls` or `tools`
+    map. `#directory.read.v1` selects the operation of that name in the document's own project
+    or package. The `from` of an instance or of a nested instantiation names a template and is
+    not a selection: its forms are INS-025.
   vectors: []
 
 - id: NAM-019
@@ -427,15 +436,15 @@
     registered as well as one of its own, and resolves to nothing only where no template of that
     kind and name exists. A nested instantiation that writes its `from` so, in a template of
     such a project or in the document that replaces one, resolves in the same way whenever the
-    template that holds it is instantiated. In the document that replaces a template, which is
-    handed over with no contracts, it reaches a contract or an implementation among the
-    contracts and implementations of the submitted project that the template being replaced
-    holds under NAM-009, as SUB-009 states. A document refers to something in its own project or
-    package in this form and never by a qualified reference: a package's own address is not
-    among the `packages` of its own manifest, so a qualified reference that uses it is rejected
-    under NAM-007. The core package's own documents are the exception: they write its address in
-    full, which resolves under NAM-020. So are the `operations` of a bound, which name the
-    project's own operations by its address, under ACC-029.
+    template that holds it is instantiated. In the document that replaces a template it reaches
+    a contract or an implementation of the project handed over with that document, as SUB-009
+    states, and never one of the project that the template held before. A document refers to
+    something in its own project or package in this form and never by a qualified reference: a
+    package's own address is not among the `packages` of its own manifest, so a qualified
+    reference that uses it is rejected under NAM-007. The core package's own documents are the
+    exception: they write its address in full, which resolves under NAM-020. So are the
+    `operations` of a bound, which name the project's own operations by its address, under
+    ACC-029.
   vectors: []
 
 - id: NAM-023
@@ -501,7 +510,7 @@
     version which includes the operation is decided like any other. Where the version of the
     operation's package that the target holds has no contract of the operation at all, the
     engine presents no tool for it, under IFC-033: a consumer's call that names such a tool is
-    answered as a call to any tool that is not presented, and reports refused under IFC-012.
+    answered as a call to a tool that is not presented, and reports refused under IFC-012.
   vectors: []
 
 # --- Added with the core package (plan-audit ruling 37; change X5 of the ruling on the core

@@ -82,6 +82,23 @@
 # The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
 # "Verification") changed TPL-017, which no longer implies that a hook reached by `remote` makes
 # onward requests (V2-16). It added none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
+# (log docs/proposals/reaudit/round-6/log-promises.md), changed TPL-004, whose observable
+# says that a type's default for a hook it does not require is not used, and that registering
+# a template that selects no implementation for that hook reports it (the open point on a
+# Type's default hook). It added none and removed none. The verification of round 6
+# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed TPL-004 again: the
+# diagnostic on that default is CTR-004's, made when the type is read, so that one is reported
+# whatever its templates select (C-05, R-10). It added none and removed none.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) changed TPL-003, whose map selects no
+# operation that the engine implements, and TPL-004: the template's selection, then the type's
+# default, and no default of an Operation contract; the engine implements the operations that
+# the core package's `engine` lists. It added none and removed none.
+# A check of that merge (docs/proposals/reaudit/round-6/log-d06-d12.md) then changed TPL-004,
+# whose `then` says that an implementation a promise calls selected includes the engine, TPL-003
+# (the `implementation` map), and TPL-017 and TPL-018 (no Operation contract states a default).
+# It added none and removed none.
 
 - id: TPL-001
   layer: language
@@ -121,17 +138,19 @@
     A template selects an implementation.
   then: >-
     It does so in the one `implementation` map of its `spec`. Each key is the selection of an
-    operation, written as NAM-018 gives one: a qualified reference, or `#name` for an operation
-    of the same project or package. Each value is a string, which is the selection of an
-    implementation.
+    operation that the core package's implementation `engine` does not implement, written as
+    NAM-018 gives one: a qualified reference, or `#name` for an operation of the same project or
+    package. Each value is a string, which is the selection of an implementation.
   observable: >-
     A member of a template's `controls` map that carries its own `implementation` key is
-    rejected with a diagnostic naming it. An Operation contract, a control's among them, may
-    state `implementation`, its default implementation, under CTR-002. The map holds one
-    selection for an operation; the same operation written twice is a duplicate key, rejected
-    under SCH-012. `setup-hook.v1` and `retire-hook.v1` are selected here like any operation,
-    under TPL-017 and TPL-018. `set-up.v1` and `retire.v1` are not: the engine implements them,
-    as TPL-008 states.
+    rejected with a diagnostic naming it, and so is a key of the `implementation` map that names
+    an operation
+    that `engine` lists under MAN-012, such as `set-up.v1`, `retire.v1` or `inspect.v1`: the
+    engine implements each of them, under TPL-004 and TPL-008. A Type's `implementation` map has
+    this form too, under CTR-004. No Operation contract states a default implementation, under
+    CTR-002. The map holds one selection for an operation; the same operation written twice is a
+    duplicate key, rejected under SCH-012. `setup-hook.v1` and `retire-hook.v1` are selected
+    here like any operation, under TPL-017 and TPL-018.
   vectors: []
 
 - id: TPL-004
@@ -139,23 +158,36 @@
   level: must
   when: >-
     An operation is not a key of a template's `implementation` map, and it is one that the
-    template's type requires, that a capability the type offers includes, or that the type
-    lists as a control.
+    template's type requires, that a capability the type offers includes, or that the type lists
+    as a control.
   then: >-
-    The implementation is the default the type states for that operation, or else the default
-    the operation's own contract states. If there is neither, the template is rejected.
+    Where the core package's implementation `engine` lists the operation, under MAN-012, the
+    implementation is the engine. Otherwise it is the default the type states for that
+    operation, and where the type states none, the template is rejected. Wherever a promise
+    speaks of the implementation that a target or an instance has selected for an operation, it
+    means the one that the template's map or this promise gives, the engine among them.
   observable: >-
     The resolved template shows one implementation for each such operation and where it came
-    from: the template, the type or the operation's contract. A default is a selection, and it
-    resolves in the project or package that holds the contract stating it: under NAM-022 where
-    it is written `#name`, and through that package's own manifest, under NAM-014, where it
-    names another package. A type's contract promises what its instances offer: a Conduit may
-    list any operation of a capability that its target's type offers, under CON-017 and
-    CON-021, a control among them, so each of those operations has an implementation when the
-    template is registered, whether or not the type also lists it under `requires`. A template
-    whose type offers a capability one of whose operations has no selection and no default is
-    rejected, and so is one whose type lists such a control, even where the template's
-    `controls` map leaves that control out.
+    from: the template, the type or the engine. No Operation contract states a default, under
+    CTR-002. The engine implements every operation of `object-management.v1`,
+    `access-control.v1` and `pool-management.v1` with no selection, as Kubernetes's API server
+    serves its built-in resources, so a Pool type of any package offers `pool-management.v1`,
+    under CTR-004, and maps none of its operations. A type's default is a selection, and it
+    resolves in the project or package that holds the type: under NAM-022 where it is written
+    `#name`, and through that package's own manifest, under NAM-014, where it names another
+    package. A type's contract promises what its instances offer: a Conduit may list any
+    operation of a capability that its target's type offers, under CON-017 and CON-021, a
+    control among them, so each of those operations has an implementation when the template is
+    registered, whether or not the type also lists it under `requires`. A template whose type
+    offers a capability one of whose operations the engine does not implement and that has no
+    selection and no default is rejected, and so is one whose type lists such a control, even
+    where the template's `controls` map leaves that control out. `setup-hook.v1` and
+    `retire-hook.v1` are in no capability, so a type's default for either is used only where the
+    type lists that hook under `requires`. A default that a type states for a hook it does not
+    require is not used. A template of that type whose `implementation` map selects no
+    implementation for the hook has none, so the hook is not dispatched, under TPL-017 and
+    TPL-018, and the template is registered. Installation or resolving reports the default in a
+    diagnostic that does not reject, when it reads the type, under CTR-004.
   vectors: []
 
 - id: TPL-005
@@ -326,8 +358,9 @@
     `conduit`. In a further setup the hook is dispatched again only as OPS-021 and OPS-028
     allow. Its outcome counts in the setup's as OPS-022 states. A template selects the hook in
     its `implementation` map or, where its type lists `setup-hook.v1` under `requires`, takes
-    the default that the type states, under TPL-004. The hook's own contract states no default,
-    so a type that requires the hook and states none makes every template of it select one. A
+    the default that the type states, under TPL-004. No Operation contract states a default,
+    under CTR-002, so a type that requires the hook and states none makes every template of it
+    select one. A
     type's default hook that is an item that is run counts with the template's other items under
     TPL-019. `setup-hook.v1` carries no mark of model work, so the hook starts none, under
     IMP-001, and neither does an onward request that serves it, under IMP-008.
@@ -368,16 +401,16 @@
     is the consumer, which stay open until its shutdown is confirmed, under CON-008, and which
     permit them under ACC-039. Where the run or the connection cannot be had, as where a read
     fails under SEC-012, the hook is not dispatched and reports unavailable, and the stop is
-    asked for all the same, under TPL-009. Where the instance's node was declared lost, the
-    hook is not dispatched, and no run is asked for and no connection made for it, under
-    PLC-027. No hook is dispatched for an instance for which no setup was ever dispatched, under
-    LIF-025. A template selects the hook in its `implementation` map or, where its type lists
-    `retire-hook.v1` under `requires`, takes the default that the type states, under TPL-004.
-    The hook's own contract states no default, so a type that requires the hook and states none
-    makes every template of it select one. A type's default hook that is an item that is run
-    counts with the template's other items under TPL-019. `retire-hook.v1` carries no mark of
-    model work, so the hook starts none, under IMP-001, and neither does an onward request that
-    serves it, under IMP-008.
+    asked for all the same, under TPL-009. Where the instance's node was declared lost, the hook
+    is not dispatched, and no run is asked for and no connection made for it, under PLC-027. No
+    hook is dispatched for an instance for which no setup was ever dispatched, under LIF-025. A
+    template selects the hook in its `implementation` map or, where its type lists
+    `retire-hook.v1` under `requires`, takes the default that the type states, under TPL-004. No
+    Operation contract states a default, under CTR-002, so a type that requires the hook and
+    states none makes every template of it select one. A type's default hook that is an item
+    that is run counts with the template's other items under TPL-019. `retire-hook.v1` carries
+    no mark of model work, so the hook starts none, under IMP-001, and neither does an onward
+    request that serves it, under IMP-008.
   vectors: []
 
 - id: TPL-019

@@ -23,6 +23,15 @@
 # The names of ruling 42 (the vocabulary audit's N1; log
 # docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`
 # in the comment below.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit (log
+# docs/proposals/reaudit/round-6/log-core.md), opened the root of an Operation contract's
+# `inputSchema` and `outputSchema` to the whole profile beside `type: object`, and kept the four
+# keys of the root for a control, whose `spec` holds `changes` (D14, CTR-012); and said below
+# what the engine checks of a control's pointers (finding 6-1-03, CTR-006) and of the controls
+# of a package-source provider's Type (finding 6-1-05, PRV-016).
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) took `implementation` out of
+# `operation-spec.v1`: an Operation contract states no default implementation (CTR-002).
 #
 # The five kinds of contract document, and an applied requirement.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -40,10 +49,11 @@
 #                           the inputs and the outputs, a property name being any non-empty
 #                           string; a handle states no `default`; no property of
 #                           `outputSchema` states one; `idempotentHint`, `destructiveHint` and
-#                           `openWorldHint`), CTR-012 (the root of each holds `type: object`
-#                           and may hold `properties`, `required` and `additionalProperties`,
-#                           and nothing else), CTR-006 (`changes` is a map from the name of an
-#                           input to the pointer that input sets), IMP-003, OPS-012, OBJ-015
+#                           `openWorldHint`), CTR-012 (the root of each holds `type: object`;
+#                           that of a control, whose `spec` holds `changes`, may hold besides
+#                           only `properties`, `required` and `additionalProperties`), CTR-006
+#                           (`changes` is a map from the name of an input to the pointer that
+#                           input sets), IMP-003, OPS-012, OBJ-015
 #                           (an input is optional where `required` does not list it),
 #                           ACC-032 and CTR-009 (`reservedToRoot`)
 #   requirement-spec.v1     CTR-005 (`inputs` and no other key), OBJ-015, OBJ-022
@@ -67,12 +77,15 @@
 # outside the core package, none that is reserved (CTR-003); that no Operation contract outside
 # the core package is marked `reservedToRoot` (CTR-009); that each key of a control's `changes`
 # is an input the control declares and each pointer a place its type's schema describes, that
-# its `inputSchema` requires `revision` and that it declares no output `settings` (CTR-006);
-# default implementations (CTR-004, TPL-004); that a Type that offers a provider capability is
-# of the family Resource and offers no other (PRV-001), that one that offers `package-source.v1`
-# requires `schemes` (PRV-016) and that one that offers `secret-provider.v1` lists no control
-# (SEC-005) and offers no other capability (SEC-022), which tools/check_schemas.py also checks;
+# no two of its pointers are equal or lie one inside the other, that its `inputSchema` requires
+# `revision` and that it declares no output `settings` (CTR-006); default implementations
+# (CTR-004, TPL-004); that a Type that offers a provider capability is of the family Resource
+# and offers no other (PRV-001), that one that offers `package-source.v1` requires `schemes` and
+# lists no control whose `changes` reaches `/schemes` (PRV-016) and that one that offers
+# `secret-provider.v1` lists no control (SEC-005) and offers no other capability (SEC-022);
 # that a `default` satisfies its schema (SCH-019); and compatibility between releases (NAM-024).
+# tools/check_schemas.py also checks some of these, as far as the documents in front of it show:
+# spec/schemas/README.md, "What a schema cannot express", says which.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -207,13 +220,17 @@ metadata:
     The properties of `inputSchema` are the operation's inputs, and those of `outputSchema` its
     outputs; one that `required` does not list is optional, and an operation that states no
     `inputSchema` or no `outputSchema` has no inputs or no outputs. The root of each holds
-    `type: object` and may hold `properties`, `required` and `additionalProperties`, and
-    nothing else. A property of `inputSchema` may state a `default`, which the engine fills
-    in where the input is not supplied; no property of `outputSchema` states one, and nor does
-    a handle, a property whose schema is the core package's `handle.v1`. A control also holds
-    `changes`, a map from the name of an input to the pointer that input sets. An operation
-    reserved to the root Interface is marked `reservedToRoot: true`, which only an Operation
-    contract of the core package may be.
+    `type: object`, and may hold any other keyword of the profile, such as a `oneOf` whose
+    branches say which inputs are present. A control also holds `changes`, a map from the name
+    of an input to the pointer that input sets, and the root of each of its schemas may hold
+    `properties`, `required` and `additionalProperties` beside `type`, and nothing else. A
+    property of `inputSchema` may state a `default`, which the engine fills in where the input
+    is not supplied; no property of `outputSchema` states one, and nor does a handle, a
+    property whose schema is the core package's `handle.v1`. An operation reserved to the root
+    Interface is marked `reservedToRoot: true`, which only an Operation contract of the core
+    package may be. An Operation contract states no default implementation: a template's
+    selection or its type's default chooses what runs, and the engine implements the
+    operations that the core package's implementation `engine` lists.
 spec:
   type: object
   properties:
@@ -238,7 +255,6 @@ spec:
         The reserved mark. True for an operation reserved to the root Interface, which is
         dispatched only when the actor is the root Interface. Absent means false. Only an
         Operation contract of the core package is marked.
-    implementation: {$ref: github.com/shrav-k/conduit/core#selection.v1}
     changes:
       type: object
       description: >-
@@ -251,6 +267,12 @@ spec:
     destructiveHint: {type: boolean}
     openWorldHint: {type: boolean}
   additionalProperties: false
+  if:
+    required: [changes]
+  then:
+    properties:
+      inputSchema: {$ref: '#/$defs/control-root'}
+      outputSchema: {$ref: '#/$defs/control-root'}
   $defs:
     root:
       type: object
@@ -260,9 +282,14 @@ spec:
           type: object
           propertyNames: {minLength: 1}
           additionalProperties: {$ref: '#/$defs/member'}
+      required: [type]
+    control-root:
+      type: object
+      properties:
+        type: {}
+        properties: {}
         required: {}
         additionalProperties: {}
-      required: [type]
       additionalProperties: false
     member:
       if:

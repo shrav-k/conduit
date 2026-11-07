@@ -1,0 +1,39 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# no key of a template's `implementation` map, nor of a Type's, is an operation that the core
+# package's implementation `engine` lists (TPL-003). The engine implements each of those
+# operations as a rule, with no selection (TPL-004). Here the Pool type `team-pool.v1` offers
+# `pool-management.v1`, as every Pool type does (CTR-004), and its template `team` selects an
+# implementation of the project for `inspect.v1`, which the engine implements. A schema cannot
+# tell: it needs the core package's manifest.
+# Added by ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md).
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/teams
+implementations:
+  team-inspector:
+    implements:
+      - github.com/shrav-k/conduit/core#inspect.v1
+    remote:
+      type: streamable-http
+      url: https://teams.example.org/mcp
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: team-pool.v1
+spec:
+  family: Pool
+  schema:
+    type: object
+  offers:
+    - github.com/shrav-k/conduit/core#pool-management.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: team
+spec:
+  type: '#team-pool.v1'
+  implementation:
+    github.com/shrav-k/conduit/core#inspect.v1: '#team-inspector'

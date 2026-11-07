@@ -176,6 +176,11 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # docs/proposals/reaudit/round-6/log-core.md), added changes-overlap (CTR-006, finding 6-1-03)
 # and fixed-schemes (PRV-016, finding 6-1-05), which compare pointers as reference tokens, and
 # had check_controls read a pointer's tokens with the same function.
+# Ruling 44's D06, as revised after the ruling (docs/proposals/reaudit/round-6/log-d06-d12.md),
+# made implementation-selected read no default from an Operation contract, which the schema
+# now rejects (CTR-002), and take the engine for an operation that the core package's `engine`
+# lists; and added engine-selected (TPL-003), for a template or a Type whose `implementation`
+# map selects an implementation for such an operation.
 RULES = {
     "one-name": "NAM-027",
     "bound-once": "CON-028",
@@ -186,6 +191,7 @@ RULES = {
     "ref": "SCH-015",
     "default-valid": "SCH-019",
     "implementation-selected": "TPL-004",
+    "engine-selected": "TPL-003",
     "names-nothing": "NAM-028",
     "core-address": "NAM-021",
     "first-start-from": "FST-006",
@@ -557,7 +563,6 @@ EXPECT = (
     ("Type", ("spec", "offers", "*"), "Capability"),
     ("Type", ("spec", "requires", "*"), "Operation"),
     ("Type", ("spec", "controls", "*"), "Operation"),
-    ("Operation", ("spec", "implementation"), "implementation"),
     ("template", ("spec", "type"), "Type"),
     ("template", ("spec", "capability"), "Capability"),
     ("template", ("spec", "operations", "*"), "Operation"),
@@ -1392,11 +1397,32 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
 
     secret = {core + "#secret-reference.v1"} | ({"#secret-reference.v1"} if is_core else set())
 
+    # The operations that the core package's implementation `engine` implements (MAN-012): the
+    # engine implements each with no selection (TPL-004), and no template or Type selects an
+    # implementation for one (TPL-003).
+    engine_item = (items.get(core) or {}).get("engine")
+    engine_ops = {canon(ref, core) for ref in (engine_item or {}).get("implements") or ()
+                  if isinstance(engine_item, dict)}
+    engine_ops.discard(None)
+    for doc in docs:
+        kind = doc.get("kind")
+        if kind not in FAMILIES and kind != "Type" or "from" in doc:
+            continue
+        body = doc.get("spec") if isinstance(doc.get("spec"), dict) else {}
+        home = here if kind != "Type" or is_core else None
+        for key, _ in members(body.get("implementation")):
+            if canon(key, home) in engine_ops:
+                found.append(("engine-selected",
+                              f"the {what(doc) if kind != 'Type' else 'Type'} {named(doc)} "
+                              f"selects an implementation for {key}, which the engine "
+                              f"implements"))
+
     # The operations each template of the set must have an implementation for, under TPL-004,
     # with the implementation it has for each: the key of the template's `implementation`
-    # map, else the default of its type, else the default of the operation's own contract.
-    # Applied where the tool has the type's contract; a capability or an operation whose
-    # contract it does not have is not followed.
+    # map, else the default of its type, else the engine, for an operation that `engine`
+    # implements. An Operation contract states no default (CTR-002). Applied where the tool
+    # has the type's contract; a capability or an operation whose contract it does not have
+    # is not followed.
     selected = {}
     for (kind, name), template in templates.items():
         spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
@@ -1436,13 +1462,13 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                 picks[key] = chosen[key]
             elif key in by_type:
                 picks[key] = by_type[key]
-            elif operation is not None and "implementation" in (operation.get("spec") or {}):
-                picks[key] = canon(operation["spec"]["implementation"], key[0])
+            elif key in engine_ops:
+                picks[key] = (core, "engine")
             elif operation is not None:
                 found.append(("implementation-selected",
                               f"the template {name} selects no implementation for {key[1]}, "
-                              f"and neither its type {named(type_doc)} nor the operation's "
-                              f"contract states a default; {why}"))
+                              f"its type {named(type_doc)} states no default, and the engine "
+                              f"does not implement it; {why}"))
         selected[name] = (type_doc, picks)
 
     for name, (type_doc, picks) in selected.items():

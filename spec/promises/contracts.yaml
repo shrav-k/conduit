@@ -65,6 +65,10 @@
 # does not reject (C-05, R-10); CTR-005, whose filter is applied to each call for a request
 # (R-05); and CTR-012, under which a `default` that the root reaches only through a keyword
 # beside its `properties` fills nothing (C-03, R-09). It added none and removed none.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) changed CTR-002: an Operation contract states
+# no `implementation`, and the engine implements the operations that the core package's
+# `engine` lists. It added none and removed none.
 
 - id: CTR-001
   layer: language
@@ -96,30 +100,33 @@
     further hold `effect`, a statement of what it changes outside itself; `startsModelWork`;
     `deduplicates`, the mark of an operation whose implementation recognizes an idempotency key
     that it has already been sent and applies the effect at most once for it; `reservedToRoot`,
-    the mark of an operation reserved to the root Interface; `implementation`,
-    its default implementation, which is one selection; for a control, `changes`, as CTR-006
-    states; and the booleans `idempotentHint`, `destructiveHint` and `openWorldHint`.
+    the mark of an operation reserved to the root Interface; for a control, `changes`, as
+    CTR-006 states; and the booleans `idempotentHint`, `destructiveHint` and `openWorldHint`.
   observable: >-
     An operation with no `effect` changes nothing outside itself. `startsModelWork`,
     `deduplicates` and `reservedToRoot` are booleans, and one that is absent is false; IMP-003
     and ACC-032 state what the first and the last of them mean, OPS-012 and OPS-021 say what the
     engine does with a repeat where `deduplicates` is declared, and CTR-009 says where
     `reservedToRoot` may be written. `idempotentHint`, `destructiveHint` and `openWorldHint` may
-    each be left out, and IFC-033 says what they become in the definition of a tool.
-    `deduplicates` is not the Model Context Protocol's `idempotentHint`, which hints that
-    calling the tool again with the same arguments has no further effect: the engine passes that
-    hint into the tool's `annotations`, under IFC-033, and never decides a new attempt by it,
-    under OPS-012. No key marks an operation as arranging work that is to start or to run after
-    its own invocation has ended, because no operation arranges such work through the engine,
-    under ACC-019: a contract whose `spec` holds a key that this promise does not name, such as
-    `inputs` or `outputs`, is rejected, as OBJ-019 rejects any key that this specification does
-    not define. A property name such as `maxResults` or `max_results` is accepted, as is any
-    other non-empty string: the rule OBJ-022 gives for other names a document chooses does not
-    apply to these. A property whose name is the empty string, a property of `outputSchema` that
-    states a `default`, and a handle that states one, are each rejected when the contract's
-    package is installed or its project is submitted. An input is optional where `inputSchema`
-    does not list it under `required`, under OBJ-015; what the `default` of an input then does
-    is OPS-026, and SCH-019 rejects one that fails the schema of its property.
+    each be left out, and IFC-033 says what they become in the definition of a tool. An
+    Operation contract states no default implementation, so one whose `spec` holds
+    `implementation` is rejected: what runs for an operation is a template's selection or its
+    type's default, under TPL-004, and the engine implements, with no selection, each operation
+    that the core package's implementation `engine` lists under MAN-012. `deduplicates` is not
+    the Model Context Protocol's `idempotentHint`, which hints that calling the tool again with
+    the same arguments has no further effect: the engine passes that hint into the tool's
+    `annotations`, under IFC-033, and never decides a new attempt by it, under OPS-012. No key
+    marks an operation as arranging work that is to start or to run after its own invocation has
+    ended, because no operation arranges such work through the engine, under ACC-019: a contract
+    whose `spec` holds a key that this promise does not name, such as `inputs` or `outputs`, is
+    rejected, as OBJ-019 rejects any key that this specification does not define. A property
+    name such as `maxResults` or `max_results` is accepted, as is any other non-empty string:
+    the rule OBJ-022 gives for other names a document chooses does not apply to these. A
+    property whose name is the empty string, a property of `outputSchema` that states a
+    `default`, and a handle that states one, are each rejected when the contract's package is
+    installed or its project is submitted. An input is optional where `inputSchema` does not
+    list it under `required`, under OBJ-015; what the `default` of an input then does is
+    OPS-026, and SCH-019 rejects one that fails the schema of its property.
   vectors: []
 
 - id: CTR-003

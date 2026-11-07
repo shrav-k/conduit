@@ -3,8 +3,7 @@
 Status: read, decided and applied, 2026-11-07 (plan-audit action A59). The coordinator decided
 each finding and each point of the critique, and the owner accepted its recommendations in
 [ruling 44](../../ruling-44/README.md). After the ruling the owner also accepted revised
-recommendations on D06 and D12, which are not yet applied (A69 of the
-[tracker](../../../AUDIT.md#action-items)). Pull request 8, on the branch
+recommendations on D06 and D12, which are applied too ([log](log-d06-d12.md)). Pull request 8, on the branch
 `audit/round-6-codex`, carries this round's report, its decisions, ruling 44 and the changes
 they made.
 
@@ -28,7 +27,7 @@ the next milestone.
 | Findings | 6: 3 wrong, 2 of them safety-critical, 2 undetermined, 1 misleading |
 | Confirmed by the independent check | 6 |
 | Fixed | 6 |
-| Points of the critique | 22: 8 accepted and applied, 10 accepted for the experiment program, 2 accepted as revised and not yet applied, 2 with no change |
+| Points of the critique | 22: 8 accepted and applied, 10 accepted for the experiment program, 2 accepted as revised and applied, 2 with no change |
 
 The counts of promises after the round are in the
 [contents table of the specification](../../../../spec/README.md#contents).

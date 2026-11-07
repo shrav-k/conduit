@@ -6,6 +6,8 @@
 # to `secret-provider.v1` and `reveal-secret.v1` to `get-secret.v1`. Its editorial fix E17
 # (docs/proposals/ruling-42/log-editorial.md) says the type of a secret Resource, where it said
 # a secret store's type.
+# Ruling 44 (D06, as revised; log docs/proposals/reaudit/round-6/log-d06-d12.md) took the
+# default implementation out of `mirror.sync.v1`, and `git-mirror.v1` states it instead.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -17,8 +19,8 @@ spec:
 ---
 # A runtime provider's type (PRV-001): a Resource that offers the core package's capability
 # `runtime-provider.v1`, configured with the Docker context it uses. Its type gives the
-# default implementation of each of the capability's three operations, which state none of
-# their own.
+# default implementation of each of the capability's three operations, since an Operation
+# contract states none (CTR-002).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
@@ -73,7 +75,6 @@ spec:
       commit: {type: string, minLength: 1}
     required: [commit]
   effect: Updates the mirror from its remote.
-  implementation: '#git-mirror-server'
 ---
 # A type whose configuration holds a secret reference (SEC-001): `token` holds a reference to
 # a secret Resource, never the token itself. The type requires both places, so the item's
@@ -94,3 +95,7 @@ spec:
     additionalProperties: false
   requires:
     - '#mirror.sync.v1'
+  # Its default implementation of the operation it requires: an Operation contract states none
+  # (CTR-002, TPL-004).
+  implementation:
+    '#mirror.sync.v1': '#git-mirror-server'

@@ -74,6 +74,10 @@
 # "Verification") changed CON-006, which rejects a shared-host requirement where an end runs
 # nothing (V2-01); CON-022, on an input that a later release adds with no `default` (V2-02); and
 # CON-031, on a consumer that is unregistered (V2-09). It added none and removed none.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) changed CON-022, which speaks of an operation
+# that the engine implements, where it said one for which the target selected `engine`. It
+# added none and removed none.
 
 - id: CON-001
   layer: language
@@ -348,15 +352,15 @@
     implementation marked `plain` states no `supports` under PKG-020, so no Conduit is
     instantiated with a filter that an instance it serves must apply. Nor does `engine`, the
     implementation of the core package, under MAN-012, so no Conduit is instantiated that
-    applies a filter and lists an operation for which its target has selected `engine`. A
+    applies a filter and lists an operation that the engine implements, under TPL-004. A
     requirement is matched by that address and that export name alone: the contract's own
     version is the last segment of that name, and the version of the package does not count,
-    because a later release may only add optional inputs that state no `default`, under
-    NAM-024, which are sent only where a document writes them, and an implementation
-    that is sent an argument for an input that its version of the requirement does not declare
-    cannot apply the filter, under IFC-019, so the request reports unavailable and nothing is
-    performed. A filter that an onward request or a hook carries is not counted here: ACC-015
-    checks it against the implementation that the request or the hook would be dispatched to.
+    because a later release may only add optional inputs that state no `default`, under NAM-024,
+    which are sent only where a document writes them, and an implementation that is sent an
+    argument for an input that its version of the requirement does not declare cannot apply the
+    filter, under IFC-019, so the request reports unavailable and nothing is performed. A filter
+    that an onward request or a hook carries is not counted here: ACC-015 checks it against the
+    implementation that the request or the hook would be dispatched to.
   vectors: []
 
 - id: CON-023

@@ -22,6 +22,9 @@
 # docs/proposals/ruling-42/log-editorial.md) call `node.v1` the type of every node, where the
 # description and the list below said the node type, which no promise says; and below, that the
 # engine implements no `get-secret.v1`, where it said that the engine serves no secret store.
+# Ruling 44 (D06, as revised after the ruling; log docs/proposals/reaudit/round-6/
+# log-d06-d12.md) says below that the engine implements the operations the types require,
+# where it said that each operation states the engine as its default.
 #
 # The Type contracts of the core package.
 #
@@ -40,7 +43,7 @@
 #
 # No type states `nodeSelector`, so none puts a rule on where its instances are placed
 # (CTR-004). Each lists under `requires` the operations of the capabilities it offers, and
-# each of those operations states the engine as its default implementation (TPL-004). No core
+# the engine implements each of those operations, with no selection (TPL-004). No core
 # type states `records`, so the records about its instances keep neither inputs nor outputs
 # (CTR-004, REC-002). No core type offers a provider capability: the engine's own runner,
 # machine provider and fetching serve where no provider does (PRV-003), and the engine

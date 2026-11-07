@@ -287,9 +287,9 @@ set up by `open.v1` and retired by `close.v1`.
 | `fetch-package.v1` | `package-source.v1` | The engine, by a provider call | PRV-017 |
 | `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023, PRV-026 |
 
-None of these nine states a default implementation, and `engine` implements none of them
-(MAN-012, SEC-020): a template selects an implementation for each that it needs, or its type's
-default does (TPL-004). A provider call is not a request: no Conduit permits it, no access
+No Operation contract states a default implementation (CTR-002), and `engine` implements none
+of these nine (MAN-012, SEC-020): a template selects an implementation for each that it needs,
+or its type's default does (TPL-004). A provider call is not a request: no Conduit permits it, no access
 decision is made for it, and it is recorded (PRV-005). So no Conduit lists an operation of
 `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PRV-004). A Conduit may
 list `get-secret.v1`, and only the root Interface opens one, for a Resource or an Agent
@@ -361,6 +361,11 @@ from `run.v1` and `stop.v1`.
   the engine gave it. A request made through a Conduit that lists the operation, and that
   names an object or an invocation that does not exist, reports invalid (OPS-029). So does a
   request for `set-up.v1` or `retire.v1` that names a template or a Conduit (LIF-032).
+  `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take the optional input
+  `expectedId`, the ID the actor expects the object it names to have, as Kubernetes's
+  `preconditions.uid`: it names nothing and grants nothing, and where the reference resolves to
+  an object with another ID, as after a name is given to another object (LIF-035), the request
+  reports conflict and changes nothing (LIF-037).
   `register-replacement.v1` names the instance that holds a nested instantiation in
   `instance`, and the name of the declared Conduit or the entry in `nested` (LIF-009, LIF-033).
 - **The resolved form of a reference.** Where a value is a reference, the instance stores
@@ -414,9 +419,10 @@ from `run.v1` and `stop.v1`.
 - No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
   operation arranges, through the engine, work that outlasts its invocation, and no contract
   carries a mark for it (ACC-019, CTR-002).
-- Every management verb states `github.com/shrav-k/conduit/core#engine` as its default
-  implementation. The engine performs it; no process is started and no request crosses the
-  implementation interface.
+- Every management verb is implemented by the engine as a rule: `engine` lists it in
+  conduit.yaml, no Operation contract states a default implementation (CTR-002), and no
+  template or type selects one for it (TPL-003, TPL-004). The engine performs it; no process is
+  started and no request crosses the implementation interface.
 
 ## Results and Conduit's keys
 
@@ -434,8 +440,8 @@ repeat of an invocation that succeeded, the stored outputs are not given: an ope
 states no `effect`, is not a control and starts no model work is dispatched again as a new
 attempt, so that its filters decide afresh; any other reports conflict where it declares outputs
 (OPS-034), and is answered from its outcome where it declares none (OPS-009). A repeat that is
-not dispatched is judged by no filter. A Conduit applies no filter where its target has selected
-`engine` for an operation it lists (CON-022), and a request for an operation of the core package
+not dispatched is judged by no filter. A Conduit applies no filter where the engine implements
+an operation it lists (CON-022), and a request for an operation of the core package
 that carries one reports unavailable (MAN-012). A request through a Conduit that has been closed
 reports refused, and one that names the closed Conduit itself reports invalid (ACC-011,
 OPS-029). A call that names a tool the engine does not present is answered as the protocol
@@ -715,7 +721,7 @@ lifecycle state and the labels reported for it (PLC-008).
 | `server-package.v1` | Schema of the manifest's part | MAN-010, PKG-019 |
 | `server-remote.v1` | Schema of the manifest's part | MAN-010, IFC-041 |
 | `document.v1` | Schema of a document | OBJ-020, SUB-005 |
-| `engine` | Implementation | TPL-004 (every management verb has an implementation), MAN-012 (it states none of `command`, `package` and `remote` and no `supports`) |
+| `engine` | Implementation | TPL-004 (the engine implements every operation it lists, with no selection), TPL-003 (no template or type selects one of them), MAN-012 (it states none of `command`, `package` and `remote` and no `supports`) |
 
 ## What this package does not settle
 

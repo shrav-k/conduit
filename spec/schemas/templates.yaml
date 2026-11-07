@@ -34,6 +34,10 @@
 # re-audit (D07; log docs/proposals/reaudit/round-6/log-core.md), says in the description of
 # `template-controls.v1` that the tool presented for a control shows the template's narrowing,
 # and that a control the map does not list has no tool (IFC-033, IFC-012).
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) says in the description of
+# `implementation-map.v1` that no key is an operation the engine implements (TPL-003), and
+# below that the engine checks it.
 #
 # A template document, and the parts of a template's `spec`.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -90,7 +94,8 @@
 # template's own family (TPL-002); that destinations do not overlap and that a destination's
 # parent is present (INS-010, INS-011); that, where a Conduit template writes no `operations`,
 # the destination of one of its inputs is `/operations` (CON-016); that an implementation
-# implements the operation it is selected for (TPL-005); default implementations (TPL-004); that
+# implements the operation it is selected for (TPL-005); that no key of `implementation` is an
+# operation that the engine implements (TPL-003); default implementations (TPL-004); that
 # the selected implementations include at most one item that is run, and none for an Interface
 # or a Pool (TPL-019), that their label selectors agree with the type's and with each other's
 # (PLC-025) and that their pointers name places the type's schema requires and confines to a
@@ -292,7 +297,9 @@ metadata:
     The `implementation` map of a template or of a Type contract. Each key selects an
     operation, by a qualified reference or, for an operation of the same project or package,
     by `#` and its name, and each value selects an implementation in the same way. A setup
-    hook and a retire hook are selected here like any operation.
+    hook and a retire hook are selected here like any operation. No key is an operation that
+    the core package's implementation `engine` implements: the engine implements each of them,
+    with no selection.
 spec:
   type: object
   propertyNames: {$ref: github.com/shrav-k/conduit/core#selection.v1}

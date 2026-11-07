@@ -210,7 +210,7 @@ says what the promises leave open.
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
 | [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 56 files |
 | [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 33 files |
-| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes | Draft; 35 promises; no vectors |
+| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes, and the expected ID that a lifecycle action may carry | Draft; 36 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 29 promises; no vectors |
 | [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 31 promises; no vectors |
 | [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 14 promises; no vectors |
@@ -220,7 +220,7 @@ says what the promises leave open.
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 44 promises; no vectors |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 15 items |
 
-Every area has been written as promises, 453 in all: 202 of the layer `language`, 207 of the
+Every area has been written as promises, 454 in all: 202 of the layer `language`, 208 of the
 layer `convention` and 44 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
 `schemas/`, `core/` and `promises/manifest.yaml`. Still to come: the conformance vectors, and a
@@ -611,13 +611,16 @@ broker that narrows it (ACC-029, ACC-030;
 [What access does not narrow](#what-access-does-not-narrow); D03, D04); ACC-033 lists its
 routing as one decision list, with no change of behavior (D18); and this page puts the current
 design first, with [reading paths](#reading-paths) (D21). Two further simplifications, as the
-owner revised them after the ruling, are not yet applied to the promises: that a package's own
-Operation contract states no default implementation, while the engine implements the core
-package's operations as a rule (D06), and that the lifecycle actions take an optional expected
-ID, names staying the only address (D12)
-([After the ruling](../docs/proposals/ruling-44/README.md#after-the-ruling)); action A69 of the
-tracker applies them. Round 6's [decisions](../docs/proposals/reaudit/round-6/DECISIONS.md) list what
-changed for each item, and the logs of its editors, with
+owner revised them after the ruling
+([After the ruling](../docs/proposals/ruling-44/README.md#after-the-ruling)), are applied, as
+[their log](../docs/proposals/reaudit/round-6/log-d06-d12.md) lists: no Operation contract
+states a default implementation, a template's selection or its type's default chooses what
+runs, and the engine implements the operations that the core package's implementation `engine`
+lists, with no selection (D06; CTR-002, TPL-003, TPL-004); and names stay the only address,
+LIF-031 unchanged, while `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take an
+optional `expectedId`, which reports conflict where the object named has another ID (D12;
+LIF-037). Round 6's [decisions](../docs/proposals/reaudit/round-6/DECISIONS.md) list
+what changed for each item, and the logs of its editors, with
 [the integration](../docs/proposals/reaudit/round-6/log-integration.md) that made their files
 agree, are beside them; the integration's
 [verification](../docs/proposals/reaudit/round-6/log-integration.md#verification) lists what two

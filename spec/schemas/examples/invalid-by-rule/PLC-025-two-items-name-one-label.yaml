@@ -1,13 +1,16 @@
 # Example. One set of documents. Each is valid alone, and together they must be rejected:
 # the label selectors of the items that a template selects agree on every label that two of
 # them name (PLC-025). The type `shared-directory.v1` names no label. The template
-# `mixed-folder` keeps `files-server`, the default implementation of
-# `example.org/files#directory.establish.v1` in ../valid/files-package/, which asks for
+# `mixed-folder` keeps `files-server` in ../valid/files-package/, the type's default
+# implementation of `example.org/files#directory.establish.v1`, which asks for
 # `kubernetes.io/os: linux`, and selects `legacy-reader` for
 # `example.org/files#directory.read.v1`, which asks for `windows`, so no node could match
 # both. A schema cannot tell: the selectors are in the package's manifest.
 # The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed location to node
 # here.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md): an Operation contract states no default
+# implementation, so the type here states the one that the operation's contract stated.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -23,6 +26,9 @@ spec:
   requires:
     - example.org/files#directory.establish.v1
     - example.org/files#directory.read.v1
+  implementation:
+    example.org/files#directory.establish.v1: example.org/files#files-server
+    example.org/files#directory.read.v1: example.org/files#files-server
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

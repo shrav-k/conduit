@@ -62,6 +62,9 @@
 # none and removed none. Its integration (docs/proposals/reaudit/round-6/log-integration.md)
 # changed a word of NAM-026, whose call is answered as one to a tool that is not presented,
 # since IFC-012 now has one such call, to a control the target does not have, report invalid.
+# Ruling 44 (D06, as revised after the ruling; log
+# docs/proposals/reaudit/round-6/log-d06-d12.md) changed NAM-018, whose default implementation
+# is a type's, since an Operation contract states none. It added none and removed none.
 
 - id: NAM-001
   layer: language
@@ -344,10 +347,10 @@
     The two forms are accepted wherever a promise speaks of the selection of one of the five: a
     template's `type`, a Conduit template's `capability` and `operations`, the `requirement` of
     an applied requirement, the lists in a contract or in an implementation item of a manifest,
-    a default implementation, and the keys of an `implementation`, `controls` or `tools` map.
-    `#directory.read.v1` selects the operation of that name in the document's own project or
-    package. The `from` of an instance or of a nested instantiation names a template and is not
-    a selection: its forms are INS-025.
+    a type's default implementation, and the keys of an `implementation`, `controls` or `tools`
+    map. `#directory.read.v1` selects the operation of that name in the document's own project
+    or package. The `from` of an instance or of a nested instantiation names a template and is
+    not a selection: its forms are INS-025.
   vectors: []
 
 - id: NAM-019

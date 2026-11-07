@@ -99,8 +99,8 @@ these sets reuses the earlier R, I, C or M ruling sets of the archived reviews.
    rewrite left open were settled, by the coordinator or by the owner in ruling 42, which also
    ruled the names of a [vocabulary audit](proposals/vocabulary-audit/README.md); both are
    applied.
-2. The owner rules on the [multi-machine proposal](proposals/multi-machine/README.md), D5 and
-   D20 among it, and the answer is applied.
+2. The owner ruled on the [multi-machine proposal](proposals/multi-machine/README.md) (ruling
+   43), and the answer is applied.
 3. A fifth round of readers reads the rewritten specification, with scenarios across several
    machines, and every confirmed finding is fixed. Then pull request 7 is merged.
 4. The owner starts a cold read by Codex. What that reader needs is in the next section,
@@ -155,7 +155,7 @@ a client keep protocol errors from its model, so an Agent's model may never see 
 was refused. And an open proposal to the protocol, SEP-2145, would turn an unknown tool into
 an error result, which would reverse the first.
 
-**Who decided what.** The next section. In short: rulings 1 to 42 are the owner's. Ruling 39
+**Who decided what.** The next section. In short: rulings 1 to 43 are the owner's. Ruling 39
 accepted every logged decision of the coordinator and choice of an editor made before it, and
 ruling 41 the planner's choices for the rewrite. A reader who disagrees with any of them should
 say so.
@@ -204,7 +204,7 @@ One list of everything that only the owner can settle.
 
 | What | Where it is recorded |
 | --- | --- |
-| D5 and D20: how Conduit works across machines, for requests from the engine to a server on another machine and for a program shipped inside a package. The owner asked for more research, looking ahead to later versions (ruling 42). | [Ruling 42](proposals/ruling-42/README.md); the research and the proposal, when they are written |
+| Nothing at present. Ruling 43 settled the last open question, D5 and D20. | [Ruling 43](proposals/ruling-43/README.md) |
 
 ## Purpose
 
@@ -312,7 +312,7 @@ states, for test 5, that an agent may issue grants to others only within a bound
 ## Ruling log
 
 All rulings are the owner's, in this order: rulings 1 to 37 on 2026-11-05, and rulings 38 to
-42 on 2026-11-06. Each row is the coordinator's summary of the owner's messages, with the
+43 on 2026-11-06. Each row is the coordinator's summary of the owner's messages, with the
 owner's own words quoted where they are marked as quoted; the owner confirmed that labelling in
 ruling 39, point 15. The record linked from a row holds the owner's words in full where the
 ruling was given point by point.
@@ -361,6 +361,7 @@ ruling was given point by point.
 | 40 | Conduit innovates only on connection and access ([record](proposals/ruling-40/README.md)). In the owner's words: "The point of conduit was always to leverage existing infrastructure where possible and only innovate on connection and access"; "We should not innovate on the architecture ourselves just the contracts". Ruled: Conduit owns its documents, connection, access, accountability (what must be recorded) and the shape of its contracts, and everything else is a provider behind a contract, swappable by the user wherever possible, "leaving decisions to the user on architecture and existing tools as long as they meet requirements"; the runtime model becomes a runtime provider contract (run, stop, status); locations stay in the language but a provider reports them, places instances by label and reports a lost machine, while what placement and loss mean for access stays Conduit's; setup graphs reduce to declared dependencies, and an operation built from other operations becomes an ordinary implementation; a request that crosses machines carries cryptographic proof of its sender; one control plane decides every request in the first version, and "a robust version of B [local enforcement] will likely be a requirement for v1"; the changes are made now, before round 5 and the cold read by Codex. |
 | 41 | The review of the whole design against ruling 40, and the secret type ([record](proposals/ruling-41/README.md)). Accepted as recommended: every decision of the [principles review](proposals/principles-review/README.md), among them setup and retirement as two hook operations in place of graphs; a runtime provider contract in the shape of CRI; placement by labels, with machines registered from what a provider reports; policies, composite Conduits, requirement composition, `obliges`, re-exports and rename removed from v0; results, cancellation, diagnostics, conditions, records, implementation items, schemas and identity in the standards' own forms; providers as packages that implement core provider capabilities, picked by the user; the secret type as a core capability that each store's package implements, read only by the engine before a run. "Accept all, though I don't necessarily like the name secret reveal for the contract, we should do another vocab audit as well before we finish up pr 7". Then, on the planner's twenty choices for the rewrite: "Accept all with p2 changed", so `graphs.yaml` is deleted and listed with its IDs in `spec/README.md` ([after the ruling](proposals/ruling-41/README.md#after-the-ruling)). |
 | 42 | The questions the rewrite left open, and the names of the vocabulary audit ([record](proposals/ruling-42/README.md)). "I accept every suggestion except for 1 and 8, I'd like some more research and clarification on how to solve the multi machine issue and be forward looking even if some functionality doesn't exist in v0". Accepted: a request through a closed Conduit reports refused (D6); the engine's own runner passes six variables of its environment and a list set on it (D8); a secret Resource's type offers no other capability (D10); a stop is asked again when an instance on a node declared lost is unregistered (D11); after a restart the engine reads a remote connection's secret again for the setup's caller (D12); `run.v1` carries the identity mechanism's variables and files (D17); `retire-with-resources.v1` goes on past a Resource it cannot retire (R5); the twenty names, among them `secret-provider.v1` and `get-secret.v1`, node for location, idempotency key for operation identity and source for origin. The owner struck none of the coordinator's 43 decisions on the rest ([record](proposals/ruling-41/open-decisions.md)). D5 and D20 wait on research into working across machines. |
+| 43 | Work across machines ([record](proposals/ruling-43/README.md)), after the [research](research/MULTI_MACHINE.md) and the [proposal](proposals/multi-machine/README.md) that ruling 42 asked for, and the coordinator's explanation of each question and of its cost on one machine and for the Model Context Protocol. "Agree all, prepare for the codex audit". Accepted: every server the engine does not run itself sits behind a gate that admits only an enforcement point with proof (D5); a secret header goes only to `https`, or to loopback on an engine that cannot fail over (D5, second part); packaged programs run only on the engine's own runner in v0 (D20); two standard forms of proof, the token form always accepted at the engine's address (Q1); failover stated as outcomes (Q2); providers run again when first needed after a restart (Q3); the shape of v1 recorded in A65 (Q4); the engine's own user said plainly to be inside the domain of trust (Q5); the name `identity` kept. |
 
 ### Later amendments
 

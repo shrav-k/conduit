@@ -1,6 +1,10 @@
 # Work across machines: D5, D20 and the road to local enforcement
 
-Status: **proposed 2026-11-06, for the owner; not ruled.** It answers the owner's ruling on
+Status: **ruled by the owner on 2026-11-06 ([ruling 43](../ruling-43/README.md)): accepted, with
+D5's second part as option b and Q1 tightened, as the ruling records.** The text below is the
+proposal as it was put to the owner.
+
+Was: proposed 2026-11-06, for the owner; not ruled. It answers the owner's ruling on
 questions 1 and 8 of [ruling 42](../ruling-42/README.md): "I'd like some more research and
 clarification on how to solve the multi machine issue and be forward looking even if some
 functionality doesn't exist in v0". Nothing here is accepted, and nothing here is part of the

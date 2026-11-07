@@ -9,7 +9,9 @@ it. Readers 1 to 4 read `spec/` alone. Reader 5 read the whole repository. Reade
 2026-07-28, fetched the same day. The next read is the owner's cold read by Codex
 ([for the next reader](../../../AUDIT.md#for-the-next-reader)). The round's fixes and this
 record came after `d0c425f` and are not in it: they are in `main` from the merge of pull
-request 7 on, which is what the next reader reads.
+request 7 on, which is what the next reader reads. (Note of 2026-11-07: pull request 7 was
+merged as commit `c4d7d33`, and the next read was [round 6](../round-6/README.md), which read
+that commit.)
 
 | | Round 2 | Round 3 | Round 4 | Round 5 |
 | --- | --- | --- | --- | --- |
@@ -39,7 +41,7 @@ vectors. Round 5 reported ten unsafe findings. All ten are fixed, and no unsafe 
 | The decisions on the findings, in seven areas, F1 to F7 | [DECISIONS.md](DECISIONS.md) |
 | The fix pass, one pass for each area, each in its own files | [F1](log-fix-F1.md), [F2](log-fix-F2.md), [F3](log-fix-F3.md), [F4](log-fix-F4.md), [F5](log-fix-F5.md), [F6](log-fix-F6.md), [F7](log-fix-F7.md) |
 | The integration, which made the files agree, with its one choice, on PLC-023 and LIF-036 | [log-fixes.md](log-fixes.md) |
-| The verification of the fixes by two verifiers, and the point it leaves for the owner | [log-fixes.md, "Verification"](log-fixes.md#verification) |
+| The verification of the fixes by two verifiers, and the point it left for the owner, V6, which the coordinator then settled | [log-fixes.md, "Verification"](log-fixes.md#verification) |
 | The check of the handoff to the next reader, and what was done about it | [handoff-check.md](handoff-check.md), [below](#handoff-check) |
 
 | Reader | Sees | Looks for | Report |
@@ -98,7 +100,11 @@ Open when the round ended, for whoever reads next:
 - The owner may want to read some decisions first: the eight that
   [DECISIONS.md](DECISIONS.md#for-the-owner) lists, the integration's
   [choice](log-fixes.md#the-choice-of-this-pass) on PLC-023 and LIF-036, and five decisions of
-  the verification that each settle a behavior: V2-01, V2-02, V2-04, V2-15 and V7.
+  the verification that each settle a behavior: V2-01, V2-02, V2-04, V2-15 and V7. (Note of
+  2026-11-07: ruling 44 reversed V2-15, on round 6's finding
+  [6-1-01](../round-6/DECISIONS.md#the-six-findings). The protocol's -32021 for a client
+  capability that the call did not declare is now read as any other error, except where
+  Conduit's own contract binds the server to have done nothing.)
 - The text that this round changed, 101 promises changed and 3 added, has been read by its
   editors and by the two verifiers, and not by a cold reader.
 - Reader 6 checked the interface as it stood at `d0c425f`. The round changed 22 of its 41
@@ -110,6 +116,12 @@ Open when the round ended, for whoever reads next:
   no decision asked for either rule.
 - DECISIONS.md gives 203 promises of the layer `language` after the round. The recount gives
   202, since M05 moved SEC-024 to `convention`. The record keeps its figure.
+
+Note of 2026-11-07: [round 6](../round-6/README.md), the owner's cold read by Codex, read the
+whole repository at `c4d7d33`, with this round's changes in it, though selectively, as its
+report says. Its finding 6-1-01 checked one of the interface's readings against the published
+protocol, the -32021 of V2-15, and ruling 44 reversed that reading. The two limits of
+`tools/check_schemas.py` above still stand.
 
 ## Handoff check
 
@@ -126,9 +138,9 @@ changed, and no file under `spec/` but `spec/README.md`.
 | H-02 | wrong | fix | In the defect register L155 is ruled by ACC-003 and ACC-036, as M69 has it, and L156 by CON-004 and ACC-006, which have decided it since the last pass of round 2. The register's triage and the tracker's row on language defects say 16 ruled and 29 answered by an item of the list; the register's status values name round 5's removal of DL11 beside ruling 41's narrowing, and its history has a row for it. |
 | H-03 | wrong | fix | In the tracker's later amendments, the rows for rulings 7 to 9, 29 and 30, and 32 and 33 add what M22 and M41 changed. A new table under them, "Changes that no ruling has accepted", lists M22 (decision 8c), M41 with the integration's choice on PLC-023 and LIF-036 (decision 17), and M69 (DL11). The overview's sentence on a left-out `placement` says that the machine provider places an instance that has a program to run, and that one that has none is placed on `local` (PLC-002). |
 | H-04 | wrong | fix | The tracker's paragraph "Left for a reader by the records" marks each point with what settled it: the check against the protocol and IFC-038 by reader 6; the control in progress by M35; MAN-017 by M30; PRV-023's `()`, PRV-024 and SEC-013's end of a connection by ruling 42's verification; PRV-021's held stop and SEC-023's failing read by the items that waited on ruling 43. It lists as still open the four the report names: TPL-004 and CTR-004 on a hook's default, a repeated named argument such as `-e`, PLC-024's form of a cause, and the late onward request (OPS-028, A65). |
-| H-05 | misleading | fix in part | Step 4 of "What happens next" reads "Next: pull request 7 is merged", once round 5's fixes and record are committed to it. "For the next reader" says which text to read: not `d0c425f`, but the head of `docs/pre-codex`, or of `main` once pull request 7 is merged, in a tree that holds this directory. This README says the same. Not done: the commit and push, which this pass was told not to make. The commit cannot be named until it exists; the coordinator names it here and in the tracker when it commits. |
+| H-05 | misleading | fix in part | Step 4 of "What happens next" reads "Next: pull request 7 is merged", once round 5's fixes and record are committed to it. "For the next reader" says which text to read: not `d0c425f`, but the head of `docs/pre-codex`, or of `main` once pull request 7 is merged, in a tree that holds this directory. This README says the same. Not done: the commit and push, which this pass was told not to make. The commit cannot be named until it exists; the coordinator names it here and in the tracker when it commits. Note of 2026-11-07: pull request 7 was merged by squashing as commit `c4d7d33`, which round 6 read; step 4 of "What happens next" in the tracker reads "Done" and names it. |
 | H-06 | misleading | fix | The tracker's definition of unsafe reads: "any by which an engine that keeps every promise could grant access it should not, leak a secret, lose or repeat an effect, or report a wrong result", as round 5 classed M01 and 5-4-02. |
-| H-07 | misleading | fix | "Waiting for the owner" holds V6, A20 and A21, says that the gate's G8 and G11 also need the owner and that the proposals of A18, A65, A66 and A67 come to the owner once written, and moves what ruling 43 settled to a sentence under the table. |
+| H-07 | misleading | fix | "Waiting for the owner" holds V6, A20 and A21, says that the gate's G8 and G11 also need the owner and that the proposals of A18, A65, A66 and A67 come to the owner once written, and moves what ruling 43 settled to a sentence under the table. Note of 2026-11-07: V6's row was removed when the coordinator settled V6, and the table now holds A20, A21 and what round 6 left for the owner. |
 | H-08 | misleading | fix | The tracker's row on the readiness gate gives the state as assessed on 2026-11-06, before rulings 40 to 43, and not since, and says that G1's only stated shortfall, secrets, is now written and that the rows for G7, G8 and G9 cite what has since changed. The gate is not assessed again here: that assessment was the owner's to confirm under ruling 39, point 8. |
 | H-09 | minor | fix | A61's status adds round 5's reader 5: 14 findings, 7 of them misleading, all fixed as M100 to M111, M30 and M87, with links to its report and to F7 of the decisions. |
 | H-10 | minor | fix | "For the next reader" links this README for the counts of rounds 2 to 5, and the re-audit record for round 1's. |

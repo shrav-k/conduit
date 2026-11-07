@@ -3,8 +3,10 @@
 Not binding. This is a short tour of the language in ordinary words, written from
 [spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md). It was
 last read against the specification on 2026-11-07, as
+[ruling 44](proposals/ruling-44/README.md) left it, which settled
+[round 6](proposals/reaudit/round-6/README.md) of the re-audit after
 [ruling 43](proposals/ruling-43/README.md) and the fixes of
-[round 5](proposals/reaudit/round-5/DECISIONS.md) of the re-audit left it: with the names that
+[round 5](proposals/reaudit/round-5/DECISIONS.md): with the names that
 [ruling 42](proposals/ruling-42/README.md) accepted from the vocabulary audit (among them node,
 machine provider, `nodeSelector`, idempotency key, source and conformance document) and its
 editorial fixes, and with ruling 43's answer on work across machines, which
@@ -72,6 +74,13 @@ Resolving runs nothing. If no document is rejected, the engine registers the tem
 instances and makes the contracts available to the project; otherwise it registers nothing.
 Registering an instance document makes the instance and the instances its template nests in
 it. Nothing is set up, and nothing is opened (INS-016).
+
+A template that exists is changed only by replacing it, with `replace.v1`, which names its
+current revision and hands over the new document with the contracts and the manifest of its
+project. The engine resolves them as it resolves a registration, so a contract, an
+implementation and a template edited together reach the instances made afterwards, while the
+instances made before keep what they resolved (SUB-009, INS-020). A replace changes one template
+and registers nothing.
 
 Where a document refers to another object, the instance stores the kind and the ID of the
 object that the reference resolved to, written `{kind, id}`. Only the engine writes that form:
@@ -173,6 +182,17 @@ Conduit to `access` that lists the opening operation (ACC-006). That Conduit can
 which names the Pools, targets and operations it covers. One that carries no bound is
 unlimited (ACC-029). A right to open is passed on only as it is or narrower, and since a bound
 never limits by filters, whoever holds one may open unfiltered access within it (ACC-030).
+
+Two limits of this version follow, and the specification states them plainly
+([what access does not narrow](../spec/README.md#what-access-does-not-narrow)). An agent that
+reads a directory through a Conduit with a filter, and that may also open Conduits to that
+directory, can open itself one with no filter: a filter limits only its own Conduit (ACC-009,
+ACC-030). And access to `management` cannot be narrowed to one template: a Conduit to it carries
+no bound and can apply no filter, so one that lists `register.v1` trusts its consumer with every
+registration that `management` authorizes (ACC-030). To let an agent start a reviewer from one
+approved template and nothing else, a broker is used: a Resource whose own operation allows only
+that, and whose implementation makes the registration through the broker's own Conduit to
+`management`. The broker's code, and not the engine, keeps that limit.
 
 Access begins at first start. Five objects then exist: the Pool `system`, the node `local`,
 the Resources `management` and `access`, and the Interface `root`, which has an open Conduit to
@@ -330,11 +350,23 @@ A caller may attach an idempotency key to a request so that a repeat is recogniz
 key is scoped to the caller, the target and the instance that sent the request, and at most one
 invocation exists for one of each and one key (OPS-008). Nothing is dispatched
 again unless the caller repeats the request (IMP-007). A repeat of a request whose invocation
-succeeded is answered with its outputs for as long as the engine keeps them, where every filter
-that applies to the repeat was sent with the invocation, and otherwise reports conflict
-(OPS-009, OPS-034); a repeat of one that has not ended reports conflict too (OPS-032). Each
-conflict carries the engine's ID for the invocation, and its diagnostic names the promise that
-tells the two apart. A caller that lost a result repeats its request.
+succeeded is answered with its outputs for as long as the engine keeps them, and otherwise
+reports conflict (OPS-009, OPS-034). Where a filter applies to the repeat, nothing is given that
+the filter has not judged now, since a filter may forbid now what it permitted before, as one
+that allows a read only until a deadline does. A repeat of an operation that changes nothing,
+is not a control and starts no model work is then dispatched again, so that the implementation
+applies the filter afresh (OPS-024). A repeat of any other operation is answered with its
+outcome alone where it declares no outputs, and otherwise reports conflict rather than give the
+stored outputs (OPS-009, OPS-034). A repeat of an invocation that has not ended reports conflict
+too (OPS-032). Each conflict carries the engine's ID for the invocation, and its diagnostic
+names the promise that tells the cases apart. A caller that lost a result repeats its request.
+
+The error that a server not written for Conduit returns when it needed a capability that the
+call did not declare, such as one to ask the user a question, does not prove that it did
+nothing: the protocol does not say that a server answers so before it acts. So for an operation
+with an effect it leaves the outcome unknown, as that server's other errors do, invalid
+parameters apart (IFC-010). An implementation that carries Conduit's keys is bound to answer
+that error only where it has done nothing, and its outcome is then failed (IFC-047, OPS-007).
 
 What follows an unknown outcome is fixed. A repeat of the request is dispatched as a new
 attempt only if the operation's contract declares `deduplicates: true` and the implementation
@@ -349,10 +381,14 @@ otherwise, or where that Pool is retired or the instance no longer exists (ACC-0
 finds each invocation whose outcome is unknown and that concerns an instance in `unreconciled`
 in the instance's status, even after the records are purged (LIF-013).
 
-A control is an operation that changes stored settings. It applies exactly the values it is
-sent, or fails (REV-007). A request to change an object names the object's current revision,
-and one that names another reports conflict (REV-002). While a setup, a retirement or a change
-of an instance is in progress, another request for one reports conflict at once (REV-014).
+A control is an operation that changes stored settings. Each of its inputs sets one setting,
+and no two of them set one place, or a place inside another (CTR-006). It applies exactly the
+values it is sent, or fails (REV-007). A template may narrow a control's inputs, or leave a
+control out, and the tool that the engine presents for it shows both: the narrowed input, and no
+tool for a control that the template leaves out (IFC-033, IFC-012). A request to change an
+object names the object's current revision, and one that names another reports conflict
+(REV-002). While a setup, a retirement or a change of an instance is in progress, another
+request for one reports conflict at once (REV-014).
 
 Model work starts only as the effect of an operation whose contract is marked as starting it,
 dispatched through an open Conduit that lists it (IMP-001). Setup, retirement and hooks never
@@ -380,7 +416,10 @@ A contract is a document that states what something is. There are five kinds: `T
 `Capability`, `Operation`, `Requirement` and `Schema`. Its name ends in its compatibility
 version, such as `.v1`. An Operation contract is written as the Model Context Protocol writes a
 tool: its inputs and outputs are the properties of its `inputSchema` and `outputSchema`
-(CTR-002).
+(CTR-002). Beside `type: object`, the root of each may use any keyword of the schema profile, as
+the protocol allows, such as a `oneOf` that takes a path or a URI and not both; a control's root
+keeps to `type`, `properties`, `required` and `additionalProperties`, because every input of a
+control but its revision may be left out (CTR-012).
 
 A package is what an author ships: a manifest and the things it exports, which are only its own
 documents. It is identified by an address, such as `example.org/files`, and each release has a
@@ -404,9 +443,11 @@ operations is an ordinary implementation: a server that makes onward requests.
 
 The shared wire between an engine and an implementation, and between an engine and a consumer,
 is the Model Context Protocol. An operation is one tool, and the engine presents to each
-consumer, as tools, the operations its open Conduits list (IFC-012). Conduit's own keys travel
-in `_meta` as an extension of the protocol (IFC-037), and an implementation that carries them
-receives its instance's settings with every request (IFC-006).
+consumer, as tools, the operations its open Conduits list (IFC-012). The schema of each tool
+holds a copy of every schema that the contract refers to, so a client reads it with no package
+at hand (IFC-033). Conduit's own keys travel in `_meta` as an extension of the protocol
+(IFC-037), and an implementation that carries them receives its instance's settings with every
+request (IFC-006).
 
 The core package is built into every engine. It exports the templates that first start
 instantiates, the contracts of the management verbs, of the hooks and of the provider
@@ -432,12 +473,14 @@ needs, such as a Docker context (PRV-001). An Agent or a Resource names the runt
 that runs it in its standard argument `runtime`, as a Kubernetes Pod names its runtime class,
 and it is fixed for life (PRV-006). The machine provider and the package-source providers are
 owned by `system`: one machine provider at a time, and one package-source provider for each
-scheme (PRV-013). A runtime provider is not retired while an instance names it (PRV-020). A
-user who picks none gets the engine's own (PRV-003). The servers of the runtime, machine and
-package-source providers run on the engine's own runner, on the engine's machine (PRV-002), so
-they stop when the engine stops, or the part of it that runs them; after that, the engine runs
-each again when it first needs to call it, reading its secrets for the caller of the setup that
-last ran it (PRV-026).
+scheme (PRV-013). The schemes that a package-source provider claims are fixed for its life: its
+type lists no control that could change them, so a scheme is moved by retiring one provider and
+registering another (PRV-016). A runtime provider is not retired while an instance names it
+(PRV-020). A user who picks none gets the engine's own (PRV-003). The servers of the runtime,
+machine and package-source providers run on the engine's own runner, on the engine's machine
+(PRV-002), so they stop when the engine stops, or the part of it that runs them; after that,
+the engine runs each again when it first needs to call it, reading its secrets for the caller of
+the setup that last ran it (PRV-026).
 
 The engine's own runner passes a program it starts, of the engine's own environment, only
 `HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER`, as the stdio clients of the Model

@@ -30,6 +30,10 @@
 # (TPL-019, M06), a bound place confines its value to a string, a number, a boolean or null
 # (MAN-017, M30), and SEC-024 covers an item selected for `get-secret.v1` and a loopback host
 # on an engine that can move (M01, M02).
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
+# re-audit (D07; log docs/proposals/reaudit/round-6/log-core.md), says in the description of
+# `template-controls.v1` that the tool presented for a control shows the template's narrowing,
+# and that a control the map does not list has no tool (IFC-033, IFC-012).
 #
 # A template document, and the parts of a template's `spec`.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -302,7 +306,9 @@ metadata:
     The `controls` map of a template. Each key selects a control of the template's type, by a
     qualified reference or, for a control of the same project or package, by `#` and its name.
     Each value may narrow that control's inputs, each named as the control's `inputSchema`
-    names it.
+    names it. The tool that the engine presents for the control on an instance of the template
+    gives each input so narrowed `allOf` of the contract's schema and the template's, and a
+    control that a `controls` map does not list has no tool on the template's instances.
 spec:
   type: object
   propertyNames: {$ref: github.com/shrav-k/conduit/core#selection.v1}

@@ -204,6 +204,11 @@ the owner can strike it. Every finding holds. 28 are fixed; 1, V6, is
 [for the owner](#for-the-owner), with options and a recommendation. Nothing was committed or
 staged.
 
+Note of 2026-11-07: V6 was settled afterwards by the coordinator, under rulings 37 and 38, as
+its option 1, and applied to PLC-007 and PLC-002, as the end of
+[for the owner](#for-the-owner) records. All 29 findings of this verification are resolved;
+the row for V6 below, and the heading of that section, keep their words as written.
+
 | Finding | Severity | Decision | What changed |
 | --- | --- | --- | --- |
 | V1 | contradiction | fix | IFC-022's `then`: where only whether the named instance still exists cannot be read, the request establishes neither, and is decided under ACC-037, as IFC-032 says. DL13's "exactly one instance or none" says the same. |
@@ -236,6 +241,17 @@ staged.
 | V2-15 | minor | fix | IFC-010 reads the protocol's -32021 for a client capability that the call did not declare as failed, as it reads -32602, since the protocol has a server answer so where acting would need that capability; OPS-007 excepts it for an implementation that carries Conduit's keys, and IFC-045 says why, as IFC-008 reads the -32021 that names Conduit's extension. |
 | V2-16 | minor | fix | IFC-015 says that the engine gives a `remote` item no means to make an onward request, as a consequence of IFC-041, and TPL-017 no longer implies that a hook reached by `remote` makes onward requests. No rule is added on what DL13's authorization server issues, as M54 added no mechanism. |
 
+Note of 2026-11-07: ruling 44 reversed V2-15, on finding 6-1-01 of
+[round 6](../round-6/DECISIONS.md#the-six-findings), which an independent check confirmed. The
+protocol has a server answer -32021 where "processing" a request needs a capability that it did
+not declare, and says nothing of whether the server acted first, so the reason given for V2-15
+does not follow from it. The error is now read as any other error, failed for an operation
+that declares no effect and unknown for one that declares one, except where Conduit's own
+contract binds the server to have done nothing: the -32021 that names Conduit's extension
+(IFC-008), and an implementation that carries Conduit's keys, which answers so only before
+acting (IFC-045). IFC-007, IFC-010, IFC-045 and OPS-007 changed together. The row above keeps
+its words as written.
+
 ### Counts
 
 Counted with a script on the working tree after the verification: 452 promises, 202 of the
@@ -256,6 +272,9 @@ sentence in its history. In the core package the descriptions of `register.v1`, 
 and `shared-host.v1` changed. Outside `spec/`, the verification changed the tracker (V6's row
 under "Waiting for the owner", V12), the re-audit record (V13), the choices of ruling 43's
 verification (V11), `INDEPENDENT_BUILDS.md` (the counts) and the overview (V2-05).
+
+Note of 2026-11-07: V6's row under "Waiting for the owner" was removed from the tracker when
+the coordinator settled V6.
 
 ### For the owner
 
@@ -288,6 +307,10 @@ runs nothing; V2-02, which forbids a `default` on an input that a later release 
 requirement; V2-04, which exempts the machine provider's reads from PLC-023; V2-15, which reads
 the protocol's -32021 for a capability that the call did not declare as failed; and V7, which
 lets a gate pass the engine's token on to the server.
+
+Note of 2026-11-07: in V6 above, the sentence that records its settlement stands before the
+recommendation; the settlement took the recommended option, 1. Ruling 44 reversed V2-15, as
+the note under the table of this verification says.
 
 ### Checks
 

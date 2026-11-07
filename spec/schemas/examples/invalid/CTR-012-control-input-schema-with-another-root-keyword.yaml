@@ -1,0 +1,30 @@
+# Example. It must be rejected:
+# the root of a control's `inputSchema` holds `type: object` and may hold `properties`,
+# `required` and `additionalProperties`, and nothing else (CTR-012). A control may be sent any
+# of its inputs but `revision` and leave the others out (REV-006), and a keyword at its root,
+# such as this `oneOf`, would make some of them required after all. An Operation that is not a
+# control may say this at its root, as `directory.find.v1` in examples/valid/files-package does.
+# Round 6 of the re-audit, under ruling 44 (D14; log
+# docs/proposals/reaudit/round-6/log-core.md), made this example a control and renamed the
+# file, which was CTR-012-operation-input-schema-with-another-root-keyword.yaml: the root of
+# any other Operation contract may now hold any keyword of the profile.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-limits.v1
+spec:
+  inputSchema:
+    type: object
+    properties:
+      readLimit: {type: integer, minimum: 1}
+      depth: {type: integer, minimum: 1}
+      revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+    required: [revision]
+    oneOf:
+      - required: [readLimit]
+      - required: [depth]
+  effect: Changes the read limit or the depth of a listing.
+  changes:
+    readLimit: /readLimit
+    depth: /listing/depth

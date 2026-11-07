@@ -5,7 +5,10 @@ things they share. This repository holds the language's design. No Conduit engin
 
 **If you were asked to build an engine, stop.** Engine builders work only from the `build-base`
 branch and must not read this branch. That branch is not yet published, and the builds have not
-started. See [independent builds](docs/implementation/INDEPENDENT_BUILDS.md).
+started. See [independent builds](docs/implementation/INDEPENDENT_BUILDS.md). The first build
+that ruling 44 makes the next milestone, a reference model with the first providers, is not one
+of those builds: it is written beside the language, and its nature is to be discussed with the
+owner before it starts.
 
 ## Read first
 
@@ -100,8 +103,11 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   request 7, on the branch `docs/pre-codex`, carries the work of rulings 39 to 43, the rewrite
   of the specification around provider contracts, the vocabulary audit, work across machines
   and [round 5](docs/proposals/reaudit/round-5/README.md) of the readers. It was merged by
-  squashing on 2026-11-07. Work after it goes on a new branch, with its own pull request. Merges to `main` are
-  squashed, with a message written by hand.
+  squashing on 2026-11-07. Pull request 8, on the branch `audit/round-6-codex`, carries
+  [round 6](docs/proposals/reaudit/round-6/README.md), the owner's cold read by Codex, with its
+  decisions and [ruling 44](docs/proposals/ruling-44/README.md). Work after it goes on a new
+  branch, with its own pull request. Merges to `main` are squashed, with a message written by
+  hand.
 
 ## Checks
 

@@ -34,6 +34,12 @@ what it says of a `remote` URL, which holds no variable and to which an item sel
 which is confined to a string, a number, a boolean or null. Its
 [verification](../docs/proposals/reaudit/round-5/log-fixes.md#verification) said above that
 ruling 42 struck none of the coordinator's decisions (V10).
+[Ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, on round 6 of the re-audit,
+changed what this page says of the root of an Operation contract's schemas, where the whole
+profile may now be used beside `type: object`, a control's apart (D14); added what the schema of
+a tool that the engine presents is made of (finding 6-1-04); and added how two pointers are
+compared (finding 6-1-03), as the
+[log of its docs editor](../docs/proposals/reaudit/round-6/log-specdocs.md) says.
 
 Schemas are not what distinguishes Conduit. This part of the specification invents nothing: it
 selects existing standards and narrows them. Where a standard defines a meaning, that meaning
@@ -53,7 +59,7 @@ Schema contract `schema.v1` in [schemas/schema.yaml](schemas/schema.yaml), and
 | Numbers that are not integers | IEEE 754, binary64 | A number that has a fractional part is read as a binary64 value, which is what a schema checks and what equality compares (SCH-020). One whose magnitude is greater than the largest finite binary64 value is rejected (SCH-021). |
 | Schemas | JSON Schema 2020-12, core and validation, with the format-assertion vocabulary | The meaning of every keyword of the profile, the definition of integer, and the definition of equality. A format the profile lists is asserted, not only annotated (SCH-001). |
 | `pattern` | ECMA-262 regular expressions, in the edition that JSON Schema 2020-12 cites | The dialect of a `pattern`, as JSON Schema recommends. A pattern is matched in Unicode mode, which is the `u` flag (SCH-016). |
-| Pointers into values | JSON Pointer, RFC 6901 | The syntax of an input's destination, of a value of a control's `changes` and of a value of an implementation item's `environment`, `packageArguments` or `headers`, in the string syntax of section 3 and not the URI fragment form of section 6 (OBJ-016). The `-` token is not accepted in a destination. |
+| Pointers into values | JSON Pointer, RFC 6901 | The syntax of an input's destination, of a value of a control's `changes` and of a value of an implementation item's `environment`, `packageArguments` or `headers`, in the string syntax of section 3 and not the URI fragment form of section 6 (OBJ-016). The `-` token is not accepted in a destination. No two pointers of a control's `changes` are equal or lie one inside the other (CTR-006), as no two destinations of a template's inputs do (INS-010). Two pointers are compared by their reference tokens, each with `~1` and `~0` read as `/` and `~`, as section 4 evaluates them: one lies inside another where the other's tokens begin its own, the empty pointer lies over every other, and `/a~1b`, one token, is not `/a/b` (CTR-006, PRV-016). |
 | `date-time`, `date` | RFC 3339, section 5.6 | Format grammar. |
 | `duration` | RFC 3339, appendix A | Format grammar. |
 | `uri` | RFC 3986 | Format grammar. |
@@ -68,7 +74,7 @@ Schema contract `schema.v1` in [schemas/schema.yaml](schemas/schema.yaml), and
 | Package archives | tar, as POSIX (IEEE Std 1003.1) defines it, compressed with gzip, RFC 1952 | A package's archive is a gzip-compressed tar file, and the digest is taken over the compressed file as distributed (PKG-022). Which of the tar formats and extensions an engine reads is item DL7 of the [implementation-defined list](implementation-defined.yaml). |
 | Host part of an address | Host names, RFC 1123, section 2.1 | The host part of a package's address: a DNS name written in lowercase, with labels of letters, digits and hyphens, each at most 63 characters, at least one dot, no port and no trailing dot. A host whose last label is all digits is not a host name (NAM-001). |
 | Internationalized host names | IDNA, RFC 5890 | An internationalized name is written in its ASCII form, with `xn--` labels (NAM-001). |
-| The implementation interface | Model Context Protocol, revision 2026-07-28 | The wire between an engine, its implementations and its consumers, and the baseline revision of this version of the specification (IFC-002). The protocol is adopted as it is: an engine and an implementation keep every requirement of the revision in use, and this specification repeats none of them (IFC-001). The protocol's tasks extension is outside the baseline revision, and may be used too (IFC-016). An Operation contract's `inputSchema` and `outputSchema` are written as the protocol's tool definition writes them (CTR-002, CTR-012). |
+| The implementation interface | Model Context Protocol, revision 2026-07-28 | The wire between an engine, its implementations and its consumers, and the baseline revision of this version of the specification (IFC-002). The protocol is adopted as it is: an engine and an implementation keep every requirement of the revision in use, and this specification repeats none of them (IFC-001). The protocol's tasks extension is outside the baseline revision, and may be used too (IFC-016). An Operation contract's `inputSchema` and `outputSchema` are written as the protocol's tool definition writes them (CTR-002, CTR-012). Its `inputSchema` holds `type: object` at its root and any keyword of JSON Schema 2020-12 beside it, composition keywords among them, and its `outputSchema` any schema; the protocol advises that the branches of a composition at the root assert only which properties are present. An Operation contract may use every keyword of the profile at the root of either, beside `type: object`, which it keeps for `outputSchema` too because its outputs are the members of `structuredContent`, keyed by name (IFC-001); a control's schemas hold at their root only `type`, `properties`, `required` and `additionalProperties` (CTR-012). |
 | Diagnostics | SARIF 2.1.0, its `result` | The core schema `diagnostic.v1` is SARIF's `result` reduced to `ruleId`, `level`, `message.text` and the logical locations of `locations`, whose fully qualified name is a JSON Pointer; `ruleId` is the ID of a promise (IFC-025). |
 | Records | CloudEvents 1.0 | The core schema `record.v1` is a CloudEvent whose `data` holds the fields of a record (REC-002). |
 | Conditions | Kubernetes `metav1.Condition` | Inspection reports `conditions` in that shape, as the core schema `condition.v1` gives it, without the optional `observedGeneration`, with `lastHeartbeatTime` and `source` added as Conduit's own (LIF-011). |
@@ -135,3 +141,20 @@ cited in the table above is the one that is checked (SCH-004).
 
 A schema of an existing Model Context Protocol server, one that was not written for this
 specification, keeps the rules of its own dialect (SCH-014).
+
+Nor does the profile, or CTR-012, govern the schemas of a tool that the engine presents: they
+are the engine's, made for the wire from the contract's own, and the engine checks requests and
+results against the contract (IFC-033). They can be read with no package at hand. Each holds,
+under the `$defs` of its root, one copy of each Schema contract that the contract's schemas
+reach, directly or through other contracts, keyed by the contract's qualified reference with `@`
+and the version of the package or project that holds it after the address, so that no two
+packages, and no two versions of one, share a key. Every `$ref` in it is a JSON Pointer within
+it: one that named a contract points to that contract's copy, and one that pointed into a
+schema points to the same place in the copy, with `~` and `/` escaped as RFC 6901 escapes a
+reference token and `#` written `%23`, as a URI fragment needs. The keywords written beside a
+`$ref` are kept, and a contract that refers to itself refers to its own copy. A contract whose
+schema holds no `$ref` may be written in the place of a reference to it beside which no keyword
+is written, instead of being copied. This follows
+the bundling of JSON Schema 2020-12, section 9.3, except that a copy carries no `$id` and its
+pointers are rewritten in its place. For a control, an input that the target's template narrows
+has the schema `allOf` of the contract's and the template's (TPL-010, IFC-033).

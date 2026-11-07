@@ -34,9 +34,11 @@ The records of the rulings number their own decisions, and some reuse a letter. 
 from a record is therefore written with the record's name, as in "re-audit decision G1".
 The rows of the ruling log are not rewritten, so in the rows of rulings 42 and 43, and wherever
 an identifier follows the number of one of them, as in "ruling 42 (D6)" or "ruling 43 (Q4)", a
-D, R or Q is one of the two records before the last in the table below. An M is round 5's,
-in the last row, as is a V or a V2- written with round 5 or its verification, as in "V6 of the
-verification of round 5's fixes".
+D, R or Q is one of the open questions after the rewrite or of the multi-machine proposal, in
+the table below. An M is round 5's, as is a V or a V2- written with round 5 or its
+verification, as in "V6 of the verification of round 5's fixes". In the row of ruling 44, and
+wherever a D or an E is written with round 6, as in "D07 of round 6", it is one of round 6's
+design critiques or evidence cases, in the last row.
 
 | Prefix | Meaning | Record |
 | --- | --- | --- |
@@ -61,6 +63,7 @@ verification of round 5's fixes".
 | **D**, **R** | The questions that the rewrite under ruling 41 left open, D1 to D20 and R1 to R28, numbered as in [its integration log](proposals/ruling-41/log-integration.md#what-remains) | [open questions after the rewrite](proposals/ruling-41/open-decisions.md) |
 | **Q** | The five smaller questions on work across machines, Q1 to Q5 | [multi-machine](proposals/multi-machine/README.md) |
 | **M**; **V**, **V2-** | Round 5 of the re-audit: its items M01 to M111, into which the coordinator merged the readers' findings, and the findings of the verification of its fixes, V1 to V13 and V2-01 to V2-16. A V here is never a vocabulary decision, and M is not the M ruling set of the archived reviews | [round 5's decisions](proposals/reaudit/round-5/DECISIONS.md), [its fix log](proposals/reaudit/round-5/log-fixes.md#verification) |
+| **6-1-**; **D**, **E** | Round 6 of the re-audit, the owner's cold read by Codex: its findings 6-1-01 to 6-1-06, its design critiques D01 to D22 and its evidence cases E01 to E20, always written with two digits and with round 6. A D here is never a disagreement of the plan audit, and an E never one of its probes | [round 6's decisions](proposals/reaudit/round-6/DECISIONS.md), [its report](proposals/reaudit/round-6/design-critique.md) |
 
 A promise has an identifier of letters, a hyphen and three digits, such as `CON-001`. The
 letters name its file; [spec/README.md](../spec/README.md#contents) lists the files. None of
@@ -89,15 +92,15 @@ these sets reuses the earlier R, I, C or M ruling sets of the archived reviews.
 
 | Item | State on 2026-11-07 |
 | --- | --- |
-| Specification | A draft, in [spec/](../spec/README.md): numbered promises in three layers (the language, the shared conventions and the implementation interface), with the definitions, the schema profile, the implementation-defined list, the core package as documents, the JSON Schemas of every document and valid and invalid examples. Its [contents table](../spec/README.md#contents) gives the files and the counts. The owner accepted it as it stood at ruling 39, and it was rewritten around provider contracts under rulings 40 to 43 ([plan and logs](proposals/ruling-41/PLAN.md), [ruling 42](proposals/ruling-42/README.md), [ruling 43](proposals/ruling-43/README.md)). No promise has a conformance vector. |
-| How it was checked | Four rounds of cold readers read `spec/` before the rewrite under rulings 40 to 43 ([re-audit](proposals/reaudit/README.md)): about 170 problems in round 1, counted by class, then 125, 44 and 38 findings in the three reports on `spec/`. The interface was checked twice against the published Model Context Protocol ([first](proposals/reaudit/round-2/mcp-citations.md), [second](proposals/reaudit/round-4/mcp-recheck.md)). [Round 5](proposals/reaudit/round-5/README.md) read the rewritten specification at commit `d0c425f`: 105 findings in the five reports on `spec/`, 10 of them unsafe, and 14 from the reader of the whole repository. One of the five reports was a third check against the protocol. No round was clean. Every finding is resolved and logged: in round 5, 110 of the 111 items that the findings were merged into are fixed and 1 is rejected. Two verifiers then checked round 5's fixes and reported 29 findings, none unsafe: 28 are fixed, and 1 waits for the owner. The text that round 5 changed, 101 promises changed and 3 added, has not been read cold. |
+| Specification | A draft, in [spec/](../spec/README.md): numbered promises in three layers (the language, the shared conventions and the implementation interface), with the definitions, the schema profile, the implementation-defined list, the core package as documents, the JSON Schemas of every document and valid and invalid examples. Its [contents table](../spec/README.md#contents) gives the files and the counts. The owner accepted it as it stood at ruling 39, and it was rewritten around provider contracts under rulings 40 to 43 ([plan and logs](proposals/ruling-41/PLAN.md), [ruling 42](proposals/ruling-42/README.md), [ruling 43](proposals/ruling-43/README.md)). Round 6's decisions and ruling 44 changed it again ([decisions](proposals/reaudit/round-6/DECISIONS.md), [ruling 44](proposals/ruling-44/README.md)). No promise has a conformance vector. |
+| How it was checked | Four rounds of cold readers read `spec/` before the rewrite under rulings 40 to 43 ([re-audit](proposals/reaudit/README.md)): about 170 problems in round 1, counted by class, then 125, 44 and 38 findings in the three reports on `spec/`. The interface was checked twice against the published Model Context Protocol ([first](proposals/reaudit/round-2/mcp-citations.md), [second](proposals/reaudit/round-4/mcp-recheck.md)). [Round 5](proposals/reaudit/round-5/README.md) read the rewritten specification at commit `d0c425f`: 105 findings in the five reports on `spec/`, 10 of them unsafe, and 14 from the reader of the whole repository. One of the five reports was a third check against the protocol. Every finding of round 5 is resolved and logged: 110 of the 111 items that the findings were merged into are fixed and 1 is rejected. Two verifiers then checked round 5's fixes and reported 29 findings, none unsafe: 28 were fixed, and the coordinator then settled the last, V6, as its option 1, in PLC-007 and PLC-002, so all 29 are resolved. [Round 6](proposals/reaudit/round-6/README.md), the owner's cold read by Codex, read the whole repository at `c4d7d33`, the merge of pull request 7: six findings, two of them wrong and safety-critical, and a critique of the design's simplicity and usefulness in 22 points. An independent check confirmed all six findings. Every finding is fixed, under the coordinator's decisions that ruling 44 accepted. No round was clean. The text that rounds 5 and 6 and ruling 44 changed has not been read cold since: round 6 read round 5's changes, but selectively, as its report says. |
 | Secrets | In the specification since ruling 41: [secrets.yaml](../spec/promises/secrets.yaml), a core capability that each store's package implements, read only by the engine, for a run or a connection, and again after a restart (SEC-010, SEC-013, SEC-023, PRV-026). Ruling 42 named the capability `secret-provider.v1` and its operation `get-secret.v1`. The [research packet](research/SECRETS.md) and the [proposal](proposals/secrets/README.md) are the reasoning. |
 | Documents outside the specification | Nothing outside `spec/` binds. What the specification superseded was removed from the tree by ruling 39; the [archive's index](archive/README.md#removed-from-the-tree) lists it, with links to its last version. The historical sections of this tracker are in [its history](archive/plan-audit-history.md). |
 | Language defects | 167 recorded in the [first sweep](LANGUAGE_DEFECTS.md), of the protocol topics. Triage by layer: 48 language, 39 shared convention, 30 type contract, 50 conformance document (the register's runtime profile). Of the 87 in the first two layers, 13 are closed and 74 are ruled; ten of those closed went with a feature that ruling 41 removed. Of the 50 left to the conformance document, 5 are closed, all with a feature that ruling 41 removed, 16 are ruled and 29 are answered by an item of the implementation-defined list. Two of the 16, L155 and L156, named DL11 until round 5 removed it (M69), and now cite the promises that decide them. The 30 type-contract defects wait for their contracts. None has a vector. |
-| Readiness gate | G1 to G11, with G7 as ruling 38 restated it. As assessed on 2026-11-06 under ruling 39 and confirmed by the owner, before rulings 40 to 43, none is met, and G1 and G3 are partly met. That assessment has not been made again since. The [build process](implementation/INDEPENDENT_BUILDS.md#state-on-2026-11-06) keeps it as confirmed, with the changes since that bear on its rows: among them, secrets, whose absence was G1's only stated shortfall, are written into `spec/`, and the rows for G7, G8 and G9 still cite round 4, an open secret type and 35 interface promises. Round 5 reported ten unsafe findings, and all ten are fixed, so no unsafe finding is open. G7 asks that the latest round report none, and the cold read by Codex is the next round it can be judged on. |
+| Readiness gate | G1 to G11, with G7 as ruling 38 restated it. As assessed on 2026-11-06 under ruling 39 and confirmed by the owner, before rulings 40 to 43, none is met, and G1 and G3 are partly met. That assessment has not been made again since. The [build process](implementation/INDEPENDENT_BUILDS.md#state-on-2026-11-06) keeps it as confirmed, with the changes since that bear on its rows: among them, secrets, whose absence was G1's only stated shortfall, are written into `spec/`, and the rows for G7, G8 and G9 still cite round 4, an open secret type and 35 interface promises. Round 5 reported ten unsafe findings, and all ten are fixed. Round 6, the latest round, reported two findings that its reader classed as wrong and safety-critical, 6-1-01 and 6-1-02; round 5 classed such a conflict between a specific procedure and a general safety promise as unsafe (M32). Both are fixed (ruling 44), so no such finding is open. G7 asks that the latest round report none, and round 6 did not: the next round it can be judged on is the read that follows the first build. |
 | Vocabulary | Ruled ([record](proposals/vocabulary/README.md)) and applied in `spec/` and the overview. The words that the promises no longer use are listed, with what replaced each, in [spec/definitions.md](../spec/definitions.md#words-the-promises-do-not-use) (A29). Ruling 42 accepted the twenty names of the [vocabulary audit](proposals/vocabulary-audit/README.md) of the rewritten specification, which ruling 41 asked for, and `spec/` uses them. |
 | Build process and brief | Drafted: [independent builds](implementation/INDEPENDENT_BUILDS.md), [engine build brief](implementation/ENGINE_BUILD_BRIEF.md). Not issued. |
-| Code | [Experiment 004](../experiments/004-stateright-evaluation/README.md), a Rust model-checking evaluation, and [Experiment 005](../experiments/005-macos-keychain/README.md), a probe of the macOS keychain for the first secret store package, executed and re-run. The Python checkers in `tools/` check the documents; round 5 added one rule to `check_schemas.py` and changed another, so it applies 25 rules, from 24 promises. No engine, no reference model and no package yet. |
+| Code | [Experiment 004](../experiments/004-stateright-evaluation/README.md), a Rust model-checking evaluation, and [Experiment 005](../experiments/005-macos-keychain/README.md), a probe of the macOS keychain for the first secret store package, executed and re-run. The Python checkers in `tools/` check the documents; round 5 added one rule to `check_schemas.py` and changed another, and round 6 added two, for CTR-006 and PRV-016, so it applies 27 rules, from 26 promises. No engine, no reference model and no package yet. |
 
 ### What happens next
 
@@ -116,36 +119,58 @@ these sets reuses the earlier R, I, C or M ruling sets of the archived reviews.
    left for it. Every finding is fixed or rejected, and the fixes were verified. The last open
    point of the verification, V6, was settled by the coordinator.
 4. Done: pull request 7, with round 5's fixes and record, was merged into `main` by
-   squashing on 2026-11-07. Later work goes on a new branch, with its own pull request.
-5. Next: the owner starts a cold read by Codex. What that reader needs is in the next section,
-   [for the next reader](#for-the-next-reader).
-6. The conformance vectors (A39), the reference model (A38) and the first providers (A63)
-   follow. Convergence is judged on them (ruling 38, point 4). In the
-   [order of the experiment program](#experiment-program) the work is at step 2.
+   squashing on 2026-11-07, as commit `c4d7d33`.
+5. Done: [round 6](proposals/reaudit/round-6/README.md), the owner's cold read by Codex, read
+   `main` at `c4d7d33` and returned six findings and a critique of the design in 22 points.
+   The coordinator decided each, an independent check confirmed the six findings and the facts
+   behind the simplifications, and the owner accepted the coordinator's recommendations in
+   ruling 44. On facts that the check found, the coordinator put D06 and D12 back to the owner
+   with revised recommendations, and the owner agreed to both. The decisions are in
+   [round 6's record](proposals/reaudit/round-6/DECISIONS.md) and applied, except D06 and D12
+   as revised, which are not yet applied (A69). Pull request 8, on the branch
+   `audit/round-6-codex`, carries the report, the decisions and ruling 44. Later work goes on
+   a new branch, with its own pull request.
+6. Next: the first build (A68), a working demonstration and not another round of review of
+   the prose (ruling 44): the S1 scenario through a reference model in Rust (A38), conformance
+   vectors for the safety cases first (A39), and the first providers (A63). Each run also
+   measures what a new author must do: the files edited, the concepts met, the grants made by
+   hand, the adapters written and the steps of recovery that need a person (D22 of round 6).
+   The nature of the first build, and how it tests the theses and refines the language, is to
+   be discussed with the owner first. Convergence is judged on the model and the vectors
+   (ruling 38, point 4). In the [order of the experiment program](#experiment-program) the
+   work moves to step 3, the tracer.
+7. Then the next read by cold readers, on the text as the build leaves it.
 
 ### For the next reader
 
-Written for the reader that the owner starts after ruling 39, and for anyone who audits this
-repository cold.
+Written for anyone who audits this repository cold. Round 6, the owner's cold read by Codex,
+read it at `c4d7d33`, and its findings are decided and applied. The next read by cold readers
+follows the first build ([what happens next](#what-happens-next)); a reader who comes before
+it is welcome, and should know that the build may change the text.
 
 **What to read.** `README.md`, then [spec/README.md](../spec/README.md) and
 [spec/definitions.md](../spec/definitions.md), then the promises. Only `spec/` binds. The
-[overview](OVERVIEW.md) is a summary and does not bind.
+[overview](OVERVIEW.md) is a summary and does not bind. The
+[documentation map](README.md#reading-paths) has shorter paths for an author, for a writer of
+contracts and providers, and for an implementer.
 
-**Which text.** The head of `main`, from the merge of pull request 7 on. Not commit `d0c425f`
-of the branch: round 5 read that commit, and its fixes and its record came after it, in the
-merge.
+**Which text.** The head of `main`, from the merge of pull request 8 on. Not commit `c4d7d33`:
+round 6 read that commit, and its decisions, ruling 44 and the changes they made came after
+it, on pull request 8.
 
 **What has been read, and by whom.** Cold readers, each a separate session that the
-coordinator started with no context ([who decides what](#who-decides-what)). Four rounds read
-`spec/` before the rewrite under rulings 40 to 43. [Round 5](proposals/reaudit/round-5/README.md)
-read the rewritten specification at commit `d0c425f`, with six readers: four of `spec/` alone,
-one of the whole repository, and one who checked the interface against the published Model
-Context Protocol. [Round 5's record](proposals/reaudit/round-5/README.md) has the counts of
-rounds 2 to 5, and the [re-audit](proposals/reaudit/README.md) has round 1's and links each
-round. Every finding of the five rounds is resolved and logged. Two verifiers then checked
-round 5's fixes. The text that round 5 changed, 101 promises changed and 3 added, has been read
-by its editors and the verifiers, and not by a cold reader.
+coordinator started with no context, or that the owner started ([who decides what](#who-decides-what)).
+Four rounds read `spec/` before the rewrite under rulings 40 to 43.
+[Round 5](proposals/reaudit/round-5/README.md) read the rewritten specification at commit
+`d0c425f`, with six readers: four of `spec/` alone, one of the whole repository, and one who
+checked the interface against the published Model Context Protocol. Two verifiers then checked
+round 5's fixes. [Round 6](proposals/reaudit/round-6/README.md) was one reader, Codex, started
+by the owner, who read the whole repository at `c4d7d33`, with round 5's changes in it, and
+wrote six findings and a critique of the design; three reviewers that it tasked itself helped
+it, and they are not separate cold reads. [Round 5's record](proposals/reaudit/round-5/README.md)
+has the counts of rounds 2 to 5, and the [re-audit](proposals/reaudit/README.md) has round 1's
+and links each round. Every finding of the six rounds is resolved and logged. What round 6 and
+ruling 44 changed has been read by its editors, and not by a cold reader.
 
 **How the readiness gate now reads (ruling 38, point 4).** The gate of two consecutive clean
 rounds of cold reading is withdrawn: four rounds showed that reading alone does not reach it.
@@ -154,11 +179,15 @@ specified apart meet. In round 5 the readers who walked scenarios on one engine 
 machines reported 16 and 23 findings. Convergence is judged instead on two things: the latest
 round of readers reports no unsafe finding, and the reference model and the conformance
 vectors, once they exist, agree with the promises. Round 5 reported ten unsafe findings, and
-all ten are fixed. No unsafe finding is open, and the verifiers of round 5's fixes classed none
-of theirs as unsafe. The first of the two things is judged next on the read by Codex. A reader
-is asked to report every finding, and to mark as unsafe any by which an engine that keeps every
-promise could grant access it should not, leak a secret, lose or repeat an effect, or report a
-wrong result.
+all ten are fixed; the verifiers of its fixes classed none of theirs as unsafe. Round 6
+reported two findings that its reader classed as wrong and safety-critical: specific
+procedures that could not be followed without breaking a general safety promise, a conflict
+that round 5 classed as unsafe (M32). Both are fixed, so no such finding is open, but round 6
+was not clean. The first of the two things is judged next on the read that follows the first
+build, and the second on the build itself. A reader is asked to report every finding, and to
+mark as unsafe any by which an engine that keeps every promise could grant access it should
+not, leak a secret, lose or repeat an effect, or report a wrong result, and also any such
+conflict between a procedure and a safety promise.
 
 **Known to be open.** Do not report these again unless there is something new:
 
@@ -180,6 +209,22 @@ wrong result.
 - A consumer that can speak only stdio. Round 5 rejected a finding on it (M78 of its
   [decisions](proposals/reaudit/round-5/DECISIONS.md)): every engine accepts the token in the
   `Authorization` header, so an existing stdio bridge that sends it works under all of them.
+- Two limits of delegation that v0 keeps on purpose, and that it states plainly since ruling
+  44 (option a of D03 and D04 of round 6): a bound does not limit the filters of the Conduits
+  that its holder opens, and access to management cannot be narrowed to one template
+  ([what access does not narrow](../spec/README.md#what-access-does-not-narrow), ACC-029,
+  ACC-030). Narrow provisioning goes through a broker, a trusted operation of a Resource whose own contract
+  allows only what it should. S1 and S2 measure whether that is good enough.
+- What a client and a model see. The protocol lets a client keep a protocol error from its
+  model, and round 6 found no further defect in IFC-012 or IFC-025 on it
+  ([its report](proposals/reaudit/round-6/reader-1.md#the-two-interface-questions-singled-out-by-the-tracker)).
+  Which clients show a refusal to their model is measured in S2 (E17 of round 6).
+- D06 and D12 of round 6, as the owner accepted them revised after ruling 44, are not yet
+  applied (A69): CTR-002 and TPL-004 still let an Operation contract state a default
+  implementation, and no lifecycle action takes an expected ID.
+- A request repeated without its idempotency key is new work (OPS-011). Whether a client keeps
+  the key across the retries it makes is a property of the client, measured in S4 (D02 of
+  round 6), and not a gap in the language.
 
 **Left for a reader by the records.** The open questions after the rewrite left for round 5 a
 check against the protocol and
@@ -205,12 +250,33 @@ small points. Most are settled since, and need not be reported again:
   failing, which it does not, since SEC-012 reads again before each request, by
   [the items that waited on ruling 43](proposals/ruling-43/log-integration.md#the-items-that-waited-on-this-ruling).
 
-Still open, and a reader may report them: whether TPL-004 ignores a default that a type states
-for a hook it does not require, or CTR-004 rejects it; that a named argument that a Package
-repeats, such as `-e`, cannot be bound; that PLC-024 has a record state a cause, where no
-invocation holds it, in no fixed form; and the late onward request of an earlier hook attempt,
-decided for the latest caller (OPS-028), a limit of this version until local enforcement
-(A65).
+The four points that were left open after round 5 are decided by ruling 44, as round 6's
+critique recommended ([its four open points](proposals/reaudit/round-6/design-critique.md#the-four-open-points)):
+
+- A default that a type states for a hook it does not require is ignored, and the registration
+  of a template that selects no implementation for the hook reports it in a diagnostic that
+  does not reject (TPL-004).
+- A named argument that a Package repeats, such as `-e`, cannot be bound (MAN-010). That waits
+  on a real package that needs it, in S7 and A63. The schema of a server's arguments has
+  `isRepeated`, a boolean taken from the registry's `server.json`, and no promise says how one
+  key binds the several values of a repeated argument; the independent check found that
+  smaller gap, which waits with it.
+- The cause that PLC-024 has a record state, where no invocation holds it, gets a portable
+  field of the record with the conformance vectors (A39).
+- The late onward request of an earlier hook attempt is decided for the latest caller
+  (OPS-028). That is kept for v0, tested (E20 of round 6), and revisited with local
+  enforcement (A65).
+
+Still open, and a reader may report them: the two cases that the independent check named
+beside finding 6-1-01 and did not check, IFC-010's reading of -32602 as failed whatever the
+operation's effect, and IFC-046's statement that the protocol has a server reject -32020 before
+acting, which rest on the same kind of inference that 6-1-01 struck for -32021. The editors who
+applied ruling 44 left five smaller points for a decision, which
+[the integration of round 6](proposals/reaudit/round-6/log-integration.md#left-for-a-decision)
+lists: whether a replace may be read from a directory, a key of an ordinary operation's own
+root `$defs` that equals a copy's key in a tool's bundle, how INS-010 compares two
+destinations, a rule of the checker for SEC-005, and a vector for the escaped form of a `$ref`
+to a copy.
 
 **To look at in particular (ruling 38, point 11).** The interface follows the Model Context
 Protocol on errors: a call to a tool that the engine does not present is answered with the
@@ -225,26 +291,35 @@ of its [decisions](proposals/reaudit/round-5/DECISIONS.md)). A result whose `isE
 now begins its `content` with one text block that states the reason or the outcome (IFC-025).
 A call to a tool that is not presented is answered as the protocol prescribes at the revision
 in use, -32602 at the baseline revision, and the error's `message` says that no tool of that
-name is presented to the instance (IFC-012). Both points are to be looked at as they now stand.
+name is presented to the instance (IFC-012). Round 6 looked at both as they stood at
+`c4d7d33` and found no further defect: the message helps a client that shows the error to its
+model and cannot make one do so, which is the protocol's limit, and SEP-2145 was still open on
+2026-11-07. What real clients show is measured in S2 (E17 of round 6).
 
-**To look at after round 5.** The text that round 5 changed has not been read cold: 101
-promises changed and 3 added, PKG-030, IFC-045 and IFC-046. Reader 6 checked the interface as
-it stood at `d0c425f`, and the round then changed 22 of its 41 promises and added 2; the
-records do not say that these were checked against the published protocol again. The
-[round's record](proposals/reaudit/round-5/README.md#known-after-the-round) lists the decisions
-that the owner may want to read first.
+**To look at after round 6.** The text that round 6 and ruling 44 changed has not been read
+cold. [Round 6's decisions](proposals/reaudit/round-6/DECISIONS.md) say what changed, and the
+logs beside them list each promise. Among them are interface promises that rest on the
+published protocol at the baseline revision: the reading of the error -32021 (IFC-007,
+IFC-010, IFC-045 and OPS-007), the tool definition presented as a self-contained bundle,
+narrowed by the target's template (IFC-033, IFC-012), and the root of an ordinary Operation's
+schemas (CTR-012). The independent check read the published protocol on each of the three;
+the editors' logs say what they read. Round 5's own decisions that the owner may want to read
+first are in [its record](proposals/reaudit/round-5/README.md#known-after-the-round), where
+V2-15 is now reversed by ruling 44.
 
-**Who decided what.** The next section. In short: rulings 1 to 43 are the owner's. Ruling 39
+**Who decided what.** The next section. In short: rulings 1 to 44 are the owner's. Ruling 39
 accepted every logged decision of the coordinator and choice of an editor made before it, and
-ruling 41 the planner's choices for the rewrite. Those made since have the standing of
-decisions the owner can strike, and the next section lists where they are logged. Among them
-are the coordinator's decisions on round 5's findings and on the findings of its verification,
-and the choice that its integration made on PLC-023 and LIF-036. A reader who disagrees with
-any of them should say so.
+ruling 41 the planner's choices for the rewrite. Ruling 44 accepted the coordinator's
+recommendations on round 6. The others made since ruling 39 have the standing of decisions the
+owner can strike, and the next section lists where they are logged. Among them are the
+coordinator's decisions on round 5's findings and on the findings of its verification, the
+choice that its integration made on PLC-023 and LIF-036, and, for round 6, the details that
+the coordinator fixed after ruling 44 and the choices of the editors who applied it. A reader
+who disagrees with any of them should say so.
 
 **Where findings go.** One report per reader, in a new directory,
-`docs/proposals/reaudit/round-6/`, the next after
-[round 5](proposals/reaudit/round-5/README.md), in the form of the earlier reports: an ID for
+`docs/proposals/reaudit/round-7/`, the next after
+[round 6](proposals/reaudit/round-6/README.md), in the form of the earlier reports: an ID for
 each finding, a severity, the promise IDs, short exact quotes, the situation, and the least
 change that fixes it. A reader changes nothing under `spec/`. The owner rules, or the
 coordinator decides under ruling 37, and the decision is logged beside the report.
@@ -286,6 +361,11 @@ and the decisions of [round 5](proposals/reaudit/round-5/DECISIONS.md) of the re
 the choices that its [fix log](proposals/reaudit/round-5/log-fixes.md) records: the
 integration's choice on PLC-023 and LIF-036, and the decisions of its verification.
 
+[Ruling 44](proposals/ruling-44/README.md) accepted the coordinator's recommendations on
+[round 6](proposals/reaudit/round-6/DECISIONS.md). The details that the coordinator fixed in
+applying them after the ruling, which that record marks as such, and the choices that the
+editors' logs beside it list, have the standing of decisions the owner can strike.
+
 | Word | Who it is |
 | --- | --- |
 | The coordinator | The Claude session that the owner asked to write the language, and that keeps this tracker. It decides a finding where ruling 37 lets it, starts the readers and editors, checks their work and commits it. It is not the owner. |
@@ -307,6 +387,7 @@ A18, A65, A66 and A67 ask for come to the owner once they are written.
 | --- | --- |
 | A20: rule on the scope of authorization in v0, the plan audit's disagreement D5, with its cross-path, issuer-independence and provider-scope questions. The plan audit has it informed by the bypass probe (A7), which is open. | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings) |
 | A21: five of the eleven known inconsistencies stand as written in files that are marked as not binding or are not edited; whether to drop them is the owner's call. | [Action items](#p0--make-the-language-concrete-and-complete), [known inconsistencies](archive/plan-audit-history.md#known-inconsistencies) |
+| The nature of the first build (A68), and how it tests the theses and refines the language: the owner asked to discuss it once ruling 44 is applied. | [Ruling 44](proposals/ruling-44/README.md), [what happens next](#what-happens-next) |
 
 Settled, and no longer waiting: ruling 43 settled the last two questions that the rewrite left
 for the owner, D5 and D20 of the
@@ -318,6 +399,11 @@ item 7 of the
 to the owner: the engine's own operating-system user is inside the domain of trust, an Agent
 not trusted that far runs under a runtime provider that isolates it, and the user a process runs
 as stays each engine's (DL16). See [ruling 43](proposals/ruling-43/README.md).
+
+Also settled: D06 and D12 of round 6. After ruling 44 accepted both, an independent check found
+facts that the critique left out, and the coordinator put each back to the owner with a revised
+recommendation, which the owner accepted on 2026-11-07 ("Agree on both"; [ruling 44, after the
+ruling](proposals/ruling-44/README.md#after-the-ruling)). They are applied under A69.
 
 ## Purpose
 
@@ -424,8 +510,8 @@ states, for test 5, that an agent may issue grants to others only within a bound
 
 ## Ruling log
 
-All rulings are the owner's, in this order: rulings 1 to 37 on 2026-11-05, and rulings 38 to
-43 on 2026-11-06. Each row is the coordinator's summary of the owner's messages, with the
+All rulings are the owner's, in this order: rulings 1 to 37 on 2026-11-05, rulings 38 to 43
+on 2026-11-06, and ruling 44 on 2026-11-07. Each row is the coordinator's summary of the owner's messages, with the
 owner's own words quoted where they are marked as quoted; the owner confirmed that labelling in
 ruling 39, point 15. The record linked from a row holds the owner's words in full where the
 ruling was given point by point.
@@ -475,6 +561,7 @@ ruling was given point by point.
 | 41 | The review of the whole design against ruling 40, and the secret type ([record](proposals/ruling-41/README.md)). Accepted as recommended: every decision of the [principles review](proposals/principles-review/README.md), among them setup and retirement as two hook operations in place of graphs; a runtime provider contract in the shape of CRI; placement by labels, with machines registered from what a provider reports; policies, composite Conduits, requirement composition, `obliges`, re-exports and rename removed from v0; results, cancellation, diagnostics, conditions, records, implementation items, schemas and identity in the standards' own forms; providers as packages that implement core provider capabilities, picked by the user; the secret type as a core capability that each store's package implements, read only by the engine before a run. "Accept all, though I don't necessarily like the name secret reveal for the contract, we should do another vocab audit as well before we finish up pr 7". Then, on the planner's twenty choices for the rewrite: "Accept all with p2 changed", so `graphs.yaml` is deleted and listed with its IDs in `spec/README.md` ([after the ruling](proposals/ruling-41/README.md#after-the-ruling)). |
 | 42 | The questions the rewrite left open, and the names of the vocabulary audit ([record](proposals/ruling-42/README.md)). "I accept every suggestion except for 1 and 8, I'd like some more research and clarification on how to solve the multi machine issue and be forward looking even if some functionality doesn't exist in v0". Accepted: a request through a closed Conduit reports refused (D6); the engine's own runner passes six variables of its environment and a list set on it (D8); a secret Resource's type offers no other capability (D10); a stop is asked again when an instance on a node declared lost is unregistered (D11); after a restart the engine reads a remote connection's secret again for the setup's caller (D12); `run.v1` carries the identity mechanism's variables and files (D17); `retire-with-resources.v1` goes on past a Resource it cannot retire (R5); the twenty names, among them `secret-provider.v1` and `get-secret.v1`, node for location, idempotency key for operation identity and source for origin. The owner struck none of the coordinator's 43 decisions on the rest ([record](proposals/ruling-41/open-decisions.md)). D5 and D20 wait on research into working across machines. |
 | 43 | Work across machines ([record](proposals/ruling-43/README.md)), after the [research](research/MULTI_MACHINE.md) and the [proposal](proposals/multi-machine/README.md) that ruling 42 asked for, and the coordinator's explanation of each question and of its cost on one machine and for the Model Context Protocol. "Agree all, prepare for the codex audit". Accepted: every server the engine does not run itself sits behind a gate that admits only an enforcement point with proof (D5); a secret header goes only to `https`, or to loopback on an engine that cannot fail over (D5, second part); packaged programs run only on the engine's own runner in v0 (D20); two standard forms of proof, the token form always accepted at the engine's address (Q1); failover stated as outcomes (Q2); providers run again when first needed after a restart (Q3); the shape of v1 recorded in A65 (Q4); the engine's own user said plainly to be inside the domain of trust (Q5); the name `identity` kept. |
+| 44 | The owner's cold read by Codex, and building next ([record](proposals/ruling-44/README.md)). Round 6 of the re-audit returned six findings and a critique of the design in 22 points, D01 to D22; the coordinator summarized both, said which it would settle itself under rulings 37 and 38, and put four questions to the owner, each with a recommendation. "I accept all your recommendations, ask me if you need more rulings, once done we should discuss the nature of the first build and how we will use it to test our theses and refine the conduit language". Accepted: the next milestone is a working demonstration, the S1 scenario through a reference model in Rust, conformance vectors for the safety cases first and the first providers, each run measuring what a new author must do (D22); v0 says plainly that a bound does not limit the filters of the Conduits its holder opens and that access to management cannot be narrowed to one template, and narrow provisioning goes through a broker, a trusted operation of a Resource (D03, D04, option a); an Operation contract states no default implementation (D06); the tools presented show the limits that the target enforces (D07); replacing a template resolves it against the project submitted with it (D11); an actor may name an object in its own request by its resolved reference (D12); an ordinary Operation's schemas may use the whole schema profile at their root (D14). After an independent check, the coordinator put D06 and D12 back with revised recommendations, and the owner answered "Agree on both" ([after the ruling](proposals/ruling-44/README.md#after-the-ruling)): a package's own Operation contract states no default implementation, and the engine implements the operations of the core package by rule; names stay the only address, LIF-031 stands, and the lifecycle actions take an optional expected ID, which reports conflict where the object that the name resolves to has another. Accepted as the coordinator proposed to settle them: the six findings; ACC-033 as one decision table (D18); reading paths in the entry points (D21); the evidence cases E01 to E20 and the qualification tables of D01 and D02 in the experiment program, with D05, D08 to D10, D15, D16, D19 and D20 as measurements; the four points left open after round 5; round 6's decisions recorded, applied and merged as one pull request, pull request 8. |
 
 ### Later amendments
 
@@ -540,6 +627,16 @@ of its section 3, and a planner's choice is one of P1 to P20 of the
 | 39 (decision 5 of round 3) | `retire-with-resources.v1` stops at the first Resource whose retirement does not complete. | It goes on: only the Resources that the order puts after the one it could not retire wait, by ruling 42 (R5). |
 | 17, 18 (V4), 33, 41 | Location, origin, operation identity and the names that ruling 41's work order coined. | The names of the [vocabulary audit](proposals/vocabulary-audit/README.md), by ruling 42. |
 | 42 (D17) | `run.v1` carries a credential as a file that the runtime provider may refresh in place. | In this version a credential lasts as long as its instance and nothing renews it (DL13), as the [multi-machine proposal](proposals/multi-machine/README.md) that ruling 43 accepted has it; renewal on the run's machine is v1's (A65). Ruling 43's verification therefore moved the leave to replace a file in place out of PRV-022's `then` into its observable (MX-21), a [choice](proposals/ruling-43/log-integration.md#choices-of-the-verification) that the owner can strike. |
+| 41 (item 16a) | An Operation contract's `inputSchema` and `outputSchema` have a root limited to `type: object`, `properties`, `required` and `additionalProperties` (CTR-012). | Ruling 44 (D14 of round 6): the schemas of an Operation contract that is not a control may hold any keyword of the schema profile at their root beside `type: object`, as the published protocol's tool definition allows at the baseline revision; the inputs and outputs are still the members of the root's `properties`. A control keeps the limited root, which its partial updates need (REV-006), and SCH-008's ban on a `default` under a conditional keyword stands (CTR-012). The rest of item 16a stands. |
+| 37 (choice C42 of the core-and-schemas record) | The default implementation of an operation is stated by each Operation contract. | Ruling 44 (D06 of round 6, as revised after the ruling): a package's own Operation contract states no default implementation, and the engine implements the operations of the core package by rule, with no mapping. Not yet applied (A69): CTR-002 and TPL-004 still state the earlier rule. |
+
+Ruling 44 does not change X2, the owner's own change in ruling 37 that an actor's request names
+objects by reference only, nor LIF-031: as revised after the ruling, D12 of round 6 keeps names
+as the only address and gives the lifecycle actions an optional expected ID instead, which is
+not yet applied (A69). The record's table of
+[earlier rulings this changes](proposals/ruling-44/README.md#earlier-rulings-this-changes) cites
+ruling 39 for C42 and X2; ruling 39 accepted them again with every logged decision, and ruling
+37 accepted them first.
 
 Decisions of the coordinator, taken under ruling 37, also changed some of what a ruling had
 accepted. The owner accepted each of the six below in ruling 38 (points 10 and 12):
@@ -566,6 +663,17 @@ Others that come close to a ruling or to a decision of the coordinator are among
 | 41 (item 8c) | The machine provider places an instance that is given no placement (PRV-015). | M22: an Agent or a Resource for which no item that is run is selected is placed on `local`, and no machine provider is asked (PLC-002). Such an instance is not checked against its type's and its items' `nodeSelector`, since nothing of it runs (PLC-007), as the coordinator settled V6 of the verification. |
 | 41 (item 17) | `unregister.v1` removes an instance only where its node was declared lost (LIF-017). | M41: it removes any retired instance (LIF-017). Following from it, the integration's [choice](proposals/reaudit/round-5/log-fixes.md#the-choice-of-this-pass) has PLC-023 not hold back the stop that LIF-036 asks for before the instance is removed, so the stop is asked for even while the machine is reported unreachable or omitted. |
 | 31 | The implementation-defined list, with DL11, on Conduits during setup. | M69: DL11 is removed, since ACC-003 and ACC-036 decide what it left to each engine; its ID is not reused. The row for ruling 31 in the first table gives the count. |
+
+Ruling 44 reversed one of round 5's decisions. V2-15 of the
+[verification of its fixes](proposals/reaudit/round-5/log-fixes.md#verification) read the
+protocol's error -32021, for a client capability that the call did not declare, as failed,
+since it took the protocol to have a server answer so before acting. The protocol says
+"processing ... requires", and nothing of the order of effects. Round 6's finding 6-1-01 reads
+that error as any other error, failed for an operation that declares no effect and unknown for
+one that declares one, except where Conduit's own contract binds the server to have done
+nothing: the error that names Conduit's extension (IFC-008), and an implementation that carries
+Conduit's keys, which answers so only before acting (IFC-045). IFC-007, IFC-010, IFC-045 and
+OPS-007 changed together.
 
 ## Layered claim
 
@@ -649,8 +757,9 @@ counts are in [spec/README.md](../spec/README.md#contents).
 | A52 | Third batch of fixes: declarations. Five decisions and thirteen rules, in the [declarations record](proposals/declarations/README.md). | Ruling 14 | The owner has ruled, and the rules are promises in the specification with vectors. | in progress: ruled (rulings 21, 22) and written as 45 promises; vectors pending. Ruling 41 removed rename, the second half of rule DR5 (item 10); its first half, that no document rewrites an instance's definition, stands (OBJ-011) |
 | A53 | Fourth batch of fixes: graphs and the schema profile. Four decisions and nine rules, in the [graphs and schemas record](proposals/graphs-and-schemas/README.md). | Ruling 14 | The owner has ruled, and the rules are promises in the specification with vectors. | in progress: ruled (ruling 23) and written as 27 promises. Ruling 41 removed the half on graphs: graphs went with GD1 and GR1 to GR4 (item 1), and `graphs.yaml` was deleted, as the owner changed planner's choice P2. It also partly reversed SD1 and SD2 (item 20). What remains is the schema profile, in [schema-profile.md](../spec/schema-profile.md) and `schemas.yaml`; vectors pending |
 | A54 | Fifth batch of fixes: packages, first start and conformance. Five decisions and eight rules, in the [packages and start record](proposals/packages-and-start/README.md). | Rulings 14, 23 | The owner has ruled, and the rules are promises in the specification with vectors. | in progress: ruled except PD1 (ruling 24), which rulings 25 and 27 then settled (A55), and written as 20 promises; vectors pending. Ruling 41 reversed PR2, so a document whose package is not installed is rejected (item 12), and removed re-exports, PR5 (item 9) |
-| A59 | Consolidate the promises and audit the whole specification again with cold readers who see only `spec/`. | Ruling 30 | As restated by ruling 38, point 4: the latest round of readers reports no unsafe finding, and the reference model and the conformance vectors agree with the promises. It was: two consecutive rounds with no finding in the language, conventions or interface, which four rounds showed reading alone does not reach. | in progress: round 1 done, with about 170 findings, 11 of them unsafe; 37 decisions accepted (ruling 32) and applied by consolidation pass 1, which changed 212 promises, removed 21 and added 48 ([record](proposals/reaudit/README.md)). The follow-up decisions (rulings 33 to 35) are applied. Round 2 is done: four readers, 125 findings in `spec/`, of which 8 classed as unsafe (7 by a reader, 1 by the coordinator), the decisions in [DECISIONS.md](proposals/reaudit/round-2/DECISIONS.md), and the fixes applied in four passes ([record](proposals/reaudit/round-2/README.md)). Round 3 is done: 44 findings in `spec/`, 4 classed as unsafe, the decisions in [DECISIONS.md](proposals/reaudit/round-3/DECISIONS.md), and the fixes applied ([record](proposals/reaudit/round-3/README.md)). No round has been clean. Round 4 is done: 38 findings in `spec/`, 3 classed as unsafe, the decisions in [DECISIONS.md](proposals/reaudit/round-4/DECISIONS.md), and the fixes applied ([record](proposals/reaudit/round-4/README.md)). Ruling 38 withdrew the gate of two clean rounds. Ruling 41 ordered a fifth round on the rewritten specification, after the vocabulary audit and before pull request 7 is merged. Round 5 is done: six readers read the text at commit `d0c425f` on 2026-11-07 and reported 119 findings, 105 of them in `spec/` and 10 classed as unsafe, merged into 111 items, of which 110 are fixed and 1 is rejected ([decisions](proposals/reaudit/round-5/DECISIONS.md)); the fixes changed 101 promises and added 3, and two verifiers checked them and reported 29 findings, none unsafe, of which 28 are fixed and the last, V6, the coordinator settled ([record](proposals/reaudit/round-5/README.md)). No round has been clean, and no unsafe finding is open. Then comes the owner's cold read by Codex, and after it the vectors and the reference model |
-| A61 | Audit the documents outside `spec/` and make the repository ready for a cold read. | Ruling 37 | Every decision of the audit is applied, and a cold reader can tell from the entry points what binds. | in progress: audited, and decisions DA1 to DA13 are applied ([record](proposals/docs-audit/README.md), which links the logs). The second half of the done-when was put to the fourth reader of round 2 of the re-audit, who read the whole repository cold and could tell from the entry points what binds ([report](proposals/reaudit/round-2/reader-4.md)). What was done about that reader's other findings, and what is left for the owner, is in [the log](proposals/reaudit/round-2/log-reader-4-fixes.md). The fourth reader of round 3 reported 23 findings, 9 of them misleading, and the fourth reader of round 4 reported 26, 8 of them misleading; each is fixed or is listed for the owner ([round 3](proposals/reaudit/round-3/DECISIONS.md), [round 4](proposals/reaudit/round-4/README.md)). Reader 5 of round 5 read the whole repository at `d0c425f` and reported 14 findings, 7 of them misleading ([report](proposals/reaudit/round-5/reader-5.md)); all 14 are fixed, as M100 to M111 ([decisions](proposals/reaudit/round-5/DECISIONS.md#f7-the-tracker-and-the-entry-documents)) and M30 and M87. The action is done when such a reader reports nothing that misleads. The cold read by Codex that ruling 37 names is the owner's to start |
+| A59 | Consolidate the promises and audit the whole specification again with cold readers who see only `spec/`. | Ruling 30 | As restated by ruling 38, point 4: the latest round of readers reports no unsafe finding, and the reference model and the conformance vectors agree with the promises. It was: two consecutive rounds with no finding in the language, conventions or interface, which four rounds showed reading alone does not reach. | in progress: round 1 done, with about 170 findings, 11 of them unsafe; 37 decisions accepted (ruling 32) and applied by consolidation pass 1, which changed 212 promises, removed 21 and added 48 ([record](proposals/reaudit/README.md)). The follow-up decisions (rulings 33 to 35) are applied. Round 2 is done: four readers, 125 findings in `spec/`, of which 8 classed as unsafe (7 by a reader, 1 by the coordinator), the decisions in [DECISIONS.md](proposals/reaudit/round-2/DECISIONS.md), and the fixes applied in four passes ([record](proposals/reaudit/round-2/README.md)). Round 3 is done: 44 findings in `spec/`, 4 classed as unsafe, the decisions in [DECISIONS.md](proposals/reaudit/round-3/DECISIONS.md), and the fixes applied ([record](proposals/reaudit/round-3/README.md)). No round has been clean. Round 4 is done: 38 findings in `spec/`, 3 classed as unsafe, the decisions in [DECISIONS.md](proposals/reaudit/round-4/DECISIONS.md), and the fixes applied ([record](proposals/reaudit/round-4/README.md)). Ruling 38 withdrew the gate of two clean rounds. Ruling 41 ordered a fifth round on the rewritten specification, after the vocabulary audit and before pull request 7 is merged. Round 5 is done: six readers read the text at commit `d0c425f` on 2026-11-07 and reported 119 findings, 105 of them in `spec/` and 10 classed as unsafe, merged into 111 items, of which 110 are fixed and 1 is rejected ([decisions](proposals/reaudit/round-5/DECISIONS.md)); the fixes changed 101 promises and added 3, and two verifiers checked them and reported 29 findings, none unsafe, of which 28 are fixed and the last, V6, the coordinator settled ([record](proposals/reaudit/round-5/README.md)). Round 6, the owner's cold read by Codex, is done: one reader read the whole repository at `c4d7d33` on 2026-11-07 and reported six findings, three wrong, two of them safety-critical, two undetermined and one misleading, with a critique of the design in 22 points; an independent check confirmed all six, the coordinator decided each, and the owner accepted the recommendations in ruling 44 ([decisions](proposals/reaudit/round-6/DECISIONS.md)). All six are fixed; D06 and D12 of the critique, which the owner accepted as revised after the ruling, are not yet applied (A69). No round has been clean, and no unsafe or safety-critical finding is open. Next come the first build (A68) and, after it, the next read |
+| A61 | Audit the documents outside `spec/` and make the repository ready for a cold read. | Ruling 37 | Every decision of the audit is applied, and a cold reader can tell from the entry points what binds. | in progress: audited, and decisions DA1 to DA13 are applied ([record](proposals/docs-audit/README.md), which links the logs). The second half of the done-when was put to the fourth reader of round 2 of the re-audit, who read the whole repository cold and could tell from the entry points what binds ([report](proposals/reaudit/round-2/reader-4.md)). What was done about that reader's other findings, and what is left for the owner, is in [the log](proposals/reaudit/round-2/log-reader-4-fixes.md). The fourth reader of round 3 reported 23 findings, 9 of them misleading, and the fourth reader of round 4 reported 26, 8 of them misleading; each is fixed or is listed for the owner ([round 3](proposals/reaudit/round-3/DECISIONS.md), [round 4](proposals/reaudit/round-4/README.md)). Reader 5 of round 5 read the whole repository at `d0c425f` and reported 14 findings, 7 of them misleading ([report](proposals/reaudit/round-5/reader-5.md)); all 14 are fixed, as M100 to M111 ([decisions](proposals/reaudit/round-5/DECISIONS.md#f7-the-tracker-and-the-entry-documents)) and M30 and M87. The action is done when such a reader reports nothing that misleads. The cold read by Codex that ruling 37 names, round 6, read the whole repository at `c4d7d33` and reported one misleading finding, 6-1-06: the entry points still said that V6 waited for the owner. It is fixed, with the other statements that the independent check found stale ([decisions](proposals/reaudit/round-6/DECISIONS.md)), and the entry points now give reading paths for an author, a writer of contracts and providers, and an implementer (D21 of round 6) |
+| A69 | Apply D06 and D12 of round 6 as the owner accepted them, revised, after ruling 44: a package's own Operation contract states no default implementation, and the engine implements the operations of the core package by rule; names stay the only address, and `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take an optional expected ID, which reports conflict where the object that the name resolves to has another. | Ruling 44, [after the ruling](proposals/ruling-44/README.md#after-the-ruling) | Written as promises, in the core package, the schemas and the examples, and logged beside round 6's decisions. | open: the pass that applied round 6's other decisions left CTR-002's `implementation`, TPL-003, TPL-004 (but for a hook's default) and LIF-031 as they were |
 | A41 | Fix the uncertain-write rule (L1) with A13. | L1 | The convention states when reissue is safe and a vector covers it. | ruled: ruling 20, OPS-012 to OPS-014; vector pending |
 | A12 | Name the target MCP revision and specify the implementation interface and its profile. Whether the wire between an engine's own services is shared is layer decision LD3. | Q2, G9 | An implementation written against the interface works with any conforming engine. | ruled: ruling 31, IFC-001 to IFC-017; the baseline revision is 2026-07-28; vectors and test implementations pending. Ruling 41 carried Conduit's keys as an extension of the protocol (item 18), changed when `isError` is true (item 6b) and removed the retrieval tool (item 6c) |
 | A11 | State what the language requires of caller authentication, then choose the mechanism from the native probes. | Q3 | Both are in the specification. | in progress: the requirement is stated. The engine establishes which instance the consumer is for each request, and no consumer can present as another (IFC-022); what a consumer presents is never sent to an implementation (IFC-030); how a request shows which instance it comes from is item DL13 of the implementation-defined list (re-audit decisions U10 and F2). Ruling 41, item 26a, made DL13 the place where an engine names its mechanism, which mutual TLS, SPIFFE or the protocol's authorization could then each be, with a cryptographic proof wherever a request crosses machines (IFC-022). Ruling 43 (Q1) fixed two forms of proof: a signed token in the form of a JWT-SVID, which the engine's address always accepts as the protocol's own authorization, and mutual TLS, which it may accept beside it (IFC-042, DL13); SPIFFE's form of ID is recommended and not required. What waits for the native probe (A4) is how a native Agent obtains and presents the token |
@@ -665,20 +774,21 @@ counts are in [spec/README.md](../spec/README.md#contents).
 
 | ID | Action | Source | Done when | Status |
 | --- | --- | --- | --- | --- |
-| A38 | Write the executable reference model in Rust for the language layer and the shared conventions: a pure, deterministic library in which every case cites a promise. | Rulings 10, 14 | It passes every vector with no unhandled case (G4). | open |
-| A39 | Publish the conformance vectors, with a held-out set. | Ruling 10 | Any engine can run them through an adapter; coverage by promise is reported. | open |
+| A68 | The first build: a working demonstration, not another round of review of the prose. The S1 scenario through a reference model in Rust (A38), conformance vectors for the safety cases first (A39), and the first providers (A63), with round 6's evidence cases placed in the [experiment program](#experiment-program). Each run measures what a new author must do: the files edited, the concepts met, the grants made by hand, the adapters written, and the steps of recovery that need a person (D22 of round 6). | Ruling 44 | S1 runs end to end on the reference model and the first providers, its safety vectors pass, and the author measurements are recorded with dated results, beside what they show for the simplifications that round 6 proposed. | open: its nature, and how it tests the theses and refines the language, is to be discussed with the owner first (ruling 44) |
+| A38 | Write the executable reference model in Rust for the language layer and the shared conventions: a pure, deterministic library in which every case cites a promise. | Rulings 10, 14 | It passes every vector with no unhandled case (G4). | open: the first build (A68) starts it on S1. It also measures the bytes it keeps for each keyed, unkeyed, failed and unknown invocation (D19 of round 6), for A14 |
+| A39 | Publish the conformance vectors, with a held-out set. | Ruling 10 | Any engine can run them through an adapter; coverage by promise is reported. | open: the safety cases come first (ruling 44), among them round 6's E01 to E06. A record of a machine's loss gets a portable field for its cause with these vectors (PLC-024, REC-002), as ruling 44 settled the open point |
 | A44 | Mutation-test the reference model against the vectors. | G6 | No unexplained surviving mutant. | open |
 | A40 | Model-check the safety promises with Stateright in small configurations, in the ordinary test run, including two machines with message loss, reordering, a partition and a lost machine (ruling 40). | [Experiment 004](../experiments/004-stateright-evaluation/README.md) | Each safety promise holds or has a recorded reason it cannot be checked this way (G5). | open: tool evaluated |
 | A45 | Publish the build base: the orphan branch, the brief as `BUILD.md`, agent instruction files, and a pilot run of the brief on S1. | Ruling 12 | G10 passes and the owner signs off (G11). | open: brief and process drafted |
 | A34 | Two independent builds in Rust, by Codex and by Claude, of the language layer, the shared conventions and the implementation interface (LD4). | Rulings 10, 14 | Both pass the public and held-out vectors; every divergence is traced to the language and fixed. | open: blocked by the readiness gate |
 | A50 | Build one reference engine, with a standard library of core type contracts and a recorded conformance document. | LD4, LD5 | It runs the scenarios S1 to S10. | open |
 | A62 | Write the provider contracts of ruling 40 in the specification: the runtime that runs an instance's implementation (run, stop, status); the machines, their labels and the loss of one; the secret store; the source of packages. | Ruling 40 | Each is a contract any existing tool can implement, and the specification names no backing system. | in progress: written under ruling 41, in [providers.yaml](../spec/promises/providers.yaml) and [secrets.yaml](../spec/promises/secrets.yaml); the questions the rewrite left open were settled in the [open questions after the rewrite](proposals/ruling-41/open-decisions.md) and by rulings 42 and 43; no vector |
-| A63 | Build the first providers, as packages in Rust under a top-level `packages/` directory, one crate per provider (ruling 40, after the ruling): two for each provider contract, on different existing tools. Candidates: secret stores on a file (the file store of the standard library: under ruling 41, item 13a, no store is built into the engine, and none reads the engine's own variables), the macOS keychain and 1Password; runtimes on a local process and Docker; machines on the local machine and a second host reached over the network; package sources on Git and a local directory. | Ruling 40 | Each passes the vectors of its contract, and S10 passes with every provider swapped. | open: needs A62. For the keychain store, [Experiment 005](../experiments/005-macos-keychain/README.md) measured, in the user's logged-in session: a binary on an item's lists reads it in milliseconds with no dialog; in the login keychain's format an item added with the `security` tool is readable only by Apple's tools until its partition list is changed, so the package should create its own items or set that list; a rebuild that changes the binary loses access unless it is signed with a stable identity; a locked keychain refuses with the same error code as an untrusted binary. A real background daemon (probe E10) is still untested |
-| A64 | Require proof of the sender on every request that crosses machines, in both directions, with the mechanism swappable (mutual TLS, SPIFFE, the authorization of the Model Context Protocol). | Ruling 40, point 3e; ruling 43 (D5, Q1) | Written as promises; one vector shows a request to the engine without proof refused, and one shows a direct call to a gated server, from anything but an enforcement point, refused. | in progress: requests to the engine in IFC-022 and IFC-032 (ruling 41, item 26a); ruling 43 adds the gate in front of every server the engine does not run itself, other than a `plain` server reached by `remote` (PRV-025). A `plain` server is outside the gate, by design: it takes none of Conduit's keys, a request to it carries no proof of its sender, even across machines, and whatever can reach its URL reaches it (IFC-007, IFC-041). Ruling 43 also adds the two standard forms of proof with the token form always accepted at the engine's address (IFC-042, DL13), and the engine's check of who answers (IFC-017); no vector |
-| A65 | Design local enforcement for v1: each machine enforces access from configuration pushed to it, with a stated bound on how long a revocation takes to arrive. | Ruling 40, point 3f; ruling 43 (Q4) | A proposal for the owner, before v1. Nothing in v0 may assume that every decision is made in one place. | in progress: the shape is recorded by ruling 43 (Q4), in [the multi-machine proposal](proposals/multi-machine/README.md#q4-the-shape-of-v1-recorded-in-a65): on each machine an existing proxy that speaks Envoy's external authorization API enforces; Conduit's own decision point there decides from a versioned copy of the Conduits held under a lease, measured on the machine's monotonic clock, and refuses new requests once it lapses; the bound is the lease term plus the allowed clock error, a value of the conformance document; credentials live no longer than the bound and are renewed on each machine. The promises v1 would change are listed [there](proposals/multi-machine/README.md#in-v1-for-a65): ACC-036, ACC-037, PLC-023, ACC-011, ACC-019, ACC-034, ACC-039, IFC-028, CON-008, IFC-012, IFC-013 and IFC-038; OPS-028's limit on a late onward request of an earlier hook attempt is among them. The detailed design is still to write |
+| A63 | Build the first providers, as packages in Rust under a top-level `packages/` directory, one crate per provider (ruling 40, after the ruling): two for each provider contract, on different existing tools. Candidates: secret stores on a file (the file store of the standard library: under ruling 41, item 13a, no store is built into the engine, and none reads the engine's own variables), the macOS keychain and 1Password; runtimes on a local process and Docker; machines on the local machine and a second host reached over the network; package sources on Git and a local directory. | Ruling 40 | Each passes the vectors of its contract, and S10 passes with every provider swapped. | open: needs A62. For the keychain store, [Experiment 005](../experiments/005-macos-keychain/README.md) measured, in the user's logged-in session: a binary on an item's lists reads it in milliseconds with no dialog; in the login keychain's format an item added with the `security` tool is readable only by Apple's tools until its partition list is changed, so the package should create its own items or set that list; a rebuild that changes the binary loses access unless it is signed with a stable identity; a locked keychain refuses with the same error code as an untrusted binary. A real background daemon (probe E10) is still untested. Round 6 adds, under ruling 44: for each provider, a record of what it implements itself, what it delegates, what persistent state it needs and what the operator configures (D15); a comparison for S10 defined before it runs, with the provider-specific edits and the replacements it allows (D16); the qualification of a plain server, a small adapter and a Conduit-aware implementation on one user task, with the adapter work counted (D01, in S2 and S7); and a real package whose server repeats a named argument, such as `-e`, in S7, before any way to bind one occurrence is added (MAN-010) |
+| A64 | Require proof of the sender on every request that crosses machines, in both directions, with the mechanism swappable (mutual TLS, SPIFFE, the authorization of the Model Context Protocol). | Ruling 40, point 3e; ruling 43 (D5, Q1) | Written as promises; one vector shows a request to the engine without proof refused, and one shows a direct call to a gated server, from anything but an enforcement point, refused. | in progress: requests to the engine in IFC-022 and IFC-032 (ruling 41, item 26a); ruling 43 adds the gate in front of every server the engine does not run itself, other than a `plain` server reached by `remote` (PRV-025). A `plain` server is outside the gate, by design: it takes none of Conduit's keys, a request to it carries no proof of its sender, even across machines, and whatever can reach its URL reaches it (IFC-007, IFC-041). Ruling 43 also adds the two standard forms of proof with the token form always accepted at the engine's address (IFC-042, DL13), and the engine's check of who answers (IFC-017); no vector. Round 6's D20 asks the first example to show, for a local deployment and an isolated one with the same relationships, which credentials an Agent process can read and what a gate protects, which S2 and S3 measure (ruling 44) |
+| A65 | Design local enforcement for v1: each machine enforces access from configuration pushed to it, with a stated bound on how long a revocation takes to arrive. | Ruling 40, point 3f; ruling 43 (Q4) | A proposal for the owner, before v1. Nothing in v0 may assume that every decision is made in one place. | in progress: the shape is recorded by ruling 43 (Q4), in [the multi-machine proposal](proposals/multi-machine/README.md#q4-the-shape-of-v1-recorded-in-a65): on each machine an existing proxy that speaks Envoy's external authorization API enforces; Conduit's own decision point there decides from a versioned copy of the Conduits held under a lease, measured on the machine's monotonic clock, and refuses new requests once it lapses; the bound is the lease term plus the allowed clock error, a value of the conformance document; credentials live no longer than the bound and are renewed on each machine. The promises v1 would change are listed [there](proposals/multi-machine/README.md#in-v1-for-a65): ACC-036, ACC-037, PLC-023, ACC-011, ACC-019, ACC-034, ACC-039, IFC-028, CON-008, IFC-012, IFC-013 and IFC-038; OPS-028's limit on a late onward request of an earlier hook attempt is among them. Ruling 44 keeps that limit for v0, has it tested (E20 of round 6, in S4), and revisits it with this design. The detailed design is still to write |
 | A66 | Design policies again as an access feature of Conduit's own, for a later version: a limit placed on an open Conduit without closing it. | Ruling 41, on item 3a of the principles review | A proposal for the owner, before the version that would carry it. | open |
-| A67 | Consider three candidate features that no one has asked for yet, which the questions after the rewrite turned up: a forced removal of an instance whose shutdown can never be confirmed; a verb that restarts a ready instance's run and keeps its identity and Conduits, as `kubectl rollout restart` does; an address owned by the project that first submitted it. | [Open questions after the rewrite](proposals/ruling-41/open-decisions.md) | A proposal for the owner, if one is wanted. | open |
-| A14 | Run the acceptance scenario on a built engine and use it for a week. | Ruling 4 | Each promise is scored exercised, contradicted or never needed. | open |
+| A67 | Consider three candidate features that no one has asked for yet, which the questions after the rewrite turned up: a forced removal of an instance whose shutdown can never be confirmed; a verb that restarts a ready instance's run and keeps its identity and Conduits, as `kubectl rollout restart` does; an address owned by the project that first submitted it. | [Open questions after the rewrite](proposals/ruling-41/open-decisions.md) | A proposal for the owner, if one is wanted. | open. Round 6's D09 measures a credential's rotation by explicit replacement first, in S2 and S10; if that is disproportionately disruptive, the restart verb comes to the owner with its exact semantics |
+| A14 | Run the acceptance scenario on a built engine and use it for a week. | Ruling 4 | Each promise is scored exercised, contradicted or never needed. | open. With it, the state kept for every invocation, measured by the reference model (D19 of round 6), is projected for the week's workload; dropping any of it would change OPS-008 and is the owner's |
 | A4 | Native launch and identity probe. | E1 | Results recorded for Claude Code and Codex. | open |
 | A5 | Four-account coexistence probe, 48 hours. | E2 | Refresh and logout behavior recorded per account. | open |
 | A6 | Mediation proxy probe, including a lost response. | E3 | A trace exists for discovery, invocation, refresh and a lost response. | open |
@@ -749,7 +859,9 @@ Order:
    of a promise (A47), then the defect re-triage (A42).
 2. The language and shared conventions, each ruled, checked and swept.
 3. Tracer, in series: S1 alone through every method, to fix the file formats for scenarios,
-   vectors and promises, on the first provider of each contract.
+   vectors and promises, on the first provider of each contract. Ruling 44 makes this the
+   first build (A68), with the vectors for the safety cases first and the author measurements
+   of D22 of round 6.
 4. Second providers: a second implementation of each provider contract, on a different existing
    tool, and S10 (A63).
 5. Fan-out, in parallel: S2 to S9, one scenario per session, with one integrator. S3 runs on at
@@ -773,3 +885,22 @@ owner or a neutral harness compares the results.
 Removal of the old experiments: 001 was removed on 2026-11-05, once
 [spec/schemas/examples](../spec/schemas/examples/) had replaced it as the worked example
 (decision DA4 of the documents audit); 002 and 003 were removed by ruling 39.
+
+### Round 6's evidence and measurements
+
+Ruling 44 put round 6's evidence cases, E01 to E20, and the qualification tables of its D01
+and D02 into this program, with D05, D08 to D10, D15, D16, D19 and D20 as measurements. Each
+case is described in [the critique](proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage);
+the assertion given here is what the specification requires since round 6's decisions, or the
+question the case settles. None has been run. Every run also records the author measurements of
+D22: the files edited, the concepts met, the grants made by hand, the adapters written and the
+steps of recovery that need a person.
+
+| Scenario | Evidence cases | Measurements and qualification |
+| --- | --- | --- |
+| S1 | E05: a tool whose schema refers to a contract with local `$defs`, two contracts with one local name, a recursive contract and a `$ref` with keywords beside it; the definition presented is a self-contained bundle that a value passes exactly when it passes the contract's schemas (IFC-033). E08: an agent may start only an approved reviewer, through a broker, with its trusted code and setup counted (D04). E11: a local contract and its implementation edited, then the template replaced while an old instance exists; the replacement resolves the project submitted with it, and the old instance keeps what it resolved (D11). E12: an object inspected, removed and its name reused before a follow-up request; once D12 is applied as revised (A69), a request that carries the expected ID reports conflict, and an ID grants nothing | D08: a chapter on change and repair, which changes a live setting, upgrades a template, replaces a nested Resource and restores the intended access, with the exact calls, identities and permissions. D19: the bytes kept for each invocation (A38). A comparison with a manually configured baseline on the same tasks, the same agents and the same service, counting duplicated credentials, per-agent changes of access, inspection effort, provider-specific code and recovery steps |
+| S2 | E02: a read succeeds before a filter's deadline and is repeated after it, with the same Conduit and arguments; the read is dispatched again and refused, and no stored output is delivered (OPS-009). E07: an agent with a filtered read and a bound over the same operation opens an unfiltered Conduit, which the bound allows (D03). E13: the shared service's secret rotated with both agents working, the service replaced, and the restoring of access failing partway; no secret reaches an Agent's run. E17: what a real client and its model see after a revoke with cached tools, a protocol refusal and a tool failure | D01: a plain server, a small adapter and a Conduit-aware implementation qualified on one user task, with the adapter work counted (also S7, A63). D05: the first restrictions as complete contracts with vectors shared by two implementations, covering changed authorization data, a repeat, onward calls and revocation. D09: rotation by explicit replacement (also S10). D20: what a local deployment and an isolated one of the same relationships each protect, and which credentials an Agent process can read (also S3) |
+| S3 | E15: a machine reported unreachable, then gone, with partitions before and after an effect and before and after a revocation; unavailable, unknown, retired and stopped stay distinct, and nothing new is dispatched without current authorization | D20, under a partition |
+| S4 | E01: a plain server makes part of an effect, then answers -32021; the outcome of an operation that declares an effect is unknown, and a repeat with the same key is not dispatched (IFC-010, OPS-012). E09: a client that keeps its key and one that sends none, each repeating after a lost response. E18: the owning Pool retired, the Resource inspected and reconciled, the instance removed and reconciled again; each step authorized as ACC-033's table says. E19: records purged and outputs expired, then an old keyed request repeated and an unknown invocation inspected; no effect is repeated. E20: a hook's reply lost, its outcome reconciled failed, a new attempt for another caller, then the earlier attempt's late onward request, decided for the latest caller (OPS-028, A65) | D02: clients that keep the key and clients that send none, against plain and deduplicating implementations, after a success whose response was lost, after an unknown outcome, and for an intended second action. D10: what the actor can conclude, verify and do next after an unknown outcome, a conflict and a partial setup |
+| S5 | E03 and E04: a control whose `changes` gives two inputs one setting, or one a setting inside another's; the control is rejected (CTR-006). E10: a control narrowed by its template to 50 under a contract that allows 100, asked for 75, then left out of the template's map of controls; the tool presented shows the narrowed schema, and no tool is presented for the excluded control (IFC-033, IFC-012). E16: an omitted input, null, an empty map, a nested default, an array element and an omitted control input; keyed repeats compare one normalized value (D13) | D10: what `ruleId`, the invocation's identity and its status let a frontend tell apart in a conflict |
+| S10 | E06: two package-source providers that would claim one scheme; a Type that lists a control changing `schemes` is rejected, so a claim is fixed for the provider's life (PRV-016), and a second claimant is refused (PRV-013). E14: S1 and S2 with each provider swapped, with every provider-specific edit listed | D15 and D16 (A63): what each provider implements, delegates, keeps and needs configured, and what a swap keeps. D09, on the swapped store |

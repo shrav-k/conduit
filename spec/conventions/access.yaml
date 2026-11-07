@@ -98,6 +98,14 @@
 # The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
 # "Verification") changed ACC-039, under which the Conduit also ends once a request to
 # unregister its consumer removes it (V2-09). It added none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit
+# (docs/proposals/reaudit/round-6/), changed ACC-008: no filter judges a repeat that is not
+# dispatched, and a repeat of an operation with no effect to which one applies is dispatched
+# again (6-1-02); ACC-029 and ACC-030, which say plainly that a bound does not limit the filters
+# of the Conduits its consumer opens, that access to `management` cannot be narrowed to one
+# template, and how a broker narrows it (D03, D04); and ACC-033, whose `then` is one decision
+# list with the same answers (D18). It added none and removed none. What changed is in
+# docs/proposals/reaudit/round-6/log-conventions.md.
 
 - id: ACC-001
   layer: convention
@@ -218,7 +226,13 @@
     under IFC-019, and where one of them forbids the request it performs nothing and answers
     with the reason refused under IFC-026. The result names the restriction that forbade the
     request in `io.github.shrav-k.conduit/restriction`, whether the engine or the implementation
-    found it, as IFC-025 states.
+    found it, as IFC-025 states. A filter judges only a call that an implementation receives,
+    under IFC-019, so no filter judges a repeat that is not dispatched, under OPS-009, OPS-012,
+    OPS-032 or OPS-034: where a filter applies to such a repeat, it returns only an outcome that
+    is already recorded, or reports conflict, and gives no outputs. A repeat to which a filter
+    applies, of an invocation that succeeded, of an operation whose contract states no `effect`,
+    that is not a control and whose contract is not marked `startsModelWork: true`, is
+    dispatched as a new attempt, under OPS-024, so that its filters decide afresh.
   vectors: []
 
 - id: ACC-009
@@ -546,7 +560,11 @@
     request. An item is compared when a request is decided, so it covers an operation of a
     package installed after the bound was written whose address and export name are the item's,
     and an operation of a submitted project in every submission at that address, under SUB-008.
-    A request that the bound does not cover reports refused and names it, as IFC-025 states.
+    A request that the bound does not cover reports refused and names it, as IFC-025 states. A
+    bound does not limit the filters of the Conduits that its consumer opens: it names no
+    filter, and a Conduit opened within it applies only the filters that its own template
+    applies. So a consumer whose own Conduit to a target applies a filter may open, for itself
+    or for another consumer, a Conduit to that target that applies none, as ACC-030 states.
     CON-028 says where a bound may be applied.
   vectors: []
 
@@ -576,13 +594,25 @@
     the moment a Conduit to `access` is opened, its bound covers nothing that the bound of the
     actor that opened it does not cover, and names no operation that bound does not name.
     Closing that actor's own Conduit to `access` afterwards closes none of the Conduits it
-    opened for others. A bound limits by Pools, targets and operations, and never by filters,
-    so a right to open trusts its consumer with unfiltered access within the bound: it may open,
-    for any consumer, a Conduit that lists any operation the bound names, to any target the
-    bound covers, with no filter but those that the Conduit's own template applies, the
-    operations of ACC-032 and SEC-008 apart. A Conduit to `management` carries no bound, under
-    CON-028, so one that lists `register.v1` or `replace.v1` trusts its consumer to register, or
-    to replace, any object that ACC-033 authorizes against `management` alone.
+    opened for others. A bound limits by Pools, targets and operations, and does not limit the
+    filters of the Conduits that its consumer opens, so a right to open trusts its consumer with
+    unfiltered access within the bound: it may open, for any consumer, a Conduit that lists any
+    operation the bound names, to any target the bound covers, with no filter but those that the
+    Conduit's own template applies, the operations of ACC-032 and SEC-008 apart. A Conduit to
+    `management` carries no bound, under CON-028, and applies no filter, since `engine`, the
+    implementation that serves it, supports none, under CON-022 and MAN-012. So access to
+    `management` cannot be narrowed to one template: a Conduit to it that lists `register.v1` or
+    `replace.v1` trusts its consumer to register, or to replace, any object that ACC-033
+    authorizes against `management` alone, an Agent made from any template among them. A
+    narrower provisioning, such as registering instances of one approved template and no other,
+    goes through a broker: a Resource with a trusted operation whose own contract and
+    configuration allow only that, and whose implementation, which is trusted to keep them,
+    makes the request as an onward request through the broker's own Conduit to `management`,
+    under ACC-016. The actor is then the consumer of a Conduit to the broker that lists that
+    operation, and of none to `management`. That Conduit applies no filter, since the onward
+    request would carry it, under ACC-017, and an onward request to `management` that carries
+    one reports unavailable, under ACC-015. The narrowing is the broker's and not the engine's:
+    the broker's own Conduit to `management` is as wide as any.
   vectors: []
 
 - id: ACC-032
@@ -612,35 +642,41 @@
     install a package, for an operation reserved to the root Interface, to reconcile an
     invocation, to open or close a Conduit, or for a control.
   then: >-
-    The request is authorized by an open Conduit from the actor that lists the operation, to a
-    target fixed as follows. Registering, replacing and unregistering any object are authorized
-    against `management`. Registering a Resource whose owner is a Pool that already exists and
-    is not retired also needs an open Conduit from the actor to that Pool, and each of the two
-    Conduits lists `register.v1`. Where the Pool is registered in the same submission, which
-    includes the Resources of its own entries, nothing more is needed. A request under LIF-009
-    for a new instance for a nested instantiation, `register-replacement.v1`, is authorized as
-    registering the instance it makes would be, by the same Conduits, each listing
-    `register-replacement.v1` in place of `register.v1`. Setting up and retiring an instance are
-    requests for `set-up.v1` and for `retire.v1`, which name the instance in the input
-    `instance`. They, and inspecting it, are authorized against the Pool that owns the instance
-    where it is a Resource, and against `management` where it is an Agent, an Interface or a
-    Pool. Inspecting a Conduit or a template is authorized against `management`. Retiring a Pool
-    together with the Resources it owns, in the one operation of LIF-021, is authorized against
-    that Pool. Installing a package, and every operation reserved to the root Interface under
-    ACC-032, are operations of `management` and are authorized against it. Opening and closing a
-    Conduit are authorized against `access`, under ACC-006 and ACC-012. A control is authorized
-    by an open Conduit to the instance itself that lists the control. Reconciling an invocation
-    of a management verb is authorized against the target that authorized the request being
-    reconciled. Reconciling any other invocation, of a control or of any other operation, is
-    authorized against the target that manages the instance the invocation was dispatched to:
-    the Pool that owns that instance where it is a Resource, and `management` where it is an
-    Agent, an Interface or a Pool. In both cases the Conduit lists `reconcile.v1`. Where a Pool
-    is retired, two of the requests that this promise authorizes against that Pool are
-    authorized against `management` in its place: inspecting a Resource that the Pool owns, and
-    reconciling an invocation. No other request is authorized against a retired Pool. Where the
-    instance that an invocation was dispatched to, or that an invocation of a management verb
-    named, no longer exists, reconciling the invocation is authorized against `management`: the
-    reconciliation records the outcome and stores nothing.
+    The request is authorized by an open Conduit from the actor that lists the operation, to the
+    target that the first of these rows that fits it names. Each row gives the request, the
+    family and state of the object, and the target.
+    (1) Registering a Resource whose owner is a Pool that already exists and is not retired:
+    `management` and that Pool, each of the two Conduits listing `register.v1`.
+    (2) Registering any other object, such as a Resource whose owner is retired or is registered
+    in the same submission, the Resources of a Pool's own entries among them, and replacing or
+    unregistering any object: `management`.
+    (3) A request under LIF-009 for a new instance for a nested instantiation,
+    `register-replacement.v1`: the targets that row 1 or row 2 gives for registering the
+    instance it makes, each Conduit listing `register-replacement.v1` in place of `register.v1`.
+    (4) Setting up or retiring a Resource, with `set-up.v1` or `retire.v1`, which name the
+    instance in the input `instance`: the Pool that owns it, and none where that Pool is
+    retired.
+    (5) Setting up or retiring an Agent, an Interface or a Pool: `management`.
+    (6) Inspecting a Resource: the Pool that owns it, or `management` where that Pool is
+    retired.
+    (7) Inspecting any other object, an Agent, an Interface, a Pool, a Conduit or a template:
+    `management`.
+    (8) Retiring a Pool together with the Resources it owns, in the one operation of LIF-021:
+    that Pool.
+    (9) Installing a package, and every operation reserved to the root Interface under ACC-032,
+    which are operations of `management`: `management`.
+    (10) Opening or closing a Conduit: `access`, under ACC-006 and ACC-012.
+    (11) A control: the instance itself.
+    (12) Reconciling an invocation where the instance that it was dispatched to, or, for an
+    invocation of a management verb, the instance that it named, no longer exists: `management`,
+    and the reconciliation records the outcome and stores nothing.
+    (13) Reconciling any other invocation of a management verb: the target that authorized the
+    request being reconciled, or `management` where that target is a retired Pool.
+    (14) Reconciling any other invocation, of a control or of any other operation: the Pool that
+    owns the instance it was dispatched to, where that instance is a Resource and the Pool is
+    not retired, and `management` where it is a Resource whose Pool is retired, an Agent, an
+    Interface or a Pool.
+    No request is authorized against a retired Pool.
   observable: >-
     An actor with an open Conduit to that target listing the operation is permitted, and any
     other actor reports refused. Except for a control, a Conduit to the object itself, or to any

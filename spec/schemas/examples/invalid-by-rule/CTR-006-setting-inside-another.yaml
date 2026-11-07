@@ -1,0 +1,31 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# no pointer of a control's `changes` lies inside another (CTR-006), as no destination of a
+# template's input lies inside another's (INS-010). Here `listing` sets `/listing` and `depth`
+# sets `/listing/depth`, which lies inside it: sent `listing: {}` alone, the control would
+# replace the whole map under REV-007 and keep the setting of the omitted `depth` under
+# REV-006. Pointers are compared as reference tokens, so `/listing` and `/listings` would not
+# overlap, nor would `/a~1b` and `/a/b`; the empty pointer lies over every other.
+# Added by round 6 of the re-audit, under ruling 44 (finding 6-1-03; log
+# docs/proposals/reaudit/round-6/log-core.md).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-listing.v1
+  description: A control. Change how a directory is listed.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      listing:
+        type: object
+        properties:
+          depth: {type: integer, minimum: 1}
+        additionalProperties: false
+      depth: {type: integer, minimum: 1}
+      revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+    required: [revision]
+  effect: Changes how the directory is listed.
+  changes:
+    listing: /listing
+    depth: /listing/depth

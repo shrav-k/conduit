@@ -82,6 +82,11 @@
 # The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
 # "Verification") changed TPL-017, which no longer implies that a hook reached by `remote` makes
 # onward requests (V2-16). It added none and removed none.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
+# (log docs/proposals/reaudit/round-6/log-promises.md), changed TPL-004, whose observable
+# says that a type's default for a hook it does not require is not used, and that registering
+# a template that selects no implementation for that hook reports it (the open point on a
+# Type's default hook). It added none and removed none.
 
 - id: TPL-001
   layer: language
@@ -155,7 +160,13 @@
     template is registered, whether or not the type also lists it under `requires`. A template
     whose type offers a capability one of whose operations has no selection and no default is
     rejected, and so is one whose type lists such a control, even where the template's
-    `controls` map leaves that control out.
+    `controls` map leaves that control out. `setup-hook.v1` and `retire-hook.v1` are in no
+    capability, so a type's default for either is used only where the type lists that hook
+    under `requires`. A default that a type states for a hook it does not require is not used.
+    A template of that type whose `implementation` map selects no implementation for the hook
+    has none, so the hook is not dispatched, under TPL-017 and TPL-018; the template is
+    registered, and its registration reports that default in a diagnostic that did not prevent
+    it.
   vectors: []
 
 - id: TPL-005

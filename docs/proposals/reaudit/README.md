@@ -9,9 +9,13 @@ This page is the record of round 1. Round 2, with four readers, is done and has
 [round 4](round-4/README.md). [Round 5](round-5/README.md) was the first to read the
 specification as rulings 40 to 43 rewrote it. Six readers reported 119 findings, ten of them
 unsafe, which the coordinator merged into 111 items: 110 were fixed and 1 rejected. Two
-verifiers then checked the fixes and reported 29 findings, none unsafe: 28 were fixed, and 1
-waits for the owner. Counts of promises on this page are as they stood when each pass ended;
-the current counts are in the
+verifiers then checked the fixes and reported 29 findings, none unsafe: 28 were fixed, and the
+coordinator then settled the last, V6, as its option 1, in PLC-007 and PLC-002.
+[Round 6](round-6/README.md) was the owner's cold read by Codex, of the whole repository at
+`c4d7d33`: six findings, two of them wrong and safety-critical, and a critique of the design in
+22 points. The coordinator's [decisions](round-6/DECISIONS.md) on them were accepted by
+plan-audit ruling 44, and all six findings are fixed. Counts of promises on this page are as
+they stood when each pass ended; the current counts are in the
 [contents table of the specification](../../../spec/README.md#contents).
 
 This is the record of a ruling. Where it and the specification differ, the specification
@@ -131,7 +135,8 @@ These four steps were written when the findings were recorded. Each now has its 
 4. A second round of cold readers. Done: [round 2](round-2/README.md), which was not clean.
    [Round 3](round-3/README.md) is done and was not clean either, and
    [round 4](round-4/README.md) is done and was not clean, nor was
-   [round 5](round-5/README.md), which read the rewritten text. The done-when of action A59
+   [round 5](round-5/README.md), which read the rewritten text, nor
+   [round 6](round-6/README.md), the owner's cold read by Codex. The done-when of action A59
    asks for two rounds in a row with no finding. Ruling 38 later withdrew that done-when and
    restated the readiness condition G7 ([record](../ruling-38/README.md)).
 

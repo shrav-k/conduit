@@ -1,0 +1,27 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# no two pointers of a control's `changes` are equal (CTR-006). Here the inputs `limit` and
+# `maxEntries` both set `/readLimit`. Sent `limit: 1` alone, the control would have to store 1
+# there under REV-007 and leave there, as the setting of the omitted `maxEntries`, what was
+# stored under REV-006; sent both, with different values, it could store neither, since a map
+# has no order of its keys (SCH-007). A schema cannot relate the values of a map to each
+# other, so this tool's rule compares the pointers, as reference tokens.
+# Added by round 6 of the re-audit, under ruling 44 (finding 6-1-03; log
+# docs/proposals/reaudit/round-6/log-core.md).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-read-limit.v1
+  description: A control. Change how many entries one read may return.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      limit: {type: integer, minimum: 1}
+      maxEntries: {type: integer, minimum: 1}
+      revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+    required: [revision]
+  effect: Changes the read limit of the directory.
+  changes:
+    limit: /readLimit
+    maxEntries: /readLimit

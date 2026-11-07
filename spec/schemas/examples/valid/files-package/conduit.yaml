@@ -20,6 +20,9 @@
 # docs/proposals/ruling-42/log-rename-b.md) renamed the key `arguments` of `listing` to
 # `packageArguments`, and moved the hash of its artifact from the item's `digest`, which is
 # gone, to its Package's `fileSha256`.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
+# re-audit (D14; log docs/proposals/reaudit/round-6/log-core.md), added `directory.find.v1` to
+# `exports` and to what `files-server` implements.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/files
@@ -37,6 +40,7 @@ exports:
   - directory.establish.v1
   - directory.read.v1
   - directory.list.v1
+  - directory.find.v1
   - watcher.start.v1
   - watcher.stop.v1
   - set-read-limit.v1
@@ -52,6 +56,7 @@ implementations:
       - '#directory.establish.v1'
       - '#directory.read.v1'
       - '#directory.list.v1'
+      - '#directory.find.v1'
       - '#watcher.start.v1'
       - '#watcher.stop.v1'
       - '#set-read-limit.v1'

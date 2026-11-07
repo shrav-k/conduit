@@ -7,7 +7,9 @@ behind it. There is no engine, no reference model and no published package yet.
 Read in this order: the [README](README.md), [spec/README.md](spec/README.md),
 [spec/definitions.md](spec/definitions.md), then the [plan audit](docs/AUDIT.md) for the state
 of the work and the owner's rulings. The [documentation map](docs/README.md) lists every other
-document. [AGENTS.md](AGENTS.md) states the same rules in short form.
+document, and the [reading paths](spec/README.md#reading-paths) of the specification say what
+to read for writing documents, for writing contracts and providers, and for building an engine.
+[AGENTS.md](AGENTS.md) states the same rules in short form.
 
 ## What binds
 

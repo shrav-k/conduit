@@ -6,7 +6,8 @@
 # `set-read-limit.v1` each state an input with `#read-limit.v1`.
 #
 # It also shows: Operation contracts written as the Model Context Protocol writes a tool,
-# with `inputSchema` and `outputSchema` (CTR-002, CTR-012), one of them with a hint; an
+# with `inputSchema` and `outputSchema` (CTR-002, CTR-012), one of them with a hint and one
+# with `oneOf` at the root of its `inputSchema`, saying which of two inputs is given; an
 # input with a `default`, which the engine fills in where the input is not supplied
 # (OPS-026); an output and an input that are handles, whose schema is the core package's
 # `handle.v1` (IFC-011); a control, whose `changes` maps its input to the setting that input
@@ -15,6 +16,10 @@
 # Requirement, which a Conduit applies as a filter (CTR-005).
 # The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement`
 # of `local-directory.v1` to `nodeSelector`, and location to node in its description.
+# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
+# re-audit (D14; log docs/proposals/reaudit/round-6/log-core.md), added `directory.find.v1`,
+# an Operation that is not a control and whose `inputSchema` holds `oneOf` at its root, beside
+# `type: object` (CTR-012).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -96,6 +101,33 @@ spec:
         items: {type: string}
     required: [entries]
   implementation: '#listing'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.find.v1
+  description: >-
+    Find the entries of a directory by their exact name, or by a pattern, and not by both. The
+    root of `inputSchema` says so with `oneOf`, whose branches only say which input is present,
+    as the Model Context Protocol advises; this operation is not a control, so its root may hold
+    any keyword of the profile beside `type: object` (CTR-012).
+spec:
+  inputSchema:
+    type: object
+    properties:
+      name: {type: string, minLength: 1}
+      pattern: {type: string, minLength: 1}
+    oneOf:
+      - required: [name]
+      - required: [pattern]
+  outputSchema:
+    type: object
+    properties:
+      entries:
+        type: array
+        items: {type: string}
+    required: [entries]
+  implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation

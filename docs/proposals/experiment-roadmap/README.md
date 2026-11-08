@@ -1,13 +1,13 @@
 # Experiment roadmap toward v0.0.1
 
-Status: a proposal from Santiago, 2026-11-08, against `main` at `2ca84f3`. Not ruled: the owner
+Status: a proposal from allocmemory, 2026-11-08, against `main` at `2ca84f3`. Not ruled: the owner
 decides. It adds a working track on top of the [experiment program](../../AUDIT.md#experiment-program)
 (scenarios S1 to S10, evidence cases E01 to E20) and [ruling 44](../ruling-44/README.md), which
 makes the first build the next milestone. It changes no promise, scenario or action item.
 
 ## The path
 
-1. **Spec plan** (Santiago). Pick the promises and the slice of S1 that the first experiments
+1. **Spec plan** (allocmemory). Pick the promises and the slice of S1 that the first experiments
    cover, and write down what each experiment must show before it runs.
 2. **Basic experiments and test results.** Run them in Rust under `experiments/`, each in its own
    directory with dated results. Expected outcomes stay labeled as expected until they run.

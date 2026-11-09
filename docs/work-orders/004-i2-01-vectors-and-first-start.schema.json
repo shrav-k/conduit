@@ -1,0 +1,154 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "decisions",
+    "findings",
+    "vectors",
+    "own_choices",
+    "could_not",
+    "checks",
+    "files_changed"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string"
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "decision",
+          "applied",
+          "notes"
+        ],
+        "properties": {
+          "decision": {
+            "type": "string"
+          },
+          "applied": {
+            "type": "string",
+            "enum": [
+              "as written",
+              "nearest sound reading",
+              "not applied"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "class",
+          "promises",
+          "text",
+          "what_the_build_did"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "class": {
+            "type": "string",
+            "enum": [
+              "gap",
+              "ambiguity",
+              "contradiction",
+              "needless complexity"
+            ]
+          },
+          "promises": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "text": {
+            "type": "string"
+          },
+          "what_the_build_did": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "vectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "promises",
+          "passes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "promises": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "passes": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "own_choices": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "could_not": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "command",
+          "exit_code",
+          "last_line"
+        ],
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "last_line": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "files_changed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

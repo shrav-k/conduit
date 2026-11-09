@@ -29,7 +29,7 @@ mod schemas;
 mod value;
 mod yaml;
 
-pub use diagnostic::{Diagnostic, Diagnostics, Position};
+pub use diagnostic::{Diagnostic, Diagnostics, Position, SchemaLocation};
 pub use project::{FileRole, MANIFEST_NAMES, Project, read_project, read_submitted_files};
 pub use read::{Document, Syntax, read_bytes, read_file, read_text};
 pub use schemas::{Names, Role, Specification, compile};

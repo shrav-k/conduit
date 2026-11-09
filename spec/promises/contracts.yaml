@@ -105,28 +105,29 @@
   observable: >-
     An operation with no `effect` changes nothing outside itself. `startsModelWork`,
     `deduplicates` and `reservedToRoot` are booleans, and one that is absent is false; IMP-003
-    and ACC-032 state what the first and the last of them mean, OPS-012 and OPS-021 say what the
-    engine does with a repeat where `deduplicates` is declared, and CTR-009 says where
-    `reservedToRoot` may be written. `idempotentHint`, `destructiveHint` and `openWorldHint` may
-    each be left out, and IFC-033 says what they become in the definition of a tool. An
+    and ACC-032 state what the first and the last of them mean, OPS-012 and OPS-021 say what
+    the engine does with a repeat where `deduplicates` is declared, and CTR-009 says where
+    `reservedToRoot` may be written. `idempotentHint`, `destructiveHint` and `openWorldHint`
+    may each be left out, and IFC-033 says what they become in the definition of a tool. An
     Operation contract states no default implementation, so one whose `spec` holds
     `implementation` is rejected: what runs for an operation is a template's selection or its
-    type's default, under TPL-004, and the engine implements, with no selection, each operation
-    that the core package's implementation `engine` lists under MAN-012. `deduplicates` is not
-    the Model Context Protocol's `idempotentHint`, which hints that calling the tool again with
-    the same arguments has no further effect: the engine passes that hint into the tool's
-    `annotations`, under IFC-033, and never decides a new attempt by it, under OPS-012. No key
-    marks an operation as arranging work that is to start or to run after its own invocation has
-    ended, because no operation arranges such work through the engine, under ACC-019: a contract
-    whose `spec` holds a key that this promise does not name, such as `inputs` or `outputs`, is
-    rejected, as OBJ-019 rejects any key that this specification does not define. A property
-    name such as `maxResults` or `max_results` is accepted, as is any other non-empty string:
-    the rule OBJ-022 gives for other names a document chooses does not apply to these. A
-    property whose name is the empty string, a property of `outputSchema` that states a
-    `default`, and a handle that states one, are each rejected when the contract's package is
-    installed or its project is submitted. An input is optional where `inputSchema` does not
-    list it under `required`, under OBJ-015; what the `default` of an input then does is
-    OPS-026, and SCH-019 rejects one that fails the schema of its property.
+    type's default, under TPL-004, and the engine implements, with no selection, each
+    operation that the core package's implementation `engine` lists under MAN-012.
+    `deduplicates` is not the Model Context Protocol's `idempotentHint`, which hints that
+    calling the tool again with the same arguments has no further effect: the engine passes
+    that hint into the tool's `annotations`, under IFC-033, and never decides a new attempt by
+    it, under OPS-012. No key marks an operation as arranging work that is to start or to run
+    after its own invocation has ended, because no operation arranges such work through the
+    engine, under ACC-019: a contract whose `spec` holds a key that this promise does not
+    name, such as `inputs` or `outputs`, is rejected by `operation-spec.v1`, under SUB-005, as
+    OBJ-019 requires for an undefined key. A property name such as `maxResults` or
+    `max_results` is accepted, as is any other non-empty string: the rule OBJ-022 gives for
+    other names a document chooses does not apply to these. A property whose name is the empty
+    string, a property of `outputSchema` that states a `default`, and a handle that states
+    one, are each rejected when the contract's package is installed or its project is
+    submitted. An input is optional where `inputSchema` does not list it under `required`,
+    under OBJ-015; what the `default` of an input then does is OPS-026, and SCH-019 rejects
+    one that fails the schema of its property.
   vectors: []
 
 - id: CTR-003
@@ -192,17 +193,17 @@
     to each call that they receive for a request through the Conduit, under IFC-019.
   observable: >-
     A Requirement contract whose `spec` holds a key that this promise does not name, such as
-    `appliesTo`, `narrows`, `obliges`, `constituents` or `schema`, is rejected when its package
-    is installed or its project is submitted, as OBJ-019 rejects any key that this specification
-    does not define. The requirements of the core package are `bound.v1`, under ACC-029, and
-    `shared-host.v1`, under PLC-013. The implementations that the target of a Conduit has
-    selected for the operations the Conduit lists must state a filter's requirement in
-    `supports`, as CON-022 states, and they are sent it under IFC-018. Where several
-    requirements apply to one Conduit, each is an item of its template's `requirements` and each
-    applies, and none permits what the Conduit does not, under ACC-008: a bundle of limits is
-    written as several items side by side. Which implementation applies a requirement on an open
-    Conduit is reported under ACC-038. A repeat that is not dispatched reaches no
-    implementation, so no filter judges it, under ACC-008.
+    `appliesTo`, `narrows`, `obliges`, `constituents` or `schema`, is rejected when its
+    package is installed or its project is submitted, by `requirement-spec.v1`, under SUB-005,
+    as OBJ-019 requires for an undefined key. The requirements of the core package are
+    `bound.v1`, under ACC-029, and `shared-host.v1`, under PLC-013. The implementations that
+    the target of a Conduit has selected for the operations the Conduit lists must state a
+    filter's requirement in `supports`, as CON-022 states, and they are sent it under IFC-018.
+    Where several requirements apply to one Conduit, each is an item of its template's
+    `requirements` and each applies, and none permits what the Conduit does not, under
+    ACC-008: a bundle of limits is written as several items side by side. Which implementation
+    applies a requirement on an open Conduit is reported under ACC-038. A repeat that is not
+    dispatched reaches no implementation, so no filter judges it, under ACC-008.
   vectors: []
 
 - id: CTR-006
@@ -264,11 +265,11 @@
     Its `spec` is a schema under the schema profile. The schema is the whole of `spec`, not a
     member of it.
   observable: >-
-    A `spec` that uses a keyword or a format outside the profile is rejected under SCH-002 and
-    SCH-003. A `$ref` that is a qualified reference resolves to a Schema contract that a package
-    exports, and one that is `#name` to a Schema contract of the same project or package, as
-    SCH-015 states. The core package's reference schemas are Schema contracts, and so are the
-    schemas of documents under spec/schemas/.
+    A `spec` that uses a keyword or a format outside the profile is rejected by `schema.v1`,
+    under SUB-005, as SCH-002 and SCH-003 require. A `$ref` that is a qualified reference
+    resolves to a Schema contract that a package exports, and one that is `#name` to a Schema
+    contract of the same project or package, as SCH-015 states. The core package's reference
+    schemas are Schema contracts, and so are the schemas of documents under spec/schemas/.
   vectors: []
 
 # --- Added with the core package (plan-audit ruling 37; change X4 of the ruling on the core

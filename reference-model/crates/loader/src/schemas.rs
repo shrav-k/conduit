@@ -17,7 +17,7 @@ use jsonschema::error::ValidationErrorKind;
 use serde_json::{Map, Value as Json};
 
 use crate::authored;
-use crate::diagnostic::{Diagnostic, Diagnostics};
+use crate::diagnostic::{Diagnostic, Diagnostics, SchemaLocation};
 use crate::formats;
 use crate::project;
 use crate::read::{Document, read_file};
@@ -206,7 +206,7 @@ impl Specification {
             None => Ok(()),
             Some(failure) => {
                 let node = document.root.locate(&failure.instance_path);
-                Err(Diagnostic::new(
+                let mut diagnostic = Diagnostic::new(
                     SUB_005,
                     format!(
                         "not valid against `{}`: {}",
@@ -216,7 +216,12 @@ impl Specification {
                 .in_file(document.file.clone())
                 .in_document(document.index)
                 .at_pointer(failure.instance_path)
-                .at(node.position))
+                .at(node.position);
+                diagnostic.schema_location = Some(Box::new(SchemaLocation {
+                    keyword_location: failure.keyword_location,
+                    absolute_keyword_location: failure.absolute_keyword_location,
+                }));
+                Err(diagnostic)
             }
         }
     }
@@ -256,7 +261,7 @@ fn validator(
         );
     }
     compile(&schema).map_err(|d| Diagnostic {
-        message: format!("{name}: {}", d.message),
+        message: format!("{name}: {}", d.message).into_boxed_str(),
         ..d
     })
 }
@@ -396,6 +401,9 @@ struct Failure {
     instance_path: String,
     /// The Schema contract whose keyword failed.
     contract: String,
+    keyword_location: String,
+    schema_location: String,
+    absolute_keyword_location: Option<String>,
     message: String,
 }
 
@@ -403,7 +411,24 @@ struct Failure {
 fn first_failure(validator: &Validator, instance: &Json) -> Option<Failure> {
     let mut errors: Vec<_> = validator.iter_errors(instance).collect();
     errors.sort_by(|a, b| a.instance_path().as_str().cmp(b.instance_path().as_str()));
-    errors.first().map(|error| explain(error))
+    let mut failure = errors.first().map(|error| explain(error))?;
+    // Custom keywords in jsonschema 0.61 lose the reference tracker in iter_errors.
+    // Its evaluation tree retains it: use that path for JSON Schema 2020-12's
+    // keywordLocation, which must include every by-reference applicator.
+    let evaluation = validator.evaluate(instance);
+    let mut units = vec![evaluation.root()];
+    while let Some(unit) = units.pop() {
+        if !unit.valid()
+            && !unit.errors().is_empty()
+            && unit.schema_location() == failure.schema_location
+            && unit.instance_location().as_str() == failure.instance_path
+        {
+            failure.keyword_location = unit.evaluation_path().as_str().to_string();
+            break;
+        }
+        units.extend(unit.children());
+    }
+    Some(failure)
 }
 
 /// Say why a value is not valid. Where a schema offers alternatives, follow the one the value
@@ -473,10 +498,53 @@ fn explain(error: &jsonschema::ValidationError<'_>) -> Failure {
     Failure {
         instance_path: parent.to_string(),
         contract,
+        keyword_location: error.evaluation_path().as_str().to_string(),
+        schema_location: error
+            .absolute_keyword_location()
+            .map_or_else(|| schema_path.to_string(), ToString::to_string),
+        absolute_keyword_location: error.absolute_keyword_location().map(ToString::to_string),
         message,
     }
 }
 
 fn depth(pointer: &str) -> usize {
     pointer.matches('/').count()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_known_absolute_keyword_location_is_kept() {
+        for (constraint, instance, keyword) in [
+            (
+                serde_json::json!({"type": "string"}),
+                serde_json::json!({"label": 1}),
+                "type",
+            ),
+            (
+                serde_json::json!({"pattern": "^a$"}),
+                serde_json::json!({"label": "b"}),
+                "pattern",
+            ),
+        ] {
+            let validator = compile(&serde_json::json!({
+                "$id": "https://example.org/schema",
+                "properties": {"label": constraint}
+            }))
+            .unwrap();
+            let failure = first_failure(&validator, &instance).unwrap();
+            assert_eq!(
+                failure.keyword_location,
+                format!("/properties/label/{keyword}")
+            );
+            assert_eq!(
+                failure.absolute_keyword_location,
+                Some(format!(
+                    "https://example.org/schema#/properties/label/{keyword}"
+                ))
+            );
+        }
+    }
 }

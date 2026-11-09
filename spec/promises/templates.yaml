@@ -111,11 +111,11 @@
     family has keys of its own beyond these. `inputs`, `conduits` and `entries` are maps keyed
     by name, as OBJ-022 states.
   observable: >-
-    An account, a model or a frontend is written inside `config`, where the type's schema checks
-    it. A Pool template that declares Conduits is rejected, because a Pool is never the consumer
-    of a Conduit. A template that writes `runtimes`, `setup` or `retire` is rejected under
-    OBJ-019: an instance's run is PRV-007, and its own work at setup and at retirement is a
-    hook, under TPL-017 and TPL-018.
+    An account, a model or a frontend is written inside `config`, where the type's schema
+    checks it. A Pool template that declares Conduits is rejected, because a Pool is never the
+    consumer of a Conduit. A template that writes `runtimes`, `setup` or `retire` is rejected
+    by `template.v1`, under SUB-005, as OBJ-019 requires: an instance's run is PRV-007, and
+    its own work at setup and at retirement is a hook, under TPL-017 and TPL-018.
   vectors: []
 
 - id: TPL-002

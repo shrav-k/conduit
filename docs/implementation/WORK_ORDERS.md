@@ -117,6 +117,6 @@ rather than going to any worker.
 
 ## The record
 
-| Order | What | State |
-| --- | --- | --- |
-| [001](../work-orders/001-review-fixes.md) | The coordinator's fixes from the review of increment 1 and A70, and ruling 48, point 3 | written |
+| Order | What | Worker | Verifier | What the admin changed | State |
+| --- | --- | --- | --- | --- | --- |
+| [001](../work-orders/001-review-fixes.md) | The coordinator's fixes from the review of increment 1 and A70, and ruling 48, point 3 | 21 minutes; every decision applied as written; 36 files; one point left to the admin | 5 minutes; one `must`: `check_schemas.py` crashed on a repeat count past Python's limit | Fixed the crash, with a regression case; settled the point left to it, SCH-015's rule for a reference to the wrong kind | done on 2026-11-09 |

@@ -44,10 +44,13 @@ compared (finding 6-1-03), as the
 added that a copy's key holds a version only where the package or project states one (R-08).
 The coordinator's decisions on the findings of increment 1 of the first build, under
 [ruling 46](../docs/proposals/ruling-46/README.md), point 4, which the owner can strike, added
-that every file is UTF-8, with a byte order mark allowed in YAML and not in JSON (finding
+that every file is UTF-8, with a byte order mark initially allowed only in YAML (finding
 1-05); that only two of I-JSON's rules apply, and what a surrogate that is not paired makes of
 a file (1-12); and that the letters of the grammars cited match either case (1-13), as the
-[log of increment 1](../docs/proposals/first-build/log-increment-1.md) says.
+[log of increment 1](../docs/proposals/first-build/log-increment-1.md) says. Its review of
+2026-11-09 then allowed one leading byte order mark in either syntax and made UTF-8 this
+profile's own rule (1-15). Ruling 48, point 3, restricted patterns to the interoperable tokens
+of JSON Schema 2020-12, core, section 6.4 (1-17).
 
 Schemas are not what distinguishes Conduit. This part of the specification invents nothing: it
 selects existing standards and narrows them. Where a standard defines a meaning, that meaning
@@ -63,11 +66,11 @@ Schema contract `schema.v1` in [schemas/schema.yaml](schemas/schema.yaml), and
 | --- | --- | --- |
 | Document syntax | YAML 1.2.2, core schema | The authoring syntax, narrowed as listed below. |
 | Equivalent syntax | JSON, RFC 8259 | A JSON document means the same as the equivalent YAML document (SCH-013). A JSON file holds one document or one array of documents (SCH-018). |
-| Encoding | UTF-8, RFC 3629 | Every file is UTF-8, as I-JSON requires (RFC 7493, section 2.1). A YAML file may begin with a byte order mark, as YAML 1.2.2 allows; a JSON file may not, since RFC 8259 does not let one be added (section 8.1). A file that is not UTF-8, or that is not YAML or JSON as the ending of its name says, holds no document and is rejected (SUB-005). |
+| Encoding | UTF-8, RFC 3629 | Every file is UTF-8: this is the profile's own rule, with I-JSON (RFC 7493, section 2.1) as its precedent. A file in either syntax may begin with one byte order mark, which is ignored, as YAML 1.2.2 allows and RFC 8259 permits a JSON parser to do (section 8.1). A file that is not UTF-8, or that is not YAML or JSON as the ending of its name says, holds no document and is rejected (SUB-005). |
 | Value model | I-JSON, RFC 7493 | Two of its rules, and no other: no duplicate keys, and whole numbers within the range it recommends. Its rule on the characters of a string does not apply, so a noncharacter, such as U+FDD0 or U+FFFF, may stand in a string wherever YAML 1.2.2 or JSON lets it stand. A surrogate code point that is not one of a pair is not text, so a file whose string holds one is not YAML or JSON, and is rejected (SUB-005). In YAML an escape writes one code point, so a surrogate pair written as two `\u` escapes is two such code points, and is rejected; a character outside the Basic Multilingual Plane is written with one escape, as `\U0001F600`, where JSON writes the pair `\ud83d\ude00`. |
 | Numbers that are not integers | IEEE 754, binary64 | A number that has a fractional part is read as a binary64 value, which is what a schema checks and what equality compares (SCH-020). One whose magnitude is greater than the largest finite binary64 value is rejected (SCH-021). |
 | Schemas | JSON Schema 2020-12, core and validation, with the format-assertion vocabulary | The meaning of every keyword of the profile, the definition of integer, and the definition of equality. A format the profile lists is asserted, not only annotated (SCH-001). |
-| `pattern` | ECMA-262 regular expressions, in the edition that JSON Schema 2020-12 cites | The dialect of a `pattern`, as JSON Schema recommends. A pattern is matched in Unicode mode, which is the `u` flag (SCH-016). |
+| `pattern` | ECMA-262 regular expressions, in the edition that JSON Schema 2020-12 cites | The dialect of a `pattern`, restricted to the interoperable tokens of JSON Schema 2020-12, core, section 6.4, and escapes of pattern punctuation (SCH-016). A pattern is matched in Unicode mode, which is the `u` flag. |
 | Pointers into values | JSON Pointer, RFC 6901 | The syntax of an input's destination, of a value of a control's `changes` and of a value of an implementation item's `environment`, `packageArguments` or `headers`, in the string syntax of section 3 and not the URI fragment form of section 6 (OBJ-016). The `-` token is not accepted in a destination. No two pointers of a control's `changes` are equal or lie one inside the other (CTR-006), as no two destinations of a template's inputs do (INS-010). Two pointers are compared by their reference tokens, each with `~1` and `~0` read as `/` and `~`, as section 4 evaluates them: one lies inside another where the other's tokens begin its own, the empty pointer lies over every other, and `/a~1b`, one token, is not `/a/b` (CTR-006, PRV-016). |
 | `date-time`, `date` | RFC 3339, section 5.6 | Format grammar. |
 | `duration` | RFC 3339, appendix A | Format grammar. |

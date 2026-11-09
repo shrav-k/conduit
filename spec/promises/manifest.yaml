@@ -222,14 +222,14 @@
     `exports` is a list, and each item is the name of a document of the package, which PKG-018
     makes an export.
   observable: >-
-    An item that is not a name, such as a qualified reference, and a name that no document of
-    the package has, are each rejected with a diagnostic naming the item: a package exports only
-    its own documents. A name is the name of one document, because no two documents of a package
-    share a name under NAM-027. That document is a template or a contract: a package holds no
-    instance document, under MAN-011, so no item names one. An implementation is not listed in
-    `exports`: its item under `implementations` is what exports it, as PKG-019 states. A name
-    written twice is rejected under PKG-012, and a name that an implementation also has under
-    NAM-027.
+    An item that is not a name, such as a qualified reference, is rejected by `manifest.v1`,
+    under SUB-005. A name that no document of the package has is rejected under MAN-007, with
+    a diagnostic naming the item: a package exports only its own documents. A name is the name
+    of one document, because no two documents of a package share a name under NAM-027. That
+    document is a template or a contract: a package holds no instance document, under MAN-011,
+    so no item names one. An implementation is not listed in `exports`: its item under
+    `implementations` is what exports it, as PKG-019 states. A name written twice is rejected
+    by `manifest.v1`, under SUB-005, and a name that an implementation also has under NAM-027.
   vectors: []
 
 - id: MAN-009
@@ -274,38 +274,39 @@
     a boolean. `tools` is the map of PKG-020, and each of its values is a non-empty string.
   observable: >-
     A `command` written as one string, a `package` whose `transport` is `sse`, one of any
-    `registryType` but `oci` that states no `fileSha256`, an `oci` one whose `identifier` holds
-    no digest, a `remote` whose `url` is not a URI or whose `type` is another transport, and a
-    name in `environment` or `headers` that the Package or the Remote does not declare, are each
-    rejected with a diagnostic naming the item. So is a key of `packageArguments` that names no
-    argument of the Package's `packageArguments`, that names more than one, or that names one
-    that states a fixed `value`, which server.json says should not be configurable by end users,
-    and so is an item that states `environment` beside `remote`, `packageArguments` beside
-    anything but `package`, or `headers` beside anything but `remote`. A `url` that
-    holds a variable, written in braces as server.json writes one, such as
-    `https://{tenant}.example.com/mcp`, is not a URI and is so rejected: no key
-    binds a variable of a Remote, so the item writes its URL whole, and a Remote's
-    `variables` are never used. A key of `packageArguments` is the name by which
-    server.json refers to an argument from a Package's transport URL, and a
-    variable inside an argument's `value` is not bound by the map. No key binds the
-    Package's `runtimeArguments`, which go to the runtime command, such as `npx` or
-    `docker`, and so are the runtime provider's, under PRV-012. The item states its artifact's
-    hash once, in the Package, as server.json writes it. `plain: false` means the same as
-    leaving `plain` out. A key of `nodeSelector` is a label and not a name, under OBJ-022. A
-    program given as a relative path is taken from the directory the manifest was read from,
-    which for a package is the root of its archive, and only the engine's own runner runs it,
-    under PRV-007, so a server meant to run on another machine is published as a `package` item,
+    `registryType` but `oci` that states no `fileSha256`, an `oci` one whose `identifier`
+    holds no digest, a `remote` whose `url` is not a URI or whose `type` is another transport,
+    and a name in `environment` or `headers` that the Package or the Remote does not declare,
+    are each rejected with a diagnostic naming the item. So is a key of `packageArguments`
+    that names no argument of the Package's `packageArguments`, that names more than one, or
+    that names one that states a fixed `value`, which server.json says should not be
+    configurable by end users, and so is an item that states `environment` beside `remote`,
+    `packageArguments` beside anything but `package`, or `headers` beside anything but
+    `remote`. A `url` that holds a variable, written in braces as server.json writes one, such
+    as `https://{tenant}.example.com/mcp`, is not a URI and is so rejected: no key binds a
+    variable of a Remote, so the item writes its URL whole, and a Remote's `variables` are
+    never used. A key of `packageArguments` is the name by which server.json refers to an
+    argument from a Package's transport URL, and a variable inside an argument's `value` is
+    not bound by the map. No key binds the Package's `runtimeArguments`, which go to the
+    runtime command, such as `npx` or `docker`, and so are the runtime provider's, under
+    PRV-012. The item states its artifact's hash once, in the Package, as server.json writes
+    it. The hash of a package file does not pin what its registry resolves for the package's
+    dependencies, and a `command` pins nothing. `plain: false` means the same as leaving
+    `plain` out. A key of `nodeSelector` is a label and not a name, under OBJ-022. A program
+    given as a relative path is taken from the directory the manifest was read from, which for
+    a package is the root of its archive, and only the engine's own runner runs it, under
+    PRV-007, so a server meant to run on another machine is published as a `package` item,
     pinned as above; no shell reads the list. Where the manifest was handed over without a
     directory, as MAN-006 describes, an item whose program is a relative path is rejected. A
-    program is a relative path where it holds a `/` and does not begin with one; one that holds
-    no `/` is a name and not a path, and is found as the one who starts it finds programs. The
-    runtime provider runs a `command` or `package` item, under PRV-007: one other than the
-    engine's own runner is reached over Streamable HTTP, under IFC-017, so it runs a `package`
-    whose transport is `stdio` only by bridging it behind its gate, under PRV-025, and
-    otherwise ends the run failed, under PRV-012. Which places a pointer may name is MAN-017,
-    and which names `environment` may not bind is MAN-018. What a pointer to a place that
-    `secret-reference.v1` governs yields is SEC-010 and SEC-013, and to which URL a header that
-    carries a secret may go is SEC-024.
+    program is a relative path where it holds a `/` and does not begin with one; one that
+    holds no `/` is a name and not a path, and is found as the one who starts it finds
+    programs. The runtime provider runs a `command` or `package` item, under PRV-007: one
+    other than the engine's own runner is reached over Streamable HTTP, under IFC-017, so it
+    runs a `package` whose transport is `stdio` only by bridging it behind its gate, under
+    PRV-025, and otherwise ends the run failed, under PRV-012. Which places a pointer may name
+    is MAN-017, and which names `environment` may not bind is MAN-018. What a pointer to a
+    place that `secret-reference.v1` governs yields is SEC-010 and SEC-013, and to which URL a
+    header that carries a secret may go is SEC-024.
   vectors: []
 
 - id: MAN-011
@@ -351,15 +352,16 @@
     Its implementations are the engine itself. Each item states `implements`, may state
     `nodeSelector`, and states none of `command`, `package` and `remote` and no `supports`.
   observable: >-
-    An item of any other package that states none of the three is rejected under MAN-009. The
-    core package is built into the engine under NAM-020, so it has no archive and no digest, and
-    its manifest lists no `packages`. What a template or an instance that refers to it then
-    holds is NAM-009 and PKG-005. The engine applies the requirements of the core package,
-    `bound.v1` and `shared-host.v1`, itself and is sent none, under CTR-005, so a request for an
-    operation of the core package that carries a filter reports unavailable under ACC-015. Its
-    items list no operation of a provider capability: the engine's own runner, machine provider
-    and fetching serve under PRV-003 without being selected as an implementation, and no engine
-    serves `get-secret.v1`, under SEC-020.
+    An item of any other package that states none of the three is rejected by
+    `implementation-item.v1`, under SUB-005. The core package is built into the engine under
+    NAM-020, so it has no archive and no digest, and its manifest lists no `packages`. What a
+    template or an instance that refers to it then holds is NAM-009 and PKG-005. The engine
+    applies the requirements of the core package, `bound.v1` and `shared-host.v1`, itself and
+    is sent none, under CTR-005, so a request for an operation of the core package that
+    carries a filter reports unavailable under ACC-015. Its items list no operation of a
+    provider capability: the engine's own runner, machine provider and fetching serve under
+    PRV-003 without being selected as an implementation, and no engine serves `get-secret.v1`,
+    under SEC-020.
   vectors: []
 
 - id: MAN-013

@@ -351,12 +351,16 @@ fn text_that_is_not_yaml_or_json_is_rejected() {
         "{'a': 1}",
         r#"{"a": 01}"#,
         "{} {}",
-        "\u{feff}{}",
     ] {
         rejected(json(text), rules::SUB_005, text);
     }
-    // A byte order mark is YAML's to allow, and the loader allows it there.
+    // Either syntax may begin with one byte order mark; another is not ignored in JSON.
     assert_eq!(yaml_value("\u{feff}a: 1\n"), Value::Integer(1));
+    assert_eq!(json_value("\u{feff}{\"a\": 1}"), Value::Integer(1));
+    assert_eq!(json("\u{feff}[]").unwrap().len(), 0);
+    rejected(json("\u{feff}\u{feff}{}"), rules::SUB_005, "two BOMs");
+    let fault = rejected(json("\u{feff}{\"a\": x}"), rules::SUB_005, "after BOM");
+    assert_eq!(fault.position, Some(Position { line: 1, column: 8 }));
 }
 
 #[test]
@@ -377,6 +381,11 @@ fn text_that_is_not_utf8_is_rejected() {
 fn values_nest_no_deeper_than_the_limit() {
     let lists = |depth: usize| format!("{}{}", "[".repeat(depth), "]".repeat(depth));
     let maps = |depth: usize| format!("{}1{}", r#"{"a": "#.repeat(depth), "}".repeat(depth));
+    // SUB-011's portable floor, in either syntax and with both kinds of container.
+    for depth in [63, 64, 65] {
+        assert!(yaml(&lists(depth)).is_ok());
+        assert!(json(&maps(depth)).is_ok());
+    }
     assert!(yaml(&lists(MAX_DEPTH)).is_ok());
     assert!(json(&maps(MAX_DEPTH)).is_ok());
     rejected(yaml(&lists(MAX_DEPTH + 1)), rules::SUB_011, "YAML");

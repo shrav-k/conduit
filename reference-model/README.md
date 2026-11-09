@@ -50,7 +50,7 @@ a file. What reads the file system is at the edge: `read_file`, `read_project` a
   range of SCH-006, so `9007199254740993.5` is rejected. JSON as RFC 8259 writes it, with the
   same narrowings, so that it means the same as YAML (SCH-013); a JSON file whose value is an
   array holds its items as documents, and any other holds its value as one (SCH-018). Files are
-  UTF-8, with a byte order mark allowed in YAML and not in JSON; a noncharacter may stand in a
+  UTF-8, with one leading byte order mark accepted and ignored in either syntax; a noncharacter may stand in a
   string, and a surrogate that is not paired may not, nor, in YAML, a pair written as two
   escapes. Values nest at most 128 levels deep, a limit that DL10 leaves to an engine, past
   which a document is rejected under SUB-011.
@@ -68,10 +68,13 @@ a file. What reads the file system is at the edge: `read_file`, `read_project` a
   validator is JSON Schema 2020-12 with the profile's formats asserted (SCH-001), `uuid` and
   `duration` checked by the grammars that the profile cites (SCH-004), and `pattern` matched as
   ECMA-262 with the `u` flag, in the edition that JSON Schema 2020-12 cites (SCH-016). The loader
-  also rejects a document whose own schemas hold a pattern that is not one of ECMA-262
+  also rejects a document whose own schemas hold a pattern outside the interoperable tokens
+  of JSON Schema 2020-12, core, section 6.4, or one that is not ECMA-262 in Unicode mode
   (`authored.rs`), as SCH-016 says. `Specification::check` gives that verdict beside the
   schemas', as reading a project does; `Specification::validate` applies the schemas alone. A
-  rejection by a schema rests on SUB-005, and names the Schema contract and the place.
+  rejection by a schema rests on SUB-005, and names the Schema contract, the instance's place
+  and the failing keyword's location (`keywordLocation`, and `absoluteKeywordLocation` where
+  known, to be carried in the SARIF result's `properties`).
 
 It does not resolve references, instantiate templates or apply the rules of
 `tools/check_schemas.py` that no schema can express: those come with the core, in increment 2.
@@ -85,7 +88,8 @@ increment 1's done-when; the others test the rest of what it covers.
 | --- | --- |
 | `tests/examples.rs` | Every directory under `spec/schemas/examples/valid/` is read as a project and accepted, and the file there whose name begins with a dot is not read; every file under `invalid/` is rejected by the step that `check_schemas.py` rejects it by, when read or by a schema, as the fixture `tests/expected/invalid-verdicts.txt` records, a rejection by a schema always under SUB-005; every document under `invalid-by-rule/` passes the schemas, and `Specification::check` rejects those named for SCH-016 and no other; the core package's own documents are valid; every example means the same written again as JSON (SCH-013); and the trees of examples are flat, so these tests read every file that the tool reads |
 | `tests/reading.rs` | The syntax rules, case by case, in YAML and in JSON: the characters YAML allows; a number read as a whole binary64 value, held to the range of SCH-006; I-JSON's two rules, and a surrogate that is not paired; every fault of a file reported, in any order of its documents and of their members (SUB-001); each fault with the same rule and place in YAML and in JSON (SCH-013); a document marker that the parser would read as content; and a file of some megabytes read in linear time |
-| `tests/formats.rs` | The grammars of `uuid`, with its edges of version and variant, and of `duration`; each format asserted; patterns matched as ECMA-262 where Python's `re` and Rust's `regex` read them otherwise; a pattern that is not ECMA-262, in the edition that JSON Schema 2020-12 cites; and the verdict of `Specification::check` on one |
+| `tests/pattern_rewrites.rs` | All eight historical patterns compared with their rewrites, on example strings and generated and boundary strings, using `regress` for both |
+| `tests/formats.rs` | The grammars of `uuid`, with its edges of version and variant, and of `duration`; each format asserted; patterns matched as ECMA-262 where Python's `re` and Rust's `regex` read them otherwise; a pattern that is not ECMA-262 or uses tokens outside the interoperable subset; and the verdict of `Specification::check` on one |
 | `tests/project.rs` | Two manifests; a manifest that is not one document; documents in a directory below, not read; a file with another ending, or whose name begins with a dot, ignored; a link followed, and one that leads nowhere rejected; the order of documents, within a file and across files, which means nothing (SUB-001) |
 | `tests/rules.rs` | Every promise the loader cites is one that `spec/` defines, with an ID in the form of a diagnostic's `ruleId` |
 
@@ -134,9 +138,10 @@ only, by one written from the grammar of RFC 3339, appendix A, whose letters mat
 as ABNF has it (finding 1-13). Its `pattern`, which translates a pattern into the syntax of
 another engine as far as it can, is replaced by [regress](https://crates.io/crates/regress), an
 engine of ECMA-262's regular expressions, in Unicode mode. `regress` follows the current
-edition of ECMA-262, and the loader rejects the two pieces of syntax it accepts that the
-edition of 2020, which JSON Schema 2020-12 cites, does not: a group that sets flags and a name
-given to two groups. The crate cannot be given another engine for `patternProperties`; no
+edition of ECMA-262. The loader tokenizes every pattern against the interoperable tokens of
+JSON Schema 2020-12, core, section 6.4, plus escaped pattern punctuation, before compiling it.
+The old patterns and their rewrites are compared with `regress`'s PikeVM backend in
+`tests/pattern_rewrites.rs`, avoiding costly backtracking in the historical patterns. The crate cannot be given another engine for `patternProperties`; no
 schema of the specification uses it, and the core matches it itself when it validates the
 schemas that authors write, from increment 2, as the
 [log of increment 1](../docs/proposals/first-build/log-increment-1.md) records.

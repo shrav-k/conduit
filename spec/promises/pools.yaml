@@ -152,14 +152,14 @@
     provider, supplied for the input. An entry's placement and its runtime are written in no
     other way: an entry writes neither key itself.
   observable: >-
-    An entry that itself writes `placement` or `runtime` is rejected under OBJ-014 and PLC-005,
-    with a diagnostic naming the entry, and so is an input with either destination that states a
-    `default`, under PLC-005. A runtime supplied for an entry names a runtime provider that is
-    not retired, as PRV-006 requires of the `runtime` of an instance document. An entry whose
-    placement no input supplies is placed under POOL-016, and one whose runtime no input
-    supplies runs on the engine's own runner, under PRV-006, which runs only on the machine that
-    `local` represents, under PRV-019: where an item that is run is selected for it, it is
-    placed only where `local`'s hostname label matches, under PLC-007.
+    An entry that itself writes `placement` or `runtime` is rejected by `pool-entry.v1`, under
+    SUB-005, with a diagnostic naming the entry. An input with either destination that states
+    a `default` is rejected under PLC-005. A runtime supplied for an entry names a runtime
+    provider that is not retired, as PRV-006 requires of the `runtime` of an instance
+    document. An entry whose placement no input supplies is placed under POOL-016, and one
+    whose runtime no input supplies runs on the engine's own runner, under PRV-006, which runs
+    only on the machine that `local` represents, under PRV-019: where an item that is run is
+    selected for it, it is placed only where `local`'s hostname label matches, under PLC-007.
   vectors: []
 
 - id: POOL-011
@@ -182,8 +182,9 @@
     It is a nested instantiation of a Resource template, in the shape OBJ-014 gives an entry. It
     gives no owner, because its owner is the Pool.
   observable: >-
-    An entry that carries `owner`, `placement` or `runtime` is rejected under OBJ-014 with a
-    diagnostic naming it. An entry with no `arguments` supplies none, as OBJ-014 states.
+    An entry that carries `owner`, `placement` or `runtime` is rejected by `pool-entry.v1`,
+    under SUB-005, with a diagnostic naming it. An entry with no `arguments` supplies none, as
+    OBJ-014 states.
   vectors: []
 
 - id: POOL-013

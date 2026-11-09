@@ -78,7 +78,7 @@ pub(crate) fn check_patterns(document: &Document) -> Vec<Diagnostic> {
                         faults.push(
                             Diagnostic::new(
                                 SCH_016,
-                                format!("`{pattern}` is not a regular expression of ECMA-262 with the `u` flag: {why}"),
+                                format!("`{pattern}` is not an interoperable pattern of SCH-016 in Unicode mode: {why}"),
                             )
                             .in_file(document.file.clone())
                             .in_document(document.index)

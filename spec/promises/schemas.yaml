@@ -66,8 +66,9 @@
     The document that holds the schema is rejected, when its package is installed or when it is
     submitted. The keyword is never ignored.
   observable: >-
-    Installation or resolving returns a diagnostic naming the keyword and where it appears.
-    A misspelled keyword is rejected in the same way.
+    The document is rejected by `schema.v1`, under SUB-005. Installation or resolving returns
+    a diagnostic naming the keyword and where it appears. A misspelled keyword is rejected in
+    the same way.
   vectors: []
 
 - id: SCH-003
@@ -79,7 +80,8 @@
     The document that holds the schema is rejected, when its package is installed or when it is
     submitted.
   observable: >-
-    Installation or resolving returns a diagnostic naming the format.
+    The document is rejected by `schema.v1`, under SUB-005. Installation or resolving returns
+    a diagnostic naming the format.
   vectors: []
 
 - id: SCH-004
@@ -271,10 +273,11 @@
     same project or package as the document that holds the schema. Each of the last two
     references the schema that is that contract's `spec`.
   observable: >-
-    The three cannot be confused: a JSON Pointer is empty or starts with `/`, and a name starts
-    with a letter. A `$ref` of any other form, such as an `https` address, is rejected like a
-    keyword outside the profile, under SCH-002. So is a qualified reference, or a `#name`, that
-    resolves to something other than a Schema contract.
+    The three cannot be confused: a JSON Pointer is empty or starts with `/`, and a name
+    starts with a letter. A `$ref` of any other form, such as an `https` address, is rejected
+    like a keyword outside the profile, by `schema.v1`, under SUB-005. A qualified reference,
+    or a `#name`, that resolves to something other than a Schema contract is rejected under
+    SCH-015.
   vectors: []
 
 - id: SCH-016
@@ -284,16 +287,24 @@
     A schema uses `pattern`, or a key of `patternProperties`, which is a pattern too.
   then: >-
     The pattern is a regular expression of the ECMA-262 dialect, as JSON Schema recommends, in
-    the edition that JSON Schema 2020-12 cites, and it is matched in Unicode mode, which is that
-    dialect's `u` flag.
+    the edition that JSON Schema 2020-12 cites, and it is matched in Unicode mode, which is
+    that dialect's `u` flag. It uses only JSON Schema 2020-12, core, section 6.4's
+    interoperable tokens (https://json-schema.org/draft/2020-12/json-schema-core#section-6.4):
+    individual Unicode characters; simple, range and complemented character classes; simple
+    and range quantifiers and their lazy versions; the anchors; grouping and alternation. In
+    the standard's notation these are "[abc]", "[a-z]", "[^abc]", "[^a-z]", "+", "*", "?",
+    "+?", "*?", "??", "{x}", "{x,y}", "{x,}", "^", "$", "(...)" and "|"; range quantifiers
+    also have lazy versions. A backslash before a character that has a meaning in a pattern is
+    also allowed, to make that character stand for itself. No other token is allowed.
   observable: >-
     Whether a string matches is what an ECMA-262 regular expression with the `u` flag gives,
-    whichever regular-expression library the engine is built with. A character outside the Basic
-    Multilingual Plane is one character to a pattern, as it is to `maxLength`. A schema written
-    in a contract or a template whose pattern is not such a regular expression, such as `[z-a]`,
-    or `(?P<x>a)`, a named group of Python's, makes the document that holds it rejected, when
-    its package is installed or when it is submitted, as SCH-002 rejects a keyword outside the
-    profile, with a diagnostic naming the pattern and where it appears.
+    whichever regular-expression library the engine is built with. A character outside the
+    Basic Multilingual Plane is one character to a pattern, as it is to `maxLength`. A schema
+    written in a contract or a template whose pattern is not such a regular expression or uses
+    a token outside this list, such as `[z-a]`, `(?P<x>a)` or the ECMA-262 lookahead `(?=a)`,
+    makes the document that holds it rejected under SCH-016, when its package is installed or
+    when it is submitted, with a diagnostic naming the pattern and where it appears. The
+    request to install reports invalid under PKG-023 with that diagnostic.
   vectors: []
 
 - id: SCH-017

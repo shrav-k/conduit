@@ -193,31 +193,21 @@ fn a_pattern_is_matched_as_ecma_262_with_the_u_flag() {
     // increment 1.
     assert!(matches("^[a-z][a-z0-9-]*$", "console"));
     assert!(!matches("^[a-z][a-z0-9-]*$", "console\n"));
-    // `\d` and `\w` are ASCII; `\s` is ECMA-262's white space, which holds U+FEFF and not
-    // U+001C. Python's `re` and the `regex` crate read each of these otherwise.
-    assert!(!matches(r"^\d$", "\u{0663}"));
-    assert!(!matches(r"^\w+$", "é"));
-    assert!(matches(r"^\s$", "\u{feff}"));
-    assert!(!matches(r"^\s$", "\u{1c}"));
-    assert!(!matches(
-        r"^https?://[^\s]+$",
-        "https://example.org\u{feff}"
-    ));
-    assert!(matches(r"^https?://[^\s]+$", "https://example.org\u{1c}"));
-    // In Unicode mode a character outside the Basic Multilingual Plane is one character, as it
-    // is to `maxLength` (SCH-016), and property escapes are read.
-    assert!(matches("^.$", "😀"));
-    assert!(matches(r"^\p{Lu}$", "É"));
-    // A pattern is not anchored, and lookahead and back-references are ECMA-262's.
+    // Unicode classes and literal characters retain ECMA-262's meaning.
+    assert!(!matches("^[0-9]$", "\u{0663}"));
+    assert!(!matches("^[A-Za-z0-9_]+$", "é"));
+    assert!(matches("^[\u{feff}]$", "\u{feff}"));
+    assert!(!matches("^[\u{feff}]$", "\u{1c}"));
+    assert!(matches("^[😀]$", "😀"));
+    // Patterns are unanchored, and escaped punctuation stands for itself.
     assert!(matches("a", "cat"));
-    assert!(matches(r"^(?!-)[a-z-]+$", "a-b"));
-    assert!(!matches(r"^(?!-)[a-z-]+$", "-ab"));
-    assert!(matches(r"^(?<x>a)\k<x>$", "aa"));
+    assert!(matches(r"^a\+b\.$", "a+b."));
+    assert!(matches("^[-a-z]+$", "a-b"));
 }
 
 #[test]
-fn the_specifications_own_lookaheads_are_matched() {
-    // `address.v1` excludes a host whose last label is all digits with a negative lookahead.
+fn the_specifications_host_constraint_is_matched() {
+    // `address.v1` excludes a host whose last label is all digits with `not`.
     let address = specification()
         .contract("address.v1")
         .expect("address.v1")
@@ -254,7 +244,7 @@ fn a_pattern_that_is_not_ecma_262_in_unicode_mode_is_rejected() {
 }
 
 #[test]
-fn what_resembles_later_syntax_is_still_ecma_262_of_2020() {
+fn only_interoperable_tokens_enter_a_pattern() {
     for pattern in [
         "(?:a)",
         "(?=a)a",
@@ -262,14 +252,50 @@ fn what_resembles_later_syntax_is_still_ecma_262_of_2020() {
         "(?<=a)b",
         "(?<!a)b",
         "(?<a>x)|(?<b>y)",
-        "[(?i:a)]",
-        r"\(?i:a\)",
+        r"\d",
+        r"\w",
+        r"\s",
+        r"\b",
+        r"(a)\1",
+        r"\p{Lu}",
+        ".",
+        r"\u0041",
+        "a++",
+        "a*+",
+        "a{1}+",
+        "a???",
+        "[a-z",
+        "a{,2}",
+        "a{2,1}",
     ] {
-        compile(&json!({"type": "string", "pattern": pattern}))
-            .unwrap_or_else(|fault| panic!("{pattern}: {fault}"));
+        let fault = compile(&json!({"pattern": pattern})).expect_err(pattern);
+        assert_eq!(fault.rule, rules::SCH_016, "{pattern}: {fault}");
     }
-    assert!(matches(r"^\(?i:a\)$", "(i:a)"));
-    assert!(!matches("^[(?i:a)]$", "A"));
+    for pattern in [
+        "",
+        "a",
+        "😀",
+        "[a-z]",
+        "[^a-z]",
+        "[]",
+        "[^]",
+        "[[]",
+        "[a&&b]",
+        "a+?",
+        "a*?",
+        "a??",
+        "a{2}",
+        "a{2,3}?",
+        "a{2,}",
+        "^(a|b)$",
+        "[(?i:a)]",
+        r"\(\?i:a\)",
+        r"[\-]",
+        r"[\]]",
+        r"\^\$\\\.\*\+\?\(\)\[\]\{\}\|",
+    ] {
+        compile(&json!({"pattern": pattern})).unwrap_or_else(|fault| panic!("{pattern}: {fault}"));
+    }
 }
 
 #[test]
@@ -293,6 +319,14 @@ fn a_document_whose_schema_holds_such_a_pattern_is_rejected() {
         api = api()
     );
     submit(&[("find.yaml", &named)]).unwrap_or_else(|faults| panic!("{faults}"));
+    // A key of patternProperties follows exactly the same token list.
+    let keyed = contract("^[a-z]+$").replace("'^x-'", "'(?=x)x'");
+    let faults = submit(&[("label.yaml", &keyed)]).expect_err("lookahead key");
+    assert_eq!(faults.rules(), vec![rules::SCH_016]);
+    assert_eq!(
+        faults.0[0].pointer.as_deref(),
+        Some("/spec/patternProperties/(?=x)x")
+    );
     // The rule is part of the verdict that `check` gives, as reading a project gives it, and
     // not of `validate`, which applies the schemas alone.
     let text = contract("(?P<x>a)");

@@ -76,7 +76,9 @@ metadata:
     diagnostic that is why a request reported invalid or conflict has the level `error`;
     `message.text` says what is wrong; and each logical location of `locations` gives in
     `fullyQualifiedName` the JSON Pointer of the place it is about. An engine may add what
-    else SARIF's `result` holds.
+    else SARIF's `result` holds. For a rejection by a schema, `properties` carries
+    `keywordLocation`, and `absoluteKeywordLocation` where known, as JSON Schema 2020-12's
+    output format names them (SUB-005).
 spec:
   type: object
   properties:

@@ -1,0 +1,58 @@
+{
+  "id": "loader-format-letter-case",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCH-004"
+  ],
+  "title": "Settlement 1-13: validate actual duration and UUID schema values",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "duration.json": "duration.json",
+    "uuid.json": "uuid.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "validate-values",
+        "file": "duration.json",
+        "schema": {
+          "type": "string",
+          "format": "duration"
+        }
+      },
+      "expect": {
+        "valid": [
+          true,
+          true,
+          true,
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "validate-values",
+        "file": "uuid.json",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "expect": {
+        "valid": [
+          true,
+          true,
+          false,
+          false
+        ]
+      }
+    }
+  ]
+}

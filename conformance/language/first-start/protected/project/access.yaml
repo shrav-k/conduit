@@ -1,0 +1,9 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Resource",
+  "metadata": {
+    "name": "submitted-access"
+  },
+  "from": "github.com/shrav-k/conduit/core#access",
+  "owner": "system"
+}

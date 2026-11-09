@@ -11,9 +11,9 @@ pre-registers its increments and what each must show, and the
 [roadmap](../ROADMAP.md#the-order-of-the-work) says where it stands. Each increment logs what it
 finds under [docs/proposals/first-build/](../docs/proposals/first-build/README.md).
 
-It holds one crate so far, the strict loader of increment 1 (A43), in
-[crates/loader](crates/loader), whose package is `conduit-loader`. The core and the shell will be
-crates beside it.
+It holds the strict loader of increment 1 (A43), in [crates/loader](crates/loader), whose
+package is `conduit-loader`; the pure `conduit-core` in [crates/core](crates/core); and the
+`conduit-conformance` runner in [crates/conformance](crates/conformance). The shell comes later.
 
 ## Running it
 
@@ -23,10 +23,40 @@ rustup installs on first use. Run the commands from this directory, so that the 
 ```sh
 cargo test --release
 cargo clippy --all-targets -- -D warnings
+cargo fmt --check
+cargo run --release -p conduit-conformance
 ```
 
 `Cargo.lock` is committed, and the build output, `target/`, is ignored. The tests read the
 specification from `../spec/`, so they run inside a checkout of this repository.
+
+## What increment 2 covers so far
+
+I2-01 implements deterministic first start: exactly five ready objects and root's two open
+declared Conduits, retaining their built-in template provenance, ownership, placement and
+machine labels. `conduit-core::step` takes immutable state, an input and a supplied context,
+and returns state, promise-citing decisions, records, external intents and a semantic reply.
+Time, UUID allocations, revisions, generated suffixes and the local machine report enter as
+values. No core code reads a file, clock, network or process. Allocation errors leave the
+caller's state untouched. Restart uses retained state and makes no new identities.
+
+The [portable cases](../conformance/README.md) run through `conduit-conformance`, the file
+boundary. They include protected-template rejection, root's LIF-034 lifecycle refusals and
+the four original loader settlements. Every decision cites known promise IDs, each record
+is checked against `record.v1`, and exact object and record arrays detect omissions and extra
+effects. The runner validates cases against their JSON Schema and checks the coverage index.
+The loader adds a public compiler for a built-in Schema contract with resolved references and
+rejects two initial YAML byte order marks under SUB-005, applying the admin's settlement 2-01.
+A permitted byte order mark before a later YAML document remains accepted.
+
+General registration, access, schema evaluation, invocation handling and the shell belong to
+later orders. Unsupported inputs are embedding errors, not invented Conduit reasons. The
+[increment's log](../docs/proposals/first-build/log-increment-2.md) records the settled BOM case
+and the verification corrections: registration checks the existing owning Pool's authority
+before exposing protected-template diagnostics, and lifecycle records keep the Conduit's
+target distinct from the named object. Authorized vectors start from an explicit snapshot
+containing root's additional open Conduit to system; they claim no general registration or
+opening implementation.
 
 ## What increment 1 covers
 

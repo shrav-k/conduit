@@ -1,0 +1,106 @@
+{
+  "id": "loader-schema-attribution",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SUB-005"
+  ],
+  "title": "Settlements 1-01 and 1-14: document and manifest schema rejection attribution",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "document.yaml": "project/document.yaml",
+    "conduit.yaml": "project/conduit.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "document.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "document": 1,
+              "file": "document.yaml"
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/metadata/name"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "name.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "name.v1",
+            "pointer": "/pattern",
+            "root_schema": "template.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "conduit.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error",
+            "properties": {
+              "document": 1,
+              "file": "conduit.yaml"
+            },
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/packages"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "manifest.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "type",
+            "contract": "manifest.v1",
+            "pointer": "/$defs/packages/type",
+            "root_schema": "manifest.v1"
+          }
+        ]
+      }
+    }
+  ]
+}

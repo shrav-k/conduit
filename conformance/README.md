@@ -1,0 +1,118 @@
+# Conformance cases
+
+Not binding. The [specification](../spec/README.md) alone binds. This is a portable convention
+of the first build's runner, adopted by the admin's [decisions 3, 4 and 7](../docs/proposals/first-build/increment-2/decisions.md).
+The [case schema](case.schema.json) describes the current executable subset. Later orders
+extend it alongside their cases; an unknown input or assertion fails rather than being skipped.
+
+Each `case.yaml` has a stable `id`, `layers` (`language`, `convention`, `interface`), promise
+IDs, a title, the `first-build` profile, an `initial` recipe, named files and ordered `steps`.
+An initial recipe is `empty` or `snapshot`, whose `file` names an alias holding an explicitly
+supplied established core state. A snapshot is runner metadata, not submitted Conduit
+documents, and makes no transition. Cases may use JSON syntax in their YAML files;
+Conduit's strict reader reads both the runner metadata and the fixtures. [manifest.yaml](manifest.yaml)
+is the coverage index. The four original loader settlements are named in their case titles;
+the review's BOM, pattern-token and artifact-pin amendments have cases too. The artifact-pin
+case checks a document and claims no execution or dependency-graph verification.
+
+The [profile](profiles/first-build.yaml) states the admin's implementation choices. It also
+lists which choices this order implements and which belong to later orders. No package is
+installed by this suite. Future package fixtures must distinguish preinstalled snapshots from
+archive-install inputs with real bytes and hashes.
+
+## Inputs and files
+
+`files` maps aliases to paths relative to the case directory; shared fixtures may use relative
+paths into the repository. Paths are never fetched. A submitted alias is the original file
+name, including `conduit.yaml` when it is a manifest. Documents are ordinary Conduit files:
+runner symbols never appear in them. Bytes that intentionally fail reading live in `bytes/`.
+No size or count cap is imposed on files, submissions or archives by these cases; the nesting
+limit is 128 and the portable floor is 64.
+
+Each step has one `input` and an `expect`. Supported input kinds are:
+
+- `first-start`: supplied `evidence` (time, UUID allocations, revisions and generated suffixes)
+  and a local `machine` report. The seven object IDs precede the fourteen record IDs. A repeat
+  consumes no allocations. No ambient time, hostname or entropy enters the core.
+- `submit-files`: loader-checked files and a supplied established management request. This
+  increment supports only submissions instantiating protected core templates. It tests their
+  rejection, including absence of atomic publication, and resolves core selections without a
+  manifest package entry. General registration comes in a later order.
+- `request`: supplied evidence, an established root request and a separate `object` ID naming
+  the already-resolved object the lifecycle operation acts on. The request's `target` must
+  match its Conduit's actual target. This increment supports only LIF-034's refusals; general
+  access and lifecycle processing come later. These are semantic inputs, not wire schemas.
+- `load`: files checked together by the strict loader, without core registration.
+- `read`: raw bytes, with explicit `yaml` or `json` syntax, checked by the strict reader only.
+- `validate-values`: a JSON file's values checked against the actual supplied schema using the
+  loader's asserted formats. This is schema validation, not a claim of core configuration
+  resolution or operation-input processing.
+
+`evidence.ids` are unique UUIDs supplied in consumption order. The core retains every consumed
+ID, including record IDs; allocation exhaustion or reuse is an embedding error. Revisions and
+five-character suffixes are supplied by the boundary too. For this initial transition the
+suffixes need no collision retry because the object store is empty. The transition is atomic:
+a caller persists its state and records together before carrying out any external intent.
+
+A step's optional `capture` maps symbol names to JSON Pointers into the result. Subsequent
+inputs and expectations may use an entire string `$symbol`; unresolved or rebound symbols
+fail. `@core#export` expands the address read from [names.yaml](../spec/names.yaml), in runner
+inputs and assertions only. Neither is a Conduit reference syntax. Requests carry established
+sender/caller UUIDs and their authorizing Conduit's UUID; no credential bytes enter the model.
+
+The protected cases retain unauthorized Resource submissions into the existing system Pool:
+ACC-033 row 1 requires registration authority to both management and that Pool, and OPS-023
+requires refused before any FST-006 diagnostic. Their replies assert diagnostics are absent.
+The authorized counterpart uses [an established state](fixtures/root-system-state.json) with
+an additional open root-to-system Conduit listing `register.v1` and `retire.v1`. Registration
+there reaches FST-006. Resource retirements through that Pool Conduit still report refused
+under LIF-034, ahead of lifecycle conflicts under OPS-023. The snapshot does not claim first
+start made the extra Conduit. The empty-state first-start case retains its exact seven objects.
+
+## Assertions
+
+Maps are required-field projections: every specified member must exist and match. An empty
+map asserts an empty map. Arrays have exact cardinality and order; in particular an expected
+object array lists every object, including both declared Conduits and their complete operation
+lists. Object order in this runner follows the supplied first-start allocations; it is not an
+inspection ordering promise. Records follow the one source's order. Projection never permits
+an omitted required field or an extra array member. `records`, `reply`, `external_intents` and
+`required_promises`, plus `state` or `stateUnchanged`, are mandatory for a core step. Every
+emitted decision must cite known promise IDs; implementation choices are in a separate field.
+An empty intent list rejects every dispatch. Every emitted record is validated against
+`record.v1`; the fixtures additionally assert IDs, supplied times, causes and applicable causal
+fields. `stateUnchanged` compares object definitions and lifecycle, allowing required records
+and allocation bookkeeping to grow. `absent` asserts that JSON Pointers do not exist, for
+example `/reply/outcome` on an undispatched request.
+
+Loader diagnostics compare exact arrays of required-field projections. `diagnostic_facts`
+checks message facts and schema keyword attribution by following the evaluation pointer from a pinned root Schema contract
+to the named contract's failing keyword, without pinning the bundler's traversal path. The SARIF adapter preserves logical and physical locations and a known absolute
+keyword location. Library prose is not a portable expectation. Raw-reader diagnostic locations
+are absent where no document was established. Schema-invalid documents and manifests check
+SUB-005, identified file/document, instance pointer, named contract and keyword location.
+
+The first-build record vocabulary is `access-decision`, `request-ended`, `invocation-dispatched`,
+`invocation-ended`, `provider-call` and `object-change`. First start emits two `object-change`
+records per instance: registration and registered-to-ready, with `cause: first-start` and no
+invented caller or invocation. LIF-034 and protected-template requests emit an access decision
+and an undispatched request end. This vocabulary and the additional event data are runner
+conventions, as decision 7 allows; the required fields remain REC-001 and REC-002's.
+Lifecycle records retain the named object in `data.object` separately from `data.target`,
+which is the actual Conduit target REC-002 requires.
+
+## Running
+
+From `reference-model/`:
+
+```sh
+cargo run --release -p conduit-conformance
+cargo test --release
+```
+
+The executable accepts an optional repository-root path. It reports each case's pass and
+promise IDs, and fails with the case, step and mismatched expectation. Every discovered case
+runs; there is no layer filter that could silently skip conventions. The workspace test runs
+the same suite. Broken fixtures and unsupported inputs fail as harness errors, never invented
+Conduit reasons. An undecidable language case is stopped and logged for the admin in
+[the increment's log](../docs/proposals/first-build/log-increment-2.md).

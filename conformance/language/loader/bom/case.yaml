@@ -1,0 +1,108 @@
+{
+  "id": "loader-leading-bom",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SUB-005",
+    "SCH-013"
+  ],
+  "title": "Review 1-15 and settlement 2-01: one BOM per YAML document prefix; reject two leading marks in either syntax",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "bom-1.yaml": "bom-1.yaml",
+    "bom-1.json": "bom-1.json",
+    "bom-2.json": "bom-2.json",
+    "bom-2.yaml": "bom-2.yaml",
+    "later-document.yaml": "later-document.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "read",
+        "file": "bom-1.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "documents": [
+          {
+            "a": "text"
+          }
+        ],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "bom-1.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "documents": [
+          {
+            "a": "text"
+          }
+        ],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "bom-2.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "bom-2.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "later-document.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "documents": [
+          {
+            "a": "first"
+          },
+          {
+            "a": "later"
+          }
+        ],
+        "document_count": 2
+      }
+    }
+  ]
+}

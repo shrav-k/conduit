@@ -1,0 +1,170 @@
+{
+  "id": "loader-depth-limit",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SUB-011"
+  ],
+  "title": "Settlements 1-11 and 1-16: floor and exact depth limit in both syntaxes",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "depth-63.yaml": "bytes/depth-63.yaml",
+    "depth-64.yaml": "bytes/depth-64.yaml",
+    "depth-65.yaml": "bytes/depth-65.yaml",
+    "depth-128.yaml": "bytes/depth-128.yaml",
+    "depth-129.yaml": "bytes/depth-129.yaml",
+    "depth-63.json": "bytes/depth-63.json",
+    "depth-64.json": "bytes/depth-64.json",
+    "depth-65.json": "bytes/depth-65.json",
+    "depth-128.json": "bytes/depth-128.json",
+    "depth-129.json": "bytes/depth-129.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-63.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-64.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-65.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-128.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-129.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-011"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "128"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-63.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-64.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-65.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-128.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "depth-129.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-011"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "128"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

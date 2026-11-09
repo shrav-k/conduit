@@ -1,0 +1,21 @@
+{"source_file":"turn-2/stub.jsonl","source_line":1,"record":{"kind":"turn_start","turn":2,"unix_ms":1794262464475}}
+{"source_file":"turn-2/stub.jsonl","source_line":2,"record":{"http_method":"POST","id":8,"kind":"request","revision":null,"token_valid":true,"turn":2,"unix_ms":1794262464614,"body":{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{"elicitation":{"form":{},"url":{}}},"clientInfo":{"name":"codex-mcp-client","title":"Codex","version":"0.167.0"}}}}}
+{"source_file":"turn-2/stub.jsonl","source_line":3,"record":{"kind":"negotiated","offered":"2025-06-18","revision":"2025-06-18","turn":2,"unix_ms":1794262464615}}
+{"source_file":"turn-2/stub.jsonl","source_line":4,"record":{"id":8,"kind":"response","notification_stream":false,"reason":null,"status":200,"turn":2,"unix_ms":1794262464615}}
+{"source_file":"turn-2/stub.jsonl","source_line":6,"record":{"id":8,"kind":"wire","turn":2,"unix_ms":1794262464615,"messages":[{"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2025-06-18","capabilities":{"extensions":{"io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}},"tools":{"listChanged":true}},"serverInfo":{"name":"experiment-008","version":"0.1.0"}}}]}}
+{"source_file":"turn-2/stub.jsonl","source_line":7,"record":{"http_method":"POST","id":9,"kind":"request","revision":"2025-06-18","token_valid":true,"turn":2,"unix_ms":1794262464616,"body":{"jsonrpc":"2.0","method":"notifications/initialized"}}}
+{"source_file":"turn-2/stub.jsonl","source_line":8,"record":{"id":9,"kind":"response","notification_stream":false,"reason":null,"status":202,"turn":2,"unix_ms":1794262464616}}
+{"source_file":"turn-2/stub.jsonl","source_line":9,"record":{"http_method":"GET","id":10,"kind":"request","revision":"2025-06-18","token_valid":true,"turn":2,"unix_ms":1794262464616,"body":null}}
+{"source_file":"turn-2/stub.jsonl","source_line":10,"record":{"id":10,"kind":"response","notification_stream":true,"reason":null,"status":200,"turn":2,"unix_ms":1794262464616}}
+{"source_file":"turn-2/stub.jsonl","source_line":12,"record":{"http_method":"POST","id":11,"kind":"request","revision":"2025-06-18","token_valid":true,"turn":2,"unix_ms":1794262464616,"body":{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{}}}}}
+{"source_file":"turn-2/stub.jsonl","source_line":13,"record":{"id":11,"kind":"response","notification_stream":false,"reason":null,"status":200,"turn":2,"unix_ms":1794262464617}}
+{"source_file":"turn-2/stub.jsonl","source_line":15,"record":{"id":11,"kind":"wire","turn":2,"unix_ms":1794262464617,"messages":[{"jsonrpc":"2.0","id":1,"result":{"ttlMs":0,"cacheScope":"private","tools":[{"name":"control.next.v1"}]}}]}}
+{"source_file":"turn-2/stub.jsonl","source_line":16,"record":{"id":10,"kind":"stream_closed","turn":2,"unix_ms":1794262470671}}
+{"source_file":"turn-2/stub.jsonl","source_line":17,"record":{"http_method":"DELETE","id":12,"kind":"request","revision":"2025-06-18","token_valid":true,"turn":2,"unix_ms":1794262470672,"body":null}}
+{"source_file":"turn-2/stub.jsonl","source_line":18,"record":{"id":12,"kind":"response","notification_stream":false,"reason":null,"status":202,"turn":2,"unix_ms":1794262470672}}
+{"source_file":"turn-2/events.jsonl","source_line":1,"record":{"type":"thread.started","thread_id":"<session>"}}
+{"source_file":"turn-2/events.jsonl","source_line":2,"record":{"type":"turn.started"}}
+{"source_file":"turn-2/events.jsonl","source_line":3,"record":{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll try reading `hello.txt` again with the stub’s `files.read.v1` tool."}}}
+{"source_file":"turn-2/events.jsonl","source_line":4,"record":{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"`files.read.v1` is no longer available, so I couldn’t read `hello.txt` again. No substitute tool was used."}}}
+{"source_file":"turn-2/events.jsonl","source_line":5,"record":{"type":"turn.completed","usage":{"input_tokens":63087,"cached_input_tokens":59392,"cache_write_input_tokens":0,"output_tokens":250,"reasoning_output_tokens":0}}}
+{"source_file":"turn-2/final.txt","source_line":1,"text":"`files.read.v1` is no longer available, so I couldn’t read `hello.txt` again. No substitute tool was used."}

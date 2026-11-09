@@ -38,3 +38,13 @@ Only the files named above.
 Every run is classified per turn or listed as not run as planned; every claim cites runs; no
 absolute path, user name or credential is in any file you write; and `python3
 tools/check_docs.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 7 minutes. 12 runs, 24 turns classified, none excluded; results and 37 trimmed
+  evidence files.
+- **Verifier**: 2 minutes. No fault found.
+- **Admin**: read the second turn of all 12 runs against the classification, and recorded its
+  review in the results. No second round.

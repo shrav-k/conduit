@@ -6,17 +6,20 @@ behind it. There is no engine, no reference model and no published package yet.
 
 Read in this order: the [README](README.md), [spec/README.md](spec/README.md),
 [spec/definitions.md](spec/definitions.md), then the [plan audit](docs/AUDIT.md) for the state
-of the work and the owner's rulings. The [documentation map](docs/README.md) lists every other
-document, and the [reading paths](spec/README.md#reading-paths) of the specification say what
-to read for writing documents, for writing contracts and providers, and for building an engine.
+of the work and the owner's rulings, and the [roadmap](ROADMAP.md) for the order of the work.
+The [documentation map](docs/README.md) lists every other document, and the
+[reading paths](spec/README.md#reading-paths) of the specification say what to read for writing
+documents, for writing contracts and providers, and for building an engine.
 [AGENTS.md](AGENTS.md) states the same rules in short form.
 
 ## What binds
 
 The specification in [spec/](spec/README.md) alone binds. Nothing under `docs/` or
-`experiments/` does. The design as it stood before the specification was removed from the tree
-by ruling 39; the [archive's index](docs/archive/README.md#removed-from-the-tree) links its
-last version, as source material for the type contracts still to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
+`experiments/` does, nor does the [roadmap](ROADMAP.md). The design as it stood before the
+specification was removed from the tree by ruling 39; the
+[archive's index](docs/archive/README.md#removed-from-the-tree) links its last version, as
+source material for the type contracts still to be written. A behavior that is missing from
+`spec/` is a gap in `spec/`.
 
 ## Where work belongs
 
@@ -31,7 +34,8 @@ last version, as source material for the type contracts still to be written. A b
 - **A defect in the language** is fixed in the language, not around it. Findings against `spec/`
   are recorded with the [re-audit](docs/proposals/reaudit/README.md). The
   [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read the protocol topics that ruling 39 removed.
-- **The state of the work** is tracked in one place, the [plan audit](docs/AUDIT.md).
+- **The state of the work** is tracked in the [plan audit](docs/AUDIT.md), and its order and its
+  experiments and probes in the [roadmap](ROADMAP.md).
 - **The build process** for the independent builds, and the brief each builder receives, are in
   [docs/implementation/](docs/implementation/INDEPENDENT_BUILDS.md).
 - **Research**, meaning sourced comparisons and the analysis of probe results, goes in
@@ -39,6 +43,9 @@ last version, as source material for the type contracts still to be written. A b
   from observed behavior. The content of existing research packets is not edited.
 - **Evidence** goes in its own directory under [experiments/](experiments/README.md), with its
   scope, instructions and dated results. An expected outcome is never presented as a result.
+  Before proposing an experiment or a probe, check the roadmap's
+  [register](ROADMAP.md#experiments-and-probes): name the row it serves, or say that it is new
+  and what it feeds, and follow [the rules for proposing one](ROADMAP.md#proposing-an-experiment).
 - **Code** is Rust, with a lockfile, a pinned toolchain and ignored build output: a probe or an
   evaluation in its own directory under [experiments/](experiments/README.md), and a provider
   package, one crate per provider, under a top-level `packages/` directory (ruling 40), which
@@ -85,15 +92,16 @@ Run these from the repository root before each commit:
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
 python3 tools/set_names.py --check   # the names under spec/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
+python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
 ```
 
 What each check needs:
 
-- `check_docs.py` and `set_names.py` need only Python 3. In a Git working tree `check_docs.py`
-  asks Git for the Markdown files. Anywhere else, such as a copy downloaded as an archive, it
-  walks the directory, skipping `.git/`, `target/` and what `.gitignore` plainly names. Its
-  first line of output says which it did.
+- `check_docs.py`, `set_names.py` and `check_roadmap.py` need only Python 3. In a Git working
+  tree `check_docs.py` asks Git for the Markdown files. Anywhere else, such as a copy downloaded
+  as an archive, it walks the directory, skipping `.git/`, `target/` and what `.gitignore`
+  plainly names. Its first line of output says which it did.
 - `check_schemas.py` needs the Python packages PyYAML and jsonschema. It was last run with
   PyYAML 6.0.1 and jsonschema 4.20.0. To install them:
 
@@ -126,6 +134,12 @@ What the checks cover:
 - `check_schemas.py` checks that the files under `spec/core/` and `spec/schemas/` are strict
   YAML within the schema profile, that every example document is accepted or rejected as its
   directory says, and that the core package agrees with itself. Its own header lists each step.
+- `check_roadmap.py` checks that each action item, from A1 to the highest, has exactly one row,
+  in the plan audit, the roadmap or the plan audit's history; that each one cited has a row;
+  that the roadmap's order of the work cites each one not yet done; that each
+  directory under `experiments/` is listed in its index and linked from the roadmap; that the
+  entry points link the roadmap; and that each state begins with an allowed word. It cannot
+  tell whether a state is true. Its own header lists each check.
 
 None of them checks behavior. That needs an engine, and no engine exists.
 

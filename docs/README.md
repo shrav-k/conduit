@@ -9,8 +9,9 @@ alone binds. Everything under `docs/` explains, records or supports it.
 
 Read in this order: the [README](../README.md), [spec/README.md](../spec/README.md),
 [spec/definitions.md](../spec/definitions.md), then the [plan audit](AUDIT.md) for the state of
-the work and the owner's rulings. Rulings are logged in the plan audit, with a record for each
-batch under [proposals/](#records-of-rulings).
+the work and the owner's rulings, and the [roadmap](../ROADMAP.md) for the order of the work.
+Rulings are logged in the plan audit, with a record for each batch under
+[proposals/](#records-of-rulings).
 
 ## Reading paths
 
@@ -25,7 +26,8 @@ than repeat them.
 | Write documents, as an author | The [overview](OVERVIEW.md) → the specification's [path for an author of documents](../spec/README.md#an-author-of-documents), with [what access does not narrow](../spec/README.md#what-access-does-not-narrow). |
 | Write a contract or a provider | The specification's [path for a writer of contracts and providers](../spec/README.md#a-writer-of-contracts-and-providers). |
 | Implement the specification: the reference model, the vectors or a first provider | The specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch (next row). |
-| Learn the state of the work | [Where things stand](AUDIT.md#where-things-stand) → [action items](AUDIT.md#action-items) in the plan audit. |
+| Learn the state of the work | [Roadmap](../ROADMAP.md) → [where things stand](AUDIT.md#where-things-stand) → [action items](AUDIT.md#action-items) in the plan audit. |
+| Propose an experiment or a probe | [Experiments and probes](../ROADMAP.md#experiments-and-probes) in the roadmap → [proposing an experiment](../ROADMAP.md#proposing-an-experiment) → [experiments/](../experiments/README.md). |
 | Understand a ruling | [Ruling log](AUDIT.md#ruling-log) → the [record](#records-of-rulings) of that batch → [research](research/README.md) for the evidence. |
 | Contribute | [AGENTS.md](../AGENTS.md) → [contributor guide](../CONTRIBUTING.md). |
 | Build an engine | Not from this branch. See [independent builds](implementation/INDEPENDENT_BUILDS.md). Builders work from a separate branch, which is not yet published. |
@@ -46,10 +48,11 @@ than repeat them.
 | [../README.md](../README.md) | What Conduit is, what exists, what binds and where to start. |
 | [../AGENTS.md](../AGENTS.md) | The rules for agents and contributors: what binds, where things go, what not to edit, and the checks. |
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | Where each kind of work belongs, the checks, the license and project ownership. |
-| [AUDIT.md](AUDIT.md) | The plan audit. The one tracker: where things stand, the owner's ruling log, priorities, action items and the experiment program. Not a specification: a ruling changes nothing until it is applied to the documents it affects. |
+| [../ROADMAP.md](../ROADMAP.md) | The roadmap: the order of the work, with the state of each step, every experiment and probe, planned, running or done, with what it feeds, and the experiment program with its scenarios. Not binding. |
+| [AUDIT.md](AUDIT.md) | The plan audit, which tracks the work with the roadmap: where things stand, the owner's ruling log, what waits for the owner, priorities, and the action items that are not experiments or probes. Not a specification: a ruling changes nothing until it is applied to the documents it affects. |
 | [OVERVIEW.md](OVERVIEW.md) | A plain-language overview of the language, written from the specification. Not binding. |
 | [LANGUAGE_DEFECTS.md](LANGUAGE_DEFECTS.md) | The register of the first sweep: 167 places where the protocol topics, since removed, would have let two engine builders diverge, and what became of each. Findings against `spec/` are in the [re-audit record](proposals/reaudit/README.md). |
-| [../tools/](../tools) | The checkers: `check_docs.py` for links and anchors, `set_names.py` for the names `spec/names.yaml` defines, `check_schemas.py` for the schemas, the core package and the examples, and `check_doc_migration.py`, the record of one past migration. The first three are the checks run before each commit; [what each needs](../CONTRIBUTING.md#checks) is in the contributor guide. |
+| [../tools/](../tools) | The checkers: `check_docs.py` for links and anchors, `set_names.py` for the names `spec/names.yaml` defines, `check_schemas.py` for the schemas, the core package and the examples, `check_roadmap.py` for the rows of the action items in the plan audit and the roadmap, and `check_doc_migration.py`, the record of one past migration. The first four are the checks run before each commit; [what each needs](../CONTRIBUTING.md#checks) is in the contributor guide. |
 
 ### Records of rulings
 
@@ -96,7 +99,7 @@ specification governs.
 | [proposals/reaudit/round-5/](proposals/reaudit/round-5/README.md) | 37, 38, 41 | Round 5 of the re-audit, which ruling 41 ordered: six readers of the specification as rulings 40 to 43 rewrote it, among them one of the whole repository and one who checked the interface against the Model Context Protocol. Their reports, the coordinator's decisions, the logs of the fix pass and the verification of the fixes. No ruling has accepted its decisions, and the owner can strike any of them. |
 | [proposals/reaudit/round-6/](proposals/reaudit/round-6/README.md) | 37, 38, 44 | Round 6 of the re-audit, the owner's cold read by Codex: one reader of the whole repository at `c4d7d33`, with six findings and a critique of the design's simplicity and usefulness in 22 points. With them are the coordinator's [decisions](proposals/reaudit/round-6/DECISIONS.md), which ruling 44 accepted, and the logs of the pass that applied them. |
 | [proposals/ruling-44/](proposals/ruling-44/README.md) | 44 | The ruling on round 6 and on building next, in the owner's words: the next milestone is the first build, and the coordinator's recommendations on the findings and the critique are accepted. |
-| [proposals/ruling-45/](proposals/ruling-45/README.md) | 45 | The ruling on two proposals of the collaborator `allocmemory`, pull requests 9 and 10, in the owner's words: what was kept of each, and where it went, and the pass that decides how the roadmap is shown. |
+| [proposals/ruling-45/](proposals/ruling-45/README.md) | 45 | The ruling on two proposals of the collaborator `allocmemory`, pull requests 9 and 10, in the owner's words: what was kept of each, and where it went, and the pass that decides how the roadmap is shown, with [its log](proposals/ruling-45/log-roadmap.md). |
 
 ### Process for the builds
 
@@ -111,7 +114,7 @@ specification governs.
 | --- | --- |
 | [research/](research/README.md) | Dated primary sources, source pins, comparisons and probe results. Evidence for the rulings; nothing in it binds, and every packet but the naming research, the secrets research and the research on work across machines predates the specification. |
 | [archive/](archive/README.md) | Closed reviews, the accounting of one migration, attributed collaborator proposals including dissent, the [history of the plan audit](archive/plan-audit-history.md), and the [list of documents removed from the tree](archive/README.md#removed-from-the-tree) with links to their last versions. History; nothing in it binds. |
-| [../experiments/](../experiments/README.md) | Measured evidence. Two experiments, both in Rust: a model-checking evaluation (004) and a probe of the macOS keychain, a candidate store for the first providers (005); the index says what became of 001 to 003. No experiment has run a Conduit engine, because none exists. |
+| [../experiments/](../experiments/README.md) | Measured evidence. Two experiments, both in Rust: a model-checking evaluation (004) and a probe of the macOS keychain, a candidate store for the first providers (005); the index says what became of 001 to 003. No experiment has run a Conduit engine, because none exists. Every experiment and probe, planned, running or done, has its row in the roadmap's [register](../ROADMAP.md#experiments-and-probes). |
 
 ## Repository boundaries
 

@@ -100,7 +100,12 @@ From A70, increment 1 and the review of both:
 - **Keep the owner's machine out.** No order edits the owner's agent configuration or reads a
   credential. A worker's own state, such as Codex's sessions, is the agent's.
 - **Close the input, pin the flags, write the report to a file.** The dispatch above is the
-  sum of this round's harness faults.
+  sum of this round's harness faults. Two orders started at the same moment once raced for
+  Git's configuration while making their working trees; `git worktree add --no-track` avoids
+  it.
+- **Pre-register before the harness, amend before the run.** Order 002's review found that the
+  pre-registration of experiment 008 named tools otherwise than IFC-012 and left its matrix
+  open; it was amended, with a dated note, before any run.
 - **Count the coordinator's own choices as risks.** Counting rules fixed after a result is
   seen are the easiest to challenge, so the order that sets them says so.
 
@@ -122,3 +127,4 @@ rather than going to any worker.
 | [001](../work-orders/001-review-fixes.md) | The coordinator's fixes from the review of increment 1 and A70, and ruling 48, point 3 | 21 minutes; every decision applied as written; 36 files; one point left to the admin | 5 minutes; one `must`: `check_schemas.py` crashed on a repeat count past Python's limit | Fixed the crash, with a regression case; settled the point left to it, SCH-015's rule for a reference to the wrong kind | done on 2026-11-09 |
 | [002](../work-orders/002-real-client-harness.md) | The harness of experiment 008 (A71) | | | | running |
 | [003](../work-orders/003-increment-2-study.md) | A study for increment 2, the core on S1 | 17 minutes; the plan, the drafts of S1 and a test; six decisions for the admin, two candidate findings, nine proposed orders | 4 minutes; two `must`, a promise's strength misstated and a safety case's refusal misdefined, and one `should`, a weak case | Sent the worker back once with the findings, which it fixed in 5 minutes; [decided](../proposals/first-build/increment-2/decisions.md) the six points and the two findings | done on 2026-11-09 |
+| [004](../work-orders/004-i2-01-vectors-and-first-start.md) | I2-01: the vectors' format, the core's crates, and first start | | | | running |

@@ -122,8 +122,12 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   its other proposal, was closed. Pull request 11 carries
   [ruling 45](docs/proposals/ruling-45/README.md) and was merged by squashing the same day, as
   `d46a52b`. Pull request 12, on the branch `docs/roadmap`, moved the roadmap to `ROADMAP.md`
-  (A72) and was merged by squashing the same day, as `f3521e7`. Ruling 46 shaped the first
-  build; each of its increments is a branch and a pull request of its own. Later work goes on a new branch, with its own pull
+  (A72) and was merged by squashing the same day, as `f3521e7`. Pull request 13 carries
+  [ruling 46](docs/proposals/ruling-46/README.md), which shaped the first build, and was merged
+  by squashing the same day, as `cdf3236`; each of the build's increments is a branch and a
+  pull request of its own. Pull request 15 carries the results of the baseline for S1 (A70),
+  merged the same day as `0544b24`, and pull request 16, on the branch `build/loader`,
+  increment 1, the strict loader. Later work goes on a new branch, with its own pull
   request. Merges to `main` are squashed, with a message written by hand.
 
 ## Checks

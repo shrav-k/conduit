@@ -6,9 +6,9 @@ things they share. This repository holds the language's design. No Conduit engin
 **If you were asked to build an engine, stop.** Engine builders work only from the `build-base`
 branch and must not read this branch. That branch is not yet published, and the builds have not
 started. See [independent builds](docs/implementation/INDEPENDENT_BUILDS.md). The first build
-that ruling 44 makes the next milestone, a reference model with the first providers, is not one
-of those builds: it is written beside the language, and its nature is to be discussed with the
-owner before it starts.
+that ruling 44 makes the next milestone, step 3 of the
+[roadmap](ROADMAP.md#the-order-of-the-work), is not one of those builds: it is written beside the
+language, and its nature is to be discussed with the owner before it starts.
 
 ## Read first
 
@@ -16,7 +16,9 @@ owner before it starts.
    and the form of a promise.
 2. [spec/definitions.md](spec/definitions.md): the terms in force.
 3. [docs/AUDIT.md](docs/AUDIT.md): the state of the work, the owner's direction, the ruling
-   log, the action items and the experiment program.
+   log and the action items.
+4. [ROADMAP.md](ROADMAP.md): the order of the work, and every experiment and probe with its
+   state and what it feeds.
 
 ## The goal
 
@@ -53,7 +55,7 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
 - If you were asked to read or audit this repository cold, start at
   [for the next reader](docs/AUDIT.md#for-the-next-reader): what to read, what is known to be
   open, what to look at first, and where findings go.
-- Also not binding: `docs/OVERVIEW.md`, `docs/implementation/`, `docs/research/`,
+- Also not binding: `ROADMAP.md`, `docs/OVERVIEW.md`, `docs/implementation/`, `docs/research/`,
   `docs/archive/` and everything under `experiments/`. Most predate the specification and say
   so in a note under their title. The files under `docs/archive/` are the exception: only the
   archive's index, `docs/archive/README.md`, carries the note. An archived file that calls the
@@ -80,7 +82,9 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   recorded under `docs/proposals/reaudit/`. `docs/LANGUAGE_DEFECTS.md` is the register of the
   first sweep, which read the protocol topics that ruling 39 removed.
 - Evidence: its own directory under `experiments/`, with dated results. Never present an
-  expected outcome as a result.
+  expected outcome as a result. Before proposing or starting an experiment or a probe, look for
+  it in the roadmap's [register](ROADMAP.md#experiments-and-probes), and follow
+  [its rules](ROADMAP.md#proposing-an-experiment).
 
 ## Rules
 
@@ -103,11 +107,16 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   request 7, on the branch `docs/pre-codex`, carries the work of rulings 39 to 43, the rewrite
   of the specification around provider contracts, the vocabulary audit, work across machines
   and [round 5](docs/proposals/reaudit/round-5/README.md) of the readers. It was merged by
-  squashing on 2026-11-07. Pull request 8, on the branch `audit/round-6-codex`, carries
+  squashing on 2026-11-07. Pull request 8, on the branch `audit/round-6-codex`, carried
   [round 6](docs/proposals/reaudit/round-6/README.md), the owner's cold read by Codex, with its
-  decisions and [ruling 44](docs/proposals/ruling-44/README.md). Work after it goes on a new
-  branch, with its own pull request. Merges to `main` are squashed, with a message written by
-  hand.
+  decisions and [ruling 44](docs/proposals/ruling-44/README.md). It was merged by squashing on
+  2026-11-07, as `2ca84f3`. Pull request 9, a proposal of the collaborator `allocmemory`, was
+  revised under ruling 45 and merged by squashing on 2026-11-09, as `0e937ee`; pull request 10,
+  its other proposal, was closed. Pull request 11 carries
+  [ruling 45](docs/proposals/ruling-45/README.md) and was merged by squashing the same day, as
+  `d46a52b`. The pass that moved the roadmap to `ROADMAP.md` (A72) is on the branch
+  `docs/roadmap`, with its own pull request. Later work goes on a new branch, with its own pull
+  request. Merges to `main` are squashed, with a message written by hand.
 
 ## Checks
 
@@ -117,15 +126,16 @@ Run these from the repository root before each commit:
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
 python3 tools/set_names.py --check   # the names under spec/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
+python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
 ```
 
 What each check needs:
 
-- `check_docs.py` and `set_names.py` need only Python 3. In a Git working tree `check_docs.py`
-  asks Git for the Markdown files. Anywhere else, such as a copy downloaded as an archive, it
-  walks the directory, skipping `.git/`, `target/` and what `.gitignore` plainly names. Its
-  first line of output says which it did.
+- `check_docs.py`, `set_names.py` and `check_roadmap.py` need only Python 3. In a Git working
+  tree `check_docs.py` asks Git for the Markdown files. Anywhere else, such as a copy downloaded
+  as an archive, it walks the directory, skipping `.git/`, `target/` and what `.gitignore`
+  plainly names. Its first line of output says which it did.
 - `check_schemas.py` needs the Python packages PyYAML and jsonschema. It was last run with
   PyYAML 6.0.1 and jsonschema 4.20.0. To install them:
 

@@ -7,6 +7,9 @@ in [spec/](../../spec/README.md), and its [form](../proposals/normative-surface/
 ruled. `conformance/`, `reference-model/` and the branches named below do not exist yet; their
 names are proposals.
 
+Where the readiness gate and the builds come in the work: step 7 of the
+[roadmap](../../ROADMAP.md#the-order-of-the-work).
+
 ## What the builds prove
 
 The claim under test is the [layered claim](../AUDIT.md#layered-claim): the language fully

@@ -9,8 +9,10 @@ unsafe in it (ruling 38, point 4).
 
 This page describes the specification as it stands now. How it came to stand so, ruling by
 ruling, and where the record of each decision is, are under [History](#history) at the end.
-The latest change is [ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, which
-settled [round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit.
+The latest change is [ruling 45](../docs/proposals/ruling-45/README.md), of 2026-11-09, which
+added six [core terms](definitions.md#core-terms) to the definitions. Before it,
+[ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, settled
+[round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit.
 
 The specification alone binds. Nothing under [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) binds:
 it is the design as it stood before the specification, superseded, and kept as source material

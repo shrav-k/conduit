@@ -1,7 +1,9 @@
 # Conduit
 
 Conduit is a configuration language for the relationships between independent agents and the
-things they share.
+things they share. In practice, an engineer uses it to declare what each AI agent may reach
+through Conduit (files, folders, services such as GitHub, other agents) and which operations it
+may call there. A document holds only a reference to a secret, never its value.
 
 Languages such as Kubernetes, Docker Compose and Terraform declare workloads, which do what
 their configuration says. An agent decides for itself what to do. So Conduit declares what

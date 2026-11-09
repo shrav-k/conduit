@@ -1,0 +1,49 @@
+{
+  "id": "loader-pattern-tokens",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCH-016"
+  ],
+  "title": "Review 1-17: document schemas use interoperable pattern tokens",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "allowed.yaml": "allowed.yaml",
+    "forbidden.yaml": "../../../../spec/schemas/examples/invalid-by-rule/SCH-016-pattern-outside-the-interoperable-tokens.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "allowed.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "forbidden.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SCH-016"
+          }
+        ]
+      }
+    }
+  ]
+}

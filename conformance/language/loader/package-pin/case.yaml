@@ -1,0 +1,33 @@
+{
+  "id": "loader-package-pin-document",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-010"
+  ],
+  "title": "Review 1-18: accept illustrative artifact hash and unpinned command; no execution claim",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "conduit.yaml": "../../../../spec/schemas/examples/valid/files-package/conduit.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "conduit.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "manifest": true,
+        "document_count": 0
+      }
+    }
+  ]
+}

@@ -51,6 +51,12 @@ use crate::value::{Node, Value};
 
 /// Read every document of a YAML text.
 pub(crate) fn read(text: &str) -> Result<Vec<Node>, Diagnostics> {
+    // YAML 1.2.2's l-document-prefix admits one BOM. The parser silently skips
+    // consecutive marks, but the second is content outside that prefix (SUB-005).
+    // Do not strip marks elsewhere: a later document may have its own prefix.
+    if text.starts_with("\u{feff}\u{feff}") {
+        return Err(not_printable('\u{feff}', Position::new(1, 2)).into());
+    }
     let characters = Characters::scan(text)?;
     let mut reader = Reader::default();
     let mut offsets = Offsets::new(text);

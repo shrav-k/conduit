@@ -159,6 +159,13 @@ impl Specification {
         self.contracts.get(name)
     }
 
+    /// Compile a built-in Schema contract with its references resolved, using the same
+    /// profile as document validation. Pure; used by the conformance runner for records.
+    pub fn contract_validator(&self, name: &str) -> Result<Validator, Diagnostics> {
+        let bundle = bundle(&self.contracts, &self.names.core_package)?;
+        validator(&bundle, &self.contracts, name).map_err(Into::into)
+    }
+
     /// The names of the Schema contracts, in order.
     pub fn contract_names(&self) -> impl Iterator<Item = &str> {
         self.contracts.keys().map(String::as_str)

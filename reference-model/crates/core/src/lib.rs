@@ -1,0 +1,514 @@
+//! Deterministic transitions. No filesystem, clock, network, process or ambient allocation.
+//! The caller supplies the built-in templates, names, time, machine evidence and unique IDs.
+//! Unsupported cases and broken embedding inputs are errors, never Conduit reasons.
+
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use std::collections::{BTreeMap, BTreeSet};
+
+type Result<T> = std::result::Result<T, String>;
+
+/// Values read at the edge from the specification, not a second copy of its assigned names.
+#[derive(Clone, Debug)]
+pub struct Context {
+    pub core_package: String,
+    pub templates: BTreeMap<String, Value>,
+    pub record_source: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct State {
+    pub started: bool,
+    pub objects: Vec<Value>,
+    pub records: Vec<Value>,
+    pub allocated_ids: BTreeSet<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Evidence {
+    pub time: String,
+    pub ids: Vec<String>,
+    #[serde(default)]
+    pub revisions: Vec<String>,
+    #[serde(default)]
+    pub suffixes: Vec<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Machine {
+    pub hostname: String,
+    pub labels: BTreeMap<String, String>,
+    pub state: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Request {
+    pub sender: String,
+    pub caller: String,
+    pub conduit: String,
+    /// The actual Conduit target, distinct from an object named in operation inputs.
+    pub target: String,
+    /// Qualified operation reference, as held by the target.
+    pub operation: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
+pub enum Input {
+    FirstStart {
+        evidence: Evidence,
+        machine: Machine,
+    },
+    Submit {
+        evidence: Evidence,
+        request: Request,
+        documents: Vec<Value>,
+    },
+    Request {
+        evidence: Evidence,
+        request: Request,
+        /// Already-resolved object named by this lifecycle operation, not its target.
+        object: String,
+    },
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct Decision {
+    pub action: String,
+    pub promises: Vec<String>,
+    /// Implementation-defined choices are never promise IDs or diagnostic rule IDs.
+    pub implementation_choices: Vec<String>,
+    pub facts: Value,
+    pub affected: Vec<String>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct Transition {
+    pub state: State,
+    pub decisions: Vec<Decision>,
+    pub records: Vec<Value>,
+    pub external_intents: Vec<Value>,
+    pub reply: Value,
+}
+
+fn decision(
+    action: &str,
+    promises: &[&str],
+    choices: &[&str],
+    facts: Value,
+    affected: Vec<String>,
+) -> Decision {
+    Decision {
+        action: action.into(),
+        promises: promises.iter().map(|s| (*s).into()).collect(),
+        implementation_choices: choices.iter().map(|s| (*s).into()).collect(),
+        facts,
+        affected,
+    }
+}
+
+struct Allocation<'a> {
+    evidence: &'a Evidence,
+    cursor: usize,
+}
+impl Allocation<'_> {
+    fn next(&mut self, state: &mut State) -> Result<String> {
+        let id = self
+            .evidence
+            .ids
+            .get(self.cursor)
+            .ok_or("exhausted ID allocations")?
+            .clone();
+        if !state.allocated_ids.insert(id.clone()) {
+            return Err("reused ID allocation".into());
+        }
+        self.cursor += 1;
+        Ok(id)
+    }
+    fn record(
+        &mut self,
+        state: &mut State,
+        context: &Context,
+        event: &str,
+        data: Value,
+    ) -> Result<Value> {
+        let record = json!({"specversion":"1.0", "id": self.next(state)?,
+            "source":context.record_source, "type": event, "time":self.evidence.time, "data":data});
+        state.records.push(record.clone());
+        Ok(record)
+    }
+}
+
+impl Context {
+    fn qualified(&self, name: &str) -> String {
+        format!("{}#{name}", self.core_package)
+    }
+    fn template(&self, name: &str) -> Result<&Value> {
+        self.templates
+            .get(name)
+            .ok_or_else(|| format!("missing built-in template {name}"))
+    }
+}
+
+/// One atomic transition. Errors leave the caller's state untouched, including allocations.
+pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition> {
+    let mut transition = Transition {
+        state: state.clone(),
+        decisions: vec![],
+        records: vec![],
+        external_intents: vec![],
+        reply: Value::Null,
+    };
+    match input {
+        Input::FirstStart { evidence, machine } => {
+            first_start(&mut transition, &evidence, machine, context)?
+        }
+        Input::Submit {
+            evidence,
+            request,
+            documents,
+        } => {
+            let management_authority = authorized_path(&transition.state, &request, context)?;
+            let management = transition
+                .state
+                .objects
+                .iter()
+                .find(|o| o["from"] == context.qualified("management"))
+                .ok_or("management is absent")?;
+            if request.operation != context.qualified("register.v1")
+                || documents.is_empty()
+                || management["id"] != request.target
+            {
+                return Err("unsupported submission".into());
+            }
+            // ACC-033 row 1 requires a second open Conduit for each existing,
+            // non-retired owning Pool. Check it before protected-template diagnostics.
+            let mut pool_authority = true;
+            for document in &documents {
+                if document["kind"] != "Resource" {
+                    continue;
+                }
+                let owner = document["owner"]
+                    .as_str()
+                    .ok_or("unsupported submission owner reference")?;
+                let pool = transition
+                    .state
+                    .objects
+                    .iter()
+                    .find(|o| o["kind"] == "Pool" && (o["name"] == owner || o["id"] == owner))
+                    .ok_or("unsupported submission owner")?;
+                if pool["state"] != "retired" {
+                    pool_authority &= transition
+                        .state
+                        .objects
+                        .iter()
+                        .any(|o| permits(o, &request.sender, &pool["id"], &request.operation));
+                }
+            }
+            if !management_authority || !pool_authority {
+                transition.decisions.push(decision(
+                    "refuse-unauthorized-registration",
+                    &["ACC-033", "OPS-023"],
+                    &[],
+                    json!({"request":request}),
+                    vec![],
+                ));
+                end_request(
+                    &mut transition,
+                    &evidence,
+                    &request,
+                    None,
+                    "refused",
+                    context,
+                )?;
+                transition.reply = json!({"reason":"refused"});
+                return Ok(transition);
+            }
+            let protected = ["system", "node", "management", "access", "root"];
+            let mut diagnostics = vec![];
+            for (index, document) in documents.iter().enumerate() {
+                let from = document
+                    .get("from")
+                    .and_then(Value::as_str)
+                    .ok_or("unsupported submission document")?;
+                if !protected.iter().any(|name| from == context.qualified(name)) {
+                    return Err("unsupported submission: not a protected core template".into());
+                }
+                diagnostics.push(json!({"ruleId":"FST-006", "level":"error",
+                    "properties":{"document":index+1},
+                    "locations":[{"logicalLocations":[{"fullyQualifiedName":"/from"}]}],
+                    "message":{"text":format!("protected core template {from}")}}));
+            }
+            transition.decisions.push(decision(
+                "reject-protected-instantiation",
+                &["FST-006", "NAM-020", "SUB-003", "ACC-033", "OPS-023"],
+                &[],
+                json!({"documents":documents,"request":request}),
+                vec![],
+            ));
+            end_request(
+                &mut transition,
+                &evidence,
+                &request,
+                None,
+                "invalid",
+                context,
+            )?;
+            transition.reply = json!({"reason":"invalid", "diagnostics":diagnostics});
+        }
+        Input::Request {
+            evidence,
+            request,
+            object,
+        } => {
+            // Validate the supplied path. LIF-034 forbids these operations whether or
+            // not that path grants access, so its refusal also covers missing authority.
+            authorized_path(&transition.state, &request, context)?;
+            let named = transition
+                .state
+                .objects
+                .iter()
+                .find(|o| o["id"] == object)
+                .ok_or("unsupported named object")?;
+            let protected = named["first_start"] == true;
+            let refuse = protected
+                && (["retire.v1", "unregister.v1"]
+                    .iter()
+                    .any(|op| request.operation == context.qualified(op))
+                    || named["from"] == context.qualified("node")
+                        && request.operation == context.qualified("declare-lost.v1"));
+            if !refuse {
+                return Err("unsupported lifecycle request".into());
+            }
+            transition.decisions.push(decision(
+                "protect-first-start-object",
+                &["LIF-034", "ACC-033", "OPS-023"],
+                &[],
+                json!({"request":request, "object":object, "first_start":protected}),
+                vec![object.clone()],
+            ));
+            end_request(
+                &mut transition,
+                &evidence,
+                &request,
+                Some(&object),
+                "refused",
+                context,
+            )?;
+            transition.reply = json!({"reason":"refused"});
+        }
+    }
+    Ok(transition)
+}
+
+fn first_start(
+    t: &mut Transition,
+    evidence: &Evidence,
+    machine: Machine,
+    context: &Context,
+) -> Result<()> {
+    if t.state.started {
+        t.decisions.push(decision(
+            "keep-first-start-identities",
+            &["FST-001", "FST-005"],
+            &["DL6"],
+            json!({"started":true}),
+            t.state
+                .objects
+                .iter()
+                .filter_map(|o| o["id"].as_str().map(str::to_owned))
+                .collect(),
+        ));
+        t.reply = json!({"started":false});
+        return Ok(());
+    }
+    if !t.state.objects.is_empty() {
+        return Err("first start requires an empty object store (DL6)".into());
+    }
+    let hostname = machine.hostname.trim().to_lowercase();
+    if !["reachable", "unreachable"].contains(&machine.state.as_str())
+        || hostname.is_empty()
+        || hostname.len() > 63
+        || machine.labels.get("kubernetes.io/hostname") != Some(&hostname)
+        || !["kubernetes.io/os", "kubernetes.io/arch"]
+            .iter()
+            .all(|k| machine.labels.get(*k).is_some_and(|v| !v.is_empty()))
+    {
+        return Err("invalid first-start machine evidence (PRV-014)".into());
+    }
+    if evidence.revisions.len() != 7
+        || evidence.revisions.iter().any(String::is_empty)
+        || evidence.suffixes.len() != 2
+        || evidence.suffixes.iter().any(|s| {
+            s.len() != 5
+                || !s
+                    .bytes()
+                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit())
+        })
+    {
+        return Err("first start needs seven revisions and two five-character suffixes".into());
+    }
+    let mut allocations = Allocation {
+        evidence,
+        cursor: 0,
+    };
+    let ids = (0..7)
+        .map(|_| allocations.next(&mut t.state))
+        .collect::<Result<Vec<_>>>()?;
+    let templates = [
+        "system",
+        "node",
+        "management",
+        "access",
+        "root",
+        "root-management",
+        "root-access",
+    ];
+    let names = [
+        "system".into(),
+        "local".into(),
+        "management".into(),
+        "access".into(),
+        "root".into(),
+        format!("root-management-{}", evidence.suffixes[0]),
+        format!("root-access-{}", evidence.suffixes[1]),
+    ];
+    for (i, template_name) in templates.iter().enumerate() {
+        let template = context.template(template_name)?;
+        let mut object = json!({"id":ids[i], "revision":evidence.revisions[i], "kind":template["kind"],
+            "name":names[i], "from":context.qualified(template_name), "state":"ready", "config":{}, "first_start":i < 5});
+        if let Some(ty) = template["spec"].get("type") {
+            object["type"] = ty.clone();
+        }
+        let mut promises = vec![
+            "FST-001", "FST-002", "FST-003", "FST-005", "NAM-020", "REV-001",
+        ];
+        if [1, 2, 3].contains(&i) {
+            object["owner"] = json!(ids[0]);
+            object["placement"] = json!(ids[1]);
+            promises.extend(["PLC-001", "PLC-002"]);
+        }
+        if i == 1 {
+            object["status"] = json!({"hostname":hostname, "labels":machine.labels});
+            promises.extend(["PLC-008", "PLC-026", "PRV-014"]);
+        }
+        if i >= 5 {
+            let local_name = if i == 5 { "management" } else { "access" };
+            let declaration = &context.template("root")?["spec"]["conduits"][local_name];
+            if declaration["from"] != context.qualified(template_name) {
+                return Err("invalid built-in root declaration".into());
+            }
+            object["consumer"] = json!(ids[4]);
+            object["target"] = json!(ids[i - 3]);
+            object["local_name"] = json!(local_name);
+            object["capability"] = template["spec"]["capability"].clone();
+            object["operations"] = template["spec"]["operations"].clone();
+            object["open"] = json!(true);
+            promises.extend([
+                "CON-002",
+                "OBJ-003",
+                if i == 5 { "ACC-032" } else { "ACC-022" },
+            ]);
+        }
+        t.decisions.push(decision("make-ready-first-start-instance", &promises, if i >= 5 { &["DL6", "DL15"] } else { &["DL6"] },
+            json!({"template":context.qualified(template_name), "machine":if i == 1 { json!(&machine) } else { Value::Null }}), vec![ids[i].clone()]));
+        t.state.objects.push(object);
+        for (action, previous, state) in [
+            ("registered", Value::Null, "registered"),
+            ("lifecycle-changed", json!("registered"), "ready"),
+        ] {
+            let record = allocations.record(
+                &mut t.state,
+                context,
+                "object-change",
+                json!({"target":ids[i],
+                "cause":"first-start", "action":action, "previous":previous, "state":state}),
+            )?;
+            t.records.push(record);
+        }
+    }
+    t.decisions.push(decision(
+        "keep-first-start-records",
+        &["REC-001", "REC-002", "REC-003", "REC-005"],
+        &["DL8"],
+        json!({"cause":"first-start", "source":context.record_source}),
+        ids,
+    ));
+    t.state.started = true;
+    t.reply = json!({"started":true});
+    Ok(())
+}
+
+fn permits(conduit: &Value, sender: &str, target: &Value, operation: &str) -> bool {
+    conduit["kind"] == "Conduit"
+        && conduit["consumer"] == sender
+        && conduit["target"] == *target
+        && conduit["open"] == true
+        && conduit["state"] == "ready"
+        && conduit["operations"]
+            .as_array()
+            .is_some_and(|ops| ops.contains(&json!(operation)))
+}
+
+/// This increment handles root's established Conduits only. It checks their actual target
+/// and operation list; general access evaluation belongs to a later order.
+fn authorized_path(state: &State, request: &Request, context: &Context) -> Result<bool> {
+    let root = state
+        .objects
+        .iter()
+        .find(|o| o["from"] == context.qualified("root"))
+        .ok_or("root is absent")?;
+    let conduit = state
+        .objects
+        .iter()
+        .find(|o| o["id"] == request.conduit)
+        .ok_or("unsupported authorization path")?;
+    if conduit["target"] != request.target {
+        return Err("request target differs from its Conduit target".into());
+    }
+    if root["id"] != request.sender || request.sender != request.caller {
+        return Err("unsupported authorization path".into());
+    }
+    Ok(permits(
+        conduit,
+        &request.sender,
+        &json!(request.target),
+        &request.operation,
+    ))
+}
+
+fn end_request(
+    t: &mut Transition,
+    evidence: &Evidence,
+    request: &Request,
+    object: Option<&str>,
+    reason: &str,
+    context: &Context,
+) -> Result<()> {
+    let mut allocation = Allocation {
+        evidence,
+        cursor: 0,
+    };
+    for event in ["access-decision", "request-ended"] {
+        let mut data = json!({"caller":request.caller,
+            "consumer":request.sender, "conduit":request.conduit, "target":request.target,
+            "operation":request.operation, "reason":reason, "dispatched":false});
+        if let Some(object) = object {
+            data["object"] = json!(object);
+        }
+        let record = allocation.record(&mut t.state, context, event, data)?;
+        t.records.push(record);
+    }
+    t.decisions.push(decision(
+        "record-undispatched-request",
+        &["REC-001", "REC-002", "REC-003", "OPS-005"],
+        &["DL8"],
+        json!({"reason":reason}),
+        vec![request.target.clone()],
+    ));
+    Ok(())
+}

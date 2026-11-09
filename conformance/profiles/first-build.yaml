@@ -1,0 +1,56 @@
+{
+  "id": "first-build",
+  "status": "Runner convention; admin decisions 3, 4 and 7, 2026-11-09",
+  "DL2": {
+    "contents_digest": "SHA-256 of RFC 8785 canonical operation and default-filled arguments",
+    "persistence": "state and records before dispatch"
+  },
+  "DL15": {
+    "suffix_length": 5,
+    "alphabet": "abcdefghijklmnopqrstuvwxyz0123456789",
+    "collision": "retry"
+  },
+  "DL4": {
+    "unreadable": "unavailable immediately"
+  },
+  "DL12": {
+    "optional_inlining": false
+  },
+  "DL8": {
+    "source": "urn:conduit:first-build",
+    "sources": 1,
+    "export": "explicit ordered CloudEvents"
+  },
+  "DL10": {
+    "nesting": 128,
+    "outputs": "retained for the whole vector unless explicit expiry",
+    "file_size": null,
+    "submission_count": null,
+    "archive_size": null
+  },
+  "DL6": {
+    "first_start": "one atomic transaction from empty state",
+    "restart": "preserve identities; no repair is inferred"
+  },
+  "record_types": [
+    "access-decision",
+    "request-ended",
+    "invocation-dispatched",
+    "invocation-ended",
+    "provider-call",
+    "object-change"
+  ],
+  "implemented_here": [
+    "DL6",
+    "DL8",
+    "DL10.nesting",
+    "DL15"
+  ],
+  "reserved_for_later_orders": [
+    "DL2",
+    "DL4",
+    "DL12",
+    "DL10.outputs",
+    "DL15.collision"
+  ]
+}

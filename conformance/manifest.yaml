@@ -1,0 +1,172 @@
+{
+  "status": "Runner coverage index, not a specification promise",
+  "cases": [
+    {
+      "id": "first-start",
+      "case": "conventions/first-start/initial/case.yaml",
+      "promises": [
+        "FST-001",
+        "FST-002",
+        "FST-003",
+        "FST-005",
+        "NAM-020",
+        "PLC-008",
+        "PLC-026",
+        "PRV-014",
+        "REC-001",
+        "REC-002",
+        "REC-003"
+      ],
+      "safety_rows": [
+        "first-start"
+      ]
+    },
+    {
+      "id": "first-start-repeat",
+      "case": "conventions/first-start/repeat/case.yaml",
+      "promises": [
+        "FST-001",
+        "FST-005",
+        "REC-003"
+      ],
+      "safety_rows": [
+        "first-start-repeat"
+      ]
+    },
+    {
+      "id": "first-start-protected",
+      "case": "language/first-start/protected/case.yaml",
+      "promises": [
+        "FST-006",
+        "NAM-020",
+        "SUB-003",
+        "REC-001",
+        "REC-002",
+        "ACC-033",
+        "OPS-023"
+      ],
+      "safety_rows": [
+        "first-start-protected"
+      ]
+    },
+    {
+      "id": "first-start-lifecycle-protected",
+      "case": "conventions/first-start/lifecycle/case.yaml",
+      "promises": [
+        "LIF-034",
+        "REC-001",
+        "REC-002",
+        "REC-003",
+        "ACC-033",
+        "OPS-023"
+      ],
+      "safety_rows": [
+        "first-start-lifecycle-protected"
+      ]
+    },
+    {
+      "id": "loader-schema-attribution",
+      "case": "language/loader/schema-attribution/case.yaml",
+      "promises": [
+        "SUB-005"
+      ],
+      "safety_rows": [
+        "loader-schema-attribution"
+      ]
+    },
+    {
+      "id": "loader-depth-limit",
+      "case": "language/loader/depth/case.yaml",
+      "promises": [
+        "SUB-011"
+      ],
+      "safety_rows": [
+        "loader-depth-limit"
+      ]
+    },
+    {
+      "id": "loader-string-values",
+      "case": "language/loader/strings/case.yaml",
+      "promises": [
+        "SCH-012",
+        "SCH-013",
+        "SUB-005"
+      ],
+      "safety_rows": [
+        "loader-string-values"
+      ]
+    },
+    {
+      "id": "loader-format-letter-case",
+      "case": "language/loader/format-case/case.yaml",
+      "promises": [
+        "SCH-004"
+      ],
+      "safety_rows": [
+        "loader-format-letter-case"
+      ]
+    },
+    {
+      "id": "loader-leading-bom",
+      "case": "language/loader/bom/case.yaml",
+      "promises": [
+        "SUB-005",
+        "SCH-013"
+      ],
+      "safety_rows": [
+        "loader-leading-bom"
+      ]
+    },
+    {
+      "id": "loader-pattern-tokens",
+      "case": "language/loader/pattern-tokens/case.yaml",
+      "promises": [
+        "SCH-016"
+      ],
+      "safety_rows": [
+        "loader-pattern-tokens"
+      ]
+    },
+    {
+      "id": "loader-package-pin-document",
+      "case": "language/loader/package-pin/case.yaml",
+      "promises": [
+        "MAN-010"
+      ],
+      "safety_rows": [
+        "loader-package-pin-document"
+      ]
+    },
+    {
+      "id": "first-start-protected-authorized",
+      "case": "language/first-start/protected-authorized/case.yaml",
+      "promises": [
+        "FST-006",
+        "NAM-020",
+        "SUB-003",
+        "REC-001",
+        "REC-002",
+        "ACC-033",
+        "OPS-023"
+      ],
+      "safety_rows": [
+        "first-start-protected-authorized"
+      ]
+    },
+    {
+      "id": "first-start-lifecycle-pool-target",
+      "case": "conventions/first-start/lifecycle-pool-target/case.yaml",
+      "promises": [
+        "LIF-034",
+        "ACC-033",
+        "OPS-023",
+        "REC-001",
+        "REC-002",
+        "REC-003"
+      ],
+      "safety_rows": [
+        "first-start-lifecycle-pool-target"
+      ]
+    }
+  ]
+}

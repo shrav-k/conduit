@@ -1,0 +1,677 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "First-build portable case (runner convention)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "language",
+          "convention",
+          "interface"
+        ]
+      }
+    },
+    "promises": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}-[0-9]{3}$"
+      }
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profile": {
+      "const": "first-build"
+    },
+    "initial": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "recipe": {
+              "const": "empty"
+            }
+          },
+          "required": [
+            "recipe"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "recipe": {
+              "const": "snapshot"
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "recipe",
+            "file"
+          ]
+        }
+      ]
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "input": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "first-start"
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "time": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "revisions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "suffixes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "required": [
+                      "time",
+                      "ids"
+                    ]
+                  },
+                  "machine": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "hostname": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "labels": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "state": {
+                        "enum": [
+                          "reachable",
+                          "unreachable"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "hostname",
+                      "labels",
+                      "state"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "machine"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "request"
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "time": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "revisions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "suffixes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "required": [
+                      "time",
+                      "ids"
+                    ]
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "sender": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "caller": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "conduit": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "target": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "operation": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "sender",
+                      "caller",
+                      "conduit",
+                      "target",
+                      "operation"
+                    ]
+                  },
+                  "object": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "request",
+                  "object"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "submit-files"
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "time": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "revisions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "suffixes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "required": [
+                      "time",
+                      "ids"
+                    ]
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "sender": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "caller": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "conduit": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "target": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "operation": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "sender",
+                      "caller",
+                      "conduit",
+                      "target",
+                      "operation"
+                    ]
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "request",
+                  "files"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "read"
+                  },
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "syntax": {
+                    "enum": [
+                      "yaml",
+                      "json"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file",
+                  "syntax"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "load"
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "files"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "validate-values"
+                  },
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "schema": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file",
+                  "schema"
+                ]
+              }
+            ]
+          },
+          "expect": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "object"
+              },
+              "stateUnchanged": {
+                "const": true
+              },
+              "reply": {
+                "type": "object"
+              },
+              "records": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "specversion",
+                    "source",
+                    "type",
+                    "time",
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "target"
+                      ]
+                    }
+                  }
+                }
+              },
+              "external_intents": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "required_promises": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "absent": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "accepted": {
+                "type": "boolean"
+              },
+              "diagnostics": {
+                "type": "array"
+              },
+              "document_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "documents": {
+                "type": "array"
+              },
+              "manifest": {
+                "type": "boolean"
+              },
+              "valid": {
+                "type": "array",
+                "items": {
+                  "type": "boolean"
+                }
+              },
+              "diagnostic_facts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "index": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "message_contains": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "keyword_location": {
+                      "type": "boolean"
+                    },
+                    "keyword": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "contract": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "pointer": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "root_schema": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "index",
+                    "message_contains"
+                  ]
+                }
+              }
+            },
+            "required": []
+          },
+          "capture": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "input",
+          "expect"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "input": {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "first-start",
+                        "request",
+                        "submit-files"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expect": {
+                  "required": [
+                    "reply",
+                    "records",
+                    "external_intents",
+                    "required_promises"
+                  ],
+                  "anyOf": [
+                    {
+                      "required": [
+                        "state"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "stateUnchanged"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "input": {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "read",
+                        "load"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expect": {
+                  "required": [
+                    "accepted",
+                    "diagnostics"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "input": {
+                  "properties": {
+                    "kind": {
+                      "const": "validate-values"
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expect": {
+                  "required": [
+                    "valid"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "input": {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "read",
+                        "load"
+                      ]
+                    }
+                  }
+                },
+                "expect": {
+                  "properties": {
+                    "accepted": {
+                      "const": true
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expect": {
+                  "required": [
+                    "document_count"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "layers",
+    "promises",
+    "title",
+    "profile",
+    "initial",
+    "files",
+    "steps"
+  ]
+}

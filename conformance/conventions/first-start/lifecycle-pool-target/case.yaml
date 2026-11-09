@@ -1,0 +1,247 @@
+{
+  "id": "first-start-lifecycle-pool-target",
+  "layers": [
+    "convention"
+  ],
+  "promises": [
+    "LIF-034",
+    "ACC-033",
+    "OPS-023",
+    "REC-001",
+    "REC-002",
+    "REC-003"
+  ],
+  "title": "Retiring protected Resources through their owning Pool records system as target and the Resource as named object",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "state.json"
+  },
+  "files": {
+    "state.json": "../../../fixtures/root-system-state.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "request",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000204",
+            "00000000-0000-4000-8000-000000000205"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000050",
+          "target": "00000000-0000-4000-8000-000000000001",
+          "operation": "@core#retire.v1"
+        },
+        "object": "00000000-0000-4000-8000-000000000002"
+      },
+      "expect": {
+        "stateUnchanged": true,
+        "records": [
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000204",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000050",
+              "target": "00000000-0000-4000-8000-000000000001",
+              "operation": "@core#retire.v1",
+              "reason": "refused",
+              "dispatched": false,
+              "object": "00000000-0000-4000-8000-000000000002"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000205",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000050",
+              "target": "00000000-0000-4000-8000-000000000001",
+              "operation": "@core#retire.v1",
+              "reason": "refused",
+              "dispatched": false,
+              "object": "00000000-0000-4000-8000-000000000002"
+            }
+          }
+        ],
+        "external_intents": [],
+        "reply": {
+          "reason": "refused"
+        },
+        "required_promises": [
+          "LIF-034",
+          "REC-001",
+          "REC-002",
+          "ACC-033",
+          "OPS-023"
+        ],
+        "absent": [
+          "/reply/outcome",
+          "/reply/invocation"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "request",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000208",
+            "00000000-0000-4000-8000-000000000209"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000050",
+          "target": "00000000-0000-4000-8000-000000000001",
+          "operation": "@core#retire.v1"
+        },
+        "object": "00000000-0000-4000-8000-000000000003"
+      },
+      "expect": {
+        "stateUnchanged": true,
+        "records": [
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000208",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000050",
+              "target": "00000000-0000-4000-8000-000000000001",
+              "operation": "@core#retire.v1",
+              "reason": "refused",
+              "dispatched": false,
+              "object": "00000000-0000-4000-8000-000000000003"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000209",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000050",
+              "target": "00000000-0000-4000-8000-000000000001",
+              "operation": "@core#retire.v1",
+              "reason": "refused",
+              "dispatched": false,
+              "object": "00000000-0000-4000-8000-000000000003"
+            }
+          }
+        ],
+        "external_intents": [],
+        "reply": {
+          "reason": "refused"
+        },
+        "required_promises": [
+          "LIF-034",
+          "REC-001",
+          "REC-002",
+          "ACC-033",
+          "OPS-023"
+        ],
+        "absent": [
+          "/reply/outcome",
+          "/reply/invocation"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "request",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000212",
+            "00000000-0000-4000-8000-000000000213"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000050",
+          "target": "00000000-0000-4000-8000-000000000001",
+          "operation": "@core#retire.v1"
+        },
+        "object": "00000000-0000-4000-8000-000000000004"
+      },
+      "expect": {
+        "stateUnchanged": true,
+        "records": [
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000212",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000050",
+              "target": "00000000-0000-4000-8000-000000000001",
+              "operation": "@core#retire.v1",
+              "reason": "refused",
+              "dispatched": false,
+              "object": "00000000-0000-4000-8000-000000000004"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000213",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000050",
+              "target": "00000000-0000-4000-8000-000000000001",
+              "operation": "@core#retire.v1",
+              "reason": "refused",
+              "dispatched": false,
+              "object": "00000000-0000-4000-8000-000000000004"
+            }
+          }
+        ],
+        "external_intents": [],
+        "reply": {
+          "reason": "refused"
+        },
+        "required_promises": [
+          "LIF-034",
+          "REC-001",
+          "REC-002",
+          "ACC-033",
+          "OPS-023"
+        ],
+        "absent": [
+          "/reply/outcome",
+          "/reply/invocation"
+        ]
+      }
+    }
+  ]
+}

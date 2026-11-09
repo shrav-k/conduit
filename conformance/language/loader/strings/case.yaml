@@ -1,0 +1,172 @@
+{
+  "id": "loader-string-values",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCH-012",
+    "SCH-013",
+    "SUB-005"
+  ],
+  "title": "Settlement 1-12: noncharacters, surrogate escapes and malformed UTF-8",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "noncharacters.yaml": "bytes/noncharacters.yaml",
+    "noncharacters.json": "bytes/noncharacters.json",
+    "high-surrogate.json": "bytes/high-surrogate.json",
+    "low-surrogate.json": "bytes/low-surrogate.json",
+    "surrogate-pair.json": "bytes/surrogate-pair.json",
+    "surrogate-pair.yaml": "bytes/surrogate-pair.yaml",
+    "non-bmp.yaml": "bytes/non-bmp.yaml",
+    "high-surrogate.yaml": "bytes/high-surrogate.yaml",
+    "bad-utf8.yaml": "bytes/bad-utf8.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "read",
+        "file": "noncharacters.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "documents": [
+          {
+            "a": "﷐￿􏿿"
+          }
+        ],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "noncharacters.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "documents": [
+          {
+            "a": "﷐￿􏿿"
+          }
+        ],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "high-surrogate.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "low-surrogate.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "surrogate-pair.json",
+        "syntax": "json"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "documents": [
+          {
+            "a": "😀"
+          }
+        ],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "surrogate-pair.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "non-bmp.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "documents": [
+          {
+            "a": "😀"
+          }
+        ],
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "high-surrogate.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "read",
+        "file": "bad-utf8.yaml",
+        "syntax": "yaml"
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    }
+  ]
+}

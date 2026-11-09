@@ -1,0 +1,12 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "only-core"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1"
+    }
+  }
+]

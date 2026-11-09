@@ -173,3 +173,83 @@ These are implementation defects against existing promises, not new language fin
   and replacement contracts are read at the runner boundary. Both schema directions compare
   authored-resource and resolver-free publication verdicts, including copies, handles, control
   narrowing and omitted controls. Every decision cites its requiring promises.
+
+## Work order 009: package snapshots and project contexts
+
+2026-11-09. I2-03, first part, applies decision 2 of the
+[admin's decisions](increment-2/decisions.md): an immutable catalog of explicitly preinstalled
+snapshots, with no fetching or installation. The core derives package/project name contexts
+from the ordinary loaded documents, manifest pins and built-in package. It rejects missing or
+mismatched pins (PKG-006, PKG-003, PKG-021), checks manifest identity and exports (PKG-017,
+PKG-018, MAN-007), namespace uniqueness (NAM-027), local and external selections (NAM-007,
+NAM-014, NAM-018, NAM-022, NAM-028), and Schema referent kinds (SCH-015). NAM-020 and NAM-021
+protect the separately supplied core. First-start provenance stays unchanged (FST-005).
+
+SUB-008's project digest uses the original manifest and only contract documents, with the
+specified ordering and RFC 8785 canonicalization. Expansion preserves the relative-program
+provenance required by SUB-010 and PRV-007. The cases compare digests across contract order,
+additional templates and directory changes, and against independently computed expectations.
+The supplementary digest unit test covers binary64 serialization and UTF-16 member ordering.
+Implementation context checks cover MAN-010 bindings, MAN-017 required scalar places,
+PKG-020 plain tool coverage and TPL-002 Type families.
+
+The [S1 fixtures](../../../conformance/fixtures/s1/README.md) are promoted copies of the
+study's drafts; the drafts remain untouched because they are outside this order's scope.
+The fixtures retain real deterministic Conduit archive bytes and their computed pins. The
+filesystem Package's npm artifact was available in the local cache; its retained bytes supply
+the real `fileSha256`, without network access. These are snapshot and artifact evidence,
+never successful installations. No archive-installation promise is claimed by these cases.
+
+**Findings:** no new undecided language case was encountered in this part. No specification
+change or settlement was made. Local submitted `from`, object resolution, registration and
+instance validation remain the later orders' work; archive installation is I2-03's second
+part. Catalogs with duplicate SemVer-equivalent releases, invalid snapshot metadata or invalid
+boundary directory evidence are embedding errors, not invented Conduit outcomes.
+
+**Worker choices:** scope keys are opaque runner identifiers; catalog storage is privately
+owned and read-only. Replies expose the derived environment, references and frozen context
+values without registering anything. Relative fetches use RFC 3986 path tokens, preserving
+percent-encoded dots; relative command paths use filesystem tokens, preserving literal `?`
+and `#`. The snapshot evidence archives and artifact bytes are retained so their hashes are
+repeatable. Unsupported metadata fails the harness rather than being skipped.
+
+**Validation:** `conduit-conformance` runs all 104 cases, including 58 package/project cases.
+S1's missing-snapshot and mismatched-digest counterparts reject without exposing any partial
+context. The duplicate-export case is rejected by the strict loader under SUB-005 before
+context resolution, as `manifest.v1` encodes PKG-012. All workspace release tests, Clippy with
+warnings denied, formatting and the repository's documentation, names, schemas, roadmap and
+whitespace checks passed. No commit, branch change, push or pull request was made.
+
+## Corrections after verification of I2-03's first part
+
+2026-11-09. The admin accepted these three implementation defects against existing promises.
+No new language finding or specification change was needed.
+
+- MAN-017 requires every instance to have a value at each binding pointer. `required` and
+  `properties` alone constrain only objects, so each intermediate place must also admit only
+  objects in every schema branch. Binding validation now intersects the `type`, `enum` and
+  `const` constraints at intermediate places as it already did at leaves. The
+  [nullable-parent vector](../../../conformance/language/packages/binding-nullable-parent/case.yaml)
+  rejects `/parent/leaf` where `parent` is required but admits null, even though `leaf` is a
+  required string in an object parent. Before the fix the vector failed because resolution
+  accepted the project and exposed its environment.
+- TPL-004 applies a Type default only where the template supplies no implementation for the
+  operation. NAM-022 resolves each operation key in the project or package that holds it;
+  spelling alone is not its identity. The resolver now merges by the resolved scope and
+  operation name, retaining the selecting scope for each implementation value. MAN-017 then
+  checks only the selected item. The
+  [qualified-override vector](../../../conformance/language/packages/qualified-implementation-override/case.yaml)
+  selects a package Type whose `#op.v1` default has an invalid binding, and replaces it with a
+  valid template selection keyed `example.org/test/p#op.v1`. Before the fix it failed with
+  `accepted: false` instead of `true` because the replaced default was still checked.
+- MAN-010 takes a relative program from the manifest's directory; SUB-010 resolves it against
+  that supplied directory. Anchoring now preserves `..` for filesystem lookup instead of
+  lexically removing the preceding component, which might be a symlink. The
+  [parent-traversal vector](../../../conformance/language/packages/relative-program-parent-traversal/case.yaml)
+  supplies `var/../bin/ls` from `file:///` and requires `/var/../bin/ls` in both the expanded
+  manifest and held context, with relative-program provenance retained. Before the fix it
+  failed because the held program was `/bin/ls`. The case asserts the preserved path without
+  depending on the host's symlinks or running the command; the pure core reads no filesystem.
+
+All three vectors were observed failing before their corresponding fixes, then passing in
+the runner's full suite of 107 cases. The required-case test also names each new vector.

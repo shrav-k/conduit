@@ -1,0 +1,44 @@
+{
+  "id": "packages-data-not-selections",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-018"
+  ],
+  "title": "data-not-selections; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:531696419af200d266fbd3ebd96b38c0ad52981063df3351f8b9e1f9978d2308",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "NAM-018"
+        ]
+      }
+    }
+  ]
+}

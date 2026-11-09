@@ -1,0 +1,51 @@
+{
+  "id": "packages-encoded-fetch-path",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SUB-010"
+  ],
+  "title": "encoded-fetch-path; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:4b1928cf6e0c2a02e5d4c9730b665bbe0bd62cb182ac50ca0571a2aa132a4fc6",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot",
+          "expanded_manifest": {
+            "packages": {
+              "example.org/test/p": {
+                "fetch": "file:///projects/one/%2E%2E/p.tar.gz"
+              }
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SUB-010"
+        ]
+      }
+    }
+  ]
+}

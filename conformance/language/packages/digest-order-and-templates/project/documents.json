@@ -1,0 +1,32 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Schema",
+    "metadata": {
+      "name": "b.v1"
+    },
+    "spec": {
+      "type": "number"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Schema",
+    "metadata": {
+      "name": "a.v1"
+    },
+    "spec": {
+      "type": "string"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "not-hashed"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1"
+    }
+  }
+]

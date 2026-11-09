@@ -1,0 +1,52 @@
+{
+  "id": "packages-cross-kind-duplicate",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-027"
+  ],
+  "title": "cross-kind-duplicate; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "NAM-027"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "NAM-027"
+        ],
+        "absent": [
+          "/reply/environment",
+          "/reply/digest",
+          "/reply/contexts"
+        ]
+      }
+    }
+  ]
+}

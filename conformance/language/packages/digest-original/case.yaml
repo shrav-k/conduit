@@ -1,0 +1,41 @@
+{
+  "id": "packages-digest-original",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SUB-008"
+  ],
+  "title": "digest-original; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:1d2375f3220b96f5c672e9aee16b281d4c12900180dea30307b7fb466caea869",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SUB-008"
+        ]
+      }
+    }
+  ]
+}

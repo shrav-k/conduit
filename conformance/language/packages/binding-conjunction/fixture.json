@@ -1,0 +1,25 @@
+{
+  "snapshots": [
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/test/p",
+      "version": "1.0.0",
+      "digest": "sha256:917521fbea11d921ba77530e5cdaacac8c1c1beb5b0fea836e0bb98be42d9d41",
+      "archive": "a0",
+      "project": {
+        "files": {
+          "conduit.json": "m0",
+          "documents.json": "d0"
+        },
+        "directory": "file:///snapshots/0/"
+      }
+    }
+  ],
+  "project": {
+    "files": {
+      "documents.json": "project-documents",
+      "conduit.json": "project-manifest"
+    },
+    "directory": null
+  }
+}

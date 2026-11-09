@@ -1,0 +1,57 @@
+{
+  "id": "packages-private-export",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "PKG-018",
+    "NAM-028"
+  ],
+  "title": "private-export; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "PKG-018"
+            },
+            {
+              "ruleId": "NAM-028"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "PKG-018",
+          "NAM-028"
+        ],
+        "absent": [
+          "/reply/environment",
+          "/reply/digest",
+          "/reply/contexts"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "snapshots": [
+    {
+      "source": "preinstalled-snapshot",
+      "address": "github.com/shrav-k/conduit/core",
+      "version": "1.0.0",
+      "digest": "sha256:b12518b1d96225e40fb39a8e8738a0404b7d8c26d61f40ffed90fcbdcc5f37c7",
+      "archive": "a0",
+      "project": {
+        "files": {
+          "conduit.json": "m0",
+          "documents.json": "d0"
+        },
+        "directory": "file:///snapshots/0/"
+      }
+    }
+  ],
+  "project": {
+    "files": {
+      "documents.json": "project-documents",
+      "conduit.json": "project-manifest"
+    },
+    "directory": null
+  }
+}

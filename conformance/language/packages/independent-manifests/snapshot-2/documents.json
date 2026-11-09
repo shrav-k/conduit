@@ -1,0 +1,12 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Schema",
+    "metadata": {
+      "name": "bridge.v1"
+    },
+    "spec": {
+      "$ref": "example.org/test/p#public.v1"
+    }
+  }
+]

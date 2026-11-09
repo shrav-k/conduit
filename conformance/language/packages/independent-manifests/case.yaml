@@ -1,0 +1,67 @@
+{
+  "id": "packages-independent-manifests",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-014",
+    "PKG-003"
+  ],
+  "title": "independent-manifests; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "m1": "snapshot-1/conduit.json",
+    "d1": "snapshot-1/documents.json",
+    "a1": "snapshot-1/evidence.tar.gz",
+    "m2": "snapshot-2/conduit.json",
+    "d2": "snapshot-2/documents.json",
+    "a2": "snapshot-2/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:7bc3feed272c5d0c2738933efbf79e597355f90df95fba58f048967a89c16b65",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot",
+          "environment": {
+            "scopes": {
+              "project": {
+                "manifest": {
+                  "example.org/test/p": "snapshot-1",
+                  "example.org/test/q": "snapshot-2"
+                }
+              },
+              "snapshot-2": {
+                "manifest": {
+                  "example.org/test/p": "snapshot-0"
+                }
+              }
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "NAM-014",
+          "PKG-003"
+        ]
+      }
+    }
+  ]
+}

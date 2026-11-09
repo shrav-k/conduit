@@ -1,0 +1,44 @@
+{
+  "id": "packages-binding-local-schema",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-017"
+  ],
+  "title": "binding-local-schema; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:44bae802851e3d57352c98c21e5bb89d5d600e18800bfe9e5a218a6c2ec67984",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-017"
+        ]
+      }
+    }
+  ]
+}

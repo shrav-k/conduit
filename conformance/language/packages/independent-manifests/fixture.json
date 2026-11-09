@@ -1,0 +1,53 @@
+{
+  "snapshots": [
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/test/p",
+      "version": "1.0.0",
+      "digest": "sha256:905be174e98be657e8147a64942582bb271286d4736b698b6a85f854e6bb215c",
+      "archive": "a0",
+      "project": {
+        "files": {
+          "conduit.json": "m0",
+          "documents.json": "d0"
+        },
+        "directory": "file:///snapshots/0/"
+      }
+    },
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/test/p",
+      "version": "2.0.0",
+      "digest": "sha256:93f9b4cb4ad164246268a2616ae8e13ff1f713bc380d2d900e474b9a5e2995ef",
+      "archive": "a1",
+      "project": {
+        "files": {
+          "conduit.json": "m1",
+          "documents.json": "d1"
+        },
+        "directory": "file:///snapshots/1/"
+      }
+    },
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/test/q",
+      "version": "1.0.0",
+      "digest": "sha256:1156435f2712e5243c18b42cfd95453b9ec7ad3c79b4d306156af0230bd07458",
+      "archive": "a2",
+      "project": {
+        "files": {
+          "conduit.json": "m2",
+          "documents.json": "d2"
+        },
+        "directory": "file:///snapshots/2/"
+      }
+    }
+  ],
+  "project": {
+    "files": {
+      "documents.json": "project-documents",
+      "conduit.json": "project-manifest"
+    },
+    "directory": null
+  }
+}

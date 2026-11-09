@@ -1,0 +1,60 @@
+{
+  "id": "packages-s1-missing",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "PKG-006"
+  ],
+  "title": "s1-missing rejects without fetching or exposing a context",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json",
+    "filesystem-m": "../../../fixtures/s1/packages/filesystem/conduit.yaml",
+    "filesystem-d": "../../../fixtures/s1/packages/filesystem/contracts.yaml",
+    "filesystem-a": "../../../fixtures/s1/archives/filesystem.tar.gz",
+    "history-m": "../../../fixtures/s1/packages/history/conduit.yaml",
+    "history-d": "../../../fixtures/s1/packages/history/contracts.yaml",
+    "history-a": "../../../fixtures/s1/archives/history.tar.gz",
+    "agents-m": "../../../fixtures/s1/packages/agents/conduit.yaml",
+    "agents-d": "../../../fixtures/s1/packages/agents/contracts.yaml",
+    "agents-a": "../../../fixtures/s1/archives/agents.tar.gz",
+    "conduit.yaml": "../../../fixtures/s1/project/conduit.yaml",
+    "templates.yaml": "../../../fixtures/s1/project/templates.yaml",
+    "instances.yaml": "../../../fixtures/s1/project/instances.yaml",
+    "npm-artifact": "../../../fixtures/s1/artifacts/server-filesystem-2.1.0.tgz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "PKG-006"
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-006"
+        ],
+        "absent": [
+          "/reply/environment",
+          "/reply/digest",
+          "/reply/contexts"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "packages-binding-conjunction",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-017"
+  ],
+  "title": "binding-conjunction; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:2abcbede8fb639dae6b9e4504e07e9b539475f47d167cd6be291d995737a4915",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-017"
+        ]
+      }
+    }
+  ]
+}

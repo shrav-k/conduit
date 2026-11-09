@@ -1,0 +1,67 @@
+{
+  "id": "packages-relative-program-parent-traversal",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-010",
+    "SUB-010"
+  ],
+  "title": "Anchoring a relative program preserves parent traversal through a possible symlink",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "project-manifest": "project/conduit.json",
+    "project-documents": "project/documents.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "source": "preinstalled-snapshot",
+          "expanded_manifest": {
+            "implementations": {
+              "local": {
+                "command": [
+                  "/var/../bin/ls",
+                  "--help"
+                ]
+              }
+            }
+          },
+          "contexts": {
+            "project": {
+              "implementations": {
+                "local": {
+                  "command": [
+                    "/var/../bin/ls",
+                    "--help"
+                  ]
+                }
+              },
+              "relative_programs": [
+                "local"
+              ]
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-010",
+          "SUB-010"
+        ]
+      }
+    }
+  ]
+}

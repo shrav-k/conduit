@@ -1,0 +1,46 @@
+{
+  "id": "packages-build-metadata",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "PKG-003",
+    "PKG-017"
+  ],
+  "title": "build-metadata; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:58db5be3d677465ebe3d993530bfb08a17bbdd4922fb91adab5f6d6db8a06beb",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "PKG-003",
+          "PKG-017"
+        ]
+      }
+    }
+  ]
+}

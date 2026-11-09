@@ -13,3 +13,8 @@ serde_json = "1"
 
 conduit-loader = { path = "../loader" }
 jsonschema = { version = "=0.61.0", default-features = false }
+semver = "1"
+sha2 = "0.10"
+serde_json_canonicalizer = "=0.3.2"
+fluent-uri = "=0.4.1"
+percent-encoding = "2"

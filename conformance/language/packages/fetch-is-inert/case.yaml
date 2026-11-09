@@ -1,0 +1,46 @@
+{
+  "id": "packages-fetch-is-inert",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "PKG-006",
+    "SUB-010"
+  ],
+  "title": "fetch-is-inert; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:aaecb7353e8629eef1b400aadb87b03ced36614dc5442f0cafae7ca4c8cd0a3c",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "PKG-006",
+          "SUB-010"
+        ]
+      }
+    }
+  ]
+}

@@ -55,3 +55,18 @@ S1's packages and project resolve from snapshots by vectors; a missing or mismat
 rejected without a fetch; the core package's contracts cannot be replaced; every decision
 cites a promise; and the checks of order 004's done-when pass, with every vector run by
 `conduit-conformance`.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 23 minutes, then a second round. An immutable catalog of snapshots, the resolving
+  of a project's pins, exports and names, SUB-008's digest, and S1's fixtures with computed
+  digests; 58 vectors, 104 in all, then 107.
+- **Verifier**: 5 minutes. Three `must`: a binding through a parent that may be null was
+  accepted; a template's override of an implementation was matched by its spelling rather
+  than by the operation it resolves to; and normalizing `..` in a relative program could
+  change which program it names.
+- **Admin**: sent the worker back once with the three findings; each fix has a vector that
+  failed before it. Kept the published tarball of the filesystem server (36 KB, MIT, with its
+  licence inside) as a fixture, so that its pin's hash is real.

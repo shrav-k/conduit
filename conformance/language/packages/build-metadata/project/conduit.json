@@ -1,0 +1,10 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/test/project",
+  "packages": {
+    "example.org/test/p": {
+      "version": "1.0.0+project",
+      "digest": "sha256:cca80b2f00945a95609c3784eca16af25bf69ec8476623bed4e195a104b317e1"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "packages-package-binding",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-010",
+    "MAN-017"
+  ],
+  "title": "package-binding; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:b99476c6d1f189b9656d1ccb28ccaa9d420a93b36fd350cf6dd2d5fc7e078871",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-010",
+          "MAN-017"
+        ]
+      }
+    }
+  ]
+}

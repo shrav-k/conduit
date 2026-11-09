@@ -1,0 +1,53 @@
+{
+  "id": "packages-relative-fetch-directory",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SUB-008",
+    "SUB-010"
+  ],
+  "title": "relative-fetch-directory; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:765e0e78b2aa3b5894d96920cc2fe2bdf8a9970d4014bec299159058bd0c9bed",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot",
+          "expanded_manifest": {
+            "packages": {
+              "example.org/test/p": {
+                "fetch": "file:///projects/p.tar.gz"
+              }
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SUB-008",
+          "SUB-010"
+        ]
+      }
+    }
+  ]
+}

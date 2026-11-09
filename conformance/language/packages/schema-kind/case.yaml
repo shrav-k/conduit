@@ -1,0 +1,52 @@
+{
+  "id": "packages-schema-kind",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCH-015"
+  ],
+  "title": "schema-kind; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SCH-015"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SCH-015"
+        ],
+        "absent": [
+          "/reply/environment",
+          "/reply/digest",
+          "/reply/contexts"
+        ]
+      }
+    }
+  ]
+}

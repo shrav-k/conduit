@@ -68,5 +68,7 @@ Written by the admin when it merged the order, on 2026-11-09.
   than by the operation it resolves to; and normalizing `..` in a relative program could
   change which program it names.
 - **Admin**: sent the worker back once with the three findings; each fix has a vector that
-  failed before it. Kept the published tarball of the filesystem server (36 KB, MIT, with its
-  licence inside) as a fixture, so that its pin's hash is real.
+  failed before it. Kept the published tarball of the filesystem server (36 KB) as a fixture,
+  so that its pin's hash is real. **Corrected the same day**: the admin had written that the
+  tarball carries its licence; it does not (its `package.json` says "SEE LICENSE IN LICENSE",
+  and no such file is inside). Order 013 removes it, and keeps only its hash.

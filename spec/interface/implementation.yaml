@@ -1103,7 +1103,13 @@
     from version 0.3.0 is under the key `example.org/acme/files@0.3.0#path.v1`, and a `$ref` to
     it is `#/$defs/example.org~1acme~1files@0.3.0%23path.v1`. Where the contract's own schema
     states `$defs` at its root, as CTR-012 lets an operation that is not a control, its members
-    keep their keys beside the copies. The definition is the engine's, made for the wire:
+    keep their keys beside the copies. A key of the form given above for a contract's copy,
+    a qualified reference with `@` and the version after the address where a version is stated,
+    is reserved in the root `$defs` of every schema an author writes. A document that uses one
+    there is rejected under IFC-033 when its package is installed or when it is submitted,
+    with a diagnostic naming the reserved key and its position in the document. This applies
+    whether or not publication would reach a contract with that key. The definition is the
+    engine's, made for the wire:
     CTR-012 and the profile govern the contract's schemas and not the definition, and the engine
     checks a request and a result against the contract and the template, under NAM-023 and
     TPL-011, so the definition changes nothing that the engine accepts. Which `$ref` the engine

@@ -1,0 +1,34 @@
+{
+  "id": "schema-map-default",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "SCH-019",
+    "SCH-010"
+  ],
+  "title": "schema-map-default; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

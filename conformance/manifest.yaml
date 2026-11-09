@@ -167,6 +167,316 @@
       "safety_rows": [
         "first-start-lifecycle-pool-target"
       ]
+    },
+    {
+      "id": "e05-local",
+      "case": "interface/schemas/e05-local/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-001",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-two-contexts",
+      "case": "interface/schemas/e05-two-contexts/case.yaml",
+      "promises": [
+        "IFC-033",
+        "NAM-014",
+        "NAM-023",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-recursive",
+      "case": "interface/schemas/e05-recursive/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-siblings",
+      "case": "interface/schemas/e05-siblings/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-001",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-escaping",
+      "case": "interface/schemas/e05-escaping/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-core-register",
+      "case": "interface/schemas/e05-core-register/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SUB-005",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-core-replace",
+      "case": "interface/schemas/e05-core-replace/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SUB-005",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-handle",
+      "case": "interface/schemas/e05-handle/case.yaml",
+      "promises": [
+        "IFC-011",
+        "IFC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-control",
+      "case": "interface/schemas/e05-control/case.yaml",
+      "promises": [
+        "IFC-033",
+        "TPL-011",
+        "TPL-013",
+        "IFC-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-control-absent-template",
+      "case": "interface/schemas/e05-control-absent-template/case.yaml",
+      "promises": [
+        "IFC-033",
+        "TPL-013",
+        "IFC-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-control-absent-type",
+      "case": "interface/schemas/e05-control-absent-type/case.yaml",
+      "promises": [
+        "IFC-033",
+        "TPL-013",
+        "IFC-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-closed",
+      "case": "interface/schemas/e05-closed/case.yaml",
+      "promises": [
+        "IFC-012",
+        "ACC-001"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-pattern-properties",
+      "case": "interface/schemas/schema-pattern-properties/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-001",
+        "SCH-016"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-literal-data",
+      "case": "interface/schemas/schema-literal-data/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-001"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-root-local",
+      "case": "interface/schemas/e05-root-local/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-root-key",
+      "case": "interface/schemas/e05-root-key/case.yaml",
+      "promises": [
+        "IFC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-defaults",
+      "case": "interface/schemas/schema-defaults/case.yaml",
+      "promises": [
+        "SCH-001",
+        "SCH-009",
+        "SCH-010"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-root-ref-default",
+      "case": "interface/schemas/schema-root-ref-default/case.yaml",
+      "promises": [
+        "SCH-009",
+        "SCH-015",
+        "OPS-026"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-invalid-default",
+      "case": "interface/schemas/schema-invalid-default/case.yaml",
+      "promises": [
+        "SCH-019"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-map-default",
+      "case": "interface/schemas/schema-map-default/case.yaml",
+      "promises": [
+        "SCH-019",
+        "SCH-010"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-nested-key-allowed",
+      "case": "interface/schemas/schema-nested-key-allowed/case.yaml",
+      "promises": [
+        "IFC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-conditional-default",
+      "case": "interface/schemas/schema-conditional-default/case.yaml",
+      "promises": [
+        "SCH-009",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-array-defaults",
+      "case": "interface/schemas/schema-array-defaults/case.yaml",
+      "promises": [
+        "SCH-009",
+        "SCH-010"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-formats",
+      "case": "interface/schemas/schema-formats/case.yaml",
+      "promises": [
+        "SCH-001",
+        "SCH-004"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-reference-kind",
+      "case": "interface/schemas/schema-reference-kind/case.yaml",
+      "promises": [
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-secret-omitted",
+      "case": "interface/schemas/e05-secret-omitted/case.yaml",
+      "promises": [
+        "IFC-012",
+        "SEC-007"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-missing-contract",
+      "case": "interface/schemas/e05-missing-contract/case.yaml",
+      "promises": [
+        "IFC-033",
+        "NAM-023"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-target-version",
+      "case": "interface/schemas/e05-target-version/case.yaml",
+      "promises": [
+        "IFC-033",
+        "NAM-023",
+        "NAM-014"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-control-local-targets",
+      "case": "interface/schemas/e05-control-local-targets/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-015",
+        "TPL-011"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-pattern-property-ref",
+      "case": "interface/schemas/schema-pattern-property-ref/case.yaml",
+      "promises": [
+        "IFC-033",
+        "SCH-001",
+        "SCH-016"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-applicator-defaults",
+      "case": "interface/schemas/schema-applicator-defaults/case.yaml",
+      "promises": [
+        "SCH-009",
+        "SCH-010",
+        "SCH-016"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-conflicting-defaults",
+      "case": "interface/schemas/schema-conflicting-defaults/case.yaml",
+      "promises": [
+        "SCH-009",
+        "SCH-015"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "schema-equal-defaults",
+      "case": "interface/schemas/schema-equal-defaults/case.yaml",
+      "promises": [
+        "SCH-009",
+        "SCH-015"
+      ],
+      "safety_rows": []
     }
   ]
 }

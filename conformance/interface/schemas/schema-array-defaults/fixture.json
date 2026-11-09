@@ -1,0 +1,43 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "schema": {
+    "type": "array",
+    "prefixItems": [
+      {
+        "type": "object",
+        "properties": {
+          "a": {
+            "default": 1
+          }
+        }
+      }
+    ],
+    "items": {
+      "type": "object",
+      "properties": {
+        "b": {
+          "default": 2
+        }
+      }
+    }
+  },
+  "samples": [
+    {
+      "value": [
+        {},
+        {}
+      ],
+      "mode": "supplied"
+    }
+  ]
+}

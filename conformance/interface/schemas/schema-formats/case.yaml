@@ -1,0 +1,43 @@
+{
+  "id": "schema-formats",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "SCH-001",
+    "SCH-004"
+  ],
+  "title": "schema-formats; supplied schema contexts",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-evaluation",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "samples": [
+            {
+              "valid": true
+            },
+            {
+              "valid": false
+            },
+            {
+              "valid": false
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

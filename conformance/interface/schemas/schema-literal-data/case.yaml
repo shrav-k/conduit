@@ -1,0 +1,38 @@
+{
+  "id": "schema-literal-data",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033",
+    "SCH-001"
+  ],
+  "title": "schema-literal-data; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": {
+            "name": "use.test.v1"
+          }
+        },
+        "required_promises": [
+          "IFC-033"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

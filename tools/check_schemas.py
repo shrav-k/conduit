@@ -54,8 +54,8 @@ What it checks, and reports under these numbers:
      valid against `manifest.v1` and which a rule on manifests rejects. Any other file there
      may also hold the manifest of its set's project, a document with no `kind`, valid against
      `manifest.v1`, from which the rules read the items that the set's templates select as
-     `#name`. The rule for SCH-019
-     validates a `default` against its schema, so it needs jsonschema; without it the rule is
+     `#name`. The rules for SCH-009 and SCH-019 compare unconditional defaults and validate
+     each `default` against its schema, so they need jsonschema; without it these rules are
      not applied, and the tool says so. The rules that follow a template's selections into
      an implementation item read the items from the manifests of the core package and of the
      directories under examples/valid/, and from the set's own manifest where it has one.
@@ -229,6 +229,7 @@ RULES = {
     "operations-filled": "CON-016",
     "ref": "SCH-015",
     "default-valid": "SCH-019",
+    "conflicting-defaults": "SCH-009",
     "implementation-selected": "TPL-004",
     "engine-selected": "TPL-003",
     "names-nothing": "NAM-028",
@@ -250,9 +251,10 @@ RULES = {
     "changes-overlap": "CTR-006",
     "fixed-schemes": "PRV-016",
     "ecma-pattern": "SCH-016",
+    "reserved-copy-key": "IFC-033",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
-NEED_VALIDATOR = frozenset({"default-valid"})
+NEED_VALIDATOR = frozenset({"default-valid", "conflicting-defaults"})
 
 errors = []
 
@@ -1159,20 +1161,74 @@ class Defaults:
         return needs is not None
 
     @staticmethod
-    def stands_for(schema, top):
-        """The schemas that `schema` stands for: itself and, through `$ref`, what it refers
-        to inside `top`."""
-        out, seen = [], set()
-        while isinstance(schema, dict):
+    def stands_for(schema, top, all_of=False):
+        """Unconditional schemas; `allOf` participates only in conflict detection.
+        SCH-009 still excludes it from filling defaults."""
+        out, seen, todo = [], set(), [schema]
+        while todo:
+            schema = todo.pop()
+            if not isinstance(schema, dict):
+                continue
+            identity = json.dumps(schema, sort_keys=True, ensure_ascii=False)
+            if identity in seen:
+                continue
+            seen.add(identity)
             out.append(schema)
             ref = schema.get("$ref")
-            if not isinstance(ref, str) or ref in seen:
-                break
-            seen.add(ref)
-            found, schema = pointer(top, ref)
-            if not found:
-                break
+            if isinstance(ref, str):
+                found, sub = pointer(top, ref)
+                if found:
+                    todo.append(sub)
+            if all_of:
+                todo.extend(reversed(schema.get("allOf", [])))
         return out
+
+    def conflicts_at(self, schemas, top, at, ancestry=frozenset()):
+        parts = [part for schema in schemas for part in self.stands_for(schema, top, True)]
+        identity = json.dumps(parts, sort_keys=True, ensure_ascii=False)
+        if identity in ancestry:
+            return []
+        ancestry = ancestry | {identity}
+        values, members, out = [], {}, []
+        for part in parts:
+            if "default" in part and not any(
+                    ecma_validator({"const":v}).is_valid(part["default"]) for v in values):
+                values.append(part["default"])
+            for keyword in ("properties", "patternProperties"):
+                for name, sub in part.get(keyword, {}).items():
+                    token = name.replace("~", "~0").replace("/", "~1")
+                    members.setdefault("/" + keyword + "/" + token, []).append(sub)
+            for keyword in ("items", "additionalProperties"):
+                if keyword in part:
+                    members.setdefault("/" + keyword, []).append(part[keyword])
+            for index, sub in enumerate(part.get("prefixItems", [])):
+                members.setdefault(f"/prefixItems/{index}", []).append(sub)
+        if len(values) > 1:
+            values = sorted(json.dumps(v, sort_keys=True) for v in values)
+            out.append(f"conflicting unconditional defaults at {at}: " + " and ".join(values))
+        for path, subs in members.items():
+            out.extend(self.conflicts_at(subs, top, at + path, ancestry))
+        return out
+
+    def conflicts(self, doc, scope):
+        out, role = [], role_of(doc, False)
+        for kind, path in SCHEMA_PLACES:
+            if kind != role:
+                continue
+            for at, root in places(doc, path):
+                rewritten, needs = self.rewrite(root, scope, "root")
+                if not self.follows(needs):
+                    continue
+                top = {"$defs": dict(self.defs, root=rewritten)}
+                def visit(schema, at):
+                    out.extend(self.conflicts_at([schema], top, at))
+                    for keyword, key, sub in subschemas(schema):
+                        if isinstance(sub, dict):
+                            token = str(key).replace("~", "~0").replace("/", "~1")
+                            visit(sub, at + "/" + keyword + ("/" + token if key is not None else ""))
+                if isinstance(rewritten, dict):
+                    visit(rewritten, at)
+        return list(dict.fromkeys(out))
 
     def filled(self, value, schema, top, depth=0):
         """`value` with the defaults of its own properties filled in, as SCH-009 and SCH-010
@@ -1180,24 +1236,36 @@ class Defaults:
         `default` its schema states, each object that is an item of a list takes the defaults
         of its own properties, and no object is made in order to hold defaults. The object
         that holds a property may be written directly, reached through `$ref`, or be the
-        schema that `items` gives; nothing is filled in through `allOf`, `anyOf` or `oneOf`."""
+        schema that `items` gives. Existing map members also take defaults through matching
+        `patternProperties` or applicable `additionalProperties`. Nothing is filled in
+        through `allOf`, `anyOf` or `oneOf`."""
         if depth > 32:
             return value
         parts = self.stands_for(schema, top)
         if isinstance(value, dict):
             value = dict(value)
             for part in parts:
-                members = part.get("properties")
-                for name, sub in (members.items() if isinstance(members, dict) else ()):
-                    if name not in value:
-                        if not isinstance(sub, dict) or "default" not in sub:
-                            continue
+                members = part.get("properties", {})
+                for name, sub in members.items():
+                    if name not in value and isinstance(sub, dict) and "default" in sub:
                         value[name] = copy.deepcopy(sub["default"])
-                    value[name] = self.filled(value[name], sub, top, depth + 1)
+                patterns = [(re.compile(ecma(pattern)), sub)
+                            for pattern, sub in part.get("patternProperties", {}).items()]
+                for name in value:
+                    applicable = [members[name]] if name in members else []
+                    applicable.extend(sub for pattern, sub in patterns if pattern.search(name))
+                    if not applicable and "additionalProperties" in part:
+                        applicable.append(part["additionalProperties"])
+                    for sub in applicable:
+                        value[name] = self.filled(value[name], sub, top, depth + 1)
         elif isinstance(value, list):
+            value = list(value)
             for part in parts:
-                if isinstance(part.get("items"), dict):
-                    return [self.filled(item, part["items"], top, depth + 1) for item in value]
+                prefix = part.get("prefixItems", [])
+                for index, item in enumerate(value):
+                    sub = prefix[index] if index < len(prefix) else part.get("items")
+                    if sub is not None:
+                        value[index] = self.filled(item, sub, top, depth + 1)
         return value
 
     def fails(self, scope, root, tokens, value):
@@ -1895,6 +1963,30 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                                   f"`secret-reference.v1` at {where}, under an applicator or "
                                   f"beside a branch where it may not stand"))
 
+    # IFC-033 reserves contract-copy keys only in each authored schema's root $defs.
+    for doc in docs:
+        role = role_of(doc, False)
+        for kind, path in SCHEMA_PLACES:
+            if kind != role:
+                continue
+            for at, schema in places(doc, path):
+                defs = schema.get("$defs") if isinstance(schema, dict) else None
+                for key in (defs if isinstance(defs, dict) else ()):
+                    address, mark, name = key.partition("#")
+                    address, version_mark, version = address.partition("@")
+                    ref = address + "#" + name
+                    shape = package_docs[core]["qualified-reference.v1"]["spec"]
+                    version_shape = package_docs[core]["version.v1"]["spec"]
+                    matches = all((re.search(ecma(part["pattern"]), ref) is not None)
+                                  if "pattern" in part else
+                                  (re.search(ecma(part["not"]["pattern"]), ref) is None)
+                                  for part in shape["allOf"])
+                    version_ok = not version_mark or re.search(ecma(version_shape["pattern"]), version)
+                    if mark and matches and version_ok:
+                        found.append(("reserved-copy-key",
+                                      f"{named(doc)}: reserved contract-copy key {key!r} "
+                                      f"at {at}/$defs/{key}"))
+
     # ecma-pattern (SCH-016): every `pattern`, and every key of `patternProperties`, in a
     # schema that a document of the set writes is a regular expression of ECMA-262 in Unicode
     # mode. Checked against the interoperable tokens, then compiled as `pattern_faults` says.
@@ -2003,10 +2095,14 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
     # default-valid (SCH-019): a `default` satisfies the schema that states it, and an input's
     # `default` the input's own `schema`. Applied where every `$ref` of the schema can be
     # followed inside this repository; the others are counted and not validated.
+    # conflicting-defaults (SCH-009) rejects different defaults at one unconditional place,
+    # including `$ref` siblings and `allOf`, with the same repository-bound resolution.
     if defaults is not None:
         for doc in docs:
             for message in defaults.faults(doc, scope or {}):
                 found.append(("default-valid", message))
+            for message in defaults.conflicts(doc, scope or {}):
+                found.append(("conflicting-defaults", message))
     return found
 
 

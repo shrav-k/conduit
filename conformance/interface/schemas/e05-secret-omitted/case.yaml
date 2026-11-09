@@ -1,0 +1,34 @@
+{
+  "id": "e05-secret-omitted",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-012",
+    "SEC-007"
+  ],
+  "title": "e05-secret-omitted; established snapshots",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": null,
+          "reason": "refused"
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

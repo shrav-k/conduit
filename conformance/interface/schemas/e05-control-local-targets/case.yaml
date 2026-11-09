@@ -1,0 +1,42 @@
+{
+  "id": "e05-control-local-targets",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033",
+    "SCH-015",
+    "TPL-011"
+  ],
+  "title": "e05-control-local-targets; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": {
+            "inputSchema": {
+              "properties": {
+                "mirror": {
+                  "$ref": "#/properties/limit/allOf/0"
+                }
+              }
+            }
+          }
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

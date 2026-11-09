@@ -1,0 +1,34 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "documents": [
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Schema",
+      "metadata": {
+        "name": "nested.v1"
+      },
+      "spec": {
+        "properties": {
+          "nested": {
+            "$defs": {
+              "example.org/acme/files#path.v1": true
+            }
+          }
+        },
+        "$defs": {
+          "example.org/acme/files@invalid#path.v1": true
+        }
+      }
+    }
+  ]
+}

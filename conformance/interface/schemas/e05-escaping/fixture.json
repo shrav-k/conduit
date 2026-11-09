@@ -1,0 +1,122 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/acme/files",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {
+          "escaped.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "escaped.v1"
+            },
+            "spec": {
+              "$defs": {
+                "a/~# %雪": {
+                  "type": "string"
+                }
+              },
+              "$ref": "#/$defs/a~1~0%23%20%25%E9%9B%AA"
+            }
+          },
+          "test.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Operation",
+            "metadata": {
+              "name": "test.v1"
+            },
+            "spec": {
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "$ref": "#escaped.v1"
+                  }
+                },
+                "required": [
+                  "value"
+                ]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "$ref": "#escaped.v1"
+                  }
+                },
+                "required": [
+                  "value"
+                ]
+              },
+              "idempotentHint": false,
+              "destructiveHint": false,
+              "openWorldHint": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "state": {
+    "started": true,
+    "objects": [
+      {
+        "kind": "Resource",
+        "id": "target",
+        "contract_scope": "main"
+      },
+      {
+        "kind": "Conduit",
+        "id": "connection",
+        "consumer": "actor",
+        "target": "target",
+        "local_name": "use",
+        "open": true,
+        "state": "ready",
+        "operations": [
+          "example.org/acme/files#test.v1"
+        ]
+      }
+    ],
+    "records": [],
+    "allocated_ids": []
+  },
+  "target": "target",
+  "consumer": "actor",
+  "conduit": "connection",
+  "operation": "example.org/acme/files#test.v1",
+  "authored_scope": "main",
+  "samples": {
+    "inputSchema": [
+      {
+        "value": {
+          "value": "x"
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "value": 3
+        },
+        "valid": false
+      }
+    ],
+    "outputSchema": [
+      {
+        "value": {
+          "value": "x"
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "value": 3
+        },
+        "valid": false
+      }
+    ]
+  },
+  "copy_count": 1
+}

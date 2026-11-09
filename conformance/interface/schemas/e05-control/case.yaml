@@ -1,0 +1,54 @@
+{
+  "id": "e05-control",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033",
+    "TPL-011",
+    "TPL-013",
+    "IFC-012"
+  ],
+  "title": "e05-control; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": {
+            "inputSchema": {
+              "required": [
+                "revision"
+              ],
+              "properties": {
+                "limit": {
+                  "allOf": [
+                    {
+                      "type": "integer",
+                      "maximum": 100
+                    },
+                    {
+                      "maximum": 50
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "documents": [
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Operation",
+      "metadata": {
+        "name": "reserved.v1"
+      },
+      "spec": {
+        "inputSchema": {
+          "type": "object",
+          "$defs": {
+            "example.org/acme/files@0.3.0#path.v1": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Operation",
+      "metadata": {
+        "name": "output.v1"
+      },
+      "spec": {
+        "outputSchema": {
+          "type": "object",
+          "$defs": {
+            "example.org/acme/files#path.v1": true
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Schema",
+      "metadata": {
+        "name": "schema.v1"
+      },
+      "spec": {
+        "$defs": {
+          "example.org/acme/files#path.v1": true
+        }
+      }
+    },
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "type.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "$defs": {
+            "example.org/acme/files#path.v1": true
+          }
+        }
+      }
+    }
+  ]
+}

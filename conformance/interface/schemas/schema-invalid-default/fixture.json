@@ -1,0 +1,38 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "documents": [
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "bad.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 0
+            }
+          },
+          "required": [
+            "x"
+          ]
+        }
+      }
+    }
+  ]
+}

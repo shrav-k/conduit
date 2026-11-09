@@ -49,7 +49,28 @@ The loader adds a public compiler for a built-in Schema contract with resolved r
 rejects two initial YAML byte order marks under SUB-005, applying the admin's settlement 2-01.
 A permitted byte order mark before a later YAML document remains accepted.
 
-General registration, access, schema evaluation, invocation handling and the shell belong to
+I2-02 adds [authored schema evaluation](crates/core/src/schemas.rs) and E05 tool publication.
+Supplied exact package/project scopes keep each manifest's release pins and each Schema
+contract's local root. Authored validation uses separate in-memory resources; publication
+copies each reached contract once into the tool root and rewrites its references, preserving
+siblings, local definitions and recursion. Both paths reuse the loader's validator, formats
+and ECMA pattern engine. `patternProperties` is specialized to the finite set of instance keys,
+with original schema positions retained for references and `additionalProperties` handled by
+the validator. The published schema itself contains the original patterns.
+
+The core exposes `evaluate-schema`, `check-authored` and `tool-definition` inputs. The first
+fills supplied values (with an operation-input mode and an output mode that fills nothing).
+The second is the semantic admission check for schemas after strict loading, shared by future
+installation/submission transitions; it checks default validity and reserved root copy keys.
+The third reads the operation and schemas held by an explicitly supplied target and open
+Conduit. It handles control narrowing and omission, handles, descriptions and hints. These
+vectors start with established snapshots and claim no package installation, registration or
+opening. The runner checks every snapshot contract through the loader, uses the actual core
+contracts, and compares authored and standalone verdicts for every E05 sample in both schema
+directions. Standalone validation checks all references are local and resolve before compiling
+with no package resolver. Conflicting unconditional defaults stop for the admin (finding 2-03).
+
+General registration, access, invocation handling and the shell belong to
 later orders. Unsupported inputs are embedding errors, not invented Conduit reasons. The
 [increment's log](../docs/proposals/first-build/log-increment-2.md) records the settled BOM case
 and the verification corrections: registration checks the existing owning Pool's authority

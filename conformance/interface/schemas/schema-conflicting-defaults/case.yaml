@@ -1,0 +1,155 @@
+{
+  "id": "schema-conflicting-defaults",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "SCH-009",
+    "SCH-015"
+  ],
+  "title": "schema-conflicting-defaults; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json",
+    "allof": "allof.json",
+    "nested": "nested.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [
+            {
+              "ruleId": "SCH-009",
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/spec/schema/properties/x"
+                    }
+                  ]
+                }
+              ],
+              "message": {
+                "text": "conflicting unconditional defaults at /spec/schema/properties/x: 1 and 2"
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "allof"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [
+            {
+              "ruleId": "SCH-009",
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/spec/schema/properties/x"
+                    }
+                  ]
+                }
+              ],
+              "message": {
+                "text": "conflicting unconditional defaults at /spec/schema/properties/x: 1 and 2"
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "nested"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [
+            {
+              "ruleId": "SCH-009",
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/spec/schema/additionalProperties/properties/n"
+                    }
+                  ]
+                }
+              ],
+              "message": {
+                "text": "conflicting unconditional defaults at /spec/schema/additionalProperties/properties/n: 1 and 2"
+              }
+            },
+            {
+              "ruleId": "SCH-009",
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/spec/schema/patternProperties/^x$/properties/n"
+                    }
+                  ]
+                }
+              ],
+              "message": {
+                "text": "conflicting unconditional defaults at /spec/schema/patternProperties/^x$/properties/n: 1 and 2"
+              }
+            },
+            {
+              "ruleId": "SCH-009",
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/spec/schema/items/properties/n"
+                    }
+                  ]
+                }
+              ],
+              "message": {
+                "text": "conflicting unconditional defaults at /spec/schema/items/properties/n: 1 and 2"
+              }
+            },
+            {
+              "ruleId": "SCH-009",
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/spec/schema/prefixItems/0/properties/n"
+                    }
+                  ]
+                }
+              ],
+              "message": {
+                "text": "conflicting unconditional defaults at /spec/schema/prefixItems/0/properties/n: 1 and 2"
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

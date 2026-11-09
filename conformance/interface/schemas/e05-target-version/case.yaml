@@ -1,0 +1,46 @@
+{
+  "id": "e05-target-version",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033",
+    "NAM-023",
+    "NAM-014"
+  ],
+  "title": "e05-target-version; established snapshots",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": {
+            "inputSchema": {
+              "$defs": {
+                "example.org/e05/main@1.0.0#path.v1": {
+                  "$defs": {
+                    "part": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

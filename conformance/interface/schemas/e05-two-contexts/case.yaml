@@ -1,0 +1,54 @@
+{
+  "id": "e05-two-contexts",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033",
+    "NAM-014",
+    "NAM-023",
+    "SCH-015"
+  ],
+  "title": "e05-two-contexts; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": {
+            "inputSchema": {
+              "$defs": {
+                "example.org/e05/common@1.0.0#path.v1": {
+                  "$defs": {
+                    "part": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example.org/e05/common@2.0.0#path.v1": {
+                  "$defs": {
+                    "part": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

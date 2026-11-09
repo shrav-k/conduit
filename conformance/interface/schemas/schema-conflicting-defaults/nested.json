@@ -1,0 +1,183 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "documents": [
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "nested-0.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "$defs": {
+            "a": {
+              "additionalProperties": {
+                "properties": {
+                  "n": {
+                    "default": 1
+                  }
+                }
+              }
+            },
+            "b": {
+              "additionalProperties": {
+                "properties": {
+                  "n": {
+                    "default": 2
+                  }
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "$ref": "#/$defs/a"
+            },
+            {
+              "$ref": "#/$defs/b"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "nested-1.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "$defs": {
+            "a": {
+              "patternProperties": {
+                "^x$": {
+                  "properties": {
+                    "n": {
+                      "default": 1
+                    }
+                  }
+                }
+              }
+            },
+            "b": {
+              "patternProperties": {
+                "^x$": {
+                  "properties": {
+                    "n": {
+                      "default": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "$ref": "#/$defs/a"
+            },
+            {
+              "$ref": "#/$defs/b"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "nested-2.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "$defs": {
+            "a": {
+              "items": {
+                "properties": {
+                  "n": {
+                    "default": 1
+                  }
+                }
+              }
+            },
+            "b": {
+              "items": {
+                "properties": {
+                  "n": {
+                    "default": 2
+                  }
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "$ref": "#/$defs/a"
+            },
+            {
+              "$ref": "#/$defs/b"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "nested-3.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "$defs": {
+            "a": {
+              "prefixItems": [
+                {
+                  "properties": {
+                    "n": {
+                      "default": 1
+                    }
+                  }
+                }
+              ]
+            },
+            "b": {
+              "prefixItems": [
+                {
+                  "properties": {
+                    "n": {
+                      "default": 2
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "$ref": "#/$defs/a"
+            },
+            {
+              "$ref": "#/$defs/b"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

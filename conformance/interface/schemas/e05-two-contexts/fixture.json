@@ -1,0 +1,205 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {
+          "example.org/e05/left": "left",
+          "example.org/e05/right": "right"
+        },
+        "contracts": {
+          "test.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Operation",
+            "metadata": {
+              "name": "test.v1"
+            },
+            "spec": {
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "left": {
+                    "$ref": "example.org/e05/left#path.v1"
+                  },
+                  "right": {
+                    "$ref": "example.org/e05/right#path.v1"
+                  }
+                },
+                "required": [
+                  "left",
+                  "right"
+                ]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "left": {
+                    "$ref": "example.org/e05/left#path.v1"
+                  },
+                  "right": {
+                    "$ref": "example.org/e05/right#path.v1"
+                  }
+                },
+                "required": [
+                  "left",
+                  "right"
+                ]
+              },
+              "idempotentHint": false,
+              "destructiveHint": false,
+              "openWorldHint": false
+            }
+          }
+        }
+      },
+      "left": {
+        "address": "example.org/e05/left",
+        "version": "1.0.0",
+        "manifest": {
+          "example.org/e05/common": "common1"
+        },
+        "contracts": {
+          "path.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "path.v1"
+            },
+            "spec": {
+              "$ref": "example.org/e05/common#path.v1"
+            }
+          }
+        }
+      },
+      "right": {
+        "address": "example.org/e05/right",
+        "version": "1.0.0",
+        "manifest": {
+          "example.org/e05/common": "common2"
+        },
+        "contracts": {
+          "path.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "path.v1"
+            },
+            "spec": {
+              "$ref": "example.org/e05/common#path.v1"
+            }
+          }
+        }
+      },
+      "common1": {
+        "address": "example.org/e05/common",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {
+          "path.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "path.v1"
+            },
+            "spec": {
+              "$defs": {
+                "part": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "$ref": "#/$defs/part"
+            }
+          }
+        }
+      },
+      "common2": {
+        "address": "example.org/e05/common",
+        "version": "2.0.0",
+        "manifest": {},
+        "contracts": {
+          "path.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "path.v1"
+            },
+            "spec": {
+              "$defs": {
+                "part": {
+                  "type": "integer"
+                }
+              },
+              "$ref": "#/$defs/part"
+            }
+          }
+        }
+      }
+    }
+  },
+  "state": {
+    "started": true,
+    "objects": [
+      {
+        "kind": "Resource",
+        "id": "target",
+        "contract_scope": "main"
+      },
+      {
+        "kind": "Conduit",
+        "id": "connection",
+        "consumer": "actor",
+        "target": "target",
+        "local_name": "use",
+        "open": true,
+        "state": "ready",
+        "operations": [
+          "example.org/e05/main#test.v1"
+        ]
+      }
+    ],
+    "records": [],
+    "allocated_ids": []
+  },
+  "target": "target",
+  "consumer": "actor",
+  "conduit": "connection",
+  "operation": "example.org/e05/main#test.v1",
+  "authored_scope": "main",
+  "samples": {
+    "inputSchema": [
+      {
+        "value": {
+          "left": "x",
+          "right": 4
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "left": 4,
+          "right": "x"
+        },
+        "valid": false
+      }
+    ],
+    "outputSchema": [
+      {
+        "value": {
+          "left": "x",
+          "right": 4
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "left": 4,
+          "right": "x"
+        },
+        "valid": false
+      }
+    ]
+  },
+  "copy_count": 4
+}

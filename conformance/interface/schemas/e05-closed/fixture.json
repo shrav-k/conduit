@@ -1,0 +1,157 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {
+          "test.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Operation",
+            "metadata": {
+              "name": "test.v1"
+            },
+            "spec": {
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "revision": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "revision",
+                  "limit"
+                ]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "revision": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "revision",
+                  "limit"
+                ]
+              },
+              "idempotentHint": false,
+              "destructiveHint": false,
+              "openWorldHint": false,
+              "changes": {
+                "limit": "/limit"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "state": {
+    "started": true,
+    "objects": [
+      {
+        "kind": "Resource",
+        "id": "target",
+        "contract_scope": "main",
+        "type_controls": [
+          "example.org/e05/main#test.v1"
+        ],
+        "controls": {
+          "example.org/e05/main#test.v1": {
+            "inputs": {
+              "limit": {
+                "schema": {
+                  "maximum": 50
+                }
+              }
+            }
+          }
+        },
+        "template_scope": "main"
+      },
+      {
+        "kind": "Conduit",
+        "id": "connection",
+        "consumer": "actor",
+        "target": "target",
+        "local_name": "use",
+        "open": false,
+        "state": "ready",
+        "operations": [
+          "example.org/e05/main#test.v1"
+        ]
+      }
+    ],
+    "records": [],
+    "allocated_ids": []
+  },
+  "target": "target",
+  "consumer": "actor",
+  "conduit": "connection",
+  "operation": "example.org/e05/main#test.v1",
+  "authored_scope": "main",
+  "samples": {
+    "inputSchema": [
+      {
+        "value": {
+          "revision": "r",
+          "limit": 50
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "revision": "r",
+          "limit": 75
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "revision": "r",
+          "limit": 101
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "revision": "r"
+        },
+        "valid": true
+      }
+    ],
+    "outputSchema": [
+      {
+        "value": {
+          "revision": "r",
+          "limit": 75
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "revision": "r",
+          "limit": 101
+        },
+        "valid": false
+      }
+    ]
+  },
+  "narrowings": {
+    "limit": {
+      "maximum": 50
+    }
+  },
+  "template_scope": "main"
+}

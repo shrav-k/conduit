@@ -1,0 +1,52 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "x": {
+        "type": "integer",
+        "default": 1
+      }
+    },
+    "$ref": "#/$defs/other",
+    "$defs": {
+      "other": {
+        "properties": {
+          "x": {
+            "type": "integer",
+            "default": 1
+          }
+        }
+      },
+      "third": {
+        "properties": {
+          "x": {
+            "type": "integer",
+            "default": 1
+          }
+        }
+      }
+    },
+    "allOf": [
+      {
+        "$ref": "#/$defs/third"
+      }
+    ]
+  },
+  "samples": [
+    {
+      "value": {},
+      "mode": "supplied"
+    }
+  ]
+}

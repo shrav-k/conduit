@@ -15,6 +15,7 @@ report. An order's results are its pull request and the record in
 | [005](005-real-client-results.md) | The results of experiment 008 (A71): every run classified, wire, client and model apart |
 | [006](006-i2-02-schemas-and-e05.md) | I2-02: authored schemas, the tool definitions, and E05 |
 | [007](007-real-client-later-turn.md) | Experiment 008's follow-up: the harness extended to a later turn of the same session |
+| [008](008-later-turn-results.md) | The results of experiment 008's follow-up, a later turn |
 
 [The standing order of a verifier](verify.md), with its schema, is given to the fresh Codex
 session that checks each order's result before the admin session reviews it.

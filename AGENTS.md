@@ -8,7 +8,9 @@ branch and must not read this branch. That branch is not yet published, and the 
 started. See [independent builds](docs/implementation/INDEPENDENT_BUILDS.md). The first build
 that ruling 44 makes the next milestone, step 3 of the
 [roadmap](ROADMAP.md#the-order-of-the-work), is not one of those builds: it is written beside the
-language, and its nature is to be discussed with the owner before it starts.
+language, as ruling 46 shaped it, one codebase with a pure core, the reference model, and a thin
+shell that makes it runnable. Its increments and what each must show are in
+[the first build](docs/implementation/FIRST_BUILD.md).
 
 ## Read first
 
@@ -81,6 +83,8 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
 - A defect in the language: fix it in the language, not around it. Findings against `spec/` are
   recorded under `docs/proposals/reaudit/`. `docs/LANGUAGE_DEFECTS.md` is the register of the
   first sweep, which read the protocol topics that ruling 39 removed.
+- A finding of the first build: its increment's log under `docs/proposals/first-build/`, and
+  the fix in the specification with a vector (ruling 46, point 4).
 - Evidence: its own directory under `experiments/`, with dated results. Never present an
   expected outcome as a result. Before proposing or starting an experiment or a probe, look for
   it in the roadmap's [register](ROADMAP.md#experiments-and-probes), and follow
@@ -114,8 +118,9 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   revised under ruling 45 and merged by squashing on 2026-11-09, as `0e937ee`; pull request 10,
   its other proposal, was closed. Pull request 11 carries
   [ruling 45](docs/proposals/ruling-45/README.md) and was merged by squashing the same day, as
-  `d46a52b`. The pass that moved the roadmap to `ROADMAP.md` (A72) is on the branch
-  `docs/roadmap`, with its own pull request. Later work goes on a new branch, with its own pull
+  `d46a52b`. Pull request 12, on the branch `docs/roadmap`, moved the roadmap to `ROADMAP.md`
+  (A72) and was merged by squashing the same day, as `f3521e7`. Ruling 46 shaped the first
+  build; each of its increments is a branch and a pull request of its own. Later work goes on a new branch, with its own pull
   request. Merges to `main` are squashed, with a message written by hand.
 
 ## Checks

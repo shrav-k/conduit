@@ -61,3 +61,18 @@ Every E05 vector and both publication checks pass, with the two verdicts equal o
 and no resolver used for the published definition; the root-key vector passes; every decision
 cites a promise; and the checks of order 004's done-when pass, with the vectors run by
 `conduit-conformance`.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 18 minutes, then a second round. The core's evaluation of authored schemas and its
+  standalone tool definitions; 28 vectors for E05 and the publication checks; IFC-033 amended
+  by decision 6; one point left to the admin (2-03).
+- **Verifier**: 4 minutes. Four `must`: a narrowed control's references left dangling; the
+  pattern adapter changed what a reference to a declared property means; defaults not filled
+  under `additionalProperties` and `patternProperties`; and the runner's check that state is
+  unchanged could not fail, so it hid every other fault of that kind.
+- **Admin**: settled 2-03 (different unconditional defaults for one place are rejected under
+  SCH-009) and sent the worker back once with it and the four findings. Each fix has a vector
+  that failed before it; 46 vectors pass, and none of the first 41 failed once the check could.

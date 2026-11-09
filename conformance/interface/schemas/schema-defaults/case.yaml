@@ -1,0 +1,64 @@
+{
+  "id": "schema-defaults",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "SCH-001",
+    "SCH-009",
+    "SCH-010"
+  ],
+  "title": "schema-defaults; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-evaluation",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "samples": [
+            {
+              "valid": true,
+              "value": {
+                "nest": {
+                  "count": 2
+                },
+                "items": [
+                  {
+                    "count": 3
+                  }
+                ]
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "nest": {},
+                "items": [
+                  {}
+                ]
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "nest": null,
+                "items": []
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

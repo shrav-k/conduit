@@ -1,0 +1,48 @@
+{
+  "id": "e05-root-local",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033",
+    "SCH-015"
+  ],
+  "title": "e05-root-local; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": {
+            "inputSchema": {
+              "$defs": {
+                "own": {
+                  "type": "string"
+                },
+                "example.org/e05/main@1.0.0#path.v1": {
+                  "$defs": {
+                    "part": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

@@ -21,6 +21,8 @@ selecting a Conduit answer. No specification change was made by this order.
 | # | Finding | Class | Promises | State |
 | --- | --- | --- | --- | --- |
 | 2-01 | Whether two initial YAML BOMs must be rejected | Ambiguity | SCH-013, SUB-005; schema profile, Encoding | Settled by the admin |
+| 2-02 | An authored root `$defs` key in the form of a contract copy | Gap | IFC-033 | Settled by the admin, decision 6 |
+| 2-03 | Different defaults on one place through unconditional `$ref` siblings or `allOf` | Ambiguity | SCH-009, SCH-015, SCH-019 | Settled by the admin |
 
 ## 2-01. Two initial YAML byte order marks
 
@@ -90,3 +92,84 @@ These are implementation defects against existing promises, not new language fin
   implement general registration or opening. The original empty-state first-start vector
   still checks exactly seven instances. The lifecycle input's separate `object` is an already
   resolved ID, not an operation's wire input schema.
+
+## 2-02. Reserved root copy keys
+
+**Class:** gap. **Promise:** IFC-033. **State:** Settled by the admin, decision 6.
+The owner can strike it.
+
+Work order 006 (I2-02), 2026-11-09, applies
+[decision 6](increment-2/decisions.md): each authored schema's root `$defs` reserves the form
+of a qualified contract-copy key, with `@version` where stated. IFC-033 now rejects a document
+using one when installed or submitted, with the key and its position in the diagnostic,
+whether or not publication would reach that key. Nested `$defs` are outside this reservation.
+
+The core's semantic admission check reports IFC-033. The
+[root-key vector](../../../conformance/interface/schemas/e05-root-key/case.yaml) checks the
+rule after strict loading, and the Python checker applies it to a new
+[example](../../../spec/schemas/examples/invalid-by-rule/IFC-033-reserved-root-defs.yaml).
+General installation and registration remain later orders; this is their shared schema check.
+
+## 2-03. Conflicting unconditional defaults
+
+**Class:** ambiguity. **Promises:** SCH-009, SCH-015, SCH-019.
+**State:** Settled by the admin. The owner can strike it.
+
+**The admin's settlement.** When schemas that apply to one place unconditionally, through
+`$ref` and its siblings or `allOf`, give different defaults, reject the document under SCH-009
+when installed or submitted. The diagnostic names the place and the defaults. Equal defaults
+are one default. This does not change SCH-009's exclusions from filling through applicators.
+
+**What the build did.** SCH-009 now states that rejection. The core's semantic admission
+check returns its diagnostic instead of the former embedding error. The
+[conflicting-defaults vector](../../../conformance/interface/schemas/schema-conflicting-defaults/case.yaml)
+checks rejection and diagnostic facts; the
+[equal-defaults vector](../../../conformance/interface/schemas/schema-equal-defaults/case.yaml)
+checks admission and a single filled property. The Python checker applies the same rule to
+[the reference-sibling example](../../../spec/schemas/examples/invalid-by-rule/SCH-009-conflicting-defaults.yaml)
+and [the allOf example](../../../spec/schemas/examples/invalid-by-rule/SCH-009-allof-defaults.yaml).
+
+## Corrections after verification of I2-02
+
+These are implementation defects against existing promises, not new language findings.
+
+- Control narrowing relocates references to original contract inputs and descendants under
+  `allOf/0`, preserving both self references and references from elsewhere in the schema.
+  The [control vector](../../../conformance/interface/schemas/e05-control-local-targets/case.yaml)
+  compares authored and published verdicts for nested definitions and property references.
+- Pattern assertions apply separately to the containing map, preserving references to an
+  explicitly declared property. The
+  [property-reference vector](../../../conformance/interface/schemas/schema-pattern-property-ref/case.yaml)
+  checks both schema directions against explicit expected verdicts as well as each other.
+- Default filling traverses existing map members through matching `patternProperties` and
+  applicable `additionalProperties`, using the loader's pattern engine and retaining SCH-009's
+  exclusions. The [applicator vector](../../../conformance/interface/schemas/schema-applicator-defaults/case.yaml)
+  asserts filled values and verdicts, with output values left unfilled.
+- Schema fixture calls compare returned objects to the actual input snapshot, including the
+  injected publication environment. A harness regression injects an unexpected object mutation
+  into all three schema input kinds and requires `stateUnchanged` to fail. After this correction
+  alone, all 41 existing vectors passed on a rebuilt runner.
+
+## Implementation choices of I2-02
+
+- Package/project scope IDs are runner metadata. Address/version copy keys follow IFC-033;
+  each scope's exact manifest pin selects dependencies. Internal URNs in authored validation
+  preserve original resource roots and are never published. The target supplies the held
+  operation and schemas (NAM-014, NAM-023, SCH-015).
+- The publisher inlines nothing optional (DL12). A visited-contract set makes recursive copies
+  finite. Local pointers escape JSON Pointer tokens before URI-fragment encoding; schema
+  positions alone are traversed, leaving `$ref` data under annotations and literal values.
+- The loader exposes the validators and pattern engine already; no loader changes are needed.
+  `patternProperties` uses that engine to match actual property names, then delegates matching
+  property schemas and additional properties to the existing validator. Original pattern
+  schema locations remain addressable in the temporary validation form. The wire definition
+  keeps authored patterns (SCH-001, SCH-016).
+- Schema admission is a pure boundary following strict loading, reusable by later installation
+  and submission transitions. Default diagnostics name the default position and failing schema
+  keyword. Output evaluation fills no default; operation inputs fill only their root's own
+  properties, as SCH-009 and OPS-026 require.
+- E05 fixtures supply established targets and open Conduits. They prove no installation,
+  registration, opening, implementation dispatch or execution of S1. Actual core registration
+  and replacement contracts are read at the runner boundary. Both schema directions compare
+  authored-resource and resolver-free publication verdicts, including copies, handles, control
+  narrowing and omitted controls. Every decision cites its requiring promises.

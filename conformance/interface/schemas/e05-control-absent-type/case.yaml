@@ -1,0 +1,39 @@
+{
+  "id": "e05-control-absent-type",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033",
+    "TPL-013",
+    "IFC-012"
+  ],
+  "title": "e05-control-absent-type; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": null,
+          "reason": "invalid",
+          "verdicts": {}
+        },
+        "required_promises": [
+          "TPL-013"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

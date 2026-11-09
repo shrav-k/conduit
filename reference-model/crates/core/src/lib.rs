@@ -2,6 +2,8 @@
 //! The caller supplies the built-in templates, names, time, machine evidence and unique IDs.
 //! Unsupported cases and broken embedding inputs are errors, never Conduit reasons.
 
+pub mod schemas;
+
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
@@ -59,6 +61,23 @@ pub struct Request {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
+    ToolDefinition {
+        consumer: String,
+        conduit: String,
+        operation: String,
+    },
+    CheckAuthored {
+        environment: schemas::Environment,
+        scope: String,
+        documents: Vec<Value>,
+    },
+    EvaluateSchema {
+        environment: schemas::Environment,
+        scope: String,
+        schema: Value,
+        value: Value,
+        mode: String,
+    },
     FirstStart {
         evidence: Evidence,
         machine: Machine,
@@ -164,6 +183,67 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
     };
     match input {
+        Input::ToolDefinition {
+            consumer,
+            conduit,
+            operation,
+        } => {
+            let (reply, d) = schemas::publish(state, &consumer, &conduit, &operation, context)?;
+            transition.reply = reply;
+            transition.decisions.push(d);
+        }
+        Input::CheckAuthored {
+            environment,
+            scope,
+            documents,
+        } => {
+            let mut diagnostics = vec![];
+            for document in documents {
+                diagnostics.extend(environment.check_document(
+                    &scope,
+                    &document,
+                    &context.core_package,
+                )?);
+            }
+            transition.reply =
+                json!({"accepted": diagnostics.is_empty(), "diagnostics": diagnostics});
+            transition.decisions.push(decision(
+                "check-authored-schemas",
+                &["IFC-033", "SCH-009", "SCH-019", "SCH-016", "SCH-015"],
+                &[],
+                json!({"scope":scope}),
+                vec![],
+            ));
+        }
+        Input::EvaluateSchema {
+            environment,
+            scope,
+            schema,
+            value,
+            mode,
+        } => {
+            environment.check_profile(&scope, &schema, &context.core_package)?;
+            let filled = match mode.as_str() {
+                "supplied" | "operation-inputs" => environment.fill(
+                    &scope,
+                    &schema,
+                    &value,
+                    mode == "operation-inputs",
+                    &context.core_package,
+                )?,
+                "output" => value,
+                _ => return Err("unsupported schema evaluation mode".into()),
+            };
+            let valid = environment.valid(&scope, &schema, &filled, &context.core_package)?;
+            transition.reply = json!({"valid":valid,"value":filled});
+            transition.decisions.push(decision(
+                "evaluate-authored-schema",
+                &["SCH-001", "SCH-009", "SCH-015", "SCH-016"],
+                &[],
+                json!({"scope":scope,"mode":mode}),
+                vec![],
+            ));
+        }
         Input::FirstStart { evidence, machine } => {
             first_start(&mut transition, &evidence, machine, context)?
         }

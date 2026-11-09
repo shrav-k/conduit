@@ -1,0 +1,73 @@
+{
+  "id": "schema-applicator-defaults",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "SCH-009",
+    "SCH-010",
+    "SCH-016"
+  ],
+  "title": "schema-applicator-defaults; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json",
+    "admission": "admission.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "admission"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "schema-evaluation",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "samples": [
+            {
+              "valid": true,
+              "value": {
+                "a": {
+                  "n": 1,
+                  "additionalOnly": 7
+                },
+                "😀": {
+                  "n": 1,
+                  "m": 2
+                },
+                "fixed": {
+                  "n": 1
+                }
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "a": {},
+                "😀": {},
+                "fixed": {}
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {
+          "test.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Operation",
+            "metadata": {
+              "name": "test.v1"
+            },
+            "spec": {
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "integer"
+                  },
+                  "y": {
+                    "$ref": "#/properties/x"
+                  }
+                },
+                "patternProperties": {
+                  "^x$": {
+                    "minimum": 2
+                  }
+                },
+                "additionalProperties": false
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "integer"
+                  },
+                  "y": {
+                    "$ref": "#/properties/x"
+                  }
+                },
+                "patternProperties": {
+                  "^x$": {
+                    "minimum": 2
+                  }
+                },
+                "additionalProperties": false
+              },
+              "idempotentHint": false,
+              "destructiveHint": false,
+              "openWorldHint": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "state": {
+    "started": true,
+    "objects": [
+      {
+        "kind": "Resource",
+        "id": "target",
+        "contract_scope": "main"
+      },
+      {
+        "kind": "Conduit",
+        "id": "connection",
+        "consumer": "actor",
+        "target": "target",
+        "local_name": "use",
+        "open": true,
+        "state": "ready",
+        "operations": [
+          "example.org/e05/main#test.v1"
+        ]
+      }
+    ],
+    "records": [],
+    "allocated_ids": []
+  },
+  "target": "target",
+  "consumer": "actor",
+  "conduit": "connection",
+  "operation": "example.org/e05/main#test.v1",
+  "authored_scope": "main",
+  "samples": {
+    "inputSchema": [
+      {
+        "value": {
+          "x": 2,
+          "y": 1
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "x": 1,
+          "y": 2
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "x": 2,
+          "y": "a"
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "x": 2,
+          "y": 1,
+          "z": 0
+        },
+        "valid": false
+      }
+    ],
+    "outputSchema": [
+      {
+        "value": {
+          "x": 2,
+          "y": 1
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "x": 1,
+          "y": 2
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "x": 2,
+          "y": "a"
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "x": 2,
+          "y": 1,
+          "z": 0
+        },
+        "valid": false
+      }
+    ]
+  },
+  "copy_count": 0
+}

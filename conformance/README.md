@@ -116,3 +116,40 @@ runs; there is no layer filter that could silently skip conventions. The workspa
 the same suite. Broken fixtures and unsupported inputs fail as harness errors, never invented
 Conduit reasons. An undecidable language case is stopped and logged for the admin in
 [the increment's log](../docs/proposals/first-build/log-increment-2.md).
+
+## Authored schemas and E05
+
+I2-02 adds `schema-case`, `schema-admission` and `schema-evaluation` runner inputs. Each names
+one declared fixture file; unsupported metadata fields at the case/step/input level fail the
+case schema. A schema fixture holds an `environment` of exact supplied scopes (`address`,
+optional `version`, `manifest` address-to-scope pins, and ordinary `contracts` documents).
+These are preinstalled snapshots, never successful installations. The runner adds the actual
+core contracts read from `spec/`, and checks every document with the strict loader. The string
+`@apiVersion` expands from the names file, as `@core#name` does for qualified references.
+
+A publication fixture additionally supplies an established `state`, consumer, Conduit, target,
+operation and authored scope. The runner injects the supplied schema environment into the
+target and calls the core's `tool-definition` input. `samples.inputSchema` and
+`samples.outputSchema` each list `{value, valid}` samples. Every sample is checked independently
+in its original resource context and against the standalone publication. Unequal verdicts or
+one that differs from `valid` fail immediately. Every published reference must resolve locally;
+no package resolver is available on that path. Optional `copy_count` asserts the exact number
+of contract copies at each root, without counting preserved local definitions. Control
+fixtures give separate `narrowings` and `template_scope` for the authored-side intersection;
+the core reads narrowing from the target's stored controls. Omitted controls report invalid
+for the would-be tool through that open Conduit, and closed Conduits report refused.
+
+Admission fixtures hold `scope` and `documents`; they run strict document validation then the
+core's schema admission checks, including IFC-033's reserved root key. Evaluation fixtures
+hold `scope`, `schema` and samples with `value` and `mode`: `supplied`, `operation-inputs` or
+`output`. Their filled values and validation verdicts are asserted explicitly. Neither input
+registers an object or installs an archive. The conformance suite claims these schema checks,
+not the later transitions that call them.
+
+For schema inputs, `stateUnchanged` is checked at every core call against that call's actual
+snapshot (including publication's injected schema environment), before replies are combined.
+The regression tests inject a returned object mutation into each schema input kind and require
+failure. Conflicting unconditional defaults are rejected at admission under SCH-009; equal
+defaults are accepted. The added vectors cover original control-reference targets, references
+to explicit properties also matched by patterns, and defaults in existing map members reached
+through patterns or additional properties.

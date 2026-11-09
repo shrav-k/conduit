@@ -1,0 +1,45 @@
+{
+  "id": "schema-array-defaults",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "SCH-009",
+    "SCH-010"
+  ],
+  "title": "schema-array-defaults; supplied schema contexts",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-evaluation",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "samples": [
+            {
+              "valid": true,
+              "value": [
+                {
+                  "a": 1
+                },
+                {
+                  "b": 2
+                }
+              ]
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

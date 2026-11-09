@@ -1,0 +1,88 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "nest": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "default": 2
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "default": 3
+            }
+          },
+          "required": [
+            "count"
+          ]
+        }
+      },
+      "optional": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "default": 1
+          }
+        },
+        "required": [
+          "x"
+        ]
+      }
+    },
+    "required": [
+      "nest",
+      "items"
+    ]
+  },
+  "samples": [
+    {
+      "value": {
+        "nest": {},
+        "items": [
+          {}
+        ]
+      },
+      "mode": "supplied"
+    },
+    {
+      "value": {
+        "nest": {},
+        "items": [
+          {}
+        ]
+      },
+      "mode": "output"
+    },
+    {
+      "value": {
+        "nest": null,
+        "items": []
+      },
+      "mode": "supplied"
+    }
+  ]
+}

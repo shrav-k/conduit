@@ -1,0 +1,74 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "documents": [
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "applicator-defaults.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "maps": {
+              "default": {
+                "a": {}
+              },
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 1
+                  },
+                  "additionalOnly": {
+                    "default": 7
+                  }
+                },
+                "required": [
+                  "n"
+                ]
+              }
+            },
+            "patterns": {
+              "default": {
+                "😀": {}
+              },
+              "type": "object",
+              "patternProperties": {
+                "^[😀-🙏]$": {
+                  "type": "object",
+                  "properties": {
+                    "n": {
+                      "type": "integer",
+                      "default": 1
+                    },
+                    "additionalOnly": {
+                      "default": 7
+                    }
+                  },
+                  "required": [
+                    "n"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {
+          "path.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "path.v1"
+            },
+            "spec": {
+              "$defs": {
+                "part": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "$ref": "#/$defs/part"
+            }
+          },
+          "test.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Operation",
+            "metadata": {
+              "name": "test.v1",
+              "description": "Local path tool"
+            },
+            "spec": {
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "$ref": "#path.v1"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "$ref": "#path.v1"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              },
+              "idempotentHint": false,
+              "destructiveHint": false,
+              "openWorldHint": false
+            }
+          }
+        }
+      },
+      "new": {
+        "address": "example.org/e05/main",
+        "version": "2.0.0",
+        "manifest": {},
+        "contracts": {
+          "path.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "path.v1"
+            },
+            "spec": {
+              "type": "integer"
+            }
+          },
+          "test.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Operation",
+            "metadata": {
+              "name": "test.v1",
+              "description": "Local path tool"
+            },
+            "spec": {
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "$ref": "#path.v1"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "$ref": "#path.v1"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              },
+              "idempotentHint": false,
+              "destructiveHint": false,
+              "openWorldHint": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "state": {
+    "started": true,
+    "objects": [
+      {
+        "kind": "Resource",
+        "id": "target",
+        "contract_scope": "main"
+      },
+      {
+        "kind": "Conduit",
+        "id": "connection",
+        "consumer": "actor",
+        "target": "target",
+        "local_name": "use",
+        "open": true,
+        "state": "ready",
+        "operations": [
+          "example.org/e05/main#test.v1"
+        ],
+        "contract_scope": "new"
+      },
+      {
+        "id": "actor",
+        "kind": "Agent",
+        "contract_scope": "new"
+      }
+    ],
+    "records": [],
+    "allocated_ids": []
+  },
+  "target": "target",
+  "consumer": "actor",
+  "conduit": "connection",
+  "operation": "example.org/e05/main#test.v1",
+  "authored_scope": "main",
+  "samples": {
+    "inputSchema": [
+      {
+        "value": {
+          "path": "x"
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "path": ""
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "path": 3
+        },
+        "valid": false
+      }
+    ],
+    "outputSchema": [
+      {
+        "value": {
+          "path": "x"
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "path": ""
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "path": 3
+        },
+        "valid": false
+      }
+    ]
+  },
+  "copy_count": 1
+}

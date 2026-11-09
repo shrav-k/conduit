@@ -103,6 +103,8 @@ dependencies = [
 name = "conduit-core"
 version = "0.1.0"
 dependencies = [
+ "conduit-loader",
+ "jsonschema",
  "serde",
  "serde_json",
 ]

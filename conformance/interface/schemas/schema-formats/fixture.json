@@ -1,0 +1,53 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "uuid": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "duration": {
+        "type": "string",
+        "format": "duration"
+      }
+    },
+    "required": [
+      "uuid",
+      "duration"
+    ]
+  },
+  "samples": [
+    {
+      "value": {
+        "uuid": "FFFFFFFF-FFFF-4FFF-8FFF-FFFFFFFFFFFF",
+        "duration": "pt1s"
+      },
+      "mode": "supplied"
+    },
+    {
+      "value": {
+        "uuid": "bad",
+        "duration": "PT1S"
+      },
+      "mode": "supplied"
+    },
+    {
+      "value": {
+        "uuid": "00000000-0000-4000-8000-000000000001",
+        "duration": "PT0.5S"
+      },
+      "mode": "supplied"
+    }
+  ]
+}

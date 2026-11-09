@@ -1,0 +1,87 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "fixed": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "integer",
+            "default": 1
+          }
+        },
+        "required": [
+          "n"
+        ]
+      }
+    },
+    "patternProperties": {
+      "^[😀-🙏]$": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "integer",
+            "default": 1
+          }
+        },
+        "required": [
+          "n"
+        ]
+      },
+      "^😀$": {
+        "properties": {
+          "m": {
+            "default": 2
+          }
+        },
+        "required": [
+          "m"
+        ]
+      }
+    },
+    "additionalProperties": {
+      "type": "object",
+      "properties": {
+        "n": {
+          "type": "integer",
+          "default": 1
+        },
+        "additionalOnly": {
+          "default": 7
+        }
+      },
+      "required": [
+        "n"
+      ]
+    }
+  },
+  "samples": [
+    {
+      "value": {
+        "a": {},
+        "😀": {},
+        "fixed": {}
+      },
+      "mode": "supplied"
+    },
+    {
+      "value": {
+        "a": {},
+        "😀": {},
+        "fixed": {}
+      },
+      "mode": "output"
+    }
+  ]
+}

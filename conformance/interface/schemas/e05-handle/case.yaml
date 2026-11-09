@@ -1,0 +1,35 @@
+{
+  "id": "e05-handle",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-011",
+    "IFC-033"
+  ],
+  "title": "e05-handle; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": {
+            "name": "use.test.v1"
+          }
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

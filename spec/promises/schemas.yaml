@@ -193,8 +193,15 @@
     the root's own `properties` state for an input. The `default` of an input that is left out
     altogether is another rule: INS-007 for a template's input, OPS-026 for an operation's and
     NAM-019 for a requirement's, and SCH-010 says what then holds for a default that is a map.
-    An output is not a supplied value, and no default is filled into a result.
-  vectors: []
+    An output is not a supplied value, and no default is filled into a result. Independently
+    of whether a supplied value needs a default, a document is rejected under SCH-009 when
+    installed or submitted if schemas that apply to one place unconditionally, through a
+    `$ref` and its siblings or through `allOf`, give different values of `default` there.
+    The diagnostic names the place and the different defaults. Equal defaults are one default.
+    This admission check does not make `allOf` supply defaults: the exclusions above still hold.
+  vectors:
+    - conformance/interface/schemas/schema-conflicting-defaults/case.yaml
+    - conformance/interface/schemas/schema-equal-defaults/case.yaml
 
 - id: SCH-010
   layer: language

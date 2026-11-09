@@ -1,0 +1,45 @@
+{
+  "id": "schema-root-ref-default",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "SCH-009",
+    "SCH-015",
+    "OPS-026"
+  ],
+  "title": "schema-root-ref-default; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-evaluation",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "samples": [
+            {
+              "valid": false,
+              "value": {}
+            },
+            {
+              "valid": true,
+              "value": {
+                "x": 1
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

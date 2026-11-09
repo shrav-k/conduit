@@ -1,0 +1,40 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "schema": {
+    "$defs": {
+      "defaults": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "default": 1
+          }
+        },
+        "required": [
+          "x"
+        ]
+      }
+    },
+    "allOf": [
+      {
+        "$ref": "#/$defs/defaults"
+      }
+    ]
+  },
+  "samples": [
+    {
+      "value": {},
+      "mode": "supplied"
+    }
+  ]
+}

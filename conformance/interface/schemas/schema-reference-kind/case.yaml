@@ -1,0 +1,36 @@
+{
+  "id": "schema-reference-kind",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SCH-015"
+  ],
+  "title": "A schema reference must resolve to a Schema contract",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [
+            {
+              "ruleId": "SCH-015"
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

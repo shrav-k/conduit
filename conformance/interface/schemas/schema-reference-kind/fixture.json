@@ -1,0 +1,34 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {
+          "wrong.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Operation",
+            "metadata": {
+              "name": "wrong.v1"
+            },
+            "spec": {}
+          }
+        }
+      }
+    }
+  },
+  "scope": "main",
+  "documents": [
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Schema",
+      "metadata": {
+        "name": "check.v1"
+      },
+      "spec": {
+        "$ref": "#wrong.v1"
+      }
+    }
+  ]
+}

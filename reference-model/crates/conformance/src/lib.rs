@@ -1,4 +1,5 @@
 //! File input, case validation and assertions. This crate owns all I/O for the pure core.
+mod schemas;
 use conduit_core::{Context, Input, State};
 use conduit_loader::{
     Diagnostic, Specification, Syntax, read_bytes, read_file, read_submitted_files,
@@ -174,6 +175,7 @@ fn expand(value: &Value, symbols: &BTreeMap<String, Value>, spec: &Specification
             .get(&s[1..])
             .cloned()
             .ok_or_else(|| format!("unresolved symbol {s}"))?,
+        Value::String(s) if s == "@apiVersion" => json!(spec.names().api_version),
         Value::String(s) if s.starts_with("@core#") => {
             json!(format!("{}#{}", spec.names().core_package, &s[6..]))
         }
@@ -384,6 +386,13 @@ fn run_case(
                             ));
                         }
                     }
+                }
+                "schema-case" | "schema-admission" | "schema-evaluation" => {
+                    let alias = input["file"].as_str().ok_or("missing schema fixture")?;
+                    let file = case.files.get(alias).ok_or("undeclared schema fixture")?;
+                    let fixture = expand(&read_value(&base.join(file))?, &symbols, spec)?;
+                    let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+                    schemas::run(&repository, &fixture, kind, spec, context)?
                 }
                 "validate-values" => {
                     let (_, bytes) = file_bytes(input["file"].as_str().ok_or("missing file")?)?;

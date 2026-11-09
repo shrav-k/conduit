@@ -1,0 +1,10 @@
+# Example: the schema is shaped correctly, but IFC-033 reserves this root copy key.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: reserved.v1
+spec:
+  inputSchema:
+    type: object
+    $defs:
+      example.org/acme/files@0.3.0#path.v1: {type: string}

@@ -1,0 +1,47 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {
+          "defaults.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "defaults.v1"
+            },
+            "spec": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "default": 1
+                }
+              },
+              "required": [
+                "x"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "scope": "main",
+  "schema": {
+    "type": "object",
+    "$ref": "#defaults.v1"
+  },
+  "samples": [
+    {
+      "value": {},
+      "mode": "operation-inputs"
+    },
+    {
+      "value": {},
+      "mode": "supplied"
+    }
+  ]
+}

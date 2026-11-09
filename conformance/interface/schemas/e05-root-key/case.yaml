@@ -1,0 +1,55 @@
+{
+  "id": "e05-root-key",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033"
+  ],
+  "title": "e05-root-key; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [
+            {
+              "ruleId": "IFC-033",
+              "locations": [
+                {
+                  "logicalLocations": [
+                    {
+                      "fullyQualifiedName": "/spec/inputSchema/$defs/example.org~1acme~1files@0.3.0#path.v1"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "ruleId": "IFC-033"
+            },
+            {
+              "ruleId": "IFC-033"
+            },
+            {
+              "ruleId": "IFC-033"
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

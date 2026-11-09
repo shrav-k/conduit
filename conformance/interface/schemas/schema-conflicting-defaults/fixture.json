@@ -1,0 +1,58 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "documents": [
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "defaults.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          "$ref": "#/$defs/other",
+          "$defs": {
+            "other": {
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "default": 2
+                }
+              }
+            },
+            "third": {
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "default": 2
+                }
+              }
+            }
+          },
+          "allOf": [
+            {
+              "$ref": "#/$defs/third"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

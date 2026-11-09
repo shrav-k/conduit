@@ -1,0 +1,102 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Type",
+  "metadata": {
+    "name": "defaults.v1"
+  },
+  "spec": {
+    "family": "Resource",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "integer",
+          "default": 1
+        }
+      },
+      "$defs": {
+        "other": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        },
+        "third": {
+          "properties": {
+            "x": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "#/$defs/other"
+        }
+      ]
+    }
+  }
+}
+---
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Type",
+  "metadata": {
+    "name": "applicator-defaults.v1"
+  },
+  "spec": {
+    "family": "Resource",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "maps": {
+          "default": {
+            "a": {}
+          },
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "n": {
+                "type": "integer",
+                "default": 1
+              },
+              "additionalOnly": {
+                "default": 7
+              }
+            },
+            "required": [
+              "n"
+            ]
+          }
+        },
+        "patterns": {
+          "default": {
+            "😀": {}
+          },
+          "type": "object",
+          "patternProperties": {
+            "^[😀-🙏]$": {
+              "type": "object",
+              "properties": {
+                "n": {
+                  "type": "integer",
+                  "default": 1
+                },
+                "additionalOnly": {
+                  "default": 7
+                }
+              },
+              "required": [
+                "n"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

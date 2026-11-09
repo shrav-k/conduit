@@ -1,0 +1,34 @@
+{
+  "id": "e05-missing-contract",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "IFC-033",
+    "NAM-023"
+  ],
+  "title": "e05-missing-contract; established snapshots",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "tool": null,
+          "reason": "refused"
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

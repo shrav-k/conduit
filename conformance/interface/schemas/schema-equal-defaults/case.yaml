@@ -1,0 +1,68 @@
+{
+  "id": "schema-equal-defaults",
+  "layers": [
+    "language",
+    "interface"
+  ],
+  "promises": [
+    "SCH-009",
+    "SCH-015"
+  ],
+  "title": "schema-equal-defaults; preinstalled snapshots, no installation or registration claimed",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json",
+    "evaluation": "evaluation.json",
+    "allof": "allof.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "schema-evaluation",
+        "file": "evaluation"
+      },
+      "expect": {
+        "reply": {
+          "samples": [
+            {
+              "valid": true,
+              "value": {
+                "x": 1
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true
+      }
+    },
+    {
+      "input": {
+        "kind": "schema-admission",
+        "file": "allof"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

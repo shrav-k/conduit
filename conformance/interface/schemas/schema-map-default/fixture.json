@@ -1,0 +1,46 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {}
+      }
+    }
+  },
+  "scope": "main",
+  "documents": [
+    {
+      "apiVersion": "@apiVersion",
+      "kind": "Type",
+      "metadata": {
+        "name": "good.v1"
+      },
+      "spec": {
+        "family": "Resource",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "nested": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "default": 1
+                }
+              },
+              "required": [
+                "x"
+              ],
+              "default": {}
+            }
+          },
+          "required": [
+            "nested"
+          ]
+        }
+      }
+    }
+  ]
+}

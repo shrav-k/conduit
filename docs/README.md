@@ -96,6 +96,7 @@ specification governs.
 | [proposals/reaudit/round-5/](proposals/reaudit/round-5/README.md) | 37, 38, 41 | Round 5 of the re-audit, which ruling 41 ordered: six readers of the specification as rulings 40 to 43 rewrote it, among them one of the whole repository and one who checked the interface against the Model Context Protocol. Their reports, the coordinator's decisions, the logs of the fix pass and the verification of the fixes. No ruling has accepted its decisions, and the owner can strike any of them. |
 | [proposals/reaudit/round-6/](proposals/reaudit/round-6/README.md) | 37, 38, 44 | Round 6 of the re-audit, the owner's cold read by Codex: one reader of the whole repository at `c4d7d33`, with six findings and a critique of the design's simplicity and usefulness in 22 points. With them are the coordinator's [decisions](proposals/reaudit/round-6/DECISIONS.md), which ruling 44 accepted, and the logs of the pass that applied them. |
 | [proposals/ruling-44/](proposals/ruling-44/README.md) | 44 | The ruling on round 6 and on building next, in the owner's words: the next milestone is the first build, and the coordinator's recommendations on the findings and the critique are accepted. |
+| [proposals/ruling-45/](proposals/ruling-45/README.md) | 45 | The ruling on two proposals of the collaborator `allocmemory`, pull requests 9 and 10, in the owner's words: what was kept of each, and where it went, and the pass that decides how the roadmap is shown. |
 
 ### Process for the builds
 

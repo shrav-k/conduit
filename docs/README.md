@@ -25,7 +25,7 @@ than repeat them.
 | Understand Conduit | [README](../README.md) → [spec/README.md](../spec/README.md) → [spec/definitions.md](../spec/definitions.md). The [overview](OVERVIEW.md) is a plain-language tour, and [spec/schemas/examples/](../spec/schemas/examples/) holds worked documents. |
 | Write documents, as an author | The [overview](OVERVIEW.md) → the specification's [path for an author of documents](../spec/README.md#an-author-of-documents), with [what access does not narrow](../spec/README.md#what-access-does-not-narrow). |
 | Write a contract or a provider | The specification's [path for a writer of contracts and providers](../spec/README.md#a-writer-of-contracts-and-providers). |
-| Implement the specification: the reference model, the vectors or a first provider | The specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch (next row). |
+| Implement the specification: the reference model, the vectors or a first provider | [The first build](implementation/FIRST_BUILD.md), then the specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch (next row). |
 | Learn the state of the work | [Roadmap](../ROADMAP.md) → [where things stand](AUDIT.md#where-things-stand) → [action items](AUDIT.md#action-items) in the plan audit. |
 | Propose an experiment or a probe | [Experiments and probes](../ROADMAP.md#experiments-and-probes) in the roadmap → [proposing an experiment](../ROADMAP.md#proposing-an-experiment) → [experiments/](../experiments/README.md). |
 | Understand a ruling | [Ruling log](AUDIT.md#ruling-log) → the [record](#records-of-rulings) of that batch → [research](research/README.md) for the evidence. |
@@ -100,6 +100,7 @@ specification governs.
 | [proposals/reaudit/round-6/](proposals/reaudit/round-6/README.md) | 37, 38, 44 | Round 6 of the re-audit, the owner's cold read by Codex: one reader of the whole repository at `c4d7d33`, with six findings and a critique of the design's simplicity and usefulness in 22 points. With them are the coordinator's [decisions](proposals/reaudit/round-6/DECISIONS.md), which ruling 44 accepted, and the logs of the pass that applied them. |
 | [proposals/ruling-44/](proposals/ruling-44/README.md) | 44 | The ruling on round 6 and on building next, in the owner's words: the next milestone is the first build, and the coordinator's recommendations on the findings and the critique are accepted. |
 | [proposals/ruling-45/](proposals/ruling-45/README.md) | 45 | The ruling on two proposals of the collaborator `allocmemory`, pull requests 9 and 10, in the owner's words: what was kept of each, and where it went, and the pass that decides how the roadmap is shown, with [its log](proposals/ruling-45/log-roadmap.md). |
+| [proposals/ruling-46/](proposals/ruling-46/README.md) | 46 | The ruling on the first build, in the owner's words: one codebase with a pure core and a thin runnable shell, its real Agents, its success criteria, how what it finds refines the language, and its providers. |
 
 ### Process for the builds
 
@@ -107,6 +108,7 @@ specification governs.
 | --- | --- |
 | [implementation/INDEPENDENT_BUILDS.md](implementation/INDEPENDENT_BUILDS.md) | The process, the independence rules and the readiness gate for the two independent builds. The roles and rules are accepted (ruling 11). The builds have not started. |
 | [implementation/ENGINE_BUILD_BRIEF.md](implementation/ENGINE_BUILD_BRIEF.md) | The brief each builder receives. A draft; not issued. |
+| [implementation/FIRST_BUILD.md](implementation/FIRST_BUILD.md) | The pre-registration of the first build (A68), as ruling 46 shaped it: what it is, the theses it tests, its four increments and what each must show, the success criteria, the tasks and measures it shares with the baseline for S1, and how its findings are logged. Not binding. |
 
 ### Evidence and history
 

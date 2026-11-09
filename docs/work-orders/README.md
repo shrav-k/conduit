@@ -22,6 +22,7 @@ report. An order's results are its pull request and the record in
 | [012](012-i2-04-registration.md) | I2-04: registration and the resolving of instances |
 | [013](013-i2-03-archives.md) | I2-03, second part: installing a package from its archive |
 | [014](014-i2-05-access.md) | I2-05: the access decision and the tools an Agent is shown |
+| [015](015-i2-06-requests-end.md) | I2-06: how a request ends, its repeats, and plain results |
 
 [The standing order of a verifier](verify.md), with its schema, is given to the fresh Codex
 session that checks each order's result before the admin session reviews it.

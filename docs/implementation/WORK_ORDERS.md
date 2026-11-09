@@ -103,6 +103,12 @@ From A70, increment 1 and the review of both:
   sum of this round's harness faults. Two orders started at the same moment once raced for
   Git's configuration while making their working trees; `git worktree add --no-track` avoids
   it.
+- **A test that binds a loopback port needs the network flag.** Codex's sandbox without
+  network access refuses to bind one, so an order whose tests run a local server has it on;
+  order 010's second round met this.
+- **The admin runs what a sandbox cannot.** Real clients, and the harness against them, run
+  from the admin session; when such a run shows a harness fault, the admin fixes it, says so in
+  the order's record, and has the worker test the fix (orders 002 and 010).
 - **Pre-register before the harness, amend before the run.** Order 002's review found that the
   pre-registration of experiment 008 named tools otherwise than IFC-012 and left its matrix
   open; it was amended, with a dated note, before any run.

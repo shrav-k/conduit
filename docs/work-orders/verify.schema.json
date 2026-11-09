@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verdict", "findings"],
+  "properties": {
+    "verdict": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "decision", "file", "line", "problem", "evidence", "fix"],
+        "properties": {
+          "severity": { "type": "string", "enum": ["must", "should", "nit"] },
+          "decision": { "type": "string" },
+          "file": { "type": "string" },
+          "line": { "type": "integer" },
+          "problem": { "type": "string" },
+          "evidence": { "type": "string" },
+          "fix": { "type": "string" }
+        }
+      }
+    }
+  }
+}

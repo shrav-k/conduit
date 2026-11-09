@@ -127,8 +127,26 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   by squashing the same day, as `cdf3236`; each of the build's increments is a branch and a
   pull request of its own. Pull request 15 carries the results of the baseline for S1 (A70),
   merged the same day as `0544b24`, and pull request 16, on the branch `build/loader`,
-  increment 1, the strict loader. Later work goes on a new branch, with its own pull
-  request. Merges to `main` are squashed, with a message written by hand.
+  increment 1, the strict loader, merged as `d27d5ef`. A work order's branch is `wo/NNN-name`
+  ([work orders](docs/implementation/WORK_ORDERS.md)). Later work goes on a new branch, with
+  its own pull request. Merges to `main` are squashed, with a message written by hand.
+
+## If you were given a work order
+
+Under [ruling 48](docs/proposals/ruling-48/README.md), the coordinator's session plans and
+decides, and Codex sessions carry out work orders, as
+[work orders](docs/implementation/WORK_ORDERS.md) describes. If you were started with an order
+from `docs/work-orders/`:
+
+- Apply the decisions the order states. Do not reopen them. Where one cannot be applied as
+  written, apply the nearest sound reading and say so in your report.
+- Change only the files in the order's scope. Report anything else that needs changing.
+- Do not commit, push, open a pull request or switch branches: the admin session does.
+- Do not edit `~/.claude`, `~/.claude.json`, `~/.codex/config.toml` or any other configuration
+  of the owner's, and never read, print or copy a credential.
+- Run the order's checks, and the checks below that apply, before you finish.
+- Answer in the order's report schema. List apart every choice you made yourself and every
+  check's last line, and never report a check you did not run.
 
 ## Checks
 

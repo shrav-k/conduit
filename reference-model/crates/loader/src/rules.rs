@@ -1,5 +1,5 @@
-//! The IDs of the promises, and of the items of the implementation-defined list, on which the
-//! loader's rejections rest. A test checks that each is one the specification defines; the list
+//! The IDs of the promises on which the loader's rejections rest. A test checks that each is
+//! one the specification defines, in the form that a diagnostic's `ruleId` takes; the list
 //! [`ALL`] is made from the same declarations, so no rule can be left out of it.
 
 macro_rules! rules {
@@ -30,20 +30,20 @@ rules! {
     /// A `$ref` that is not one of the three forms, or that names no Schema contract.
     SCH_015 = "SCH-015";
     /// Something that is not a template, an instance, a contract or the project's one
-    /// manifest: a file that is not YAML or JSON, and a document or a manifest that a schema
-    /// rejects.
+    /// manifest: a file that is not UTF-8, or not YAML or JSON as the ending of its name says,
+    /// and a document or a manifest that a Schema contract rejects.
     SUB_005 = "SUB-005";
     /// Two Schema contracts of the specification with one name. Only the specification itself
     /// is checked for this; the core checks the documents of a project.
     NAM_027 = "NAM-027";
-    /// A directory, or a file of documents in it, that cannot be read as a project's.
+    /// A directory, or an entry of it that MAN-011 reads, that cannot be read: a link that
+    /// leads nowhere, a file that may not be read, or anything that is not a regular file.
     SUB_010 = "SUB-010";
     /// A manifest that does not hold exactly one document.
     MAN_001 = "MAN-001";
     /// More than one manifest.
     MAN_002 = "MAN-002";
-    /// Limits of an engine: here, how deeply the values of a document may nest. Not the ID of
-    /// a promise, which a diagnostic's `ruleId` is: no promise yet says what a document beyond
-    /// an engine's limits rests on, and the first build's log of increment 1 records it.
-    DL10 = "DL10";
+    /// A document beyond a limit that the engine states under DL10 of the implementation-defined
+    /// list: here, how deeply its values may nest.
+    SUB_011 = "SUB-011";
 }

@@ -46,17 +46,22 @@ a file. What reads the file system is at the edge: `read_file`, `read_project` a
   are rejected (SCH-012), and so are `.inf`, `.nan`, `0x1F` and `0o17` (SCH-017) and numbers out
   of range (SCH-006, SCH-021), and a character that YAML 1.2.2 does not allow where it stands.
   A number with no fractional part is an integer however it is written (SCH-005); one with a
-  fractional part is binary64 (SCH-020). JSON as RFC 8259 writes it, with the same narrowings,
-  so that it means the same as YAML (SCH-013); a JSON file holds one document or an array of
-  them (SCH-018). Files are UTF-8, and values nest at most 128 levels deep, a limit that DL10
-  leaves to an engine.
+  fractional part is binary64 (SCH-020), and an integer where that value is whole, held to the
+  range of SCH-006, so `9007199254740993.5` is rejected. JSON as RFC 8259 writes it, with the
+  same narrowings, so that it means the same as YAML (SCH-013); a JSON file whose value is an
+  array holds its items as documents, and any other holds its value as one (SCH-018). Files are
+  UTF-8, with a byte order mark allowed in YAML and not in JSON; a noncharacter may stand in a
+  string, and a surrogate that is not paired may not, nor, in YAML, a pair written as two
+  escapes. Values nest at most 128 levels deep, a limit that DL10 leaves to an engine, past
+  which a document is rejected under SUB-011.
 - **A project's directory** (`project.rs`). The manifest is the one file named `conduit.yaml`,
   `conduit.yml` or `conduit.json`, and it holds one document (MAN-001); more than one is
   rejected (MAN-002). The documents are the other files of the directory itself whose names
-  end in `.yaml`, `.yml` or `.json`; nothing below it is read, and no other file (MAN-011,
-  SUB-010). A link is followed; one that leads nowhere, or an entry that cannot be read, under
-  such a name, is rejected under SUB-010 and never skipped. Files handed over without a
-  directory are read by the same rules.
+  end in `.yaml`, `.yml` or `.json` and do not begin with a dot, names and endings compared
+  exactly; nothing below it is read, and no other file (MAN-011, SUB-010). A link is followed,
+  and one to a directory is not entered; one that leads nowhere, or an entry that cannot be
+  read, under such a name, is rejected under SUB-010 and never skipped. Files handed over
+  without a directory are read by the same rules.
 - **Validation** (`schemas.rs`, `formats.rs`). Each document is validated against `document.v1`
   and the manifest against `manifest.v1`, after the Schema contracts of `spec/schemas/` and
   `spec/core/` are bundled exactly as `bundle()` in `tools/check_schemas.py` bundles them. The
@@ -64,9 +69,9 @@ a file. What reads the file system is at the edge: `read_file`, `read_project` a
   `duration` checked by the grammars that the profile cites (SCH-004), and `pattern` matched as
   ECMA-262 with the `u` flag, in the edition that JSON Schema 2020-12 cites (SCH-016). The loader
   also rejects a document whose own schemas hold a pattern that is not one of ECMA-262
-  (`authored.rs`): its reading, pending finding 1-03 of the log. `Specification::check` gives
-  that verdict beside the schemas', as reading a project does; `Specification::validate` applies
-  the schemas alone.
+  (`authored.rs`), as SCH-016 says. `Specification::check` gives that verdict beside the
+  schemas', as reading a project does; `Specification::validate` applies the schemas alone. A
+  rejection by a schema rests on SUB-005, and names the Schema contract and the place.
 
 It does not resolve references, instantiate templates or apply the rules of
 `tools/check_schemas.py` that no schema can express: those come with the core, in increment 2.
@@ -78,11 +83,11 @@ increment 1's done-when; the others test the rest of what it covers.
 
 | Test | What it shows |
 | --- | --- |
-| `tests/examples.rs` | Every directory under `spec/schemas/examples/valid/` is read as a project and accepted; every file under `invalid/` is rejected by the step that `check_schemas.py` rejects it by, when read or by a schema, as the fixture `tests/expected/invalid-verdicts.txt` records; every document under `invalid-by-rule/` passes the schemas; the core package's own documents are valid; every example means the same written again as JSON (SCH-013); and the trees of examples are flat, so these tests read every file that the tool reads |
-| `tests/reading.rs` | The syntax rules, case by case, in YAML and in JSON: the characters YAML allows; every fault of a file reported, in any order of its documents and of their members (SUB-001); each fault with the same rule and place in YAML and in JSON (SCH-013); a document marker that the parser would read as content; and a file of some megabytes read in linear time |
+| `tests/examples.rs` | Every directory under `spec/schemas/examples/valid/` is read as a project and accepted, and the file there whose name begins with a dot is not read; every file under `invalid/` is rejected by the step that `check_schemas.py` rejects it by, when read or by a schema, as the fixture `tests/expected/invalid-verdicts.txt` records, a rejection by a schema always under SUB-005; every document under `invalid-by-rule/` passes the schemas, and `Specification::check` rejects those named for SCH-016 and no other; the core package's own documents are valid; every example means the same written again as JSON (SCH-013); and the trees of examples are flat, so these tests read every file that the tool reads |
+| `tests/reading.rs` | The syntax rules, case by case, in YAML and in JSON: the characters YAML allows; a number read as a whole binary64 value, held to the range of SCH-006; I-JSON's two rules, and a surrogate that is not paired; every fault of a file reported, in any order of its documents and of their members (SUB-001); each fault with the same rule and place in YAML and in JSON (SCH-013); a document marker that the parser would read as content; and a file of some megabytes read in linear time |
 | `tests/formats.rs` | The grammars of `uuid`, with its edges of version and variant, and of `duration`; each format asserted; patterns matched as ECMA-262 where Python's `re` and Rust's `regex` read them otherwise; a pattern that is not ECMA-262, in the edition that JSON Schema 2020-12 cites; and the verdict of `Specification::check` on one |
-| `tests/project.rs` | Two manifests; a manifest that is not one document; documents in a directory below, not read; a file with another ending, ignored; a link followed, and one that leads nowhere rejected; the order of documents, within a file and across files, which means nothing (SUB-001) |
-| `tests/rules.rs` | Every promise the loader cites is one that `spec/` defines |
+| `tests/project.rs` | Two manifests; a manifest that is not one document; documents in a directory below, not read; a file with another ending, or whose name begins with a dot, ignored; a link followed, and one that leads nowhere rejected; the order of documents, within a file and across files, which means nothing (SUB-001) |
+| `tests/rules.rs` | Every promise the loader cites is one that `spec/` defines, with an ID in the form of a diagnostic's `ruleId` |
 
 ## Choices
 
@@ -112,8 +117,8 @@ in its own code, and none of it is left to chance:
 - It reads a line `---` into a block scalar at the root as content, where YAML 1.2.2 has it
   begin a document. The loader rejects such a text as not YAML rather than read it otherwise
   than YAML does; the fault is to be reported to the parser's maintainers.
-- Its lookahead stops at 255 levels of flow collections, which the loader reports as the limit
-  that DL10 leaves to an engine. The loader's own limit is 128 levels.
+- Its lookahead stops at 255 levels of flow collections, which the loader reports, under
+  SUB-011, as the limit that DL10 leaves to an engine. The loader's own limit is 128 levels.
 
 **JSON: [serde_json](https://crates.io/crates/serde_json)**, with its `raw_value` feature. It
 checks the syntax. The values are built from the raw text of each, so that two members with one
@@ -132,6 +137,6 @@ engine of ECMA-262's regular expressions, in Unicode mode. `regress` follows the
 edition of ECMA-262, and the loader rejects the two pieces of syntax it accepts that the
 edition of 2020, which JSON Schema 2020-12 cites, does not: a group that sets flags and a name
 given to two groups. The crate cannot be given another engine for `patternProperties`; no
-schema of the specification uses it, and the
-[log of increment 1](../docs/proposals/first-build/log-increment-1.md) records what is left for
-the core.
+schema of the specification uses it, and the core matches it itself when it validates the
+schemas that authors write, from increment 2, as the
+[log of increment 1](../docs/proposals/first-build/log-increment-1.md) records.

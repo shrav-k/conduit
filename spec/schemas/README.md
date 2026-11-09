@@ -132,6 +132,18 @@ example: `OBJ-001-name-ending-in-a-line-feed.yaml` and
 `SCH-021-fraction-just-above-binary64.yaml` under examples/invalid, and the two examples of
 SCH-019 for a `default` that is not a `uuid` or a `duration` under examples/invalid-by-rule.
 
+The coordinator then settled the log's other findings under ruling 46, point 4, and the owner
+can strike each. This tool now reads a file as bytes and rejects one that is not UTF-8
+(SUB-005); reads files whose names end in `.yml` and `.json` as well as `.yaml`, a JSON file as
+SCH-018 reads it; reads no file whose name begins with a dot (MAN-011); rejects a number written
+with a fraction whose binary64 value is whole and outside the range of SCH-006; and, by a new
+rule of its step 6, rejects a schema whose pattern is not one of ECMA-262, as far as Python's
+`re` can tell (SCH-016). Each has an example: `SUB-005-not-utf-8.yaml`,
+`SUB-005-json-value-that-is-not-a-map.json` and
+`SCH-006-fraction-read-as-an-integer-out-of-range.yaml` under examples/invalid,
+`SCH-016-pattern-that-is-not-ecma-262.yaml` under examples/invalid-by-rule, and the file
+`.notes.yaml` of examples/valid/project, which is not read.
+
 ## What this is
 
 One JSON Schema for each thing an author writes or an engine must accept. Each is written in
@@ -282,7 +294,7 @@ documents in front of it show, in its step 6; an example under
 
 | What | Promises | Why a schema cannot | Tool |
 | --- | --- | --- | --- |
-| The syntax of the file: duplicate keys, anchors, aliases, merge keys, tags, keys that are not strings; numbers with no JSON form; whole numbers out of range; other numbers outside the range of binary64; one document or one array in a JSON file | SCH-012, SCH-017, SCH-006, SCH-021, SCH-018 | They are gone, or cannot be seen, once the file has been read into values | When it reads a file, in step 1, except SCH-018 |
+| The syntax of the file: a file that is not UTF-8, or not YAML or JSON; duplicate keys, anchors, aliases, merge keys, tags, keys that are not strings; numbers with no JSON form; whole numbers out of range, and numbers read as whole binary64 values out of range; other numbers outside the range of binary64; one document or one array in a JSON file | SUB-005, SCH-012, SCH-017, SCH-006, SCH-021, SCH-018 | They are gone, or cannot be seen, once the file has been read into values | When it reads a file, in step 1, a JSON file as SCH-018 reads it |
 | A standard argument written under `arguments`, and anything else inside an open place | OBJ-013, INS-003 | The place is open by OBJ-019 | — |
 | That a reference resolves, and to the right thing: a template or an instance, a kind, a contract of the expected kind, an export; that a `$ref` written as a qualified reference or as `#name` names a Schema contract | OBJ-007 to OBJ-009, INS-002, TPL-002, TPL-005, CON-017, CON-021, CON-027, NAM-003, NAM-007, NAM-022, NAM-028, PKG-018, POOL-014, SCH-015 | It needs the other documents, the objects that exist and the installed packages | Only a selection, a `$ref`, or a `from` written as a qualified reference or as `#name`, that names something in this repository, for its kind, or that names nothing there; SCH-015 and NAM-028 have an example each |
 | That a document, or a request that an actor makes on its own behalf, does not write the resolved form of a reference, `{kind, id}` | OBJ-009, LIF-031 | Every reference schema accepts the form, because a stored instance holds it and the same schema governs what is stored | — |
@@ -324,8 +336,8 @@ documents in front of it show, in its step 6; an example under
 | That a relative `fetch`, or a program given as a relative path, has a directory to be resolved against | MAN-006, MAN-010 | Whether a manifest was read from a directory or handed over as a value is not in the manifest. The schemas do check that `fetch` is a URI reference with no user information | — |
 | That the address a package's manifest states is the one it was listed or fetched under | PKG-017 | It needs the manifest that lists the package, or the request that installs it | — |
 | That a document does not use one version's `apiVersion` with another version's core address | OBJ-024 | The schemas are those of one version, and state its names alone | — |
-| That a `pattern` is a regular expression of ECMA-262 | SCH-016 | Not expressible | — |
-| Everything a package's archive must be, which files of a directory are read, and that a package holds no instance document | PKG-004, PKG-021, PKG-022, MAN-001, MAN-002, MAN-011, MAN-013, MAN-014 | It is about files, not a document: a schema sees one document, and not whether it lies in a package or in a submitted project | — |
+| That a `pattern`, and a key of `patternProperties`, is a regular expression of ECMA-262, in Unicode mode and in the edition the profile names; a schema whose pattern is not one is rejected | SCH-016 | `schema.v1` can say that a pattern is a string, and no keyword of the profile says that a string is a regular expression | Only a pattern that Python's `re` cannot compile either, once `ecma` has translated it, and none that holds syntax that ECMA-262 has and `re` lacks, such as `\p{Lu}` or a named group |
+| Everything a package's archive must be, which files of a directory are read, and that a package holds no instance document | PKG-004, PKG-021, PKG-022, MAN-001, MAN-002, MAN-011, MAN-013, MAN-014 | It is about files, not a document: a schema sees one document, and not whether it lies in a package or in a submitted project | Only that a file whose name begins with a dot is not read, in the trees of examples it reads |
 
 A schema therefore answers one question: is this document, taken alone, one this specification
 could accept. It never says a document is accepted.
@@ -360,16 +372,17 @@ The work of ruling 41 made these choices where the promises left the shape open;
 
 | Path | What |
 | --- | --- |
-| [examples/valid/project](examples/valid/project) | A small submitted project, whose manifest states `address` because it holds contracts and lists implementations: a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input and a narrowed control, which selects a setup hook; a Pool template with two entries, one referring to the other, whose input supplies their placement, and whose items, a program inside a package, run on the engine's own runner; a Conduit template with the shared-host requirement and a filter; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open, naming an operation of the project by its address; a runtime provider's type and template; the type of a secret Resource, a secret Resource and the Conduit through which it is read; a type whose configuration holds a secret reference, with a plain `command` item whose `environment` binds it; and instance documents of every family, an Agent that names its `runtime` among them |
+| [examples/valid/project](examples/valid/project) | A small submitted project, whose manifest states `address` because it holds contracts and lists implementations: a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input and a narrowed control, which selects a setup hook; a Pool template with two entries, one referring to the other, whose input supplies their placement, and whose items, a program inside a package, run on the engine's own runner; a Conduit template with the shared-host requirement and a filter; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open, naming an operation of the project by its address; a runtime provider's type and template; the type of a secret Resource, a secret Resource and the Conduit through which it is read; a type whose configuration holds a secret reference, with a plain `command` item whose `environment` binds it; and instance documents of every family, an Agent that names its `runtime` among them. Beside them lies `.notes.yaml`, whose name begins with a dot, so that it is not read (MAN-011), and which would be rejected if it were |
 | [examples/valid/files-package](examples/valid/files-package) | A package: a manifest with `address`, `version`, `exports` and three implementations, reached by `command`, by a server.json `package` pinned by its `fileSha256` and by a plain `remote`, each binding a value of the configuration, the `command` and the `remote` with label selectors that name one label with different values; and one contract of each of the five kinds, two of which use a `$ref` written `#name`. Among them are Operation contracts in `inputSchema` form, one with a `default`, one with a hint, one with `oneOf` at the root of its `inputSchema` and two with a handle, a control whose `changes` maps its input to a setting, a Type with a label selector, the default implementations of the operations it needs, since no Operation contract states one, and `records`, and a Requirement that is a filter |
 | [examples/valid/first-start](examples/valid/first-start) | The instance documents of the five first-start objects, written out to show what first start makes. Each is valid against the schemas. The engine makes these objects itself and is handed no such document: submitting them is rejected, under FST-006 for the five made from the templates `system`, `node`, `management`, `access` and `root`, and under OBJ-002 because the five names are taken |
-| [examples/invalid](examples/invalid) | 59 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
-| [examples/invalid-by-rule](examples/invalid-by-rule) | 36 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Four files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. Three others hold, beside their documents, the manifest of their project, a document with no `kind`, whose items their templates select. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
+| [examples/invalid](examples/invalid) | 62 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents. One is a JSON file, whose value is a string |
+| [examples/invalid-by-rule](examples/invalid-by-rule) | 37 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Four files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. Three others hold, beside their documents, the manifest of their project, a document with no `kind`, whose items their templates select. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
 
 Every name under `example.org` is invented, and every digest and hash in an example is
 illustrative. Each directory under `examples/valid` is one project, with its documents beside
-its manifest where it has one, as MAN-011 states. A set under `examples/invalid-by-rule` shows
-one rule and is not a whole project: it may name objects and packages that are not written out.
+its manifest where it has one, as MAN-011 states; a file there whose name begins with a dot is
+not one of them. A set under `examples/invalid-by-rule` shows one rule and is not a whole
+project: it may name objects and packages that are not written out.
 
 ## Checking
 
@@ -377,8 +390,9 @@ one rule and is not a whole project: it may name objects and packages that are n
 python3 tools/check_schemas.py
 ```
 
-It reads every file as strict YAML, checks every schema against the profile, validates every
-document here, in `spec/core` and in `examples/valid`, and checks that every document in
+It reads every file of documents as UTF-8 and as strict YAML or JSON, by the ending of its name,
+and no file whose name begins with a dot. It checks every schema against the profile, validates
+every document here, in `spec/core` and in `examples/valid`, and checks that every document in
 `examples/invalid` is rejected by a schema, or when its file is read. It checks that the core
 package agrees with itself, that each control's `changes` maps inputs the control declares to
 places its type's schema describes and that its `inputSchema` requires `revision`, and that the

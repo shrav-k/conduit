@@ -11,7 +11,9 @@ pub const LARGEST_WHOLE: u64 = 9_007_199_254_740_991;
 ///
 /// A number with no fractional part is held as [`Value::Integer`] however it is written, so
 /// `15`, `15.0` and `1.5e1` are the same value (SCH-005, SCH-007). A number with one is held as
-/// the IEEE 754 binary64 value nearest to it (SCH-020).
+/// the IEEE 754 binary64 value nearest to it (SCH-020), and as [`Value::Integer`] where that
+/// value has no fractional part, which SCH-006 holds to its range: `0.99999999999999999999` is
+/// the integer 1. So a [`Value::Float`] never has a fractional part of zero.
 #[derive(Clone, Debug)]
 pub enum Value {
     Null,

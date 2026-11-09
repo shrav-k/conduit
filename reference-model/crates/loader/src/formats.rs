@@ -44,10 +44,10 @@ pub fn is_uuid(text: &str) -> bool {
 /// duration   = "P" (dur-date / dur-time / dur-week)
 /// ```
 ///
-/// The quoted letters of ABNF match either case (RFC 5234, section 2.3), as for [`is_uuid`],
-/// so `p1d` matches; the `jsonschema` crate's own check takes only capitals. A digit is ASCII,
-/// and a fraction, a sign and a week beside another unit are not in the grammar. The first
-/// build's log of increment 1 records the case of the letters as a finding.
+/// The quoted letters of ABNF match either case (RFC 5234, section 2.3), as for [`is_uuid`]
+/// and as the schema profile says, so `p1d` matches; the `jsonschema` crate's own check takes
+/// only capitals. A digit is ASCII, and a fraction, a sign and a week beside another unit are
+/// not in the grammar.
 pub fn is_duration(text: &str) -> bool {
     /// The designators of a run of units, each after one or more digits, or none where the
     /// run is not of that form.
@@ -240,9 +240,10 @@ fn pattern_keyword<'a>(
 /// `pattern` as ECMA-262 (SCH-016).
 ///
 /// The crate checks `date-time` and `date` by RFC 3339, and `uri` and `uri-reference` by RFC
-/// 3986, the grammars the profile cites. `patternProperties`
-/// is still matched by the crate's own engine, which cannot be replaced; no schema of the
-/// specification uses it, and the first build's log of increment 1 records what remains.
+/// 3986, the grammars the profile cites. `patternProperties` is still matched by the crate's
+/// own engine, which cannot be replaced; no schema of the specification uses it, and the core
+/// matches it itself when it validates the schemas that authors write, from increment 2, as
+/// the first build's log of increment 1 records.
 pub fn options() -> jsonschema::ValidationOptions<'static> {
     jsonschema::draft202012::options()
         .should_validate_formats(true)

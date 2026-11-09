@@ -7,12 +7,15 @@
 //! keep one of silently, and so that each number is read from the digits that write it
 //! (SCH-005, SCH-006, SCH-020, SCH-021), not from a binary64 value `serde_json` made of it.
 //! JSON has no infinity, not-a-number, hexadecimal, anchor, alias, tag or merge key, so SCH-017
-//! and the rest of SCH-012 cannot arise. A byte order mark is not JSON text and is rejected, as
-//! `serde_json` rejects it; RFC 8259 (section 8.1) lets a reader either ignore or reject it.
+//! and the rest of SCH-012 cannot arise. A byte order mark is not allowed in a JSON file, as
+//! the schema profile says, since RFC 8259 (section 8.1) does not let one be added, and
+//! `serde_json` rejects it as not JSON (SUB-005). It rejects in the same way an escape of a
+//! surrogate that is not one of a pair, `\ud800`, which is not text; a pair, `\ud83d\ude00`, is
+//! one character.
 //!
-//! A file holds one document, or one array each of whose items is a document (SCH-018): an
-//! array is read as the documents that are its items, and anything else as one document,
-//! which the schemas then judge, as they judge a YAML document.
+//! A file whose value is an array holds the documents that are its items, and any other file
+//! holds its value as one document (SCH-018), which the schemas then judge, as they judge a
+//! YAML document: a value that is not a map is rejected under SUB-005.
 //!
 //! As in YAML, a text that is not JSON is rejected for that alone, and any other fault is in a
 //! value: it is reported with its place as a JSON Pointer, and reading goes on, so that every
@@ -27,7 +30,7 @@ use serde_json::value::RawValue;
 
 use crate::diagnostic::{Diagnostic, Diagnostics, Locator, char_boundary, position_of};
 use crate::number::read_number;
-use crate::rules::{DL10, SCH_012, SUB_005};
+use crate::rules::{SCH_012, SUB_005};
 use crate::value::{Node, Value};
 use crate::yaml::number_fault;
 
@@ -122,10 +125,7 @@ impl<'t> Reader<'t> {
         };
         let source = raw.get();
         let value = match source.as_bytes().first() {
-            Some(b'{' | b'[') if depth >= crate::MAX_DEPTH => fault(Diagnostic::new(
-                DL10,
-                format!("values nested more than {} deep", crate::MAX_DEPTH),
-            )),
+            Some(b'{' | b'[') if depth >= crate::MAX_DEPTH => fault(crate::too_deep()),
             Some(b'{') => {
                 let Members(members) = serde_json::from_str(source)
                     .map_err(|error| syntax(self.text, &error).at(at))?;

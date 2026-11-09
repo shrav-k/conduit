@@ -12,7 +12,8 @@
 //!   any other scalar is a string: `yes` is a string, `"15"` is a string, `15` is a number;
 //! - `.inf`, `.nan`, `0x1F` and `0o17` have no JSON form and are rejected (SCH-017);
 //! - a number outside its range is rejected (SCH-006, SCH-021), as `crate::number` reads it;
-//! - values nest at most [`crate::MAX_DEPTH`] deep (DL10).
+//! - values nest at most [`crate::MAX_DEPTH`] deep, a limit that DL10 leaves to an engine, past
+//!   which a document is rejected (SUB-011).
 //!
 //! Three things the parser does not check, this file checks, so that a text the parser takes
 //! but YAML 1.2.2 does not is not read:
@@ -27,6 +28,12 @@
 //!   marker of the document and never its content (`c-forbidden`), and which the parser reads
 //!   as content.
 //!
+//! An escape writes one code point, so an escape of a surrogate, `\ud800`, is not text, alone
+//! or as one of a pair: the parser rejects it, as the schema profile has it, and a character
+//! outside the Basic Multilingual Plane is written with one escape, `\U0001F600` (SUB-005).
+//! A noncharacter, such as U+FDD0, is a character like any other (I-JSON's rule on strings
+//! does not apply).
+//!
 //! A file holds any number of documents. A text that is not YAML is rejected for that alone,
 //! under SUB-005, where reading stopped. Any other fault is in a value: it is reported with the
 //! place of the value as a JSON Pointer, and reading goes on, so that every fault of every
@@ -39,7 +46,7 @@ use saphyr_parser::{Event, Parser, ScalarStyle, Span, Tag};
 
 use crate::diagnostic::{Diagnostic, Diagnostics, Position, position_of};
 use crate::number::{NumberFault, is_decimal, read_number};
-use crate::rules::{DL10, SCH_006, SCH_012, SCH_017, SCH_021, SUB_005};
+use crate::rules::{SCH_006, SCH_012, SCH_017, SCH_021, SUB_005, SUB_011};
 use crate::value::{Node, Value};
 
 /// Read every document of a YAML text.
@@ -309,7 +316,7 @@ struct Reader {
     documents: Vec<Node>,
     faults: Vec<Diagnostic>,
     /// How many levels deep the reader is inside a map or a list that is beyond the limit of
-    /// nesting, and where it began: its content is not read (DL10).
+    /// nesting, and where it began: its content is not read (SUB-011).
     skipping: usize,
     skipped_at: Position,
 }
@@ -325,7 +332,7 @@ impl Reader {
     /// The parser stopped on an error, and nothing after it can be read. The parser keeps at
     /// most 255 levels of flow collections, and reads ahead of the events it gives, so a deeper
     /// document may stop it before the reader's own limit, or just after it: that is the limit
-    /// (DL10), reported as the reader found it where it did, and not text that is not YAML.
+    /// (SUB-011), reported as the reader found it where it did, and not text that is not YAML.
     fn stopped(&mut self, error: &saphyr_parser::ScanError) -> Diagnostic {
         let marker = error.marker();
         let at = Position::new(marker.line(), marker.col() + 1);
@@ -336,15 +343,10 @@ impl Reader {
         let found = self
             .faults
             .iter()
-            .position(|d| d.rule == DL10 && d.document == Some(index));
+            .position(|d| d.rule == SUB_011 && d.document == Some(index));
         match found {
             Some(found) => self.faults.swap_remove(found),
-            None => Diagnostic::new(
-                DL10,
-                format!("values nested more than {} deep", crate::MAX_DEPTH),
-            )
-            .at(at)
-            .in_document(index),
+            None => crate::too_deep().at(at).in_document(index),
         }
     }
 
@@ -388,11 +390,7 @@ impl Reader {
             self.fault(fault, at, pointer.clone());
         }
         if self.stack.len() >= crate::MAX_DEPTH {
-            let fault = Diagnostic::new(
-                DL10,
-                format!("values nested more than {} deep", crate::MAX_DEPTH),
-            );
-            self.fault(fault, at, pointer);
+            self.fault(crate::too_deep(), at, pointer);
             self.skipping = 1;
             self.skipped_at = at;
             return;

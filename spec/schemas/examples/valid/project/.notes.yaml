@@ -1,0 +1,8 @@
+# Not read. A file whose name begins with a dot is not one of a project's documents (MAN-011),
+# so the project in this directory is accepted with this file beside it. Read, it would be
+# rejected: what follows is not a template, an instance, a contract or a manifest (SUB-005).
+# Editors and other tools leave such names, and `tar` on macOS stores `._templates.yaml` beside
+# `templates.yaml` for its extended attributes. The first build's log of increment 1
+# (docs/proposals/first-build/log-increment-1.md) added it.
+
+notes: Ask the owner of the shared directory before its layout changes.

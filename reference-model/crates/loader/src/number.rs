@@ -1,8 +1,8 @@
 //! Reading a number from the text that writes it, in YAML or in JSON.
 //!
-//! Whether a number has a fractional part is decided by the decimal value its text writes,
-//! not by the binary64 value nearest to it, as `tools/check_schemas.py` decides it: `1.5e1` has
-//! none, and `9007199254740993.5` has one although its nearest binary64 value is whole.
+//! Whether a number has a fractional part is decided first by the decimal value its text
+//! writes, as `tools/check_schemas.py` decides it: `1.5e1` has none, and `9007199254740993.5`
+//! has one.
 //!
 //! - A number with no fractional part is an integer however it is written (SCH-005), and one
 //!   outside the range of I-JSON is rejected (SCH-006).
@@ -10,6 +10,11 @@
 //!   whose magnitude is greater than the largest finite binary64 value is rejected (SCH-021).
 //!   That is judged on the decimal value: a number a little above the largest binary64 value
 //!   that would round down to it is still rejected.
+//! - A binary64 value so read that has no fractional part is an integer too, and is held to
+//!   the range of SCH-006, so that no integer outside it is read (SCH-006, SCH-020):
+//!   `0.99999999999999999999` is read as the integer 1, and `9007199254740993.5`, whose
+//!   nearest binary64 value is 9007199254740994, is rejected. The first build's log of
+//!   increment 1 records this as the coordinator's decision on its finding 1-10.
 
 use crate::value::{LARGEST_WHOLE, Value};
 
@@ -85,9 +90,23 @@ pub(crate) fn read_number(text: &str) -> Result<Value, NumberFault> {
         exponent
     );
     match written.parse::<f64>() {
-        Ok(value) if value.is_finite() => Ok(Value::Float(value)),
+        Ok(value) if value.is_finite() => binary64(value),
         _ => Err(NumberFault::OutsideBinary64),
     }
+}
+
+/// The value of a number written with a fractional part, once read as binary64 (SCH-020). One
+/// that has no fractional part is an integer, held to the range of SCH-006 as any other is, so
+/// a [`Value::Float`] never has a fractional part of zero.
+fn binary64(value: f64) -> Result<Value, NumberFault> {
+    if value.fract() != 0.0 {
+        return Ok(Value::Float(value));
+    }
+    // 2^53 - 1 is a binary64 value exactly, so the comparison is exact.
+    if value.abs() > LARGEST_WHOLE as f64 {
+        return Err(NumberFault::WholeOutOfRange);
+    }
+    Ok(Value::Integer(value as i64))
 }
 
 /// The exponent, saturated far beyond any that can matter, so that no text overflows it.
@@ -202,9 +221,32 @@ mod tests {
         assert_eq!(float("15.5"), 15.5);
         assert_eq!(float(".5"), 0.5);
         assert_eq!(float("-1.25e-1"), -0.125);
-        assert_eq!(float("1e-400"), 0.0);
-        // Written with a fraction; its nearest binary64 value is whole, and it stays a float.
-        assert_eq!(float("9007199254740993.5"), 9_007_199_254_740_994.0);
+        assert_eq!(float("4503599627370495.5"), 4_503_599_627_370_495.5);
+    }
+
+    /// SCH-006 and SCH-020: a binary64 value read from a number written with a fraction, and
+    /// that has no fractional part, is an integer, held to the range of SCH-006.
+    #[test]
+    fn a_whole_binary64_value_is_an_integer_within_the_range() {
+        assert_eq!(integer("0.99999999999999999999"), 1);
+        assert_eq!(integer("1e-400"), 0);
+        assert_eq!(integer("-1e-400"), 0);
+        // Between 2^52 and 2^53 binary64 values are one apart, and a tie goes to the even one.
+        assert_eq!(integer("9007199254740990.5"), 9_007_199_254_740_990);
+        assert_eq!(integer("-9007199254740990.5"), -9_007_199_254_740_990);
+        for text in [
+            "9007199254740993.5",
+            "-9007199254740993.5",
+            // A tie between 2^53 - 1 and 2^53, which is even, and outside the range.
+            "9007199254740991.5",
+            "12345678901234567.25",
+        ] {
+            assert_eq!(
+                read_number(text),
+                Err(NumberFault::WholeOutOfRange),
+                "{text}"
+            );
+        }
     }
 
     #[test]
@@ -219,14 +261,15 @@ mod tests {
             read_number(&format!("{largest}0.5")),
             Err(NumberFault::OutsideBinary64)
         );
-        // One less, with a fraction, is not.
+        // One less, with a fraction, is within binary64, and its nearest binary64 value is
+        // whole and far outside the range of SCH-006.
         let mut below = largest.clone().into_bytes();
         *below.last_mut().unwrap() -= 1;
         let below = String::from_utf8(below).unwrap();
-        assert!(matches!(
+        assert_eq!(
             read_number(&format!("{below}.5")),
-            Ok(Value::Float(_))
-        ));
+            Err(NumberFault::WholeOutOfRange)
+        );
     }
 
     #[test]

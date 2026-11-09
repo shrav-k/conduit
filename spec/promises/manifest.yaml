@@ -90,6 +90,12 @@
 # under which a Remote's `url` that holds a variable is rejected (M23), and MAN-017, under
 # which the schema of a bound place confines its value to a string, a number, a boolean or
 # null (M17, M30). It added none and removed none.
+# The coordinator's decision on finding 1-06 of increment 1 of the first build, under ruling
+# 46, point 4 (docs/proposals/first-build/log-increment-1.md), changed MAN-011: a name that
+# begins with a dot is not read, as Terraform skips one in a module; names and endings are
+# compared exactly; a link to a file is followed and one to a directory is not entered; and an
+# entry that cannot be read is rejected under SUB-010. It added none and removed none. The
+# owner can strike it.
 
 - id: MAN-001
   layer: language
@@ -309,10 +315,10 @@
     A project's directory is read, whether it was submitted or is the content of a package's
     archive.
   then: >-
-    Its documents are the files whose names end in `.yaml`, `.yml` or `.json` and that lie in
-    the directory itself, apart from the manifest. Nothing in a directory below it is read. A
-    package holds templates and contracts only: a package whose archive holds an instance
-    document is rejected when it is installed.
+    Its documents are the files whose names end in `.yaml`, `.yml` or `.json`, do not begin with
+    a dot, and lie in the directory itself, apart from the manifest. Nothing in a directory below
+    it is read. A package holds templates and contracts only: a package whose archive holds an
+    instance document is rejected when it is installed.
   observable: >-
     A project keeps the programs of its implementations, and any other file, in directories
     below its own. A file in the directory itself that has one of the three endings and holds
@@ -321,7 +327,17 @@
     package may not: installing registers nothing, under NAM-013, so an instance document in an
     archive could never be used, and installation returns a diagnostic naming it. The request to
     install reports invalid under PKG-023. A file with any other ending is not a document and is
-    not read. Documents in a directory below are another project, with a manifest of its own if
+    not read. Nor is a file whose name begins with a dot, such as `.notes.yaml`, or
+    `._templates.yaml`, which `tar` on macOS stores beside `templates.yaml` for its extended
+    attributes, as Terraform skips such a name when it reads a module. Names and endings are
+    compared exactly: the manifest is named `conduit.yaml`, `conduit.yml` or `conduit.json`, and
+    the endings are `.yaml`, `.yml` and `.json`, in lower case, so `Conduit.yaml` is a file of
+    documents and `notes.YAML` is not read. A link to a file is read as that file, and a link to
+    a directory is not entered. An entry whose name this promise reads and that cannot be read
+    as a regular file, such as a link that leads nowhere, a file that the engine may not read or
+    anything that is not a regular file, is rejected under SUB-010 and never skipped, so that a
+    link named `conduit.yaml` that leads nowhere does not leave the project read as one with no
+    manifest. Documents in a directory below are another project, with a manifest of its own if
     it uses packages.
   vectors: []
 

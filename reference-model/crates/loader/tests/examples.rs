@@ -1,9 +1,11 @@
 //! The done-when of increment 1 (docs/implementation/FIRST_BUILD.md), on the examples under
 //! `spec/schemas/examples/`: every document under `valid/` is accepted, each directory read as
 //! a project; every file under `invalid/` is rejected by the step its name gives, the verdict
-//! that `tools/check_schemas.py` gives it; and every document under `invalid-by-rule/` passes
-//! the schemas, since its rule comes with the core. The documents of the core package under
-//! `spec/core/` and `spec/schemas/` are valid too, as step 3 of `check_schemas.py` checks.
+//! that `tools/check_schemas.py` gives it, a rejection by a schema always under SUB-005; and
+//! every document under `invalid-by-rule/` passes the schemas, since its rule comes with the
+//! core, the rule of SCH-016 apart, which the loader applies. The documents of the core package
+//! under `spec/core/` and `spec/schemas/` are valid too, as step 3 of `check_schemas.py`
+//! checks. A file whose name begins with a dot is not read (MAN-011), here or by the tool.
 
 mod common;
 
@@ -153,26 +155,100 @@ fn every_invalid_example_is_rejected_by_the_step_its_name_gives() {
     }
 }
 
+/// What a document of a file under `invalid-by-rule/` is validated as, as `check_schemas.py`
+/// has it: a file named `-manifest-` holds a manifest, and in any other a document with no
+/// `kind` is the manifest of its set's project.
+fn by_rule_role(name: &str, document: &Document) -> Role {
+    if name.contains("-manifest-") || document.root.get("kind").is_none() {
+        Role::Manifest
+    } else {
+        Role::Document
+    }
+}
+
 #[test]
 fn every_invalid_by_rule_example_passes_the_schemas() {
     let files = files_in(&examples().join("invalid-by-rule"));
     assert!(!files.is_empty());
     for file in files {
-        let name = file.file_name().unwrap().to_string_lossy().into_owned();
+        let name = name_of(&file);
         let documents = read_file(&file).unwrap_or_else(|faults| panic!("{name}: {faults}"));
         for document in &documents {
-            // As check_schemas.py has it: a file named `-manifest-` holds a manifest, and in any
-            // other a document with no `kind` is the manifest of its set's project.
-            let role = if name.contains("-manifest-") || document.root.get("kind").is_none() {
-                Role::Manifest
-            } else {
-                Role::Document
-            };
             specification()
-                .validate(document, role)
+                .validate(document, by_rule_role(&name, document))
                 .unwrap_or_else(|fault| panic!("{name}: {fault}"));
         }
     }
+}
+
+/// SCH-016, as the coordinator settled finding 1-03: a schema whose pattern is not one of
+/// ECMA-262 makes the document that holds it rejected. Of the rules of `invalid-by-rule/`, it is
+/// the one the loader applies, in `Specification::check`, as reading a project does: each file
+/// there named for SCH-016 is rejected by it alone, and every other passes `check`, since its
+/// rule comes with the core.
+#[test]
+fn check_rejects_the_invalid_by_rule_examples_of_sch_016_alone() {
+    let mut named = 0;
+    for file in files_in(&examples().join("invalid-by-rule")) {
+        let name = name_of(&file);
+        let documents = read_file(&file).unwrap_or_else(|faults| panic!("{name}: {faults}"));
+        let mut found = Vec::new();
+        for document in &documents {
+            if let Err(faults) = specification().check(document, by_rule_role(&name, document)) {
+                found.extend(faults.rules());
+            }
+        }
+        if promise_of(&name) == rules::SCH_016 {
+            named += 1;
+            assert_eq!(found, vec![rules::SCH_016], "{name}");
+        } else {
+            assert_eq!(found, Vec::<&str>::new(), "{name}");
+        }
+    }
+    assert!(
+        named > 0,
+        "no file under invalid-by-rule/ is named for SCH-016"
+    );
+}
+
+/// MAN-011, as the coordinator settled finding 1-06: a name that begins with a dot is not read.
+/// A directory under `valid/` holds such a file, which would be rejected if it were read, and
+/// the project is accepted beside it.
+#[test]
+fn a_file_whose_name_begins_with_a_dot_is_not_read_in_a_valid_example() {
+    let mut found = 0;
+    for directory in directories_in(&examples().join("valid")) {
+        let project = read_project(&directory, specification())
+            .unwrap_or_else(|faults| panic!("{}: {faults}", directory.display()));
+        for entry in std::fs::read_dir(&directory).expect("a directory") {
+            let path = entry.expect("an entry").path();
+            let name = name_of(&path);
+            if !name.starts_with('.') || Syntax::of(&name).is_none() {
+                continue;
+            }
+            found += 1;
+            let rejected = match read_file(&path) {
+                Err(_) => true,
+                Ok(documents) => documents
+                    .iter()
+                    .any(|d| specification().validate(d, Role::Document).is_err()),
+            };
+            assert!(rejected, "{name} would be accepted if it were read");
+            let shown = path.display().to_string();
+            assert!(
+                project.documents.iter().all(|d| d.file != shown),
+                "{name} was read"
+            );
+            assert!(
+                project.manifest.as_ref().is_none_or(|m| m.file != shown),
+                "{name} was read"
+            );
+        }
+    }
+    assert!(
+        found > 0,
+        "no valid example holds a file whose name begins with a dot"
+    );
 }
 
 /// Each document written as JSON, as the array of a JSON file.

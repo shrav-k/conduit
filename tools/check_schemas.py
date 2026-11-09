@@ -5,10 +5,14 @@
 
 What it checks, and reports under these numbers:
 
-  1. Every YAML file under spec/core/ and spec/schemas/ is strict YAML as SCH-012, SCH-017,
+  1. Every file of documents under spec/core/ and spec/schemas/, which is one whose name ends
+     in `.yaml`, `.yml` or `.json` and does not begin with a dot (MAN-011), is UTF-8 (SUB-005)
+     and strict YAML, or strict JSON for a name that ends in `.json`, as SCH-012, SCH-017,
      SCH-006 and SCH-021 require: no duplicate key, anchor, alias, merge key, tag or key that
-     is not a string; no number without a JSON form; no whole number outside the I-JSON range;
-     and no other number outside the range of IEEE 754 binary64.
+     is not a string; no number without a JSON form; no whole number outside the I-JSON range,
+     nor a number with a fraction whose binary64 value is whole and outside it; and no other
+     number outside the range of IEEE 754 binary64. A JSON file whose value is an array holds
+     its items as documents, and any other holds its value as one document (SCH-018).
   2. Every Schema contract under spec/schemas/ and spec/core/ uses only the keywords and the
      formats that spec/schema-profile.md permits, places `default` only where SCH-008 accepts
      it, which is never inside `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else` or
@@ -19,8 +23,9 @@ What it checks, and reports under these numbers:
      written inside another document is checked through `schema.v1` in step 3, and a `$ref`
      in it that is not a pointer is resolved in step 5.
   3. Every document under spec/core/, spec/schemas/ and spec/schemas/examples/valid/ is valid
-     against `document.v1`, and every manifest (a file named conduit.yaml) against
-     `manifest.v1`, with a JSON Schema 2020-12 validator and format checking on.
+     against `document.v1`, and every manifest (a file named conduit.yaml, conduit.yml or
+     conduit.json) against `manifest.v1`, with a JSON Schema 2020-12 validator and format
+     checking on.
   4. Every document under spec/schemas/examples/invalid/ is rejected by a schema, or is
      rejected when its file is read, and its file is named for a promise that exists.
   5. The core package agrees with itself: every export in its manifest is a document of the
@@ -55,7 +60,9 @@ What it checks, and reports under these numbers:
      an implementation item read the items from the manifests of the core package and of the
      directories under examples/valid/, and from the set's own manifest where it has one.
      The rule for MAN-018 reads the names of the variables of `identity` from
-     spec/names.yaml, and compares them without regard to case.
+     spec/names.yaml, and compares them without regard to case. The rule for SCH-016 compiles
+     each pattern that a schema of a document writes with Python's `re`, as `ecma` translates
+     it, so it rejects only a pattern that ECMA-262 and `re` both reject (see `pattern_faults`).
      examples/valid/first-start/ writes out the documents that first start makes, which no
      submission may hold (FST-006), so the rule for FST-006 is not applied to it.
 
@@ -73,7 +80,8 @@ did not run.
 
 Where it reads otherwise than the specification, and why no verdict here depends on it. The
 strict loader in reference-model/ follows the specification in each, and the first build's log
-of increment 1 (docs/proposals/first-build/log-increment-1.md) lists them.
+of increment 1 (docs/proposals/first-build/log-increment-1.md) lists them. Where the two
+differ, this tool is not the reference, and no example may rely on a difference listed here.
 
   - `pattern` is evaluated by Python's `re`, not by an ECMA-262 engine (SCH-016). The patterns
     in these schemas use only syntax the two share, and two pieces of it that they read
@@ -90,11 +98,20 @@ of increment 1 (docs/proposals/first-build/log-increment-1.md) lists them.
     a plain scalar, a character outside YAML's printable set even inside quotes, a byte order
     mark before a later document and a key of more than 1024 characters in a flow mapping,
     each of which YAML 1.2.2 allows, and it reads a byte order mark inside a plain or a block
-    scalar, which YAML 1.2.2 does not allow there. No file here holds any of them.
+    scalar, which YAML 1.2.2 does not allow there. It also reads an escape of a surrogate,
+    `\\ud800`, alone or as one of a pair written as two escapes, as that code point, where the
+    profile has the file rejected (SUB-005): a surrogate that is not paired is not text, and a
+    YAML escape writes one code point. No file here holds any of them. The specification and
+    the loader follow YAML 1.2.2; this tool keeps PyYAML, so that the checks need no other
+    package.
+  - JSON is read by Python's `json`, which reads an escape of a surrogate that is not one of a
+    pair, `\\ud800`, as that code point, where the profile rejects the file (SUB-005). No file
+    here holds one.
 """
 import copy
 import decimal
 import ipaddress
+import json
 import os
 import pathlib
 import re
@@ -127,6 +144,11 @@ NAME = re.compile(r"^[a-z][a-z0-9-]*$")
 EXPORT = re.compile(r"^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$")
 VERSIONED = re.compile(r"^([a-z][a-z0-9-]*\.)+v[1-9][0-9]*$")
 LOCAL_REF = re.compile(r"^#([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)*)$")
+
+# The endings of a file of documents, and the names of a manifest, compared exactly (MAN-001,
+# MAN-011).
+ENDINGS = (".yaml", ".yml", ".json")
+MANIFEST_NAMES = ("conduit.yaml", "conduit.yml", "conduit.json")
 
 # Documents of the core package that it deliberately does not export. There is none: every
 # document of the core package is exported. A name listed here must be a document of the
@@ -199,6 +221,9 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # now rejects (CTR-002), and take the engine for an operation that the core package's `engine`
 # lists; and added engine-selected (TPL-003), for a template or a Type whose `implementation`
 # map selects an implementation for such an operation.
+# The coordinator's decision on finding 1-03 of the first build's log of increment 1
+# (docs/proposals/first-build/log-increment-1.md) added ecma-pattern (SCH-016), for a pattern
+# that a schema of a document writes and that is not a regular expression of ECMA-262.
 RULES = {
     "one-name": "NAM-027",
     "bound-once": "CON-028",
@@ -228,6 +253,7 @@ RULES = {
     "secret-header-https": "SEC-024",
     "changes-overlap": "CTR-006",
     "fixed-schemes": "PRV-016",
+    "ecma-pattern": "SCH-016",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -241,6 +267,26 @@ def fail(message):
 
 def rel(path):
     return pathlib.Path(path).relative_to(ROOT).as_posix()
+
+
+def is_manifest_file(path):
+    return path.name in MANIFEST_NAMES
+
+
+def files_of(directory, deep=False, endings=ENDINGS):
+    """The files under `directory` with one of these endings, in the directory itself or, where
+    `deep`, below it too, in order. A name that begins with a dot is not read, nor anything
+    below a directory whose name does, as MAN-011 has it; so not `.notes.yaml`, nor the
+    `._name` that `tar` on macOS stores beside a file."""
+    found = directory.rglob("*") if deep else directory.glob("*")
+    return sorted(p for p in found if p.is_file() and p.suffix in endings
+                  and not any(part.startswith(".") for part in p.relative_to(directory).parts))
+
+
+def text_of(path):
+    """The text of a file that is searched, not read as documents: a byte that is not UTF-8,
+    which step 1 rejects where it reads the file, is replaced."""
+    return pathlib.Path(path).read_bytes().decode("utf-8", errors="replace")
 
 
 # --- 1. Strict YAML: the YAML 1.2 core schema, narrowed as SCH-012 and SCH-017 require.
@@ -267,14 +313,19 @@ class StrictLoader(yaml.SafeLoader):
         return super().construct_mapping(node, deep)
 
 
-def _int(loader, node):
-    text = node.value
+def read_integer(text, at):
+    """A number in the form of a YAML integer, or a JSON number with no fraction or exponent.
+    `at` says where it is written, for a message."""
     if re.match(r"^0[ox]", text):
-        raise NotStrict(f"line {node.start_mark.line + 1}: {text} has no JSON form (SCH-017)")
+        raise NotStrict(f"{at}{text} has no JSON form (SCH-017)")
     value = int(text)
     if abs(value) > SAFE_INT:
-        raise NotStrict(f"line {node.start_mark.line + 1}: {text} is outside the range of SCH-006")
+        raise NotStrict(f"{at}{text} is outside the range of SCH-006")
     return value
+
+
+def _int(loader, node):
+    return read_integer(node.value, f"line {node.start_mark.line + 1}: ")
 
 
 # The largest finite IEEE 754 binary64 value, exactly: an integer of 309 digits (SCH-021).
@@ -293,31 +344,39 @@ def _decimal(text):
     return significant, int(exponent or 0) - len(fraction) + len(digits) - len(significant)
 
 
-def _float(loader, node):
-    """A number in the form of a YAML float. Whether it has a fractional part, and whether it
-    is in range, are read from the decimal value that it writes, as SCH-005, SCH-006 and
-    SCH-021 have them: `1.5e1` is a whole number, and a number with a fractional part a little
-    above the largest binary64 value is rejected, although it would round down to that value.
-    It is then read as the binary64 value nearest to it (SCH-020), which for `1e-400` is 0. The
-    first build's log of increment 1 records why it is read so."""
-    text = node.value
-    line = node.start_mark.line + 1
+def read_fraction(text, at):
+    """A number in the form of a YAML float, or a JSON number with a fraction or an exponent.
+    Whether it has a fractional part, and whether it is in range, are read from the decimal
+    value that it writes, as SCH-005, SCH-006 and SCH-021 have them: `1.5e1` is a whole number,
+    and a number with a fractional part a little above the largest binary64 value is rejected,
+    although it would round down to that value. It is then read as the binary64 value nearest
+    to it (SCH-020), which for `1e-400` is 0; and a value so read that is whole is held to the
+    range of SCH-006 too, so that `9007199254740993.5`, read as 9007199254740994, is rejected.
+    The first build's log of increment 1 records why it is read so. `at` says where it is
+    written, for a message."""
     if re.search(r"inf|nan", text, re.I):
-        raise NotStrict(f"line {line}: {text} has no JSON form (SCH-017)")
+        raise NotStrict(f"{at}{text} has no JSON form (SCH-017)")
     significant, scale = _decimal(text)
     whole_digits = len(significant) + scale
     largest_digits = len(str(LARGEST_BINARY64))
     if not significant or scale >= 0:
         if whole_digits > 16 or int(significant or "0") * 10 ** scale > SAFE_INT:
-            raise NotStrict(f"line {line}: {text} is outside the range of SCH-006")
+            raise NotStrict(f"{at}{text} is outside the range of SCH-006")
     elif whole_digits > largest_digits or (
             whole_digits == largest_digits
             and int(significant[:whole_digits]) >= LARGEST_BINARY64):
         # The fraction is not zero, so the number is greater than the largest value exactly
         # when its whole part is at least that value.
-        raise NotStrict(f"line {line}: {text} is outside the range of IEEE 754 binary64 "
-                        f"(SCH-021)")
-    return float(text)
+        raise NotStrict(f"{at}{text} is outside the range of IEEE 754 binary64 (SCH-021)")
+    value = float(text)
+    if value.is_integer() and abs(value) > SAFE_INT:
+        raise NotStrict(f"{at}{text} is read as the binary64 value {value:.0f}, which is whole "
+                        f"and outside the range of SCH-006")
+    return value
+
+
+def _float(loader, node):
+    return read_fraction(node.value, f"line {node.start_mark.line + 1}: ")
 
 
 for _tag, _pattern, _first in (
@@ -333,8 +392,19 @@ StrictLoader.add_constructor("tag:yaml.org,2002:float", _float)
 
 
 def load(path):
-    """Return the documents of one file, or raise NotStrict."""
-    text = pathlib.Path(path).read_text()
+    """Return the documents of one file, or raise NotStrict. The file is read as bytes and
+    decoded as UTF-8, the one encoding the profile allows, so that a file that is not UTF-8 is
+    rejected when it is read, with a message and not an exception (SUB-005). A name that ends
+    in `.json` is read as JSON, any other as YAML."""
+    data = pathlib.Path(path).read_bytes()
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as error:
+        line = data[:error.start].count(b"\n") + 1
+        raise NotStrict(f"line {line}: the byte 0x{data[error.start]:02X} is not UTF-8, and a "
+                        f"file that is not UTF-8 holds no document (SUB-005)")
+    if pathlib.Path(path).suffix == ".json":
+        return load_json(text)
     try:
         for event in yaml.parse(text, Loader=yaml.SafeLoader):
             line = event.start_mark.line + 1
@@ -347,6 +417,34 @@ def load(path):
         return [d for d in yaml.load_all(text, Loader=StrictLoader)]
     except yaml.YAMLError as error:
         raise NotStrict(str(error).replace("\n", " "))
+
+
+def load_json(text):
+    """The documents of a JSON text, read strictly, as SCH-013 has JSON mean what the equivalent
+    YAML means: two members with one key are rejected (SCH-012), each number is read from its
+    digits as a YAML number is, and `NaN` and `Infinity`, and a byte order mark, are not JSON.
+    A value that is an array holds its items as documents, and any other value is one document,
+    which the schemas then judge (SCH-018)."""
+    def members(pairs):
+        seen = set()
+        for key, _ in pairs:
+            if key in seen:
+                raise NotStrict(f"duplicate key {key!r}")
+            seen.add(key)
+        return dict(pairs)
+
+    def constant(name):
+        raise NotStrict(f"not JSON: {name}")
+
+    try:
+        value = json.loads(text, object_pairs_hook=members, parse_constant=constant,
+                           parse_int=lambda t: read_integer(t, ""),
+                           parse_float=lambda t: read_fraction(t, ""))
+    except json.JSONDecodeError as error:
+        raise NotStrict(f"not JSON: {error}")
+    except RecursionError:
+        raise NotStrict("not read: values nested too deep")
+    return value if isinstance(value, list) else [value]
 
 
 # --- The names and the profile, read from the specification itself.
@@ -805,7 +903,7 @@ def kinds_in(files):
         for doc in docs:
             if not isinstance(doc, dict):
                 continue
-            if path.name == "conduit.yaml":
+            if is_manifest_file(path):
                 for name in (doc.get("implementations") or {}):
                     if name in out:
                         twice.append(name)
@@ -821,7 +919,7 @@ def kinds_in(files):
 def contents(files):
     """name -> document, for every template and contract in these files."""
     return {named(doc): doc for path, docs in files for doc in docs
-            if isinstance(doc, dict) and path.name != "conduit.yaml" and "from" not in doc}
+            if isinstance(doc, dict) and not is_manifest_file(path) and "from" not in doc}
 
 
 def members_of(body, key):
@@ -1334,6 +1432,46 @@ def secret_faults(schema, secret):
     return out
 
 
+# Syntax of ECMA-262 in Unicode mode that Python's `re` lacks, or takes only in part: a
+# property escape, `\u{...}`, a named group, a reference to one, `\c` and a letter, a
+# lookbehind, which `re` takes only of fixed width, and the empty classes `[]` and `[^]`. The
+# rule for SCH-016 does not judge a pattern that holds any of them.
+ECMA_ONLY = re.compile(r"\\[pPkc]|\\u\{|\(\?<|\[\^?\]")
+
+
+def pattern_faults(schema):
+    """Each `pattern`, and each key of `patternProperties`, in a schema that is not a regular
+    expression of ECMA-262 (SCH-016), as (place, pattern, why). It is judged by Python's `re`,
+    on the pattern as `ecma` translates it: one that `re` cannot compile is not one of ECMA-262.
+    The two engines read some patterns otherwise, so this catches only a pattern that both
+    reject, such as `[z-a]`, a class whose range runs backwards, or `a(`. A pattern that
+    ECMA-262 rejects and `re` takes, such as `(?P<x>a)` or `a{`, is not caught, and one that
+    holds syntax of ECMA_ONLY is not judged. The strict loader in reference-model/ checks every
+    pattern by ECMA-262 itself."""
+    out = []
+
+    def visit(node, at):
+        if not isinstance(node, dict):
+            return
+        written = []
+        if isinstance(node.get("pattern"), str):
+            written.append((f"{at}/pattern", node["pattern"]))
+        if isinstance(node.get("patternProperties"), dict):
+            written += [(f"{at}/patternProperties/{key}", key)
+                        for key in node["patternProperties"]]
+        for where, pattern in written:
+            if ECMA_ONLY.search(pattern):
+                continue
+            try:
+                re.compile(ecma(pattern))
+            except re.error as error:
+                out.append((where, pattern, str(error)))
+        for keyword, token, sub in subschemas(node):
+            visit(sub, f"{at}/{keyword}" + ("" if token is None else f"/{token}"))
+    visit(schema, "")
+    return out
+
+
 def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, items=None,
                 first_start=False):
     """Return (rule, message) for each rule of RULES that one set of documents breaks. The set
@@ -1701,6 +1839,22 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                                   f"`secret-reference.v1` at {where}, under an applicator or "
                                   f"beside a branch where it may not stand"))
 
+    # ecma-pattern (SCH-016): every `pattern`, and every key of `patternProperties`, in a
+    # schema that a document of the set writes is a regular expression of ECMA-262 in Unicode
+    # mode. Applied with Python's `re`, as `pattern_faults` says, so only a pattern that both
+    # engines reject is caught.
+    for doc in docs:
+        role = role_of(doc, False)
+        for kind, path in SCHEMA_PLACES:
+            if kind != role:
+                continue
+            for at, schema in places(doc, path):
+                for where, pattern, why in pattern_faults(schema):
+                    found.append(("ecma-pattern",
+                                  f"{named(doc)}: the pattern {pattern!r} at {at}{where} is "
+                                  f"not a regular expression of ECMA-262, nor of Python's "
+                                  f"`re`: {why}"))
+
     # provider-family (PRV-001): a Type that offers a provider capability is of the family
     # Resource and offers no other provider capability.
     for doc in docs:
@@ -1878,14 +2032,14 @@ def main():
             fail(f"tools/check_schemas.py: the rule {rule} is named for {promise}, which is "
                  f"not a promise that exists")
 
-    # 1. Strict YAML.
+    # 1. Strict YAML and JSON, in UTF-8. A name that begins with a dot is not read (MAN-011).
     loaded = {}
     groups = {
-        "schemas": sorted(schema_dir.glob("*.yaml")),
-        "core": sorted(core_dir.glob("*.yaml")),
-        "valid": sorted(valid_dir.rglob("*.yaml")),
-        "invalid": sorted(invalid_dir.rglob("*.yaml")),
-        "by-rule": sorted(by_rule_dir.rglob("*.yaml")),
+        "schemas": files_of(schema_dir),
+        "core": files_of(core_dir),
+        "valid": files_of(valid_dir, deep=True),
+        "invalid": files_of(invalid_dir, deep=True),
+        "by-rule": files_of(by_rule_dir, deep=True),
     }
     for group, paths in groups.items():
         for path in paths:
@@ -1895,9 +2049,10 @@ def main():
                 if group == "invalid":
                     loaded[path] = problem
                 else:
-                    fail(f"{rel(path)}: not strict YAML: {problem}")
+                    fail(f"{rel(path)}: not read strictly: {problem}")
     count = sum(len(v) for v in loaded.values() if isinstance(v, list))
-    print(f"1. Read {len(loaded)} files holding {count} documents as strict YAML.")
+    print(f"1. Read {len(loaded)} files holding {count} documents as UTF-8 and as strict YAML or "
+          f"JSON.")
 
     # 2. The profile.
     schemas = {}
@@ -1940,7 +2095,7 @@ def main():
         for path in groups[group]:
             for index, doc in enumerate(loaded.get(path, [])):
                 checked += 1
-                why = validate(bundled, doc, path.name == "conduit.yaml")
+                why = validate(bundled, doc, is_manifest_file(path))
                 if why:
                     fail(f"{rel(path)} document {index + 1}: not valid: {why}")
                 if isinstance(doc, dict) and doc.get("apiVersion") != named_values["apiVersion"]:
@@ -1980,7 +2135,7 @@ def main():
     for name in twice:
         fail(f"core package: an implementation and something else are both named {name} "
              f"({CLASH})")
-    manifest = next((d[0] for p, d in core_files if p.name == "conduit.yaml" and d), {})
+    manifest = next((d[0] for p, d in core_files if is_manifest_file(p) and d), {})
     exports = list(manifest.get("exports") or [])
     documents = {n for n, k in core_kinds.items() if k != "implementation"}
     for name in sorted(n for n in exports if exports.count(n) > 1):
@@ -2022,10 +2177,10 @@ def main():
         for name in twice:
             fail(f"{rel(directory)}: an implementation and something else are both named "
                  f"{name} ({CLASH})")
-        held = [d for p, ds in files if p.name != "conduit.yaml" for d in ds]
+        held = [d for p, ds in files if not is_manifest_file(p) for d in ds]
         has_contract = any(isinstance(d, dict) and d.get("kind") in CONTRACTS for d in held)
         manifests = [ds[0] for p, ds in files
-                     if p.name == "conduit.yaml" and ds and isinstance(ds[0], dict)]
+                     if is_manifest_file(p) and ds and isinstance(ds[0], dict)]
         if has_contract and not manifests:
             fail(f"{rel(directory)}: holds a contract and has no manifest, so it states no "
                  f"`address` (MAN-015)")
@@ -2085,7 +2240,7 @@ def main():
                               package_docs, core)
     for directory, files in by_dir.items():
         address = next((d[0].get("address") for p, d in files
-                        if p.name == "conduit.yaml" and d and isinstance(d[0], dict)), None)
+                        if is_manifest_file(p) and d and isinstance(d[0], dict)), None)
         if address:
             controls += check_controls(rel(directory), [d for _, ds in files for d in ds],
                                        package_docs, address)
@@ -2094,32 +2249,31 @@ def main():
     for path, docs in core_files:
         for doc in docs:
             if isinstance(doc, dict):
-                role = role_of(doc, path.name == "conduit.yaml")
+                role = role_of(doc, is_manifest_file(path))
                 for _, message in check_references(role, doc, packages, core_kinds, counts):
                     fail(f"{rel(path)}: {message}")
     for directory, files in by_dir.items():
         for path, docs in files:
             for doc in docs:
                 if isinstance(doc, dict):
-                    role = role_of(doc, path.name == "conduit.yaml")
+                    role = role_of(doc, is_manifest_file(path))
                     for _, message in check_references(role, doc, packages, local[directory],
                                                        counts):
                         fail(f"{rel(path)}: {message}")
     used = set()
     for path in list(loaded):
-        used.update(re.findall(re.escape(core) + r"#([a-z0-9.-]*[a-z0-9])", path.read_text()))
+        used.update(re.findall(re.escape(core) + r"#([a-z0-9.-]*[a-z0-9])", text_of(path)))
     for name in sorted(used - set(core_kinds)):
         fail(f"a file refers to {core}#{name}, which the core package does not hold")
 
     # Every promise cited by the files this tool covers exists. The prefix of a promise file
     # that a ruling removed is looked for too, so that no citation of one of its IDs remains.
     prefixes = "|".join(sorted({p.split("-")[0] for p in promises} | set(REMOVED_PREFIXES)))
-    cited_in = [p for p in list(core_dir.rglob("*")) + list(schema_dir.rglob("*"))
-                if p.is_file() and p.suffix in (".yaml", ".md")]
+    cited_in = [p for d in (core_dir, schema_dir) for p in files_of(d, True, ENDINGS + (".md",))]
     cited_in.append(ROOT / "spec" / "promises" / "manifest.yaml")
     cited = 0
     for path in cited_in:
-        text = path.read_text()
+        text = text_of(path)
         if path.parent.name == "promises":
             # A promise file's head comment names the IDs that rulings removed from it, as
             # each must be named there; only its promises are read for citations.
@@ -2139,13 +2293,13 @@ def main():
 
     # 6. Rules that no schema can express.
     checker = Defaults() if validating else None
-    core_docs = [d for p, ds in core_files if p.name != "conduit.yaml" for d in ds]
+    core_docs = [d for p, ds in core_files if not is_manifest_file(p) for d in ds]
     sets = [("the core package", core_docs, True,
              checker.add(core, core_docs) if checker else None)]
     for directory, files in by_dir.items():
-        docs = [d for p, ds in files if p.name != "conduit.yaml" for d in ds]
+        docs = [d for p, ds in files if not is_manifest_file(p) for d in ds]
         address = next((d[0].get("address") for p, d in files
-                        if p.name == "conduit.yaml" and d and isinstance(d[0], dict)), None)
+                        if is_manifest_file(p) and d and isinstance(d[0], dict)), None)
         sets.append((rel(directory), docs, False,
                      checker.add(address, docs) if checker else None))
     if checker:
@@ -2159,9 +2313,9 @@ def main():
             fail(f"{label}: {message} ({RULES[rule]})")
     for directory, files in by_dir.items():
         holds_contract = any(isinstance(d, dict) and d.get("kind") in CONTRACTS
-                             for p, ds in files if p.name != "conduit.yaml" for d in ds)
+                             for p, ds in files if not is_manifest_file(p) for d in ds)
         for path, docs in files:
-            if path.name == "conduit.yaml":
+            if is_manifest_file(path):
                 for doc in docs:
                     for rule, message in manifest_rules(doc, core, holds_contract):
                         fail(f"{rel(path)}: {message} ({RULES[rule]})")
@@ -2175,7 +2329,7 @@ def main():
             continue
         docs = loaded.get(path)
         if not isinstance(docs, list):
-            continue                       # not strict YAML: already reported in step 1
+            continue                       # not read strictly: already reported in step 1
         if checker is None and all(rule in NEED_VALIDATOR
                                    for rule, named_for in RULES.items() if named_for == promise):
             not_run += 1

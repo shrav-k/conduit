@@ -33,17 +33,28 @@ finding whose fix adds or removes a feature, or changes what Conduit is for, goe
 and the log records what the build assumed in the meantime.
 
 A log marks each finding as fixed, with its vector, or as left for the owner, with the build's
-reading. Ruling 46 lets the coordinator settle more than the log of increment 1 settles: only a
-fix that adds or removes a feature, or changes what Conduit is for, must go to the owner. For
-increment 1 the coordinator chose, in its brief, to fix in the increment's pull request only
-what was clear, changed no behavior that a ruling settled and could be shown by a vector that
-the checks run, and to put every other finding to the owner with a recommendation, though most
-of them add or remove no feature. Each of those fixes chooses between readings that the text
-leaves open, or narrows what an engine accepts, and this is the first time the promises are read
-in order to build them. The owner may hand any of them back to the coordinator to settle.
+reading. The coordinator settled all thirteen findings of increment 1 under ruling 46, point 4,
+in the increment's pull request: none adds or removes a feature or changes what Conduit is for.
+Each is logged as the coordinator's own decision, and the owner can strike it.
 
 ## The logs
 
 | Increment | Log | Findings |
 | --- | --- | --- |
-| 1, the strict loader (A43) | [log-increment-1.md](log-increment-1.md) | Thirteen: three defects of a tool, two fixed with vectors and one stated in the tool, and ten for the owner |
+| 1, the strict loader (A43) | [log-increment-1.md](log-increment-1.md) | Thirteen, all settled by the coordinator: three defects of a tool, two fixed with vectors and one stated in the tool; and ten against the promises, nine fixed in them, each with a vector, and one kept as written |
+
+## Noted for later increments
+
+What one increment found that a later one must meet. None is a finding against the promises
+yet.
+
+- **The token that Codex sends, for increment 3.** Codex 0.167.0, one of S1's Agents, takes the
+  bearer token of an MCP server that it reaches over HTTP from a variable of its environment:
+  `codex mcp add NAME --url URL --bearer-token-env-var VAR`, or the same setting in its
+  configuration. The engine gives a run its token as a file: under PRV-022 and DL13, `identity`
+  holds the engine's address in the variable `CONDUIT_URL`, and the token in the file `token` of
+  the directory that the variable `CONDUIT_IDENTITY_DIR` names, as the names under `identity` in
+  [spec/names.yaml](../../../spec/names.yaml) fix them. So increment 3 needs a step that starts
+  Codex with the content of that file in a variable. The author writes it so that one tool fits
+  another, so it counts as an adapter in the author measurements of
+  [the first build](../../implementation/FIRST_BUILD.md#measures).

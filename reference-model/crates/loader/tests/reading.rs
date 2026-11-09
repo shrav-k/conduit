@@ -193,6 +193,11 @@ fn numbers_out_of_range_are_rejected() {
         ("1e16", rules::SCH_006),
         ("1e400", rules::SCH_006),
         ("1.5e300", rules::SCH_006),
+        // Written with a fraction, and read as a binary64 value that is whole and outside the
+        // range: no integer outside it is read (SCH-006, SCH-020).
+        ("9007199254740993.5", rules::SCH_006),
+        ("-9007199254740993.5", rules::SCH_006),
+        ("9007199254740991.5", rules::SCH_006),
         (&format!("{largest}.5") as &str, rules::SCH_021),
     ] {
         let fault = rejected(yaml(&format!("a: {text}\n")), rule, text);
@@ -237,6 +242,24 @@ fn a_number_is_read_by_its_value() {
     assert_eq!(json_value(r#"{"a": 15.5}"#), Value::Float(15.5));
     assert_eq!(yaml_value("a: 1.\n"), Value::Integer(1));
     assert_eq!(yaml_value("a: -0\n"), Value::Integer(0));
+    // SCH-020 and SCH-006: a binary64 value read from a number written with a fraction, and
+    // that has no fractional part, is an integer within the range.
+    for (text, whole) in [
+        ("0.99999999999999999999", 1),
+        ("1e-400", 0),
+        ("9007199254740990.5", 9_007_199_254_740_990),
+    ] {
+        assert_eq!(
+            yaml_value(&format!("a: {text}\n")),
+            Value::Integer(whole),
+            "{text}"
+        );
+        assert_eq!(
+            json_value(&format!("{{\"a\": {text}}}")),
+            Value::Integer(whole),
+            "{text}"
+        );
+    }
 }
 
 #[test]
@@ -356,8 +379,8 @@ fn values_nest_no_deeper_than_the_limit() {
     let maps = |depth: usize| format!("{}1{}", r#"{"a": "#.repeat(depth), "}".repeat(depth));
     assert!(yaml(&lists(MAX_DEPTH)).is_ok());
     assert!(json(&maps(MAX_DEPTH)).is_ok());
-    rejected(yaml(&lists(MAX_DEPTH + 1)), rules::DL10, "YAML");
-    rejected(json(&maps(MAX_DEPTH + 1)), rules::DL10, "JSON");
+    rejected(yaml(&lists(MAX_DEPTH + 1)), rules::SUB_011, "YAML");
+    rejected(json(&maps(MAX_DEPTH + 1)), rules::SUB_011, "JSON");
     // Block style, by indentation, is held to the same limit.
     let block = |depth: usize| {
         (0..depth)
@@ -365,10 +388,10 @@ fn values_nest_no_deeper_than_the_limit() {
             .collect::<String>()
     };
     assert!(yaml(&block(MAX_DEPTH)).is_ok());
-    rejected(yaml(&block(MAX_DEPTH + 1)), rules::DL10, "block YAML");
+    rejected(yaml(&block(MAX_DEPTH + 1)), rules::SUB_011, "block YAML");
     // Far deeper input is rejected as a value, and does not exhaust the stack.
-    rejected(yaml(&lists(100_000)), rules::DL10, "YAML");
-    rejected(json(&maps(100_000)), rules::DL10, "JSON");
+    rejected(yaml(&lists(100_000)), rules::SUB_011, "YAML");
+    rejected(json(&maps(100_000)), rules::SUB_011, "JSON");
 }
 
 /// SCH-013: the JSON form and the YAML form of one document read as the same values.
@@ -440,6 +463,64 @@ fn characters_that_yaml_does_not_allow_are_rejected() {
         json("{\"a\": \"x\u{1}y\"}"),
         rules::SUB_005,
         "a C0 control in JSON",
+    );
+}
+
+/// The schema profile's row for I-JSON: of its rules only two apply, no duplicate keys and whole
+/// numbers in range. A noncharacter may stand in a string. A surrogate that is not one of a pair
+/// is not text, so the file is not YAML or JSON (SUB-005); a YAML escape writes one code point,
+/// so a pair written as two escapes is two such surrogates, where JSON reads it as one
+/// character.
+#[test]
+fn of_i_json_only_two_rules_apply_to_strings() {
+    // A noncharacter, written out or escaped, in either syntax.
+    for (text, value) in [
+        ("a: x\u{fdd0}y\n", "x\u{fdd0}y"),
+        ("a: \"x\u{fdd0}y\"\n", "x\u{fdd0}y"),
+        (
+            "a: \"\\uFDD0\\uFFFF\\U0010FFFF\"\n",
+            "\u{fdd0}\u{ffff}\u{10ffff}",
+        ),
+        ("a: 'x\u{ffff}y'\n", "x\u{ffff}y"),
+    ] {
+        assert_eq!(yaml_value(text), string(value), "{text:?}");
+    }
+    for (text, value) in [
+        ("{\"a\": \"x\u{fdd0}y\"}", "x\u{fdd0}y"),
+        (
+            r#"{"a": "\ufdd0\uffff\udbff\udfff"}"#,
+            "\u{fdd0}\u{ffff}\u{10ffff}",
+        ),
+    ] {
+        assert_eq!(json_value(text), string(value), "{text:?}");
+    }
+    // A surrogate that is not one of a pair, escaped, is not text.
+    for text in [
+        r#"{"a": "\ud800"}"#,
+        r#"{"a": "\udc00"}"#,
+        r#"{"a": "x\ud83dy"}"#,
+        r#"{"a": "\ude00\ud83d"}"#,
+        r#"{"\ud800": 1}"#,
+    ] {
+        rejected(json(text), rules::SUB_005, text);
+    }
+    for text in [r#"a: "\ud800""#, r#"a: "\udc00""#, r#""\ud800": 1"#] {
+        rejected(yaml(text), rules::SUB_005, text);
+    }
+    // In YAML an escape writes one code point, so a pair written as two escapes is rejected;
+    // the character is written with one escape. In JSON the pair is one character.
+    rejected(
+        yaml(r#"a: "\ud83d\ude00""#),
+        rules::SUB_005,
+        "an escaped pair in YAML",
+    );
+    assert_eq!(yaml_value(r#"a: "\U0001F600""#), string("\u{1f600}"));
+    assert_eq!(json_value(r#"{"a": "\ud83d\ude00"}"#), string("\u{1f600}"));
+    // Encoded in the file, a surrogate is not UTF-8.
+    rejected(
+        read_bytes(Syntax::Yaml, b"a: \"\xed\xa0\x80\"\n"),
+        rules::SUB_005,
+        "an encoded surrogate",
     );
 }
 

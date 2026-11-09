@@ -50,6 +50,12 @@ fn the_role_of_a_file_is_given_by_its_name() {
         "templates.YAML",
         "conduit.toml",
         "yaml",
+        // A name that begins with a dot is not read, whatever its ending (MAN-011).
+        ".notes.yaml",
+        "._templates.yaml",
+        ".conduit.yaml",
+        ".yaml",
+        ".json",
     ] {
         assert_eq!(FileRole::of(name), FileRole::NotRead, "{name}");
     }
@@ -182,6 +188,40 @@ fn a_file_with_any_other_ending_is_not_read() {
     fs::write(root.join("binary.bin"), [0xff, 0xfe, 0x00]).expect("a file");
     let project = read_project(root, specification()).unwrap_or_else(|faults| panic!("{faults}"));
     assert_eq!(project.documents.len(), 1);
+}
+
+/// MAN-011: a name that begins with a dot is not read, so neither the files that editors and
+/// other tools leave nor the `._name` that `tar` on macOS stores beside each file is one of the
+/// project's documents, and none of them can be rejected.
+#[test]
+fn a_name_that_begins_with_a_dot_is_not_read() {
+    let directory = tempfile::tempdir().expect("a directory");
+    let root = directory.path();
+    write(root, "conduit.yaml", &manifest());
+    write(root, "templates.yaml", &interface("console"));
+    // Each of these would be rejected if it were read.
+    write(root, ".notes.yaml", "notes: not a document\n");
+    write(root, ".conduit.yml", "a: b: c\n");
+    write(root, ".draft.json", "{");
+    // What `tar` on macOS stores for the extended attributes of `templates.yaml`: binary, and
+    // not UTF-8.
+    fs::write(
+        root.join("._templates.yaml"),
+        [0x00, 0x05, 0x16, 0x07, 0x00, 0x02, 0x00, 0x00, 0xff, 0xfe],
+    )
+    .expect("a file");
+    let project = read_project(root, specification()).unwrap_or_else(|faults| panic!("{faults}"));
+    assert!(project.manifest.is_some());
+    assert_eq!(project.documents.len(), 1);
+    // The same files handed over without a directory are read by the same rule.
+    let submitted = submit(&[
+        ("templates.yaml", &interface("console")),
+        (".notes.yaml", "notes: not a document\n"),
+        (".conduit.yaml", "a: b: c\n"),
+    ])
+    .unwrap_or_else(|faults| panic!("{faults}"));
+    assert_eq!(submitted.documents.len(), 1);
+    assert!(submitted.manifest.is_none());
 }
 
 #[test]
@@ -331,6 +371,10 @@ fn a_link_is_followed_and_one_that_leads_nowhere_is_rejected() {
     )
     .expect("a link");
     symlink(elsewhere.path().join("below"), root.join("folder.yaml")).expect("a link");
+    let project = read_project(root, specification()).unwrap_or_else(|faults| panic!("{faults}"));
+    assert_eq!(project.documents.len(), 1);
+    // A link whose name begins with a dot is not read, and so not followed, wherever it leads.
+    symlink(root.join("nowhere.yaml"), root.join(".hidden.yaml")).expect("a link");
     let project = read_project(root, specification()).unwrap_or_else(|faults| panic!("{faults}"));
     assert_eq!(project.documents.len(), 1);
     symlink(root.join("nowhere.yaml"), root.join("conduit.yaml")).expect("a link");

@@ -1,0 +1,14 @@
+# Example. It must be rejected when it is read:
+# every file is UTF-8, as the schema profile says, and a file that is not holds no document
+# and is rejected (SUB-005). The description below holds the byte 0xE9, which is the letter e
+# with an acute accent in Latin-1 and is not UTF-8, in which that letter is the two bytes 0xC3
+# 0xA9. Read as Latin-1, the document would be valid. The first build's log of increment 1
+# (docs/proposals/first-build/log-increment-1.md) added it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: console
+  description: The console of the café downstairs.
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1

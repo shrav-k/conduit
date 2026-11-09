@@ -119,6 +119,11 @@
 # (docs/proposals/reaudit/round-6/log-integration.md, "Verification") added to DL10 that a
 # repeat that OPS-024 dispatches does not report conflict once outputs are no longer kept
 # (R-06).
+# The coordinator's decision on finding 1-11 of increment 1 of the first build, under ruling
+# 46, point 4 (docs/proposals/first-build/log-increment-1.md), had DL10 name, among sizes and
+# counts, those of a document, such as how deeply its values may nest, past which a document
+# is rejected under SUB-011, which it added to promises/submissions.yaml. It added none and
+# removed none. The owner can strike it.
 
 - id: DL1
   subject: Order of a Pool's Resources
@@ -181,12 +186,13 @@
 - id: DL10
   subject: Limits
   document: >-
-    Sizes, counts, the `ttlMs` of a tool list that the engine serves, under IFC-038, the time
-    allowed for a call, a retire hook's among them, after which its part ends unknown and the
-    stop is asked for under TPL-009; how long the outputs of a succeeded invocation, other than
-    one whose outcome a reconciliation set, are kept for a repeat under OPS-009, after which a
-    repeat reports conflict under OPS-034, unless OPS-024 dispatches it; and behavior when
-    storage is exhausted.
+    Sizes and counts, among them those of a document, such as how deeply its values may nest,
+    past which the document is rejected under SUB-011; the `ttlMs` of a tool list that the
+    engine serves, under IFC-038; the time allowed for a call, a retire hook's among them, after
+    which its part ends unknown and the stop is asked for under TPL-009; how long the outputs of
+    a succeeded invocation, other than one whose outcome a reconciliation set, are kept for a
+    repeat under OPS-009, after which a repeat reports conflict under OPS-034, unless OPS-024
+    dispatches it; and behavior when storage is exhausted.
 - id: DL12
   subject: Protocol revisions, `content`, `Origin` and the schemas of tools
   document: >-

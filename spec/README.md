@@ -9,8 +9,13 @@ unsafe in it (ruling 38, point 4).
 
 This page describes the specification as it stands now. How it came to stand so, ruling by
 ruling, and where the record of each decision is, are under [History](#history) at the end.
-The latest change is [ruling 45](../docs/proposals/ruling-45/README.md), of 2026-11-09, which
-added six [core terms](definitions.md#core-terms) to the definitions. Before it,
+The latest change is the coordinator's settling of the findings of increment 1 of the first
+build, under [ruling 46](../docs/proposals/ruling-46/README.md), point 4, of 2026-11-09, which
+the [log of increment 1](../docs/proposals/first-build/log-increment-1.md) lists and the owner
+can strike: it changed SCH-006, SCH-016, SCH-018, SCH-020, SUB-005, SUB-010, MAN-011, DL10 and
+the [schema profile](schema-profile.md), and added SUB-011. Before it,
+[ruling 45](../docs/proposals/ruling-45/README.md), of the same day, added six
+[core terms](definitions.md#core-terms) to the definitions, and
 [ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, settled
 [round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit.
 
@@ -184,7 +189,7 @@ says what the promises leave open.
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; no vectors |
 | [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 22 promises; no vectors |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, `conduit.yml` or `conduit.json`, its keys, implementation items, which variables of a run they may not bind, which files of a project are its documents, and the layout of a package's archive | Draft; 17 promises; no vectors |
-| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, and that every engine takes a directory | Draft; 10 promises; no vectors |
+| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, that every engine takes a directory, and a document beyond a limit that the engine states | Draft; 11 promises; no vectors |
 | [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 15 promises; no vectors |
 | [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: nodes, machines, labels and placement by the provider, and values tied to a node | Draft; 21 promises; no vectors |
 | [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 22 promises; no vectors |
@@ -209,9 +214,9 @@ says what the promises leave open.
 | [schemas/schema.yaml](schemas/schema.yaml) | `schema.v1`: the schema profile written as a schema | Draft; 1 contract |
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item; and `server-package.v1` and `server-remote.v1`: a Package and a Remote of server.json | Draft; 4 contracts |
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions, digests, IDs, revisions and label selectors | Draft; 13 contracts |
-| [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
-| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 59 files |
-| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 36 files |
+| [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 7 files of documents in 3 directories, and one file whose name begins with a dot, which is not read |
+| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 62 files |
+| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 37 files |
 | [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes, and the expected ID that a lifecycle action may carry | Draft; 36 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 29 promises; no vectors |
 | [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 31 promises; no vectors |
@@ -222,7 +227,7 @@ says what the promises leave open.
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 44 promises; no vectors |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 15 items |
 
-Every area has been written as promises, 454 in all: 202 of the layer `language`, 208 of the
+Every area has been written as promises, 455 in all: 203 of the layer `language`, 208 of the
 layer `convention` and 44 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
 `schemas/`, `core/` and `promises/manifest.yaml`. Still to come: the conformance vectors, and a
@@ -459,9 +464,9 @@ python3 tools/check_docs.py          # links, in every Markdown file of the repo
 ```
 
 The first three read `spec/`. The first checks that every file under `spec/` writes the names
-of [names.yaml](names.yaml) as that file states them. The second reads every file under `core/`
-and `schemas/` as strict YAML, checks every schema against
-[schema-profile.md](schema-profile.md), validates every document of the core package and
+of [names.yaml](names.yaml) as that file states them. The second reads every file of
+documents under `core/` and `schemas/` as UTF-8 and as strict YAML or JSON, checks every schema
+against [schema-profile.md](schema-profile.md), validates every document of the core package and
 every valid example against the schemas, checks that every invalid example is rejected, checks
 the references among those files, and applies a few of the rules that no schema can express,
 among them that a `default` satisfies its schema (SCH-019). It needs PyYAML and jsonschema,

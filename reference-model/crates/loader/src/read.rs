@@ -18,8 +18,8 @@ pub enum Syntax {
 
 impl Syntax {
     /// The syntax of a file by its name, or none for a name with any other ending, which is not
-    /// a document and is not read (MAN-011). The ending is compared as written, so `.YAML` is
-    /// another ending.
+    /// a document and is not read (MAN-011). The ending is compared exactly, as MAN-011 says, so
+    /// `.YAML` is another ending.
     pub fn of(name: &str) -> Option<Syntax> {
         if name.ends_with(".yaml") || name.ends_with(".yml") {
             Some(Syntax::Yaml)
@@ -68,8 +68,9 @@ pub(crate) fn content(syntax: Syntax, text: &str) -> Result<Content, Diagnostics
     }
 }
 
-/// The text of a file's bytes. The loader reads UTF-8, the encoding I-JSON requires
-/// (RFC 7493, section 2.1); the profile names no other, and YAML's others are not read.
+/// The text of a file's bytes. Every file is UTF-8, as the schema profile says and as I-JSON
+/// requires (RFC 7493, section 2.1), and YAML's other encodings are not read: a file that is
+/// not UTF-8 holds no document, and is rejected under SUB-005.
 pub(crate) fn text_of(bytes: &[u8]) -> Result<&str, Diagnostic> {
     std::str::from_utf8(bytes).map_err(|error| {
         let valid = &bytes[..error.valid_up_to()];

@@ -148,6 +148,17 @@ def derive(args: argparse.Namespace, old: dict[str, str]) -> dict[str, str]:
     return new
 
 
+def read(p: pathlib.Path) -> str:
+    """The text of a file as UTF-8. A byte that is not UTF-8, as in the example under
+    spec/schemas/examples/invalid/ that shows such a file rejected (SUB-005), is kept as it is,
+    so that a file written back holds the same bytes but for the names changed."""
+    return p.read_text(encoding="utf-8", errors="surrogateescape")
+
+
+def write_back(p: pathlib.Path, text: str) -> None:
+    p.write_text(text, encoding="utf-8", errors="surrogateescape")
+
+
 def files(roots: list[str]) -> list[pathlib.Path]:
     out = []
     for r in roots:
@@ -223,7 +234,7 @@ def check(roots: list[str]) -> int:
     for p in files(roots):
         if p == NAMES:
             continue
-        text = p.read_text()
+        text = read(p)
         rel = p.relative_to(ROOT)
         for k in seen:
             seen[k] += text.count(names[k])
@@ -273,7 +284,7 @@ def change(new: dict[str, str], roots: list[str], write: bool) -> int:
         print(f"  {o}  ->  {n}")
     total = 0
     for p in files(roots):
-        text = p.read_text()
+        text = read(p)
         out = text
         if p == NAMES:
             continue
@@ -297,7 +308,7 @@ def change(new: dict[str, str], roots: list[str], write: bool) -> int:
             total += hits
             print(f"{'rewrote' if write else 'would rewrite'} {p.relative_to(ROOT)} ({hits})")
             if write:
-                p.write_text(out)
+                write_back(p, out)
     if write:
         text = NAMES.read_text()
         for k in KEYS + IDENTITY_KEYS:

@@ -1,5 +1,6 @@
-//! Every rule the loader's rejections rest on is one the specification defines: a promise
-//! under `spec/`, or an item of the implementation-defined list.
+//! Every rule the loader's rejections rest on is a promise that the specification defines,
+//! written as a diagnostic's `ruleId` is: `diagnostic.v1` holds it to the pattern
+//! `^[A-Z]+-[0-9]{3}$`, so an item of the implementation-defined list, such as DL10, is not one.
 
 mod common;
 
@@ -43,6 +44,14 @@ fn every_rule_cited_is_defined() {
         assert!(
             defined.contains(*rule),
             "{rule} is not a promise or an item of spec/"
+        );
+        let (prefix, number) = rule.split_once('-').unwrap_or_default();
+        assert!(
+            !prefix.is_empty()
+                && prefix.bytes().all(|b| b.is_ascii_uppercase())
+                && number.len() == 3
+                && number.bytes().all(|b| b.is_ascii_digit()),
+            "{rule} is not in the form of a promise's ID, which a `ruleId` takes"
         );
     }
 }

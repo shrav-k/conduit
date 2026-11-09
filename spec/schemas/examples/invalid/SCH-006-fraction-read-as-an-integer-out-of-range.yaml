@@ -1,0 +1,20 @@
+# Example. It must be rejected when it is read:
+# a number written with a fraction is read as the binary64 value nearest to it (SCH-020), and
+# where that value has no fractional part it is held to the range of SCH-006, so that no
+# integer outside the range is read. The `maximum` below is read as 9,007,199,254,740,994,
+# which is outside it. A reader that judges the range on the decimal written alone would accept
+# it. The first build's log of increment 1 (docs/proposals/first-build/log-increment-1.md)
+# added it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: bounded-count.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      count:
+        type: number
+        maximum: 9007199254740993.5

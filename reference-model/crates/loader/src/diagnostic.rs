@@ -25,8 +25,8 @@ impl Position {
 /// Why a file, a document or a project was rejected.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Diagnostic {
-    /// The ID of the promise the rejection rests on, such as `SCH-012`, or of the item of the
-    /// implementation-defined list, such as `DL10`. See [`crate::rules`].
+    /// The ID of the promise the rejection rests on, such as `SCH-012`: a diagnostic's
+    /// `ruleId` (IFC-025). See [`crate::rules`].
     pub rule: &'static str,
     /// The file, as it was named to the loader, where there is one.
     pub file: Option<String>,

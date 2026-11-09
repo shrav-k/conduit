@@ -43,15 +43,23 @@ pub fn core() -> String {
     specification().names().core_package.clone()
 }
 
-/// The files directly in a directory, in the order of their names.
+/// The files directly in a directory, in the order of their names, but for a name that begins
+/// with a dot, which is not read (MAN-011), as `tools/check_schemas.py` does not read it.
 pub fn files_in(directory: &Path) -> Vec<PathBuf> {
     let mut files: Vec<PathBuf> = std::fs::read_dir(directory)
         .unwrap_or_else(|e| panic!("{}: {e}", directory.display()))
         .map(|entry| entry.expect("a directory entry").path())
-        .filter(|path| path.is_file())
+        .filter(|path| path.is_file() && !name_of(path).starts_with('.'))
         .collect();
     files.sort();
     files
+}
+
+/// The name of a file, as text.
+pub fn name_of(path: &Path) -> String {
+    path.file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_default()
 }
 
 /// The directories directly in a directory, in the order of their names.

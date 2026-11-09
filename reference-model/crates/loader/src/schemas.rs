@@ -183,10 +183,10 @@ impl Specification {
 
     /// Validate one document against the schemas alone, as `validate()` in
     /// `tools/check_schemas.py` does: a manifest against `manifest.v1`; any other document
-    /// against `envelope.v1`, and then `document.v1`. A rejection rests on SUB-005, which
-    /// `document.v1` encodes as "anything else is not a document"; it names the Schema contract
-    /// that rejected the document, and the place. The rule on the patterns a document's own
-    /// schemas hold is not applied: [`Specification::check`] applies both.
+    /// against `envelope.v1`, and then `document.v1`. A rejection rests on SUB-005, whichever
+    /// promise the Schema contract encodes, as SUB-005 says, and names the Schema contract that
+    /// rejected the document, and the place as a JSON Pointer. The rule on the patterns a
+    /// document's own schemas hold is not applied: [`Specification::check`] applies both.
     pub fn validate(&self, document: &Document, role: Role) -> Result<(), Diagnostic> {
         let instance = document.root.to_json();
         let failure = match role {

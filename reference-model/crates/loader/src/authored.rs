@@ -2,11 +2,11 @@
 //! each `pattern`, and each pattern that keys `patternProperties`, is a regular expression of
 //! ECMA-262 in Unicode mode (SCH-016).
 //!
-//! SCH-016 says what a pattern is, and `spec/schemas/README.md` lists the check as the
-//! engine's, but no promise says when a schema whose pattern is not one is rejected. The loader
-//! rejects the document when it is read, as SCH-002 rejects a keyword outside the profile; the
-//! first build's log of increment 1 records this for the owner. The rule is applied only to a
-//! document that the schemas accept, so that the places below hold what they should.
+//! SCH-016 says what a pattern is, and that a schema whose pattern is not one makes the
+//! document that holds it rejected, as SCH-002 rejects a keyword outside the profile; the
+//! coordinator settled that on finding 1-03 of the first build's log of increment 1. The loader
+//! rejects the document when it is read. The rule is applied only to a document that the
+//! schemas accept, so that the places below hold what they should.
 
 use crate::diagnostic::Diagnostic;
 use crate::formats::ecma_regex;

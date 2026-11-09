@@ -36,6 +36,19 @@ pub use schemas::{Names, Role, Specification, compile};
 pub use value::{LARGEST_WHOLE, Node, Value};
 
 /// How deeply the values of a document may nest: a map or a list inside another counts one
-/// level. A limit of an engine, which DL10 of the implementation-defined list leaves to it;
-/// it keeps a document from exhausting the stack of the reader or of the validator.
+/// level. A limit of an engine, which DL10 of the implementation-defined list leaves to it,
+/// past which a document is rejected under SUB-011; it keeps a document from exhausting the
+/// stack of the reader or of the validator.
 pub const MAX_DEPTH: usize = 128;
+
+/// The rejection of a document whose values nest deeper than [`MAX_DEPTH`], which names the
+/// limit (SUB-011).
+pub(crate) fn too_deep() -> Diagnostic {
+    Diagnostic::new(
+        rules::SUB_011,
+        format!(
+            "values nested more than {MAX_DEPTH} levels deep, the limit of nesting that this \
+             engine states under DL10"
+        ),
+    )
+}

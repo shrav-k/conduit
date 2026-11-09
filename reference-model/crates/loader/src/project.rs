@@ -2,18 +2,20 @@
 //! (MAN-001, MAN-002, MAN-011, SUB-005, SUB-010).
 //!
 //! A directory is read as MAN-011 says: its documents are the files in the directory itself
-//! whose names end in `.yaml`, `.yml` or `.json`, apart from the manifest, which is the one file
-//! named `conduit.yaml`, `conduit.yml` or `conduit.json` (MAN-001). Nothing in a directory below
-//! it is read, and a file with any other ending is not read. More than one manifest is
-//! rejected (MAN-002). Each document is then validated against `document.v1` and the manifest
-//! against `manifest.v1`.
+//! whose names end in `.yaml`, `.yml` or `.json` and do not begin with a dot, apart from the
+//! manifest, which is the one file named `conduit.yaml`, `conduit.yml` or `conduit.json`
+//! (MAN-001). Nothing in a directory below it is read, and no other file is. More than one
+//! manifest is rejected (MAN-002). Each document is then validated against `document.v1` and
+//! the manifest against `manifest.v1`.
 //!
-//! A name is compared as the file system gives it, so `Conduit.yaml` is not the manifest and
-//! `notes.YAML` is not a document. A name that begins with a dot is read like any other. A link
-//! is followed as the file system follows it: one that leads to a directory is not entered, and
-//! one that leads nowhere, under a name that MAN-011 reads, is a file that cannot be read, as is
-//! anything there but a regular file, rejected under SUB-010 and never skipped. The first
-//! build's log of increment 1 records these readings.
+//! Names and endings are compared exactly, as MAN-011 says, so `Conduit.yaml` is not the
+//! manifest and `notes.YAML` is not a document. A name that begins with a dot is not read, so
+//! neither `.notes.yaml` nor the `._templates.yaml` that `tar` on macOS stores beside
+//! `templates.yaml` is. A link is followed as the file system follows it: one that leads to a
+//! directory is not entered, and one that leads nowhere, under a name that MAN-011 reads, is a
+//! file that cannot be read, as is anything there but a regular file, rejected under SUB-010
+//! and never skipped. The first build's log of increment 1 records these as the coordinator's
+//! decision on its finding 1-06.
 
 use std::path::{Path, PathBuf};
 
@@ -32,12 +34,16 @@ pub enum FileRole {
     Manifest(Syntax),
     /// A file of documents (MAN-011).
     Documents(Syntax),
-    /// Not a document, and not read (MAN-011).
+    /// Not a document, and not read (MAN-011): a name with another ending, or one that begins
+    /// with a dot.
     NotRead,
 }
 
 impl FileRole {
     pub fn of(name: &str) -> FileRole {
+        if name.starts_with('.') {
+            return FileRole::NotRead;
+        }
         match Syntax::of(name) {
             Some(syntax) if MANIFEST_NAMES.contains(&name) => FileRole::Manifest(syntax),
             Some(syntax) => FileRole::Documents(syntax),
@@ -117,8 +123,9 @@ fn load(
 
 /// The files of a directory that MAN-011 reads, each with its name and bytes, in the order of
 /// their names, and a fault for each that has a name MAN-011 reads and cannot be read. A
-/// directory below is not entered and a file with any other ending is not read. Only a
-/// directory that cannot be read at all is an error. Reads the file system.
+/// directory below is not entered, and a file with any other ending, or whose name begins with
+/// a dot, is not read. Only a directory that cannot be read at all is an error. Reads the file
+/// system.
 pub(crate) fn directory_files(directory: &Path) -> Result<(Named, Vec<Diagnostic>), Diagnostic> {
     let unreadable = |error: std::io::Error| {
         Diagnostic::new(SUB_010, format!("the directory cannot be read: {error}"))

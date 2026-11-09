@@ -36,8 +36,20 @@ pub struct Diagnostic {
     pub pointer: Option<String>,
     /// Where that place, or the fault, is in the file.
     pub position: Option<Position>,
+    /// The failing schema keyword's locations, carried in SARIF's `properties` by a shell.
+    /// Stored together behind one pointer to keep ordinary diagnostics small.
+    pub schema_location: Option<Box<SchemaLocation>>,
     /// What is wrong, in words.
-    pub message: String,
+    pub message: Box<str>,
+}
+
+/// JSON Schema 2020-12's keyword locations for a rejection by a schema (SUB-005).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SchemaLocation {
+    /// The keyword's evaluation path, including by-reference applicators.
+    pub keyword_location: String,
+    /// The keyword's absolute URI, where known.
+    pub absolute_keyword_location: Option<String>,
 }
 
 impl Diagnostic {
@@ -48,8 +60,23 @@ impl Diagnostic {
             document: None,
             pointer: None,
             position: None,
-            message: message.into(),
+            schema_location: None,
+            message: message.into().into_boxed_str(),
         }
+    }
+
+    /// `keywordLocation` for a schema rejection, to be serialized in SARIF's `properties`.
+    pub fn keyword_location(&self) -> Option<&str> {
+        self.schema_location
+            .as_deref()
+            .map(|location| location.keyword_location.as_str())
+    }
+
+    /// `absoluteKeywordLocation` where the schema's absolute base URI is known.
+    pub fn absolute_keyword_location(&self) -> Option<&str> {
+        self.schema_location
+            .as_deref()
+            .and_then(|location| location.absolute_keyword_location.as_deref())
     }
 
     #[must_use]

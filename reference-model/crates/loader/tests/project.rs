@@ -266,7 +266,7 @@ fn verdict(
                 d.rule.to_string(),
                 d.file.clone(),
                 d.pointer.clone(),
-                d.message.clone(),
+                d.message.to_string(),
             )
         })
         .collect();
@@ -435,4 +435,24 @@ fn an_unreadable_directory_is_a_value_not_a_panic() {
     let missing = directory.path().join("missing");
     let faults = read_project(&missing, specification()).expect_err("no directory");
     assert_eq!(faults.rules(), vec![rules::SUB_010]);
+}
+
+/// SUB-005: the instance pointer and the failing keyword's location are separate places.
+#[test]
+fn a_schema_rejection_carries_the_keyword_location() {
+    let faults = submit(&[("bad.yaml", &interface("Not-a-name"))]).expect_err("schema rejection");
+    let diagnostic = &faults.0[0];
+    assert_eq!(diagnostic.rule, rules::SUB_005);
+    assert_eq!(diagnostic.pointer.as_deref(), Some("/metadata/name"));
+    let keyword = diagnostic.keyword_location().expect("keywordLocation");
+    assert!(keyword.starts_with("/$ref/"), "{keyword}");
+    assert!(keyword.ends_with("/pattern"), "{keyword}");
+    // The bundle has no absolute base URI; inventing one would give a false location.
+    assert_eq!(diagnostic.absolute_keyword_location(), None);
+    let bad_manifest = manifest().replace(&api(), "wrong");
+    let faults = submit(&[("conduit.yaml", &bad_manifest)]).expect_err("manifest");
+    let diagnostic = &faults.0[0];
+    assert_eq!(diagnostic.rule, rules::SUB_005);
+    assert_eq!(diagnostic.pointer.as_deref(), Some("/apiVersion"));
+    assert!(diagnostic.keyword_location().unwrap().ends_with("/const"));
 }

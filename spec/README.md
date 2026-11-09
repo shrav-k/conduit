@@ -9,8 +9,13 @@ unsafe in it (ruling 38, point 4).
 
 This page describes the specification as it stands now. How it came to stand so, ruling by
 ruling, and where the record of each decision is, are under [History](#history) at the end.
-The latest change is the coordinator's settling of the findings of increment 1 of the first
-build, under [ruling 46](../docs/proposals/ruling-46/README.md), point 4, of 2026-11-09, which
+The latest changes apply the review of increment 1 of the first build on 2026-11-09:
+schema rejections cite SUB-005 and the failing keyword's location, either syntax accepts one
+leading byte order mark, SUB-011 has a floor and covers files, submissions and archives, and
+MAN-010 states what a pin holds. Ruling 48, point 3, restricts SCH-016 to interoperable pattern
+tokens. The [log](../docs/proposals/first-build/log-increment-1.md#after-the-review-of-2026-11-09)
+records those fixes and their vectors. Before them, the coordinator settled the findings under
+[ruling 46](../docs/proposals/ruling-46/README.md), point 4, of 2026-11-09, which
 the [log of increment 1](../docs/proposals/first-build/log-increment-1.md) lists and the owner
 can strike: it changed SCH-006, SCH-016, SCH-018, SCH-020, SUB-005, SUB-010, MAN-011, DL10 and
 the [schema profile](schema-profile.md), and added SUB-011. Before it,
@@ -74,7 +79,7 @@ must do are `convention`, as in PRV-005, PRV-007, PRV-011, PRV-022 and SEC-010; 
 implementation of `get-secret.v1` must do with a secret, and what any implementation that is
 given one must not do with it, are `interface`, as in SEC-006 and SEC-019.
 
-Two things are deliberately outside it. How one type behaves, such as the conditions it defines
+The following are deliberately outside it. How one type behaves, such as the conditions it defines
 (running or paused, for example) or a directory's edge cases, belongs to that type's contract;
 the one lifecycle that every instance has is not among them, and is a shared convention. How a
 system gets from documents to running work, beyond what the promises fix, belongs to the
@@ -82,7 +87,11 @@ provider that does it, such as how a runtime provider starts a process or where 
 provider places an instance, which that provider's contract states; and what stays the engine's
 own, such as retries and the storage of its records, belongs to that engine's conformance
 document, which is its documented choice for every item of the [implementation-defined
-list](implementation-defined.yaml). Neither binds other engines.
+list](implementation-defined.yaml). Neither binds other engines. An Agent's own means, its
+built-in tools, its shell and sandbox, its network, and the services of the account it signs in
+with are outside the documents; inspecting an instance shows its reach through Conduit only.
+Confining an Agent belongs to its runtime provider, under PRV-006, and every restriction in
+this version is reported as mediated, under ACC-027.
 
 One thing is left out of this version on purpose: work that outlasts its invocation. No
 operation arranges, through the engine, work that starts or runs after its own invocation has
@@ -189,7 +198,7 @@ says what the promises leave open.
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; no vectors |
 | [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 22 promises; no vectors |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, `conduit.yml` or `conduit.json`, its keys, implementation items, which variables of a run they may not bind, which files of a project are its documents, and the layout of a package's archive | Draft; 17 promises; no vectors |
-| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, that every engine takes a directory, and a document beyond a limit that the engine states | Draft; 11 promises; no vectors |
+| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, that every engine takes a directory, and documents, files, submissions or archives beyond a limit that the engine states | Draft; 11 promises; no vectors |
 | [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 15 promises; no vectors |
 | [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: nodes, machines, labels and placement by the provider, and values tied to a node | Draft; 21 promises; no vectors |
 | [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 22 promises; no vectors |
@@ -214,9 +223,9 @@ says what the promises leave open.
 | [schemas/schema.yaml](schemas/schema.yaml) | `schema.v1`: the schema profile written as a schema | Draft; 1 contract |
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item; and `server-package.v1` and `server-remote.v1`: a Package and a Remote of server.json | Draft; 4 contracts |
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions, digests, IDs, revisions and label selectors | Draft; 13 contracts |
-| [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 7 files of documents in 3 directories, and one file whose name begins with a dot, which is not read |
+| [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 8 files of documents in 3 directories, and one file whose name begins with a dot, which is not read |
 | [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 62 files |
-| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 37 files |
+| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 38 files |
 | [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes, and the expected ID that a lifecycle action may carry | Draft; 36 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 29 promises; no vectors |
 | [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 31 promises; no vectors |

@@ -1,0 +1,9 @@
+﻿{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Interface",
+  "metadata": {
+    "name": "bom",
+    "description": "Example: one leading byte order mark is accepted and ignored (SUB-005; schema profile)."
+  },
+  "spec": {"type": "github.com/shrav-k/conduit/core#interface.v1"}
+}

@@ -70,7 +70,9 @@ implementations:
       kubernetes.io/os: linux
   # A server published to a registry, as one server.json Package, pinned by the SHA-256 of
   # its package file in `fileSha256`. Its named argument `--root` takes the instance's
-  # `/path`. A runtime provider that runs `npm` packages runs it (PRV-012).
+  # `/path`. A runtime provider that runs `npm` packages runs it (PRV-012). The hash does not
+  # pin what npm resolves for this artifact's dependencies, and the `command` of files-server
+  # pins nothing (MAN-010; first build finding 1-18).
   listing:
     implements:
       - '#directory.list.v1'

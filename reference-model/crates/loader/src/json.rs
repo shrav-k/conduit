@@ -7,9 +7,9 @@
 //! keep one of silently, and so that each number is read from the digits that write it
 //! (SCH-005, SCH-006, SCH-020, SCH-021), not from a binary64 value `serde_json` made of it.
 //! JSON has no infinity, not-a-number, hexadecimal, anchor, alias, tag or merge key, so SCH-017
-//! and the rest of SCH-012 cannot arise. A byte order mark is not allowed in a JSON file, as
-//! the schema profile says, since RFC 8259 (section 8.1) does not let one be added, and
-//! `serde_json` rejects it as not JSON (SUB-005). It rejects in the same way an escape of a
+//! and the rest of SCH-012 cannot arise. One leading byte order mark is accepted and ignored,
+//! as the schema profile requires and RFC 8259 (section 8.1) permits a parser to do.
+//! `serde_json` rejects as not JSON (SUB-005) an escape of a
 //! surrogate that is not one of a pair, `\ud800`, which is not text; a pair, `\ud83d\ude00`, is
 //! one character.
 //!
@@ -44,7 +44,17 @@ pub(crate) struct Content {
 
 /// Read the documents of a JSON text.
 pub(crate) fn read(text: &str) -> Result<Content, Diagnostics> {
-    let root: &RawValue = serde_json::from_str(text).map_err(|error| syntax(text, &error))?;
+    let source = text.strip_prefix('\u{feff}').unwrap_or(text);
+    let root: &RawValue = serde_json::from_str(source).map_err(|error| {
+        let mut diagnostic = syntax(source, &error);
+        if source.len() != text.len()
+            && let Some(position) = &mut diagnostic.position
+            && position.line == 1
+        {
+            position.column = position.column.saturating_add(1);
+        }
+        diagnostic
+    })?;
     let reader = Reader {
         text,
         locator: Locator::new(text),

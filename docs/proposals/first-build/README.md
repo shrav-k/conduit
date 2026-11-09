@@ -33,28 +33,29 @@ finding whose fix adds or removes a feature, or changes what Conduit is for, goe
 and the log records what the build assumed in the meantime.
 
 A log marks each finding as fixed, with its vector, or as left for the owner, with the build's
-reading. The coordinator settled all thirteen findings of increment 1 under ruling 46, point 4,
-in the increment's pull request: none adds or removes a feature or changes what Conduit is for.
-Each is logged as the coordinator's own decision, and the owner can strike it.
+reading. Increment 1 and its review have eighteen findings, all settled. Ruling 48, point 3,
+settled the restriction on pattern tokens; the other settlements are the coordinator's under
+ruling 46, point 4, and the owner can strike them. None adds or removes a feature or changes
+what Conduit is for.
 
 ## The logs
 
 | Increment | Log | Findings |
 | --- | --- | --- |
-| 1, the strict loader (A43) | [log-increment-1.md](log-increment-1.md) | Thirteen, all settled by the coordinator: three defects of a tool, two fixed with vectors and one stated in the tool; and ten against the promises, nine fixed in them, each with a vector, and one kept as written |
+| 1, the strict loader (A43) | [log-increment-1.md](log-increment-1.md) | Eighteen, all settled: three defects of a tool, two fixed with vectors and one stated in the tool; fifteen against the promises, including five after the review of 2026-11-09. Ruling 48, point 3, settles the pattern tokens; the other settlements are the coordinator's and can be struck |
 
 ## Noted for later increments
 
 What one increment found that a later one must meet. None is a finding against the promises
 yet.
 
-- **The token that Codex sends, for increment 3.** Codex 0.167.0, one of S1's Agents, takes the
-  bearer token of an MCP server that it reaches over HTTP from a variable of its environment:
-  `codex mcp add NAME --url URL --bearer-token-env-var VAR`, or the same setting in its
-  configuration. The engine gives a run its token as a file: under PRV-022 and DL13, `identity`
-  holds the engine's address in the variable `CONDUIT_URL`, and the token in the file `token` of
-  the directory that the variable `CONDUIT_IDENTITY_DIR` names, as the names under `identity` in
-  [spec/names.yaml](../../../spec/names.yaml) fix them. So increment 3 needs a step that starts
-  Codex with the content of that file in a variable. The author writes it so that one tool fits
-  another, so it counts as an adapter in the author measurements of
-  [the first build](../../implementation/FIRST_BUILD.md#measures).
+- **The token that Codex sends, for increment 3.** Codex 0.167.0 has
+  `mcp_servers.<id>.http_headers_helper`, a local command that prints a JSON object of headers,
+  as Claude Code has `headersHelper`. Both can read `token` from `CONDUIT_IDENTITY_DIR` with a
+  one-line helper. PRV-022 and DL13 give the run that directory and the engine's address in
+  `CONDUIT_URL`, under the names in [spec/names.yaml](../../../spec/names.yaml). No adapter is
+  counted in advance. A4 or A71 must confirm whether Codex runs the helper again after a 401,
+  and whether its "locally connected" servers include an engine at a loopback address.
+- **A missing tool of a plain server, for increment 3.** When `tools/list` lacks a tool that
+  the item's `tools` map names, whether the request reports `failed` or `unavailable` is to be
+  settled there, with a vector.

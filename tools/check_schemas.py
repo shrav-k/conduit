@@ -61,8 +61,8 @@ What it checks, and reports under these numbers:
      directories under examples/valid/, and from the set's own manifest where it has one.
      The rule for MAN-018 reads the names of the variables of `identity` from
      spec/names.yaml, and compares them without regard to case. The rule for SCH-016 compiles
-     each pattern that a schema of a document writes with Python's `re`, as `ecma` translates
-     it, so it rejects only a pattern that ECMA-262 and `re` both reject (see `pattern_faults`).
+     each authored pattern against SCH-016's interoperable tokens, then compiles it with
+     Python's `re` after `ecma` translates anchors and character classes (see `pattern_faults`).
      examples/valid/first-start/ writes out the documents that first start makes, which no
      submission may hold (FST-006), so the rule for FST-006 is not applied to it.
 
@@ -83,13 +83,9 @@ strict loader in reference-model/ follows the specification in each, and the fir
 of increment 1 (docs/proposals/first-build/log-increment-1.md) lists them. Where the two
 differ, this tool is not the reference, and no example may rely on a difference listed here.
 
-  - `pattern` is evaluated by Python's `re`, not by an ECMA-262 engine (SCH-016). The patterns
-    in these schemas use only syntax the two share, and two pieces of it that they read
-    differently, `$` and `\\s`, are translated so that `re` matches them as ECMA-262 does (see
-    `ecma`). No pattern here uses `\\d`, `\\w` or `\\b`, which the two also read differently.
-    `.` is used once, in the lookahead of `qualified-reference.v1`, where the rest of the
-    pattern admits only ASCII letters, digits, dots and hyphens, so the line terminators that
-    one `.` matches and the other does not cannot change a verdict.
+  - `pattern` uses SCH-016's interoperable tokens, checked by a tokenizer. Python's `re`
+    evaluates them after `ecma` translates the end anchor and character classes to their
+    ECMA-262 meanings. The strict loader matches with `regress` in Unicode mode.
   - The formats are Python's checkers, but for `uuid` and `duration`, which are checked here by
     the grammars that SCH-004 cites (see `format_checker`). Python's `date-time` and `date`
     reject a leap second and the year 0000, which the grammar of RFC 3339 allows; no value
@@ -422,7 +418,8 @@ def load(path):
 def load_json(text):
     """The documents of a JSON text, read strictly, as SCH-013 has JSON mean what the equivalent
     YAML means: two members with one key are rejected (SCH-012), each number is read from its
-    digits as a YAML number is, and `NaN` and `Infinity`, and a byte order mark, are not JSON.
+    digits as a YAML number is, and `NaN` and `Infinity` are not JSON. One leading byte order
+    mark is accepted and ignored.
     A value that is an array holds its items as documents, and any other value is one document,
     which the schemas then judge (SCH-018)."""
     def members(pairs):
@@ -437,7 +434,7 @@ def load_json(text):
         raise NotStrict(f"not JSON: {name}")
 
     try:
-        value = json.loads(text, object_pairs_hook=members, parse_constant=constant,
+        value = json.loads(text.removeprefix("\ufeff"), object_pairs_hook=members, parse_constant=constant,
                            parse_int=lambda t: read_integer(t, ""),
                            parse_float=lambda t: read_fraction(t, ""))
     except json.JSONDecodeError as error:
@@ -646,29 +643,36 @@ ECMA_SPACE = ("\t\n\x0b\x0c\r\x20\xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f
 
 
 def ecma(pattern):
-    """A pattern as Python's `re` must be given it to match as ECMA-262 does (SCH-016), in the
-    two places where the patterns of these schemas use syntax that the two read differently:
-    `$` outside a class, which in ECMA-262 is the end of the string and in `re` also matches
-    before a line feed at the end, is written `\\Z`; and `\\s`, in a class or outside one, is
-    written as ECMA-262's own set of spaces. The first build's log of increment 1
-    (docs/proposals/first-build/log-increment-1.md) records why."""
-    out, in_class, escaped = [], False, False
-    for char in pattern:
-        if escaped:
-            escaped = False
-            if char == "s":
-                out[-1] = ECMA_SPACE if in_class else f"[{ECMA_SPACE}]"
+    r"""Translate ECMA-262's end anchor and character classes for Python's `re`.
+    Empty classes and literal `[` inside a class have different syntax in `re`; escaped
+    punctuation keeps its literal meaning. No unsupported authored token reaches this function.
+    `\s` is retained for comparing the historical schemas in regression checks."""
+    out, in_class, at = [], False, 0
+    while at < len(pattern):
+        char = pattern[at]
+        if char == "\\" and at + 1 < len(pattern):
+            following = pattern[at + 1]
+            if following == "s":
+                out.append(ECMA_SPACE if in_class else f"[{ECMA_SPACE}]")
             else:
-                out.append(char)
-        elif char == "\\":
-            escaped = True
-            out.append(char)
-        elif in_class:
+                out.append(char + following)
+            at += 2
+            continue
+        if not in_class and pattern.startswith("[^]", at):
+            out.append("[\\s\\S]")
+            at += 3
+            continue
+        if not in_class and pattern.startswith("[]", at):
+            out.append("(?!)")
+            at += 2
+            continue
+        if in_class:
+            out.append("\\" + char if char in "[&~|" else char)
             in_class = char != "]"
-            out.append(char)
         else:
             in_class = char == "["
             out.append("\\Z" if char == "$" else char)
+        at += 1
     return "".join(out)
 
 
@@ -1432,22 +1436,68 @@ def secret_faults(schema, secret):
     return out
 
 
-# Syntax of ECMA-262 in Unicode mode that Python's `re` lacks, or takes only in part: a
-# property escape, `\u{...}`, a named group, a reference to one, `\c` and a letter, a
-# lookbehind, which `re` takes only of fixed width, and the empty classes `[]` and `[^]`. The
-# rule for SCH-016 does not judge a pattern that holds any of them.
-ECMA_ONLY = re.compile(r"\\[pPkc]|\\u\{|\(\?<|\[\^?\]")
+def interoperable_tokens(pattern):
+    """SCH-016's tokens, before compilation. Return why a token is outside the list, or None.
+    Kept in step with the Rust loader's tokenizer in formats.rs."""
+    at, can_quantify = 0, False
+    while at < len(pattern):
+        char = pattern[at]
+        if char == "\\":
+            at += 1
+            if at == len(pattern) or pattern[at] not in "^$\\.*+?()[]{}|":
+                return "only escaped pattern punctuation is allowed"
+            can_quantify = True
+        elif char == "[":
+            at += 1
+            if at < len(pattern) and pattern[at] == "^":
+                at += 1
+            while at < len(pattern) and pattern[at] != "]":
+                if pattern[at] == "\\":
+                    at += 1
+                    if at == len(pattern) or pattern[at] not in "^$\\.*+?()[]{}|-":
+                        return "only escaped pattern punctuation is allowed in a class"
+                at += 1
+            if at == len(pattern):
+                return "an unclosed character class"
+            can_quantify = True
+        elif char == "(":
+            if pattern[at + 1:at + 2] == "?":
+                return "only simple grouping is allowed"
+            can_quantify = False
+        elif char in "|^$":
+            can_quantify = False
+        elif char in "*+?{":
+            if not can_quantify:
+                return "a quantifier without an atom"
+            if char == "{":
+                at += 1
+                begin = at
+                while at < len(pattern) and pattern[at] in "0123456789":
+                    at += 1
+                if at == begin:
+                    return "a range quantifier needs a decimal count"
+                if pattern[at:at + 1] == ",":
+                    at += 1
+                    while at < len(pattern) and pattern[at] in "0123456789":
+                        at += 1
+                if pattern[at:at + 1] != "}":
+                    return "an unclosed range quantifier"
+            if pattern[at + 1:at + 2] == "?":
+                at += 1
+            can_quantify = False
+        elif char == ".":
+            return "the wildcard is outside the interoperable tokens"
+        elif char in "]}":
+            return "an unmatched closing delimiter"
+        else:
+            can_quantify = True
+        at += 1
+    return None
 
 
 def pattern_faults(schema):
-    """Each `pattern`, and each key of `patternProperties`, in a schema that is not a regular
-    expression of ECMA-262 (SCH-016), as (place, pattern, why). It is judged by Python's `re`,
-    on the pattern as `ecma` translates it: one that `re` cannot compile is not one of ECMA-262.
-    The two engines read some patterns otherwise, so this catches only a pattern that both
-    reject, such as `[z-a]`, a class whose range runs backwards, or `a(`. A pattern that
-    ECMA-262 rejects and `re` takes, such as `(?P<x>a)` or `a{`, is not caught, and one that
-    holds syntax of ECMA_ONLY is not judged. The strict loader in reference-model/ checks every
-    pattern by ECMA-262 itself."""
+    """Each authored pattern outside SCH-016, as (place, pattern, why). Tokenize the
+    interoperable subset first, then compile its translated ECMA-262 meaning."""
     out = []
 
     def visit(node, at):
@@ -1460,12 +1510,18 @@ def pattern_faults(schema):
             written += [(f"{at}/patternProperties/{key}", key)
                         for key in node["patternProperties"]]
         for where, pattern in written:
-            if ECMA_ONLY.search(pattern):
+            why = interoperable_tokens(pattern)
+            if why:
+                out.append((where, pattern, why))
                 continue
             try:
                 re.compile(ecma(pattern))
             except re.error as error:
                 out.append((where, pattern, str(error)))
+            except (OverflowError, RecursionError):
+                # Python's `re` cannot build it, as with a repeat count past its limit, though
+                # it keeps to the tokens and ECMA-262 takes it: not a fault (work order 001).
+                pass
         for keyword, token, sub in subschemas(node):
             visit(sub, f"{at}/{keyword}" + ("" if token is None else f"/{token}"))
     visit(schema, "")
@@ -1841,8 +1897,7 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
 
     # ecma-pattern (SCH-016): every `pattern`, and every key of `patternProperties`, in a
     # schema that a document of the set writes is a regular expression of ECMA-262 in Unicode
-    # mode. Applied with Python's `re`, as `pattern_faults` says, so only a pattern that both
-    # engines reject is caught.
+    # mode. Checked against the interoperable tokens, then compiled as `pattern_faults` says.
     for doc in docs:
         role = role_of(doc, False)
         for kind, path in SCHEMA_PLACES:
@@ -1852,8 +1907,7 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                 for where, pattern, why in pattern_faults(schema):
                     found.append(("ecma-pattern",
                                   f"{named(doc)}: the pattern {pattern!r} at {at}{where} is "
-                                  f"not a regular expression of ECMA-262, nor of Python's "
-                                  f"`re`: {why}"))
+                                  f"not an interoperable pattern of SCH-016: {why}"))
 
     # provider-family (PRV-001): a Type that offers a provider capability is of the family
     # Resource and offers no other provider capability.
@@ -2002,11 +2056,42 @@ def manifest_rules(manifest, core, holds_contracts=False):
     return found
 
 
+def check_profile_regressions():
+    """Vectors for the reader and the pattern checker, run with the ordinary checks."""
+    for text, expected in [('\ufeff{}', [{}]), ('\ufeff[]', []),
+                           ('\ufeff{"x": "\ufeff"}', [{"x": "\ufeff"}])]:
+        if load_json(text) != expected:
+            fail("JSON BOM regression: a leading mark is ignored; content is kept")
+    try:
+        load_json('\ufeff\ufeff{}')
+    except NotStrict:
+        pass
+    else:
+        fail("JSON BOM regression: two leading marks were accepted")
+    accepted = ["", "😀", "[a-z]", "[^a-z]", "[]", "[^]", "[[]", "[a&&b]",
+                "a+?", "a*?", "a??", "a{2}", "a{2,3}?", "a{2,}", "a{4294967296}", "^(a|b)$",
+                r"\(\?i:a\)", r"[\-]", r"[\]]", r"\^\$\\\.\*\+\?\(\)\[\]\{\}\|"]
+    rejected = ["(?:a)", "(?=a)a", "(?!b)a", "(?<=a)b", "(?<!a)b", "(?<a>x)|(?<b>y)",
+                r"\d", r"\w", r"\s", r"\b", r"(a)\1", r"\p{Lu}", ".", r"\u0041",
+                "a++", "a*+", "a{1}+", "a???", "[a-z", "a{,2}", "a{2,1}", "a{", "[z-a]",
+                "a}", "a]", r"\-", r"\a", "(?P<x>a)"]
+    for pattern in accepted + rejected:
+        faults = pattern_faults({"pattern": pattern})
+        keyed = pattern_faults({"patternProperties": {pattern: True}})
+        if bool(faults) != (pattern in rejected) or bool(keyed) != bool(faults):
+            fail(f"SCH-016 token regression: {pattern!r}: {faults}, key: {keyed}")
+    for pattern, text, expected in [("[]", "a", False), ("[^]", "😀", True),
+                                    ("[[]", "[", True), ("a$", "a\n", False)]:
+        if bool(re.search(ecma(pattern), text)) != expected:
+            fail(f"ECMA class/anchor regression: {pattern!r} on {text!r}")
+
+
 def main():
     from importlib import metadata
     validating = jsonschema is not None
     print(f"Python {sys.version.split()[0]} at {sys.executable}; PyYAML {yaml.__version__}; "
           f"jsonschema {metadata.version('jsonschema') if validating else 'NOT IMPORTABLE'}")
+    check_profile_regressions()
     named_values = names()
     core = named_values["corePackage"]
     keywords, formats = profile()

@@ -2,8 +2,6 @@
 //! `duration` that SCH-004 cites, and `pattern` evaluated as ECMA-262 with the `u` flag
 //! (SCH-016).
 
-use std::collections::HashSet;
-
 use jsonschema::{Keyword, ValidationError, paths::Location};
 use serde_json::{Map, Value};
 
@@ -93,97 +91,97 @@ pub fn is_duration(text: &str) -> bool {
     }
 }
 
-/// A regular expression of ECMA-262, in Unicode mode, which is the `u` flag (SCH-016), in the
-/// edition that JSON Schema 2020-12 cites, the eleventh, of 2020. `regress` implements the
-/// current edition, and accepts two things that the eleventh does not, which are rejected here:
-/// a group that sets flags, such as `(?i:a)`, and two groups of one name, such as
-/// `(?<a>x)|(?<a>y)`, both of the edition of 2025. Nothing else that the later editions added
-/// is syntax of a pattern; they added flags, and a pattern here takes the `u` flag alone.
+/// A pattern using the interoperable tokens of JSON Schema 2020-12, core, section 6.4,
+/// plus escaped pattern punctuation, read as ECMA-262 in Unicode mode (SCH-016).
 pub fn ecma_regex(pattern: &str) -> Result<regress::Regex, String> {
-    let regex = regress::Regex::with_flags(pattern, "u").map_err(|error| error.to_string())?;
-    match later_syntax(pattern) {
-        Some(why) => Err(why.to_string()),
-        None => Ok(regex),
-    }
+    interoperable_tokens(pattern)?;
+    regress::Regex::with_flags(pattern, "u").map_err(|error| error.to_string())
 }
 
-/// Syntax of a pattern, which `regress` has accepted, that ECMA-262 added after the edition
-/// of 2020: a group that sets flags, and a name given to two groups.
-fn later_syntax(pattern: &str) -> Option<&'static str> {
+/// Tokenize before compiling: constructs accepted by a regex library but outside SCH-016
+/// must not enter an authored schema. The Python checker uses the same token list.
+fn interoperable_tokens(pattern: &str) -> Result<(), String> {
     let chars: Vec<char> = pattern.chars().collect();
-    let mut names = HashSet::new();
-    let mut in_class = false;
     let mut at = 0;
+    let mut can_quantify = false;
     while at < chars.len() {
-        match chars[at] {
-            '\\' => at += 1,
-            '[' => in_class = true,
-            ']' => in_class = false,
-            '(' if !in_class && chars.get(at + 1) == Some(&'?') => match chars.get(at + 2) {
-                Some(':' | '=' | '!') => {}
-                Some('<') if matches!(chars.get(at + 3), Some('=' | '!')) => {}
-                Some('<') => {
-                    let name: String = chars[at + 3..].iter().take_while(|c| **c != '>').collect();
-                    if !names.insert(group_name(&name)) {
-                        return Some(
-                            "a name given to two groups, which ECMA-262 allows only from its \
-                             edition of 2025",
-                        );
+        let c = chars[at];
+        match c {
+            '\\' => {
+                at += 1;
+                if !chars
+                    .get(at)
+                    .is_some_and(|c| "^$\\.*+?()[]{}|".contains(*c))
+                {
+                    return Err("only escaped pattern punctuation is allowed".into());
+                }
+                can_quantify = true;
+            }
+            '[' => {
+                at += 1;
+                if chars.get(at) == Some(&'^') {
+                    at += 1;
+                }
+                while at < chars.len() && chars[at] != ']' {
+                    if chars[at] == '\\' {
+                        at += 1;
+                        if !chars
+                            .get(at)
+                            .is_some_and(|c| "^$\\.*+?()[]{}|-".contains(*c))
+                        {
+                            return Err(
+                                "only escaped pattern punctuation is allowed in a class".into()
+                            );
+                        }
+                    }
+                    at += 1;
+                }
+                if chars.get(at) != Some(&']') {
+                    return Err("an unclosed character class".into());
+                }
+                can_quantify = true;
+            }
+            '(' => {
+                if chars.get(at + 1) == Some(&'?') {
+                    return Err("only simple grouping is allowed".into());
+                }
+                can_quantify = false;
+            }
+            '|' | '^' | '$' => can_quantify = false,
+            '*' | '+' | '?' | '{' => {
+                if !can_quantify {
+                    return Err("a quantifier without an atom".into());
+                }
+                if c == '{' {
+                    at += 1;
+                    let begin = at;
+                    while chars.get(at).is_some_and(char::is_ascii_digit) {
+                        at += 1;
+                    }
+                    if at == begin {
+                        return Err("a range quantifier needs a decimal count".into());
+                    }
+                    if chars.get(at) == Some(&',') {
+                        at += 1;
+                        while chars.get(at).is_some_and(char::is_ascii_digit) {
+                            at += 1;
+                        }
+                    }
+                    if chars.get(at) != Some(&'}') {
+                        return Err("an unclosed range quantifier".into());
                     }
                 }
-                _ => {
-                    return Some(
-                        "a group that sets flags, which ECMA-262 has only from its edition of \
-                         2025",
-                    );
+                if chars.get(at + 1) == Some(&'?') {
+                    at += 1;
                 }
-            },
-            _ => {}
+                can_quantify = false;
+            }
+            '.' => return Err("the wildcard is outside the interoperable tokens".into()),
+            _ => can_quantify = true,
         }
         at += 1;
     }
-    None
-}
-
-/// The name of a group as ECMA-262 compares it, with each `\uXXXX` and `\u{X}` escape read
-/// as the character it writes, and a pair of escaped surrogates as one character.
-fn group_name(written: &str) -> String {
-    let mut units: Vec<u32> = Vec::new();
-    let mut rest = written;
-    while !rest.is_empty() {
-        if let Some(after) = rest.strip_prefix("\\u{")
-            && let Some(end) = after.find('}')
-            && let Ok(code) = u32::from_str_radix(&after[..end], 16)
-        {
-            units.push(code);
-            rest = &after[end + 1..];
-        } else if let Some(after) = rest.strip_prefix("\\u")
-            && let Some(hex) = after.get(..4)
-            && let Ok(code) = u32::from_str_radix(hex, 16)
-        {
-            units.push(code);
-            rest = &after[4..];
-        } else {
-            let c = rest.chars().next().unwrap_or_default();
-            units.push(u32::from(c));
-            rest = &rest[c.len_utf8()..];
-        }
-    }
-    let mut name = String::new();
-    let mut index = 0;
-    while index < units.len() {
-        let unit = units[index];
-        let next = units.get(index + 1).copied().unwrap_or(0);
-        if (0xD800..0xDC00).contains(&unit) && (0xDC00..0xE000).contains(&next) {
-            let code = 0x10000 + ((unit - 0xD800) << 10) + (next - 0xDC00);
-            name.extend(char::from_u32(code));
-            index += 2;
-        } else {
-            name.push(char::from_u32(unit).unwrap_or('\u{fffd}'));
-            index += 1;
-        }
-    }
-    name
+    Ok(())
 }
 
 /// The keyword `pattern`, evaluated by an ECMA-262 engine. It takes the place of the crate's

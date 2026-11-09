@@ -186,13 +186,15 @@
 - id: DL10
   subject: Limits
   document: >-
-    Sizes and counts, among them those of a document, such as how deeply its values may nest,
-    past which the document is rejected under SUB-011; the `ttlMs` of a tool list that the
-    engine serves, under IFC-038; the time allowed for a call, a retire hook's among them, after
-    which its part ends unknown and the stop is asked for under TPL-009; how long the outputs of
-    a succeeded invocation, other than one whose outcome a reconciliation set, are kept for a
-    repeat under OPS-009, after which a repeat reports conflict under OPS-034, unless OPS-024
-    dispatches it; and behavior when storage is exhausted.
+    Sizes and counts: a document's nesting, with a floor of 64 levels; a file's size; the
+    number of documents or files in a submission; and the size of a package's archive.
+    Exceeding a stated limit is rejected under SUB-011, and at installation the request
+    reports invalid under PKG-023 with that diagnostic; the `ttlMs` of a tool list that the
+    engine serves, under IFC-038; the time allowed for a call, a retire hook's among them,
+    after which its part ends unknown and the stop is asked for under TPL-009; how long the
+    outputs of a succeeded invocation, other than one whose outcome a reconciliation set, are
+    kept for a repeat under OPS-009, after which a repeat reports conflict under OPS-034,
+    unless OPS-024 dispatches it; and behavior when storage is exhausted.
 - id: DL12
   subject: Protocol revisions, `content`, `Origin` and the schemas of tools
   document: >-

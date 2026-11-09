@@ -90,8 +90,10 @@ metadata:
     `.` nor `..` is one. An internationalized name is written with its `xn--` labels.
 spec:
   type: string
-  pattern: "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+(?![0-9]+(/|$))\
-    [a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(/[a-z0-9][a-z0-9._-]*)*$"
+  allOf:
+    - pattern: "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+\
+        [a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(/[a-z0-9][a-z0-9._-]*)*$"
+    - not: {pattern: '^[^/]*\.[0-9]+(/|$)'}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -102,9 +104,12 @@ metadata:
     exports. It never carries a version.
 spec:
   type: string
-  pattern: "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+(?![0-9]+([/#]|$))\
-    [a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(/[a-z0-9][a-z0-9._-]*)*\
-    #(?=.{1,63}$)[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+  allOf:
+    - pattern: "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+\
+        [a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(/[a-z0-9][a-z0-9._-]*)*\
+        #[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+    - not: {pattern: '^[^/#]*\.[0-9]+([/#]|$)'}
+    - pattern: '#[a-z0-9.-]{1,63}$'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -140,7 +145,9 @@ metadata:
     of template and is stated by the schema of that template's `spec`.
 spec:
   type: string
-  pattern: '^(/(?!-(/|$))([^/~]|~[01])*)+$'
+  allOf:
+    - pattern: '^(/([^/~]|~[01])*)+$'
+    - not: {pattern: '/-(/|$)'}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

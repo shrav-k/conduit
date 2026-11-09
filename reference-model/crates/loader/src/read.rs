@@ -68,8 +68,8 @@ pub(crate) fn content(syntax: Syntax, text: &str) -> Result<Content, Diagnostics
     }
 }
 
-/// The text of a file's bytes. Every file is UTF-8, as the schema profile says and as I-JSON
-/// requires (RFC 7493, section 2.1), and YAML's other encodings are not read: a file that is
+/// The text of a file's bytes. Every file is UTF-8, the schema profile's own rule, with I-JSON
+/// (RFC 7493, section 2.1) as its precedent, and YAML's other encodings are not read: a file that is
 /// not UTF-8 holds no document, and is rejected under SUB-005.
 pub(crate) fn text_of(bytes: &[u8]) -> Result<&str, Diagnostic> {
     std::str::from_utf8(bytes).map_err(|error| {

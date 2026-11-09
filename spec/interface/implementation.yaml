@@ -1287,38 +1287,39 @@
     for the item's URL, under DL13, to which the engine authenticates with its own credential of
     DL13.
   observable: >-
-    The connection serves that one instance, so no header's value reaches a request for another
-    instance. The connection is the engine's holding of the header values, as SEC-013 states,
-    and a failed HTTP request does not end it. A secret's value is sent only to that item's URL
-    and held only for that connection, under SEC-013, and only where SEC-024 lets it go on the
-    engine as it is configured when the value is sent: to an `https` URL, or to an `http` URL
-    whose host is a loopback address on an engine that, as configured, can neither restart on
-    another machine nor run as several parts, under DL17. Where the read does not succeed no
-    connection is made, under SEC-012. Where the engine has lost the values that
-    a connection held, as after it restarts, on its machine or on another, it reads the secrets
-    again under SEC-023 before it sends them, by the references that the setup which made the
-    connection read, and sends every other header with the value that the setup took, which it
-    keeps with the connection: a restart changes nothing that a connection carries. An item that
-    is not `plain` takes Conduit's keys, so its server is its own gate under PRV-025: it checks
-    the engine's proof itself, its operator having configured it to admit only a credential
-    that names the engine's credential ID, which the engine's conformance document states under
-    DL13, so that no instance's credential passes. Under the protocol's authorization, its
-    protected resource metadata names as its authorization server the one that DL13 states, or
-    one that the user runs, has configured for the item's URL and that issues tokens to the
-    engine as a client registered in advance, under the protocol's extension for client
-    credentials, whose flow leaves to the client which server it uses. The engine asks no other
-    server for a token: one that only the metadata names, and that serves another item, could
-    ignore the `resource` that RFC 8707 has the engine send, and issue a token that the other
-    item admits and that the item which received it could present there. The engine
-    authenticates to that server with its own credential, as a JWT assertion under RFC 7523, so
-    it holds no client secret outside every Conduit, and the server admits only a token that
-    names the engine as that client. A server that cannot be so configured is used as `plain`,
-    and is sent no proof and none of Conduit's keys. An item that is not `plain` at an `http`
-    URL is rejected, under IFC-044. The names that `headers` may give are those the item's
-    Remote declares, under MAN-010, and an item that is not `plain` names no `Authorization`,
-    under IFC-043. A `remote` item that names no headers is sent none. Beside these headers the
-    engine sends what the protocol and its transport require, and never what a consumer
-    presented to identify itself, under IFC-030.
+    The connection serves that one instance, so no header's value reaches a request for
+    another instance. The connection is the engine's holding of the header values, as SEC-013
+    states, and a failed HTTP request does not end it. A secret's value is sent only to that
+    item's URL and held only for that connection, under SEC-013, and only where SEC-024 lets
+    it go on the engine as it is configured when the value is sent: to an `https` URL, or to
+    an `http` URL whose host is a loopback address on an engine that, as configured, can
+    neither restart on another machine nor run as several parts, under DL17. Where the read
+    does not succeed no connection is made, under SEC-012. Where the engine has lost the
+    values that a connection held, as after it restarts, on its machine or on another, it
+    reads the secrets again under SEC-023 before it sends them, by the references that the
+    setup which made the connection read, and sends every other header with the value that the
+    setup took, which it keeps with the connection: a restart changes nothing that a
+    connection carries. An item that is not `plain` takes Conduit's keys, so its server is its
+    own gate under PRV-025: it checks the engine's proof itself, its operator having
+    configured it to admit only a credential that names the engine's credential ID, which the
+    engine's conformance document states under DL13, so that no instance's credential passes.
+    Under the protocol's authorization, its protected resource metadata names as its
+    authorization server the one that DL13 states, or one that the user runs, has configured
+    for the item's URL and that issues tokens to the engine as a client registered in advance,
+    under the protocol's extension for client credentials, whose flow leaves to the client
+    which server it uses. The engine asks no other server for a token: one that only the
+    metadata names, and that serves another item, could ignore the `resource` that RFC 8707
+    has the engine send, and issue a token that the other item admits and that the item which
+    received it could present there. The engine authenticates to that server with its own
+    credential, as a JWT assertion under RFC 7523, so it holds no client secret outside every
+    Conduit, and the server admits only a token that names the engine as that client. A server
+    that cannot be so configured is used as `plain`, and is sent no proof and none of
+    Conduit's keys. An item that is not `plain` at an `http` URL is rejected by
+    `implementation-item.v1`, under SUB-005, as IFC-044 requires. The names that `headers` may
+    give are those the item's Remote declares, under MAN-010, and an item that is not `plain`
+    names no `Authorization`, under IFC-043. A `remote` item that names no headers is sent
+    none. Beside these headers the engine sends what the protocol and its transport require,
+    and never what a consumer presented to identify itself, under IFC-030.
   vectors: []
 
 # --- Added by ruling 43 (docs/proposals/ruling-43/README.md; Q1 and D5 of
@@ -1367,13 +1368,13 @@
   then: >-
     The item is rejected.
   observable: >-
-    The item is rejected with a diagnostic naming the item and the header, as MAN-010 rejects
-    an item, wherever it is read, whichever engine reads it. The engine presents its own proof
-    to such an item under IFC-041, and in the form of a token that proof is the protocol's own
-    authorization, which the `Authorization` header carries; a value from configuration there
-    would be the same for every request, and proves nothing of who sent it. A plain item may
-    name the header, since the engine presents it no proof, and a header that carries a secret
-    goes only where SEC-024 lets it go.
+    The item is rejected by `implementation-item.v1`, under SUB-005, with a diagnostic naming
+    the item and the header, wherever it is read, whichever engine reads it. The engine
+    presents its own proof to such an item under IFC-041, and in the form of a token that
+    proof is the protocol's own authorization, which the `Authorization` header carries; a
+    value from configuration there would be the same for every request, and proves nothing of
+    who sent it. A plain item may name the header, since the engine presents it no proof, and
+    a header that carries a secret goes only where SEC-024 lets it go.
   vectors: []
 
 # --- Added by the verification of ruling 43 (docs/proposals/ruling-43/log-integration.md,
@@ -1389,18 +1390,18 @@
   then: >-
     The item is rejected.
   observable: >-
-    The item is rejected with a diagnostic naming the item and the URL, as MAN-010 rejects an
-    item, wherever it is read, whichever engine reads it, and the schema
-    `implementation-item.v1` states it. The engine connects to such an item only at an `https`
-    URL, once TLS has proved the host of its URL, under IFC-041 and IFC-017, which unencrypted
-    `http` cannot prove, so no engine could connect to it, and an engine rejects a document that
-    it cannot honor rather than accept it and ignore a part of it. A local server that takes
-    Conduit's keys runs as a `command` or `package` item on the engine's own runner, over stdio,
-    which needs neither TLS nor a gate. A plain item may stand at an `http` URL, where SEC-024
-    lets it: not at one whose host is not a loopback address where it carries a secret, in a
-    header or as the value of `get-secret.v1`, and at no loopback host on an engine that, as
-    configured, can restart on another machine or run as several parts. So an `http` URL on
-    loopback serves a plain server alone, on an engine that can do neither.
+    The item is rejected by `implementation-item.v1`, under SUB-005, with a diagnostic naming
+    the item and the URL, wherever it is read, whichever engine reads it. The engine connects
+    to such an item only at an `https` URL, once TLS has proved the host of its URL, under
+    IFC-041 and IFC-017, which unencrypted `http` cannot prove, so no engine could connect to
+    it, and an engine rejects a document that it cannot honor rather than accept it and ignore
+    a part of it. A local server that takes Conduit's keys runs as a `command` or `package`
+    item on the engine's own runner, over stdio, which needs neither TLS nor a gate. A plain
+    item may stand at an `http` URL, where SEC-024 lets it: not at one whose host is not a
+    loopback address where it carries a secret, in a header or as the value of
+    `get-secret.v1`, and at no loopback host on an engine that, as configured, can restart on
+    another machine or run as several parts. So an `http` URL on loopback serves a plain
+    server alone, on an engine that can do neither.
   vectors: []
 
 # --- Added by the verification of round 5 of the re-audit

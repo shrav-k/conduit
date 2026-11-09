@@ -316,8 +316,8 @@
     instantiated.
   observable: >-
     Resolving returns a diagnostic naming the key. A declared Conduit that names a consumer is
-    rejected under OBJ-014: the consumer of a declared Conduit is always the instance being
-    instantiated.
+    rejected by `declared-conduit.v1`, under SUB-005: the consumer of a declared Conduit is
+    always the instance being instantiated.
   vectors: []
 
 - id: CON-021

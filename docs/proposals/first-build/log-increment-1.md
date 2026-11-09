@@ -17,24 +17,20 @@ every file under `examples/invalid/` is rejected by the step that `check_schemas
 by; every document under `examples/invalid-by-rule/` passes the schemas; and the cases written
 for SCH-004's grammars and SCH-016's patterns pass.
 
-Thirteen findings, all settled. Three are defects of a tool: two were fixed with the increment,
-with vectors, and the third is stated in the tool. Ten are findings against the promises. The
-coordinator's brief for the increment first put those ten to the owner, each with the loader's
-reading and a recommendation, and 1-09's choice of a parser with them. Ruling 46, point 4, has
-the coordinator settle such a finding itself, in the same pull request, and send to the owner
-only a fix that adds or removes a feature or changes what Conduit is for, which none of these
-does. So the coordinator settled each: nine by a change to the promises or the profile, with a
-vector; 1-04 by keeping the profile as written; and 1-09 by keeping the tool's parser. Each is
-logged below as the coordinator's own decision, and the owner can strike it. Three verifiers
-read the increment before it was merged, and findings 1-08 to 1-13 come from their reports, as
-do the corrections to the readings of 1-03, 1-04 and 1-06.
-
+Eighteen findings, all settled: the first thirteen from the increment and its verifiers, and
+five from the review of 2026-11-09. Three are defects of a tool, two fixed with vectors and one
+stated in the tool; fifteen concern the promises. The coordinator settled the first findings
+under ruling 46, point 4, and the review completed or corrected those settlements below.
+Ruling 48, point 3, settles 1-04 and the review's 1-17. Every other settlement is the
+coordinator's own, and the owner can strike it. None adds or removes a feature or changes what
+Conduit is for. The original entries record what the increment found and did; the section
+[after the review](#after-the-review-of-2026-11-09) gives the later changes and their vectors.
 | # | Finding | Class | Promises | Settled |
 | --- | --- | --- | --- | --- |
 | 1-01 | A rejection by a schema names no one promise | Gap | OPS-005, IFC-025, OBJ-023, SUB-005 | Settled by the coordinator: SUB-005, with a vector |
 | 1-02 | `check_schemas.py` matched `$` and `\s` otherwise than ECMA-262 | Defect of a tool | SCH-016, OBJ-001 | Fixed, with a vector |
 | 1-03 | When a schema whose pattern is not ECMA-262 is rejected | Gap | SCH-016, SCH-002, SCH-003 | Settled by the coordinator: SCH-016, with a vector |
-| 1-04 | ECMA-262 patterns are needlessly hard outside JavaScript | Needless complexity | SCH-016, INS-014 | Settled by the coordinator: kept as written |
+| 1-04 | ECMA-262 patterns are needlessly hard outside JavaScript | Needless complexity | SCH-016, INS-014 | Settled by ruling 48, point 3; applied in 1-17 |
 | 1-05 | The encoding of a file, and a file that is not YAML or JSON | Gap | SUB-005, SCH-013 | Settled by the coordinator: the profile and SUB-005, with a vector |
 | 1-06 | Which names in a directory are read | Gap | MAN-011, MAN-001, SUB-010, PKG-022 | Settled by the coordinator: MAN-011, SUB-010 and SUB-005, with a vector |
 | 1-07 | A JSON file whose value is not a map or a list of maps | Ambiguity | SCH-018, SCH-013, SUB-005 | Settled by the coordinator: SCH-018, with a vector |
@@ -44,6 +40,11 @@ do the corrections to the readings of 1-03, 1-04 and 1-06.
 | 1-11 | A rejection for a limit of an engine names no promise | Gap | OPS-005, IFC-025, SUB-005, DL10 | Settled by the coordinator: SUB-011 added, and DL10, with a vector |
 | 1-12 | I-JSON's rules on strings | Ambiguity | SCH-013, SCH-012 | Settled by the coordinator: the profile, with a vector |
 | 1-13 | The case of the letters of a duration | Ambiguity | SCH-004 | Settled by the coordinator: the profile, with a vector |
+| 1-14 | Schema rejections still cite other promises and lack keyword locations | Contradiction | SUB-005, PKG-023 and the schema-encoded rules | Settled by the coordinator: attribution and diagnostic location, with vectors |
+| 1-15 | JSON's byte order mark and the source of the UTF-8 rule | Contradiction | SUB-005, SCH-013; the profile | Settled by the coordinator: one leading mark in either syntax, with vectors |
+| 1-16 | SUB-011 has no floor and leaves files, submissions and archives out | Gap | SUB-011, PKG-023, DL10 | Settled by the coordinator: floor and scope, with vectors |
+| 1-17 | Patterns exceed JSON Schema's interoperable tokens | Needless complexity | SCH-016, INS-014 | Settled by ruling 48, point 3, with vectors |
+| 1-18 | A package file's hash can be mistaken for a pin of its dependencies | Gap | MAN-010 | Settled by the coordinator: what a pin holds, with an example |
 
 ## 1-01. A rejection by a schema names no one promise
 
@@ -77,6 +78,8 @@ asserts SUB-005 for every file under `examples/invalid/` that a schema rejects, 
 `every_fault_of_a_project_is_reported`, in `tests/project.rs`, which asserts the place and the
 contract; the conformance vectors (A39) will carry it. Promise changed: SUB-005. The owner can
 strike it.
+
+**After the review.** The review completed this settlement in 1-14: schema-encoded rejections name SUB-005 throughout, including at installation, and diagnostics carry the failing keyword's location.
 
 ## 1-02. `check_schemas.py` matched `$` and `\s` otherwise than ECMA-262
 
@@ -187,6 +190,8 @@ to narrow the profile's patterns to I-Regexp, RFC 9485, the subset of regular ex
 to be matched alike by every engine. No promise changed, and no vector was added. The owner can
 strike it.
 
+**After the review.** Ruling 48, point 3, replaced this settlement: SCH-016 keeps ECMA-262 in Unicode mode and restricts its tokens to the interoperable list. Finding 1-17 applies it; no I-Regexp question remains open.
+
 ## 1-05. The encoding of a file, and a file that is not YAML or JSON
 
 **Class:** gap. **Promises:** SUB-005, SCH-013; the profile's rows for YAML 1.2.2, JSON and
@@ -222,6 +227,8 @@ reads and writes such a byte unchanged. The vector is
 in Latin-1, which is not UTF-8. The tool and the loader both reject it when they read it, and
 the loader's fixture and the counts of the two READMEs include it. Promise changed: SUB-005;
 and the profile. The owner can strike it.
+
+**After the review.** The review corrected this settlement in 1-15: either syntax may begin with one byte order mark, which is ignored, and UTF-8 is the profile's own rule.
 
 ## 1-06. Which names in a directory are read
 
@@ -450,6 +457,8 @@ assumes. The counts of [spec/README.md](../../../spec/README.md) and of the
 [independent builds](../../implementation/INDEPENDENT_BUILDS.md) include the new promise.
 Promises changed: SUB-011, added, and DL10. The owner can strike it.
 
+**After the review.** The review completed this settlement in 1-16: every engine accepts nesting at least 64 levels deep; files, submissions and archives fall under SUB-011 too; exhaustion of storage stays with DL10.
+
 ## 1-12. I-JSON's rules on strings
 
 **Class:** ambiguity. **Promises:** SCH-013, SCH-012; the profile's row for I-JSON.
@@ -513,6 +522,131 @@ take a small `t` and `z`. The vector is the loader's tests in `tests/formats.rs`
 `a_uuid_matches_the_grammar_of_rfc_9562`, with letters of either case, each checked against the
 validator and against the grammar. No promise changed; the profile did. The owner can strike it.
 
+## After the review of 2026-11-09
+
+### 1-14. A rejection by a schema cites SUB-005 everywhere
+
+**Class:** contradiction. **Promises:** SUB-005, PKG-023, CON-020, POOL-009, POOL-012,
+MAN-012, MAN-007, CTR-008, OBJ-015, OBJ-019, TPL-001; also CTR-002, CTR-005, SCH-002,
+SCH-003, SCH-015, IFC-041, IFC-043 and IFC-044.
+
+The first settlement of 1-01 gave schema rejections SUB-005, while other promises still gave
+the same rejection a different rule. Those attributions now name SUB-005 and the rejecting
+Schema contract. The search beyond the order's initial list found the undefined keys of
+CTR-002 and CTR-005, the unknown keyword and format of SCH-002 and SCH-003, the malformed
+`$ref` of SCH-015, and the header and URL restrictions of IFC-041, IFC-043 and IFC-044. It
+also separated MAN-007's duplicate export name, which `manifest.v1` rejects, from an export
+that names no document, which needs MAN-007's semantic check. POOL-009 keeps PLC-005 for an
+input with a placement or runtime destination that states a default. A reference that resolves
+to something other than a Schema contract is not decided by a schema, and SCH-015 said it was
+rejected under SCH-002, while `check_schemas.py` and the example
+`SCH-015-ref-to-a-name-that-is-not-a-schema.yaml` name SCH-015. The coordinator settled it on
+SCH-015, the promise that says what a `$ref` resolves to, so the text now agrees with the tool
+and the example. Every rejection that a schema does not decide keeps its rule.
+
+SUB-005 now also covers a schema rejection of a package's document or manifest during
+installation, with the request reporting invalid under PKG-023, as MAN-011 says. Its
+observable requires the keyword's `keywordLocation`, and `absoluteKeywordLocation` where
+known, in the SARIF result's `properties`. `diagnostic.v1` already allows SARIF's other
+members, including this property bag; its description now states that use. The loader's
+`Diagnostic` carries both locations. The bundle has no absolute base URI, so its absolute
+location is unknown; one is preserved when the validator supplies it. The core's thesis "the
+core cites a promise for every decision" is met for the rules a schema encodes through SUB-005
+and the keyword's location.
+
+**Vectors:** `a_schema_rejection_carries_the_keyword_location` in `tests/project.rs` checks
+both a document and a manifest, with the instance pointer kept apart from the keyword's path;
+`a_known_absolute_keyword_location_is_kept` in `src/schemas.rs` checks a known absolute URI.
+`every_invalid_example_is_rejected_by_the_step_its_name_gives` still requires SUB-005 for
+every schema rejection. The custom-keyword errors of jsonschema 0.61 lose the reference
+tracker; the loader reads the evaluation tree to retain the `$ref` traversals required by
+JSON Schema 2020-12. **The owner can strike it.**
+
+### 1-15. A byte order mark in JSON is accepted and ignored
+
+**Class:** contradiction. **Promises:** SUB-005, SCH-013; the profile's Encoding and Value
+model rows.
+
+The Encoding row now allows one leading byte order mark in either syntax and ignores it,
+which RFC 8259, section 8.1, permits a JSON parser to do. UTF-8 is the profile's own rule,
+with I-JSON as its precedent, so the Value model row still adopts only its two stated rules.
+Both the loader and `check_schemas.py` skip that one mark before reading JSON. A second mark
+is not skipped; a mark inside a string remains content. The loader keeps source positions
+relative to the original text, including the leading mark.
+
+**Vectors:** [bom.json](../../../spec/schemas/examples/valid/project/bom.json), read by both
+tools; `text_that_is_not_yaml_or_json_is_rejected` in `tests/reading.rs`, which now accepts one
+mark and rejects two and checks a diagnostic after it; and `check_profile_regressions` in
+`tools/check_schemas.py`, which checks one mark, two, an array and content inside a string.
+**The owner can strike it.**
+
+### 1-16. SUB-011 has a floor and covers files, submissions and archives
+
+**Class:** gap. **Promises:** SUB-011, PKG-023, DL10.
+
+Every engine accepts values nested at least 64 levels deep. This loader keeps its stated
+limit of 128. SUB-011 also covers file sizes, counts of documents and files in a submission,
+and package archives. At installation the request reports invalid under PKG-023 with the
+SUB-011 diagnostic. The rule against unstated limits now applies to size, count and nesting
+limits alone, leaving exhaustion of storage to DL10. DL10 lists the same scope and floor.
+
+**Vector:** `values_nest_no_deeper_than_the_limit` in `tests/reading.rs` accepts 63, 64 and
+65 levels in YAML and JSON and keeps the existing checks at 128 and beyond. All specification
+examples remain within the floor. File-count and archive limits are not imposed by this
+loader, and installation comes with a later increment; no runtime verdict on an archive is
+claimed here. **The owner can strike it.**
+
+### 1-17. A pattern uses only the interoperable tokens
+
+**Class:** needless complexity. **Promises:** SCH-016, INS-014.
+
+SCH-016 now names and quotes the token notation of JSON Schema 2020-12, core, section 6.4,
+plus a backslash before pattern punctuation to give its literal meaning. It keeps ECMA-262 in
+Unicode mode. A malformed pattern, or one outside those tokens, makes its document rejected
+under SCH-016 when read, including at package installation, as 1-03 settled.
+
+The schemas' eight patterns that used other tokens have been rewritten: `address.v1`,
+`qualified-reference.v1`, `destination.v1`, the three destination schemas in `templates.yaml`,
+and the transport URL of `server-package.v1` and the URL of `server-remote.v1`. Lookaheads now
+use `allOf` and `not` with another pattern; the qualified reference's export length uses a
+second positive pattern. The two URL classes write out exactly ECMA-262's white space and
+line terminators, with YAML escapes decoded to individual Unicode characters. The search of
+the rest of `spec/` found no other unsupported schema patterns, apart from the deliberately
+invalid examples. The loader replaces its checks for later editions with a tokenizer and
+keeps `regress` for matching. The tool's `ecma-pattern` rule tokenizes the same list, then
+compiles it; `ecma()` keeps the end anchor and character classes at their ECMA-262 meanings.
+
+**Vectors:** the existing
+[SCH-016-pattern-that-is-not-ecma-262.yaml](../../../spec/schemas/examples/invalid-by-rule/SCH-016-pattern-that-is-not-ecma-262.yaml)
+and the new
+[SCH-016-pattern-outside-the-interoperable-tokens.yaml](../../../spec/schemas/examples/invalid-by-rule/SCH-016-pattern-outside-the-interoperable-tokens.yaml)
+are rejected by both tools. `only_interoperable_tokens_enter_a_pattern` and
+`a_document_whose_schema_holds_such_a_pattern_is_rejected` in `tests/formats.rs` check allowed
+and forbidden tokens, and keys of `patternProperties`; `check_profile_regressions` checks the
+tool's tokenizer and class translation too. `every_rewritten_pattern_keeps_its_verdict` in
+`tests/pattern_rewrites.rs` compares each historical expression with its rewrite, both matched
+by `regress`, on every string value read from the examples and over 10,000 strings per pattern
+including generated strings and the boundaries of host labels, export lengths, destinations,
+escapes, white space and line terminators. A file that is not readable has no document value to
+match. The test uses `regress`'s PikeVM backend because a long host label makes the historical
+qualified-reference pattern take excessive time by backtracking. No verdict changed in these
+comparisons. This settles 1-04. **Settled by ruling 48, point 3.**
+
+### 1-18. What a pin holds
+
+**Class:** gap. **Promise:** MAN-010.
+
+MAN-010's observable now says that the hash of a package file does not pin what its registry
+resolves for that package's dependencies, and that a `command` pins nothing. No new field or
+runtime behavior is introduced.
+
+**Vector:** the existing
+[files-package manifest](../../../spec/schemas/examples/valid/files-package/conduit.yaml)
+keeps the `listing` Package's illustrative `fileSha256` beside `files-server`'s `command`,
+and its comment states the distinction. The loader and tool still accept the manifest. The
+loader neither fetches a registry's dependency graph nor executes a command, so this example
+illustrates the stated limit and claims no execution result. **The owner can strike it.**
+
 ## Read, and found decided
 
 These were checked and need no change: the text decides them, though a builder could miss it.
@@ -551,8 +685,8 @@ These were checked and need no change: the text decides them, though a builder c
   the verdict is the same, and the rule named differs. The fault is to be reported to the
   parser's maintainers.
 - **The edition of ECMA-262.** The profile names the edition that JSON Schema 2020-12 cites, the
-  eleventh, of 2020. The loader rejects the syntax of later editions that its engine accepts
-  (1-04).
+  eleventh, of 2020. Since the review it first checks the interoperable token list (1-17),
+  which excludes the later syntax too.
 - **A merge key** is a plain `<<` used as a key: YAML 1.1's merge type resolves a plain scalar
   alone, so a quoted `"<<"` is a string key, as `check_schemas.py` also has it.
 - **An empty file and an empty document.** A YAML file with no document holds none, and is

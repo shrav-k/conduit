@@ -288,13 +288,14 @@
   observable: >-
     A `required` key on any of the four is rejected with a diagnostic naming it. `required`
     keeps its meaning inside a schema, and an Operation contract's `inputSchema` and
-    `outputSchema` are schemas: `optional: true` written as a keyword inside them is outside the
-    profile, and rejected under SCH-002. An input that states `default: []` and no mark may be
-    left out, and the default is then used: INS-007 says so for a template's input and NAM-019
-    for a Requirement's. A property of an Operation contract's `inputSchema` that states a
-    `default` takes it under OPS-026 when a request leaves it out, before the request is checked
-    against `inputSchema`, so it may be left out even where `required` lists it. An output that
-    `outputSchema` does not list under `required` is one that a result may leave out.
+    `outputSchema` are schemas: `optional: true` written as a keyword inside them is outside
+    the profile, and rejected by `schema.v1`, under SUB-005, as SCH-002 requires. An input
+    that states `default: []` and no mark may be left out, and the default is then used:
+    INS-007 says so for a template's input and NAM-019 for a Requirement's. A property of an
+    Operation contract's `inputSchema` that states a `default` takes it under OPS-026 when a
+    request leaves it out, before the request is checked against `inputSchema`, so it may be
+    left out even where `required` lists it. An output that `outputSchema` does not list under
+    `required` is one that a result may leave out.
   vectors: []
 
 - id: OBJ-016
@@ -366,13 +367,14 @@
   then: >-
     The document is rejected. Every key this specification defines is written in camelCase.
   observable: >-
-    Resolving returns a diagnostic naming the key. `depends_on`, `runtimes`, `setup` or `retire`
-    written in a template, and a family-specific key on an Interface or an Agent are each
-    rejected in this way. An input's `default` is a literal value whether a template or a
+    Resolving returns a diagnostic naming the key. `depends_on`, `runtimes`, `setup` or
+    `retire` written in a template, and a family-specific key on an Interface or an Agent are
+    each rejected in this way. An input's `default` is a literal value whether a template or a
     Requirement contract declares the input, and an Operation contract's input states its
     `default` inside its `inputSchema`, so a key inside a `default` that is a map is the
-    author's. Inside a schema only the names and the patterns are the author's: its keywords are
-    closed by the profile, and one outside it is rejected under SCH-002.
+    author's. Inside a schema only the names and the patterns are the author's: its keywords
+    are closed by the profile, and one outside it is rejected by `schema.v1`, under SUB-005,
+    as SCH-002 requires.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).

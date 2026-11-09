@@ -185,9 +185,11 @@ spec:
           type: array
           items:
             type: string
-            pattern: "^/(conduits/[a-z][a-z0-9-]{0,62}/target|\
-              (config|conduits/[a-z][a-z0-9-]{0,62}/arguments)\
-              (/(?!-(/|$))([^/~]|~[01])*)*)$"
+            allOf:
+              - pattern: "^/(conduits/[a-z][a-z0-9-]{0,62}/target|\
+                  (config|conduits/[a-z][a-z0-9-]{0,62}/arguments)\
+                  (/([^/~]|~[01])*)*)$"
+              - not: {pattern: '/-(/|$)'}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -222,9 +224,11 @@ spec:
           type: array
           items:
             type: string
-            pattern: "^/(entries/[a-z][a-z0-9-]{0,62}/(placement|runtime)|\
-              (config|entries/[a-z][a-z0-9-]{0,62}/arguments)\
-              (/(?!-(/|$))([^/~]|~[01])*)*)$"
+            allOf:
+              - pattern: "^/(entries/[a-z][a-z0-9-]{0,62}/(placement|runtime)|\
+                  (config|entries/[a-z][a-z0-9-]{0,62}/arguments)\
+                  (/([^/~]|~[01])*)*)$"
+              - not: {pattern: '/-(/|$)'}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -266,8 +270,10 @@ spec:
           type: array
           items:
             type: string
-            pattern: "^/(operations|requirements/[a-z][a-z0-9-]{0,62}/arguments\
-              (/(?!-(/|$))([^/~]|~[01])*)*)$"
+            allOf:
+              - pattern: "^/(operations|requirements/[a-z][a-z0-9-]{0,62}/arguments\
+                  (/([^/~]|~[01])*)*)$"
+              - not: {pattern: '/-(/|$)'}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

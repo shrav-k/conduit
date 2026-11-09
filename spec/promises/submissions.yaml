@@ -122,22 +122,27 @@
   then: >-
     The submission is rejected.
   observable: >-
-    The diagnostic names the item, and nothing is registered. A document, or the manifest, that
-    a Schema contract rejects is rejected under this promise, whichever promise that contract
-    encodes: the diagnostic names the place in the document by a JSON Pointer, in a logical
-    location, and its message names the Schema contract. So is a file that is not UTF-8, the
-    encoding that the schema profile names, or that is not YAML or JSON as the ending of its name
-    says: it holds no document, and the diagnostic names the file. The documents and the one
-    manifest that are handed over together in one registration are one project, and a directory
-    is one way to hand them over. Where a directory is submitted, what is read is the files in
-    the directory itself whose names end in `.yaml`, `.yml` or `.json` and do not begin with a
-    dot, the manifest among them, as MAN-001 and MAN-011 state. Nothing below the directory is
-    read, and no other file is, so neither is part of the submission. Every engine takes a
-    directory, under SUB-010. An engine that is handed files applies the rules on a file when it
-    reads them: which files are read, under MAN-001, MAN-002 and MAN-011, and their syntax, under
-    SCH-012, SCH-017 and SCH-018. Where a registration hands the documents over as values, as
-    the input `documents` of `register.v1` does, no file is in front of the engine and those
-    rules have nothing to check; every other rule applies to the values.
+    The diagnostic names the item, and nothing is registered. A document, or the manifest,
+    that a Schema contract rejects is rejected under this promise, whichever promise that
+    contract encodes: the diagnostic names the place in the document by a JSON Pointer, in a
+    logical location, and its message names the Schema contract. Its SARIF result carries the
+    failing keyword's location in `properties`, as JSON Schema 2020-12's output format names
+    it: `keywordLocation`, and `absoluteKeywordLocation` where known. This holds also for a
+    document or manifest rejected by a schema when its package is installed: the request
+    reports invalid under PKG-023, with that diagnostic, consistently with MAN-011. So is a
+    file that is not UTF-8, the encoding that the schema profile names, or that is not YAML or
+    JSON as the ending of its name says: it holds no document, and the diagnostic names the
+    file. The documents and the one manifest that are handed over together in one registration
+    are one project, and a directory is one way to hand them over. Where a directory is
+    submitted, what is read is the files in the directory itself whose names end in `.yaml`,
+    `.yml` or `.json` and do not begin with a dot, the manifest among them, as MAN-001 and
+    MAN-011 state. Nothing below the directory is read, and no other file is, so neither is
+    part of the submission. Every engine takes a directory, under SUB-010. An engine that is
+    handed files applies the rules on a file when it reads them: which files are read, under
+    MAN-001, MAN-002 and MAN-011, and their syntax, under SCH-012, SCH-017 and SCH-018. Where
+    a registration hands the documents over as values, as the input `documents` of
+    `register.v1` does, no file is in front of the engine and those rules have nothing to
+    check; every other rule applies to the values.
   vectors: []
 
 - id: SUB-006
@@ -327,16 +332,21 @@
   layer: language
   level: must
   when: >-
-    A document exceeds a limit that the engine states under DL10 of the implementation-defined
-    list, such as how deeply its values may nest.
+    A document, file, submission or package archive exceeds a limit that the engine states
+    under DL10 of the implementation-defined list, such as how deeply values may nest, a
+    file's size, the number of documents or files in a submission, or the size of a package's
+    archive.
   then: >-
-    The document is rejected, with an error diagnostic that names the limit.
+    The document, file, submission or package is rejected, with an error diagnostic that names
+    the limit. Every engine accepts values nested at least 64 levels deep.
   observable: >-
     The diagnostic's `ruleId` is SUB-011, and its message names the limit and the value that
-    the engine's conformance document states for it, such as values nested more than 128 levels
-    deep. Nothing in the submission is registered, under SUB-003. A document within every limit
-    that the engine states is not rejected for its size: a limit that the conformance document
-    does not state is not applied. Such a document is not malformed, and another engine that
-    states larger limits accepts it, so the diagnostic names the engine's limit and not a fault
-    of the document.
+    the engine's conformance document states for it, such as values nested more than 128
+    levels deep. Nothing in the submission is registered, under SUB-003. At installation the
+    request reports invalid under PKG-023, with that diagnostic. A document, file, submission
+    or archive within every stated size, count and nesting limit is not rejected for exceeding
+    such a limit: an unstated limit on these is not applied. This does not govern exhaustion
+    of storage, whose behavior DL10 leaves to the engine. What exceeds an engine's limit is
+    not thereby malformed; another engine that states larger limits accepts it, so the
+    diagnostic names the engine's limit and not a fault of the documents.
   vectors: []

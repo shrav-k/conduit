@@ -45,3 +45,18 @@ you report.
 S1's documents register and resolve on the core by vectors, in any order, with nothing
 published on a rejection and no effect; every decision cites a promise; and the checks of order
 004's done-when pass, with every vector run by `conduit-conformance`.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 25 minutes, then a second round. Atomic registration and the resolving of
+  instances; S1 registers as nine templates, six named instances and four nested Conduits, with
+  no effect, in any order; 52 vectors, then 190 in all.
+- **Verifier**: 7 minutes. Nine `must` and one `should`, among them a Type with no schema
+  rejected, a requirement's arguments left unvalidated, a retired Resource selectable, and
+  unresolved names in nested declarations left unreported.
+- **Admin**: sent the worker back once, telling it to check each finding against the promise
+  that decides it and to log, not invent, any the promises did not decide. Each was decided
+  (CTR-004, PLC-005, NAM-019, PKG-007, OBJ-009, POOL-014, OBJ-008, OBJ-013, INS-023 and others),
+  and each fix has a vector that failed before it.

@@ -26,7 +26,7 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "pattern": "^[A-Z]{3}-[0-9]{3}$"
+        "pattern": "^[A-Z]{3,4}-[0-9]{3}$"
       }
     },
     "title": {
@@ -439,6 +439,98 @@
                   "kind",
                   "file"
                 ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "register-project",
+                      "registration-orders"
+                    ]
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "time": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "revisions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "suffixes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "required": [
+                      "time",
+                      "ids"
+                    ]
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "sender": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "caller": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "conduit": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "target": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "operation": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "sender",
+                      "caller",
+                      "conduit",
+                      "target",
+                      "operation"
+                    ]
+                  },
+                  "file": {
+                    "type": "string"
+                  },
+                  "reverse": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file",
+                  "evidence",
+                  "request"
+                ]
               }
             ]
           },
@@ -585,7 +677,9 @@
                       "enum": [
                         "first-start",
                         "request",
-                        "submit-files"
+                        "submit-files",
+                        "register-project",
+                        "registration-orders"
                       ]
                     }
                   }

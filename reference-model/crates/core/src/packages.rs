@@ -73,7 +73,7 @@ pub fn project_digest(project: &Project) -> Result<String> {
 pub fn bytes_digest(bytes: &[u8]) -> String {
     format!("sha256:{:x}", Sha256::digest(bytes))
 }
-fn version_equal(a: &str, b: &str) -> bool {
+pub(crate) fn version_equal(a: &str, b: &str) -> bool {
     match (Version::parse(a), Version::parse(b)) {
         (Ok(a), Ok(b)) => a.cmp_precedence(&b).is_eq(),
         _ => false,
@@ -100,7 +100,7 @@ fn strings<'a>(value: &'a Value, key: &str) -> impl Iterator<Item = &'a str> {
 fn manifest(project: &Project) -> Value {
     project.manifest.clone().unwrap_or(json!({}))
 }
-fn index(project: &Project) -> BTreeMap<String, Value> {
+pub(crate) fn index(project: &Project) -> BTreeMap<String, Value> {
     project
         .documents
         .iter()
@@ -525,7 +525,7 @@ fn expand_manifest(p: &Project, diagnostics: &mut Vec<Value>) -> Result<Value> {
     }
     Ok(m)
 }
-fn resolve_name(
+pub(crate) fn resolve_name(
     env: &Environment,
     indexes: &BTreeMap<String, BTreeMap<String, Value>>,
     scope: &str,
@@ -624,7 +624,11 @@ fn selections_spec(spec: &Value, out: &mut Vec<(String, String)>) {
         add(&r["requirement"], "Requirement", out);
     }
 }
-fn selections_document(d: &Value, packaged: bool, out: &mut Vec<(String, String)>) -> Result<()> {
+pub(crate) fn selections_document(
+    d: &Value,
+    packaged: bool,
+    out: &mut Vec<(String, String)>,
+) -> Result<()> {
     if let Some(from) = d["from"].as_str()
         && (from.contains('#') && (!from.starts_with('#') || packaged))
     {

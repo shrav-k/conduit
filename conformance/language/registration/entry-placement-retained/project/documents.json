@@ -1,0 +1,63 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "pool"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1",
+      "entries": {
+        "one": {
+          "from": "resource"
+        }
+      },
+      "inputs": {
+        "node": {
+          "schema": {
+            "type": "string"
+          },
+          "to": [
+            "/entries/one/placement"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "p"
+    },
+    "from": "pool",
+    "arguments": {
+      "node": "local"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "resource.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [],
+      "requires": []
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "resource"
+    },
+    "spec": {
+      "type": "#resource.v1"
+    }
+  }
+]

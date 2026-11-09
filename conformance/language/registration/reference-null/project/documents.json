@@ -1,0 +1,100 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "test.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pool": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#alias.v1"
+              }
+            ]
+          },
+          "data": {},
+          "list": {
+            "type": "array",
+            "items": {
+              "$ref": "github.com/shrav-k/conduit/core#pool-reference.v1"
+            }
+          }
+        },
+        "required": [
+          "pool"
+        ]
+      },
+      "offers": [],
+      "requires": []
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "agent"
+    },
+    "spec": {
+      "type": "#test.v1",
+      "config": {
+        "pool": null,
+        "data": {
+          "kind": "Pool",
+          "name": "ordinary-data"
+        },
+        "list": [
+          "p"
+        ]
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "a"
+    },
+    "from": "agent"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "pool"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "p"
+    },
+    "from": "pool"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Schema",
+    "metadata": {
+      "name": "alias.v1"
+    },
+    "spec": {
+      "$defs": {
+        "ref": {
+          "$ref": "github.com/shrav-k/conduit/core#pool-reference.v1"
+        }
+      },
+      "$ref": "#/$defs/ref"
+    }
+  }
+]

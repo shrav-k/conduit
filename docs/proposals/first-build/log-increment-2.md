@@ -253,3 +253,144 @@ No new language finding or specification change was needed.
 
 All three vectors were observed failing before their corresponding fixes, then passing in
 the runner's full suite of 107 cases. The required-case test also names each new vector.
+
+## I2-04: registration and resolving instances (work order 012)
+
+2026-11-09. Applied the order's decisions against OBJ, INS, SUB, NAM and TPL, using I2-03's
+snapshot contexts. No language finding needed a settlement and no specification or S1 fixture
+was changed. S1's count agrees with the study: nine templates and six named instances, plus
+four nested Conduits, **19 new objects**. The instances are registered and every new Conduit
+is unopened. No setup, run, call, installation or external intent occurs.
+
+**What the build did.** The core plans registration in private and publishes only after all
+documents and nested instances resolve. Every decision cites promises. Existing-name clashes
+report conflict; other defects report invalid, with refusal taking precedence when the
+established registration path lacks authority. ID, revision and suffix evidence is supplied
+at the boundary. Instance configuration, ownership, placement, Conduit ends and retained
+nested declarations keep references by kind/ID, resolved under their schemas. A template
+keeps its package identities, schema environment and selected implementation items; a later
+project's contracts cannot change that context. Argument assignment replaces whole values,
+fills defaults without coercion and preserves relative paths. Generated names retry both
+existing and later-submitted named collisions under DL15.
+
+**Worker choices.** Registration uses a new `register-project` input, leaving I2-01's
+protected-submission compatibility input intact. Traversal sorts by family, name and document
+value, then nested slot name, so allocation evidence maps to the same objects in every order.
+The reply's nested projection gives parent ID, slot and declaration name. A successful
+registration appends one `object-change` per new object, without inventing setup invocations.
+Frozen contexts are owned values in the state. The case schema now permits POOL's four-letter
+promise prefix. The runner's `registration-orders` compares entire transitions across three
+orders, including reversed files, and publishes one result. Its assertions still compare
+exact object/record arrays. DL15 collision retry is now implemented rather than reserved.
+
+**Vectors.** The cases under
+[registration](../../../conformance/language/registration/s1/case.yaml) cover accepted and
+rejected arguments, defaults, configuration and references; template/Type family checks;
+implementation defaults, overrides, engine selections, coverage and run counts; ownership,
+placement, nested slots and generated-name collisions. S1 and its rejected counterpart are
+compared in three orders, with rejection preserving every existing object. The frozen-template
+case submits a changed Type contract at the same address and makes another instance from the
+old template; it retains the old schema and leaves the old instance unchanged.
+
+**Validation:** all 159 portable cases passed through `conduit-conformance`, including 52
+new registration cases. Every registration case asserts exact object/record arrays or unchanged
+objects on rejection. An additional boundary test exhausts IDs after an object-change record
+was built privately, and repeats with a reused ID; both leave the caller's objects, records
+and allocations untouched. All workspace release tests passed. Clippy with warnings denied
+and formatting passed. The reference-patterns case applies both a property schema and a
+matching pattern to one reference; both read the original value, preserving the stored ID
+without treating another schema's rewrite as authored input. Repository documentation, names,
+schemas, roadmap and whitespace checks passed. No commit, staging, branch change, push or
+pull request was made.
+
+### Verification corrections to I2-04 (work order 012, second round)
+
+2026-11-09. The admin accepted ten verifier findings. The worker checked each against the
+promises before applying it; all ten are decided by the current specification or, for vector
+coverage, the order's decision 5. No specification change or "For the admin" settlement was
+needed. The corrections are confined to the order's scope.
+
+1. **Omitted Type schema — CTR-004.** A Type without `schema` puts no rule on configuration.
+   Both template inspection and instance resolution use an unconstrained schema when absent.
+   `registration-type-no-schema` accepts and preserves arbitrary configuration, including an
+   ordinary map resembling a reference. It failed against the original binary.
+2. **Defaults inside config — PLC-005, INS-012.** PLC-005 forbids defaults targeting an entry's
+   placement/runtime; INS-012 permits destinations inside config. The prohibition now checks
+   the `entries` root. `registration-config-standard-defaults` accepts defaults at both
+   `/config/settings/placement` and `/config/settings/runtime`; it failed before the fix.
+3. **Requirement arguments — NAM-019, OBJ-009, OBJ-021, SCH-009.** NAM-019 requires the same
+   argument checks and default filling as instantiation. Every applied requirement now uses
+   its own held contract context, validates arguments, fills input and schema defaults,
+   rejects authored IDs and resolves governed references. The eight `registration-requirement-*`
+   cases cover bound IDs/defaults, schema defaults, private schemas in the Requirement's
+   package, unresolved references, authored IDs, invalid/unknown arguments and required inputs.
+   All eight failed against the original binary and pass after correction.
+4. **Retained packages — PKG-007, NAM-010.** Instantiation rejects an uninstalled package,
+   naming its required version, while retaining the template's original context. Selection of
+   a retained template now checks its package address/version/digest against the current
+   catalog. `registration-retained-package-missing` registers a template with its snapshot,
+   then omits that snapshot on an instance-only second submission; the rejection names the
+   package and version and preserves existing objects. That second step was accepted before.
+5. **Retained entry references — OBJ-009, POOL-009, POOL-016.** Every instance reference is
+   stored by ID, and an input-supplied placement remains in the retained entry. Retained
+   entries now copy supplied placement/runtime references from their resolved children;
+   provider-chosen placement is not added to the declaration. The placement and runtime
+   retained-entry vectors assert both parent and child, using plain string input schemas.
+   Both failed before the fix. Standard references are resolved from their original supplied
+   values, so an input schema's prior rewrite neither loses authorship checks nor rejects an
+   engine-written ID.
+6. **Retired entries — POOL-014.** An entry reference reaches the Resource that is not retired,
+   and names no existing object when none qualifies. Lookup now filters by Resource kind and
+   excludes retired entries. `registration-entry-retired-only` rejects; the active-replacement
+   case selects the later active ID even with the retired Resource first. Both failed before.
+7. **Template diagnostics — OBJ-008, OBJ-021, POOL-005.** Missing template references are
+   diagnostics that permit registration. Inspection now covers Conduit input defaults,
+   applied requirement arguments, nested arguments and standard targets, and missing nested
+   template names. It continues after unresolved schema leaves. `registration-template-nested-notes`
+   asserts five non-blocking named diagnostics; `registration-template-nested-from-note`
+   asserts the missing template name. Both failed before. Two additional vectors preserve
+   POOL-005's acceptance of a real sibling entry and rejection of a missing sibling; both
+   already passed before these changes.
+8. **Standard argument keys — OBJ-013.** Owner, placement, runtime, consumer and target are
+   rejected under `arguments` independently of template input names. Five vectors declare
+   each conflicting input and assert rejection with unchanged objects. All five were accepted
+   by the original binary.
+9. **Coverage — INS-023, PRV-006, SUB-005; order decision 5.** New accepted/rejected vectors
+   cover input-supplied operations, an explicit registered runtime provider, a non-provider,
+   a retired provider, and a wrong-family runtime rejected by the document schema. These six
+   cases already passed the original binary: they close coverage gaps. INS-023's rejection
+   now names the offending operation, and runtime rejection names the selected runtime.
+10. **S1 assertions — OBJ-009, CON-017, CON-021, TPL-004, NAM-009.** The three accepted S1
+    variants now assert the consumer, target, capability and exact ordered operations of
+    all five Conduits, the selected filesystem implementation items, and the exact retained
+    package identity arrays of all nineteen new objects. The existing resolver satisfies the
+    strengthened assertions; no S1 fixture changed.
+
+**Worker choices.** Template diagnostics reuse the reference-schema traversal with an
+inspection-only collection of unresolved leaves; entry shorthand is checked against the Pool's
+entry names in that mode. Standard fields are checked independently of input schemas. Retained
+package checks compare the identities already recorded on the template and leave its indexes
+unchanged. They reuse the catalog's PKG-003 comparison, which ignores build metadata. The
+`registration-retained-package-build-metadata` safeguard passed the original binary, failed
+the initial availability correction, then passed with that comparison reused. Wrong-family runtime coverage uses the loader because its document schema rejects
+that form before registration. The required-case test names all thirty-one added vectors.
+
+**Before-fix evidence.** A copy of the original release binary ran the final new fixtures in
+isolated case inventories. Only the temporary baseline copies omitted `required_promises`
+assertions, to distinguish actual behavior failures from newly added decision citations.
+Twenty-two new behavior regressions failed there; the six coverage cases and the three
+acceptance safeguards passed. The original source was saved separately for comparison and
+was not committed. No fetch, installation, provider call or process run is claimed by a vector.
+
+**S1 assertion probes.** Two temporary mutations to the resolver were compiled separately:
+retargeting each new Conduit to its consumer, and appending an extra operation after the
+capability check. Each mutation failed all three strengthened S1 variants, respectively at
+`target/id` and the exact `operations` array length. The source was restored after the probes;
+neither mutation is part of the change.
+
+**Validation after correction.** All 190 portable cases, including 31 added cases and the
+three strengthened S1 cases, passed through `conduit-conformance`. The workspace release tests,
+including all five boundary tests, passed; Clippy with warnings denied and formatting passed.
+The four Python repository checks and whitespace checks passed. New untracked registration
+files were checked for trailing whitespace separately. No specification or S1 fixture was
+changed, and no commit, staging, branch change, push or pull request was made.

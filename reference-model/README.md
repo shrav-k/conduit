@@ -223,3 +223,39 @@ and Agent packages and S1's project, with real computed pins and no state change
 Other vectors exercise accepted and rejected names, pins, exports, path expansion and digest
 invariance. This is context resolution; general registration, instance arguments, object
 references, installation and execution remain later work.
+
+## Registration and resolving instances (I2-04)
+
+[The registration module](crates/core/src/registration.rs) adds `register-project`, carrying
+loaded documents, their manifest, installed snapshots, the separately supplied built-in
+package, a request and allocation evidence. It checks root's established registration path
+and the additional authority for an existing owning Pool before returning object diagnostics.
+A new Pool in the submission requires management authority alone (ACC-033).
+
+Registration plans templates and instances privately and publishes them together only after
+all checks succeed (SUB-003). Traversal is deterministic by family, name and document value;
+nested slots use their names. Evidence supplies object IDs, revisions, record IDs and DL15
+suffix candidates. Generated names retry collisions, including collisions with named objects
+later in the submission. The reply lists every new object and each nested instance's parent,
+slot and declaration name. Rejections preserve all existing objects; existing-name clashes
+report conflict, other defects invalid, after authorization (OBJ-023, OBJ-025, OPS-023).
+
+Templates retain their schema environment, exact package identities and resolved implementation
+items. Instances use that frozen context (NAM-009/010), assign whole argument/default values,
+validate configuration, and resolve references only where reference schemas govern them.
+References in configuration, standard fields and retained nested declarations hold kind/ID.
+Ordinary maps with `kind` and `name` remain data. Inputs are removed from the stored instance;
+nested declarations retain their filled arguments for a future replacement (INS-013).
+Missing instance references reject; missing template references are reported as notes (OBJ-008).
+An omitted Type schema is unconstrained (CTR-004). Applied requirement arguments are checked,
+default-filled and resolved through the Requirement's own context (NAM-019, OBJ-009/021).
+Instantiation checks retained package identities against the supplied installed catalog without
+changing the frozen context (PKG-007). Supplied entry placement/runtime references are retained
+by ID; entry lookup excludes retired Resources (POOL-014/016). Standard argument names are
+rejected under `arguments` even if the template declares an input of that name (OBJ-013).
+
+S1 registers nine templates, six named instances and four nested Conduits. Instances are
+registered, Conduits unopened, and no setup, run, call or external intent is made (INS-016,
+SUB-006). Placement vectors use the established local node and the engine's own runner;
+provider invocation, general access evaluation and setup remain later orders. The earlier
+`submit` input remains the protected-first-start compatibility path.

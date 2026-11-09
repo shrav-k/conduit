@@ -192,3 +192,96 @@ fn registration_requires_both_open_conduits_listing_the_operation() {
         }
     }
 }
+
+#[test]
+fn registration_allocation_failures_leave_objects_records_and_allocations_untouched() {
+    use conduit_core::packages::Project;
+    let (context, input) = fixture();
+    let initial = step(
+        &State::default(),
+        serde_json::from_value(input).unwrap(),
+        &context,
+    )
+    .unwrap()
+    .state;
+    let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let spec = Specification::read(&repository.join("spec")).unwrap();
+    let core = conduit_loader::read_project(&repository.join("spec/core"), &spec).unwrap();
+    let mut documents = core
+        .documents
+        .iter()
+        .map(|d| d.root.to_json())
+        .collect::<Vec<_>>();
+    for entry in std::fs::read_dir(repository.join("spec/schemas")).unwrap() {
+        let path = entry.unwrap().path();
+        if path.extension().is_some_and(|s| s == "yaml") {
+            documents.extend(read_file(&path).unwrap().iter().map(|d| d.root.to_json()));
+        }
+    }
+    let evidence = Evidence {
+        time: "2026-11-09T12:00:00Z".into(),
+        ids: (100..104)
+            .map(|i| format!("00000000-0000-4000-8000-{i:012}"))
+            .collect(),
+        revisions: vec!["t".into(), "i".into()],
+        suffixes: vec![],
+    };
+    let request = Request {
+        sender: initial.objects[4]["id"].as_str().unwrap().into(),
+        caller: initial.objects[4]["id"].as_str().unwrap().into(),
+        conduit: initial.objects[5]["id"].as_str().unwrap().into(),
+        target: initial.objects[2]["id"].as_str().unwrap().into(),
+        operation: format!("{}#register.v1", context.core_package),
+    };
+    let project = Project {
+        manifest: None,
+        directory: None,
+        documents: vec![
+            json!({"apiVersion":spec.names().api_version,"kind":"Pool","from":"pool","metadata":{"name":"p"}}),
+            json!({"apiVersion":spec.names().api_version,"kind":"Pool","metadata":{"name":"pool"},"spec":{"type":format!("{}#pool.v1",context.core_package)}}),
+        ],
+    };
+    let builtin = Project {
+        manifest: core.manifest.map(|d| d.root.to_json()),
+        documents,
+        directory: None,
+    };
+    let original = initial.clone();
+    for fault in ["exhausted", "reused"] {
+        let mut allocations = evidence.clone();
+        if fault == "exhausted" {
+            allocations.ids.truncate(3);
+        } else {
+            allocations.ids[1] = allocations.ids[0].clone();
+        }
+        let result = step(
+            &initial,
+            Input::RegisterProject {
+                snapshots: vec![],
+                builtin: builtin.clone(),
+                project: project.clone(),
+                evidence: allocations,
+                request: request.clone(),
+            },
+            &context,
+        );
+        assert!(result.unwrap_err().contains(fault));
+        assert_eq!(initial, original);
+    }
+    let accepted = step(
+        &initial,
+        Input::RegisterProject {
+            snapshots: vec![],
+            builtin,
+            project,
+            evidence,
+            request,
+        },
+        &context,
+    )
+    .unwrap();
+    assert_eq!(accepted.reply["accepted"], true);
+    assert_eq!(accepted.state.objects.len(), initial.objects.len() + 2);
+    assert_eq!(accepted.records.len(), 2);
+    assert!(accepted.external_intents.is_empty());
+}

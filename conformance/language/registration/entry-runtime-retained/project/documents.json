@@ -1,0 +1,113 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "pool"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1",
+      "entries": {
+        "one": {
+          "from": "resource"
+        }
+      },
+      "inputs": {
+        "node": {
+          "schema": {
+            "type": "string"
+          },
+          "to": [
+            "/entries/one/placement"
+          ]
+        },
+        "provider": {
+          "schema": {
+            "type": "string"
+          },
+          "to": [
+            "/entries/one/runtime"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "p"
+    },
+    "from": "pool",
+    "arguments": {
+      "node": "local",
+      "provider": "provider"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "resource.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [],
+      "requires": []
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "resource"
+    },
+    "spec": {
+      "type": "#resource.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "provider.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [
+        "github.com/shrav-k/conduit/core#runtime-provider.v1"
+      ],
+      "requires": [],
+      "implementation": {
+        "github.com/shrav-k/conduit/core#run.v1": "#provider-server",
+        "github.com/shrav-k/conduit/core#stop.v1": "#provider-server",
+        "github.com/shrav-k/conduit/core#inspect-run.v1": "#provider-server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "provider-template"
+    },
+    "spec": {
+      "type": "#provider.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "provider"
+    },
+    "from": "provider-template",
+    "owner": "system"
+  }
+]

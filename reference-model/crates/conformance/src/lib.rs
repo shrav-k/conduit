@@ -215,6 +215,11 @@ fn projection(actual: &Value, expected: &Value, pointer: &str) -> Result<()> {
             }
             Ok(())
         }
+        (Value::Array(a), Value::Array(e)) => Err(format!(
+            "{pointer}: expected {} items, found {}",
+            e.len(),
+            a.len()
+        )),
         (a, e) if a == e => Ok(()),
         (a, e) => Err(format!("{pointer}: expected {e}, found {a}")),
     }
@@ -327,15 +332,40 @@ fn run_case(
             };
             let mut next = state.clone();
             let actual = match kind {
-                "resolve-project" => {
-                    let t = packages::run(
+                "resolve-project" | "register-project" | "registration-orders" => {
+                    let mut t = packages::run(
                         base,
                         input["file"].as_str().ok_or("missing context fixture")?,
                         &case.files,
                         &state,
                         spec,
                         context,
+                        (kind != "resolve-project").then_some((
+                            &input["evidence"],
+                            &input["request"],
+                            usize::from(input["reverse"] == true),
+                        )),
                     )?;
+                    if kind == "registration-orders" {
+                        let original = serde_json::to_value(&t).map_err(|e| e.to_string())?;
+                        for order in [1, 2] {
+                            let other = packages::run(
+                                base,
+                                input["file"].as_str().unwrap(),
+                                &case.files,
+                                &state,
+                                spec,
+                                context,
+                                Some((&input["evidence"], &input["request"], order)),
+                            )?;
+                            if serde_json::to_value(other).map_err(|e| e.to_string())? != original {
+                                return Err(
+                                    "SUB-001: registration differs by document/file order".into()
+                                );
+                            }
+                        }
+                        t.reply["orders_compared"] = json!(3);
+                    }
                     next = t.state.clone();
                     serde_json::to_value(t).map_err(|e| e.to_string())?
                 }

@@ -1,0 +1,32 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Schema",
+    "metadata": {
+      "name": "pools.v1"
+    },
+    "spec": {
+      "type": "array",
+      "items": {
+        "$ref": "github.com/shrav-k/conduit/core#pool-reference.v1"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Requirement",
+    "metadata": {
+      "name": "limit.v1"
+    },
+    "spec": {
+      "inputs": {
+        "pools": {
+          "schema": {
+            "$ref": "#pools.v1"
+          },
+          "default": []
+        }
+      }
+    }
+  }
+]

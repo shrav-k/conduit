@@ -115,6 +115,25 @@ open.
   to build, that is a finding for the first build, logged as one.
 - The models' behaviour is a sample of three runs per cell, not a measurement of a population.
 
+## Follow-up: a later turn, pre-registered on 2026-11-09
+
+The results of 2026-11-09 found that a Conduit opened while a headless session runs reaches
+neither client's model within that turn (C5), though Claude Code fetches the changed list. The
+first build's Agents run one long session each, so the case that matters is a later turn of the
+same session. This follow-up asks: in a second user turn of the same session, after the list
+changed during the first, does the model see and use the new tool, and does it stop offering
+the closed one?
+
+- **C1-later**: the first turn calls `files.read.v1` and `control.next.v1`, which closes `files`;
+  a second turn asks the model to read the file again.
+- **C5-later**: the first turn calls `control.next.v1`, which opens `notes`; a second turn asks
+  the model to call `notes.read.v1`.
+
+Each with each client, in the base variant (cache off, `ttlMs` 0), three times: 12 runs. Claude
+Code takes the second turn on its streamed input in the same process; Codex takes it by resuming
+the same session, which keeps the session on disk. What is recorded and how the next action is
+classified are as above. The same limits apply; interactive use is still not run.
+
 ## Results
 
 The [results of 2026-11-09](results-2026-11-09.md) account for all 68 matrix runs: 67

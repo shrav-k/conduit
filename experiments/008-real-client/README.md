@@ -46,7 +46,7 @@ as the engine's presented server would, for one consumer:
   with `cacheScope: private` and `listChanged`, and notifies on a change (IFC-038).
 - Its answers carry Conduit's keys in `_meta`, and `isError`, as IFC-025 says, and a call to a
   tool no longer presented is answered as IFC-012 and IFC-013 say.
-- A control tool, `control.next`, moves the scenario to its next state: it closes or opens a
+- A control tool, `control.next.v1`, moves the scenario to its next state: it closes or opens a
   Conduit, so that a change happens while the client's session runs.
 - It logs every request and response, every notification and whether a stream was open to
   carry it, the protocol revision each client negotiates, and whether the token was valid. It
@@ -56,21 +56,30 @@ as the engine's presented server would, for one consumer:
 
 | Case | The scenario | What the model is asked to do |
 | --- | --- | --- |
-| C1 | A Conduit is closed after the client has its list: the stub notifies, and the client calls the tool from its cached list | Call `files.read`, then `control.next`, then `files.read` again |
+| C1 | A Conduit is closed after the client has its list: the stub notifies, and the client calls the tool from its cached list | Call `files.read.v1`, then `control.next.v1`, then `files.read.v1` again |
 | C2 | A call to a tool that was never presented | Call a tool by a name the stub never listed |
-| C3 | A tool fails: outcome `failed` | Call `files.read` on a path the stub fails |
-| C4 | The outcome is unknown | Call `files.write`, which the stub answers with outcome `unknown` |
-| C5 | A Conduit opens while the session runs: the stub notifies of a new tool | Call `control.next`, then use the new tool `notes.read` |
+| C3 | A tool fails: outcome `failed` | Call `files.read.v1` on a path the stub fails |
+| C4 | The outcome is unknown | Call `files.write.v1`, which the stub answers with outcome `unknown` |
+| C5 | A Conduit opens while the session runs: the stub notifies of a new tool | Call `control.next.v1`, then use the new tool `notes.read.v1` |
 
 Each case runs with each client, under each variant that applies:
 
 - Claude Code with its discovery cache on and off (`MCP_DISCOVERY_CACHE`), and Codex with its
-  cached catalog on and off (`startup_readiness`).
-- A `ttlMs` stated by the stub of 0, and of 60,000.
-- The token: valid from the start, and 401 on the first request.
+  cached catalog on and off (`startup_readiness`): for C1 and C5, the cases in which the list
+  changes.
+- A `ttlMs` stated by the stub of 0, and of 60,000: for C1 and C5.
+- The token: valid from the start in every case, and 401 on the first request in one run of
+  C3 per client, since whether the helper is run again is a wire fact.
 
 The model's behaviour varies between runs, so each cell is run three times. A wire fact needs
-one run.
+one run. That is 68 runs: 16 cells of C1 and C5 and 6 of C2 to C4, three times each, and the
+2 runs of the 401.
+
+**Amended on 2026-11-09, before any run.** The tools are named as IFC-012 names them, the
+Conduit's local name and the operation's export name joined by a dot, so that what each client
+makes of such a name is seen too; the first version wrote them without the version segment.
+And the variants are applied only where they apply, as above, which the first version left
+open.
 
 ## Method
 
@@ -96,6 +105,9 @@ one run.
 
 - Headless only. Interactive sessions are not run unattended; a client that refreshes its list
   only when interactive will show as one that does not. A manual subset can follow.
+- Each client uses the owner's subscription login, as ruling 48, point 2 has it, kept apart
+  from the owner's configuration by flags; no API key is used, and the runner removes the API
+  key variables from each client's environment.
 - One machine, one version of each client: Claude Code 2.1.318 and Codex 0.167.0. Both change
   often, so the results are dated and name the versions.
 - The stub answers as the promises say. Where it cannot, because a promise is not clear enough

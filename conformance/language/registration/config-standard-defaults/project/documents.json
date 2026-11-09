@@ -1,0 +1,56 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "test.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "agent"
+    },
+    "spec": {
+      "type": "#test.v1",
+      "config": {
+        "settings": {}
+      },
+      "inputs": {
+        "placement": {
+          "schema": {
+            "type": "string"
+          },
+          "to": [
+            "/config/settings/placement"
+          ],
+          "default": "placement-data"
+        },
+        "runtime": {
+          "schema": {
+            "type": "string"
+          },
+          "to": [
+            "/config/settings/runtime"
+          ],
+          "default": "runtime-data"
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "a"
+    },
+    "from": "agent"
+  }
+]

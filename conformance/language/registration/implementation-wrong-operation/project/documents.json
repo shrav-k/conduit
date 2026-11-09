@@ -1,0 +1,70 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "read.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "other.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "read-access.v1"
+    },
+    "spec": {
+      "operations": [
+        "#read.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "reader.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [
+        "#read-access.v1"
+      ],
+      "implementation": {
+        "#read.v1": "#server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "reader"
+    },
+    "spec": {
+      "type": "#reader.v1",
+      "implementation": {
+        "#read.v1": "#wrong"
+      }
+    }
+  }
+]

@@ -1,0 +1,99 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "test.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "agent"
+    },
+    "spec": {
+      "type": "#test.v1",
+      "conduits": {
+        "one": {
+          "from": "admin",
+          "target": {
+            "kind": "Pool",
+            "name": "future-one"
+          },
+          "arguments": {
+            "pool": [
+              {
+                "kind": "Resource",
+                "name": "future-argument-one"
+              }
+            ]
+          }
+        },
+        "two": {
+          "from": "admin",
+          "target": {
+            "kind": "Pool",
+            "name": "future-two"
+          },
+          "arguments": {
+            "pool": [
+              {
+                "kind": "Resource",
+                "name": "future-argument-two"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "admin"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#inspect.v1"
+      ],
+      "inputs": {
+        "pool": {
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "github.com/shrav-k/conduit/core#target-reference.v1"
+            }
+          },
+          "to": [
+            "/requirements/limit/arguments/targets"
+          ],
+          "default": [
+            {
+              "kind": "Resource",
+              "name": "future-default"
+            }
+          ]
+        }
+      },
+      "requirements": {
+        "limit": {
+          "requirement": "github.com/shrav-k/conduit/core#bound.v1",
+          "arguments": {
+            "pools": [
+              "system"
+            ]
+          }
+        }
+      }
+    }
+  }
+]

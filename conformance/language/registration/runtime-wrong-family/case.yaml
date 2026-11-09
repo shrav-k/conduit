@@ -1,0 +1,51 @@
+{
+  "id": "registration-runtime-wrong-family",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PRV-006",
+    "SUB-005"
+  ],
+  "title": "runtime-wrong-family",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "fixture": "fixture.json",
+    "initial": "../../../fixtures/root-system-state.json",
+    "manifest": "project/conduit.json",
+    "documents": "project/documents.json",
+    "documents.json": "project/documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "documents.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/runtime"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "agent"
+    },
+    "spec": {
+      "type": "example.org/held#test.v1"
+    }
+  }
+]

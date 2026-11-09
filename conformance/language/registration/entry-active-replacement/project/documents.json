@@ -1,0 +1,45 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "test.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "entry": {
+            "$ref": "github.com/shrav-k/conduit/core#resource-reference.v1"
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "agent"
+    },
+    "spec": {
+      "type": "#test.v1",
+      "config": {
+        "entry": {
+          "kind": "Pool",
+          "name": "system",
+          "entry": "one"
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "a"
+    },
+    "from": "agent"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "pool"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "a"
+    },
+    "from": "pool"
+  }
+]

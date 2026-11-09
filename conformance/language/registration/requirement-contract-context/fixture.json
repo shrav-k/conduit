@@ -1,0 +1,22 @@
+{
+  "snapshots": [
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/requirements",
+      "version": "1.0.0",
+      "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "project": {
+        "files": {
+          "conduit.json": "package-manifest",
+          "documents.json": "package-documents"
+        }
+      }
+    }
+  ],
+  "project": {
+    "files": {
+      "conduit.json": "manifest",
+      "documents.json": "documents"
+    }
+  }
+}

@@ -188,3 +188,33 @@ package cases use small ordinary documents and deterministic archive evidence. T
 also cover implementation bindings (MAN-010, MAN-017), plain tool mappings and type-family
 checks. They do not claim full registration or instance argument/configuration validation;
 local submitted `from` and object references remain the later registration order's work.
+
+## Registration vectors
+
+I2-04 adds `register-project`: the same ordinary-file fixture as `resolve-project`, plus a
+request and allocation evidence. It runs the loader, then atomically registers and resolves
+on the core. Evidence lists object IDs followed by record IDs, one revision per object and
+five-character suffix candidates. `reverse: true` reverses the loaded document sequence.
+`registration-orders` runs the same input from the same state three times: ordinary order,
+reversed documents, and reversed files with rotated documents. It requires exact equality of
+the complete transitions, including decisions, allocations, diagnostics and records, then
+reports `orders_compared: 3`. It commits one resulting transition to the case's state.
+
+The [S1 registration case](language/registration/s1/case.yaml) checks all 19 new objects:
+nine templates, six named instances and four nested Conduits. Exact object and record arrays
+prevent extra publication or activity from being hidden by projections. The cases check
+configuration, owner and placement IDs, unopened nested instances, missing/invalid arguments,
+default precedence, null, relative paths, reference-schema chains, ordinary data, authored
+IDs, nested targets, implementation selections and name collisions. A later submission with
+a changed contract demonstrates that an existing template still instantiates against its
+own held project. Accepted and rejected S1 variants compare across file/document orders.
+These vectors exercise registration only; they start no implementation or provider.
+
+The verification regressions include omitted Type schemas, defaults inside config, requirement
+arguments resolved through their own contract context, retained package availability on a later
+submission, retained entry placement/runtime IDs, active entry replacement lookup, unresolved
+nested template names and defaults, and standard argument names conflicting with declared inputs.
+Input-supplied operations and explicit runtime selection have accepted and rejected cases,
+including a wrong-family runtime rejected by the document schema. The three S1 cases assert
+every Conduit's endpoints, capability and exact operations, selected filesystem implementations
+and exact retained package identities.

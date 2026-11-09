@@ -430,7 +430,7 @@ pub fn standalone_valid(schema: &Value, value: &Value) -> Result<bool> {
 }
 
 impl Environment {
-    fn failure_at(
+    pub(crate) fn failure_at(
         &self,
         scope: &str,
         root: &Value,
@@ -460,7 +460,7 @@ impl Environment {
             .next()
             .map(|e| format!("{}; failing schema keyword {}", e, e.schema_path())))
     }
-    fn valid_at(
+    pub(crate) fn valid_at(
         &self,
         scope: &str,
         root: &Value,

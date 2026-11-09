@@ -3,6 +3,7 @@
 //! Unsupported cases and broken embedding inputs are errors, never Conduit reasons.
 
 pub mod packages;
+pub mod registration;
 pub mod schemas;
 
 use serde::{Deserialize, Serialize};
@@ -62,6 +63,13 @@ pub struct Request {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
+    RegisterProject {
+        snapshots: Vec<packages::Snapshot>,
+        builtin: packages::Project,
+        project: packages::Project,
+        evidence: Evidence,
+        request: Request,
+    },
     ResolveProject {
         snapshots: Vec<packages::Snapshot>,
         builtin: packages::Project,
@@ -189,6 +197,23 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
     };
     match input {
+        Input::RegisterProject {
+            snapshots,
+            builtin,
+            project,
+            evidence,
+            request,
+        } => {
+            registration::register(
+                &mut transition,
+                snapshots,
+                builtin,
+                project,
+                &evidence,
+                &request,
+                context,
+            )?;
+        }
         Input::ResolveProject {
             snapshots,
             builtin,

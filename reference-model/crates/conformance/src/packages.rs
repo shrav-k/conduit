@@ -40,8 +40,9 @@ fn load(
     base: &Path,
     files: &BTreeMap<String, String>,
     spec: &Specification,
+    reverse_files: bool,
 ) -> Result<Project> {
-    let bytes = recipe
+    let mut bytes = recipe
         .files
         .iter()
         .map(|(name, alias)| {
@@ -52,6 +53,9 @@ fn load(
             ))
         })
         .collect::<Result<Vec<_>>>()?;
+    if reverse_files {
+        bytes.reverse();
+    }
     let p = read_submitted_files(&bytes, spec).map_err(|e| e.to_string())?;
     Ok(Project {
         manifest: p.manifest.map(|d| d.root.to_json()),
@@ -66,6 +70,7 @@ pub(super) fn run(
     state: &State,
     spec: &Specification,
     context: &Context,
+    registration: Option<(&Value, &Value, usize)>,
 ) -> Result<conduit_core::Transition> {
     let path = files.get(file).ok_or("undeclared context fixture")?;
     let fixture: Fixture =
@@ -84,7 +89,7 @@ pub(super) fn run(
             address: recipe.address,
             version: recipe.version,
             digest: recipe.digest,
-            project: load(recipe.project, base, files, spec)?,
+            project: load(recipe.project, base, files, spec, false)?,
         });
     }
     for artifact in fixture.artifacts {
@@ -132,13 +137,33 @@ pub(super) fn run(
         documents,
         directory: Some("file:///builtin/".into()),
     };
-    conduit_core::step(
-        state,
+    let mut project = load(
+        fixture.project,
+        base,
+        files,
+        spec,
+        registration.is_some_and(|(_, _, order)| order == 2),
+    )?;
+    if registration.is_some_and(|(_, _, order)| order == 1) {
+        project.documents.reverse();
+    }
+    if registration.is_some_and(|(_, _, order)| order == 2) && !project.documents.is_empty() {
+        project.documents.rotate_left(1);
+    }
+    let input = if let Some((evidence, request, _)) = registration {
+        Input::RegisterProject {
+            snapshots,
+            builtin,
+            project,
+            evidence: serde_json::from_value(evidence.clone()).map_err(|e| e.to_string())?,
+            request: serde_json::from_value(request.clone()).map_err(|e| e.to_string())?,
+        }
+    } else {
         Input::ResolveProject {
             snapshots,
             builtin,
-            project: load(fixture.project, base, files, spec)?,
-        },
-        context,
-    )
+            project,
+        }
+    };
+    conduit_core::step(state, input, context)
 }

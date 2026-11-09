@@ -18,6 +18,7 @@ report. An order's results are its pull request and the record in
 | [008](008-later-turn-results.md) | The results of experiment 008's follow-up, a later turn |
 | [009](009-i2-03-packages-and-projects.md) | I2-03, first part: packages and projects, resolved from snapshots |
 | [010](010-native-launch-harness.md) | The harness of experiment 009 (A4): wrappers that run Claude Code and Codex as Agents |
+| [011](011-native-launch-results.md) | The results of experiment 009 (A4), native launch and identity |
 
 [The standing order of a verifier](verify.md), with its schema, is given to the fresh Codex
 session that checks each order's result before the admin session reviews it.

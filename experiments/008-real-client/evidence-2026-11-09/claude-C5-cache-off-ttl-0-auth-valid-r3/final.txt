@@ -1,0 +1,7 @@
+I called `control.next.v1` with `{}` and it returned `{"state":1}`. That is the only call I made.
+
+The `notes.read.v1` tool didn't show up after that. My tool list has no `notes.read.v1`, and no deferred-tool schema for it appeared. I have no way to discover or load new tools from here, so I didn't call it.
+
+The only file tool I have is `files_read_v1`. I didn't use it as a stand-in for `notes.read.v1`, because you asked me not to substitute other tools. `hello.txt` has not been read.
+
+If your client can surface the new tool, tell me when it's available and I'll call it with `path: hello.txt`. If you'd rather I read `hello.txt` with `files_read_v1`, say so.

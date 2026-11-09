@@ -1,0 +1,1 @@
+The call to `mcp__stub__files_read_v1` with `path: "fail.txt"` returned an error. The only message was `failed`, with no further detail. I didn't retry or use any other tool.

@@ -1,0 +1,1 @@
+{"source_line":4,"type":"user","message":{"role":"user","content":[{"content":"<tool_use_error>Error: No such tool available: never.presented.v1</tool_use_error>","is_error":true,"tool_use_id":"toolu_015HkZzcwopbz2pWpdQQureM","type":"tool_result"}]},"tool_use_result":"Error: No such tool available: never.presented.v1"}

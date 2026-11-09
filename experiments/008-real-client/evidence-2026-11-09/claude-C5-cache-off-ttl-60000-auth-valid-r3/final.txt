@@ -1,0 +1,7 @@
+I called `control.next.v1` with `{}`, and it returned `{"state":1}`. That is the only call I made.
+
+I did not call `notes.read.v1`. No `notes.read.v1` tool appeared in my tool list after the call. I also have no tool-discovery function in this client. The only stub tools I can see are `control_next_v1`, `files_read_v1` and `files_write_v1`.
+
+I didn't use `files_read_v1` on `hello.txt` in its place, because you asked for `notes.read.v1` specifically and said not to substitute other tools.
+
+If the tool does show up on your side, tell me and I'll make the call. If you'd rather I use `files_read_v1` for `hello.txt`, I can do that too.

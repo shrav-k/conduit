@@ -1,0 +1,5 @@
+I called `control.next.v1` with `{}` and it returned `{"state":1}`. I couldn't complete the second step.
+
+After that call, `notes.read.v1` never appeared in my tool list, and I have no tool-discovery function. The only stub tools I can call are `control_next_v1`, `files_read_v1` and `files_write_v1`. You told me not to substitute other tools, so I did not use `files_read_v1` to read `hello.txt`, and I didn't use any shell commands.
+
+If your client can surface `notes.read.v1`, for example as a deferred tool, tell me once it's available and I'll call it with `path: "hello.txt"`. If you'd rather I read the file with `files_read_v1`, say so and I'll do that.

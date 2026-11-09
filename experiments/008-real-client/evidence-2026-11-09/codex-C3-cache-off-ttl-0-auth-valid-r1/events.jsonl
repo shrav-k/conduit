@@ -1,0 +1,4 @@
+{"source_line":3,"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll find the experiment stub’s `files.read.v1` tool and call it with `fail.txt`."}}
+{"source_line":4,"type":"item.started","item":{"id":"item_1","type":"mcp_tool_call","server":"stub","tool":"files.read.v1","arguments":{"path":"fail.txt"},"result":null,"error":null,"status":"in_progress"}}
+{"source_line":5,"type":"item.completed","item":{"id":"item_1","type":"mcp_tool_call","server":"stub","tool":"files.read.v1","arguments":{"path":"fail.txt"},"result":{"content":[{"type":"text","text":"failed"}],"_meta":{"io.github.shrav-k.conduit/invocation":"inv-1","io.github.shrav-k.conduit/outcome":"failed"},"structured_content":null},"error":null,"status":"failed"}}
+{"source_line":6,"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":"Called `files.read.v1` with `path: \"fail.txt\"`. It returned `failed` with `isError: true`."}}

@@ -1,0 +1,3 @@
+1. `files.read.v1` with `{"path":"hello.txt"}` succeeded: `Hello from memory.`
+2. `control.next.v1` with `{}` succeeded: `{"state":1}`.
+3. Attempted `files.read.v1` again with `{"path":"hello.txt"}`. It failed with MCP error `-32602`: “No tool of name files.read.v1 is presented to the instance” (reason: `refused`).

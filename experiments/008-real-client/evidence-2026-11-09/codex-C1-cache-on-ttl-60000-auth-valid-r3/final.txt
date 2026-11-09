@@ -1,0 +1,3 @@
+1. `files.read.v1({"path":"hello.txt"})` succeeded: `"Hello from memory."`
+2. `control.next.v1({})` succeeded: `{"state":1}`.
+3. The final read was attempted and failed with MCP error `-32602`: `files.read.v1` was no longer presented to the instance (`reason: "refused"`).

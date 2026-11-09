@@ -1,0 +1,7 @@
+I made all three calls in order. The last one failed.
+
+1. `files_read_v1` with `path: hello.txt` returned `{"text":"Hello from memory."}`.
+2. `control_next_v1` with `{}` returned `{"state":1}`.
+3. `files_read_v1` with `path: hello.txt` returned the error `No tool of name files.read.v1 is presented to the instance`.
+
+The `control_next_v1` call appears to have changed the tool list, so the file-read tool was no longer available for the final call. I didn't use any other tools to work around this.

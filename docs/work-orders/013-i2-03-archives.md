@@ -31,7 +31,15 @@ and the core as order 012 left it.
    resolved as order 009's snapshot was; a wrong digest; a manifest naming another address or
    version; an instance document in an archive (MAN-011); a `._` entry that is skipped; and an
    entry that would unpack outside its directory, rejected. Every decision cites its promise.
-4. **A finding**: as order 004's decision 6 says.
+4. **No third party's bytes in the repository.** Remove
+   `conformance/fixtures/s1/artifacts/server-filesystem-2.1.0.tgz`, the published package of the
+   filesystem server, which order 009 kept as a fixture: it carries no licence text. The three
+   cases that hash it (`s1`, `s1-digest-mismatch` and `s1-missing` under
+   `conformance/language/packages/`) take its SHA-256 as recorded data instead, with the fixture
+   README saying how it was computed and from what (`npm pack` of the published version) and
+   that the core never fetches it. Every archive the installation vectors use is one this
+   repository makes.
+5. **A finding**: as order 004's decision 6 says.
 
 ## Scope
 

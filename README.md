@@ -1,10 +1,9 @@
 # Conduit
 
-Conduit is a configuration language for the access around AI agents. Engineers use it to declare
-exactly what each agent can reach (files, folders, services like GitHub, other agents) and which
-operations it may perform. Credentials stay in stores like 1Password or the Keychain, so agents
-use services without ever seeing the secrets. The [components](docs/COMPONENTS.md) page names
-every part in a line each.
+Conduit is a configuration language for the relationships between independent agents and the
+things they share. In practice, an engineer uses it to declare what each AI agent may reach
+through Conduit (files, folders, services such as GitHub, other agents) and which operations it
+may call there. A document holds only a reference to a secret, never its value.
 
 Languages such as Kubernetes, Docker Compose and Terraform declare workloads, which do what
 their configuration says. An agent decides for itself what to do. So Conduit declares what

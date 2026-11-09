@@ -13,6 +13,7 @@ full row of each. How this file came to stand as it does, pass by pass, is under
 | --- | --- | --- |
 | engine | The running program that implements this specification; in this version it alone decides every request and passes it on. | [Resolving and registration](#resolving-and-registration) |
 | document | One template, instance or contract, written in YAML or in the equivalent JSON. | [Objects and documents](#objects-and-documents) |
+| project | The documents and the one manifest that are handed over together in one registration; a directory is one way to hand them over. | [Objects and documents](#objects-and-documents) |
 | family | One of the five kinds of object: Interface, Agent, Resource, Pool and Conduit. | [Objects and documents](#objects-and-documents) |
 | Interface, Agent | The two actors, which make requests on their own behalf: where a person or a system outside acts, and a participant whose model decides its own actions. | [Objects and documents](#objects-and-documents) |
 | Resource | A shared thing that instances use, owned by exactly one Pool; a provider is one. | [Objects and documents](#objects-and-documents) |
@@ -29,6 +30,7 @@ full row of each. How this file came to stand as it does, pass by pass, is under
 | bound | The limit on which Conduits a right to open may open: by Pools, targets and operations, never by filters. | [Access](#access) |
 | broker | A Resource whose trusted operation gives an actor narrower access to `management` than a Conduit can carry. | [Access](#access) |
 | `management`, `access` | The two Resources against which managing objects, and opening and closing Conduits, are authorized. | [First start](#first-start) |
+| root Interface | The Interface `root`, the only actor with access at first start; some operations, such as purging records, are reserved to it, and it alone opens a Conduit that lists `get-secret.v1`. | [First start](#first-start) |
 | register | Store the templates and instances that a submission's documents make; nothing runs. | [Resolving and registration](#resolving-and-registration) |
 | set up, retire | Begin and end an instance's work, each by one invocation; for a Conduit, open and close. | [Lifecycle](#lifecycle) |
 | request | The asking for one operation on one target. | [Requests and operations](#requests-and-operations) |
@@ -39,9 +41,13 @@ full row of each. How this file came to stand as it does, pass by pass, is under
 | implementation | What does the work behind an operation: a server reached by `command`, `package` or `remote`, or the engine itself. | [Implementations and the implementation interface](#implementations-and-the-implementation-interface) |
 | plain | Said of an existing server not written for this specification, which receives none of Conduit's keys and applies no filter. | [Implementations and the implementation interface](#implementations-and-the-implementation-interface) |
 | tool | What the engine presents to a consumer for each operation of its open Conduits, with a definition derived from the contract. | [Implementations and the implementation interface](#implementations-and-the-implementation-interface) |
+| gate | What stands before the server of a run that a runtime provider other than the engine's own runner makes, and before a server reached by `remote` that is not plain, and lets a request through only with an enforcement point's proof. | [Implementations and the implementation interface](#implementations-and-the-implementation-interface) |
 | provider | A Resource that runs instances, reports machines, fetches packages or reads a secret, behind a contract that the user picks. | [Providers](#providers) |
+| node | A Resource of the core type `node.v1` that represents one machine, where Agents and Resources run; the engine makes every node. | [Placement](#placement) |
 | secret Resource | A Resource that reads one secret from a store; a document holds only a reference to it. | [Secrets](#secrets) |
 | package | What an author ships: a manifest and its exports, at an address, each release pinned by its version and digest. | [Packages](#packages) |
+| manifest | The one file of a project, such as `conduit.yaml`, that pins each package the project uses by version and digest, and lists its exports and implementations. | [Packages](#packages) |
+| core package | The package built into every engine: the management verbs, the hooks, the provider capabilities, the basic types, the schemas and the first-start templates; its one implementation is the engine. | [Packages](#packages) |
 | record | What is kept about a request, a provider call or another occurrence: who, what, when and how it ended. | [Inspection, observation and records](#inspection-observation-and-records) |
 
 ## Objects and documents

@@ -21,7 +21,7 @@ than repeat them.
 
 | Goal | Path |
 | --- | --- |
-| Understand Conduit | [README](../README.md) → [spec/README.md](../spec/README.md) → [spec/definitions.md](../spec/definitions.md). The [components](COMPONENTS.md) page lists every part in a line each, the [overview](OVERVIEW.md) is a plain-language tour, and [spec/schemas/examples/](../spec/schemas/examples/) holds worked documents. |
+| Understand Conduit | [README](../README.md) → [spec/README.md](../spec/README.md) → [spec/definitions.md](../spec/definitions.md). The [overview](OVERVIEW.md) is a plain-language tour, and [spec/schemas/examples/](../spec/schemas/examples/) holds worked documents. |
 | Write documents, as an author | The [overview](OVERVIEW.md) → the specification's [path for an author of documents](../spec/README.md#an-author-of-documents), with [what access does not narrow](../spec/README.md#what-access-does-not-narrow). |
 | Write a contract or a provider | The specification's [path for a writer of contracts and providers](../spec/README.md#a-writer-of-contracts-and-providers). |
 | Implement the specification: the reference model, the vectors or a first provider | The specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch (next row). |

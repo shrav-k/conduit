@@ -38,6 +38,12 @@ settled the restriction on pattern tokens; the other settlements are the coordin
 ruling 46, point 4, and the owner can strike them. None adds or removes a feature or changes
 what Conduit is for.
 
+## Increment 2's plan
+
+[The study of increment 2](increment-2/plan.md), by work order 003, proposes S1 as documents,
+the promises and safety cases it touches, a format for the vectors and a sequence of orders.
+[The admin's decisions](increment-2/decisions.md) settle what it left open.
+
 ## The logs
 
 | Increment | Log | Findings |

@@ -120,6 +120,18 @@ D11, and `template-controls.v1` and this page say what the tool presented for an
 holds (finding 6-1-04, D07). The promises are the source of truth: where a schema and a
 promise differ, the schema is wrong.
 
+The first build's strict loader, under [ruling 46](../../docs/proposals/ruling-46/README.md),
+reads and validates these examples too, and its
+[log of increment 1](../../docs/proposals/first-build/log-increment-1.md) found three places
+where this tool read otherwise than the promises. It matched `pattern` with Python's `re`, and
+accepted a name that ends in a line feed; it now reads `$` and `\s` in a pattern as ECMA-262
+does (SCH-016). It rounded a number with a fractional part into the range of binary64; it now
+rejects one beyond that range (SCH-021). And it checked `uuid` and `duration` by Python's
+libraries; it now checks them by the grammars the profile cites (SCH-004). Each fix has an
+example: `OBJ-001-name-ending-in-a-line-feed.yaml` and
+`SCH-021-fraction-just-above-binary64.yaml` under examples/invalid, and the two examples of
+SCH-019 for a `default` that is not a `uuid` or a `duration` under examples/invalid-by-rule.
+
 ## What this is
 
 One JSON Schema for each thing an author writes or an engine must accept. Each is written in
@@ -351,8 +363,8 @@ The work of ruling 41 made these choices where the promises left the shape open;
 | [examples/valid/project](examples/valid/project) | A small submitted project, whose manifest states `address` because it holds contracts and lists implementations: a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input and a narrowed control, which selects a setup hook; a Pool template with two entries, one referring to the other, whose input supplies their placement, and whose items, a program inside a package, run on the engine's own runner; a Conduit template with the shared-host requirement and a filter; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open, naming an operation of the project by its address; a runtime provider's type and template; the type of a secret Resource, a secret Resource and the Conduit through which it is read; a type whose configuration holds a secret reference, with a plain `command` item whose `environment` binds it; and instance documents of every family, an Agent that names its `runtime` among them |
 | [examples/valid/files-package](examples/valid/files-package) | A package: a manifest with `address`, `version`, `exports` and three implementations, reached by `command`, by a server.json `package` pinned by its `fileSha256` and by a plain `remote`, each binding a value of the configuration, the `command` and the `remote` with label selectors that name one label with different values; and one contract of each of the five kinds, two of which use a `$ref` written `#name`. Among them are Operation contracts in `inputSchema` form, one with a `default`, one with a hint, one with `oneOf` at the root of its `inputSchema` and two with a handle, a control whose `changes` maps its input to a setting, a Type with a label selector, the default implementations of the operations it needs, since no Operation contract states one, and `records`, and a Requirement that is a filter |
 | [examples/valid/first-start](examples/valid/first-start) | The instance documents of the five first-start objects, written out to show what first start makes. Each is valid against the schemas. The engine makes these objects itself and is handed no such document: submitting them is rejected, under FST-006 for the five made from the templates `system`, `node`, `management`, `access` and `root`, and under OBJ-002 because the five names are taken |
-| [examples/invalid](examples/invalid) | 57 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
-| [examples/invalid-by-rule](examples/invalid-by-rule) | 34 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Four files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. Three others hold, beside their documents, the manifest of their project, a document with no `kind`, whose items their templates select. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
+| [examples/invalid](examples/invalid) | 59 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
+| [examples/invalid-by-rule](examples/invalid-by-rule) | 36 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Four files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. Three others hold, beside their documents, the manifest of their project, a document with no `kind`, whose items their templates select. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
 
 Every name under `example.org` is invented, and every digest and hash in an example is
 illustrative. Each directory under `examples/valid` is one project, with its documents beside

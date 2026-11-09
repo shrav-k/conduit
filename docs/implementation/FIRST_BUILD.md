@@ -107,8 +107,9 @@ table.
 
 ## Findings
 
-Each increment logs what it finds in `docs/proposals/first-build/`, one log per increment
-(ruling 46, point 4). A finding is one of:
+Each increment logs what it finds in
+[docs/proposals/first-build/](../proposals/first-build/README.md), one log per increment (ruling
+46, point 4). A finding is one of:
 
 - a **gap**: a case that no promise decides;
 - an **ambiguity**: a promise that two readings would build differently;

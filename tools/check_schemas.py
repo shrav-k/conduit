@@ -69,14 +69,32 @@ It needs PyYAML and jsonschema. If the interpreter that runs it lacks either, it
 again under /usr/bin/python3. If PyYAML is still missing it stops and says that nothing was
 checked. If only jsonschema is missing it runs steps 1, 2, 5 and 6, says in capitals that no
 document was validated against a schema, and exits with status 3. It never reports a check it
-did not run. `pattern` is evaluated by Python's `re`,
-not by an ECMA-262 engine (SCH-016); the patterns in these schemas use only syntax the two
-share.
+did not run.
+
+Where it reads otherwise than the specification, and why no verdict here depends on it. The
+strict loader in reference-model/ follows the specification in each, and the first build's log
+of increment 1 (docs/proposals/first-build/log-increment-1.md) lists them.
+
+  - `pattern` is evaluated by Python's `re`, not by an ECMA-262 engine (SCH-016). The patterns
+    in these schemas use only syntax the two share, and two pieces of it that they read
+    differently, `$` and `\\s`, are translated so that `re` matches them as ECMA-262 does (see
+    `ecma`). No pattern here uses `\\d`, `\\w` or `\\b`, which the two also read differently.
+    `.` is used once, in the lookahead of `qualified-reference.v1`, where the rest of the
+    pattern admits only ASCII letters, digits, dots and hyphens, so the line terminators that
+    one `.` matches and the other does not cannot change a verdict.
+  - The formats are Python's checkers, but for `uuid` and `duration`, which are checked here by
+    the grammars that SCH-004 cites (see `format_checker`). Python's `date-time` and `date`
+    reject a leap second and the year 0000, which the grammar of RFC 3339 allows; no value
+    checked here holds either.
+  - YAML is read by PyYAML, which reads YAML 1.1. It rejects a tab, NEL or a line separator in
+    a plain scalar, a character outside YAML's printable set even inside quotes, a byte order
+    mark before a later document and a key of more than 1024 characters in a flow mapping,
+    each of which YAML 1.2.2 allows, and it reads a byte order mark inside a plain or a block
+    scalar, which YAML 1.2.2 does not allow there. No file here holds any of them.
 """
 import copy
 import decimal
 import ipaddress
-import math
 import os
 import pathlib
 import re
@@ -259,22 +277,47 @@ def _int(loader, node):
     return value
 
 
+# The largest finite IEEE 754 binary64 value, exactly: an integer of 309 digits (SCH-021).
+LARGEST_BINARY64 = int(sys.float_info.max)
+
+
+def _decimal(text):
+    """The number that a text in the form of a YAML float writes, exactly, whatever its
+    exponent: `(significant, scale)`, for the value `significant` times ten to the power
+    `scale`, where `significant` is its digits with no zero at either end, empty for zero."""
+    whole, fraction, exponent = re.fullmatch(
+        r"[-+]?([0-9]*)(?:\.([0-9]*))?(?:[eE]([-+]?[0-9]+))?", text).groups()
+    fraction = fraction or ""
+    digits = (whole + fraction).lstrip("0")
+    significant = digits.rstrip("0")
+    return significant, int(exponent or 0) - len(fraction) + len(digits) - len(significant)
+
+
 def _float(loader, node):
+    """A number in the form of a YAML float. Whether it has a fractional part, and whether it
+    is in range, are read from the decimal value that it writes, as SCH-005, SCH-006 and
+    SCH-021 have them: `1.5e1` is a whole number, and a number with a fractional part a little
+    above the largest binary64 value is rejected, although it would round down to that value.
+    It is then read as the binary64 value nearest to it (SCH-020), which for `1e-400` is 0. The
+    first build's log of increment 1 records why it is read so."""
     text = node.value
+    line = node.start_mark.line + 1
     if re.search(r"inf|nan", text, re.I):
-        raise NotStrict(f"line {node.start_mark.line + 1}: {text} has no JSON form (SCH-017)")
-    try:
-        number = decimal.Decimal(text)
-        whole = number == number.to_integral_value()
-    except decimal.DecimalException:
-        raise NotStrict(f"line {node.start_mark.line + 1}: {text} cannot be read as a number")
-    if whole and abs(number) > SAFE_INT:
-        raise NotStrict(f"line {node.start_mark.line + 1}: {text} is outside the range of SCH-006")
-    value = float(text)
-    if math.isinf(value):
-        raise NotStrict(f"line {node.start_mark.line + 1}: {text} is outside the range of IEEE 754 "
-                      f"binary64 (SCH-021)")
-    return value
+        raise NotStrict(f"line {line}: {text} has no JSON form (SCH-017)")
+    significant, scale = _decimal(text)
+    whole_digits = len(significant) + scale
+    largest_digits = len(str(LARGEST_BINARY64))
+    if not significant or scale >= 0:
+        if whole_digits > 16 or int(significant or "0") * 10 ** scale > SAFE_INT:
+            raise NotStrict(f"line {line}: {text} is outside the range of SCH-006")
+    elif whole_digits > largest_digits or (
+            whole_digits == largest_digits
+            and int(significant[:whole_digits]) >= LARGEST_BINARY64):
+        # The fraction is not zero, so the number is greater than the largest value exactly
+        # when its whole part is at least that value.
+        raise NotStrict(f"line {line}: {text} is outside the range of IEEE 754 binary64 "
+                        f"(SCH-021)")
+    return float(text)
 
 
 for _tag, _pattern, _first in (
@@ -497,11 +540,83 @@ def bundle(schemas, core):
     return {"$schema": "https://json-schema.org/draft/2020-12/schema", "$defs": defs}
 
 
+# What ECMA-262 matches with `\s` (SCH-016): its WhiteSpace and LineTerminator, among them
+# U+FEFF, and not U+001C to U+001F or U+0085, which Python's `re` also matches with `\s`.
+# U+2000 to U+200A is a range, as it stands inside a class.
+ECMA_SPACE = ("\t\n\x0b\x0c\r\x20\xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000"
+              "\ufeff")
+
+
+def ecma(pattern):
+    """A pattern as Python's `re` must be given it to match as ECMA-262 does (SCH-016), in the
+    two places where the patterns of these schemas use syntax that the two read differently:
+    `$` outside a class, which in ECMA-262 is the end of the string and in `re` also matches
+    before a line feed at the end, is written `\\Z`; and `\\s`, in a class or outside one, is
+    written as ECMA-262's own set of spaces. The first build's log of increment 1
+    (docs/proposals/first-build/log-increment-1.md) records why."""
+    out, in_class, escaped = [], False, False
+    for char in pattern:
+        if escaped:
+            escaped = False
+            if char == "s":
+                out[-1] = ECMA_SPACE if in_class else f"[{ECMA_SPACE}]"
+            else:
+                out.append(char)
+        elif char == "\\":
+            escaped = True
+            out.append(char)
+        elif in_class:
+            in_class = char != "]"
+            out.append(char)
+        else:
+            in_class = char == "["
+            out.append("\\Z" if char == "$" else char)
+    return "".join(out)
+
+
+def ecma_pattern(validator, pattern, instance, schema):
+    """The keyword `pattern`, matched as ECMA-262 matches it as far as `ecma` translates it."""
+    if validator.is_type(instance, "string") and not re.search(ecma(pattern), instance):
+        yield jsonschema.ValidationError(f"{instance!r} does not match {pattern!r}")
+
+
+# The grammars that SCH-004 cites for `uuid`, RFC 9562, section 4, and for `duration`, RFC 3339,
+# appendix A. The quoted letters of ABNF match either case (RFC 5234, section 2.3), and a digit
+# is ASCII.
+UUID = re.compile(r"[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}")
+DUR_TIME = r"[Tt](?:[0-9]+[Hh](?:[0-9]+[Mm](?:[0-9]+[Ss])?)?|[0-9]+[Mm](?:[0-9]+[Ss])?|[0-9]+[Ss])"
+DURATION = re.compile(r"[Pp](?:(?:[0-9]+[Dd]|[0-9]+[Mm](?:[0-9]+[Dd])?"
+                      r"|[0-9]+[Yy](?:[0-9]+[Mm](?:[0-9]+[Dd])?)?)(?:" + DUR_TIME + r")?"
+                      r"|" + DUR_TIME + r"|[0-9]+[Ww])")
+
+
+def format_checker():
+    """Python's checkers for the formats of JSON Schema 2020-12, but `uuid` and `duration`,
+    which are checked by the grammars that SCH-004 cites. Python's `uuid` takes what
+    `uuid.UUID` parses, a sign, an underscore, a digit outside ASCII and white space among
+    them, and its `duration` takes ISO 8601's, such as `P1Y3D` and `PT0.5S`, which the grammar
+    of RFC 3339 does not. The first build's log of increment 1 records why."""
+    checker = jsonschema.FormatChecker()
+    checker.checkers = dict(jsonschema.Draft202012Validator.FORMAT_CHECKER.checkers)
+    for name, grammar in (("uuid", UUID), ("duration", DURATION)):
+        checker.checks(name)(
+            lambda value, grammar=grammar: not isinstance(value, str)
+            or grammar.fullmatch(value) is not None)
+    return checker
+
+
+def ecma_validator(schema):
+    """A JSON Schema 2020-12 validator that asserts formats, by `format_checker`, and matches
+    `pattern` by `ecma`."""
+    kind = jsonschema.validators.extend(jsonschema.Draft202012Validator,
+                                        {"pattern": ecma_pattern})
+    return kind(schema, format_checker=format_checker())
+
+
 def validator(bundled, name):
     schema = dict(bundled)
     schema["$ref"] = "#/$defs/" + name
-    return jsonschema.Draft202012Validator(
-        schema, format_checker=jsonschema.Draft202012Validator.FORMAT_CHECKER)
+    return ecma_validator(schema)
 
 
 def explain(error):
@@ -1000,8 +1115,7 @@ class Defaults:
         top["$schema"] = "https://json-schema.org/draft/2020-12/schema"
         top["$defs"] = dict(self.defs, root=rewritten)
         value = self.filled(value, top, top)
-        found = list(jsonschema.Draft202012Validator(
-            top, format_checker=jsonschema.Draft202012Validator.FORMAT_CHECKER).iter_errors(value))
+        found = list(ecma_validator(top).iter_errors(value))
         return explain(found[0]) if found else None
 
     def faults(self, doc, scope):
@@ -1743,7 +1857,7 @@ def main():
     core = named_values["corePackage"]
     keywords, formats = profile()
     if validating:
-        checkers = jsonschema.Draft202012Validator.FORMAT_CHECKER.checkers
+        checkers = format_checker().checkers
         unchecked = sorted(f for f in formats if f not in checkers)
         state = ("Format checkers available for all of them." if not unchecked
                  else "Format checkers MISSING for " + ", ".join(unchecked) + ".")

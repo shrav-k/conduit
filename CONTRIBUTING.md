@@ -47,9 +47,11 @@ source material for the type contracts still to be written. A behavior that is m
   [register](ROADMAP.md#experiments-and-probes): name the row it serves, or say that it is new
   and what it feeds, and follow [the rules for proposing one](ROADMAP.md#proposing-an-experiment).
 - **Code** is Rust, with a lockfile, a pinned toolchain and ignored build output: a probe or an
-  evaluation in its own directory under [experiments/](experiments/README.md), and a provider
+  evaluation in its own directory under [experiments/](experiments/README.md); a provider
   package, one crate per provider, under a top-level `packages/` directory (ruling 40), which
-  does not exist yet. The only exception is the Python checkers in `tools/`.
+  does not exist yet; and the first build, its core and its shell, in the workspace under
+  [reference-model/](reference-model/README.md) (ruling 46). The only exception is the Python
+  checkers in `tools/`.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
   dissent. What it holds is not edited; new material may be added, with a line in its index.
 
@@ -90,10 +92,11 @@ Run these from the repository root before each commit:
 
 ```sh
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
-python3 tools/set_names.py --check   # the names under spec/ agree with spec/names.yaml
+python3 tools/set_names.py --check   # the names under spec/ and reference-model/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
+(cd reference-model && cargo test --release)   # the first build: the strict loader's tests
 ```
 
 What each check needs:
@@ -117,9 +120,13 @@ What each check needs:
   ran", and it exits with status 3 when N is 0. It never reports a check it did not run. Its
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
+- `cargo test --release` in `reference-model/` needs Rust through rustup, which installs on
+  first use the toolchain that `reference-model/rust-toolchain.toml` pins. Run it from inside
+  the directory, so that the pin applies. For a change to its code, run
+  `cargo clippy --all-targets -- -D warnings` there too.
 
-Run `cargo test --release` in each Rust directory you change, under `experiments/` or
-`packages/`.
+Run `cargo test --release` in each Rust directory you change, under `experiments/`,
+`packages/` or `reference-model/`, and in `reference-model/` after any change to `spec/`.
 
 What the checks cover:
 
@@ -140,6 +147,10 @@ What the checks cover:
   directory under `experiments/` is listed in its index and linked from the roadmap; that the
   entry points link the roadmap; and that each state begins with an allowed word. It cannot
   tell whether a state is true. Its own header lists each check.
+- `cargo test --release` in `reference-model/` runs the first build's tests: the strict loader
+  reads every example under `spec/schemas/examples/` and checks its verdict against the one
+  `check_schemas.py` gives, which a fixture records, and reads documents and directories case
+  by case. [reference-model/README.md](reference-model/README.md) lists the tests.
 
 None of them checks behavior. That needs an engine, and no engine exists.
 

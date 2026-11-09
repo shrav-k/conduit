@@ -1,0 +1,16 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a `default` satisfies the schema that states it (SCH-019), and a format is checked by the
+# grammar that the profile cites (SCH-004), for `uuid` that of RFC 9562. The default below
+# ends in a hyphen, which some libraries that parse a UUID accept, and the grammar does not.
+# The first build's log of increment 1 (docs/proposals/first-build/log-increment-1.md) added it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: tagged-directory.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      tag: {type: string, format: uuid, default: f81d4fae-7dec-11d0-a765-00a0c91e6bf6-}

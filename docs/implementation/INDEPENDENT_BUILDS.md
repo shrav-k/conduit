@@ -4,8 +4,9 @@ Status: the roles and independence rules were accepted by the owner on 2026-11-0
 below follows layer decision LD4 of the same day. **The builds have not started and must not
 start until the [readiness gate](#readiness-gate) passes.** The specification exists as a draft
 in [spec/](../../spec/README.md), and its [form](../proposals/normative-surface/README.md) is
-ruled. `conformance/`, `reference-model/` and the branches named below do not exist yet; their
-names are proposals.
+ruled. `conformance/` and the branches named below do not exist yet; their names are
+proposals. `reference-model/` holds the code of the first build (ruling 46), which is not one of
+these builds.
 
 Where the readiness gate and the builds come in the work: step 7 of the
 [roadmap](../../ROADMAP.md#the-order-of-the-work).
@@ -144,7 +145,9 @@ returns the URL at which it is reached, or the engine's own runner reaches it ov
 (PRV-007), so DL12 no longer leaves to each engine who starts a process or over which transport
 it is reached (G9); the schemas cover `from` and two nested instantiations, not three
 (G3); the experiment program has ten scenarios, S1 to S10 (G3); of the 87 defects in the
-language and the shared conventions, 13 are closed and 74 are ruled (G7).
+language and the shared conventions, 13 are closed and 74 are ruled (G7); and
+`reference-model/` exists and holds the strict loader in Rust (A43), increment 1 of the first
+build, though no core of the reference model yet (G3, G4).
 
 [Round 5](../proposals/reaudit/round-5/README.md) of the re-audit read the rewrite at commit
 `d0c425f`. Its readers reported ten unsafe findings. All ten are fixed, so no unsafe finding

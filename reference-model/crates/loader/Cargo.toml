@@ -1,0 +1,19 @@
+[package]
+name = "conduit-loader"
+version = "0.1.0"
+description = "Reads Conduit documents and project directories strictly, and validates them against the specification's schemas."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# Exact versions where the behavior of a crate decides a verdict; Cargo.lock pins the rest.
+jsonschema = { version = "=0.61.0", default-features = false }
+regress = "=0.12.0"
+saphyr-parser = "=0.3.3"
+serde = "1"
+serde_json = { version = "1", features = ["raw_value"] }
+
+[dev-dependencies]
+tempfile = "3"

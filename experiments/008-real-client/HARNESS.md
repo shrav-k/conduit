@@ -1,8 +1,9 @@
 # Experiment 008 harness
 
 A harness for the [pre-registration](README.md), not an engine or conformance evidence.
-No real client has been run to produce these files. The worker's checks use a scripted HTTP
-client only. The worker leaves the admin's amended pre-registration and the specification unchanged.
+The later-turn extension has not been run with a real client. The worker's checks use scripted
+HTTP clients and local process fixtures only. The worker leaves the pre-registration,
+recorded results and specification unchanged.
 
 ## Run
 
@@ -11,6 +12,8 @@ From this directory:
 ```sh
 cargo run --release -- --dry-run
 cargo run --release -- --output /tmp/conduit-008-evidence-2026-11-09
+cargo run --release -- --follow-up --dry-run
+cargo run --release -- --follow-up --output /tmp/conduit-008-later-turn-evidence
 ```
 
 The actual command launches agents and spends model tokens; the admin runs it. Its output
@@ -152,7 +155,8 @@ inserted into the pre-registered matrix. The admin must retain that limitation i
 Claude receives a `headersHelper` shell command; Codex receives an
 `mcp_servers.stub.http_headers_helper` shell command. Both invoke this binary's
 `--headers-helper` mode with absolute, shell-quoted lab paths. Standard input is null for
-version checks and agent commands. Model prompts and commands contain no token.
+version checks and single-turn agent commands. The later-turn Claude command uses streamed
+input as described below. Model prompts and commands contain no token.
 
 Local documentation consulted: installed CLI help; locally saved Claude Code MCP/environment
 references; locally saved MCP July 2026 transport, tools, caching, discovery and schema docs;
@@ -165,6 +169,60 @@ crates. Useful source locations for admin verification are
 [Codex configuration](https://developers.openai.com/codex/config-reference/), and
 [MCP July 2026](https://modelcontextprotocol.io/specification/2026-07-28).
 These links identify references, not a claim that the worker fetched their live contents.
+
+## Follow-up: a later turn
+
+`--follow-up` selects four cells and 12 runs, independent of the original 24 cells and 68
+runs: C1-later and C5-later, each client, cache off, TTL 0, valid token, three repetitions.
+`--only` accepts, for example, `codex-C5-later-cache-off-ttl-0-auth-valid`. A follow-up dry run
+prints exactly 12 `RUN` entries and describes both turns, including the wait before turn 2.
+It does not run clients, bind a socket or create output.
+
+| Case | First turn | Second turn | Stub states |
+| --- | --- | --- | --- |
+| C1-later | Read `hello.txt` through `files.read.v1`, then call `control.next.v1`; stop | Read `hello.txt` again through `files.read.v1` if available | C1: `files` closes and remains closed |
+| C5-later | Call `control.next.v1`; stop | Call `notes.read.v1` with path `hello.txt`; discover it if possible | C5: `notes` opens and remains open |
+
+Both prompts are fixed in `Cell::turn_prompt` before a run; no prompt is constructed from a
+model result. One stub, identity, port and lab last through both turns. No control is called
+by the runner between turns, and the runner does not force a catalog refresh.
+
+Claude keeps its existing flags, including `--no-session-persistence`, adding
+`--input-format stream-json`. The runner sends a JSONL user message on piped stdin, reads
+stdout until the first `result`, then sends the second message in that same process. It
+leaves stdin open until the second result, then closes it and drains stdout. An error result,
+EOF or timeout before the first result prevents the second message.
+
+Codex keeps every isolation flag and configuration override, including the stub server's
+approval, and omits `--ephemeral` so the first session can be resumed. The runner waits for
+exit 0 and `turn.completed`, takes the exact `thread_id` from `thread.started`, and invokes
+`codex exec resume` with that ID and the second fixed prompt. It never uses `--last`. Installed
+CLI help defines `--sandbox` and `--color` only on `exec`, so those two flags precede `resume`;
+the other flags and overrides follow it. Both commands retain the same lab, helper, URL,
+environment and removal of API-key variables. A different session ID reported on resume is
+retained as a runner error. Codex writes its own session state in its usual location; the
+runner neither inspects that state nor changes the owner's configuration home.
+
+Each run has `turn-1/` and `turn-2/`: `prompt.txt`, `plan.json`, `events.jsonl`, `final.txt`,
+`client-exposed.jsonl`, `authentication.json`, `visibility.txt`, `status.json` and `stub.jsonl`.
+Claude also records the exact attempted `input.jsonl`; its second plan describes input to the
+existing process, not another launch. Codex records `session.json` at the run root with the ID
+and its event source. Its stderr is per turn; Claude's shared process stderr and unmodified
+combined event stream are at the run root. An uncompleted or unsent turn has an explicit status;
+its unavailable events or input are not invented. `final.txt` is empty if no model text was
+exposed.
+
+The root `stub.jsonl` remains the complete wire record, including startup. `turn_start`
+markers and a `turn` field mark subsequent log entries by the active user turn; the per-turn
+stub files snapshot those entries verbatim when client execution finishes. The root log also
+retains later shutdown entries. A long-lived stream may span the boundary: `turn`
+marks when bytes were logged, while request IDs still identify the originating request.
+Startup before the first turn remains only in the root log.
+
+Budget about 12 minutes, an estimate, for the 12 sequential runs. `--timeout-secs` applies to
+each turn separately, and also bounds Claude's shutdown after its second result. Failed
+launches, incomplete streams, missing Codex IDs and timeouts remain observations, never
+successful experiment results. Only the admin runs the actual follow-up.
 
 ## Evidence and interpretation
 
@@ -209,6 +267,7 @@ cargo test --release
 cargo clippy --all-targets -- -D warnings
 cargo fmt --check
 cargo run --release -- --dry-run
+cargo run --release -- --follow-up --dry-run
 ```
 
 The HTTP tests drive all five cases at all three revisions and both TTLs, checking IFC-012,
@@ -221,3 +280,9 @@ API-key environment removal, authentication event extraction, invalid-control no
 HTTP error statuses, unsupported-version negotiation and protocol header logging.
 They launch only the harness helper and harmless local shells,
 never an agent.
+
+Follow-up tests check both prompts and plans for each client, all inherited isolation flags
+and API-key removals, exact-session resume, and the exact 12-run dry run and subset selection.
+A local shell fixture requires that the second input arrive only after its first result,
+checks that stdin stays open through both results, proves both turns use one PID, and checks
+separate event/text extraction. EOF before a result leaves the second message unsent.

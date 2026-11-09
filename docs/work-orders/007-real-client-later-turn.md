@@ -39,3 +39,12 @@ Only files under `experiments/008-real-client/` other than `README.md` and the r
 ## Done when
 
 As order 002's done-when, with the follow-up's dry run printing its 12 runs.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 8 minutes. Two cases with two turns each, the follow-up's 12 runs behind
+  `--follow-up`, the original 68 unchanged; 20 tests that need no agent.
+- **Verifier**: 2 minutes. No fault found.
+- **Admin**: ran the tests, read the resume command, and ran the 12 runs. No second round.

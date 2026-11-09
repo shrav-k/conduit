@@ -62,16 +62,17 @@ impl Case {
 }
 
 #[derive(Clone)]
-pub struct Log(Arc<Mutex<File>>);
+pub struct Log(Arc<Mutex<(File, Option<usize>)>>);
 impl Log {
     pub fn new(path: &Path) -> Result<Self> {
-        Ok(Self(Arc::new(Mutex::new(
+        Ok(Self(Arc::new(Mutex::new((
             OpenOptions::new()
                 .create_new(true)
                 .write(true)
                 .mode(0o600)
                 .open(path)?,
-        ))))
+            None,
+        )))))
     }
     pub fn event(&self, value: Value) {
         let mut value = value;
@@ -81,9 +82,17 @@ impl Log {
                 .unwrap()
                 .as_millis()
         );
-        let mut file = self.0.lock().unwrap();
+        let mut state = self.0.lock().unwrap();
+        if let Some(turn) = state.1 {
+            value["turn"] = json!(turn);
+        }
+        let file = &mut state.0;
         writeln!(file, "{value}").expect("write evidence");
         file.flush().expect("flush evidence");
+    }
+    pub fn begin_turn(&self, turn: usize) {
+        self.0.lock().unwrap().1 = Some(turn);
+        self.event(json!({"kind":"turn_start"}));
     }
 }
 
@@ -568,6 +577,7 @@ pub struct RunningStub {
     pub url: String,
     pub cancel: CancellationToken,
     pub task: JoinHandle<std::io::Result<()>>,
+    pub log: Log,
 }
 pub async fn start(
     case: Case,
@@ -595,7 +605,7 @@ pub async fn start(
         identity,
         origin: url.trim_end_matches('/').to_string(),
         first_401: AtomicBool::new(first_401),
-        log,
+        log: log.clone(),
         request_id: AtomicU64::new(1),
         streams: AtomicUsize::new(0),
     }));
@@ -619,7 +629,12 @@ pub async fn start(
             .with_graceful_shutdown(shutdown.cancelled_owned())
             .await
     });
-    Ok(RunningStub { url, cancel, task })
+    Ok(RunningStub {
+        url,
+        cancel,
+        task,
+        log,
+    })
 }
 
 pub fn headers_helper(identity_dir: &Path, log_path: &Path) -> Result<()> {

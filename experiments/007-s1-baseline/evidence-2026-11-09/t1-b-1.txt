@@ -1,0 +1,3 @@
+# Codex run t1-b-1 (agent B): stderr only (no events)
+Error loading config.toml: invalid transport
+in `mcp_servers.project`

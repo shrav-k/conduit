@@ -1,6 +1,8 @@
 # 007 — The baseline for S1, with today's tools
 
-Status: pre-registered on 2026-11-09, not yet run. This is action item A70 of the
+Status: pre-registered on 2026-11-09, and run the same day with Claude Code and Codex: every
+task, T1 to T7, done and counted, in the [results of 2026-11-09](results-2026-11-09.md). This
+is action item A70 of the
 [roadmap](../../ROADMAP.md#experiments-and-probes), which ruling 45 accepted from X3 of pull
 request 10, from `allocmemory`. [Ruling 46](../../docs/proposals/ruling-46/README.md) made its
 comparison one of the success criteria of the first build. Under ruling 45's rule, this page
@@ -57,11 +59,16 @@ result, and the first build is judged against it.
   newcomer's effort.
 - One run of each task, on one machine. The counts are exact, but the times are observations,
   not measurements of a population.
-- Codex is not installed on the machine at pre-registration. It needs the owner to install it
-  and sign in. Until then the baseline cannot use it, and the results say which agents were
-  used.
+- Codex was not installed on the machine at pre-registration. The owner installed it (0.167.0)
+  and signed in on 2026-11-09, before the run, so the run used Claude Code and Codex, as the
+  results say.
 
 ## Results
 
-None yet. Results go in this directory with their date, and the
-[register](../../ROADMAP.md#experiments-and-probes) records the state.
+- [Results of 2026-11-09](results-2026-11-09.md): the setup and its reasons, each task's log,
+  counts and evidence, the observed time and mistakes, what surprised the author, the limits
+  and the deviations. The measured configuration files are in [setup/](setup/), and the
+  author's log, the prompts and each run's trimmed output in
+  [evidence-2026-11-09/](evidence-2026-11-09/).
+
+The [register](../../ROADMAP.md#experiments-and-probes) records the state.

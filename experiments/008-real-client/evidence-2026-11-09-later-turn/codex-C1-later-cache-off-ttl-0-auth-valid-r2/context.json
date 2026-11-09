@@ -1,0 +1,154 @@
+{
+  "version": {
+    "source_file": "version.txt",
+    "text": "codex-cli 0.167.0"
+  },
+  "cell": {
+    "cell": {
+      "cache": false,
+      "case": "C1",
+      "client": "Codex",
+      "first_401": false,
+      "later": true,
+      "ttl": 0
+    },
+    "model_visibility": "Only directly exposed client events are evidence; wire is recorded separately.",
+    "repetition": 2,
+    "timeout_secs": 180
+  },
+  "status": {
+    "process": {
+      "exit_code": 0,
+      "timed_out": false
+    },
+    "runner_error": null,
+    "turns": [
+      {
+        "exit_code": 0,
+        "timed_out": false
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false
+      }
+    ]
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "prompt": {
+        "source_file": "turn-1/prompt.txt",
+        "text": "Use only the experiment stub's MCP tools. Call files.read.v1 with path hello.txt, then control.next.v1 with {}, in that order. Stop after these two calls. Report what happened. Do not substitute shell commands or other tools for the requested calls."
+      },
+      "plan": {
+        "source_file": "turn-1/plan.json",
+        "value": {
+          "program": "codex",
+          "args": [
+            "exec",
+            "--ignore-user-config",
+            "--strict-config",
+            "--ignore-rules",
+            "--disable",
+            "apps",
+            "--sandbox",
+            "read-only",
+            "--skip-git-repo-check",
+            "--json",
+            "--color",
+            "never",
+            "--output-last-message",
+            "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/turn-1/final.txt",
+            "-c",
+            "mcp_servers.stub.url=\"http://127.0.0.1:53459/\"",
+            "-c",
+            "mcp_servers.stub.http_headers_helper=\"'<lab>' '--headers-helper' '--identity-dir' '<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/identity' '--helper-log' '<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/helper.jsonl'\"",
+            "-c",
+            "mcp_servers.stub.startup_readiness=\"connection\"",
+            "-c",
+            "mcp_servers.stub.required=true",
+            "-c",
+            "mcp_servers.stub.default_tools_approval_mode=\"approve\"",
+            "-c",
+            "model_reasoning_effort=\"low\"",
+            "-c",
+            "web_search=\"disabled\"",
+            "Use only the experiment stub's MCP tools. Call files.read.v1 with path hello.txt, then control.next.v1 with {}, in that order. Stop after these two calls. Report what happened. Do not substitute shell commands or other tools for the requested calls."
+          ],
+          "env": {
+            "CONDUIT_IDENTITY_DIR": "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/identity",
+            "CONDUIT_URL": "http://127.0.0.1:53459/",
+            "TMPDIR": "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/tmp",
+            "npm_config_cache": "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/npm-cache"
+          },
+          "env_remove": [
+            "ANTHROPIC_API_KEY",
+            "OPENAI_API_KEY",
+            "CLAUDECODE",
+            "MCP_CONFIG"
+          ],
+          "cwd": "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/lab"
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "prompt": {
+        "source_file": "turn-2/prompt.txt",
+        "text": "Use only the experiment stub's MCP tools. Read hello.txt again using files.read.v1 if it is available. Report what happened. Do not substitute shell commands or other tools for the requested calls."
+      },
+      "plan": {
+        "source_file": "turn-2/plan.json",
+        "value": {
+          "program": "codex",
+          "args": [
+            "exec",
+            "--sandbox",
+            "read-only",
+            "--color",
+            "never",
+            "resume",
+            "--ignore-user-config",
+            "--strict-config",
+            "--ignore-rules",
+            "--disable",
+            "apps",
+            "--skip-git-repo-check",
+            "--json",
+            "--output-last-message",
+            "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/turn-2/final.txt",
+            "-c",
+            "mcp_servers.stub.url=\"http://127.0.0.1:53459/\"",
+            "-c",
+            "mcp_servers.stub.http_headers_helper=\"'<lab>' '--headers-helper' '--identity-dir' '<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/identity' '--helper-log' '<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/helper.jsonl'\"",
+            "-c",
+            "mcp_servers.stub.startup_readiness=\"connection\"",
+            "-c",
+            "mcp_servers.stub.required=true",
+            "-c",
+            "mcp_servers.stub.default_tools_approval_mode=\"approve\"",
+            "-c",
+            "model_reasoning_effort=\"low\"",
+            "-c",
+            "web_search=\"disabled\"",
+            "<session>",
+            "Use only the experiment stub's MCP tools. Read hello.txt again using files.read.v1 if it is available. Report what happened. Do not substitute shell commands or other tools for the requested calls."
+          ],
+          "env": {
+            "CONDUIT_IDENTITY_DIR": "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/identity",
+            "CONDUIT_URL": "http://127.0.0.1:53459/",
+            "TMPDIR": "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/tmp",
+            "npm_config_cache": "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/npm-cache"
+          },
+          "env_remove": [
+            "ANTHROPIC_API_KEY",
+            "OPENAI_API_KEY",
+            "CLAUDECODE",
+            "MCP_CONFIG"
+          ],
+          "cwd": "<runs>/codex-C1-later-cache-off-ttl-0-auth-valid-r2/lab"
+        }
+      }
+    }
+  ]
+}

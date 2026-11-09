@@ -1,0 +1,162 @@
+{
+  "version": {
+    "source_file": "version.txt",
+    "text": "2.1.318 (Claude Code)"
+  },
+  "cell": {
+    "cell": {
+      "cache": false,
+      "case": "C5",
+      "client": "Claude",
+      "first_401": false,
+      "later": true,
+      "ttl": 0
+    },
+    "model_visibility": "Only directly exposed client events are evidence; wire is recorded separately.",
+    "repetition": 2,
+    "timeout_secs": 180
+  },
+  "status": {
+    "process": {
+      "exit_code": 0,
+      "timed_out": false
+    },
+    "runner_error": null,
+    "turns": [
+      {
+        "completed": true,
+        "result_is_error": false,
+        "result_subtype": "success",
+        "timed_out": false
+      },
+      {
+        "completed": true,
+        "result_is_error": false,
+        "result_subtype": "success",
+        "timed_out": false
+      }
+    ]
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "prompt": {
+        "source_file": "turn-1/prompt.txt",
+        "text": "Use only the experiment stub's MCP tools. Call control.next.v1 with {}. Stop after that call. Report what happened. Do not substitute shell commands or other tools for the requested calls."
+      },
+      "plan": {
+        "source_file": "turn-1/plan.json",
+        "value": {
+          "program": "claude",
+          "args": [
+            "--print",
+            "--model",
+            "sonnet",
+            "--setting-sources",
+            "project",
+            "--settings",
+            "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/settings.json",
+            "--strict-mcp-config",
+            "--mcp-config",
+            "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/mcp.json",
+            "--tools",
+            "",
+            "--allowedTools",
+            "mcp__stub__*",
+            "--no-session-persistence",
+            "--output-format",
+            "stream-json",
+            "--verbose",
+            "--include-partial-messages",
+            "--disable-slash-commands",
+            "--input-format",
+            "stream-json"
+          ],
+          "env": {
+            "CONDUIT_IDENTITY_DIR": "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/identity",
+            "CONDUIT_URL": "http://127.0.0.1:53382/",
+            "MCP_DISCOVERY_CACHE": "0",
+            "TMPDIR": "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/tmp",
+            "npm_config_cache": "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/npm-cache"
+          },
+          "env_remove": [
+            "ANTHROPIC_API_KEY",
+            "OPENAI_API_KEY",
+            "CLAUDECODE",
+            "MCP_CONFIG"
+          ],
+          "cwd": "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/lab",
+          "stdin_message": {
+            "message": {
+              "content": "Use only the experiment stub's MCP tools. Call control.next.v1 with {}. Stop after that call. Report what happened. Do not substitute shell commands or other tools for the requested calls.",
+              "role": "user"
+            },
+            "parent_tool_use_id": null,
+            "session_id": "",
+            "type": "user"
+          }
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "prompt": {
+        "source_file": "turn-2/prompt.txt",
+        "text": "Use only the experiment stub's MCP tools. Call notes.read.v1 with path hello.txt. Discover the new tool if your client permits it. Report what happened. Do not substitute shell commands or other tools for the requested calls."
+      },
+      "plan": {
+        "source_file": "turn-2/plan.json",
+        "value": {
+          "program": "claude",
+          "args": [
+            "--print",
+            "--model",
+            "sonnet",
+            "--setting-sources",
+            "project",
+            "--settings",
+            "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/settings.json",
+            "--strict-mcp-config",
+            "--mcp-config",
+            "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/mcp.json",
+            "--tools",
+            "",
+            "--allowedTools",
+            "mcp__stub__*",
+            "--no-session-persistence",
+            "--output-format",
+            "stream-json",
+            "--verbose",
+            "--include-partial-messages",
+            "--disable-slash-commands",
+            "--input-format",
+            "stream-json"
+          ],
+          "env": {
+            "CONDUIT_IDENTITY_DIR": "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/identity",
+            "CONDUIT_URL": "http://127.0.0.1:53382/",
+            "MCP_DISCOVERY_CACHE": "0",
+            "TMPDIR": "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/tmp",
+            "npm_config_cache": "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/npm-cache"
+          },
+          "env_remove": [
+            "ANTHROPIC_API_KEY",
+            "OPENAI_API_KEY",
+            "CLAUDECODE",
+            "MCP_CONFIG"
+          ],
+          "cwd": "<runs>/claude-C5-later-cache-off-ttl-0-auth-valid-r2/lab",
+          "stdin_message": {
+            "message": {
+              "content": "Use only the experiment stub's MCP tools. Call notes.read.v1 with path hello.txt. Discover the new tool if your client permits it. Report what happened. Do not substitute shell commands or other tools for the requested calls.",
+              "role": "user"
+            },
+            "parent_tool_use_id": null,
+            "session_id": "",
+            "type": "user"
+          }
+        }
+      }
+    }
+  ]
+}

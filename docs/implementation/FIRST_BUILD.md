@@ -62,7 +62,12 @@ ruling 48 settled.
    Claude Agent SDK or an adapter of the Agent Client Protocol. The clients stay unchanged as
    consumers of the engine's server.
 2. **One long-lived session per Agent**, so that the live parts of T4 and T7 are tested, not
-   one process per prompt.
+   one process per prompt. Experiment 008 found that a change of a client's tools reaches its
+   model at the next turn, not within the turn in which it happens: Claude Code's streamed
+   session took it at its next turn, and Codex took it when its session was resumed, which
+   starts a new process. So each wrapper hands its client a change of access at a turn's
+   boundary, and Codex's wrapper resumes its session for each turn unless A4 shows another
+   way.
 3. **The owner's configuration kept out**, by the flags that A70 used: for Claude Code
    `--setting-sources`, `--mcp-config` and `--strict-mcp-config`; for Codex
    `--ignore-user-config` and `--strict-config`.

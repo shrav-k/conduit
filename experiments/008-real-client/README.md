@@ -142,3 +142,9 @@ client-exposed evidence and model behavior, with [trimmed evidence](evidence-202
 for each run. The worker's classifications and candidate findings await admin review. The
 [experiment register](../README.md) and the
 [roadmap's A71 row](../../ROADMAP.md#experiments-and-probes) link the dated results.
+
+The [later-turn results of 2026-11-09](results-2026-11-09-later-turn.md) account for the
+follow-up's 12 runs and both turns of each, with
+[trimmed evidence](evidence-2026-11-09-later-turn/README.md). Both clients used the newly
+opened tool in turn two; handling of the closed tool differed. The worker's classifications
+await admin review.

@@ -53,6 +53,14 @@
 # takes the project that the replacing template belongs to, its contracts and its manifest,
 # and resolves the template against it as a registration does, with the digest of SUB-008
 # (D11). It added none and removed none.
+# The coordinator's decisions on the findings of increment 1 of the first build, under ruling
+# 46, point 4 (docs/proposals/first-build/log-increment-1.md), changed SUB-005: a document or
+# a manifest that a Schema contract rejects is rejected under it, with the place and the
+# contract (1-01), a file that is not UTF-8, or not YAML or JSON as its ending says, holds no
+# document (1-05), and a name that begins with a dot is not read (1-06); and SUB-010: an entry
+# that MAN-011 reads and that cannot be read is rejected under it (1-06). They added SUB-011: a
+# document beyond a limit that the engine states under DL10 is rejected, with a diagnostic
+# that names the limit (1-11). It removed none. The owner can strike each.
 
 - id: SUB-001
   layer: language
@@ -114,14 +122,19 @@
   then: >-
     The submission is rejected.
   observable: >-
-    The diagnostic names the item, and nothing is registered. The documents and the one manifest
-    that are handed over together in one registration are one project, and a directory is one
-    way to hand them over. Where a directory is submitted, what is read is the files in the
-    directory itself whose names end in `.yaml`, `.yml` or `.json`, the manifest among them, as
-    MAN-001 and MAN-011 state. Nothing below the directory is read, and a file with any other
-    ending is not read, so neither is part of the submission. Every engine takes a directory,
-    under SUB-010. An engine that is handed files applies the rules on a file when it reads
-    them: which files are read, under MAN-001, MAN-002 and MAN-011, and their syntax, under
+    The diagnostic names the item, and nothing is registered. A document, or the manifest, that
+    a Schema contract rejects is rejected under this promise, whichever promise that contract
+    encodes: the diagnostic names the place in the document by a JSON Pointer, in a logical
+    location, and its message names the Schema contract. So is a file that is not UTF-8, the
+    encoding that the schema profile names, or that is not YAML or JSON as the ending of its name
+    says: it holds no document, and the diagnostic names the file. The documents and the one
+    manifest that are handed over together in one registration are one project, and a directory
+    is one way to hand them over. Where a directory is submitted, what is read is the files in
+    the directory itself whose names end in `.yaml`, `.yml` or `.json` and do not begin with a
+    dot, the manifest among them, as MAN-001 and MAN-011 state. Nothing below the directory is
+    read, and no other file is, so neither is part of the submission. Every engine takes a
+    directory, under SUB-010. An engine that is handed files applies the rules on a file when it
+    reads them: which files are read, under MAN-001, MAN-002 and MAN-011, and their syntax, under
     SCH-012, SCH-017 and SCH-018. Where a registration hands the documents over as values, as
     the input `documents` of `register.v1` does, no file is in front of the engine and those
     rules have nothing to check; every other rule applies to the values.
@@ -286,7 +299,9 @@
     The objects that exist afterwards, and the diagnostics, are those that `register.v1` gives
     for the same documents as its input `documents` and the same manifest as its input
     `manifest`. The manifest is the file named `conduit.yaml`, `conduit.yml` or `conduit.json`,
-    under MAN-001. The rules on a file are applied as the files are read, under SUB-005. A
+    under MAN-001. An entry of the directory that MAN-011 reads and that cannot be read as a
+    regular file, such as a link that leads nowhere, is rejected under this promise, with a
+    diagnostic naming it. The rules on a file are applied as the files are read, under SUB-005. A
     relative `fetch` or program is resolved against the directory, under MAN-006 and MAN-010,
     before the values are compared with what `register.v1` takes: a registration that hands over
     values has no directory, and rejects a relative one. Two things do not follow the resolved
@@ -303,4 +318,25 @@
     request for `install.v1`, which is always a request of its own, under NAM-012. In an engine
     that keeps the conventions the registration is a request like any other, made for an actor
     that DL7 has the engine name, and is authorized under ACC-033.
+  vectors: []
+
+# --- Added by the coordinator's decision on finding 1-11 of the first build, under ruling 46,
+# --- point 4 (docs/proposals/first-build/log-increment-1.md).
+
+- id: SUB-011
+  layer: language
+  level: must
+  when: >-
+    A document exceeds a limit that the engine states under DL10 of the implementation-defined
+    list, such as how deeply its values may nest.
+  then: >-
+    The document is rejected, with an error diagnostic that names the limit.
+  observable: >-
+    The diagnostic's `ruleId` is SUB-011, and its message names the limit and the value that
+    the engine's conformance document states for it, such as values nested more than 128 levels
+    deep. Nothing in the submission is registered, under SUB-003. A document within every limit
+    that the engine states is not rejected for its size: a limit that the conformance document
+    does not state is not applied. Such a document is not malformed, and another engine that
+    states larger limits accepts it, so the diagnostic names the engine's limit and not a fault
+    of the document.
   vectors: []

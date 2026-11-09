@@ -101,6 +101,7 @@ specification governs.
 | [proposals/ruling-44/](proposals/ruling-44/README.md) | 44 | The ruling on round 6 and on building next, in the owner's words: the next milestone is the first build, and the coordinator's recommendations on the findings and the critique are accepted. |
 | [proposals/ruling-45/](proposals/ruling-45/README.md) | 45 | The ruling on two proposals of the collaborator `allocmemory`, pull requests 9 and 10, in the owner's words: what was kept of each, and where it went, and the pass that decides how the roadmap is shown, with [its log](proposals/ruling-45/log-roadmap.md). |
 | [proposals/ruling-46/](proposals/ruling-46/README.md) | 46 | The ruling on the first build, in the owner's words: one codebase with a pure core and a thin runnable shell, its real Agents, its success criteria, how what it finds refines the language, and its providers. |
+| [proposals/first-build/](proposals/first-build/README.md) | 46 | What the first build finds in the language, one log per increment, under ruling 46, point 4: each gap, ambiguity, contradiction or needless complexity against the IDs of its promises, with what the build did and the fix, made with a vector or left for the owner. [Increment 1](proposals/first-build/log-increment-1.md), the strict loader, has thirteen. |
 
 ### Process for the builds
 
@@ -109,6 +110,7 @@ specification governs.
 | [implementation/INDEPENDENT_BUILDS.md](implementation/INDEPENDENT_BUILDS.md) | The process, the independence rules and the readiness gate for the two independent builds. The roles and rules are accepted (ruling 11). The builds have not started. |
 | [implementation/ENGINE_BUILD_BRIEF.md](implementation/ENGINE_BUILD_BRIEF.md) | The brief each builder receives. A draft; not issued. |
 | [implementation/FIRST_BUILD.md](implementation/FIRST_BUILD.md) | The pre-registration of the first build (A68), as ruling 46 shaped it: what it is, the theses it tests, its four increments and what each must show, the success criteria, the tasks and measures it shares with the baseline for S1, and how its findings are logged. Not binding. |
+| [../reference-model/](../reference-model/README.md) | The codebase of the first build (ruling 46): a Cargo workspace in Rust for the core, the reference model, and later the shell. It holds the strict loader of increment 1 (A43), which reads documents and project directories and validates them against the schemas; its README says how to run its tests and why each crate was chosen. Not binding. |
 
 ### Evidence and history
 
@@ -124,8 +126,9 @@ One main repository is accepted. It uses Apache-2.0 for original material, and p
 naming remains deferred under the
 [publication policy](../CONTRIBUTING.md#project-ownership-and-publication).
 
-The repository holds no engine code and no release scheme. The top-level directories
-`conformance/`, `reference-model/` and `packages/` are planned and do not exist yet; see
+The repository holds no engine code and no release scheme. The top-level directory
+`reference-model/` holds the first build's code, which is not yet an engine; `conformance/` and
+`packages/` are planned and do not exist yet; see
 [independent builds](implementation/INDEPENDENT_BUILDS.md#repository-layout-and-isolation).
 `packages/` is to hold the first providers, one Rust crate per provider (ruling 40).
 There is one specification, `spec/`, and nothing else is to become a second one. A website, if

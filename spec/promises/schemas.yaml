@@ -36,6 +36,13 @@
 # "Verification"), changed SCH-009, whose observable says that a `default` that the root of an
 # Operation contract's `inputSchema` reaches only through a keyword beside its `properties`,
 # which D14 now allows, is not applied (C-03, R-09). It removed none and added none.
+# The coordinator's decisions on the findings of increment 1 of the first build, under ruling
+# 46, point 4 (docs/proposals/first-build/log-increment-1.md), changed SCH-006 and SCH-020: a
+# number written with a fraction whose binary64 value is whole is held to SCH-006's range
+# (1-10); SCH-016: a key of `patternProperties` is a pattern too, and a schema whose pattern is
+# not one of ECMA-262 is rejected as SCH-002 rejects a keyword outside the profile (1-03); and
+# SCH-018: a JSON file whose value is not an array holds that value as one document, which the
+# schemas judge (1-07). It removed none and added none. The owner can strike each.
 
 - id: SCH-001
   layer: language
@@ -102,12 +109,15 @@
   layer: language
   level: must
   when: >-
-    A document contains a number with no fractional part outside the range from
-    −9,007,199,254,740,991 to 9,007,199,254,740,991.
+    A document contains a number outside the range from −9,007,199,254,740,991 to
+    9,007,199,254,740,991 that has no fractional part, or that has one and is read under SCH-020
+    as a binary64 value that has none.
   then: >-
     The document is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the value. It is not rounded into the range.
+    Resolving returns a diagnostic naming the value. It is not rounded into the range. No
+    integer outside the range is read, however the number is written: `9007199254740993.5` is
+    read under SCH-020 as 9,007,199,254,740,994, which has no fractional part, and is rejected.
   vectors: []
 
 - id: SCH-007
@@ -271,7 +281,7 @@
   layer: language
   level: must
   when: >-
-    A schema uses `pattern`.
+    A schema uses `pattern`, or a key of `patternProperties`, which is a pattern too.
   then: >-
     The pattern is a regular expression of the ECMA-262 dialect, as JSON Schema recommends, in
     the edition that JSON Schema 2020-12 cites, and it is matched in Unicode mode, which is that
@@ -279,7 +289,11 @@
   observable: >-
     Whether a string matches is what an ECMA-262 regular expression with the `u` flag gives,
     whichever regular-expression library the engine is built with. A character outside the Basic
-    Multilingual Plane is one character to a pattern, as it is to `maxLength`.
+    Multilingual Plane is one character to a pattern, as it is to `maxLength`. A schema written
+    in a contract or a template whose pattern is not such a regular expression, such as `[z-a]`,
+    or `(?P<x>a)`, a named group of Python's, makes the document that holds it rejected, when
+    its package is installed or when it is submitted, as SCH-002 rejects a keyword outside the
+    profile, with a diagnostic naming the pattern and where it appears.
   vectors: []
 
 - id: SCH-017
@@ -304,11 +318,15 @@
   when: >-
     Documents are written in a JSON file.
   then: >-
-    The file holds one document, or one array each of whose items is a document.
+    A file whose value is an array holds the documents that are its items, and a file whose
+    value is anything else holds one document, that value.
   observable: >-
     A JSON file that holds an array is read as the documents that are its items, and means the
     same as a YAML file that holds those documents. The order of the items has no meaning, as
-    SUB-001 states.
+    SUB-001 states. Each document is then judged by the schemas, so a value that is not a map,
+    whether it is the file's value or an item of its array, is rejected under SUB-005, as a YAML
+    document that is not a map is, and the JSON form and the YAML form give the same
+    diagnostics, under SCH-013. A JSON manifest that holds an array is rejected under MAN-001.
   vectors: []
 
 # --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP5 and
@@ -349,7 +367,9 @@
     `0.7` has the value of the binary64 number nearest to it. That value is what a schema checks
     and what SCH-007 compares, so two numbers that are written differently and read as the same
     binary64 value are equal. A number with no fractional part is an integer under SCH-005, and
-    SCH-006 gives its range.
+    SCH-006 gives its range. So is a value read that has no fractional part, and SCH-006 holds it
+    to the same range: `0.99999999999999999999` is read as 1, and `1e-400` as 0, and
+    `9007199254740993.5`, read as 9,007,199,254,740,994, is rejected under SCH-006.
   vectors: []
 
 - id: SCH-021

@@ -42,6 +42,12 @@ compared (finding 6-1-03), as the
 [log of its docs editor](../docs/proposals/reaudit/round-6/log-specdocs.md) says. The
 [verification of round 6](../docs/proposals/reaudit/round-6/log-integration.md#verification)
 added that a copy's key holds a version only where the package or project states one (R-08).
+The coordinator's decisions on the findings of increment 1 of the first build, under
+[ruling 46](../docs/proposals/ruling-46/README.md), point 4, which the owner can strike, added
+that every file is UTF-8, with a byte order mark allowed in YAML and not in JSON (finding
+1-05); that only two of I-JSON's rules apply, and what a surrogate that is not paired makes of
+a file (1-12); and that the letters of the grammars cited match either case (1-13), as the
+[log of increment 1](../docs/proposals/first-build/log-increment-1.md) says.
 
 Schemas are not what distinguishes Conduit. This part of the specification invents nothing: it
 selects existing standards and narrows them. Where a standard defines a meaning, that meaning
@@ -57,7 +63,8 @@ Schema contract `schema.v1` in [schemas/schema.yaml](schemas/schema.yaml), and
 | --- | --- | --- |
 | Document syntax | YAML 1.2.2, core schema | The authoring syntax, narrowed as listed below. |
 | Equivalent syntax | JSON, RFC 8259 | A JSON document means the same as the equivalent YAML document (SCH-013). A JSON file holds one document or one array of documents (SCH-018). |
-| Value model | I-JSON, RFC 7493 | No duplicate keys, and whole numbers within the range it recommends. |
+| Encoding | UTF-8, RFC 3629 | Every file is UTF-8, as I-JSON requires (RFC 7493, section 2.1). A YAML file may begin with a byte order mark, as YAML 1.2.2 allows; a JSON file may not, since RFC 8259 does not let one be added (section 8.1). A file that is not UTF-8, or that is not YAML or JSON as the ending of its name says, holds no document and is rejected (SUB-005). |
+| Value model | I-JSON, RFC 7493 | Two of its rules, and no other: no duplicate keys, and whole numbers within the range it recommends. Its rule on the characters of a string does not apply, so a noncharacter, such as U+FDD0 or U+FFFF, may stand in a string wherever YAML 1.2.2 or JSON lets it stand. A surrogate code point that is not one of a pair is not text, so a file whose string holds one is not YAML or JSON, and is rejected (SUB-005). In YAML an escape writes one code point, so a surrogate pair written as two `\u` escapes is two such code points, and is rejected; a character outside the Basic Multilingual Plane is written with one escape, as `\U0001F600`, where JSON writes the pair `\ud83d\ude00`. |
 | Numbers that are not integers | IEEE 754, binary64 | A number that has a fractional part is read as a binary64 value, which is what a schema checks and what equality compares (SCH-020). One whose magnitude is greater than the largest finite binary64 value is rejected (SCH-021). |
 | Schemas | JSON Schema 2020-12, core and validation, with the format-assertion vocabulary | The meaning of every keyword of the profile, the definition of integer, and the definition of equality. A format the profile lists is asserted, not only annotated (SCH-001). |
 | `pattern` | ECMA-262 regular expressions, in the edition that JSON Schema 2020-12 cites | The dialect of a `pattern`, as JSON Schema recommends. A pattern is matched in Unicode mode, which is the `u` flag (SCH-016). |
@@ -138,6 +145,10 @@ does not is rejected (SCH-019).
 
 `date-time`, `date`, `duration`, `uri`, `uri-reference`, `uuid`. For each of them the grammar
 cited in the table above is the one that is checked (SCH-004).
+
+A letter that one of these grammars writes in quotes matches either case, as ABNF has it
+(RFC 5234, section 2.3). So `p1d` and `PT1h` are durations, and a UUID may be written in
+capitals, in small letters or in both.
 
 ## Schemas this profile does not govern
 

@@ -1,0 +1,11 @@
+# The first build (ruling 46): one codebase, a pure core, the reference model, and a thin shell.
+# Increment 1 holds the strict loader alone.
+[workspace]
+members = ["crates/loader"]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.97"
+license = "Apache-2.0"
+publish = false

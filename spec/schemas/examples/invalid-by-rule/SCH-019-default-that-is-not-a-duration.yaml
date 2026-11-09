@@ -1,0 +1,16 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a `default` satisfies the schema that states it (SCH-019), and a format is checked by the
+# grammar that the profile cites (SCH-004), for `duration` that of RFC 3339, appendix A. The
+# default below has a fraction of a second, which ISO 8601 allows and the grammar does not.
+# The first build's log of increment 1 (docs/proposals/first-build/log-increment-1.md) added it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: timed-directory.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      timeout: {type: string, format: duration, default: PT0.5S}

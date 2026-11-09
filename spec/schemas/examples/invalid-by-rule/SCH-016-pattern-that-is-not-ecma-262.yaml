@@ -1,0 +1,14 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a pattern is a regular expression of ECMA-262, matched in Unicode mode, and a schema whose
+# pattern is not one is rejected, as SCH-002 rejects a keyword outside the profile (SCH-016).
+# `schema.v1` checks only that a pattern is a string. The pattern below is a class whose range
+# runs backwards, from `z` to `a`, which ECMA-262 and Python's `re` both reject. The first
+# build's log of increment 1 (docs/proposals/first-build/log-increment-1.md) added it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: tag.v1
+spec:
+  type: string
+  pattern: '[z-a]'

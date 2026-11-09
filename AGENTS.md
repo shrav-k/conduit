@@ -83,8 +83,9 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
 - A defect in the language: fix it in the language, not around it. Findings against `spec/` are
   recorded under `docs/proposals/reaudit/`. `docs/LANGUAGE_DEFECTS.md` is the register of the
   first sweep, which read the protocol topics that ruling 39 removed.
-- A finding of the first build: its increment's log under `docs/proposals/first-build/`, and
-  the fix in the specification with a vector (ruling 46, point 4).
+- A finding of the first build: its increment's log under
+  [docs/proposals/first-build/](docs/proposals/first-build/README.md), and the fix in the
+  specification with a vector (ruling 46, point 4).
 - Evidence: its own directory under `experiments/`, with dated results. Never present an
   expected outcome as a result. Before proposing or starting an experiment or a probe, look for
   it in the roadmap's [register](ROADMAP.md#experiments-and-probes), and follow
@@ -93,8 +94,10 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
 ## Rules
 
 - Any code is Rust, with a `Cargo.lock`, a pinned toolchain and ignored build output: a probe or
-  an evaluation in its own directory under `experiments/`, and a provider package, one crate per
-  provider, under `packages/` (ruling 40). The only exception is the Python checkers in `tools/`.
+  an evaluation in its own directory under `experiments/`, a provider package, one crate per
+  provider, under `packages/` (ruling 40), and the first build, its core and its shell, in the
+  workspace under [reference-model/](reference-model/README.md) (ruling 46). The only exception
+  is the Python checkers in `tools/`.
 - The owner makes the rulings. When a choice changes behavior, present the options with a
   recommendation and wait; do not record your recommendation as accepted.
 - Do not edit what `docs/archive/` holds or the content of `docs/research/`: they are records
@@ -119,8 +122,12 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   its other proposal, was closed. Pull request 11 carries
   [ruling 45](docs/proposals/ruling-45/README.md) and was merged by squashing the same day, as
   `d46a52b`. Pull request 12, on the branch `docs/roadmap`, moved the roadmap to `ROADMAP.md`
-  (A72) and was merged by squashing the same day, as `f3521e7`. Ruling 46 shaped the first
-  build; each of its increments is a branch and a pull request of its own. Later work goes on a new branch, with its own pull
+  (A72) and was merged by squashing the same day, as `f3521e7`. Pull request 13 carries
+  [ruling 46](docs/proposals/ruling-46/README.md), which shaped the first build, and was merged
+  by squashing the same day, as `cdf3236`; each of the build's increments is a branch and a
+  pull request of its own. Pull request 15 carries the results of the baseline for S1 (A70),
+  merged the same day as `0544b24`, and pull request 16, on the branch `build/loader`,
+  increment 1, the strict loader. Later work goes on a new branch, with its own pull
   request. Merges to `main` are squashed, with a message written by hand.
 
 ## Checks
@@ -129,10 +136,11 @@ Run these from the repository root before each commit:
 
 ```sh
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
-python3 tools/set_names.py --check   # the names under spec/ agree with spec/names.yaml
+python3 tools/set_names.py --check   # the names under spec/ and reference-model/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
+(cd reference-model && cargo test --release)   # the first build: the strict loader's tests
 ```
 
 What each check needs:
@@ -156,14 +164,22 @@ What each check needs:
   ran", and it exits with status 3 when N is 0. It never reports a check it did not run. Its
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
+- `cargo test --release` in `reference-model/` needs Rust through rustup, which installs on
+  first use the toolchain that `reference-model/rust-toolchain.toml` pins. Run it from inside
+  the directory, so that the pin applies. For a change to its code, run
+  `cargo clippy --all-targets -- -D warnings` there too. The tests read `spec/`, and check the
+  loader's verdict on every example against the verdicts of `check_schemas.py`, which a
+  fixture records.
 
 The names the specification assigns (the core package's address, `apiVersion`, the prefix of
 its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,
 in `spec/names.yaml`. Never edit one by hand. Run
 `python3 tools/set_names.py` with the new values to see what would change, and add `--write` to
-rewrite every occurrence under `spec/` together, and under `conformance/` and `reference-model/`
-once they exist. The tool does not change a document outside them that quotes a name, such as
-the example in `docs/OVERVIEW.md`: update it once the tool has run.
+rewrite every occurrence under `spec/` together, and under `reference-model/` and, once it
+exists, `conformance/`. The code under `reference-model/` reads the names from
+`spec/names.yaml` and writes none of them, so the tool finds nothing to rewrite there. The tool
+does not change a document outside them that quotes a name, such as the example in
+`docs/OVERVIEW.md`: update it once the tool has run.
 
-Run `cargo test --release` in each Rust directory you change, under `experiments/` or
-`packages/`.
+Run `cargo test --release` in each Rust directory you change, under `experiments/`,
+`packages/` or `reference-model/`, and in `reference-model/` after any change to `spec/`.

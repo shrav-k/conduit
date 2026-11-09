@@ -1,0 +1,70 @@
+# The verdict of tools/check_schemas.py on each file under spec/schemas/examples/invalid/, by
+# the step that rejects it: `read`, rejected when its file is read (step 1, a line "rejected
+# NAME: when read: ..." under step 4), or `schema`, rejected by a schema (a line "rejected NAME:
+# at ...", step 4). Derived by running `python3 tools/check_schemas.py` on 2026-11-09 and taking
+# those lines of its output, after the fixes of findings 1-02 and 1-08 of the first build's log
+# of increment 1, and the coordinator's decisions on its findings 1-05, 1-07 and 1-10, which
+# each added a file here. A file added under invalid/ needs a line here, which the test
+# `every_invalid_example_is_rejected_by_the_step_its_name_gives` asks for.
+CON-016-template-without-operations.yaml schema
+CON-020-template-names-a-consumer.yaml schema
+CTR-001-contract-name-only-a-version.yaml schema
+CTR-001-contract-name-without-version.yaml schema
+CTR-002-operation-arranges-later-work.yaml schema
+CTR-002-operation-states-implementation.yaml schema
+CTR-002-output-with-default.yaml schema
+CTR-004-pool-type-without-pool-management.yaml schema
+CTR-004-records-as-a-list.yaml schema
+CTR-006-changes-as-a-list.yaml schema
+CTR-012-control-input-schema-with-another-root-keyword.yaml schema
+IFC-043-manifest-remote-item-names-authorization.yaml schema
+IFC-044-manifest-remote-item-not-plain-at-http.yaml schema
+INS-001-instance-with-spec.yaml schema
+INS-012-destination-item-of-operations.yaml schema
+INS-012-destination-requirement-of-a-requirement.yaml schema
+INS-012-destination-under-inputs.yaml schema
+INS-012-destination-whole-nested-instantiation.yaml schema
+INS-021-input-without-to.yaml schema
+MAN-003-manifest-with-kind.yaml schema
+MAN-004-manifest-version-without-address.yaml schema
+MAN-009-manifest-item-with-command-and-remote.yaml schema
+MAN-010-manifest-oci-package-without-a-digest.yaml schema
+MAN-010-manifest-package-without-file-sha256.yaml schema
+MAN-010-manifest-remote-url-not-a-uri.yaml schema
+MAN-010-manifest-remote-with-another-transport.yaml schema
+NAM-001-manifest-address-dot-segment.yaml schema
+NAM-001-manifest-address-label-too-long.yaml schema
+NAM-001-manifest-address-numeric-host.yaml schema
+NAM-001-manifest-address-trailing-dot.yaml schema
+NAM-001-manifest-address-with-port.yaml schema
+NAM-005-reference-with-a-version.yaml schema
+NAM-006-manifest-item-without-digest.yaml schema
+NAM-006-manifest-version-range.yaml schema
+OBJ-001-name-ending-in-a-line-feed.yaml schema
+OBJ-001-name-with-uppercase.yaml schema
+OBJ-004-engine-owned-field.yaml schema
+OBJ-012-template-with-extra-top-level-key.yaml schema
+OBJ-013-consumer-as-bare-name.yaml schema
+OBJ-013-runtime-on-a-pool.yaml schema
+OBJ-014-entry-with-owner.yaml schema
+OBJ-015-input-marked-required.yaml schema
+OBJ-017-no-api-version.yaml schema
+OBJ-018-unknown-metadata-key.yaml schema
+OBJ-019-depends-on-in-snake-case.yaml schema
+OBJ-020-unknown-kind.yaml schema
+PKG-004-manifest-digest-in-uppercase.yaml schema
+PKG-020-manifest-plain-with-supports.yaml schema
+PLC-006-placement-on-a-pool.yaml schema
+POOL-001-resource-without-owner.yaml schema
+SCH-002-keyword-outside-the-profile.yaml schema
+SCH-006-fraction-read-as-an-integer-out-of-range.yaml read
+SCH-008-default-on-items.yaml schema
+SCH-008-default-under-if.yaml schema
+SCH-012-duplicate-key.yaml read
+SCH-015-ref-to-a-bare-name.yaml schema
+SCH-015-ref-to-an-https-address.yaml schema
+SCH-021-fraction-just-above-binary64.yaml read
+SUB-005-json-value-that-is-not-a-map.json schema
+SUB-005-not-utf-8.yaml read
+TPL-001-pool-template-with-conduits.yaml schema
+TPL-002-conduit-template-with-type.yaml schema

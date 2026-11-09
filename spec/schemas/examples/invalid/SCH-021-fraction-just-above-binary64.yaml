@@ -1,0 +1,19 @@
+# Example. It must be rejected when it is read:
+# a number that has a fractional part and whose magnitude is greater than the largest finite
+# IEEE 754 binary64 value is rejected, and it is not rounded into the range (SCH-021). The
+# `maximum` below is that value and a half. Its nearest binary64 value is the largest value
+# itself, so a reader that judges the range on the value it rounds to would accept it. The
+# first build's log of increment 1 (docs/proposals/first-build/log-increment-1.md) added it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: bounded-number.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      size:
+        type: number
+        maximum: 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.5

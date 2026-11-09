@@ -1,6 +1,8 @@
 # 009 — Native launch and identity
 
-Status: pre-registered on 2026-11-09, not yet run. This is action item A4 of the
+Status: done on 2026-11-09; [dated results](results-2026-11-09.md) record three attempts,
+including two failed Codex attempts and the limits of the observations. Pre-registered on
+2026-11-09. This is action item A4 of the
 [roadmap](../../ROADMAP.md#experiments-and-probes), probe E1 of the plan audit, which
 [ruling 48](../../docs/proposals/ruling-48/README.md) runs before increment 3 of
 [the first build](../../docs/implementation/FIRST_BUILD.md#what-increment-3-needs). A Codex
@@ -62,5 +64,9 @@ For each client, with evidence:
 
 ## Results
 
-None yet. Results go in this directory with their date, and the
+[Results of 2026-11-09](results-2026-11-09.md): three attempts at the nine-scenario matrix;
+the third completed all twenty-four turns, after changing how Codex's header helper receives
+its identity directory. The records show per-request attribution and changed access on the
+second turn; the results state the configuration, login and message-refusal properties still
+unshown. [Trimmed evidence](evidence-2026-11-09/README.md) accompanies them, and the
 [register](../../ROADMAP.md#experiments-and-probes) records the state.

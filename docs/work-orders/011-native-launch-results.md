@@ -48,3 +48,14 @@ Only the files named above.
 Every point of the pre-registration is answered or said to be unshown, with runs cited; every
 attempt is reported; no absolute path, user name or credential is in any file you write; and
 `python3 tools/check_docs.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 10 minutes. Every point of the pre-registration answered or said to be unshown,
+  with runs cited; all three attempts reported; one candidate finding, on Codex's header helper.
+- **Verifier**: 3 minutes. One `nit`: the evidence guide said usage was omitted, though Codex's
+  token counts were kept.
+- **Admin**: fixed the nit, and carried the finding and the points left unshown into what
+  increment 3 needs. No second round.

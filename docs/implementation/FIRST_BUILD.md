@@ -79,7 +79,9 @@ ruling 48 settled.
    home of its own.
 6. **The token from its file.** Each client reads `token` from `CONDUIT_IDENTITY_DIR` by its
    own header helper, Claude Code's `headersHelper` and Codex's `http_headers_helper`, so
-   neither needs the token in a variable.
+   neither needs the token in a variable. Experiment 009 found that Codex runs its helper with
+   none of the run's environment and rejects `env_vars` for an HTTP server, so Codex's Agent
+   type writes the identity directory, not the token, into the helper's command line.
 7. **One approval for the engine's server**, in the client's own terms (an allow rule in Claude
    Code, `default_tools_approval_mode = "approve"` in Codex), so that the engine's decision is
    the only one made per call.
@@ -87,6 +89,11 @@ ruling 48 settled.
    the other Agent's identity directory.
 9. **Each connection confirmed by a tool call** that the engine records, never by a client's
    debug output.
+10. **What experiment 009 left unshown, shown before increment 3 claims it**: that Codex's
+    apps are off, which its events never list; that the owner's settings, hooks and
+    instructions load in neither client, beyond the servers and tools each reports; that
+    Claude Code refuses a message from another session; and which login each client used.
+    Each needs evidence of its own, such as a sentinel the client would load if it could.
 
 ## Success criteria
 

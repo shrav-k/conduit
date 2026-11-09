@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "decisions", "own_choices", "could_not", "behavior_changes", "checks", "files_changed"],
+  "properties": {
+    "summary": { "type": "string" },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "applied", "promises", "files", "vectors", "notes"],
+        "properties": {
+          "item": { "type": "string", "enum": ["A", "B", "C", "D", "E", "F", "G", "H"] },
+          "applied": { "type": "string", "enum": ["as written", "nearest sound reading", "not applied"] },
+          "promises": { "type": "array", "items": { "type": "string" } },
+          "files": { "type": "array", "items": { "type": "string" } },
+          "vectors": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "own_choices": { "type": "array", "items": { "type": "string" } },
+    "could_not": { "type": "array", "items": { "type": "string" } },
+    "behavior_changes": { "type": "array", "items": { "type": "string" } },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "exit_code", "last_line"],
+        "properties": {
+          "command": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "last_line": { "type": "string" }
+        }
+      }
+    },
+    "files_changed": { "type": "array", "items": { "type": "string" } }
+  }
+}

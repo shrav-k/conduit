@@ -11,6 +11,8 @@ first cell is `A` followed by digits, such as `A70`, or a link whose text is one
 
   1. Each action item from A1 to the highest number has exactly one row across
      docs/AUDIT.md, ROADMAP.md and the history: no number is missing, and none has two rows.
+     A number that ROADMAP.md lists as "Held for an open pull request: A75, A76." counts as
+     present, and must have no row until that line is removed.
   2. Each action item that docs/AUDIT.md or ROADMAP.md cites, as `A70` or as a range
      `A51 to A54`, has a row in one of the three.
   3. Each action item of ROADMAP.md has its row in the register. Each action item of
@@ -63,6 +65,10 @@ ITEM_LINK = re.compile(r"\[(A\d+)\]\([^)\s]*\)")
 CITED = re.compile(r"\bA(\d+)(?:\s+to\s+A(\d+))?\b")
 DIRECTORY = re.compile(r"(\d{3})-[A-Za-z0-9._-]+")
 HELD = re.compile(r"experiments/((\d{3})-[A-Za-z0-9._-]*[A-Za-z0-9])")
+# Item numbers that an open pull request has taken, stated in the roadmap as
+# "Held for an open pull request: A75, A76." They count toward the run of numbers, and
+# must have no row until the line is removed, when that pull request merges.
+HELD_ITEMS = re.compile(r"Held for an open pull request: (A\d+(?:, A\d+)*)\.")
 LINK = re.compile(r"!?\[[^\]\n]*\]\((<[^>]+>|[^\s)]+)(?:\s+\"[^\"\n]*\")?\)")
 
 
@@ -235,14 +241,19 @@ def check():
     for ident, places in sorted(seen.items(), key=lambda kv: int(kv[0][1:])):
         if len(places) > 1:
             errors.append(f"{ident}: {len(places)} rows, at {', '.join(places)}")
-    highest = max((int(ident[1:]) for ident in seen), default=0)
+    held_items = {ident for match in HELD_ITEMS.finditer(ROADMAP.read_text(encoding="utf-8"))
+                  for ident in match[1].split(", ")}
+    for ident in sorted(held_items & set(seen), key=lambda i: int(i[1:])):
+        errors.append(f"{ident}: held for an open pull request in {label(ROADMAP)}, but it has "
+                      f"a row at {', '.join(seen[ident])}; remove it from the held line")
+    highest = max((int(ident[1:]) for ident in set(seen) | held_items), default=0)
     for n in range(1, highest + 1):
-        if f"A{n}" not in seen:
+        if f"A{n}" not in seen and f"A{n}" not in held_items:
             errors.append(f"A{n}: no row in {label(AUDIT)}, {label(ROADMAP)} or "
                           f"{label(HISTORY)}, though A{highest} has one")
 
     # 2. Each action item that the plan audit or the roadmap cites has a row somewhere.
-    known = set(seen)
+    known = set(seen) | held_items
     roadmap_text = ROADMAP.read_text(encoding="utf-8")
     for path in (AUDIT, ROADMAP):
         for ident in sorted(cited(prose(path)) - known, key=lambda i: int(i[1:])):

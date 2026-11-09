@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "design", "how_to_run", "findings", "own_choices", "could_not", "checks", "files_changed"],
+  "properties": {
+    "summary": { "type": "string" },
+    "design": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["crates", "revisions", "promises", "client_flags"],
+      "properties": {
+        "crates": { "type": "array", "items": { "type": "string" } },
+        "revisions": { "type": "string" },
+        "promises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "how", "test"],
+            "properties": { "id": { "type": "string" }, "how": { "type": "string" }, "test": { "type": "string" } }
+          }
+        },
+        "client_flags": { "type": "string" }
+      }
+    },
+    "how_to_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "runs", "expected_minutes", "needs"],
+      "properties": {
+        "command": { "type": "string" },
+        "runs": { "type": "integer" },
+        "expected_minutes": { "type": "integer" },
+        "needs": { "type": "string" }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["class", "promises", "text", "reading_taken"],
+        "properties": {
+          "class": { "type": "string", "enum": ["gap", "ambiguity", "contradiction", "needless complexity"] },
+          "promises": { "type": "array", "items": { "type": "string" } },
+          "text": { "type": "string" },
+          "reading_taken": { "type": "string" }
+        }
+      }
+    },
+    "own_choices": { "type": "array", "items": { "type": "string" } },
+    "could_not": { "type": "array", "items": { "type": "string" } },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "exit_code", "last_line"],
+        "properties": { "command": { "type": "string" }, "exit_code": { "type": "integer" }, "last_line": { "type": "string" } }
+      }
+    },
+    "files_changed": { "type": "array", "items": { "type": "string" } }
+  }
+}

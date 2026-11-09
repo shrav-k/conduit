@@ -247,3 +247,188 @@ fn actual_run_and_standalone_stub_require_explicit_output() {
         );
     }
 }
+
+#[test]
+fn follow_up_dry_run_prints_exactly_twelve_runs_and_both_turns_without_output() {
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("no-output");
+    let result = Command::new(env!("CARGO_BIN_EXE_real-client-harness"))
+        .args(["--follow-up", "--dry-run", "--output"])
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    let text = String::from_utf8(result.stdout).unwrap();
+    let cells = runner::follow_up_matrix();
+    assert_eq!(cells.len(), 4);
+    let actual: std::collections::BTreeSet<_> = text
+        .lines()
+        .filter(|line| line.starts_with("RUN "))
+        .map(str::to_owned)
+        .collect();
+    let expected: std::collections::BTreeSet<_> = cells
+        .iter()
+        .flat_map(|cell| (1..=3).map(move |rep| format!("RUN {}-r{rep}", cell.id())))
+        .collect();
+    assert_eq!(actual, expected);
+    assert_eq!(
+        text.lines().filter(|line| line.starts_with("RUN ")).count(),
+        12
+    );
+    for prefix in ["TURN 1 START", "TURN 2 AFTER TURN 1 RESULT", "CONFIG "] {
+        assert_eq!(
+            text.lines().filter(|line| line.starts_with(prefix)).count(),
+            12
+        );
+    }
+    assert_eq!(
+        text.lines()
+            .filter(|line| line.starts_with("SEND TURN "))
+            .count(),
+        12
+    );
+    assert_eq!(
+        text.lines()
+            .filter(|line| line.contains("'resume'"))
+            .count(),
+        6
+    );
+    assert!(!text.contains("--ephemeral"));
+    assert!(
+        text.ends_with("TOTAL 12 runs (4 cells; 3 repetitions per normal cell, 1 per 401 cell)\n")
+    );
+    assert!(!output.exists());
+    for cell in cells {
+        assert!(!cell.cache && cell.ttl == 0 && !cell.first_401 && cell.later);
+        let result = Command::new(env!("CARGO_BIN_EXE_real-client-harness"))
+            .args(["--follow-up", "--dry-run", "--only", &cell.id()])
+            .output()
+            .unwrap();
+        assert!(result.status.success());
+        assert_eq!(
+            String::from_utf8(result.stdout)
+                .unwrap()
+                .lines()
+                .filter(|line| line.starts_with("RUN "))
+                .count(),
+            3
+        );
+    }
+}
+
+#[test]
+fn later_turn_plans_preserve_flags_and_use_streamed_input_or_exact_session_resume() {
+    let run = Path::new("/tmp/run");
+    for cell in runner::follow_up_matrix() {
+        let original = runner::plan(&cell, run, Path::new("/tmp/harness"), "http://127.0.0.1:1/");
+        let first = runner::turn_plan(
+            &cell,
+            run,
+            Path::new("/tmp/harness"),
+            "http://127.0.0.1:1/",
+            1,
+            None,
+        );
+        let second = runner::turn_plan(
+            &cell,
+            run,
+            Path::new("/tmp/harness"),
+            "http://127.0.0.1:1/",
+            2,
+            Some("exact-session-id"),
+        );
+        assert_ne!(cell.turn_prompt(1), cell.turn_prompt(2));
+        assert!(cell.turn_prompt(1).contains("control.next.v1"));
+        assert!(!cell.turn_prompt(2).contains("control.next.v1"));
+        if cell.case.name() == "C1" {
+            assert!(cell.turn_prompt(1).contains("files.read.v1"));
+            assert!(cell.turn_prompt(2).contains("files.read.v1"));
+        } else {
+            assert!(!cell.turn_prompt(1).contains("notes.read.v1"));
+            assert!(cell.turn_prompt(2).contains("notes.read.v1"));
+        }
+        for (index, plan) in [&first, &second].into_iter().enumerate() {
+            assert_eq!(plan.env, original.env);
+            assert_eq!(plan.env_remove, original.env_remove);
+            assert_eq!(plan.cwd, original.cwd);
+            // Every original flag is retained apart from Codex's deliberate persistence change.
+            for arg in &original.args[..original.args.len() - 1] {
+                if arg == "--ephemeral" || arg.ends_with("/final.txt") {
+                    continue;
+                }
+                assert!(plan.args.contains(arg), "missing original argument {arg}");
+            }
+            match cell.client {
+                Client::Claude => {
+                    assert_eq!(first.args, second.args);
+                    assert!(
+                        plan.args
+                            .windows(2)
+                            .any(|pair| pair == ["--input-format", "stream-json"])
+                    );
+                    let message = plan.stdin_message.as_ref().unwrap();
+                    assert_eq!(message["type"], "user");
+                    assert_eq!(message["message"]["role"], "user");
+                    assert_eq!(message["message"]["content"], cell.turn_prompt(index + 1));
+                    assert!(!plan.args.contains(&cell.turn_prompt(index + 1)));
+                }
+                Client::Codex => {
+                    assert!(plan.stdin_message.is_none());
+                    assert!(
+                        !plan
+                            .args
+                            .iter()
+                            .any(|arg| arg == "--ephemeral" || arg == "--last")
+                    );
+                    assert!(plan.args.iter().any(
+                        |arg| arg == "mcp_servers.stub.default_tools_approval_mode=\"approve\""
+                    ));
+                    assert!(
+                        plan.args
+                            .contains(&format!("/tmp/run/turn-{}/final.txt", index + 1))
+                    );
+                    assert_eq!(plan.args.last().unwrap(), &cell.turn_prompt(index + 1));
+                    if index == 1 {
+                        assert_eq!(
+                            &plan.args[..6],
+                            [
+                                "exec",
+                                "--sandbox",
+                                "read-only",
+                                "--color",
+                                "never",
+                                "resume"
+                            ]
+                        );
+                        assert_eq!(plan.args[plan.args.len() - 2], "exact-session-id");
+                    } else {
+                        assert!(!plan.args.iter().any(|arg| arg == "resume"));
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn resume_rejects_missing_failed_or_ambiguous_first_turns() {
+    let started = "{\"type\":\"thread.started\",\"thread_id\":\"exact-id\"}\n";
+    let completed = "{\"type\":\"turn.completed\"}\n";
+    assert_eq!(
+        runner::completed_session(&format!("{started}{completed}")).unwrap(),
+        "exact-id"
+    );
+    for events in [
+        String::new(),
+        started.into(),
+        completed.into(),
+        format!("{started}{{\"type\":\"turn.failed\"}}\n{completed}"),
+        format!("{started}{{\"type\":\"thread.started\",\"thread_id\":\"other-id\"}}\n{completed}"),
+    ] {
+        assert!(runner::completed_session(&events).is_err());
+    }
+}

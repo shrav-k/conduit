@@ -12,6 +12,8 @@ struct Args {
     #[arg(long)]
     dry_run: bool,
     #[arg(long)]
+    follow_up: bool,
+    #[arg(long)]
     only: Option<String>,
     #[arg(long)]
     output: Option<PathBuf>,
@@ -71,6 +73,7 @@ async fn main() -> Result<()> {
         args.dry_run,
         args.only.as_deref(),
         args.timeout_secs,
+        args.follow_up,
     )
     .await
 }

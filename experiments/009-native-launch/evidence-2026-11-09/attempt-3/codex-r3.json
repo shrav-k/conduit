@@ -1,0 +1,1378 @@
+{
+  "run": "attempt-3/codex-r3",
+  "scenario_status": {
+    "completed": true,
+    "error": null
+  },
+  "stub": {
+    "source": "stub.jsonl",
+    "source_lines": 47,
+    "records": [
+      {
+        "source_line": 1,
+        "canonical_audience": "http://127.0.0.1:55101/",
+        "case": "C5",
+        "first_401": false,
+        "instances": [
+          "spiffe://experiment.test/conduit/instance/codex-r3-codex"
+        ],
+        "kind": "start",
+        "ttl_ms": 0,
+        "unix_ms": 1794265102806,
+        "url": "http://127.0.0.1:55101/"
+      },
+      {
+        "source_line": 2,
+        "kind": "turn_start",
+        "turn": 1,
+        "unix_ms": 1794265102869
+      },
+      {
+        "source_line": 3,
+        "body": {
+          "jsonrpc": "2.0",
+          "id": 0,
+          "method": "initialize",
+          "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {
+              "elicitation": {
+                "form": {},
+                "url": {}
+              }
+            },
+            "clientInfo": {
+              "name": "codex-mcp-client",
+              "title": "Codex",
+              "version": "0.167.0"
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 1,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": null,
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794265102969
+      },
+      {
+        "source_line": 4,
+        "kind": "negotiated",
+        "offered": "2025-06-18",
+        "revision": "2025-06-18",
+        "turn": 1,
+        "unix_ms": 1794265102970
+      },
+      {
+        "source_line": 5,
+        "id": 1,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 1,
+        "unix_ms": 1794265102970
+      },
+      {
+        "source_line": 6,
+        "id": 1,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794265102970,
+        "messages": []
+      },
+      {
+        "source_line": 7,
+        "id": 1,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794265102970,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": 0,
+            "result": {
+              "protocolVersion": "2025-06-18",
+              "capabilities": {
+                "extensions": {
+                  "io.github.shrav-k.conduit/implementation-interface": {
+                    "revision": "v0"
+                  }
+                },
+                "tools": {
+                  "listChanged": true
+                }
+              },
+              "serverInfo": {
+                "name": "experiment-008",
+                "version": "0.1.0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 8,
+        "body": {
+          "jsonrpc": "2.0",
+          "method": "notifications/initialized"
+        },
+        "http_method": "POST",
+        "id": 2,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794265102971
+      },
+      {
+        "source_line": 9,
+        "id": 2,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 202,
+        "turn": 1,
+        "unix_ms": 1794265102971
+      },
+      {
+        "source_line": 10,
+        "body": null,
+        "http_method": "GET",
+        "id": 3,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794265102971
+      },
+      {
+        "source_line": 11,
+        "id": 3,
+        "kind": "response",
+        "notification_stream": true,
+        "reason": null,
+        "status": 200,
+        "turn": 1,
+        "unix_ms": 1794265102972
+      },
+      {
+        "source_line": 12,
+        "id": 3,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794265102972,
+        "messages": []
+      },
+      {
+        "source_line": 13,
+        "body": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "method": "tools/list",
+          "params": {
+            "_meta": {
+              "progressToken": 0
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 4,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794265102972
+      },
+      {
+        "source_line": 14,
+        "id": 4,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 1,
+        "unix_ms": 1794265102972
+      },
+      {
+        "source_line": 15,
+        "id": 4,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794265102973,
+        "messages": []
+      },
+      {
+        "source_line": 16,
+        "id": 4,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794265102973,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": {
+              "ttlMs": 0,
+              "cacheScope": "private",
+              "tools": [
+                {
+                  "name": "control.next.v1",
+                  "description": "Advance this case once; later calls keep the final state.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                  },
+                  "outputSchema": {
+                    "properties": {
+                      "state": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "annotations": {
+                    "openWorldHint": false
+                  }
+                },
+                {
+                  "name": "files.read.v1",
+                  "description": "Read a dummy file from the in-memory directory.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "type": "object"
+                  },
+                  "outputSchema": {
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  "annotations": {
+                    "readOnlyHint": true,
+                    "openWorldHint": false
+                  }
+                },
+                {
+                  "name": "files.write.v1",
+                  "description": "Write a dummy file in the in-memory directory.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  "outputSchema": {
+                    "properties": {
+                      "written": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "written"
+                    ],
+                    "type": "object"
+                  },
+                  "annotations": {
+                    "openWorldHint": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 17,
+        "body": {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "method": "tools/call",
+          "params": {
+            "_meta": {
+              "callId": "exec-97c3f71c-16f8-4aad-ac90-da0859405917",
+              "x-codex-turn-metadata": {
+                "session_id": "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+                "thread_id": "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+                "reasoning_effort": "low",
+                "turn_id": "01a1c288-bee3-74e2-bc6d-505c5b1238b6",
+                "model": "gpt-6.1-sol",
+                "thread_source": "user",
+                "turn_trigger": "exec",
+                "sandbox": "seatbelt",
+                "sandbox_mode": "read-only",
+                "auto_review_enabled": false,
+                "node_repl_auto_review_required": true,
+                "node_repl_disabled": false,
+                "turn_started_at_unix_ms": 1794265104104,
+                "codex_version": "0.167.0"
+              },
+              "threadId": "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+              "sessionId": "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+              "windowId": "01a1c288-ba67-7a13-97e6-c51c4b4b176f:0",
+              "itemId": "ctc_038bc9bda55b992b016af2501489ac87d28f56585c63e2203d",
+              "progressToken": 1
+            },
+            "name": "files.read.v1",
+            "arguments": {
+              "path": "hello.txt"
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 5,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794265109397
+      },
+      {
+        "source_line": 18,
+        "id": 5,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 1,
+        "unix_ms": 1794265109398
+      },
+      {
+        "source_line": 19,
+        "id": 5,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794265109398,
+        "messages": []
+      },
+      {
+        "source_line": 20,
+        "id": 5,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794265109398,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"text\":\"Hello from memory.\"}"
+                }
+              ],
+              "structuredContent": {
+                "text": "Hello from memory."
+              },
+              "isError": false,
+              "_meta": {
+                "io.github.shrav-k.conduit/invocation": "inv-1",
+                "io.github.shrav-k.conduit/outcome": "succeeded"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 21,
+        "id": 3,
+        "kind": "stream_closed",
+        "turn": 1,
+        "unix_ms": 1794265111214
+      },
+      {
+        "source_line": 22,
+        "body": null,
+        "http_method": "DELETE",
+        "id": 6,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794265111215
+      },
+      {
+        "source_line": 23,
+        "id": 6,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 202,
+        "turn": 1,
+        "unix_ms": 1794265111215
+      },
+      {
+        "source_line": 24,
+        "kind": "turn_start",
+        "turn": 2,
+        "unix_ms": 1794265112389
+      },
+      {
+        "source_line": 25,
+        "kind": "list_changed",
+        "streams_open": 0,
+        "tools": [
+          "control.next.v1",
+          "notes.read.v1"
+        ],
+        "turn": 2,
+        "unix_ms": 1794265112389
+      },
+      {
+        "source_line": 26,
+        "kind": "notification_delivery",
+        "sent": false,
+        "streams_open": 0,
+        "transport": "legacy",
+        "turn": 2,
+        "unix_ms": 1794265112389
+      },
+      {
+        "source_line": 27,
+        "body": {
+          "jsonrpc": "2.0",
+          "id": 0,
+          "method": "initialize",
+          "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {
+              "elicitation": {
+                "form": {},
+                "url": {}
+              }
+            },
+            "clientInfo": {
+              "name": "codex-mcp-client",
+              "title": "Codex",
+              "version": "0.167.0"
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 7,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": null,
+        "token_valid": true,
+        "turn": 2,
+        "unix_ms": 1794265112507
+      },
+      {
+        "source_line": 28,
+        "kind": "negotiated",
+        "offered": "2025-06-18",
+        "revision": "2025-06-18",
+        "turn": 2,
+        "unix_ms": 1794265112507
+      },
+      {
+        "source_line": 29,
+        "id": 7,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 2,
+        "unix_ms": 1794265112508
+      },
+      {
+        "source_line": 30,
+        "id": 7,
+        "kind": "wire",
+        "turn": 2,
+        "unix_ms": 1794265112508,
+        "messages": []
+      },
+      {
+        "source_line": 31,
+        "id": 7,
+        "kind": "wire",
+        "turn": 2,
+        "unix_ms": 1794265112508,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": 0,
+            "result": {
+              "protocolVersion": "2025-06-18",
+              "capabilities": {
+                "extensions": {
+                  "io.github.shrav-k.conduit/implementation-interface": {
+                    "revision": "v0"
+                  }
+                },
+                "tools": {
+                  "listChanged": true
+                }
+              },
+              "serverInfo": {
+                "name": "experiment-008",
+                "version": "0.1.0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 32,
+        "body": {
+          "jsonrpc": "2.0",
+          "method": "notifications/initialized"
+        },
+        "http_method": "POST",
+        "id": 8,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 2,
+        "unix_ms": 1794265112508
+      },
+      {
+        "source_line": 33,
+        "id": 8,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 202,
+        "turn": 2,
+        "unix_ms": 1794265112508
+      },
+      {
+        "source_line": 34,
+        "body": null,
+        "http_method": "GET",
+        "id": 9,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 2,
+        "unix_ms": 1794265112509
+      },
+      {
+        "source_line": 35,
+        "id": 9,
+        "kind": "response",
+        "notification_stream": true,
+        "reason": null,
+        "status": 200,
+        "turn": 2,
+        "unix_ms": 1794265112509
+      },
+      {
+        "source_line": 36,
+        "id": 9,
+        "kind": "wire",
+        "turn": 2,
+        "unix_ms": 1794265112509,
+        "messages": []
+      },
+      {
+        "source_line": 37,
+        "body": {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "method": "tools/list",
+          "params": {
+            "_meta": {
+              "progressToken": 0
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 10,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 2,
+        "unix_ms": 1794265112509
+      },
+      {
+        "source_line": 38,
+        "id": 10,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 2,
+        "unix_ms": 1794265112509
+      },
+      {
+        "source_line": 39,
+        "id": 10,
+        "kind": "wire",
+        "turn": 2,
+        "unix_ms": 1794265112510,
+        "messages": []
+      },
+      {
+        "source_line": 40,
+        "id": 10,
+        "kind": "wire",
+        "turn": 2,
+        "unix_ms": 1794265112510,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": {
+              "ttlMs": 0,
+              "cacheScope": "private",
+              "tools": [
+                {
+                  "name": "control.next.v1",
+                  "description": "Advance this case once; later calls keep the final state.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                  },
+                  "outputSchema": {
+                    "properties": {
+                      "state": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "annotations": {
+                    "openWorldHint": false
+                  }
+                },
+                {
+                  "name": "notes.read.v1",
+                  "description": "Read a dummy file from the in-memory directory.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "type": "object"
+                  },
+                  "outputSchema": {
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  "annotations": {
+                    "readOnlyHint": true,
+                    "openWorldHint": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 41,
+        "body": {
+          "jsonrpc": "2.0",
+          "id": 2,
+          "method": "tools/call",
+          "params": {
+            "_meta": {
+              "callId": "exec-1dc70ddb-e1f9-498c-862f-cf4661318d6c",
+              "x-codex-turn-metadata": {
+                "session_id": "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+                "thread_id": "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+                "reasoning_effort": "low",
+                "turn_id": "01a1c288-e4e6-71a0-83b7-ed17eefb48d8",
+                "model": "gpt-6.1-sol",
+                "thread_source": "user",
+                "turn_trigger": "exec",
+                "sandbox": "seatbelt",
+                "sandbox_mode": "read-only",
+                "auto_review_enabled": false,
+                "node_repl_auto_review_required": true,
+                "node_repl_disabled": false,
+                "turn_started_at_unix_ms": 1794265113836,
+                "codex_version": "0.167.0"
+              },
+              "threadId": "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+              "sessionId": "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+              "windowId": "01a1c288-ba67-7a13-97e6-c51c4b4b176f:0",
+              "itemId": "ctc_05db70f2d0f6cb60016af2502264cc87d1b93fc22edb5fe21a",
+              "progressToken": 1
+            },
+            "name": "notes.read.v1",
+            "arguments": {
+              "path": "hello.txt"
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 11,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 2,
+        "unix_ms": 1794265122725
+      },
+      {
+        "source_line": 42,
+        "id": 11,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 2,
+        "unix_ms": 1794265122727
+      },
+      {
+        "source_line": 43,
+        "id": 11,
+        "kind": "wire",
+        "turn": 2,
+        "unix_ms": 1794265122727,
+        "messages": []
+      },
+      {
+        "source_line": 44,
+        "id": 11,
+        "kind": "wire",
+        "turn": 2,
+        "unix_ms": 1794265122728,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"text\":\"A newly opened note.\"}"
+                }
+              ],
+              "structuredContent": {
+                "text": "A newly opened note."
+              },
+              "isError": false,
+              "_meta": {
+                "io.github.shrav-k.conduit/invocation": "inv-2",
+                "io.github.shrav-k.conduit/outcome": "succeeded"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 45,
+        "id": 9,
+        "kind": "stream_closed",
+        "turn": 2,
+        "unix_ms": 1794265125295
+      },
+      {
+        "source_line": 46,
+        "body": null,
+        "http_method": "DELETE",
+        "id": 12,
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "kind": "request",
+        "revision": "2025-06-18",
+        "token_valid": true,
+        "turn": 2,
+        "unix_ms": 1794265125296
+      },
+      {
+        "source_line": 47,
+        "id": 12,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 202,
+        "turn": 2,
+        "unix_ms": 1794265125297
+      }
+    ]
+  },
+  "clients": {
+    "codex": {
+      "version": "codex-cli 0.167.0",
+      "version_status": {
+        "exit_code": 0
+      },
+      "launch": {
+        "args": [
+          "--evidence",
+          "<RUN>/codex",
+          "--timeout-secs",
+          "180"
+        ],
+        "cwd": "<RUN>/codex/work",
+        "environment": {
+          "CONDUIT_IDENTITY_DIR": "<RUN>/codex/identity",
+          "CONDUIT_URL": "http://127.0.0.1:55101/",
+          "HOME": "<HOME>",
+          "LOGNAME": "<USER>",
+          "PATH": "<PATH>",
+          "SHELL": "<SHELL>",
+          "TERM": "xterm-256color",
+          "USER": "<USER>"
+        },
+        "instance": "spiffe://experiment.test/conduit/instance/codex-r3-codex",
+        "login": "owner shared; client authentication report required",
+        "program": "<HARNESS>/target/release/codex-wrapper"
+      },
+      "settings": {
+        "crossSessionInbound": "refuse",
+        "disableAllHooks": true,
+        "disableClaudeAiConnectors": true,
+        "enabledPlugins": {},
+        "permissions": {
+          "allow": [
+            "mcp__stub__*"
+          ],
+          "defaultMode": "dontAsk",
+          "deny": [
+            "SendMessage",
+            "ListAgents",
+            "RemoteTrigger"
+          ]
+        }
+      },
+      "mcp": {
+        "mcpServers": {
+          "stub": {
+            "headersHelper": "'<HARNESS>/target/release/codex-wrapper' --headers-helper",
+            "type": "http",
+            "url": "http://127.0.0.1:55101/"
+          }
+        }
+      },
+      "wrapper_exchange": [
+        {
+          "source_line": 1,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "initialize",
+            "params": {
+              "capabilities": {},
+              "clientInfo": {
+                "name": "experiment-009-runner",
+                "version": "0.1.0"
+              },
+              "protocolVersion": "2025-11-25"
+            }
+          }
+        },
+        {
+          "source_line": 2,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "capabilities": {
+                "tools": {}
+              },
+              "protocolVersion": "2025-11-25",
+              "serverInfo": {
+                "name": "native-launch-wrapper",
+                "version": "0.1.0"
+              }
+            }
+          }
+        },
+        {
+          "source_line": 3,
+          "direction": "to_wrapper",
+          "message": {
+            "jsonrpc": "2.0",
+            "method": "notifications/initialized"
+          }
+        },
+        {
+          "source_line": 4,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "tools/list",
+            "params": {}
+          }
+        },
+        {
+          "source_line": 5,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "tools": [
+                {
+                  "name": "turn",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "type": "object"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "source_line": 6,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "method": "tools/call",
+            "params": {
+              "arguments": {
+                "message": "Use only the stub MCP server. Call files.read.v1 with path hello.txt once. Report the returned text and stop. Do not call control.next.v1 or any other tool."
+              },
+              "name": "turn"
+            }
+          }
+        },
+        {
+          "source_line": 7,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "result": {
+              "isError": false,
+              "text": "Hello from memory.",
+              "events_retained_in": "turns"
+            }
+          }
+        },
+        {
+          "source_line": 8,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 4,
+            "jsonrpc": "2.0",
+            "method": "tools/call",
+            "params": {
+              "arguments": {
+                "message": "Access changed between turns. Use only the stub MCP server. Call notes.read.v1 with path hello.txt once (discover it if needed). Also read hello.txt through files.read.v1 if it remains available; otherwise report it unavailable. Report what happened and stop. Do not call control.next.v1 or substitute other tools."
+              },
+              "name": "turn"
+            }
+          }
+        },
+        {
+          "source_line": 9,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 4,
+            "jsonrpc": "2.0",
+            "result": {
+              "isError": false,
+              "text": "`notes.read.v1` returned: “A newly opened note.”\n\n`files.read.v1` is unavailable.",
+              "events_retained_in": "turns"
+            }
+          }
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "status": {
+            "completed": true,
+            "error": null
+          },
+          "prompt": "Use only the stub MCP server. Call files.read.v1 with path hello.txt once. Report the returned text and stop. Do not call control.next.v1 or any other tool.",
+          "start_report": {
+            "authentication": {
+              "observations": [],
+              "status": "not_reported"
+            },
+            "mcp_servers": {
+              "observations": [],
+              "status": "not_reported"
+            },
+            "tools": {
+              "observations": [],
+              "status": "not_reported"
+            }
+          },
+          "final": "Hello from memory.",
+          "events_source_lines": 7,
+          "events": [
+            {
+              "source_line": 1,
+              "type": "thread.started",
+              "thread_id": "01a1c288-ba67-7a13-97e6-c51c4b4b176f"
+            },
+            {
+              "source_line": 2,
+              "type": "turn.started"
+            },
+            {
+              "source_line": 3,
+              "type": "item.completed",
+              "item": {
+                "id": "item_0",
+                "type": "agent_message",
+                "text": "I’ll read `hello.txt` once using the stub server and report the returned text."
+              }
+            },
+            {
+              "source_line": 4,
+              "type": "item.started",
+              "item": {
+                "id": "item_1",
+                "type": "mcp_tool_call",
+                "server": "stub",
+                "tool": "files.read.v1",
+                "arguments": {
+                  "path": "hello.txt"
+                },
+                "result": null,
+                "error": null,
+                "status": "in_progress"
+              }
+            },
+            {
+              "source_line": 5,
+              "type": "item.completed",
+              "item": {
+                "id": "item_1",
+                "type": "mcp_tool_call",
+                "server": "stub",
+                "tool": "files.read.v1",
+                "arguments": {
+                  "path": "hello.txt"
+                },
+                "result": {
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "{\"text\":\"Hello from memory.\"}"
+                    }
+                  ],
+                  "_meta": {
+                    "io.github.shrav-k.conduit/invocation": "inv-1",
+                    "io.github.shrav-k.conduit/outcome": "succeeded"
+                  },
+                  "structured_content": {
+                    "text": "Hello from memory."
+                  }
+                },
+                "error": null,
+                "status": "completed"
+              }
+            },
+            {
+              "source_line": 6,
+              "type": "item.completed",
+              "item": {
+                "id": "item_2",
+                "type": "agent_message",
+                "text": "Hello from memory."
+              }
+            },
+            {
+              "source_line": 7,
+              "type": "turn.completed",
+              "usage": {
+                "input_tokens": 24636,
+                "cached_input_tokens": 21760,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 82,
+                "reasoning_output_tokens": 0
+              }
+            }
+          ],
+          "plan": {
+            "api_keys_removed": [
+              "ANTHROPIC_API_KEY",
+              "OPENAI_API_KEY"
+            ],
+            "args": [
+              "exec",
+              "--sandbox",
+              "read-only",
+              "--color",
+              "never",
+              "--ignore-user-config",
+              "--strict-config",
+              "--ignore-rules",
+              "--disable",
+              "apps",
+              "--skip-git-repo-check",
+              "--json",
+              "-c",
+              "mcp_servers.stub.url=\"http://127.0.0.1:55101/\"",
+              "-c",
+              "mcp_servers.stub.http_headers_helper=\"'<HARNESS>/target/release/codex-wrapper' --headers-helper --identity-dir '<RUN>/codex/identity'\"",
+              "-c",
+              "mcp_servers.stub.startup_readiness=\"connection\"",
+              "-c",
+              "mcp_servers.stub.required=true",
+              "-c",
+              "mcp_servers.stub.default_tools_approval_mode=\"approve\"",
+              "-c",
+              "model_reasoning_effort=\"low\"",
+              "-c",
+              "web_search=\"disabled\"",
+              "Use only the stub MCP server. Call files.read.v1 with path hello.txt once. Report the returned text and stop. Do not call control.next.v1 or any other tool."
+            ],
+            "cwd": "<RUN>/codex/work",
+            "environment": {
+              "CONDUIT_IDENTITY_DIR": "<RUN>/codex/identity",
+              "CONDUIT_URL": "http://127.0.0.1:55101/",
+              "HOME": "<HOME>",
+              "LOGNAME": "<USER>",
+              "PATH": "<PATH>",
+              "SHELL": "<SHELL>",
+              "TERM": "xterm-256color",
+              "USER": "<USER>"
+            },
+            "program": "codex"
+          },
+          "stderr": "Reading additional input from stdin...\n",
+          "classification": "told_user"
+        },
+        {
+          "turn": 2,
+          "status": {
+            "completed": true,
+            "error": null
+          },
+          "prompt": "Access changed between turns. Use only the stub MCP server. Call notes.read.v1 with path hello.txt once (discover it if needed). Also read hello.txt through files.read.v1 if it remains available; otherwise report it unavailable. Report what happened and stop. Do not call control.next.v1 or substitute other tools.",
+          "start_report": {
+            "authentication": {
+              "observations": [],
+              "status": "not_reported"
+            },
+            "mcp_servers": {
+              "observations": [],
+              "status": "not_reported"
+            },
+            "tools": {
+              "observations": [],
+              "status": "not_reported"
+            }
+          },
+          "final": "`notes.read.v1` returned: “A newly opened note.”\n\n`files.read.v1` is unavailable.",
+          "events_source_lines": 7,
+          "events": [
+            {
+              "source_line": 1,
+              "type": "thread.started",
+              "thread_id": "01a1c288-ba67-7a13-97e6-c51c4b4b176f"
+            },
+            {
+              "source_line": 2,
+              "type": "turn.started"
+            },
+            {
+              "source_line": 3,
+              "type": "item.completed",
+              "item": {
+                "id": "item_0",
+                "type": "agent_message",
+                "text": "I’ll check the stub tools, read `hello.txt` through `notes.read.v1` once, and also use `files.read.v1` if it’s available."
+              }
+            },
+            {
+              "source_line": 4,
+              "type": "item.started",
+              "item": {
+                "id": "item_1",
+                "type": "mcp_tool_call",
+                "server": "stub",
+                "tool": "notes.read.v1",
+                "arguments": {
+                  "path": "hello.txt"
+                },
+                "result": null,
+                "error": null,
+                "status": "in_progress"
+              }
+            },
+            {
+              "source_line": 5,
+              "type": "item.completed",
+              "item": {
+                "id": "item_1",
+                "type": "mcp_tool_call",
+                "server": "stub",
+                "tool": "notes.read.v1",
+                "arguments": {
+                  "path": "hello.txt"
+                },
+                "result": {
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "{\"text\":\"A newly opened note.\"}"
+                    }
+                  ],
+                  "_meta": {
+                    "io.github.shrav-k.conduit/invocation": "inv-2",
+                    "io.github.shrav-k.conduit/outcome": "succeeded"
+                  },
+                  "structured_content": {
+                    "text": "A newly opened note."
+                  }
+                },
+                "error": null,
+                "status": "completed"
+              }
+            },
+            {
+              "source_line": 6,
+              "type": "item.completed",
+              "item": {
+                "id": "item_2",
+                "type": "agent_message",
+                "text": "`notes.read.v1` returned: “A newly opened note.”\n\n`files.read.v1` is unavailable."
+              }
+            },
+            {
+              "source_line": 7,
+              "type": "turn.completed",
+              "usage": {
+                "input_tokens": 62474,
+                "cached_input_tokens": 58880,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 217,
+                "reasoning_output_tokens": 0
+              }
+            }
+          ],
+          "plan": {
+            "api_keys_removed": [
+              "ANTHROPIC_API_KEY",
+              "OPENAI_API_KEY"
+            ],
+            "args": [
+              "exec",
+              "--sandbox",
+              "read-only",
+              "--color",
+              "never",
+              "resume",
+              "--ignore-user-config",
+              "--strict-config",
+              "--ignore-rules",
+              "--disable",
+              "apps",
+              "--skip-git-repo-check",
+              "--json",
+              "-c",
+              "mcp_servers.stub.url=\"http://127.0.0.1:55101/\"",
+              "-c",
+              "mcp_servers.stub.http_headers_helper=\"'<HARNESS>/target/release/codex-wrapper' --headers-helper --identity-dir '<RUN>/codex/identity'\"",
+              "-c",
+              "mcp_servers.stub.startup_readiness=\"connection\"",
+              "-c",
+              "mcp_servers.stub.required=true",
+              "-c",
+              "mcp_servers.stub.default_tools_approval_mode=\"approve\"",
+              "-c",
+              "model_reasoning_effort=\"low\"",
+              "-c",
+              "web_search=\"disabled\"",
+              "01a1c288-ba67-7a13-97e6-c51c4b4b176f",
+              "Access changed between turns. Use only the stub MCP server. Call notes.read.v1 with path hello.txt once (discover it if needed). Also read hello.txt through files.read.v1 if it remains available; otherwise report it unavailable. Report what happened and stop. Do not call control.next.v1 or substitute other tools."
+            ],
+            "cwd": "<RUN>/codex/work",
+            "environment": {
+              "CONDUIT_IDENTITY_DIR": "<RUN>/codex/identity",
+              "CONDUIT_URL": "http://127.0.0.1:55101/",
+              "HOME": "<HOME>",
+              "LOGNAME": "<USER>",
+              "PATH": "<PATH>",
+              "SHELL": "<SHELL>",
+              "TERM": "xterm-256color",
+              "USER": "<USER>"
+            },
+            "program": "codex"
+          },
+          "stderr": "",
+          "classification": "told_user"
+        }
+      ]
+    }
+  },
+  "request_attribution": {
+    "requests": 12,
+    "all_valid": true,
+    "by_instance": {
+      "spiffe://experiment.test/conduit/instance/codex-r3-codex": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    }
+  }
+}

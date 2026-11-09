@@ -1,0 +1,1133 @@
+{
+  "run": "attempt-2/pair-r2",
+  "scenario_status": {
+    "completed": false,
+    "error": "wrapper turn failed: {\"id\":3,\"jsonrpc\":\"2.0\",\"result\":{\"content\":[{\"text\":\"client EOF before result boundary\",\"type\":\"text\"}],\"isError\":true}}"
+  },
+  "stub": {
+    "source": "stub.jsonl",
+    "source_lines": 16,
+    "records": [
+      {
+        "source_line": 1,
+        "canonical_audience": "http://127.0.0.1:54786/",
+        "case": "C5",
+        "first_401": false,
+        "instances": [
+          "spiffe://experiment.test/conduit/instance/pair-r2-claude",
+          "spiffe://experiment.test/conduit/instance/pair-r2-codex"
+        ],
+        "kind": "start",
+        "ttl_ms": 0,
+        "unix_ms": 1794264910513,
+        "url": "http://127.0.0.1:54786/"
+      },
+      {
+        "source_line": 2,
+        "kind": "turn_start",
+        "turn": 1,
+        "unix_ms": 1794264910589
+      },
+      {
+        "source_line": 3,
+        "body": {
+          "jsonrpc": "2.0",
+          "id": "server-discover-probe-1",
+          "method": "server/discover",
+          "params": {
+            "_meta": {
+              "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+              "io.modelcontextprotocol/clientInfo": {
+                "name": "claude-code",
+                "title": "Claude Code",
+                "version": "2.1.318",
+                "description": "Anthropic's agentic coding tool",
+                "websiteUrl": "https://claude.com/claude-code"
+              },
+              "io.modelcontextprotocol/clientCapabilities": {
+                "roots": {
+                  "listChanged": true
+                },
+                "elicitation": {
+                  "form": {},
+                  "url": {}
+                },
+                "extensions": {
+                  "io.modelcontextprotocol/tasks": {}
+                }
+              }
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 1,
+        "instance": "spiffe://experiment.test/conduit/instance/pair-r2-claude",
+        "kind": "request",
+        "revision": "2026-07-28",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794264910794
+      },
+      {
+        "source_line": 4,
+        "kind": "negotiated",
+        "mode": "per-request",
+        "revision": "2026-07-28",
+        "turn": 1,
+        "unix_ms": 1794264910795
+      },
+      {
+        "source_line": 5,
+        "id": 1,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 1,
+        "unix_ms": 1794264910795
+      },
+      {
+        "source_line": 6,
+        "id": 1,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794264910795,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": "server-discover-probe-1",
+            "result": {
+              "resultType": "complete",
+              "supportedVersions": [
+                "2025-06-18",
+                "2025-11-25",
+                "2026-07-28"
+              ],
+              "capabilities": {
+                "extensions": {
+                  "io.github.shrav-k.conduit/implementation-interface": {
+                    "revision": "v0"
+                  }
+                },
+                "tools": {
+                  "listChanged": true
+                }
+              },
+              "ttlMs": 0,
+              "cacheScope": "private",
+              "_meta": {
+                "io.modelcontextprotocol/serverInfo": {
+                  "name": "experiment-008",
+                  "version": "0.1.0"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 7,
+        "body": {
+          "jsonrpc": "2.0",
+          "id": "listen:0",
+          "method": "subscriptions/listen",
+          "params": {
+            "_meta": {
+              "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+              "io.modelcontextprotocol/clientInfo": {
+                "name": "claude-code",
+                "title": "Claude Code",
+                "version": "2.1.318",
+                "description": "Anthropic's agentic coding tool",
+                "websiteUrl": "https://claude.com/claude-code"
+              },
+              "io.modelcontextprotocol/clientCapabilities": {
+                "roots": {
+                  "listChanged": true
+                },
+                "elicitation": {
+                  "form": {},
+                  "url": {}
+                },
+                "extensions": {
+                  "io.modelcontextprotocol/tasks": {}
+                }
+              }
+            },
+            "notifications": {
+              "toolsListChanged": true
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 2,
+        "instance": "spiffe://experiment.test/conduit/instance/pair-r2-claude",
+        "kind": "request",
+        "revision": "2026-07-28",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794264910797
+      },
+      {
+        "source_line": 8,
+        "id": 2,
+        "kind": "response",
+        "notification_stream": true,
+        "reason": null,
+        "status": 200,
+        "turn": 1,
+        "unix_ms": 1794264910798
+      },
+      {
+        "source_line": 9,
+        "id": 2,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794264910798,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "method": "notifications/subscriptions/acknowledged",
+            "params": {
+              "_meta": {
+                "io.modelcontextprotocol/subscriptionId": "listen:0"
+              },
+              "notifications": {
+                "toolsListChanged": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 10,
+        "body": {
+          "method": "tools/list",
+          "jsonrpc": "2.0",
+          "id": 0,
+          "params": {
+            "_meta": {
+              "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+              "io.modelcontextprotocol/clientInfo": {
+                "name": "claude-code",
+                "title": "Claude Code",
+                "version": "2.1.318",
+                "description": "Anthropic's agentic coding tool",
+                "websiteUrl": "https://claude.com/claude-code"
+              },
+              "io.modelcontextprotocol/clientCapabilities": {
+                "roots": {
+                  "listChanged": true
+                },
+                "elicitation": {
+                  "form": {},
+                  "url": {}
+                },
+                "extensions": {
+                  "io.modelcontextprotocol/tasks": {}
+                }
+              }
+            }
+          }
+        },
+        "http_method": "POST",
+        "id": 3,
+        "instance": "spiffe://experiment.test/conduit/instance/pair-r2-claude",
+        "kind": "request",
+        "revision": "2026-07-28",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794264910800
+      },
+      {
+        "source_line": 11,
+        "id": 3,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 1,
+        "unix_ms": 1794264910801
+      },
+      {
+        "source_line": 12,
+        "id": 3,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794264910801,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": 0,
+            "result": {
+              "resultType": "complete",
+              "ttlMs": 0,
+              "cacheScope": "private",
+              "tools": [
+                {
+                  "name": "control.next.v1",
+                  "description": "Advance this case once; later calls keep the final state.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                  },
+                  "outputSchema": {
+                    "properties": {
+                      "state": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "state"
+                    ],
+                    "type": "object"
+                  },
+                  "annotations": {
+                    "openWorldHint": false
+                  }
+                },
+                {
+                  "name": "files.read.v1",
+                  "description": "Read a dummy file from the in-memory directory.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "type": "object"
+                  },
+                  "outputSchema": {
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  "annotations": {
+                    "readOnlyHint": true,
+                    "openWorldHint": false
+                  }
+                },
+                {
+                  "name": "files.write.v1",
+                  "description": "Write a dummy file in the in-memory directory.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "text"
+                    ],
+                    "type": "object"
+                  },
+                  "outputSchema": {
+                    "properties": {
+                      "written": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "written"
+                    ],
+                    "type": "object"
+                  },
+                  "annotations": {
+                    "openWorldHint": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 13,
+        "body": {
+          "method": "tools/call",
+          "params": {
+            "name": "files.read.v1",
+            "arguments": {
+              "path": "hello.txt"
+            },
+            "_meta": {
+              "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+              "io.modelcontextprotocol/clientInfo": {
+                "name": "claude-code",
+                "title": "Claude Code",
+                "version": "2.1.318",
+                "description": "Anthropic's agentic coding tool",
+                "websiteUrl": "https://claude.com/claude-code"
+              },
+              "io.modelcontextprotocol/clientCapabilities": {
+                "roots": {
+                  "listChanged": true
+                },
+                "elicitation": {
+                  "form": {},
+                  "url": {}
+                }
+              },
+              "claudecode/toolUseId": "toolu_01VD82dCCmJugmj1xjgDzEFp",
+              "progressToken": 1
+            }
+          },
+          "jsonrpc": "2.0",
+          "id": 1
+        },
+        "http_method": "POST",
+        "id": 4,
+        "instance": "spiffe://experiment.test/conduit/instance/pair-r2-claude",
+        "kind": "request",
+        "revision": "2026-07-28",
+        "token_valid": true,
+        "turn": 1,
+        "unix_ms": 1794264913106
+      },
+      {
+        "source_line": 14,
+        "id": 4,
+        "kind": "response",
+        "notification_stream": false,
+        "reason": null,
+        "status": 200,
+        "turn": 1,
+        "unix_ms": 1794264913107
+      },
+      {
+        "source_line": 15,
+        "id": 4,
+        "kind": "wire",
+        "turn": 1,
+        "unix_ms": 1794264913107,
+        "messages": [
+          {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": {
+              "resultType": "complete",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"text\":\"Hello from memory.\"}"
+                }
+              ],
+              "structuredContent": {
+                "text": "Hello from memory."
+              },
+              "isError": false,
+              "_meta": {
+                "io.github.shrav-k.conduit/invocation": "inv-1",
+                "io.github.shrav-k.conduit/outcome": "succeeded"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "source_line": 16,
+        "id": 2,
+        "kind": "stream_closed",
+        "turn": 1,
+        "unix_ms": 1794264913786
+      }
+    ]
+  },
+  "clients": {
+    "claude": {
+      "version": "2.1.318 (Claude Code)",
+      "version_status": {
+        "exit_code": 0
+      },
+      "launch": {
+        "args": [
+          "--evidence",
+          "<RUN>/claude",
+          "--timeout-secs",
+          "180"
+        ],
+        "cwd": "<RUN>/claude/work",
+        "environment": {
+          "CONDUIT_IDENTITY_DIR": "<RUN>/claude/identity",
+          "CONDUIT_URL": "http://127.0.0.1:54786/",
+          "HOME": "<HOME>",
+          "LOGNAME": "<USER>",
+          "PATH": "<PATH>",
+          "SHELL": "<SHELL>",
+          "TERM": "xterm-256color",
+          "USER": "<USER>"
+        },
+        "instance": "spiffe://experiment.test/conduit/instance/pair-r2-claude",
+        "login": "owner shared; client authentication report required",
+        "program": "<HARNESS>/target/release/claude-wrapper"
+      },
+      "settings": {
+        "crossSessionInbound": "refuse",
+        "disableAllHooks": true,
+        "disableClaudeAiConnectors": true,
+        "enabledPlugins": {},
+        "permissions": {
+          "allow": [
+            "mcp__stub__*"
+          ],
+          "defaultMode": "dontAsk",
+          "deny": [
+            "SendMessage",
+            "ListAgents",
+            "RemoteTrigger"
+          ]
+        }
+      },
+      "mcp": {
+        "mcpServers": {
+          "stub": {
+            "headersHelper": "'<HARNESS>/target/release/claude-wrapper' --headers-helper",
+            "type": "http",
+            "url": "http://127.0.0.1:54786/"
+          }
+        }
+      },
+      "wrapper_exchange": [
+        {
+          "source_line": 1,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "initialize",
+            "params": {
+              "capabilities": {},
+              "clientInfo": {
+                "name": "experiment-009-runner",
+                "version": "0.1.0"
+              },
+              "protocolVersion": "2025-11-25"
+            }
+          }
+        },
+        {
+          "source_line": 2,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "capabilities": {
+                "tools": {}
+              },
+              "protocolVersion": "2025-11-25",
+              "serverInfo": {
+                "name": "native-launch-wrapper",
+                "version": "0.1.0"
+              }
+            }
+          }
+        },
+        {
+          "source_line": 3,
+          "direction": "to_wrapper",
+          "message": {
+            "jsonrpc": "2.0",
+            "method": "notifications/initialized"
+          }
+        },
+        {
+          "source_line": 4,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "tools/list",
+            "params": {}
+          }
+        },
+        {
+          "source_line": 5,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "tools": [
+                {
+                  "name": "turn",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "type": "object"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "source_line": 6,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "method": "tools/call",
+            "params": {
+              "arguments": {
+                "message": "Use only the stub MCP server. Call files.read.v1 with path hello.txt once. Report the returned text and stop. Do not call control.next.v1 or any other tool."
+              },
+              "name": "turn"
+            }
+          }
+        },
+        {
+          "source_line": 7,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "result": {
+              "isError": false,
+              "text": "The returned text is: \"Hello from memory.\"",
+              "events_retained_in": "turns"
+            }
+          }
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "status": {
+            "completed": true,
+            "error": null
+          },
+          "prompt": "Use only the stub MCP server. Call files.read.v1 with path hello.txt once. Report the returned text and stop. Do not call control.next.v1 or any other tool.",
+          "start_report": {
+            "authentication": {
+              "observations": [
+                {
+                  "line": 1,
+                  "pointer": "/apiKeySource",
+                  "value": "none"
+                }
+              ],
+              "status": "reported"
+            },
+            "mcp_servers": {
+              "observations": [
+                {
+                  "line": 1,
+                  "pointer": "/mcp_servers",
+                  "value": [
+                    {
+                      "name": "stub",
+                      "source": "dynamic",
+                      "status": "connected"
+                    }
+                  ]
+                }
+              ],
+              "status": "reported"
+            },
+            "tools": {
+              "observations": [
+                {
+                  "line": 1,
+                  "pointer": "/tools",
+                  "value": [
+                    "mcp__stub__control_next_v1",
+                    "mcp__stub__files_read_v1",
+                    "mcp__stub__files_write_v1"
+                  ]
+                }
+              ],
+              "status": "reported"
+            }
+          },
+          "final": "The returned text is: \"Hello from memory.\"",
+          "events_source_lines": 24,
+          "events": [
+            {
+              "source_line": 1,
+              "type": "system",
+              "subtype": "init",
+              "cwd": "<RUN>/claude/work",
+              "session_id": "f2010086-b857-4cd2-8c97-116b322fc6c4",
+              "tools": [
+                "mcp__stub__control_next_v1",
+                "mcp__stub__files_read_v1",
+                "mcp__stub__files_write_v1"
+              ],
+              "mcp_servers": [
+                {
+                  "name": "stub",
+                  "status": "connected",
+                  "source": "dynamic"
+                }
+              ],
+              "model": "claude-sonnet-5-5",
+              "permissionMode": "dontAsk",
+              "slash_commands": [],
+              "apiKeySource": "none",
+              "claude_code_version": "2.1.318",
+              "output_style": "default",
+              "agents": [
+                "claude",
+                "Explore",
+                "general-purpose",
+                "Plan",
+                "statusline-setup"
+              ],
+              "skills": [],
+              "plugins": [
+                {
+                  "name": "cc-plugin-agents-md",
+                  "path": "builtin",
+                  "source": "cc-plugin-agents-md@builtin"
+                },
+                {
+                  "name": "cc-plugin-telemetry",
+                  "path": "builtin",
+                  "source": "cc-plugin-telemetry@builtin"
+                },
+                {
+                  "name": "cc-plugin-privacy",
+                  "path": "builtin",
+                  "source": "cc-plugin-privacy@builtin"
+                },
+                {
+                  "name": "cc-plugin-plugin-authoring",
+                  "path": "builtin",
+                  "source": "cc-plugin-plugin-authoring@builtin"
+                }
+              ],
+              "capabilities": [
+                "interrupt_receipt_v1",
+                "interrupt_cancel_queued_v1",
+                "interrupt_send_now_v1",
+                "interrupt_requeue_taken_v1",
+                "msg_lifecycle_v1",
+                "request_marker_lists_v1",
+                "ask_user_question_unanswered_v1",
+                "lifecycle_wakeup_source_v1",
+                "sdk_mcp_tools_list_changed",
+                "sdk_mcp_manifests",
+                "mcp_read_resource_v1",
+                "mcp_tool_ui_meta_v1",
+                "ui_surface_v1",
+                "mcp_call_result_not_for_model_v1"
+              ],
+              "analytics_disabled": false,
+              "product_feedback_disabled": false,
+              "uuid": "fadbbff3-63df-4e98-bf2b-a59a9cf2eef4",
+              "memory_paths": {
+                "auto": "<MEMORY>"
+              },
+              "original_cwd": "<RUN>/claude/work",
+              "additional_directories": [],
+              "messaging_socket_path": "<SOCKET>",
+              "fast_mode_state": "off",
+              "fast_mode_disabled_reason": "sdk_opt_in_required",
+              "per_turn_effort_active": true,
+              "ultrathink_available": false,
+              "ultrathink_typed_raises": false,
+              "view_mode": "default"
+            },
+            {
+              "source_line": 9,
+              "type": "assistant",
+              "session_id": "f2010086-b857-4cd2-8c97-116b322fc6c4",
+              "content": [
+                {
+                  "type": "tool_use",
+                  "id": "toolu_01VD82dCCmJugmj1xjgDzEFp",
+                  "name": "mcp__stub__files_read_v1",
+                  "input": {
+                    "path": "hello.txt"
+                  },
+                  "caller": {
+                    "type": "direct"
+                  }
+                }
+              ]
+            },
+            {
+              "source_line": 14,
+              "type": "user",
+              "session_id": "f2010086-b857-4cd2-8c97-116b322fc6c4",
+              "tool_use_result": {
+                "content": "{\"text\":\"Hello from memory.\"}",
+                "_meta": {
+                  "io.github.shrav-k.conduit/invocation": "inv-1",
+                  "io.github.shrav-k.conduit/outcome": "succeeded"
+                },
+                "structuredContent": {
+                  "text": "Hello from memory."
+                }
+              },
+              "content": [
+                {
+                  "tool_use_id": "toolu_01VD82dCCmJugmj1xjgDzEFp",
+                  "type": "tool_result",
+                  "content": "{\"text\":\"Hello from memory.\"}"
+                }
+              ]
+            },
+            {
+              "source_line": 20,
+              "type": "assistant",
+              "session_id": "f2010086-b857-4cd2-8c97-116b322fc6c4",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "The returned text is: \"Hello from memory.\""
+                }
+              ]
+            },
+            {
+              "source_line": 24,
+              "session_id": "f2010086-b857-4cd2-8c97-116b322fc6c4",
+              "is_error": false,
+              "subtype": "success",
+              "result": "The returned text is: \"Hello from memory.\"",
+              "type": "result"
+            }
+          ],
+          "plan": {
+            "api_keys_removed": [
+              "ANTHROPIC_API_KEY",
+              "OPENAI_API_KEY"
+            ],
+            "args": [
+              "--print",
+              "--model",
+              "sonnet",
+              "--setting-sources",
+              "project",
+              "--settings",
+              "<RUN>/claude/settings.json",
+              "--strict-mcp-config",
+              "--mcp-config",
+              "<RUN>/claude/mcp.json",
+              "--tools",
+              "",
+              "--allowedTools",
+              "mcp__stub__*",
+              "--disallowedTools",
+              "SendMessage,ListAgents,RemoteTrigger",
+              "--no-session-persistence",
+              "--output-format",
+              "stream-json",
+              "--input-format",
+              "stream-json",
+              "--verbose",
+              "--include-partial-messages",
+              "--disable-slash-commands"
+            ],
+            "cwd": "<RUN>/claude/work",
+            "environment": {
+              "CONDUIT_IDENTITY_DIR": "<RUN>/claude/identity",
+              "CONDUIT_URL": "http://127.0.0.1:54786/",
+              "HOME": "<HOME>",
+              "LOGNAME": "<USER>",
+              "PATH": "<PATH>",
+              "SHELL": "<SHELL>",
+              "TERM": "xterm-256color",
+              "USER": "<USER>"
+            },
+            "program": "claude"
+          },
+          "stderr": "",
+          "classification": "told_user"
+        },
+        {
+          "turn": 2,
+          "status": "not_started",
+          "reason": "scenario stopped after first-turn failure; no turn status or prompt recorded"
+        }
+      ]
+    },
+    "codex": {
+      "version": "codex-cli 0.167.0",
+      "version_status": {
+        "exit_code": 0
+      },
+      "launch": {
+        "args": [
+          "--evidence",
+          "<RUN>/codex",
+          "--timeout-secs",
+          "180"
+        ],
+        "cwd": "<RUN>/codex/work",
+        "environment": {
+          "CONDUIT_IDENTITY_DIR": "<RUN>/codex/identity",
+          "CONDUIT_URL": "http://127.0.0.1:54786/",
+          "HOME": "<HOME>",
+          "LOGNAME": "<USER>",
+          "PATH": "<PATH>",
+          "SHELL": "<SHELL>",
+          "TERM": "xterm-256color",
+          "USER": "<USER>"
+        },
+        "instance": "spiffe://experiment.test/conduit/instance/pair-r2-codex",
+        "login": "owner shared; client authentication report required",
+        "program": "<HARNESS>/target/release/codex-wrapper"
+      },
+      "settings": {
+        "crossSessionInbound": "refuse",
+        "disableAllHooks": true,
+        "disableClaudeAiConnectors": true,
+        "enabledPlugins": {},
+        "permissions": {
+          "allow": [
+            "mcp__stub__*"
+          ],
+          "defaultMode": "dontAsk",
+          "deny": [
+            "SendMessage",
+            "ListAgents",
+            "RemoteTrigger"
+          ]
+        }
+      },
+      "mcp": {
+        "mcpServers": {
+          "stub": {
+            "headersHelper": "'<HARNESS>/target/release/codex-wrapper' --headers-helper",
+            "type": "http",
+            "url": "http://127.0.0.1:54786/"
+          }
+        }
+      },
+      "wrapper_exchange": [
+        {
+          "source_line": 1,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "initialize",
+            "params": {
+              "capabilities": {},
+              "clientInfo": {
+                "name": "experiment-009-runner",
+                "version": "0.1.0"
+              },
+              "protocolVersion": "2025-11-25"
+            }
+          }
+        },
+        {
+          "source_line": 2,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "capabilities": {
+                "tools": {}
+              },
+              "protocolVersion": "2025-11-25",
+              "serverInfo": {
+                "name": "native-launch-wrapper",
+                "version": "0.1.0"
+              }
+            }
+          }
+        },
+        {
+          "source_line": 3,
+          "direction": "to_wrapper",
+          "message": {
+            "jsonrpc": "2.0",
+            "method": "notifications/initialized"
+          }
+        },
+        {
+          "source_line": 4,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "method": "tools/list",
+            "params": {}
+          }
+        },
+        {
+          "source_line": 5,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "tools": [
+                {
+                  "name": "turn",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "type": "object"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "source_line": 6,
+          "direction": "to_wrapper",
+          "message": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "method": "tools/call",
+            "params": {
+              "arguments": {
+                "message": "Use only the stub MCP server. Call files.read.v1 with path hello.txt once. Report the returned text and stop. Do not call control.next.v1 or any other tool."
+              },
+              "name": "turn"
+            }
+          }
+        },
+        {
+          "source_line": 7,
+          "direction": "from_wrapper",
+          "message": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "client EOF before result boundary",
+                  "type": "text"
+                }
+              ],
+              "isError": true
+            }
+          }
+        }
+      ],
+      "turns": [
+        {
+          "turn": 1,
+          "status": {
+            "completed": false,
+            "error": "client EOF before result boundary"
+          },
+          "prompt": "Use only the stub MCP server. Call files.read.v1 with path hello.txt once. Report the returned text and stop. Do not call control.next.v1 or any other tool.",
+          "start_report": {
+            "authentication": {
+              "observations": [],
+              "status": "not_reported"
+            },
+            "mcp_servers": {
+              "observations": [],
+              "status": "not_reported"
+            },
+            "tools": {
+              "observations": [],
+              "status": "not_reported"
+            }
+          },
+          "final": "",
+          "events_source_lines": 0,
+          "events": [],
+          "plan": {
+            "api_keys_removed": [
+              "ANTHROPIC_API_KEY",
+              "OPENAI_API_KEY"
+            ],
+            "args": [
+              "exec",
+              "--sandbox",
+              "read-only",
+              "--color",
+              "never",
+              "--ignore-user-config",
+              "--strict-config",
+              "--ignore-rules",
+              "--disable",
+              "apps",
+              "--skip-git-repo-check",
+              "--json",
+              "-c",
+              "mcp_servers.stub.url=\"http://127.0.0.1:54786/\"",
+              "-c",
+              "mcp_servers.stub.http_headers_helper=\"'<HARNESS>/target/release/codex-wrapper' --headers-helper\"",
+              "-c",
+              "mcp_servers.stub.startup_readiness=\"connection\"",
+              "-c",
+              "mcp_servers.stub.required=true",
+              "-c",
+              "mcp_servers.stub.default_tools_approval_mode=\"approve\"",
+              "-c",
+              "mcp_servers.stub.env_vars=[\"CONDUIT_IDENTITY_DIR\"]",
+              "-c",
+              "model_reasoning_effort=\"low\"",
+              "-c",
+              "web_search=\"disabled\"",
+              "Use only the stub MCP server. Call files.read.v1 with path hello.txt once. Report the returned text and stop. Do not call control.next.v1 or any other tool."
+            ],
+            "cwd": "<RUN>/codex/work",
+            "environment": {
+              "CONDUIT_IDENTITY_DIR": "<RUN>/codex/identity",
+              "CONDUIT_URL": "http://127.0.0.1:54786/",
+              "HOME": "<HOME>",
+              "LOGNAME": "<USER>",
+              "PATH": "<PATH>",
+              "SHELL": "<SHELL>",
+              "TERM": "xterm-256color",
+              "USER": "<USER>"
+            },
+            "program": "codex"
+          },
+          "stderr": "Error loading config.toml: env_vars is not supported for streamable_http\nin `mcp_servers.stub`\n\n",
+          "classification": "other"
+        },
+        {
+          "turn": 2,
+          "status": "not_started",
+          "reason": "scenario stopped after first-turn failure; no turn status or prompt recorded"
+        }
+      ]
+    }
+  },
+  "request_attribution": {
+    "requests": 4,
+    "all_valid": true,
+    "by_instance": {
+      "spiffe://experiment.test/conduit/instance/pair-r2-claude": [
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  }
+}

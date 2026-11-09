@@ -1,0 +1,326 @@
+[
+  {
+    "client": "Claude Code",
+    "case": "attempt-1/claude-r1",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-1/claude-r2",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-1/claude-r3",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-1/codex-r1",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-1/codex-r2",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-1/codex-r3",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-1/pair-r1",
+    "retried": 0,
+    "told_user": 1,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-1/pair-r1",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-1/pair-r2",
+    "retried": 0,
+    "told_user": 1,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-1/pair-r2",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-1/pair-r3",
+    "retried": 0,
+    "told_user": 1,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-1/pair-r3",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-2/claude-r1",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-2/claude-r2",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-2/claude-r3",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-2/codex-r1",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-2/codex-r2",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-2/codex-r3",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-2/pair-r1",
+    "retried": 0,
+    "told_user": 1,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-2/pair-r1",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-2/pair-r2",
+    "retried": 0,
+    "told_user": 1,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-2/pair-r2",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-2/pair-r3",
+    "retried": 0,
+    "told_user": 1,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-2/pair-r3",
+    "retried": 0,
+    "told_user": 0,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 1
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-3/claude-r1",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-3/claude-r2",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-3/claude-r3",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-3/codex-r1",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-3/codex-r2",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-3/codex-r3",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-3/pair-r1",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-3/pair-r1",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-3/pair-r2",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-3/pair-r2",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Claude Code",
+    "case": "attempt-3/pair-r3",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  },
+  {
+    "client": "Codex",
+    "case": "attempt-3/pair-r3",
+    "retried": 0,
+    "told_user": 2,
+    "other_tool": 0,
+    "false_success": 0,
+    "other": 0
+  }
+]

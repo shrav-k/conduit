@@ -1,0 +1,68 @@
+{
+  "id": "packages-relative-program-directory",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SUB-008",
+    "SUB-010"
+  ],
+  "title": "relative-program-directory; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:bf703b84f4905c2a241f8491a0eb80cafe6ce9e9b2da440232df19221feefadc",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot",
+          "expanded_manifest": {
+            "implementations": {
+              "local": {
+                "command": [
+                  "/projects/one/bin/server"
+                ]
+              }
+            }
+          },
+          "contexts": {
+            "project": {
+              "relative_programs": [
+                "local"
+              ]
+            },
+            "core": {
+              "version": "0.1.0"
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SUB-008",
+          "SUB-010"
+        ],
+        "absent": [
+          "/reply/contexts/core/digest"
+        ]
+      }
+    }
+  ]
+}

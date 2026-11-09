@@ -1,0 +1,49 @@
+{
+  "id": "packages-missing",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "PKG-006"
+  ],
+  "title": "missing; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "PKG-006"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "PKG-006"
+        ],
+        "absent": [
+          "/reply/environment",
+          "/reply/digest",
+          "/reply/contexts"
+        ]
+      }
+    }
+  ]
+}

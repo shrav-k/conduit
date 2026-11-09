@@ -153,3 +153,38 @@ failure. Conflicting unconditional defaults are rejected at admission under SCH-
 defaults are accepted. The added vectors cover original control-reference targets, references
 to explicit properties also matched by patterns, and defaults in existing map members reached
 through patterns or additional properties.
+
+## Package and project contexts
+
+I2-03's first part adds `resolve-project`, naming a fixture file. It runs the strict loader
+then the core's context resolution, without registration, instantiation, installation, setup
+or execution. Each fixture has `snapshots` and `project`; a project recipe maps original file
+names to aliases in the case's `files`, and can supply an absolute `file:` directory URL.
+Each snapshot states `source: preinstalled-snapshot`, address, version, digest and a project
+recipe. An optional `archive` alias supplies retained digest evidence: the runner hashes those
+bytes but neither unpacks nor installs them. This is not evidence for PKG-022 or PKG-026.
+Optional `artifacts` entries name a file alias, snapshot address and implementation item; the
+runner checks its bytes against that item's Package `fileSha256`.
+
+The core owns its catalog's snapshots and exposes no mutation interface. It checks the pins
+of every manifest, preserving each package's own dependency context, export visibility,
+local selections, qualified template selections and Schema references. Duplicate names,
+missing exports, mismatched releases and digests, and attempts to claim or list the core
+address are rejected. Satisfied unused pins produce NAM-008 notes. The built-in documents and
+manifest come separately from `spec/`, including its Schema contracts. Snapshot validation
+checks the supplied installed facts; it does not represent an installation transition.
+
+A successful reply contains the derived schema `environment`, resolved `references`, and
+`contexts` retaining package identities and implementation items. The core context has no
+digest. Relative programs are expanded in those items and listed under `relative_programs`,
+retaining PRV-007's provenance. The project `digest` hashes only contract documents and the
+original manifest under SUB-008, before expansion. Reordered contracts, added templates and
+changed source directories leave that digest unchanged; changed contracts or manifest values
+do change it. A rejection exposes no partial environment, contexts or digest. Every case
+asserts no intents, no records and unchanged objects.
+
+The [S1 fixtures](fixtures/s1/README.md) retain the three packages and project. The other
+package cases use small ordinary documents and deterministic archive evidence. These cases
+also cover implementation bindings (MAN-010, MAN-017), plain tool mappings and type-family
+checks. They do not claim full registration or instance argument/configuration validation;
+local submitted `from` and object references remain the later registration order's work.

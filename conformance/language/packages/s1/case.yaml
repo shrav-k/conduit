@@ -1,0 +1,73 @@
+{
+  "id": "packages-s1",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "PKG-006",
+    "PKG-003",
+    "PKG-021",
+    "NAM-014",
+    "NAM-020",
+    "SUB-008"
+  ],
+  "title": "S1 package and project contexts resolve from snapshots; no installation or registration",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "fixture.json",
+    "filesystem-m": "../../../fixtures/s1/packages/filesystem/conduit.yaml",
+    "filesystem-d": "../../../fixtures/s1/packages/filesystem/contracts.yaml",
+    "filesystem-a": "../../../fixtures/s1/archives/filesystem.tar.gz",
+    "history-m": "../../../fixtures/s1/packages/history/conduit.yaml",
+    "history-d": "../../../fixtures/s1/packages/history/contracts.yaml",
+    "history-a": "../../../fixtures/s1/archives/history.tar.gz",
+    "agents-m": "../../../fixtures/s1/packages/agents/conduit.yaml",
+    "agents-d": "../../../fixtures/s1/packages/agents/contracts.yaml",
+    "agents-a": "../../../fixtures/s1/archives/agents.tar.gz",
+    "conduit.yaml": "../../../fixtures/s1/project/conduit.yaml",
+    "templates.yaml": "../../../fixtures/s1/project/templates.yaml",
+    "instances.yaml": "../../../fixtures/s1/project/instances.yaml",
+    "npm-artifact": "../../../fixtures/s1/artifacts/server-filesystem-2.1.0.tgz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "contexts": {
+            "core": {
+              "version": "0.1.0"
+            },
+            "snapshot-0": {
+              "address": "example.org/s1/filesystem",
+              "version": "0.1.0",
+              "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+            }
+          }
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-006",
+          "PKG-003",
+          "PKG-021",
+          "NAM-014",
+          "NAM-020",
+          "SUB-008"
+        ],
+        "absent": [
+          "/reply/contexts/core/digest"
+        ]
+      }
+    }
+  ]
+}

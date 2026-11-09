@@ -1,0 +1,13 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/test/project",
+  "implementations": {
+    "local": {
+      "implements": [],
+      "command": [
+        "var/../bin/ls",
+        "--help"
+      ]
+    }
+  }
+}

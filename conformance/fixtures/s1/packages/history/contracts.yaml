@@ -1,0 +1,27 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: file-history.v1
+  description: 'A70 history: one new file per message, named <UTC time>-<agent>-<unique suffix>.md;
+    read files in name order. Clients must not replace existing posts. The plain server does not
+    enforce this convention, uniqueness, author identity or chronological accuracy.'
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      root:
+        type: string
+        minLength: 1
+    required:
+    - root
+    additionalProperties: false
+  offers:
+  - example.org/s1/filesystem#directory.v1
+  implementation:
+    example.org/s1/filesystem#file.read.v1: example.org/s1/filesystem#filesystem-server
+    example.org/s1/filesystem#directory.list.v1: example.org/s1/filesystem#filesystem-server
+    example.org/s1/filesystem#file.write.v1: example.org/s1/filesystem#filesystem-server
+  records:
+    inputs: true
+    outputs: false

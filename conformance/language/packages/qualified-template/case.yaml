@@ -1,0 +1,46 @@
+{
+  "id": "packages-qualified-template",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-018",
+    "NAM-028"
+  ],
+  "title": "qualified-template; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:081438e73e3ff39c33dae3ae0f9ba8ff4be11dc0c9c891b37cc800f788c55c18",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "NAM-018",
+          "NAM-028"
+        ]
+      }
+    }
+  ]
+}

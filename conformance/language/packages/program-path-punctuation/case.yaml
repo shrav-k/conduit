@@ -1,0 +1,68 @@
+{
+  "id": "packages-program-path-punctuation",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "SUB-008",
+    "SUB-010"
+  ],
+  "title": "program-path-punctuation; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:4ea9bde27187d8d2d3ac11aca97433415245b0dcc2f64e58ff9802223bb6d166",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot",
+          "expanded_manifest": {
+            "implementations": {
+              "local": {
+                "command": [
+                  "/projects/one/bin/a#b?c"
+                ]
+              }
+            }
+          },
+          "contexts": {
+            "project": {
+              "relative_programs": [
+                "local"
+              ]
+            },
+            "core": {
+              "version": "0.1.0"
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "SUB-008",
+          "SUB-010"
+        ],
+        "absent": [
+          "/reply/contexts/core/digest"
+        ]
+      }
+    }
+  ]
+}

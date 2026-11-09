@@ -38,6 +38,7 @@ fn environment(repository: &Path, fixture: &Value, spec: &Specification) -> Resu
             version: None,
             manifest: BTreeMap::new(),
             contracts,
+            exports: None,
         },
     );
     for scope in env.scopes.values() {

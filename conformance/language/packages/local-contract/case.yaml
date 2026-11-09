@@ -1,0 +1,43 @@
+{
+  "id": "packages-local-contract",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-022",
+    "SUB-008"
+  ],
+  "title": "local-contract; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:b08fd45ba0ea955d103a16b128a5ede855e8e280756798e53128f1afd780a306",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "NAM-022",
+          "SUB-008"
+        ]
+      }
+    }
+  ]
+}

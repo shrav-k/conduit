@@ -1,0 +1,12 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "directory"
+    },
+    "spec": {
+      "type": "example.org/test/p#type.v1"
+    }
+  }
+]

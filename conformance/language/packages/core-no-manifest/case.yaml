@@ -1,0 +1,40 @@
+{
+  "id": "packages-core-no-manifest",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-020"
+  ],
+  "title": "core-no-manifest; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "project-documents": "project/documents.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:c8be7a45d50e38076dfad14318f05aefbe4c5a7106ca2ee49c0a016a8515f96c",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "NAM-020"
+        ]
+      }
+    }
+  ]
+}

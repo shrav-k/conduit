@@ -1,0 +1,47 @@
+{
+  "id": "packages-qualified-implementation-override",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-017",
+    "NAM-022",
+    "TPL-004"
+  ],
+  "title": "A qualified template override replaces the same package operation selected by a local Type key",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-017",
+          "NAM-022",
+          "TPL-004"
+        ]
+      }
+    }
+  ]
+}

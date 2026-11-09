@@ -1,0 +1,54 @@
+{
+  "id": "packages-exact",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "PKG-006",
+    "PKG-003",
+    "PKG-021",
+    "NAM-014",
+    "SCH-015",
+    "SUB-008"
+  ],
+  "title": "exact; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:02713b32541165dda5d907a1a4c18c086a2d4c11ee43fa9dd611dd7f2ac7eef7",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "PKG-006",
+          "PKG-003",
+          "PKG-021",
+          "NAM-014",
+          "SCH-015",
+          "SUB-008"
+        ]
+      }
+    }
+  ]
+}

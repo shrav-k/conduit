@@ -196,3 +196,30 @@ The old patterns and their rewrites are compared with `regress`'s PikeVM backend
 schema of the specification uses it, and the core matches it itself when it validates the
 schemas that authors write, from increment 2, as the
 [log of increment 1](../docs/proposals/first-build/log-increment-1.md) records.
+
+## Snapshot catalogs and project contexts (I2-03, first part)
+
+[The package module](crates/core/src/packages.rs) owns an immutable catalog of explicit
+preinstalled snapshots plus a separately supplied built-in package. Its `resolve-project`
+input derives schema scopes and resolves selections through each manifest's exact pins,
+without I/O. SemVer comparison ignores build metadata; digests must match exactly. The core
+address cannot be supplied as a snapshot, claimed by a submitted project, or listed as a pin.
+External references require exports; local selections can reach private documents/items.
+Missing or mismatched pins return invalid diagnostics without any fetch or installation.
+The reply retains package identities and implementation items, including the provenance of
+programs supplied as relative paths. No first-start object or its provenance is changed.
+
+`project_digest` uses SHA-256 of RFC 8785 JSON, sorting only the contract documents by kind
+and name in UTF-8 order, with the original submitted manifest. Runtime path expansion and
+fixture metadata never enter it. The canonicalizer is pinned, and an independent digest test
+covers number serialization and UTF-16 map-member ordering. Resolving also checks manifest
+bindings, selected required scalar configuration places and plain tool coverage.
+
+[The runner boundary](crates/conformance/src/packages.rs) strictly loads ordinary files,
+adds the actual built-in package, and supplies directory URLs as evidence. Retained archive
+and Package artifact bytes are hashed only as fixture evidence. The
+[S1 vector](../conformance/language/packages/s1/case.yaml) resolves the filesystem, history,
+and Agent packages and S1's project, with real computed pins and no state changes or intents.
+Other vectors exercise accepted and rejected names, pins, exports, path expansion and digest
+invariance. This is context resolution; general registration, instance arguments, object
+references, installation and execution remain later work.

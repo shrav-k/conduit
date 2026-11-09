@@ -1,0 +1,19 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "data-kept"
+    },
+    "spec": {
+      "type": "example.org/test/p#type.v1",
+      "config": {
+        "type": "unresolved",
+        "operations": [
+          "example.org/absent#op.v1"
+        ],
+        "$ref": "example.org/absent#schema.v1"
+      }
+    }
+  }
+]

@@ -1,0 +1,10 @@
+# Preinstalled snapshot; dependency pin hashes the retained filesystem archive.
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/s1/history
+version: 0.1.0
+packages:
+  example.org/s1/filesystem:
+    version: 0.1.0
+    digest: sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
+exports:
+- file-history.v1

@@ -1,0 +1,54 @@
+{
+  "id": "packages-duplicate-exports",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "PKG-012",
+    "SUB-005"
+  ],
+  "title": "Duplicate export names fail at the strict loader before context resolution",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "conduit.json": "../exact/snapshot-0/conduit.json",
+    "conduit.yaml": "duplicate-conduit.json",
+    "documents.json": "../exact/snapshot-0/documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "conduit.json",
+          "documents.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 4,
+        "manifest": true
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "conduit.yaml",
+          "documents.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    }
+  ]
+}

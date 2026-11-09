@@ -2,6 +2,7 @@
 //! The caller supplies the built-in templates, names, time, machine evidence and unique IDs.
 //! Unsupported cases and broken embedding inputs are errors, never Conduit reasons.
 
+pub mod packages;
 pub mod schemas;
 
 use serde::{Deserialize, Serialize};
@@ -61,6 +62,11 @@ pub struct Request {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
+    ResolveProject {
+        snapshots: Vec<packages::Snapshot>,
+        builtin: packages::Project,
+        project: packages::Project,
+    },
     ToolDefinition {
         consumer: String,
         conduit: String,
@@ -183,6 +189,16 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
     };
     match input {
+        Input::ResolveProject {
+            snapshots,
+            builtin,
+            project,
+        } => {
+            let resolution = packages::Catalog::new(builtin, snapshots, &context.core_package)?
+                .resolve(&project)?;
+            transition.reply = resolution.reply;
+            transition.decisions = resolution.decisions;
+        }
         Input::ToolDefinition {
             consumer,
             conduit,

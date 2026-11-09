@@ -1,0 +1,44 @@
+{
+  "id": "packages-binding-required-scalar",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-017"
+  ],
+  "title": "binding-required-scalar; preinstalled snapshots, no installation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "m0": "snapshot-0/conduit.json",
+    "d0": "snapshot-0/documents.json",
+    "a0": "snapshot-0/evidence.tar.gz",
+    "project-documents": "project/documents.json",
+    "project-manifest": "project/conduit.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "digest": "sha256:dc6b294bcfbcb0be90b67914190a435f287474a90e441a024a1d2fde1e28505a",
+          "diagnostics": [],
+          "source": "preinstalled-snapshot"
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-017"
+        ]
+      }
+    }
+  ]
+}

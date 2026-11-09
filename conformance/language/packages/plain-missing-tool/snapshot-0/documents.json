@@ -1,0 +1,75 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Schema",
+    "metadata": {
+      "name": "public.v1"
+    },
+    "spec": {
+      "type": "string"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Schema",
+    "metadata": {
+      "name": "private.v1"
+    },
+    "spec": {
+      "type": "integer"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "op.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "$ref": "#private.v1"
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "type.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "root": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "root"
+        ]
+      },
+      "implementation": {
+        "#op.v1": "#server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "other.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object"
+      }
+    }
+  }
+]

@@ -14,6 +14,9 @@ pub struct Scope {
     /// Address -> exact supplied scope, including the selected release (NAM-014).
     pub manifest: BTreeMap<String, String>,
     pub contracts: BTreeMap<String, Value>,
+    /// Present on catalog-derived package scopes; old standalone schema fixtures omit it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exports: Option<Vec<String>>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -53,7 +56,7 @@ fn unfragment(s: &str) -> Result<String> {
     String::from_utf8(out).map_err(|e| e.to_string())
 }
 /// Visit schema positions only, never annotation or instance data.
-fn walk<F>(schema: &mut Value, at: &str, visit: &mut F) -> Result<()>
+pub(crate) fn walk<F>(schema: &mut Value, at: &str, visit: &mut F) -> Result<()>
 where
     F: FnMut(&mut Map<String, Value>, &str) -> Result<()> + ?Sized,
 {
@@ -98,6 +101,24 @@ where
     Ok(())
 }
 impl Environment {
+    pub(crate) fn schema_reference(
+        &self,
+        scope: &str,
+        root: &Value,
+        reference: &str,
+        core: &str,
+    ) -> Result<(String, Value)> {
+        if reference == "#" || reference.starts_with("#/") {
+            return Ok((
+                scope.into(),
+                root.pointer(&unfragment(&reference[1..])?)
+                    .ok_or("missing local schema pointer")?
+                    .clone(),
+            ));
+        }
+        let c = self.resolve(scope, reference, core)?;
+        Ok((c.0.clone(), self.schema(&c)?.clone()))
+    }
     fn scope(&self, scope: &str) -> Result<&Scope> {
         self.scopes
             .get(scope)
@@ -123,6 +144,14 @@ impl Environment {
                 .ok_or_else(|| format!("NAM-014: no pin for {address} in {scope}"))?
         };
         let held = self.scope(&target)?;
+        if target != scope
+            && held
+                .exports
+                .as_ref()
+                .is_some_and(|e| !e.iter().any(|e| e == name))
+        {
+            return Err(format!("PKG-018: {reference} is not exported"));
+        }
         if !address.is_empty() && held.address != address {
             return Err("NAM-014: pin address differs".into());
         }
@@ -670,7 +699,7 @@ impl Environment {
 }
 
 /// Schema roots held by actual authored documents; paths also locate admission diagnostics.
-fn roots(document: &Value) -> Vec<(String, Value)> {
+pub(crate) fn roots(document: &Value) -> Vec<(String, Value)> {
     let mut roots = vec![];
     let kind = document["kind"].as_str().unwrap_or("");
     match kind {

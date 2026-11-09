@@ -1,0 +1,40 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/test/p",
+  "version": "1.0.0",
+  "exports": [
+    "public.v1",
+    "op.v1",
+    "type.v1"
+  ],
+  "implementations": {
+    "server": {
+      "implements": [
+        "#op.v1"
+      ],
+      "package": {
+        "registryType": "npm",
+        "identifier": "@modelcontextprotocol/server-filesystem",
+        "version": "2.1.0",
+        "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+        "transport": {
+          "type": "stdio"
+        },
+        "packageArguments": [
+          {
+            "type": "positional",
+            "valueHint": "root",
+            "isRequired": false
+          }
+        ]
+      },
+      "packageArguments": {
+        "root": "/root"
+      },
+      "plain": true,
+      "tools": {
+        "#op.v1": "read_text_file"
+      }
+    }
+  }
+}

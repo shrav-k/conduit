@@ -1,4 +1,5 @@
 //! File input, case validation and assertions. This crate owns all I/O for the pure core.
+mod packages;
 mod schemas;
 use conduit_core::{Context, Input, State};
 use conduit_loader::{
@@ -326,6 +327,18 @@ fn run_case(
             };
             let mut next = state.clone();
             let actual = match kind {
+                "resolve-project" => {
+                    let t = packages::run(
+                        base,
+                        input["file"].as_str().ok_or("missing context fixture")?,
+                        &case.files,
+                        &state,
+                        spec,
+                        context,
+                    )?;
+                    next = t.state.clone();
+                    serde_json::to_value(t).map_err(|e| e.to_string())?
+                }
                 "read" => {
                     let alias = input["file"].as_str().ok_or("missing file")?;
                     let (_, bytes) = file_bytes(alias)?;

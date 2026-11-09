@@ -1,0 +1,52 @@
+{
+  "id": "packages-binding-nullable-parent",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-017"
+  ],
+  "title": "A required nullable parent does not guarantee a value at its child binding",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "project-manifest": "project/conduit.json",
+    "project-documents": "project/documents.json",
+    "fixture": "fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-017",
+              "message": {
+                "text": "template \"directory\" selects #server: LEAF -> /parent/leaf is not a required scalar place, or required input admits null"
+              }
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-017"
+        ],
+        "absent": [
+          "/reply/environment",
+          "/reply/digest",
+          "/reply/contexts"
+        ]
+      }
+    }
+  ]
+}

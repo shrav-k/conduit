@@ -422,6 +422,23 @@
                   "kind",
                   "file"
                 ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "resolve-project"
+                  },
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file"
+                ]
               }
             ]
           },
@@ -675,6 +692,32 @@
                 "expect": {
                   "required": [
                     "document_count"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "input": {
+                  "properties": {
+                    "kind": {
+                      "const": "resolve-project"
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expect": {
+                  "required": [
+                    "reply",
+                    "records",
+                    "external_intents",
+                    "required_promises",
+                    "stateUnchanged"
                   ]
                 }
               }

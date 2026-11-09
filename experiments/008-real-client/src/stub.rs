@@ -101,9 +101,10 @@ pub struct Identity {
     token: String,
     public_key: Vec<u8>,
     audience: String,
+    subject: String,
 }
 impl Identity {
-    fn mint(port: u16) -> Result<Self> {
+    fn mint(audience: String, subject: &str) -> Result<Self> {
         let rng = SystemRandom::new();
         let pkcs8 = signature::EcdsaKeyPair::generate_pkcs8(
             &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
@@ -116,12 +117,13 @@ impl Identity {
             &rng,
         )
         .map_err(|_| anyhow!("load signing key"))?;
-        let audience = format!("https://localhost:{port}/");
         let exp = now() + 24 * 3600;
         let header = B64.encode(serde_json::to_vec(
             &json!({"alg":"ES256","typ":"JWT","kid":"lab"}),
         )?);
-        let claims = B64.encode(serde_json::to_vec(&json!({"sub":"spiffe://experiment.test/conduit/instance/consumer-1","aud":[audience],"exp":exp}))?);
+        let claims = B64.encode(serde_json::to_vec(
+            &json!({"sub":subject,"aud":[audience],"exp":exp}),
+        )?);
         let input = format!("{header}.{claims}");
         let sig = key
             .sign(&rng, input.as_bytes())
@@ -130,6 +132,7 @@ impl Identity {
             token: format!("{input}.{}", B64.encode(sig.as_ref())),
             public_key: key.public_key().as_ref().to_vec(),
             audience,
+            subject: subject.into(),
         })
     }
     fn valid(&self, token: &str) -> bool {
@@ -157,7 +160,7 @@ impl Identity {
             return false;
         };
         header["alg"] == "ES256"
-            && claims["sub"] == "spiffe://experiment.test/conduit/instance/consumer-1"
+            && claims["sub"] == self.subject
             && claims["aud"] == json!([self.audience])
             && claims["exp"].as_u64().is_some_and(|exp| exp > now())
     }
@@ -206,7 +209,8 @@ struct Shared {
     invocation: AtomicU64,
     peers: Mutex<Vec<Peer<RoleServer>>>,
     changes: broadcast::Sender<()>,
-    identity: Identity,
+    identities: Vec<Identity>,
+    swap_access: bool,
     origin: String,
     first_401: AtomicBool,
     log: Log,
@@ -217,13 +221,34 @@ impl Stub {
     fn presented(&self) -> Vec<&'static str> {
         let advanced = self.0.advanced.load(Ordering::SeqCst);
         let mut names = vec!["control.next.v1"];
-        if !(matches!(self.0.case, Case::C1) && advanced) {
+        if !((matches!(self.0.case, Case::C1) || self.0.swap_access) && advanced) {
             names.extend(["files.read.v1", "files.write.v1"]);
         }
         if matches!(self.0.case, Case::C5) && advanced {
             names.push("notes.read.v1");
         }
         names
+    }
+    async fn advance(&self) {
+        let changed = !self.0.advanced.swap(true, Ordering::SeqCst)
+            && (matches!(self.0.case, Case::C1 | Case::C5) || self.0.swap_access);
+        if changed {
+            let peers = self.0.peers.lock().unwrap().clone();
+            self.0.log.event(json!({"kind":"list_changed","tools":self.presented(),"streams_open":self.0.streams.load(Ordering::SeqCst)}));
+            for peer in peers {
+                let sent = peer.notify_tool_list_changed().await.is_ok();
+                self.0.log.event(json!({"kind":"notification_delivery","transport":"legacy","sent":sent,"streams_open":self.0.streams.load(Ordering::SeqCst)}));
+            }
+            let _ = self.0.changes.send(());
+        }
+    }
+    fn redact(&self, text: &str) -> String {
+        self.0
+            .identities
+            .iter()
+            .fold(text.to_owned(), |text, identity| {
+                text.replace(&identity.token, "[REDACTED]")
+            })
     }
     fn result(
         &self,
@@ -370,17 +395,7 @@ impl ServerHandler for Stub {
                 .into());
         }
         if name == "control.next.v1" {
-            let changed = !self.0.advanced.swap(true, Ordering::SeqCst)
-                && matches!(self.0.case, Case::C1 | Case::C5);
-            if changed {
-                let peers = self.0.peers.lock().unwrap().clone();
-                self.0.log.event(json!({"kind":"list_changed","tools":self.presented(),"streams_open":self.0.streams.load(Ordering::SeqCst)}));
-                for peer in peers {
-                    let sent = peer.notify_tool_list_changed().await.is_ok();
-                    self.0.log.event(json!({"kind":"notification_delivery","transport":"legacy","sent":sent,"streams_open":self.0.streams.load(Ordering::SeqCst)}));
-                }
-                let _ = self.0.changes.send(());
-            }
+            self.advance().await;
             return Ok(self
                 .result(Some("succeeded"), None, json!({"state":1}))
                 .into());
@@ -415,9 +430,11 @@ async fn audit(State(stub): State<Stub>, request: Request, next: Next) -> Respon
         .get("authorization")
         .and_then(|s| s.to_str().ok())
         .and_then(|s| s.strip_prefix("Bearer "));
-    let valid = token.is_some_and(|t| stub.0.identity.valid(t));
-    let request_text =
-        String::from_utf8_lossy(&bytes).replace(&stub.0.identity.token, "[REDACTED]");
+    let instance = token
+        .and_then(|t| stub.0.identities.iter().find(|identity| identity.valid(t)))
+        .map(|identity| identity.subject.clone());
+    let valid = instance.is_some();
+    let request_text = stub.redact(&String::from_utf8_lossy(&bytes));
     let headers: std::collections::BTreeMap<_, _> = [
         "mcp-session-id",
         "mcp-protocol-version",
@@ -434,17 +451,12 @@ async fn audit(State(stub): State<Stub>, request: Request, next: Next) -> Respon
             .headers
             .get_all(name)
             .iter()
-            .map(|value| {
-                value
-                    .to_str()
-                    .unwrap_or("[non-UTF8]")
-                    .replace(&stub.0.identity.token, "[REDACTED]")
-            })
+            .map(|value| stub.redact(value.to_str().unwrap_or("[non-UTF8]")))
             .collect();
         (!values.is_empty()).then_some((name, values))
     })
     .collect();
-    stub.0.log.event(json!({"kind":"request","id":id,"http_method":parts.method.as_str(),"body":request_text,"session":parts.headers.get("mcp-session-id").and_then(|s|s.to_str().ok()),"revision":parts.headers.get("mcp-protocol-version").and_then(|s|s.to_str().ok()),"headers":headers,"token_valid":valid}));
+    stub.0.log.event(json!({"kind":"request","id":id,"http_method":parts.method.as_str(),"body":request_text,"session":parts.headers.get("mcp-session-id").and_then(|s|s.to_str().ok()),"revision":parts.headers.get("mcp-protocol-version").and_then(|s|s.to_str().ok()),"headers":headers,"token_valid":valid,"instance":instance}));
     let forced = stub.0.first_401.swap(false, Ordering::SeqCst);
     let origin_invalid = parts
         .headers
@@ -503,7 +515,7 @@ async fn audit(State(stub): State<Stub>, request: Request, next: Next) -> Respon
                 }
             });
             if let Ok(ref chunk) = chunk {
-                guard.stub.0.log.event(json!({"kind":"wire","id":guard.id,"data":String::from_utf8_lossy(chunk).replace(&guard.stub.0.identity.token,"[REDACTED]")}));
+                guard.stub.0.log.event(json!({"kind":"wire","id":guard.id,"data":guard.stub.redact(&String::from_utf8_lossy(chunk))}));
             }
             Some((chunk, (stream, guard)))
         },
@@ -578,6 +590,13 @@ pub struct RunningStub {
     pub cancel: CancellationToken,
     pub task: JoinHandle<std::io::Result<()>>,
     pub log: Log,
+    stub: Stub,
+}
+impl RunningStub {
+    /// Runner-controlled change, after all first turns and before any second turn.
+    pub async fn change_access(&self) {
+        self.stub.advance().await;
+    }
 }
 pub async fn start(
     case: Case,
@@ -586,14 +605,65 @@ pub async fn start(
     output: &Path,
     port: u16,
 ) -> Result<RunningStub> {
+    start_with_agents(
+        case,
+        ttl,
+        first_401,
+        output,
+        port,
+        &[(
+            "spiffe://experiment.test/conduit/instance/consumer-1",
+            &output.join("identity"),
+        )],
+        false,
+    )
+    .await
+}
+
+/// Experiment 009: distinct JWT-SVID subjects at one server and one boundary change
+/// that closes files and opens notes. Existing experiment 008 cases are unchanged.
+pub async fn start_agents(output: &Path, agents: &[(&str, &Path)]) -> Result<RunningStub> {
+    start_with_agents(Case::C5, 0, false, output, 0, agents, true).await
+}
+
+async fn start_with_agents(
+    case: Case,
+    ttl: u64,
+    first_401: bool,
+    output: &Path,
+    port: u16,
+    agents: &[(&str, &Path)],
+    swap_access: bool,
+) -> Result<RunningStub> {
+    anyhow::ensure!(!agents.is_empty(), "at least one identity");
+    let mut subjects = std::collections::BTreeSet::new();
+    anyhow::ensure!(
+        agents.iter().all(|(subject, _)| subjects.insert(*subject)),
+        "duplicate identity subject"
+    );
     let listener = TcpListener::bind(("127.0.0.1", port)).await?;
     let port = listener.local_addr()?.port();
     let url = format!("http://127.0.0.1:{port}/");
     let names = Names::default();
-    let identity = Identity::mint(port)?;
-    identity.write(&output.join("identity"), &url, &names)?;
+    let mut identities = Vec::new();
+    for (subject, dir) in agents {
+        let audience = if swap_access {
+            url.clone()
+        } else {
+            format!("https://localhost:{port}/")
+        };
+        let identity = Identity::mint(audience, subject)?;
+        identity.write(dir, &url, &names)?;
+        if swap_access {
+            use std::os::unix::fs::PermissionsExt;
+            fs::set_permissions(dir, fs::Permissions::from_mode(0o700))?;
+            // PRV-022: loopback needs no configured certificate; the trust bundle is empty.
+            fs::write(dir.join(names.get("x509BundleFile")), "")?;
+        }
+        identities.push(identity);
+    }
     let log = Log::new(&output.join("stub.jsonl"))?;
-    log.event(json!({"kind":"start","case":case.name(),"ttl_ms":ttl,"first_401":first_401,"url":url,"canonical_audience":identity.audience}));
+    log.event(json!({"kind":"start","case":case.name(),"ttl_ms":ttl,"first_401":first_401,"url":url,"canonical_audience":identities[0].audience,"instances":subjects}));
     let stub = Stub(Arc::new(Shared {
         names,
         case,
@@ -602,7 +672,8 @@ pub async fn start(
         invocation: AtomicU64::new(1),
         peers: Mutex::new(Vec::new()),
         changes: broadcast::channel(16).0,
-        identity,
+        identities,
+        swap_access,
         origin: url.trim_end_matches('/').to_string(),
         first_401: AtomicBool::new(first_401),
         log: log.clone(),
@@ -622,7 +693,7 @@ pub async fn start(
     );
     let router = Router::new()
         .fallback_service(service)
-        .layer(middleware::from_fn_with_state(stub, audit));
+        .layer(middleware::from_fn_with_state(stub.clone(), audit));
     let shutdown = cancel.clone();
     let task = tokio::spawn(async move {
         axum::serve(listener, router)
@@ -634,6 +705,7 @@ pub async fn start(
         cancel,
         task,
         log,
+        stub,
     })
 }
 

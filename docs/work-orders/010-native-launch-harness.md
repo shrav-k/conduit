@@ -58,3 +58,18 @@ In `experiments/009-native-launch/`: `cargo test --release`, `cargo clippy --all
 warnings` and `cargo fmt --check` pass, and the dry run prints every run. From the repository
 root, `python3 tools/check_docs.py`, `python3 tools/check_roadmap.py` and `git diff --check`
 pass. Your report gives the command the admin runs and what it needs.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 13 minutes, then a second round. Two wrappers in Rust, one per client, and a
+  runner of nine scenarios, reusing experiment 008's stub.
+- **Verifier**: 4 minutes. Two `should`: a test of attribution that would pass with the
+  credentials swapped, and a test of redaction that never reached the redaction.
+- **Admin**: ran the harness against the real clients. Codex failed twice, because it runs its
+  header helper without the run's environment and rejects `env_vars` for an HTTP server; the
+  admin had the Codex wrapper write the identity directory into the helper's command line, and
+  the third attempt completed all nine scenarios. It sent the worker back once to test that
+  change and fix the two tests. The worker's sandbox, run without network access, refused the
+  tests that bind a loopback port, so the admin ran them: all pass.

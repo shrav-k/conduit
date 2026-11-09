@@ -5,7 +5,7 @@ where a row names a promise, that promise states the rule and the row only says 
 means. The first table gives the core terms in one line each; the section it links holds the
 full row of each. How this file came to stand as it does, pass by pass, is under
 [How this file changed](#how-this-file-changed) at the end. The latest pass is that of
-[ruling 44](../docs/proposals/ruling-44/README.md), which settled round 6 of the re-audit.
+[ruling 45](../docs/proposals/ruling-45/README.md), which added six core terms.
 
 ## Core terms
 
@@ -516,3 +516,8 @@ operation (D14), hook (the open point on a type's default for a hook), repeat, a
 then changed the rows plain (C-01), filter and repeat (C-07, R-06, R-13), tool (R-07), bundle
 (R-08), hook (C-05, R-10) and `management` (R-11), and the text under "How a request ends"
 (R-13).
+
+[Ruling 45](../docs/proposals/ruling-45/README.md), of 2026-11-09, added six rows to the core
+terms, for terms that a collaborator's list of components named and the table lacked: project,
+root Interface, gate, node, manifest and core package. Each restates its full row and changes no
+meaning.

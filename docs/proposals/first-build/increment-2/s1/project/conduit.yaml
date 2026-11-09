@@ -1,0 +1,13 @@
+# Draft only. All three digests are illustrative placeholders.
+# Install the three packages explicitly before registration; this manifest installs nothing.
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/s1/filesystem:
+    version: 0.1.0
+    digest: sha256:1111111111111111111111111111111111111111111111111111111111111111
+  example.org/s1/history:
+    version: 0.1.0
+    digest: sha256:2222222222222222222222222222222222222222222222222222222222222222
+  example.org/s1/agents:
+    version: 0.1.0
+    digest: sha256:3333333333333333333333333333333333333333333333333333333333333333

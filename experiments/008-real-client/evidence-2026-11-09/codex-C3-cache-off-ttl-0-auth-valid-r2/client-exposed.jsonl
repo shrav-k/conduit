@@ -1,0 +1,1 @@
+{"source_line":2,"item":{"arguments":{"path":"fail.txt"},"error":null,"id":"item_1","result":{"_meta":{"io.github.shrav-k.conduit/invocation":"inv-1","io.github.shrav-k.conduit/outcome":"failed"},"content":[{"text":"failed","type":"text"}],"structured_content":null},"server":"stub","status":"failed","tool":"files.read.v1","type":"mcp_tool_call"},"type":"item.completed"}

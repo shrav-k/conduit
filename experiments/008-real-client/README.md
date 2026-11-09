@@ -1,6 +1,7 @@
 # 008 — What a real client shows its model
 
-Status: pre-registered on 2026-11-09, not yet run. This is action item A71 of the
+Status: done on 2026-11-09; [dated results](results-2026-11-09.md), with worker classifications
+for admin review. Pre-registered on 2026-11-09. This is action item A71 of the
 [roadmap](../../ROADMAP.md#experiments-and-probes), which ruling 45 accepted from X5 of pull
 request 10, from `allocmemory`, as E17 of round 6 run early. Ruling 48 added the cases that the
 review of A70 found, and has a Codex worker build the harness under
@@ -116,5 +117,9 @@ open.
 
 ## Results
 
-None yet. Results go in this directory with their date, and the
-[register](../../ROADMAP.md#experiments-and-probes) records the state.
+The [results of 2026-11-09](results-2026-11-09.md) account for all 68 matrix runs: 67
+completed and one initialization failure excluded from model classification. They separate wire,
+client-exposed evidence and model behavior, with [trimmed evidence](evidence-2026-11-09/README.md)
+for each run. The worker's classifications and candidate findings await admin review. The
+[experiment register](../README.md) and the
+[roadmap's A71 row](../../ROADMAP.md#experiments-and-probes) link the dated results.

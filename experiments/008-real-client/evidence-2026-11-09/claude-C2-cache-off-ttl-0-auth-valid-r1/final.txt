@@ -1,0 +1,3 @@
+The call failed. I tried `never.presented.v1` with `{}`, and the client returned `Error: No such tool available: never.presented.v1`.
+
+The tool isn't registered with this client. It wasn't in my tool list, and it hadn't been surfaced as a deferred tool. I didn't use any other tools or shell commands as a substitute.

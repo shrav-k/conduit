@@ -1,0 +1,7 @@
+Here's what happened, in order:
+
+1. **`files_read_v1` with `hello.txt`** succeeded and returned `{"text":"Hello from memory."}`.
+2. **`control_next_v1` with `{}`** succeeded and returned `{"state":1}`.
+3. **`files_read_v1` with `hello.txt`**, the second read, failed with the error `No tool of name files.read.v1 is presented to the instance`.
+
+The tool list changed after `control_next_v1` advanced the state, and `files_read_v1` was no longer available. I attempted the final call anyway, as you asked, and it was rejected. I didn't try any shell commands or other tools in its place.

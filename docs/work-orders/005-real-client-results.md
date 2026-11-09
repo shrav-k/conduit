@@ -63,3 +63,13 @@ Only the files named above. Do not change `spec/` or the harness's code.
 Every run is classified or listed as not run as planned; every claim in the results cites runs;
 no absolute path, user name or credential is in any file you write; and `python3
 tools/check_docs.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 11 minutes. Every run classified or listed as not run as planned; dated results
+  and trimmed evidence; four candidate findings for the admin.
+- **Verifier**: 3 minutes. No fault found.
+- **Admin**: checked the classification of C5 against the raw records of two runs, and
+  recorded that review in the results, which the worker had left as pending. No second round.

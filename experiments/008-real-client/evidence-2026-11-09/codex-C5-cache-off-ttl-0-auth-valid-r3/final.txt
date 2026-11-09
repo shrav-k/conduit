@@ -1,0 +1,3 @@
+Called `control.next.v1` with `{}`; it returned `{"state":1}`.
+
+Afterward, the available tool list still did not expose `notes.read.v1`, so I couldn’t call it for `hello.txt`. I did not substitute another tool.

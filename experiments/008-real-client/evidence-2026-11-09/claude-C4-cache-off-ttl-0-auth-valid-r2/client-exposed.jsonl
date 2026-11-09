@@ -1,0 +1,1 @@
+{"source_line":2,"type":"user","message":{"role":"user","content":[{"content":"unknown","is_error":true,"tool_use_id":"toolu_01NFps3xSZy1wJWC9UX5EWNn","type":"tool_result"}]},"tool_use_result":{"_meta":{"io.github.shrav-k.conduit/invocation":"inv-1","io.github.shrav-k.conduit/outcome":"unknown"},"content":"Error: unknown"}}

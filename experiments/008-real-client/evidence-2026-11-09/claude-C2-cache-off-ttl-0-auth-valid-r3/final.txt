@@ -1,0 +1,1 @@
+The call failed. I tried `never.presented.v1` with `{}`, and the client returned `Error: No such tool available: never.presented.v1`. The tool isn't registered in this session, so nothing ran. As you asked, I didn't use shell commands or any other tool in its place.

@@ -1,0 +1,2 @@
+{"source_line":3,"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll check whether the client allows a call to `never.presented.v1` with `{}` using the experiment stub’s MCP tools."}}
+{"source_line":4,"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Attempted `never.presented.v1` with `{}`. The client returned `TypeError: tools.never.presented.v1 is not a function`, so no MCP request reached the server."}}

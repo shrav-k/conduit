@@ -1,0 +1,5 @@
+I called `control.next.v1` with `{}`, and it returned `{"state":1}`. I couldn't complete the second step.
+
+After that call, no `notes.read.v1` tool appeared in my tool list. I have no tool-discovery function in this session, so I couldn't search for it. I didn't call `notes.read.v1` with `hello.txt`.
+
+I also didn't use `files_read_v1` or any shell command as a stand-in, because you said not to substitute other tools. If your client can surface the new tool, I can retry once it's available.

@@ -1,0 +1,1 @@
+Use only the experiment stub's MCP tools. Call files.read.v1 with path fail.txt. Report what happened. Do not substitute shell commands or other tools for the requested calls.

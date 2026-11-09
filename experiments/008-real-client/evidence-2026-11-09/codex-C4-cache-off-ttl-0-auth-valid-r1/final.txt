@@ -1,0 +1,1 @@
+Called `files.write.v1` with path `hello.txt` and text `replacement`. The stub returned an error: `unknown`. The write was not confirmed.

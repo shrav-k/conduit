@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["mcp__project", "mcp__history"]
+  }
+}

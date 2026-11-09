@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "<lab>/agent-a": {
+      "hasTrustDialogAccepted": true
+    }
+  }
+}

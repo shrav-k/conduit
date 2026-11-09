@@ -1,0 +1,7 @@
+# Codex run diag-b2-2 (agent B), trimmed from its --json output
+## stderr
+Reading additional input from stdin...
+## events
+MESSAGE I’ll check for that tool and call it once if available.
+
+MESSAGE No MCP server named `history` with a `list_allowed_directories` tool is available.

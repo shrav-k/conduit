@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "project": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@2.2.0", "<lab>/shared-2"]
+    },
+    "history": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@2.1.0", "<lab>/history"]
+    }
+  }
+}

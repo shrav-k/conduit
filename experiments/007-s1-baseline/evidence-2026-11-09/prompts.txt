@@ -1,0 +1,141 @@
+The prompt of each check run, as sent. <lab> is the lab directory. Runs whose file is not
+listed here sent their prompt inside the stream, where the evidence file shows it (the live
+sessions t4-a-live, t7-a-live and verify-t4-live).
+
+t1-a-1, t1-a-2 (A)
+  This is a permissions test in a throwaway lab. Use only the MCP tools of the server named
+  project; do not use any other tool. Do these steps in order and report each result exactly,
+  quoting any error text: (1) call list_allowed_directories; (2) read README.md in that
+  directory and quote its first line; (3) try to create the file t1-a.txt in that directory with
+  the content 'written by A'. Stop after step 3.
+
+t1-a-3 (A)
+  This is a permissions test in a throwaway lab, and you are expected to be refused. Try, with
+  any tool you have (MCP tools, Write, Edit, Bash or other), to create the file
+  <lab>/shared/t1-a-any.txt with the content 'written by A'. Make at most one attempt per tool,
+  then report each attempt and its exact result or error text.
+
+t1-b-1, t1-b-2, t1-b-3, t1-b-4 (B)
+  This is a permissions test in a throwaway lab. Use only the MCP tools of the server named
+  project; do not use the shell. Do these steps in order and report each result exactly, quoting
+  any error text: (1) call list_allowed_directories; (2) read README.md in that directory and
+  quote its first line; (3) create the file t1-b.txt in that directory with the content
+  'written by B'. Stop after step 3.
+
+t2-a-1 (A)
+  This is a test in a throwaway lab. (1) Post the message 'hello from A' to the shared message
+  history, as your instructions say. (2) Read the history and quote every message in it with
+  its file name. (3) Then, as a check that must fail, try to write the file
+  <lab>/shared/t2-a.txt with the content 'A via history' using the history server's write_file.
+  Report each step and quote any error text exactly.
+
+t2-b-1 (B)
+  This is a test in a throwaway lab. (1) Read the shared message history and quote every
+  message with its file name. (2) Post the reply 'hello from B' to the history, as your
+  instructions say. (3) Then, as a check that must fail, try to write the file
+  <lab>/shared/t2-b.txt with the content 'B via history' using the history server's write_file.
+  Report each step and quote any error text exactly. Do not use the shell except to get the
+  current UTC time.
+
+t2-a-2 (A)
+  This is a test in a throwaway lab. Read the shared message history and quote every message
+  with its file name. Do nothing else.
+
+t3-a-1 (A)
+  This is a reach test in a throwaway lab; some steps are expected to be refused. Make exactly
+  these attempts, one each, and report each result with any error text quoted exactly: (1) call
+  the history server's edit_file on <lab>/history/20261109T173010Z-B.md replacing 'hello from B'
+  with 'edited by A', with dryRun set to true so that nothing is written; (2) run the Bash
+  command: cat <lab>/shared/README.md ; (3) use the Read tool on <lab>/agent-b/AGENTS.md ; (4) use
+  the Read tool on <lab>/shared/notes.txt . Do not try any other tool or workaround.
+
+t3-b-1 (B)
+  This is a reach test in a throwaway lab; some steps are expected to fail. Make exactly these
+  attempts, one each, and report each result with any error text quoted exactly: (1) run the
+  shell command: cat <lab>/agent-a/.claude/settings.json ; (2) run the shell command: touch
+  <lab>/shared/t3-b-shell.txt ; (3) call the history server's edit_file on
+  <lab>/history/20261109T172940Z-A.md replacing 'hello from A' with 'edited by B', with dryRun set
+  to true so that nothing is written. Do not try anything else.
+
+t3-b-2 (B)
+  This is a sandbox test in a throwaway lab, expected to fail. Run exactly one shell command and
+  nothing else: touch <lab>/shared/t3-b-shell.txt ; then report its exit code and output exactly.
+
+t4-a-1 (A)
+  This is a permissions test in a throwaway lab. Using only the MCP tools of the server named
+  project: (1) read README.md in its directory and quote the first line; (2) create the file
+  t4-a.txt there with the content 'written by A after T4'. Report each step and quote any error
+  text exactly.
+
+t4-b-1 (B)
+  This is a permissions test in a throwaway lab; step 2 is expected to fail. Using only the MCP
+  tools of the server named project, do not use the shell: (1) read README.md in its directory
+  and quote the first line; (2) try to create the file t4-b.txt there with the content 'written
+  by B after T4'; if no tool of that server can write, say so and list the tools the server
+  offers. Report each step and quote any error text exactly.
+
+t5-b-1, t5-b-2 (B)
+  This is a permissions test in a throwaway lab; you are expected to be read-only. Using only
+  the MCP tools of the server named project, do not use the shell: (1) list every tool that
+  server offers; (2) read README.md in its directory and quote the first line; (3) try to create
+  the file t5-b.txt in that directory with the content 'written by B after T5', using any tool
+  of that server that can create or add to a file (make at most two attempts). Report each step
+  and quote any error text exactly.
+
+t5-a-1 (A)
+  This is a test in a throwaway lab. Using only the MCP tools of the server named project, and
+  MCP resource tools if you have them for that server: (1) list the tools of the project server;
+  (2) read README.md in its directory and quote the first line; (3) append the line 'A after T5'
+  to a new file t5-a.txt there; (4) if you can list MCP resources of the project server, list up
+  to 3. Report each step and quote any error text exactly.
+
+t6-a-1 (A)
+  This is a test in a throwaway lab. Using only the MCP tools of the server named project: (1)
+  call list_allowed_directories; (2) read README.md in that directory and quote the first line;
+  (3) create the file t6-a.txt there with the content 'A in the replacement'; (4) as a check that
+  must fail, try to read <lab>/shared/README.md (the old directory) with read_text_file. Report
+  each step and quote any error text exactly.
+
+t6-b-1 (B)
+  This is a permissions test in a throwaway lab; you are expected to be read-only. Using only
+  the MCP tools of the server named project, do not use the shell: (1) call
+  list_allowed_directories; (2) read README.md in that directory and quote the first line; (3)
+  try to create the file t6-b.txt there with any tool that can create a file; if none exists,
+  say so; (4) as a check that must fail, try to read <lab>/shared/README.md (the old directory)
+  with read_text_file. Report each step and quote any error text exactly.
+
+t7-a-1 (A, while revoked)
+  This is a revocation test in a throwaway lab; you are expected to be refused. Try once each,
+  and report each result with any error text quoted exactly: (1) read <lab>/shared-2/README.md
+  with any tool of the MCP server named project; (2) list or read MCP resources of the server
+  named project; (3) read <lab>/shared-2/README.md with the Read tool; (4) read
+  <lab>/shared-2/README.md with the history server's read_text_file. Do not try anything else.
+
+t7-b-1 (B, while A is revoked)
+  This is a test in a throwaway lab. Use only MCP tools, not the shell: (1) with the server
+  named project, read docs/notes.txt in its directory and quote it; (2) post the message 'B
+  still works during T7' to the shared message history, as your instructions say. Report each
+  step and quote any error text exactly.
+
+t7-a-2 (A, after restore)
+  This is a test in a throwaway lab. Using only the MCP tools of the server named project: (1)
+  read README.md in its directory and quote the first line; (2) create the file t7-a.txt there
+  with the content 'A restored'. Then (3) post 'A restored after T7' to the shared message
+  history as your instructions say. Report each step and quote any error text exactly.
+
+diag-b2-1 (B's diagnostic copy, after T7)
+  Diagnostic in a throwaway lab. Do not call any tool. List the names of the MCP servers and MCP
+  tools available to you in this session, in one line.
+
+diag-b2-2, diag-b2-U, diag-b2-I (B's diagnostic copy, after T7)
+  Diagnostic in a throwaway lab. Call the tool list_allowed_directories of the MCP server named
+  history, once, and quote its output. If no such server or tool exists, say so. Do nothing
+  else.
+
+final-b-projectfile (B, after T7, its project file loaded by Codex)
+  Confirmation test in a throwaway lab; step 2 is expected to fail. Use only MCP tools, not the
+  shell: (1) call list_allowed_directories on the server named project and on the server named
+  history, and quote both; (2) try to create the file final-b.txt in the project server's
+  directory with any tool of that server that can create a file; if none exists, say so and list
+  the project server's tools; (3) list the history directory. Report each step and quote any
+  error text exactly.

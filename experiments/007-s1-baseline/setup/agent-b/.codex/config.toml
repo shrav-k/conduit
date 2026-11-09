@@ -1,0 +1,11 @@
+sandbox_mode = "read-only"
+
+[mcp_servers.project]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem@2.2.0", "--read-only", "<lab>/shared-2"]
+default_tools_approval_mode = "approve"
+
+[mcp_servers.history]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem@2.1.0", "<lab>/history"]
+default_tools_approval_mode = "approve"

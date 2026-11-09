@@ -1,0 +1,33 @@
+# Claude Code run t2-a-1 (agent A), trimmed from its stream-json output
+## stderr
+Ignoring 2 permissions.allow entries from .claude/settings.json: this workspace has not been trusted. Run Claude Code interactively here once and accept the trust dialog, or set projects["<lab>/agent-a"].hasTrustDialogAccepted: true in <home>/.claude.json.
+## events
+INIT mcp_servers=project:connected,history:connected project_tools=directory_tree,get_file_info,list_allowed_directories,list_directory,list_directory_with_sizes,read_file,read_media_file,read_multiple_files,read_text_file,search_files history_tools=14
+TOOL_USE ToolSearch {"query":"select:mcp__history__write_file,mcp__history__list_directory,mcp__history__read_multiple_files,mcp__history__list_allowed_directories","max_results":5}
+TOOL_RESULT [{"type":"tool_reference","tool_name":"mcp__history__write_file"},{"type":"tool_reference","tool_name":"mcp__history__list_directory"},{"type":"tool_reference","tool_name":"mcp__history__read_multiple_files"},{"type":"tool_reference","tool_name":"mcp__history__list_allowed_directories"}]
+TOOL_USE Bash {"command":"date -u +%Y%m%dT%H%M%SZ"}
+TOOL_RESULT 20261109T172940Z
+TOOL_USE mcp__history__list_allowed_directories {}
+TOOL_RESULT {"content":"Allowed directories:\n<lab>/history"}
+TOOL_USE mcp__history__write_file {"path":"<lab>/history/20261109T172940Z-A.md","content":"hello from A"}
+TOOL_RESULT {"content":"Successfully wrote to <lab>/history/20261109T172940Z-A.md"}
+TOOL_USE mcp__history__list_directory {"path":"<lab>/history"}
+TOOL_RESULT {"content":"[FILE] 20261109T172940Z-A.md"}
+TOOL_USE mcp__history__write_file {"path":"<lab>/shared/t2-a.txt","content":"A via history"}
+TOOL_RESULT Access denied - path outside allowed directories: <lab>/shared/t2-a.txt not in <lab>/history
+TOOL_USE mcp__history__read_multiple_files {"paths":["<lab>/history/20261109T172940Z-A.md"]}
+TOOL_RESULT {"content":"<lab>/history/20261109T172940Z-A.md:\nhello from A\n"}
+FINAL All three steps are done, so this is the final report.
+
+**1. Post:** This worked. I wrote `20261109T172940Z-A.md` to the history directory with the content `hello from A`. The server replied: `Successfully wrote to <lab>/history/20261109T172940Z-A.md`
+
+**2. Read the history:** The directory has one file.
+- `20261109T172940Z-A.md`: "hello from A"
+
+It has no messages from B.
+
+**3. Write that had to fail:** It failed as expected. I called the history server's `write_file` on `.../a70-lab/shared/t2-a.txt` with the content `A via history`. The error text was:
+
+`Access denied - path outside allowed directories: <lab>/shared/t2-a.txt not in <lab>/history`
+
+The history server only allows paths under `.../a70-lab/history`, so `shared/t2-a.txt` was not created.

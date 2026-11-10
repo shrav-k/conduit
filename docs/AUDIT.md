@@ -357,6 +357,10 @@ build finds: each increment logs its findings and the coordinator's fixes under
 `docs/proposals/first-build/`, and the owner can strike each fix. A finding whose fix adds or
 removes a feature, or changes what Conduit is for, goes to the owner.
 
+On 2026-11-09 the owner accepted the coordinator's decisions in the first build for now, and
+asked to go over the impactful ones together later: they are listed, most consequential first,
+in [the decisions to go over with the owner](proposals/first-build/to-review-with-the-owner.md).
+
 [Ruling 48](proposals/ruling-48/README.md) makes the coordinator the admin session: Codex
 workers carry out work orders that the coordinator writes, under `docs/work-orders/`, and the
 decisions an order applies are the coordinator's, logged and strikeable as above. A choice a

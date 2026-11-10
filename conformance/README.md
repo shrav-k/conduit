@@ -287,3 +287,32 @@ cached tool catalog follows these lists: even a cached or guessed call is decide
 The bounds case checks Pools, individual targets, operations, omitted/empty bounds and
 narrower/wider delegated bounds. The two plain-filter cases test both registration rejection
 and an onward call carrying a filter to a plain filesystem implementation.
+
+
+## Request endings (I2-06)
+
+The [request cases](conventions/requests/plain-content/case.yaml) begin by registering S1.
+`request-fixture` names a control document holding a `requests` array and selects its
+zero-based `index`. Each observation holds a `call` (`invoke`) and supplied ready/open
+`patches`. Optional `contract_updates` select a target, contract `kind` (Operation by default) and name and replace spec
+members in its held schema environment; `aware` and `target` select the corresponding
+nonplain implementation variation. They describe independent established contexts, not
+language operations. The runner checks that the core transition changes no objects or
+packages after those observations.
+
+`invoke` takes current access inputs and an optional idempotency `key`. It returns a pending
+invocation and dispatch intent, or an IFC-025 result (a baseline protocol error for an
+unpresented tool). `complete` supplies an invocation ID, attempt number and `result`,
+`protocol-error` (including optional `data`) or `missing` completion. A safe -32020 repair yields a
+`refresh-tools-and-call` intent within the same attempt, at most once. `cancel` is a trusted
+boundary notification and can carry an implementation result as `confirmation`; without
+valid no-effect confirmation its outcome is unknown. No intent executes a call.
+
+`restore-state` serializes and restores all state, then calls the core’s `recover` transition.
+Interrupted attempts end unknown under IMP-007, with no dispatch intent. Recovery of an
+interrupted attempt requires supplied `evidence` for its records; settled state needs none. Its optional `records_purged`
+observes an empty record store left by an
+external purge; it is not a `purge.v1` implementation. `expire-outputs` explicitly exercises
+DL10, removing retained outputs and plain content, while preserving the invocation.
+The [finding log](../docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
+records the admin’s narrowing of header repair and the return-review regressions.

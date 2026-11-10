@@ -280,14 +280,20 @@
   when: >-
     A request arrives from the instance that sent an earlier request, with the same caller,
     target, idempotency key and contents as that request; the invocation that request began
-    succeeded; and either no filter applies to the request, and the operation declares no
-    outputs or the engine still keeps the invocation's outputs, or a filter applies to it, and
+    succeeded; and either no filter applies to the request, and (the operation declares no
+    outputs and is not implemented by a plain server, or the engine still keeps the
+    invocation's outputs and any plain content), or a filter applies to it, and
     the operation declares no outputs and is not one that OPS-024 dispatches again: its contract
     states an `effect`, it is a control, or its contract is marked `startsModelWork: true`.
   then: >-
     The request is a repeat, not a new request. Nothing is dispatched, and the result is that
-    invocation's: the outcome succeeded and its outputs.
+    invocation's: the outcome succeeded, its outputs and any plain content.
   observable: >-
+    For this promise and OPS-034, the content of a succeeded plain invocation counts as outputs
+    that must be kept, whether or not the operation declares outputs. The engine keeps and
+    gives that content again unchanged, together with any declared outputs, for as long as
+    DL10 keeps them. After it no longer keeps the content, a repeat reports conflict under
+    OPS-034, and is never dispatched to recover it. A reconciliation supplies no content.
     The implementation receives no further call for the invocation, and the result holds the
     outputs that the invocation returned and the engine's ID for it, under IFC-025. Two requests
     have the same contents when they name the same operation and their arguments are equal under
@@ -297,8 +303,8 @@
     the map with that default written out, have the same contents. The engine keeps the outputs
     of an invocation that succeeded for as long as DL10 of the implementation-defined list says,
     and keeps none of one whose outcome a reconciliation set, since `reconcile.v1` takes none.
-    An operation that declares no outputs has none to lose: a repeat of an invocation of it that
-    succeeded is answered so, with an empty map as its `structuredContent`, unless OPS-024
+    An operation that declares no outputs and is not implemented by a plain server has none
+    to lose: a repeat of an invocation of it that succeeded is answered so, with an empty map as its `structuredContent`, unless OPS-024
     dispatches it again. Where a filter applies to the repeat, that answer gives only the
     outcome already recorded, and no filter judges it, under ACC-008. A repeat of an invocation
     that has not ended reports conflict under OPS-032, and so, under OPS-034, does one of an

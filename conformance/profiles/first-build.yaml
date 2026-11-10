@@ -23,7 +23,7 @@
   },
   "DL10": {
     "nesting": 128,
-    "outputs": "retained for the whole vector unless explicit expiry",
+    "outputs": "outputs and succeeded plain content retained for the whole vector unless explicit expiry",
     "file_size": null,
     "submission_count": null,
     "archive_size": null
@@ -47,11 +47,13 @@
     "DL15",
     "DL7",
     "DL4",
-    "DL12"
+    "DL12",
+    "DL2.contents_digest",
+    "DL2.persistence_boundary",
+    "DL10.outputs"
   ],
   "reserved_for_later_orders": [
-    "DL2",
-    "DL10.outputs"
+    "DL2.shell_persistence"
   ],
   "DL7": {
     "archive_format": "gzip-compressed POSIX USTAR; no GNU or PAX extensions",

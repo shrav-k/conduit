@@ -54,7 +54,7 @@ pub(super) fn run(
     t.state.invocations = state.invocations.clone();
     Ok(t)
 }
-fn patch(state: &mut State, patches: &Value) -> Result<()> {
+pub(super) fn patch(state: &mut State, patches: &Value) -> Result<()> {
     if patches.is_null() {
         return Ok(());
     }

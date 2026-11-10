@@ -243,10 +243,13 @@ critique recommended ([its four open points](proposals/reaudit/round-6/design-cr
   (OPS-028). That is kept for v0, tested (E20 of round 6), and revisited with local
   enforcement (A65).
 
-Still open, and a reader may report them: the two cases that the independent check named
+Settled on 2026-11-09, by the first build: the two cases that the independent check named
 beside finding 6-1-01 and did not check, IFC-010's reading of -32602 as failed whatever the
 operation's effect, and IFC-046's statement that the protocol has a server reject -32020 before
-acting, which rest on the same kind of inference that 6-1-01 struck for -32021. The editors who
+acting. [Work order 018](proposals/first-build/check-plain-errors.md) found that neither code
+proves that a server has not acted, and work order 015 corrected both promises under the
+coordinator's decision 8a of [increment 2](proposals/first-build/increment-2/decisions.md),
+which the owner can strike. The editors who
 applied ruling 44 left five smaller points for a decision, which
 [the integration of round 6](proposals/reaudit/round-6/log-integration.md#left-for-a-decision)
 lists: whether a replace may be read from a directory, a key of an ordinary operation's own

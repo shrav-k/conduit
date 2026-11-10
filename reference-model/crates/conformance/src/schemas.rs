@@ -296,6 +296,12 @@ mod tests {
         let spec = Specification::read(&repository.join("spec")).unwrap();
         let context = Context {
             core_package: spec.names().core_package.clone(),
+            meta_prefix: read_file(&repository.join("spec/names.yaml")).unwrap()[0]
+                .root
+                .to_json()["metaPrefix"]
+                .as_str()
+                .unwrap()
+                .into(),
             templates: BTreeMap::new(),
             record_source: "urn:test".into(),
             core_environment: Environment {
@@ -347,6 +353,12 @@ mod regression_vectors {
         let spec = Specification::read(&repository.join("spec")).unwrap();
         let context = Context {
             core_package: spec.names().core_package.clone(),
+            meta_prefix: read_file(&repository.join("spec/names.yaml")).unwrap()[0]
+                .root
+                .to_json()["metaPrefix"]
+                .as_str()
+                .unwrap()
+                .into(),
             templates: BTreeMap::new(),
             record_source: "urn:test".into(),
             core_environment: Environment {

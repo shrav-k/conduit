@@ -6,6 +6,7 @@ pub mod access;
 pub mod archives;
 pub mod packages;
 pub mod registration;
+pub mod requests;
 pub mod schemas;
 
 use serde::{Deserialize, Serialize};
@@ -18,6 +19,7 @@ type Result<T> = std::result::Result<T, String>;
 #[derive(Clone, Debug)]
 pub struct Context {
     pub core_package: String,
+    pub meta_prefix: String,
     pub templates: BTreeMap<String, Value>,
     pub record_source: String,
     pub core_environment: schemas::Environment,
@@ -70,6 +72,30 @@ pub struct Request {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
+    Invoke {
+        evidence: Evidence,
+        request: access::AccessRequest,
+        #[serde(default)]
+        key: Option<String>,
+    },
+    Complete {
+        evidence: Evidence,
+        invocation: String,
+        attempt: u64,
+        completion: requests::Completion,
+    },
+    Cancel {
+        evidence: Evidence,
+        invocation: String,
+        #[serde(default)]
+        confirmation: Option<Value>,
+    },
+    Recover {
+        evidence: Evidence,
+    },
+    ExpireOutputs {
+        invocation: String,
+    },
     Access {
         evidence: Evidence,
         request: access::AccessRequest,
@@ -216,6 +242,37 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
     };
     match input {
+        Input::Invoke {
+            evidence,
+            request,
+            key,
+        } => requests::invoke(&mut transition, &evidence, &request, key, context)?,
+        Input::Complete {
+            evidence,
+            invocation,
+            attempt,
+            completion,
+        } => requests::complete(
+            &mut transition,
+            &evidence,
+            &invocation,
+            attempt,
+            completion,
+            context,
+        )?,
+        Input::Cancel {
+            evidence,
+            invocation,
+            confirmation,
+        } => requests::cancel(
+            &mut transition,
+            &evidence,
+            &invocation,
+            confirmation,
+            context,
+        )?,
+        Input::Recover { evidence } => requests::recover(&mut transition, &evidence, context)?,
+        Input::ExpireOutputs { invocation } => requests::expire(&mut transition, &invocation)?,
         Input::Access { evidence, request } => {
             access::decide(&mut transition, &evidence, &request, context)?
         }

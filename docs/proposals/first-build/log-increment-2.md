@@ -23,6 +23,10 @@ selecting a Conduit answer. No specification change was made by this order.
 | 2-01 | Whether two initial YAML BOMs must be rejected | Ambiguity | SCH-013, SUB-005; schema profile, Encoding | Settled by the admin |
 | 2-02 | An authored root `$defs` key in the form of a contract copy | Gap | IFC-033 | Settled by the admin, decision 6 |
 | 2-03 | Different defaults on one place through unconditional `$ref` siblings or `allOf` | Ambiguity | SCH-009, SCH-015, SCH-019 | Settled by the admin |
+| 2-04 | Succeeded plain content on repeats (F1) | Gap | OPS-009, IFC-025, DL10 | Settled by the admin, decision 5 |
+| 2-05 | A plain server's invalid-parameters error does not prove no effect | Contradiction | IFC-010, OPS-003, OPS-018 | Settled by the admin, decision 8a |
+| 2-06 | A plain server's parameter-header error does not authorize repeating an effect | Contradiction | IFC-046, OPS-018 | Settled by the admin, decision 8a |
+| 2-07 | How a contract declares an effectful plain operation safe to repeat | Gap | IFC-046, OPS-012 | Settled by the admin, narrowing decision 8a |
 
 ## 2-01. Two initial YAML byte order marks
 
@@ -630,3 +634,182 @@ shape. These choices change no language behavior.
 Clippy with warnings denied, formatting, all four Python repository checks and Git's
 whitespace check pass. A separate scan of changed and untracked text files reports no trailing
 whitespace. No specification, branch, staging, commit, push or pull request was changed or made.
+
+
+## I2-06: request endings (work order 015)
+
+The pure core now decides invocation dispatch, completions and repeats after evaluating
+current access atomically. An invocation retains its caller, sender, target, operation,
+filled arguments' canonical digest, selected contract and implementation, attempt number and
+Conduit. It is independent of records (OPS-008). Every returned intent is a plan for the shell;
+DL2 requires persistence of the state and records before it is carried out. No call is sent
+here. No restart or record removal sends one.
+
+### 2-04. Succeeded plain content on repeats
+
+**State: Settled by the admin, decision 5. The owner can strike it.**
+
+OPS-009 previously described only declared outputs, leaving a plain success's text undefined
+on a repeat. OPS-009, IFC-025 and DL10 now explicitly keep that content with outputs, return it
+unchanged while kept, and report conflict under OPS-034 after expiry. They never dispatch a
+succeeded invocation again to recover it. The
+[plain-content vector](../../../conformance/conventions/requests/plain-content/case.yaml)
+observes text on the original result, an identical repeat, and conflict after explicit expiry.
+The [declared-outputs vector](../../../conformance/conventions/requests/declared-outputs/case.yaml)
+checks outputs and content together. OPS-034's existing rule is applied through OPS-009's
+explicit statement that plain content counts as outputs for these promises; it is outside
+this order's specification edit scope.
+
+### 2-05. Invalid parameters from a plain server
+
+**State: Settled by the admin, decision 8a. The owner can strike it.**
+
+IFC-010's unconditional failed for -32602 could permit a second write after a server had
+acted. The amended table treats it as an ordinary plain error: failed only for an operation
+with no effect, no control and no model work, unknown otherwise. An engine rejection before
+dispatch keeps its reason and has no outcome. The
+[read](../../../conformance/conventions/requests/read-invalid-parameters/case.yaml) and
+[write](../../../conformance/conventions/requests/write-invalid-parameters/case.yaml) vectors
+exercise both outcomes. OPS-003 and OPS-018 did not repeat the old reading and need no edit.
+
+### 2-06. Repeating after a parameter-header error
+
+**State: Settled by the admin, decision 8a. The owner can strike it.**
+
+IFC-046 no longer assumes that -32020 proves no effect. Only an operation with no effect,
+no control and no model work may be sent again. Otherwise it ends unknown, as finding 2-07
+narrows decision 8a. The
+[read repair vector](../../../conformance/conventions/requests/repair-read-success/case.yaml)
+observes one repair intent and the second response's result, with one invocation and attempt;
+the [second-error vector](../../../conformance/conventions/requests/read-parameter-headers/case.yaml)
+observes no third call. The
+[unsafe write vector](../../../conformance/conventions/requests/unsafe-write-headers/case.yaml)
+checks that neither deduplicates nor idempotentHint authorizes a plain write's repair.
+
+### 2-07. Declaring safe repetition of a plain effect
+
+**State: Settled by the admin, narrowing decision 8a. The owner can strike it.**
+Class: gap. Promises: IFC-046, OPS-012.
+
+No contract declares an effectful `plain` operation safe to repeat, and none is added.
+IFC-046 now sends a call again after -32020 only for an operation with no declared `effect`,
+that is not a control and starts no model work; any other ends unknown. Its amended text
+contains no declaration exception. The previously stopped variant now expects unknown and
+no further dispatch, including on a caller repeat, in the
+[effectful plain headers vector](../../../conformance/conventions/requests/effectful-plain-headers/case.yaml).
+The [aware headers vector](../../../conformance/conventions/requests/aware-headers-no-repair/case.yaml)
+also prevents an effectful deduplicating operation from bypassing the narrowed condition.
+
+### Implementation choices and vector boundaries
+
+- `invoke` checks current access, fills defaults, validates, compares the scoped key and
+  contents, checks ordinary availability, then dispatches. Conflicts precede ordinary
+  unavailability; unreadable requests and unavailable authority precede both. A permit from
+  the older access-only input is not accepted as reusable authority.
+- DL2's digest is SHA-256 over RFC 8785 of operation and filled arguments. The index is in
+  `State.invocations`, not reconstructed from records. It retains the target's frozen schema
+  view for output validation. Completion inputs name both invocation and attempt, so an old
+  attempt cannot overwrite a new one. Late completions cannot resolve unknown by themselves.
+- A completion is a supplied result, protocol error or missing response. A header repair is
+  a distinct intent within the same attempt, allowed once. An authorized reconciliation
+  records its actor and checked evidence and never fabricates content or outputs.
+- Cancellation is a trusted boundary notification for the running request, forwarded as an
+  intent. A valid nonplain implementation confirmation of failed can accompany it;
+  otherwise its outcome is unknown. Protocol ownership of cancellation belongs to the shell.
+- `request-fixture` supplies ready/open observations on registered S1, optional contract
+  variations and a Conduit-aware implementation variation. These are fixture observations,
+  not setup or contract mutation operations. The runner checks that the actual request
+  transition leaves objects and packages as observed. `restore-state` round-trips the entire
+  serialized state and optionally observes records already purged; it does not implement
+  `purge.v1`. It runs the core recovery transition: interrupted attempts end unknown under IMP-007, with
+  supplied record evidence, and no dispatch intent. Settled invocations keep their state.
+- `expire-outputs` is the explicit DL10 expiry boundary. It removes retained content and
+  outputs, never the invocation. Time is supplied and no timeout reconciles an invocation.
+
+The request vectors cover S1-plain-ends, S1-key-scope, S1-unknown-write and S1-reconcile,
+including sender/caller/target changes, different operation and content, default equality,
+no-key identities, in-progress conflict, succeeded repeats, unknown plain writes after
+restart and record removal, both reconciliation outcomes, and cancellation. Reconciliation
+of lifecycle state or controls remains the lifecycle order's work; unsupported core
+management dispatches are embedding errors, never external calls to an engine implementation.
+
+
+**Validation.** All 306 portable cases, including 58 request cases, pass in the workspace's
+release tests. Clippy with warnings denied and formatting pass. The four Python repository
+checks, Git whitespace check and a separate scan of changed and untracked text files are run
+before the worker's report. No file is staged, and no branch, commit, push or pull request is
+made. The return review below adds regression vectors and completes finding 2-07.
+
+
+### Corrections after the return review of I2-06
+
+These six findings are defects decided by existing promises. No additional settlement or
+specification change is needed for them. Finding 2-07 above separately applies the admin's
+narrowing of decision 8a.
+
+1. **Metadata validity — IFC-009, OPS-007.** Presence is checked separately from value
+   conversion. Both keys mean unknown, including null or nonstring values; no valid outcome
+   or restriction reason rescues contradictory metadata. The ten `metadata-*` vectors test
+   null, number, object and array reasons beside succeeded/failed, and null/number outcomes
+   beside a refused reason with a matching restriction. Their non-deduplicating aware write
+   repeats stay unknown and emit no dispatch. Each failed against the pre-fix executable:
+   either it returned succeeded/failed or it reported the reason instead of unknown.
+   Example: [failed with null reason](../../../conformance/conventions/requests/metadata-failed-reason-null/case.yaml).
+2. **Aware capability errors — OPS-007, IFC-008, IFC-047.** Protocol completions preserve
+   `data.requiredCapabilities`, with extensions under its `extensions` map. A nonempty
+   capability map establishes failed for an aware
+   implementation, distinguishing the extension from undeclared client capabilities; absent
+   or malformed data still establishes nothing. Records of the extension error name the
+   declared revision; a core test also checks absent, empty and malformed capability maps.
+   The [extension](../../../conformance/conventions/requests/aware-capability-extension/case.yaml)
+   and [undeclared capability](../../../conformance/conventions/requests/aware-capability-undeclared/case.yaml)
+   vectors check failed and a caller-driven second attempt, beside the existing plain read
+   and write cases. Both failed before the fix because the completion boundary rejected data;
+   with that boundary retained and classification alone disabled, both returned unknown and
+   failed their outcome assertions.
+3. **Interrupted attempts — IMP-007, OPS-012, OPS-013, OPS-018.** `recover` is a pure core
+   transition over restored state. Every in-progress attempt ends unknown, with records from
+   supplied evidence and no dispatch intent. Settled invocations retain their states. The
+   [interrupted restart](../../../conformance/conventions/requests/restart-interrupted/case.yaml)
+   vector dispatches a write, restarts immediately without a completion, repeats it, supplies
+   a late success, reconciles by an authorized actor with checked evidence, and restarts
+   again. Recovery and the repeat send nothing, the late success is ignored, and
+   reconciliation remains possible. Before the fix it failed with in-progress instead of
+   unknown. The existing purge/restart vector still preserves the separate invocation index.
+4. **Reconciliation precedence — OPS-031, OPS-023.** A forbidden non-control revision is
+   checked before OPS-030's state conflict, after authority and schema validation. The
+   [in-progress](../../../conformance/conventions/requests/reconcile-revision-in-progress/case.yaml)
+   and [succeeded](../../../conformance/conventions/requests/reconcile-revision-succeeded/case.yaml)
+   vectors combine that invalid revision with each conflicting state. Both failed before the
+   fix with conflict rather than invalid, and assert the original invocation is unchanged.
+5. **Recorded keys — REC-002.** Applicable access, dispatch, invocation-end and request-end
+   records hold `idempotencyKey`, from the request or the durable invocation. Reconciliation
+   records use the reconciled invocation's key and target as well. The
+   [key retention](../../../conformance/conventions/requests/records-key/case.yaml) vector
+   checks dispatch, completion and a succeeded repeat; key-scope and identity-scope assertions
+   also distinguish keyed and keyless records. The retention vector failed before the fix
+   because its first access record omitted the key.
+6. **Recorded inputs — REC-002, SEC-004, SEC-015, PRV-024.** Record content follows the held
+   target Type's `records` settings. Inputs are retained across access, dispatch, completion
+   and repeats when enabled; outputs obey their separate setting. Schema-directed secret
+   references retain only resolved Resource references; excluded values leave a path and
+   rule, without their contents. Run secrets and identity, and secret-read outputs, are
+   excluded regardless of retention settings. The
+   [S1 inputs](../../../conformance/conventions/requests/records-inputs/case.yaml) vector
+   failed before the fix because inputs were absent. The
+   [rejected-input retention](../../../conformance/conventions/requests/records-inputs-invalid/case.yaml)
+   vector also failed with absent inputs before readable rejections were given their raw
+   arguments for retention and redaction. The
+   [disabled inputs](../../../conformance/conventions/requests/records-disabled/case.yaml)
+   vector is a negative control with the Type's inputs setting false, now selectable by
+   contract kind in the fixture. Three pure-core tests additionally check run credentials,
+   secret-read outputs, and secret references through an alias, including unresolved-value
+   exclusion and resolved-value retention.
+
+**Choices made by the worker.** Recovery is an explicit `recover` input with evidence for
+records; the restore fixture calls it after deserialization. A completion preserves an optional
+JSON `data` member, and treats absent, empty or malformed capability maps conservatively as
+unknown. Record content is assembled in one helper using the held Type, with schema-directed
+exclusions described by path and rule. Correcting reconciliation record enrichment also makes
+its target the reconciled invocation's target. These implement the cited promises and add no
+new language behavior.

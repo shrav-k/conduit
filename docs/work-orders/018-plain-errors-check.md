@@ -45,3 +45,16 @@ Only the new file. Change nothing under `spec/`.
 
 Both readings are answered with quotations and citations, every claim cites its source, and
 `python3 tools/check_docs.py` and `git diff --check` pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 8 minutes. The protocol's text and the official SDKs' source, cited: neither
+  `-32602` nor `-32020` proves that a server has not acted, and the SDKs let a handler answer
+  either after acting. No such path in the filesystem server at 2.1.0 or 2.2.0.
+- **Verifier**: 3 minutes. One `must`: the report gave `failed` to the engine's own rejection
+  before dispatch, which has a reason and no outcome (OPS-005).
+- **Admin**: fixed that sentence, and decided the two readings as decision 8a of
+  [increment 2's decisions](../proposals/first-build/increment-2/decisions.md), which order
+  015 applies.

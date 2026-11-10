@@ -803,6 +803,16 @@
         "reply": {
           "_meta": {
             "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "OPS-029",
+                "message": {
+                  "text": "Resource/missing does not exist. A closed Conduit and a removed instance no longer exist."
+                }
+              }
+            ]
           }
         },
         "required_promises": [
@@ -1040,6 +1050,16 @@
         "reply": {
           "_meta": {
             "io.github.shrav-k.conduit/reason": "invalid"
+          },
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "OPS-029",
+                "message": {
+                  "text": "Resource/missing does not exist. A closed Conduit and a removed instance no longer exist."
+                }
+              }
+            ]
           }
         },
         "required_promises": [

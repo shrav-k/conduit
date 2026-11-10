@@ -542,3 +542,310 @@ fn t5_public_install_is_live_and_existing_instances_keep_versions() {
         );
     }
 }
+
+struct HookBoundary {
+    intents: Mutex<Vec<Value>>,
+    run_state: &'static str,
+}
+impl Executor for HookBoundary {
+    fn builtin_runner(
+        &self,
+        intent: &Value,
+        _: Option<&conduit_shell::RunIdentity>,
+    ) -> Result<Execution> {
+        self.intents.lock().unwrap().push(intent.clone());
+        let op = intent["operation"].as_str().unwrap();
+        Ok(Execution::SetupReport(if op.ends_with("#inspect-run.v1") {
+            json!({"kind":"inspect-run","state":self.run_state})
+        } else if op.ends_with("#run.v1") {
+            json!({"kind":"run","outcome":"succeeded"})
+        } else {
+            json!({"kind":"stop","outcome":"failed"})
+        }))
+    }
+    fn connect(&self, intent: &Value) -> Result<Execution> {
+        self.intents.lock().unwrap().push(intent.clone());
+        Ok(Execution::SetupReport(
+            json!({"kind":"connected","part":intent["part"],"outcome":"succeeded"}),
+        ))
+    }
+    fn dispatch(&self, intent: &Value) -> Result<Execution> {
+        self.intents.lock().unwrap().push(intent.clone());
+        Ok(Execution::Complete(
+            json!({"kind":"result","result":{"isError":true,"_meta":{format!("{}outcome", boundary::context(&repo())?.meta_prefix):"failed"}}}),
+        ))
+    }
+}
+fn hook_resource(shell: &Shell, remote: bool) {
+    fixture(shell, false);
+    let spec = conduit_loader::Specification::read(&repo().join("spec")).unwrap();
+    let project =
+        boundary::project(&repo().join("conformance/fixtures/s1/project"), &spec).unwrap();
+    let mut manifest = project.manifest.unwrap();
+    manifest["address"] = json!("example.org/test/retirement");
+    let hook = format!("{}#retire-hook.v1", shell.context.core_package);
+    let operations = ["file.read.v1", "file.write.v1", "directory.list.v1"]
+        .map(|n| format!("example.org/s1/filesystem#{n}"));
+    let implements: Vec<_> = operations
+        .iter()
+        .cloned()
+        .chain((!remote).then_some(hook.clone()))
+        .collect();
+    manifest["implementations"] =
+        json!({"run":{"command":["/test/program"],"implements":implements}});
+    if remote {
+        manifest["implementations"]["hook"] = json!({"remote":{"type":"streamable-http","url":"https://example.invalid/hook","headers":[]},"implements":[hook.clone()]});
+    }
+    let mut template = project
+        .documents
+        .iter()
+        .find(|d| d["metadata"]["name"] == "shared-directory")
+        .unwrap()
+        .clone();
+    template["metadata"]["name"] = json!("hook-directory");
+    template["spec"]["implementation"] = json!({hook:if remote {"#hook"} else {"#run"}});
+    for op in operations {
+        template["spec"]["implementation"][op] = json!("#run");
+    }
+    success(invoke(
+        shell,
+        &MissingExecutor,
+        "management.register.v1",
+        json!({"manifest":manifest,"documents":[template,{"apiVersion":spec.names().api_version,"kind":"Resource","metadata":{"name":"hook-resource"},"from":"hook-directory","owner":"workspace","arguments":{"root":"/test"}}]}),
+    ));
+    let reply = invoke(
+        shell,
+        &MissingExecutor,
+        "root-workspace.set-up.v1",
+        json!({"instance":{"kind":"Resource","name":"hook-resource"}}),
+    );
+    assert_eq!(reply["isError"], true);
+}
+fn retire_hook_resource(shell: &Shell, boundary: &HookBoundary) -> Value {
+    invoke(
+        shell,
+        boundary,
+        "root-workspace.retire.v1",
+        json!({"instance":{"kind":"Resource","name":"hook-resource"}}),
+    )
+}
+fn retirement_parts(shell: &Shell) -> Value {
+    shell
+        .state()
+        .unwrap()
+        .invocations
+        .iter()
+        .rev()
+        .find(|v| v.get("retirement").is_some())
+        .unwrap()["retirement"]["parts"]
+        .clone()
+}
+#[test]
+fn remote_retire_hook_connects_without_preparing_unrelated_run() {
+    let temp = tempfile::tempdir().unwrap();
+    let shell = Shell::open(
+        &temp.path().join("store"),
+        boundary::context(&repo()).unwrap(),
+        Config::default(),
+    )
+    .unwrap();
+    hook_resource(&shell, true);
+    let boundary = HookBoundary {
+        intents: Mutex::new(vec![]),
+        run_state: "unknown",
+    };
+    retire_hook_resource(&shell, &boundary);
+    let intents = boundary.intents.lock().unwrap();
+    assert_eq!(
+        intents
+            .iter()
+            .map(|v| v["kind"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        ["connect", "dispatch", "builtin-runner"]
+    );
+    assert_eq!(
+        intents[0]["implementation"]["item"]["remote"]["url"],
+        "https://example.invalid/hook"
+    );
+    assert_eq!(
+        intents[2]["operation"],
+        format!("{}#stop.v1", shell.context.core_package)
+    );
+}
+#[test]
+fn successful_run_for_retire_hook_counts_as_an_effectful_part() {
+    let temp = tempfile::tempdir().unwrap();
+    let shell = Shell::open(
+        &temp.path().join("store"),
+        boundary::context(&repo()).unwrap(),
+        Config::default(),
+    )
+    .unwrap();
+    hook_resource(&shell, false);
+    let boundary = HookBoundary {
+        intents: Mutex::new(vec![]),
+        run_state: "stopped",
+    };
+    let reply = retire_hook_resource(&shell, &boundary);
+    assert_eq!(
+        reply["_meta"][format!("{}outcome", shell.context.meta_prefix)],
+        "unknown"
+    );
+    assert!(
+        retirement_parts(&shell)
+            .as_array()
+            .unwrap()
+            .contains(&json!({"name":"hook-run","outcome":"succeeded","effect":true}))
+    );
+}
+#[test]
+fn unknown_run_makes_retire_hook_unavailable_without_an_effect() {
+    let temp = tempfile::tempdir().unwrap();
+    let shell = Shell::open(
+        &temp.path().join("store"),
+        boundary::context(&repo()).unwrap(),
+        Config::default(),
+    )
+    .unwrap();
+    hook_resource(&shell, false);
+    let boundary = HookBoundary {
+        intents: Mutex::new(vec![]),
+        run_state: "unknown",
+    };
+    let reply = retire_hook_resource(&shell, &boundary);
+    assert_eq!(
+        reply["_meta"][format!("{}outcome", shell.context.meta_prefix)],
+        "failed"
+    );
+    assert_eq!(
+        retirement_parts(&shell),
+        json!([{"name":"hook","outcome":"unavailable","effect":false},{"name":"stop","outcome":"failed","effect":true}])
+    );
+    let intents = boundary.intents.lock().unwrap();
+    assert_eq!(intents.len(), 2);
+    assert!(intents.iter().all(|v| v["kind"] == "builtin-runner"));
+}
+
+#[test]
+fn missing_object_diagnostic_ignores_unrelated_additional_inputs() {
+    let temp = tempfile::tempdir().unwrap();
+    let shell = Shell::open(
+        &temp.path().join("store"),
+        boundary::context(&repo()).unwrap(),
+        Config::default(),
+    )
+    .unwrap();
+    fixture(&shell, false);
+    for extra in [json!("unrelated"), Value::Null, json!({})] {
+        let reply = invoke(
+            &shell,
+            &MissingExecutor,
+            "management.inspect.v1",
+            json!({"object":{"kind":"Agent","name":"missing-agent"},"conduit":extra}),
+        );
+        let diagnostic = &reply["structuredContent"]["diagnostics"][0];
+        assert_eq!(diagnostic["ruleId"], "OPS-029", "{reply}");
+        assert_eq!(
+            diagnostic["message"]["text"],
+            "Agent/missing-agent does not exist. A closed Conduit and a removed instance no longer exist.",
+            "{reply}"
+        );
+    }
+}
+
+#[test]
+fn missing_object_diagnostics_name_the_reference_and_explain_removal() {
+    let temp = tempfile::tempdir().unwrap();
+    let shell = Shell::open(
+        &temp.path().join("store"),
+        boundary::context(&repo()).unwrap(),
+        Config::default(),
+    )
+    .unwrap();
+    fixture(&shell, false);
+    let consumer = id(&shell, "Agent", "agent-b", false);
+    let closed = shell
+        .state()
+        .unwrap()
+        .objects
+        .iter()
+        .find(|o| {
+            o["kind"] == "Conduit"
+                && o["nested"]["parent"] == consumer
+                && o["nested"]["name"] == "project"
+        })
+        .unwrap()["name"]
+        .clone();
+    let closed_label = format!("Conduit/{}", closed.as_str().unwrap());
+    success(invoke(
+        &shell,
+        &MissingExecutor,
+        "access.close.v1",
+        json!({"conduit":closed}),
+    ));
+    success(invoke(
+        &shell,
+        &MissingExecutor,
+        "management.retire.v1",
+        json!({"instance":{"kind":"Agent","name":"agent-a"}}),
+    ));
+    let revision = object(&shell, "Agent", "agent-b", false)["revision"].clone();
+    for (tool, args, label) in [
+        (
+            "management.inspect.v1",
+            json!({"object":{"kind":"Conduit","name":closed}}),
+            closed_label.as_str(),
+        ),
+        (
+            "access.close.v1",
+            json!({"conduit":closed}),
+            closed_label.as_str(),
+        ),
+        (
+            "access.open.v1",
+            json!({"conduit":closed}),
+            closed_label.as_str(),
+        ),
+        (
+            "management.unregister.v1",
+            json!({"object":{"kind":"Conduit","name":closed},"revision":revision}),
+            closed_label.as_str(),
+        ),
+        (
+            "management.retire.v1",
+            json!({"instance":{"kind":"Agent","name":"agent-a"}}),
+            "Agent/agent-a",
+        ),
+        (
+            "management.set-up.v1",
+            json!({"instance":{"kind":"Agent","name":"never-here"}}),
+            "Agent/never-here",
+        ),
+        (
+            "management.declare-lost.v1",
+            json!({"node":"missing-node"}),
+            "Resource/missing-node",
+        ),
+        (
+            "management.reconcile.v1",
+            json!({"invocation":"00000000-0000-4000-8000-000000009999","occurred":false,"checked":"No invocation with this ID"}),
+            "Invocation/00000000-0000-4000-8000-000000009999",
+        ),
+    ] {
+        let reply = invoke(&shell, &MissingExecutor, tool, args);
+        assert_eq!(
+            reply["structuredContent"]["diagnostics"][0]["ruleId"], "OPS-029",
+            "{reply}"
+        );
+        let text = reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+            .as_str()
+            .unwrap();
+        assert!(
+            text.contains(label)
+                && text.contains("does not exist")
+                && text.contains("closed Conduit")
+                && text.contains("removed instance"),
+            "{text}"
+        );
+    }
+}

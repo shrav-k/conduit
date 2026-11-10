@@ -225,13 +225,15 @@ pub(crate) fn execute(
             add(t, i, "hook", "unavailable");
             return stop(t, a, c, i, o);
         }
-        if let Some(item) = run(o) {
-            t.state.invocations[i]["setup"] = json!({"item":item});
+        let implementation = &o["resolved_implementations"][c.qualified("retire-hook.v1")];
+        if implementation["item"].get("command").is_some()
+            || implementation["item"].get("package").is_some()
+        {
+            t.state.invocations[i]["setup"] = json!({"item":implementation});
             t.state.invocations[i]["retirement"]["phase"] = json!("inspect-run");
             return lifecycle::emit(t, a, c, i, "inspect-run.v1", json!({}));
         }
-        let implementation = &o["resolved_implementations"][c.qualified("retire-hook.v1")];
-        if implementation["item"]["remote"].get("headers").is_some() {
+        if implementation["item"].get("remote").is_some() {
             t.state.invocations[i]["retirement"]["phase"] = json!("connect");
             t.external_intents.push(json!({"kind":"connect","part":"retire-hook","invocation":v["id"],"subject":o["id"],"implementation":implementation}));
             t.reply = json!({"pending":true,"invocation":v["id"]});
@@ -263,7 +265,7 @@ fn add(t: &mut Transition, i: usize, name: &str, outcome: &str) {
     t.state.invocations[i]["retirement"]["parts"]
         .as_array_mut()
         .unwrap()
-        .push(json!({"name":name,"outcome":outcome,"effect":name != "hook-connect"}));
+        .push(json!({"name":name,"outcome":outcome,"effect":name != "hook-connect" && outcome != "unavailable"}));
 }
 fn stop(
     t: &mut Transition,
@@ -386,19 +388,21 @@ pub(crate) fn report(
             if state != "unknown" && state != "stopped" {
                 return Err("invalid run state".into());
             }
-            add(t, i, "hook-run", "unknown");
+            add(t, i, "hook", "unavailable");
         }
         lifecycle::Report::Run { outcome, .. } if phase == "run" => {
+            add(t, i, "hook-run", &outcome);
             if outcome == "succeeded" && v["cancelled"] != true {
                 return hook(t, a, c, i, &o);
             }
-            add(t, i, "hook-run", &outcome);
+            add(t, i, "hook", "unavailable");
         }
         lifecycle::Report::Connected { outcome, .. } if phase == "connect" => {
+            add(t, i, "hook-connect", &outcome);
             if outcome == "succeeded" && v["cancelled"] != true {
                 return hook(t, a, c, i, &o);
             }
-            add(t, i, "hook-connect", &outcome);
+            add(t, i, "hook", "unavailable");
         }
         lifecycle::Report::Stop { outcome } if phase == "stop" => {
             add(t, i, "stop", &outcome);

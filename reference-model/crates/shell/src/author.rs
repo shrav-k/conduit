@@ -14,6 +14,24 @@ fn state(directory: &Path) -> Result<Value> {
 fn reference(value: &Value) -> &Value {
     value.get("id").unwrap_or(value)
 }
+
+/// CLI-only supplement: inspect.v1 has no defined consumer-Conduit inventory.
+pub fn inspection_row(objects: &[Value], object: &Value, reply: Value) -> Value {
+    let mut row = json!({"object":{"kind":object["kind"],"name":object["name"]},"result":reply});
+    if row["result"]["isError"] == false
+        && object.get("spec").is_none()
+        && object["kind"] != "Conduit"
+    {
+        row["consumedConduits"] = json!(objects.iter().filter(|p| {
+            p["kind"] == "Conduit" && p.get("spec").is_none()
+                && reference(&p["consumer"]) == &object["id"]
+        }).map(|p| {
+            let target = objects.iter().find(|o| &o["id"] == reference(&p["target"]));
+            json!({"name":p["name"],"target":target.map(|o| json!({"kind":o["kind"],"name":o["name"],"id":o["id"]})).unwrap_or_else(|| p["target"].clone()),"open":p["open"] == true})
+        }).collect::<Vec<_>>());
+    }
+    row
+}
 fn named(argument: &str) -> Result<Value> {
     let (kind, name) = argument.split_once('/').ok_or("expected KIND/NAME")?;
     if !["Agent", "Interface", "Resource", "Pool", "Conduit"].contains(&kind)
@@ -139,6 +157,19 @@ pub async fn run(
         .await
         .map_err(|e| format!("conduit serve must hold this store: {e}"))?;
     match command {
+        "inspect" => {
+            let current = state(directory)?;
+            let objects = current["objects"].as_array().ok_or("missing objects")?;
+            for object in objects {
+                let reference = json!({"kind":object["kind"],"name":object["name"]});
+                let tool = route(directory, &reference, "inspect.v1")
+                    .unwrap_or_else(|_| "management.inspect.v1".into());
+                let reply =
+                    server::client(directory, None, Some(&tool), json!({"object":reference}))
+                        .await?;
+                println!("{}", inspection_row(objects, object, reply));
+            }
+        }
         "install" => {
             if args.len() != 1 {
                 return Err("install needs ARCHIVE#SHA256".into());

@@ -209,6 +209,8 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
             "in_app_browser",
             "computer_use",
             "multi_agent",
+            "multi_agent_v2",
+            "multi_agent_v2_dynamic_tools",
             "hooks",
             "plugins",
             "view_image",

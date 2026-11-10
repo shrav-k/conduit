@@ -333,10 +333,10 @@ fn serve_signal_during_setup_ends_run_and_starts_no_later_part() {
             .unwrap(),
     );
     let startup = Instant::now();
-    while !["shared", "history"]
-        .iter()
-        .any(|name| parent.path().join(name).join("pid").is_file())
-    {
+    while !["shared", "history"].iter().any(|name| {
+        fs::read_to_string(parent.path().join(name).join("pid"))
+            .is_ok_and(|s| s.parse::<i32>().is_ok())
+    }) {
         assert!(
             server.0.try_wait().unwrap().is_none(),
             "serve exited during setup: {}",
@@ -350,7 +350,10 @@ fn serve_signal_during_setup_ends_run_and_starts_no_later_part() {
     }
     let first = ["shared", "history"]
         .into_iter()
-        .find(|name| parent.path().join(name).join("pid").is_file())
+        .find(|name| {
+            fs::read_to_string(parent.path().join(name).join("pid"))
+                .is_ok_and(|s| s.parse::<i32>().is_ok())
+        })
         .unwrap();
     let pid: i32 = fs::read_to_string(parent.path().join(first).join("pid"))
         .unwrap()
@@ -596,7 +599,9 @@ fn cancel_setup_initializing_starts_no_later_part() {
             &runner,
         )
         .unwrap();
-    until(|| parent.path().join("shared/pid").exists());
+    until(|| {
+        fs::read_to_string(parent.path().join("shared/pid")).is_ok_and(|s| s.parse::<i32>().is_ok())
+    });
     let pid = fs::read_to_string(parent.path().join("shared/pid"))
         .unwrap()
         .parse::<i32>()
@@ -838,7 +843,9 @@ fn dropping_runner_during_initialize_ends_group_with_shell_still_open() {
             &runner,
         )
         .unwrap();
-    until(|| parent.path().join("shared/pid").exists());
+    until(|| {
+        fs::read_to_string(parent.path().join("shared/pid")).is_ok_and(|s| s.parse::<i32>().is_ok())
+    });
     let pid = fs::read_to_string(parent.path().join("shared/pid"))
         .unwrap()
         .parse::<i32>()

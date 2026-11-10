@@ -316,3 +316,42 @@ external purge; it is not a `purge.v1` implementation. `expire-outputs` explicit
 DL10, removing retained outputs and plain content, while preserving the invocation.
 The [finding log](../docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
 records the admin’s narrowing of header repair and the return-review regressions.
+
+## Setup and Conduit lifecycle (I2-07)
+
+The [setup cases](conventions/setup/base/case.yaml) register the ordinary S1 project
+before making lifecycle requests. They cover the base setup, a complete second setup with
+fresh keys, per-open sender authority (including an onward setup), opening before a target
+is ready, independent A/B closing, a result arriving after close, and explicit restoration.
+Additional cases cover optional declarations, ordered Pool entry setup, run reports,
+partial setup without rollback, cancellation, hook keys and outcomes, concurrent run and
+remote-connection parts, and replacement against a changed or missing template or retired target.
+The registration-only Agent types still launch no wrappers or model work.
+
+`setup-report` carries the setup invocation ID and a report: `inspect-run` with `state`,
+`run` with `outcome` and an optional provider `url`, or `connected` with the selected `part`
+and its `outcome`. It supplies evidence rather than performing a runner or network action.
+A `lifecycle-fixture` selects an indexed request from a declared file, just as a
+`request-fixture` does, while allowing lifecycle changes to persist. Its optional patches,
+implementation updates and supplied serving invocations describe small explicit variants;
+the base case uses the real lifecycle transitions throughout. An observation may remove an
+object to represent an unregistered template. `@core#` also expands in fixture map keys.
+
+Assertions `object_count` and `absent_objects` check exact cardinality and removal;
+`object_facts` and `invocation_facts` select objects by ID (or instance name) and compare
+required fields. `record_facts` requires matching records in the stated causal order.
+These supplement the existing exact arrays and promise checks. The base case checks both
+open invocations' sender, original caller and parent links, stable nested IDs and revisions;
+the close case checks the exact remaining private tool list. For a development subset,
+`cargo run --release -p conduit-conformance -- .. setup-` runs IDs with that prefix. Omitting
+the prefix runs every case; the coverage inventory is validated in either mode.
+
+The `setup-review-` cases exercise the return review of order 016: dependency order
+and a failed optional dependency, hook filter reasons with and without earlier effects,
+a cancelled Pool entry run, retirement before a run and during concurrent parts in both
+completion orders, frozen reference inputs during replacement, complete Running conditions,
+an expanded relative command with an explicit runtime, and provider calls within entry
+setup. The runner validates every condition against `condition.v1` and rejects request route
+fields on every provider-call record, in addition to the vectors' positive and absent-field
+assertions. The condition cases check unchanged transition times, changed statuses, preserved
+unrelated conditions and the last successful heartbeat when observation becomes unknown.

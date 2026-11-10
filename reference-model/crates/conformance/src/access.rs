@@ -59,6 +59,14 @@ pub(super) fn patch(state: &mut State, patches: &Value) -> Result<()> {
         return Ok(());
     }
     for patch in patches.as_array().ok_or("patches must be an array")? {
+        if let Some(id) = patch.get("remove") {
+            let before = state.objects.len();
+            state.objects.retain(|o| o["id"] != *id);
+            if state.objects.len() == before {
+                return Err("removal observation names no object".into());
+            }
+            continue;
+        }
         if patch.get("append").is_some() {
             state.objects.push(patch["append"].clone());
             continue;

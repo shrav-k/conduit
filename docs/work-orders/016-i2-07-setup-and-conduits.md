@@ -45,3 +45,18 @@ As order 009's scope.
 S1's base setup succeeds by vectors, and the six rows pass, with T7's case shown: closing A's
 Conduit leaves B's working; every decision cites a promise; and the checks of order 004's
 done-when pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 23 minutes, then a second round. Setup in its parts, intents to run and their
+  completions, and the opening, closing, removal and explicit replacement of Conduits, with T7's
+  case: closing A's Conduit leaves B's working; 22 vectors, then 345 in all.
+- **Verifier**: 7 minutes. Eight `must`, among them Pool entries set up by name rather than by
+  their dependencies, a refused hook leaving its setup in progress, cancellation or retirement
+  losing an effect's unknown outcome, and a relative program sent to a runtime provider.
+- **Admin**: sent the worker back once, insisting that an effect whose outcome is unknown is
+  never reported failed and that nothing the promises forbid is dispatched. Each finding was
+  decided by its promises (POOL-013, OPS-022, OPS-027, TPL-012, LIF-009, PRV-007, PRV-005 and
+  others) and fixed with a vector that failed before it.

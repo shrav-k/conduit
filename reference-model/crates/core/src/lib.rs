@@ -4,6 +4,7 @@
 
 pub mod access;
 pub mod archives;
+pub mod lifecycle;
 pub mod packages;
 pub mod registration;
 pub mod requests;
@@ -36,6 +37,8 @@ pub struct State {
     pub invocations: Vec<Value>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub installed_packages: Vec<archives::InstalledPackage>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub preinstalled_snapshots: Vec<packages::Snapshot>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -89,6 +92,11 @@ pub enum Input {
         invocation: String,
         #[serde(default)]
         confirmation: Option<Value>,
+    },
+    SetupReport {
+        evidence: Evidence,
+        invocation: String,
+        report: lifecycle::Report,
     },
     Recover {
         evidence: Evidence,
@@ -271,6 +279,13 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
             confirmation,
             context,
         )?,
+        Input::SetupReport {
+            evidence,
+            invocation,
+            report,
+        } => {
+            lifecycle::report(&mut transition, &evidence, &invocation, report, context)?;
+        }
         Input::Recover { evidence } => requests::recover(&mut transition, &evidence, context)?,
         Input::ExpireOutputs { invocation } => requests::expire(&mut transition, &invocation)?,
         Input::Access { evidence, request } => {

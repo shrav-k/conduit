@@ -1,0 +1,391 @@
+{
+  "id": "setup-sender-no-access",
+  "title": "S1-setup-sender: each open uses the sending instance authority; no rollback",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "ACC-005",
+    "CON-004",
+    "TPL-012",
+    "OPS-022",
+    "LIF-004",
+    "LIF-027"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "fixture": "../../../language/registration/s1/fixture.json",
+    "filesystem-m": "../../../fixtures/s1/packages/filesystem/conduit.yaml",
+    "filesystem-d": "../../../fixtures/s1/packages/filesystem/contracts.yaml",
+    "filesystem-a": "../../../fixtures/s1/archives/filesystem.tar.gz",
+    "history-m": "../../../fixtures/s1/packages/history/conduit.yaml",
+    "history-d": "../../../fixtures/s1/packages/history/contracts.yaml",
+    "history-a": "../../../fixtures/s1/archives/history.tar.gz",
+    "agents-m": "../../../fixtures/s1/packages/agents/conduit.yaml",
+    "agents-d": "../../../fixtures/s1/packages/agents/contracts.yaml",
+    "agents-a": "../../../fixtures/s1/archives/agents.tar.gz",
+    "conduit.yaml": "../../../fixtures/s1/project/conduit.yaml",
+    "templates.yaml": "../../../fixtures/s1/project/templates.yaml",
+    "instances.yaml": "../../../fixtures/s1/project/instances.yaml",
+    "initial": "../../../fixtures/root-system-state.json",
+    "requests": "requests.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "register-project",
+        "file": "fixture",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000100",
+            "00000000-0000-4000-8000-000000000101",
+            "00000000-0000-4000-8000-000000000102",
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105",
+            "00000000-0000-4000-8000-000000000106",
+            "00000000-0000-4000-8000-000000000107",
+            "00000000-0000-4000-8000-000000000108",
+            "00000000-0000-4000-8000-000000000109",
+            "00000000-0000-4000-8000-000000000110",
+            "00000000-0000-4000-8000-000000000111",
+            "00000000-0000-4000-8000-000000000112",
+            "00000000-0000-4000-8000-000000000113",
+            "00000000-0000-4000-8000-000000000114",
+            "00000000-0000-4000-8000-000000000115",
+            "00000000-0000-4000-8000-000000000116",
+            "00000000-0000-4000-8000-000000000117",
+            "00000000-0000-4000-8000-000000000118",
+            "00000000-0000-4000-8000-000000000119",
+            "00000000-0000-4000-8000-000000000120",
+            "00000000-0000-4000-8000-000000000121",
+            "00000000-0000-4000-8000-000000000122",
+            "00000000-0000-4000-8000-000000000123",
+            "00000000-0000-4000-8000-000000000124",
+            "00000000-0000-4000-8000-000000000125",
+            "00000000-0000-4000-8000-000000000126",
+            "00000000-0000-4000-8000-000000000127",
+            "00000000-0000-4000-8000-000000000128",
+            "00000000-0000-4000-8000-000000000129",
+            "00000000-0000-4000-8000-000000000130",
+            "00000000-0000-4000-8000-000000000131",
+            "00000000-0000-4000-8000-000000000132",
+            "00000000-0000-4000-8000-000000000133",
+            "00000000-0000-4000-8000-000000000134",
+            "00000000-0000-4000-8000-000000000135",
+            "00000000-0000-4000-8000-000000000136",
+            "00000000-0000-4000-8000-000000000137",
+            "00000000-0000-4000-8000-000000000138",
+            "00000000-0000-4000-8000-000000000139",
+            "00000000-0000-4000-8000-000000000140",
+            "00000000-0000-4000-8000-000000000141"
+          ],
+          "revisions": [
+            "reg-0",
+            "reg-1",
+            "reg-2",
+            "reg-3",
+            "reg-4",
+            "reg-5",
+            "reg-6",
+            "reg-7",
+            "reg-8",
+            "reg-9",
+            "reg-10",
+            "reg-11",
+            "reg-12",
+            "reg-13",
+            "reg-14",
+            "reg-15",
+            "reg-16",
+            "reg-17",
+            "reg-18",
+            "reg-19"
+          ],
+          "suffixes": [
+            "a0000",
+            "a0001",
+            "a0002",
+            "a0003",
+            "a0004",
+            "a0005"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000006",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        },
+        "reverse": false
+      },
+      "expect": {
+        "state": {
+          "started": true
+        },
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000000119",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000100",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000120",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000101",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000121",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000102",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000122",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000103",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000123",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000104",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000124",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000105",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000125",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000106",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000126",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000107",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000127",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000108",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000128",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000129",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000110",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000130",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000111",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000131",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000112",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000132",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000113",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000133",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000114",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000134",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000115",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000135",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000116",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000136",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000117",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000137",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000118",
+              "action": "registered"
+            }
+          }
+        ],
+        "reply": {
+          "accepted": true
+        },
+        "object_count": 27,
+        "required_promises": [
+          "INS-016"
+        ],
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "failed"
+          }
+        },
+        "external_intents": [],
+        "object_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000000109",
+            "state": "registered"
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000110",
+            "state": "registered",
+            "open": false
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000111",
+            "state": "registered",
+            "open": false
+          }
+        ],
+        "required_promises": [
+          "ACC-005",
+          "OPS-022",
+          "LIF-027"
+        ]
+      }
+    }
+  ]
+}

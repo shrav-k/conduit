@@ -291,6 +291,7 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
             ("conduit", "conduit"),
             ("operation", "operation"),
             ("serving", "serving"),
+            ("object", "object"),
             ("requiredCapabilities", "requiredCapabilities"),
             ("extensionRevision", "extensionRevision"),
         ] {
@@ -374,14 +375,33 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
     Ok(())
 }
 
-fn record(
+pub(crate) fn record(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
     event: &str,
     mut data: Value,
 ) -> Result<()> {
-    record_content(t, c, &mut data)?;
+    // PRV-005 / REC-002: the enclosing invocation supplies correlation only.
+    // A provider call has its own target and inputs, and no request route.
+    if event == "provider-call" {
+        let enclosing = data.as_object_mut().unwrap().remove("invocation");
+        record_content(t, c, &mut data)?;
+        if let Some(id) = enclosing {
+            data["invocation"] = id;
+        }
+        for field in [
+            "consumer",
+            "conduit",
+            "serving",
+            "idempotencyKey",
+            "filters",
+        ] {
+            data.as_object_mut().unwrap().remove(field);
+        }
+    } else {
+        record_content(t, c, &mut data)?;
+    }
     if let Some(fields) = data.as_object_mut() {
         fields.retain(|_, v| !v.is_null());
     }
@@ -417,7 +437,7 @@ fn end(
     record(t, a, c, "request-ended", data)
 }
 #[allow(clippy::too_many_arguments)]
-fn reject(
+pub(crate) fn reject(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
@@ -495,15 +515,32 @@ pub(crate) fn invoke(
     key: Option<String>,
     c: &Context,
 ) -> Result<()> {
-    if key.as_ref().is_some_and(String::is_empty) {
-        return Err("empty idempotency key at boundary".into());
-    }
-    let v = access::evaluate(&t.state, request, c, true)?;
     let mut a = Allocation {
         evidence,
         cursor: 0,
     };
+    invoke_part(t, &mut a, request, key, c, None)
+}
+
+pub(crate) fn invoke_part(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    request: &access::AccessRequest,
+    key: Option<String>,
+    c: &Context,
+    parent: Option<&Value>,
+) -> Result<()> {
+    if key.as_ref().is_some_and(String::is_empty) {
+        return Err("empty idempotency key at boundary".into());
+    }
+    let v = access::evaluate(&t.state, request, c, true)?;
     let mut route = v.route;
+    if let Some(parent) = parent
+        && route.is_object()
+    {
+        route["caller"] = parent["caller"].clone();
+        route["serving"] = parent["id"].clone();
+    }
     // A readable rejection still has the caller's inputs when the selected Type
     // retains them. Accepted inputs already contain normalized defaults.
     if route.get("arguments").is_none()
@@ -515,15 +552,17 @@ pub(crate) fn invoke(
     if let Some(key) = &key {
         route["idempotencyKey"] = json!(key);
     }
-    if let Some(serving) = &request.serving {
+    if parent.is_none()
+        && let Some(serving) = &request.serving
+    {
         route["serving"] = json!(serving);
     }
     record(
         t,
-        &mut a,
+        a,
         c,
         "access-decision",
-        json!({"target":route["target"],"consumer":route["consumer"],"caller":route["caller"],"tool":request.tool,"conduit":route["conduit"],"operation":route["operation"],"serving":request.serving,"idempotencyKey":key,"arguments":route["arguments"],"permitted":v.reason.is_none()}),
+        json!({"target":route["target"],"consumer":route["consumer"],"caller":route["caller"],"tool":request.tool,"conduit":route["conduit"],"operation":route["operation"],"serving":route["serving"],"idempotencyKey":key,"arguments":route["arguments"],"permitted":v.reason.is_none()}),
     )?;
     let mut access_rules = v.rules.clone();
     access_rules.extend(["REC-001", "REC-002", "SEC-004"]);
@@ -540,16 +579,7 @@ pub(crate) fn invoke(
         } else {
             v.rules[0]
         };
-        return reject(
-            t,
-            &mut a,
-            c,
-            &route,
-            reason,
-            rule,
-            None,
-            v.restriction.as_ref(),
-        );
+        return reject(t, a, c, &route, reason, rule, None, v.restriction.as_ref());
     }
     let target = crate::registration::publication_object(
         access::object(&t.state, &route["target"]).ok_or("missing target")?,
@@ -583,7 +613,7 @@ pub(crate) fn invoke(
         if let Some(rule) = conflict {
             return reject(
                 t,
-                &mut a,
+                a,
                 c,
                 &route,
                 "conflict",
@@ -604,15 +634,20 @@ pub(crate) fn invoke(
             && old["needs_result"] == true
             && (filtered || old.get("retained").is_none())
         {
-            return reject(t, &mut a, c, &route, "conflict", "OPS-034", Some(id), None);
+            return reject(t, a, c, &route, "conflict", "OPS-034", Some(id), None);
         }
+    }
+    if (previous.is_none() || redispatch)
+        && let Some((reason, rule)) = crate::lifecycle::preflight(&t.state, &route, c)?
+    {
+        return reject(t, a, c, &route, reason, rule, None, None);
     }
     // OPS-023 puts ordinary unavailability after conflicts, including the repeat index.
     let available = access::evaluate(&t.state, request, c, false)?;
     if let Some(reason) = available.reason {
         return reject(
             t,
-            &mut a,
+            a,
             c,
             &route,
             reason,
@@ -644,7 +679,27 @@ pub(crate) fn invoke(
             json!({"invocation":old["id"]}),
             vec![],
         ));
-        return end(t, &mut a, c, &route, Some(outcome), None, Some(&old["id"]));
+        return end(t, a, c, &route, Some(outcome), None, Some(&old["id"]));
+    }
+    if op == c.qualified("register-replacement.v1") {
+        let parent = access::object(&t.state, &route["arguments"]["instance"])
+            .ok_or("replacement parent absent")?
+            .clone();
+        let mut trial = t.clone();
+        let mut allocation = Allocation {
+            evidence: a.evidence,
+            cursor: a.cursor,
+        };
+        let result = crate::registration::replacement(
+            &mut trial,
+            &mut allocation,
+            c,
+            &parent,
+            &route["arguments"]["nested"],
+        )?;
+        if let Some(rule) = result["rule"].as_str() {
+            return reject(t, a, c, &route, "invalid", rule, None, None);
+        }
     }
     // Validate reconciliation's state after authority/schema, before allocating or dispatching.
     let reconcile = op == c.qualified("reconcile.v1");
@@ -655,17 +710,17 @@ pub(crate) fn invoke(
             .iter()
             .position(|v| v["id"] == route["arguments"]["invocation"]);
         let Some(i) = i else {
-            return reject(t, &mut a, c, &route, "invalid", "OPS-029", None, None);
+            return reject(t, a, c, &route, "invalid", "OPS-029", None, None);
         };
         if route["arguments"].get("revision").is_some()
             && t.state.invocations[i]["contract"]["spec"]
                 .get("changes")
                 .is_none()
         {
-            return reject(t, &mut a, c, &route, "invalid", "OPS-031", None, None);
+            return reject(t, a, c, &route, "invalid", "OPS-031", None, None);
         }
         if t.state.invocations[i]["state"] != "unknown" {
-            return reject(t, &mut a, c, &route, "conflict", "OPS-030", None, None);
+            return reject(t, a, c, &route, "conflict", "OPS-030", None, None);
         }
         if t.state.invocations[i]["contract"]["spec"]
             .get("changes")
@@ -685,13 +740,19 @@ pub(crate) fn invoke(
     if implementation.is_null() {
         return Err("missing selected implementation".into());
     }
-    if implementation["source"] == "engine" && !reconcile {
+    if implementation["source"] == "engine" && !reconcile && !crate::lifecycle::handles(op, c) {
         return Err("engine operation belongs to its lifecycle or records transition".into());
     }
     let plain = implementation["item"]["plain"] == true;
     let mut invocation = json!({"id":id,"key":key,"sender":route["consumer"],"caller":route["caller"],"target":route["target"],"conduit":route["conduit"],"operation":op,"arguments":route["arguments"],"digest":digest,"filters":route["filters"],"state":"in-progress","plain":plain,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":plain || contract["spec"].get("outputSchema").is_some(),"attempt":previous.as_ref().and_then(|v|v["attempt"].as_u64()).unwrap_or(0)+1,"wire_retried":false,"config":target["config"],"revision":target["revision"]});
     if let Some(serving) = &request.serving {
         invocation["serving"] = json!(serving);
+    }
+    if let Some(parent) = parent {
+        invocation["setup_parent"] = parent["id"].clone();
+        invocation["serving"] = parent["id"].clone();
+        invocation["caller"] = parent["caller"].clone();
+        invocation["filters"] = parent["filters"].clone();
     }
     if let Some(old) = previous {
         invocation["previous"] = old;
@@ -705,7 +766,7 @@ pub(crate) fn invoke(
     };
     record(
         t,
-        &mut a,
+        a,
         c,
         "invocation-dispatched",
         json!({"target":route["target"],"caller":route["caller"],"consumer":route["consumer"],"conduit":route["conduit"],"operation":op,"invocation":id,"attempt":invocation["attempt"]}),
@@ -734,7 +795,7 @@ pub(crate) fn invoke(
             .remove("retained");
         record(
             t,
-            &mut a,
+            a,
             c,
             "invocation-ended",
             json!({"target":t.state.invocations[reconciled]["target"],"invocation":args["invocation"],"outcome":outcome,"actor":route["consumer"],"checked":args["checked"],"reconciled":true}),
@@ -746,14 +807,16 @@ pub(crate) fn invoke(
             json!({"checked":args["checked"]}),
             vec![],
         ));
-        finish(t, &mut a, c, i, "succeeded", json!({}), json!([]))?;
+        finish(t, a, c, i, "succeeded", json!({}), json!([]))?;
+    } else if crate::lifecycle::handles(op, c) {
+        crate::lifecycle::execute(t, a, c, i)?;
     } else {
         t.external_intents.push(intent(&invocation, c));
         t.reply = json!({"pending":true,"invocation":id,"attempt":invocation["attempt"]});
     }
     Ok(())
 }
-fn finish(
+pub(crate) fn finish(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
@@ -920,7 +983,7 @@ pub(crate) fn complete(
                         } else {
                             t.state.invocations.remove(i);
                         }
-                        return reject(
+                        reject(
                             t,
                             &mut a,
                             c,
@@ -929,7 +992,8 @@ pub(crate) fn complete(
                             "IFC-026",
                             None,
                             restriction,
-                        );
+                        )?;
+                        return crate::lifecycle::child_answered(t, &mut a, c, &v, reason.unwrap());
                     }
                 }
                 if reason_value.is_none()
@@ -969,7 +1033,8 @@ pub(crate) fn complete(
     if outcome != "succeeded" {
         outputs = json!({});
     }
-    finish(t, &mut a, c, i, outcome, outputs, content)
+    finish(t, &mut a, c, i, outcome, outputs, content)?;
+    crate::lifecycle::child_ended(t, &mut a, c, i)
 }
 pub(crate) fn cancel(
     t: &mut Transition,
@@ -988,6 +1053,9 @@ pub(crate) fn cancel(
         evidence,
         cursor: 0,
     };
+    if t.state.invocations[i].get("setup").is_some() {
+        return crate::lifecycle::cancel(t, &mut a, c, i);
+    }
     t.external_intents
         .push(json!({"kind":"cancel","invocation":id,"attempt":t.state.invocations[i]["attempt"]}));
     t.decisions.push(decision(
@@ -1055,6 +1123,81 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
         vec![],
     ));
     t.reply = json!({"restored":true});
+    Ok(())
+}
+
+/// A hook is an invocation with a stable per-instance key and no Conduit. It is
+/// authorized by its setup, and retains the caller and filters of that invocation.
+pub(crate) fn setup_hook(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    parent: usize,
+    object: &Value,
+    implementation: &Value,
+) -> Result<()> {
+    let p = t.state.invocations[parent].clone();
+    let op = c.qualified("setup-hook.v1");
+    let previous = t
+        .state
+        .invocations
+        .iter()
+        .position(|v| v["hook"] == true && v["target"] == object["id"] && v["operation"] == op);
+    if let Some(i) = previous
+        && t.state.invocations[i]["state"] != "failed"
+    {
+        let old = t.state.invocations[i].clone();
+        t.state.invocations[parent]["setup"]["phase"] = json!("hook-pending");
+        t.state.invocations[i]["setup_parent"] = p["id"].clone();
+        t.decisions.push(decision(
+            "keep-hook-outcome",
+            &["OPS-021", "OPS-028"],
+            &[],
+            json!({"hook":old["id"]}),
+            vec![],
+        ));
+        return crate::lifecycle::child_ended(t, a, c, i);
+    }
+    let target = crate::registration::publication_object(object, c)?;
+    let (_, _, contract) = schemas::operation(&target, &op, &c.core_package)?;
+    let id = if let Some(i) = previous {
+        t.state.invocations[i]["id"].clone()
+    } else {
+        json!(a.next(&mut t.state)?)
+    };
+    let attempt = previous
+        .and_then(|i| t.state.invocations[i]["attempt"].as_u64())
+        .unwrap_or(0)
+        + 1;
+    let v = json!({"id":id,"key":format!("{}:{op}",object["id"].as_str().unwrap()),"hook":true,"setup_parent":p["id"],"serving":p["id"],"sender":p["sender"],"caller":p["caller"],"target":object["id"],"operation":op,"arguments":{},"filters":p["filters"],"state":"in-progress","plain":implementation["item"]["plain"] == true,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":false,"attempt":attempt,"config":object["config"],"revision":object["revision"]});
+    if let Some(i) = previous {
+        t.state.invocations[i] = v.clone();
+    } else {
+        t.state.invocations.push(v.clone());
+    }
+    t.state.invocations[parent]["setup"]["phase"] = json!("hook-pending");
+    record(
+        t,
+        a,
+        c,
+        "invocation-dispatched",
+        json!({"target":object["id"],"invocation":id,"caller":p["caller"],"consumer":p["sender"],"serving":p["id"],"operation":op,"attempt":attempt}),
+    )?;
+    let mut call = intent(&v, c);
+    if let Some(meta) = call["call"]["params"]["_meta"].as_object_mut() {
+        meta.remove(&mark(c, "conduit"));
+    }
+    t.external_intents.push(call);
+    t.reply = json!({"pending":true,"invocation":p["id"],"hook":id});
+    t.decisions.push(decision(
+        "dispatch-setup-hook",
+        &[
+            "TPL-012", "TPL-017", "OPS-021", "OPS-028", "ACC-018", "IMP-002",
+        ],
+        &[],
+        json!({"hook":id}),
+        vec![],
+    ));
     Ok(())
 }
 

@@ -1,0 +1,108 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "test.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [
+        "#test-cap.v1"
+      ],
+      "implementation": {
+        "#ping.v1": "#relative"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "agent"
+    },
+    "spec": {
+      "type": "#test.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "a"
+    },
+    "from": "agent",
+    "runtime": "provider"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "provider.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [
+        "github.com/shrav-k/conduit/core#runtime-provider.v1"
+      ],
+      "requires": [],
+      "implementation": {
+        "github.com/shrav-k/conduit/core#run.v1": "#provider-server",
+        "github.com/shrav-k/conduit/core#stop.v1": "#provider-server",
+        "github.com/shrav-k/conduit/core#inspect-run.v1": "#provider-server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "provider-template"
+    },
+    "spec": {
+      "type": "#provider.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "provider"
+    },
+    "from": "provider-template",
+    "owner": "system"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "test-cap.v1"
+    },
+    "spec": {
+      "operations": [
+        "#ping.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "ping.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object"
+      }
+    }
+  }
+]

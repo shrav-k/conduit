@@ -813,3 +813,121 @@ unknown. Record content is assembled in one helper using the held Type, with sch
 exclusions described by path and rule. Correcting reconciliation record enrichment also makes
 its target the reconciled invocation's target. These implement the cited promises and add no
 new language behavior.
+
+## I2-07: setup and Conduit lifecycle (work order 016)
+
+The core carries out ordered setups through the invocation path, including separately
+authorized declared opens and Pool entry setups, explicit runner inspection/run reports,
+remote connection parts and the final hook. Earlier successful parts survive a later
+failure. Hook attempts retain a stable instance/operation key; succeeded and unknown hooks
+are not dispatched again. Cancellation ends pending work and begins no later part.
+No process or network connection is made by the core or by these vectors.
+
+Closing records shutdown and removal, keeps the consumer ready, and preserves both records
+and pending invocations. The original in-flight response still completes; subsequent calls
+and onward requests use current authority. A missing declared slot is not recreated by setup.
+Explicit replacement uses the existing registration resolver, frozen declaration references,
+the current referenced template and a fresh identity, and leaves opening to a later request.
+
+The 22 new cases under [setup](../../../conformance/conventions/setup/base/case.yaml)
+cover the six S1 rows of the order, T7's independent A/B access, and the setup part boundaries.
+Their IDs are in the coverage manifest and the required-case test. The base setup checks
+part invocation/caller links and performs a complete second setup with fresh request keys;
+runner reports and all UUID allocations are supplied. Findings: none newly established;
+no promise text changed.
+
+**Choices made by the worker.** Pending setup plans are stored within the durable invocation
+index. A typed `setup-report` resumes only the outstanding part. The identity descriptor
+contains required field names from the core contract and the subject ID, never credentials.
+Preinstalled snapshots are retained in state so replacement can check the same immutable
+package identities as registration. The runner adds explicit lifecycle observations,
+ID-selected object/invocation assertions, ordered record projections and a development
+case-prefix selector. These are core/runner representations, not new language rules.
+
+### Return review of work order 016
+
+The admin accepted eight verifier findings. Each is decided by the promises already in
+force; none changes the specification or needs a "For the admin" settlement.
+
+1. **Entry dependencies — POOL-006, POOL-013.** POOL-013 begins an entry "only once the
+   parts for the entries it refers to have succeeded". Setup orders entries by their frozen
+   reference dependencies and checks their outcomes before dispatch. The
+   [succeeded dependency](../../../conformance/conventions/setup/review-dependencies-succeeded/case.yaml)
+   and [failed dependency](../../../conformance/conventions/setup/review-dependencies-failed/case.yaml)
+   cases put `z` before its dependent `a`, despite alphabetical order. A failed optional `z`
+   leaves `a` undispatched and unsuccessful.
+2. **Hook reasons — IFC-026, IFC-027, OPS-022.** IFC-026 covers "a request or a hook";
+   OPS-022 expressly counts a part answered with a reason as unsuccessful without an effect.
+   A hook's snapshot now supplies its reason to the parent before the parent settles, even
+   when the hook invocation was removed. The
+   [refused](../../../conformance/conventions/setup/review-hook-refused/case.yaml) and
+   [unavailable](../../../conformance/conventions/setup/review-hook-unavailable/case.yaml)
+   cases match the filter actually sent to the hook. Earlier successful opens make the parent
+   unknown; the corresponding
+   [refused without effects](../../../conformance/conventions/setup/review-hook-refused-no-effect/case.yaml)
+   and [unavailable without effects](../../../conformance/conventions/setup/review-hook-unavailable-no-effect/case.yaml)
+   cases end failed. The hook itself is answered with its reason, never a fabricated outcome.
+3. **Cancelled entry effects — OPS-022, OPS-027, TPL-012.** OPS-022 requires unknown where
+   an effectful part ended unknown. Cancellation now records each nested setup's outcome,
+   effect and invocation in the Pool's parts before settlement. The
+   [Pool cancellation](../../../conformance/conventions/setup/review-pool-cancel/case.yaml)
+   case cancels while the first entry's run is pending, and asserts unknown for both setups,
+   their part link and the cancellation intent.
+4. **Retirement during setup — TPL-012, OPS-022, LIF-006.** TPL-012 requires that "the
+   parts already dispatched end as they end" and prohibits any new part after retirement.
+   Setup waits for pending entries, hooks, run work and connections; it records required work
+   retirement prevented from starting. The five retirement cases cover
+   [before a run](../../../conformance/conventions/setup/review-retire-before-run/case.yaml),
+   connection-first completion with a
+   [successful](../../../conformance/conventions/setup/review-retire-connection-succeeded/case.yaml)
+   or [unknown run](../../../conformance/conventions/setup/review-retire-connection-unknown/case.yaml),
+   and run-first completion with a
+   [successful](../../../conformance/conventions/setup/review-retire-run-succeeded/case.yaml)
+   or [unknown run](../../../conformance/conventions/setup/review-retire-run-unknown/case.yaml).
+   No early completion settles outstanding work; no later hook or run is dispatched; the
+   instance stays retired. An effect whose result is unknown remains unknown in setup.
+5. **Replacement configuration — LIF-009, OBJ-009, INS-006.** LIF-009 uses the parent's
+   resolved nested definition. Configuration resolution now respects replacement's trusted
+   context for retained input references. The
+   [reference replacement](../../../conformance/conventions/setup/review-replacement-reference/case.yaml)
+   case registers an ordinary Resource entry with a reference input directed into its
+   configuration, checks the parent's frozen argument, retires the entry and checks the
+   replacement's configuration. Ordinary registration still rejects actor-authored IDs, as
+   the existing authored-reference cases require.
+6. **Running conditions — LIF-011, OBS-002, OBS-003, condition.v1.** LIF-011 requires the
+   full condition schema; OBS-002 requires a URI-reference source and OBS-003 preserves the
+   last successful heartbeat for an unknown observation. Inspection upserts Running beside
+   other conditions, including reason, message and transition time, with a string source.
+   The [built-in](../../../conformance/conventions/setup/review-conditions-builtin/case.yaml)
+   and [selected runtime](../../../conformance/conventions/setup/review-conditions-provider/case.yaml)
+   cases assert complete conditions through repeated stopped reports, running and unknown.
+   Transition time stays fixed while status stays fixed. The runner also validates every
+   condition against the actual core schema.
+7. **Relative programs — PRV-007.** Its explicit prohibition applies even after SUB-010
+   expands the manifest's relative path: the part ends failed and nothing runs. Before a
+   provider run, setup now reads the selected implementation's retained relative-program
+   provenance in its held scope. The
+   [relative provider command](../../../conformance/conventions/setup/review-relative-provider/case.yaml)
+   case registers an explicit runtime and a relative command from an ordinary manifest,
+   asserts its expanded path, reports stopped and asserts failed with no run intent.
+8. **Provider records — PRV-005, REC-002.** PRV-005 gives a provider call no Conduit,
+   restriction or idempotency key; REC-002 gives its record no invocation served. Provider
+   records now use the provider's own target and inputs with explicit enclosing-invocation
+   correlation, without enriching them from the enclosing request's route. The
+   [nested provider records](../../../conformance/conventions/setup/review-provider-records/case.yaml)
+   case checks inspection and run within a Pool entry's setup, including correlation and
+   absent request fields. Every provider-call record is also checked for the forbidden
+   fields by the runner.
+
+**Regression evidence.** Each of these seventeen cases was run with its corresponding fix
+disabled, with the other fixes present, and failed. The failures respectively exposed the
+wrong first entry, the missing hook part, the lost cancelled entry part, settlement before
+outstanding work ended, rejection of the frozen replacement input, invalid conditions, a
+forbidden provider run intent and inherited `serving` on a provider record. All cases are
+required by the inventory test. No expected failure is presented as a successful check.
+
+**Choices made by the worker.** Independent entries use deterministic name order as a tie
+break; references determine their dependencies. A retirement-prevented required part is
+represented as `retired-before-part` with no effect. Running conditions use `RunRunning`,
+`RunStopped` and `RunUnknown` reasons, and a provider UUID URN or the built-in runner's URN
+as their source. These are core and runner representations of the cited promises.

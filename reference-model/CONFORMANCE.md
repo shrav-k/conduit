@@ -182,10 +182,27 @@ argument. Apps false/true uses explicit disable/enable apps, requiring real-clie
 No claim of account-source exclusion, peer refusal or intended subscription use follows from
 the scripted tests. The owner's subscription is shared, as ruling 48 requires for increment 3.
 
-All restrictions are mediated (ACC-027). In particular Codex's read-only shell can read files
-outside the engine, including shared files and other run credentials readable by the OS user.
-Neither wrapper provides OS-user isolation. The closeout must report this route, and any native
-account/peer channel enabled by an input, separately from successful MCP access enforcement.
+The client's own tools that reach the machine, a shell, code execution, a browser, another
+Agent, hooks and plugins are off by default, alongside account services and messaging
+(order 024, findings 3-04 and 3-05). Claude uses --setting-sources "" and --tools ""; only
+explicit --mcp-config/--settings supply the engine, header helper and allow rule. Codex uses
+project_doc_max_bytes=0 and --disable for shell_tool, unified_exec, code_mode_host, browser_use,
+browser_use_external, in_app_browser, computer_use, multi_agent, hooks, plugins, view_image,
+goals and image_generation. accountServices true enables apps alone; the other features stay
+off. Claude's peer opt-in remains limited to its three named tools.
+
+All restrictions are mediated (ACC-027). Neither wrapper provides OS-user isolation, and
+the shared login and same-user access to other run credentials remain limits. Codex's former
+read-only shell bypass is disabled; the admin must retry the outside-file read in closeout.
+The direct trial still listed apply_patch in its read-only sandbox and a request for user
+input. Closeout must report those and any other native tools still on, plus any account/peer
+channel enabled by an input, separately from successful MCP access enforcement.
+
+For finding 3-03, core publication omits outputSchema for an operation that declares no
+outputs, and its successful result omits structuredContent while preserving plain content.
+Declared outputs keep their schema and structured result; invalid/conflict error diagnostics
+remain as IFC-025 requires. The plain-read-text-only vector checks publication and the read's
+sole text content, and the repeat vectors check omission on successful repeated requests.
 
 CLI --package is an explicit local archive-admission step via install-archive, **not** the
 unfinished public install.v1 operation. It accepts repeated ARCHIVE#SHA256 arguments and

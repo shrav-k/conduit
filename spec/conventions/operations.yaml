@@ -289,33 +289,34 @@
     The request is a repeat, not a new request. Nothing is dispatched, and the result is that
     invocation's: the outcome succeeded, its outputs and any plain content.
   observable: >-
-    For this promise and OPS-034, the content of a succeeded plain invocation counts as outputs
-    that must be kept, whether or not the operation declares outputs. The engine keeps and
-    gives that content again unchanged, together with any declared outputs, for as long as
-    DL10 keeps them. After it no longer keeps the content, a repeat reports conflict under
-    OPS-034, and is never dispatched to recover it. A reconciliation supplies no content.
-    The implementation receives no further call for the invocation, and the result holds the
-    outputs that the invocation returned and the engine's ID for it, under IFC-025. Two requests
-    have the same contents when they name the same operation and their arguments are equal under
-    SCH-007, judged after the defaults are filled in under OPS-026: that of an input that was
-    left out, and that of a property that is absent from a map that was supplied. A request that
-    supplies `{}` for an input whose schema gives a property a `default`, and one that supplies
-    the map with that default written out, have the same contents. The engine keeps the outputs
-    of an invocation that succeeded for as long as DL10 of the implementation-defined list says,
-    and keeps none of one whose outcome a reconciliation set, since `reconcile.v1` takes none.
-    An operation that declares no outputs and is not implemented by a plain server has none
-    to lose: a repeat of an invocation of it that succeeded is answered so, with an empty map as its `structuredContent`, unless OPS-024
-    dispatches it again. Where a filter applies to the repeat, that answer gives only the
-    outcome already recorded, and no filter judges it, under ACC-008. A repeat of an invocation
-    that has not ended reports conflict under OPS-032, and so, under OPS-034, does one of an
-    invocation that succeeded, of an operation that declares outputs, where no filter applies to
-    the repeat and the engine does not keep them, or where a filter applies to it and OPS-024
-    does not dispatch it. A repeat of an invocation that succeeded, of an operation whose
-    contract states no `effect`, that is not a control and whose contract is not marked
-    `startsModelWork: true`, to which a filter applies, is dispatched as a new attempt under
-    OPS-024, so that its filters decide afresh; a repeat of one whose outcome is unknown is
-    OPS-012, and of one that failed OPS-024. A repeat is a request through a Conduit, and the
-    access decision is made for it like any other, under ACC-036: a repeat sent through a
+    For this promise and OPS-034, the content of a succeeded plain invocation counts as outputs that
+    must be kept, whether or not the operation declares outputs. The engine keeps and gives that
+    content again unchanged, together with any declared outputs, for as long as DL10 keeps them.
+    After it no longer keeps the content, a repeat reports conflict under OPS-034, and is never
+    dispatched to recover it. A reconciliation supplies no content. The implementation receives no
+    further call for the invocation, and the result holds the outputs that the invocation returned
+    and the engine's ID for it, under IFC-025. Two requests have the same contents when they name
+    the same operation and their arguments are equal under SCH-007, judged after the defaults are
+    filled in under OPS-026: that of an input that was left out, and that of a property that is
+    absent from a map that was supplied. A request that supplies `{}` for an input whose schema
+    gives a property a `default`, and one that supplies the map with that default written out, have
+    the same contents. The engine keeps the outputs of an invocation that succeeded for as long as
+    DL10 of the implementation-defined list says, and keeps none of one whose outcome a
+    reconciliation set, since `reconcile.v1` takes none. An operation that declares no outputs and
+    is not implemented by a plain server has none to lose: a repeat of an invocation of it that
+    succeeded is answered so, with no `structuredContent`, unless OPS-024 dispatches it again.
+    IFC-033 omits `outputSchema` for such an operation: the protocol makes it optional, a client
+    that sees one may prefer the structured result, and an empty map would hide the content. Where a
+    filter applies to the repeat, that answer gives only the outcome already recorded, and no filter
+    judges it, under ACC-008. A repeat of an invocation that has not ended reports conflict under
+    OPS-032, and so, under OPS-034, does one of an invocation that succeeded, of an operation that
+    declares outputs, where no filter applies to the repeat and the engine does not keep them, or
+    where a filter applies to it and OPS-024 does not dispatch it. A repeat of an invocation that
+    succeeded, of an operation whose contract states no `effect`, that is not a control and whose
+    contract is not marked `startsModelWork: true`, to which a filter applies, is dispatched as a
+    new attempt under OPS-024, so that its filters decide afresh; a repeat of one whose outcome is
+    unknown is OPS-012, and of one that failed OPS-024. A repeat is a request through a Conduit, and
+    the access decision is made for it like any other, under ACC-036: a repeat sent through a
     Conduit that has been closed reports refused under ACC-011.
   vectors: []
 

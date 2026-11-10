@@ -1,7 +1,7 @@
 # agent-codex
 
 Maintainer: the Conduit project's owner. Native-client launch baseline: Codex 0.167.0, from
-experiment 009. Work order 023 tested this package with its scripted client only; the real
+experiment 009. Work orders 023 and 024 tested this package with its scripted client only; the real
 client closeout is still required. No client version command or model was run for this order.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
@@ -56,16 +56,28 @@ turn. Closeout compares current client evidence with the engine's separate priva
 
 Codex resumes the exact thread in a fresh process per turn. Prompts are written verbatim
 to stdin with the `-` prompt argument, including literal `-` and option-like text. `--ignore-user-config`,
-`--strict-config` and `--ignore-rules` keep the owner's configuration/rules out. The sandbox
-is read-only and web search disabled. Apps are explicitly disabled unless accountServices is
+`--strict-config` and `--ignore-rules` exclude user configuration/rules;
+`-c project_doc_max_bytes=0` also prevents ancestor/project AGENTS.md discovery, which
+`--ignore-rules` alone did not stop (finding 3-05). The sandbox is read-only and web search
+disabled. Every launch and exact-thread resume disables `shell_tool`, `unified_exec`,
+`code_mode_host`, `browser_use`, `browser_use_external`, `in_app_browser`, `computer_use`,
+`multi_agent`, `hooks`, `plugins`, `view_image`, `goals` and `image_generation` with
+`--disable`. Apps are explicitly disabled unless accountServices is
 true, when they are explicitly enabled. Codex has no separate peer-messaging launch switch
 in the qualified baseline; peerMessaging is accepted/bound but changes no Codex argument.
 The HTTP server is required and its default_tools_approval_mode is approve. Its header helper
 receives the identity directory on its command line because Codex removes the run environment
 from helpers. No env_vars or inline token is configured for that server.
 
-**Mediated access (ACC-027): Codex's read-only shell can read files outside the engine**, which
-can include the shared directory and other run credentials accessible to the OS user. This
-package does not solve that route around the engine. Shared OS identity and the shared login
-also prevent a claim of strong isolation. Closeout must report the bypass even if every MCP
-call is correctly mediated, and independently prove that apps are actually off.
+The client's own tools that reach the machine, a shell, code execution, a browser, another
+Agent, hooks and plugins are off by default, alongside account services and messaging.
+`accountServices: true` enables `apps` alone; none of the disabled features is turned back on.
+The admin's direct trial still listed `apply_patch` (in the read-only sandbox) and a request
+for user input. These remain routes the closeout must report and exercise where possible,
+along with any other native tool still exposed; their presence is not engine authorization.
+
+**Mediated access (ACC-027):** the former read-only shell bypass is disabled by these launch
+arguments. Closeout must ask Codex to read an outside sentinel without engine tools and
+observe the result, not infer confinement from absent engine requests. Shared OS identity,
+access to other run credentials and the shared login still prevent strong isolation. Any
+opted-in app or other remaining native tool is a route around the engine and must be reported.

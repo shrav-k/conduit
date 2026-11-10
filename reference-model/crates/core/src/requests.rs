@@ -47,7 +47,7 @@ fn envelope(
     reason: Option<&str>,
     invocation: Option<&Value>,
     rule: &str,
-    outputs: Value,
+    outputs: Option<Value>,
     content: Value,
     restriction: Option<&Value>,
 ) -> Value {
@@ -74,7 +74,7 @@ fn envelope(
     }
     blocks.extend(content.as_array().into_iter().flatten().cloned());
     let mut reply = json!({"_meta":meta,"isError":error,"content":blocks});
-    if !error {
+    if !error && let Some(outputs) = outputs {
         reply["structuredContent"] = outputs;
     }
     if matches!(reason, Some("invalid" | "conflict")) {
@@ -499,7 +499,7 @@ pub(crate) fn reject(
         Some(reason),
         id,
         rule,
-        json!({}),
+        None,
         json!([]),
         restriction,
     );
@@ -592,7 +592,7 @@ pub(crate) fn invoke_part(
             Some("invalid"),
             None,
             "IFC-036",
-            json!({}),
+            None,
             json!([]),
             None,
         );
@@ -786,7 +786,9 @@ pub(crate) fn invoke_part(
             None,
             Some(&old["id"]),
             "",
-            old["retained"].get("outputs").cloned().unwrap_or(json!({})),
+            contract["spec"]
+                .get("outputSchema")
+                .map(|_| old["retained"].get("outputs").cloned().unwrap_or(json!({}))),
             old["retained"].get("content").cloned().unwrap_or(json!([])),
             None,
         );
@@ -985,7 +987,9 @@ pub(crate) fn finish(
         None,
         Some(&v["id"]),
         "",
-        outputs.clone(),
+        v["contract"]["spec"]
+            .get("outputSchema")
+            .map(|_| outputs.clone()),
         content,
         None,
     );

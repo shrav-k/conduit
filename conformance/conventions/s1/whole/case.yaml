@@ -3283,11 +3283,12 @@ steps:
         - type: text
           text: hello
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: hello
@@ -3390,11 +3391,12 @@ steps:
         - type: text
           text: hello.txt
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: hello.txt
@@ -3539,11 +3541,12 @@ steps:
         - type: text
           text: hello
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: hello
@@ -3648,11 +3651,12 @@ steps:
         - type: text
           text: written
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: written
@@ -3755,11 +3759,12 @@ steps:
         - type: text
           text: B update
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: B update
@@ -3864,11 +3869,12 @@ steps:
         - type: text
           text: posted
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: posted
@@ -3971,11 +3977,12 @@ steps:
         - type: text
           text: 2026-11-09-a-001.md
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: 2026-11-09-a-001.md
@@ -4078,11 +4085,12 @@ steps:
         - type: text
           text: a post
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: a post
@@ -4187,11 +4195,12 @@ steps:
         - type: text
           text: posted
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: posted
@@ -4296,11 +4305,12 @@ steps:
 
             2026-11-09-b-001.md'
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: '2026-11-09-a-001.md
@@ -4405,11 +4415,12 @@ steps:
         - type: text
           text: a post
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: a post
@@ -4751,11 +4762,12 @@ steps:
         - type: text
           text: written
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: written
@@ -4858,11 +4870,12 @@ steps:
         - type: text
           text: B while A closed
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: B while A closed
@@ -4965,11 +4978,12 @@ steps:
         - type: text
           text: b post
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: b post
@@ -5072,11 +5086,12 @@ steps:
         - type: text
           text: a post
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: a post
@@ -5583,11 +5598,12 @@ steps:
         - type: text
           text: B while A closed
   expect:
+    absent:
+    - /reply/structuredContent
     stateUnchanged: true
     external_intents: []
     reply:
       isError: false
-      structuredContent: {}
       content:
       - type: text
         text: B while A closed

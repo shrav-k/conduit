@@ -1104,13 +1104,11 @@ pub fn publish(
         }
     }
     let input = env.finish_bundle(input, todo, &context.core_package)?;
-    let output = spec
-        .get("outputSchema")
-        .cloned()
-        .unwrap_or(json!({"type":"object","properties":{},"additionalProperties":false}));
     let mut tool = json!({"name":format!("{}.{}",path["local_name"].as_str().ok_or("missing local name")?,contract.1),
-        "inputSchema":input,
-        "outputSchema":env.publish_schema(&contract.0,&output,&context.core_package)?,"annotations":{}});
+        "inputSchema":input,"annotations":{}});
+    if let Some(output) = spec.get("outputSchema") {
+        tool["outputSchema"] = env.publish_schema(&contract.0, output, &context.core_package)?;
+    }
     if let Some(description) = doc["metadata"].get("description") {
         tool["description"] = description.clone();
     }

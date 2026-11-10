@@ -1434,8 +1434,7 @@
               "type": "text",
               "text": "server answer"
             }
-          ],
-          "structuredContent": {}
+          ]
         },
         "records": [
           {
@@ -1476,7 +1475,8 @@
         "absent": [
           "/reply/_meta/io.github.shrav-k.conduit~1reason",
           "/records/0/data/inputs",
-          "/records/1/data/inputs"
+          "/records/1/data/inputs",
+          "/reply/structuredContent"
         ]
       }
     },

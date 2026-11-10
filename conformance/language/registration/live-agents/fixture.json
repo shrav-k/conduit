@@ -29,8 +29,8 @@
     {
       "source": "preinstalled-snapshot",
       "address": "example.org/conduit/agent-claude-code",
-      "version": "0.1.0",
-      "digest": "sha256:b18cf7c4deee67f9abd927b0728fbf92afc035075c519c91ab078c6778b47215",
+      "version": "0.1.1",
+      "digest": "sha256:edf9d0022737a0686ce6dbd9187aff121249f77530c9eea21c92e5ff85266b68",
       "archive": "agent-claude-code-a",
       "project": {
         "files": {
@@ -43,8 +43,8 @@
     {
       "source": "preinstalled-snapshot",
       "address": "example.org/conduit/agent-codex",
-      "version": "0.1.0",
-      "digest": "sha256:eb0aa8d9fdd7f1d0f3a470ba9262ba44b617043fb35bc947b2b6e3062f67cbd8",
+      "version": "0.1.1",
+      "digest": "sha256:71163c1c3cf1fe6ea92693676c3df9e7cb0b8668022b64e5b4874d67d44bfa88",
       "archive": "agent-codex-a",
       "project": {
         "files": {

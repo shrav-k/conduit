@@ -8,7 +8,7 @@ use tokio::sync::Mutex;
 struct Wrapper(Arc<Mutex<Session>>);
 impl ServerHandler for Wrapper {
     fn get_info(&self) -> ServerConfig {
-        serde_json::from_value(json!({"protocolVersion":"2026-07-28","serverInfo":{"name":agent_adapter::WRAPPER,"version":"0.1.0"},"capabilities":{"tools":{}}})).unwrap()
+        serde_json::from_value(json!({"protocolVersion":"2026-07-28","serverInfo":{"name":agent_adapter::WRAPPER,"version":env!("CARGO_PKG_VERSION")},"capabilities":{"tools":{}}})).unwrap()
     }
     async fn list_tools(
         &self,

@@ -1596,8 +1596,7 @@
             "io.github.shrav-k.conduit/invocation": "00000000-0000-4000-8000-000000010041"
           },
           "isError": false,
-          "content": [],
-          "structuredContent": {}
+          "content": []
         },
         "required_promises": [
           "OPS-014",
@@ -1658,6 +1657,9 @@
               "target": "00000000-0000-4000-8000-000000000116"
             }
           }
+        ],
+        "absent": [
+          "/reply/structuredContent"
         ]
       }
     },

@@ -426,33 +426,33 @@ from `run.v1` and `stop.v1`.
 
 ## Results and Conduit's keys
 
-A result that the engine gives a consumer has `isError` true where the request ended with a
-reason or its outcome is failed or unknown, and in no other case. Any other result holds the
-outputs in `structuredContent`, which conforms to the tool's `outputSchema` and is an empty map
-where the operation declares no outputs (IFC-025, IFC-033). A result whose outcome is succeeded
-holds its outputs even where the Conduit through which its invocation was dispatched was closed
-before it ended (ACC-034). A repeat of an invocation that has not ended reports conflict, and
+A result that the engine gives a consumer has `isError` true where the request ended with a reason
+or its outcome is failed or unknown, and in no other case. Any other result holds the declared
+outputs in `structuredContent`, which conforms to the tool's `outputSchema`. Where the operation
+declares no outputs, the tool has no `outputSchema` and a successful result has no
+`structuredContent`, preserving plain content (IFC-025, IFC-033). A result whose outcome is
+succeeded holds its outputs even where the Conduit through which its invocation was dispatched was
+closed before it ended (ACC-034). A repeat of an invocation that has not ended reports conflict, and
 its result holds the engine's ID for the invocation (OPS-032); so does a repeat of one that
-succeeded, of an operation that declares outputs, where the engine does not keep its outputs,
-and the `ruleId` of the error diagnostic tells the two apart (OPS-034). A caller that lost a
-result repeats its request with the same idempotency key (OPS-009). Where a filter applies to a
-repeat of an invocation that succeeded, the stored outputs are not given: an operation that
-states no `effect`, is not a control and starts no model work is dispatched again as a new
-attempt, so that its filters decide afresh; any other reports conflict where it declares outputs
-(OPS-034), and is answered from its outcome where it declares none (OPS-009). A repeat that is
-not dispatched is judged by no filter. A Conduit applies no filter where the engine implements
-an operation it lists (CON-022), and a request for an operation of the core package
-that carries one reports unavailable (MAN-012). A request through a Conduit that has been closed
-reports refused, and one that names the closed Conduit itself reports invalid (ACC-011,
-OPS-029). A call that names a tool the engine does not present is answered as the protocol
-prescribes for an unknown tool at the revision in use. At the baseline revision that is no tool
-result: the engine returns the protocol's error for invalid parameters, code -32602, whose
-`data` holds `io.github.shrav-k.conduit/reason` with the value refused, or invalid where the
-call names the tool that an open Conduit would give a control that its target does not have,
-where the target holds the control's contract (TPL-013). At a revision at which a tool result
-answers it, that result carries the reason as any other does (IFC-012, IFC-025). A request that
-the protocol has a server reject with an error of its own is answered with that error and no
-tool result (IFC-036).
+succeeded, of an operation that declares outputs, where the engine does not keep its outputs, and
+the `ruleId` of the error diagnostic tells the two apart (OPS-034). A caller that lost a result
+repeats its request with the same idempotency key (OPS-009). Where a filter applies to a repeat of
+an invocation that succeeded, the stored outputs are not given: an operation that states no
+`effect`, is not a control and starts no model work is dispatched again as a new attempt, so that
+its filters decide afresh; any other reports conflict where it declares outputs (OPS-034), and is
+answered from its outcome where it declares none (OPS-009). A repeat that is not dispatched is
+judged by no filter. A Conduit applies no filter where the engine implements an operation it lists
+(CON-022), and a request for an operation of the core package that carries one reports unavailable
+(MAN-012). A request through a Conduit that has been closed reports refused, and one that names the
+closed Conduit itself reports invalid (ACC-011, OPS-029). A call that names a tool the engine does
+not present is answered as the protocol prescribes for an unknown tool at the revision in use. At
+the baseline revision that is no tool result: the engine returns the protocol's error for invalid
+parameters, code -32602, whose `data` holds `io.github.shrav-k.conduit/reason` with the value
+refused, or invalid where the call names the tool that an open Conduit would give a control that its
+target does not have, where the target holds the control's contract (TPL-013). At a revision at
+which a tool result answers it, that result carries the reason as any other does (IFC-012, IFC-025).
+A request that the protocol has a server reject with an error of its own is answered with that error
+and no tool result (IFC-036).
 
 A result's `_meta` holds `io.github.shrav-k.conduit/outcome` where the request has an outcome,
 and `io.github.shrav-k.conduit/reason` where it ended with a reason, with

@@ -36,6 +36,15 @@ limit on the content kept for repeats (taken into increment 3's work). Item 9's 
 stand; they are reported apart from the rules set before the baseline, so a reader can judge
 the comparison by either set. A decision made after this date goes below as a new item.
 
+## Since the first review
+
+| # | Decision | Why it matters | Where |
+| --- | --- | --- | --- |
+| 11 | **An operation that declares no outputs is presented with no `outputSchema`, and its results carry no `structuredContent`** (finding 3-03). The specification had given it an empty map in both | Found with the real Claude Code: shown a tool with an `outputSchema`, it gave its model the empty structured result and not the file's text, so every read of a `plain` server looked empty. It changes IFC-025 and IFC-033, the tool contract every engine presents | [log of increment 3](log-increment-3.md), 3-03; work order 024 |
+| 12 | **An Agent's own machine tools are off by default**: a client's shell, code execution, browser, other Agents, hooks and plugins, beside the account services and messaging that ruling 48 turned off | Found with the real Codex: with its shell on, it read the shared directory around the engine and made no request of it. It extends ruling 48's point 1, which was the owner's, from the Agent's account to its machine | [log of increment 3](log-increment-3.md), 3-05; work order 024 |
+| 13 | **Each Agent's client loads no instruction file or setting source of its own**: Claude Code with no setting source, Codex with no project document | Found with planted sentinels, which both clients loaded from a directory above their private working directory. It decides what an Agent knows beyond its turn and its tools | [log of increment 3](log-increment-3.md), 3-04 and 3-05 |
+| 14 | **The engine's credentials name an expiry 100 years ahead** (finding 3-01) | DL13 and JWT-SVID require an expiry; a credential lasts as long as its instance in this version, so the expiry only has to be far enough away | [log of increment 3](log-increment-3.md), 3-01 |
+
 ## What the owner ruled, for reference
 
 Ruling 48 settled four points with the owner: an Agent's own reach off by default, the shared

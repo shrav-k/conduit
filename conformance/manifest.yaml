@@ -4141,6 +4141,31 @@
         "NAM-014",
         "SUB-008"
       ]
+    },
+    {
+      "id": "registration-live-agents",
+      "case": "language/registration/live-agents/case.yaml",
+      "promises": [
+        "SUB-001",
+        "SUB-002",
+        "SUB-003",
+        "SUB-006",
+        "INS-013",
+        "INS-016",
+        "OBJ-003",
+        "OBJ-009",
+        "TPL-004",
+        "NAM-009",
+        "PLC-001",
+        "PLC-002",
+        "POOL-001",
+        "MAN-010",
+        "MAN-017",
+        "PKG-020",
+        "TPL-019",
+        "SCH-009"
+      ],
+      "safety_rows": []
     }
   ],
   "s1_coverage": [

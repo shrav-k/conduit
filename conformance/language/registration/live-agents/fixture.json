@@ -1,0 +1,72 @@
+{
+  "snapshots": [
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/s1/filesystem",
+      "version": "0.1.0",
+      "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160",
+      "archive": "filesystem-a",
+      "project": {
+        "files": {
+          "conduit.yaml": "filesystem-m",
+          "contracts.yaml": "filesystem-d"
+        }
+      }
+    },
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/s1/history",
+      "version": "0.1.0",
+      "digest": "sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69",
+      "archive": "history-a",
+      "project": {
+        "files": {
+          "conduit.yaml": "history-m",
+          "contracts.yaml": "history-d"
+        }
+      }
+    },
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/conduit/agent-claude-code",
+      "version": "0.1.0",
+      "digest": "sha256:b18cf7c4deee67f9abd927b0728fbf92afc035075c519c91ab078c6778b47215",
+      "archive": "agent-claude-code-a",
+      "project": {
+        "files": {
+          "conduit.yaml": "agent-claude-code-m",
+          "contracts.yaml": "agent-claude-code-d"
+        },
+        "directory": "file:///pinned/agent-claude-code/"
+      }
+    },
+    {
+      "source": "preinstalled-snapshot",
+      "address": "example.org/conduit/agent-codex",
+      "version": "0.1.0",
+      "digest": "sha256:eb0aa8d9fdd7f1d0f3a470ba9262ba44b617043fb35bc947b2b6e3062f67cbd8",
+      "archive": "agent-codex-a",
+      "project": {
+        "files": {
+          "conduit.yaml": "agent-codex-m",
+          "contracts.yaml": "agent-codex-d"
+        },
+        "directory": "file:///pinned/agent-codex/"
+      }
+    }
+  ],
+  "project": {
+    "files": {
+      "conduit.yaml": "conduit.yaml",
+      "templates.yaml": "templates.yaml",
+      "instances.yaml": "instances.yaml"
+    }
+  },
+  "artifacts": [
+    {
+      "address": "example.org/s1/filesystem",
+      "implementation": "filesystem-server",
+      "sha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df"
+    }
+  ]
+}

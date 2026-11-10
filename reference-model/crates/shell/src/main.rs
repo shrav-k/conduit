@@ -11,6 +11,7 @@ fn run() -> Result<()> {
     )?;
     let mut store = None;
     let mut project = None;
+    let mut packages = Vec::new();
     let mut labels = BTreeMap::new();
     let mut config = Config::default();
     let mut url = None;
@@ -18,6 +19,9 @@ fn run() -> Result<()> {
     let mut as_instance = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--package" if command == "register" => {
+                packages.push(args.next().ok_or("--package needs ARCHIVE#SHA256")?)
+            }
             "--store" => store = Some(PathBuf::from(args.next().ok_or("--store needs DIR")?)),
             "--label" if command == "init" => {
                 let label = args.next().ok_or("--label needs KEY=VALUE")?;
@@ -199,6 +203,9 @@ fn run() -> Result<()> {
         }
         "register" => {
             let project = project.ok_or("register needs PROJECT_DIR")?;
+            for package in &packages {
+                boundary::install_package(&shell, &repository, package)?;
+            }
             let spec = conduit_loader::Specification::read(&repository.join("spec"))
                 .map_err(|e| e.to_string())?;
             let state = shell.state()?;

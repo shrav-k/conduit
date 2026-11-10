@@ -28,7 +28,7 @@ them. This tool keeps the two in step.
     python3 tools/set_names.py --core-package A --api-version B --meta-prefix C
     python3 tools/set_names.py --identity certificateFile=cert.pem
         Show what would change. Add --write to rewrite every file under the given roots
-        (default: spec, conformance, reference-model) and spec/names.yaml itself. A variable
+        (default: spec, conformance, reference-model, packages) and spec/names.yaml itself. A variable
         of `identity` is rewritten wherever it stands as a whole word; a file of `identity`
         only where it is written in backticks, and not under spec/schemas/examples/, whose
         examples use a word such as `token` for other things. Each line in which a file name
@@ -62,7 +62,7 @@ FILE_NAME = re.compile(r"[A-Za-z0-9_][A-Za-z0-9._-]*")
 # for other things. It is counted and rewritten only where it is written in backticks, and not
 # under this directory.
 EXAMPLES = ROOT / "spec" / "schemas" / "examples"
-DEFAULT_ROOTS = ("spec", "conformance", "reference-model")
+DEFAULT_ROOTS = ("spec", "conformance", "reference-model", "packages")
 TEXT_SUFFIXES = {".yaml", ".yml", ".md", ".json", ".rs", ".toml", ".txt"}
 # The file that defines Conduit's `_meta` keys. The list of keys is read from it.
 INTERFACE = ROOT / "spec" / "interface" / "implementation.yaml"

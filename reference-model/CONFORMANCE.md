@@ -142,3 +142,64 @@ The runner keeps private historical engine/group PID diagnostics under store/run
 used by the test to observe actual group disappearance without process-table access. These
 files are never used to recover or terminate a process after restart. No real Agent client
 is demonstrated by these tests.
+
+## I3-04: standalone Agent adapters
+
+The first build uses the independently buildable packages under packages/agent-claude-code
+and packages/agent-codex. Their Types use plain tool mappings (PKG-020): turn.v1 maps to turn,
+marked startsModelWork. The single wrapper per Agent starts no native client at setup and
+keeps one conversation per wrapper lifetime. Claude streams one process; Codex resumes the
+exact thread with a new process at each turn. Each wrapper has a 180-second per-turn deadline;
+a failure or deadline poisons that session rather than starting it again. Runner shutdown
+ends the whole process group. Conversation persistence across wrapper restarts is not claimed.
+
+MAN-017 requires each environment-bound scalar to be required by the Type schema. Therefore
+model is required with an empty-string default, although authors may omit it in configuration.
+This is the nearest sound reading of order 023's optional model plus three environment bindings;
+no promise or core decision changes. An empty model defers to the native client's own default.
+Both reach booleans remain required and are false in live S1.
+
+The only credential-reading wrapper path is its header helper. It emits one Authorization
+header from the run's token file. Codex gets the identity directory as a helper argument;
+Claude uses the identity variable. Keys/tokens are absent from client arguments, environment
+and wrapper logs. Client stdout is parsed in memory; raw events and stderr are not logged.
+Structured turn results contain reply text and clientTools: engine tool names from that turn's
+startup events, with event positions, raw reportedNames and freshness. Only the first turn's
+startup catalog establishes current tools (reported). Later session/thread init catalogs are
+unavailable with session_init_unverified freshness, even if names differ; experiment 009
+recorded a stale repeated Claude init. Missing lists are not_reported. Neither unavailable
+nor not_reported establishes a current catalog; no engine list or model prose substitutes.
+Codex 0.167.0 did not report a native catalog in experiment 009. Notifications start no
+model work and tool changes are qualified only at explicit turn boundaries (IFC-038).
+
+The native launch baseline is Claude Code 2.1.318 / Codex 0.167.0, as experiment 009 qualified
+it; this order ran scripted binaries only. Claude's peer input selects and allows only the three peer tools when true, and removes
+the inbound refusal so the client's own inbound default applies. This is the nearest sound
+reading of --tools empty alongside an effective peer opt-in: machine tools stay unselected.
+Real incoming-message refusal, inbound default and opt-in effectiveness remain closeout checks.
+Codex has no qualified peer-messaging switch: its bound peerMessaging input changes no native
+argument. Apps false/true uses explicit disable/enable apps, requiring real-client evidence.
+No claim of account-source exclusion, peer refusal or intended subscription use follows from
+the scripted tests. The owner's subscription is shared, as ruling 48 requires for increment 3.
+
+All restrictions are mediated (ACC-027). In particular Codex's read-only shell can read files
+outside the engine, including shared files and other run credentials readable by the OS user.
+Neither wrapper provides OS-user isolation. The closeout must report this route, and any native
+account/peer channel enabled by an input, separately from successful MCP access enforcement.
+
+CLI --package is an explicit local archive-admission step via install-archive, **not** the
+unfinished public install.v1 operation. It accepts repeated ARCHIVE#SHA256 arguments and
+checks the compressed bytes before reading manifest metadata. Core admission still checks
+the digest, archive paths and contracts. Admission is per archive; earlier accepted packages
+remain installed if a later archive or registration fails. The submitted project manifest is
+not rewritten. Host archive digests vary with the executable/target, so live S1's working copy
+needs freshly generated pins; its checked-in pins identify metadata-only vector snapshots.
+The new registration-live-agents vector registers the portable contract copies, not executable
+files. The shell's scripted S1 test separately installs/runs actual host wrapper bytes and uses
+conduit call for both turn requests, checking distinct Agent consumer/caller records.
+
+Wrapper request cancellation is observed while waiting for the session lock and before
+starting a client. A queued cancelled turn starts no work; active cancellation kills/reaps
+the client and poisons the conversation, so later turns cannot implicitly restart it.
+CLI package metadata discovery accepts conduit.yaml, conduit.yml and conduit.json, and
+resolves archive links in memory with the core's virtual unpack semantics before admission.

@@ -1,0 +1,18 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/agent-claude-code
+version: 0.1.0
+exports:
+- claude-code.v1
+- conversation.v1
+- turn.v1
+implementations:
+  wrapper:
+    implements: ['#turn.v1']
+    command: [bin/agent-claude-code]
+    environment:
+      AGENT_ACCOUNT_SERVICES: /accountServices
+      AGENT_PEER_MESSAGING: /peerMessaging
+      AGENT_MODEL: /model
+    plain: true
+    tools:
+      '#turn.v1': turn

@@ -493,3 +493,24 @@ private notifications and verifies both filesystem process groups disappear on S
 Base S1 Agents have no executable; the test materializes their identities through the same
 run-contract API as the runner, without executing Agents or models.
 See [CONFORMANCE.md](CONFORMANCE.md#consumer-server-order-022) for these boundaries.
+
+## Runnable Agent packages (work order 023)
+
+[Live S1](examples/s1/README.md) replaces the registration-only Agent fixtures with the
+standalone [Claude Code](../packages/agent-claude-code/README.md) and
+[Codex](../packages/agent-codex/README.md) packages. Each crate builds and packs on its own.
+`conduit register --store DIR --package ARCHIVE#SHA256 --package ARCHIVE#SHA256 PROJECT_DIR`
+admits both archives through the core before registering the project. The CLI checks each
+compressed archive's digest and leaves package admission to the core; it does not rewrite
+project pins. Pins in a live working copy must match the generated host archives. The checked-in
+example instead pins portable metadata-only archives for the registration vector.
+
+Setup starts wrappers only. `conduit call --store DIR turn-a.turn.v1 '{"message":"..."}'`
+and the corresponding turn-b tool are explicit model-work requests through authorizing
+Conduits. No real client was run by order 023. Its default release tests build both standalone
+packages, exercise unmodified archives through the CLI, then install test archives with the
+explicit scripted-client argument and run S1's two Agents through the actual runner/HTTP
+server. A scripted filesystem replaces npm in this test; each Agent makes an engine-recorded
+request with its own run identity. This needs only crates and loopback networking. The
+[admin closeout plan](../docs/proposals/first-build/increment-3/closeout.md) covers the real
+clients, owner-source sentinels, apps, messaging, login and T7 still to be shown.

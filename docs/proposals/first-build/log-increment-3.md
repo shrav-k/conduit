@@ -11,6 +11,7 @@ The increment's complete requirements remain in
 | ID | Class | Promises | Finding | What the build did | Settlement |
 | --- | --- | --- | --- | --- | --- |
 | 3-01 | contradiction | DL13, IFC-022, PRV-022 | Order 020's "no exp" conflicts with DL13's far-future expiration and [JWT-SVID section 3.3](https://github.com/spiffe/spiffe/blob/main/standards/JWT-SVID.md#33-expiration-time), which requires exp. The first round followed the order and failed to report the conflict; the verifier found it. | The correction issues exp at iat plus 100 calendar years and rejects expired tokens. | The admin settled it for far-future exp, with no change to spec/. The order's original instruction is superseded by this settlement. |
+| 3-02 | contradiction | MAN-017, SCH-009 | The order asked for an optional field; MAN-017 requires a bound input to be a required scalar. | The Agent Types require a model string with an empty-string default; authors can still omit it. | The admin settled it for an empty default, no change to spec/. |
 
 The unsupported public management paths already named in
 [the handoff](increment-3-handoff.md#current-implementation-limits-to-resolve-before-exposure)
@@ -441,3 +442,138 @@ rejection, runner S1 and the serve-process S1 test, including T7, ready-store re
 shutdown. Clippy with warnings denied, formatting, all four Python repository checks,
 git diff --check and an explicit whitespace/conflict-marker scan of the five changed files
 passed. The index and history were left unchanged.
+
+## I3-04: the Agent packages (work order 023)
+
+The two packages are independent Rust crates under packages/agent-claude-code and
+packages/agent-codex: no outside path dependencies, their own lockfiles and pinned toolchains,
+and copied adapter/test/packaging code. Each exports one Agent Type, a conversation capability
+and turn.v1. The plain implementation maps that operation to the wrapper's sole turn tool.
+It binds the two reach inputs and model through environment JSON Pointers and records neither
+inputs nor outputs. The wrapper starts the native client only when an authorized turn arrives.
+Claude uses one streamed process; Codex resumes its exact thread per process/turn. It writes
+Claude configuration into the run's private directory, passes only the six permitted ambient
+variables and the two identity variables, removes both API-key variables, and reads the run
+token only through its header-helper mode. Raw streams/stderr are not retained as logs.
+
+The client's own startup tool names are reported in clientTools with source event positions.
+An absent list is explicitly not_reported, including later Claude turns without an init
+event and the qualified Codex baseline's lack of a startup list. Repeated session/thread init
+lists on later turns are unavailable with session_init_unverified freshness; they do not
+establish a current catalog. This does not replace the
+engine list and does not claim notification delivery proves model catalog refresh. The
+[closeout plan](increment-3/closeout.md) names each remaining real-client need and its evidence;
+the worker did not run either real client or fetch anything except crates.
+
+### Adjustments to the order, not new language decisions
+
+- **Model binding (MAN-017, SCH-009).** The first attempted registration was rejected: an
+  environment pointer to optional model is forbidden by MAN-017 even with a default. The
+  nearest sound reading makes model required in the Type schema with an empty-string default.
+  Authors can still omit it: the core fills the default. The live registration vector and
+  scripted CLI registration exercise that omission. No specification/core change is proposed.
+- **Host pins (MAN-010, PKG-004/021/026).** A runnable archive includes a host binary and
+  cannot have one portable digest. Live S1 in the tree pins the metadata-only fixture archives
+  used by its registration vector. The documented live preparation copies the project and
+  replaces those two pins with the generated host hashes. The CLI never silently changes a
+  submitted manifest. Its --package option explicitly installs via the existing semantic
+  archive API, not the unfinished install.v1 public invocation.
+- **Codex peers.** The qualified Codex launch exposes no separate peer-messaging switch.
+  peerMessaging is accepted/bound for the common input contract and changes no Codex argument.
+  Claude's false/true settings are tested as emitted configuration. True selects/allows only
+  the three peer tools and removes the explicit inbound refusal, using the native default;
+  no guessed inbound enum value is written. This is the nearest sound reading of --tools
+  empty plus a working peer opt-in, while machine tools remain unselected. Real message
+  refusal, the inbound default and effective opt-in remain closeout work.
+
+These are limits and an order/spec constraint, not cases the core could not decide. The
+admin accepted the model settlement as finding 3-02 above. An omitted native catalog cannot
+be repaired by inventing a language rule or recording the engine's own list as the client's
+observation.
+
+### Packaging and evidence
+
+Each package's cargo run --release --bin package builds its host wrapper and writes sorted
+USTAR/gzip with zero owners/times, executable mode 0755 and YAML mode 0644, plus SHA-256.
+The conformance/fixtures/agents copies are metadata pins only and say where they come from.
+The single new registration-live-agents vector registers live S1 against those copies,
+including authorizing turn Conduits; setup/model work is absent from that vector.
+
+The shell accepts repeated --package ARCHIVE#SHA256 arguments before registration. A test
+uses unmodified host archives through that CLI and rejects incorrect digests without changing
+state. It then installs explicit scripted-client variants, starts S1's wrappers and a
+scripted filesystem, and calls both Agents through conduit call on the real loopback server.
+The filesystem/client substitutions are test evidence, not real npm or model evidence.
+Each package tests all four reach combinations, exact arguments/environment, its helper's
+single header output, no client startup at MCP initialization/listing, one conversation and
+failure poisoning. Packaging tests check reproducible bytes and archive metadata/digests.
+
+Mediated restrictions remain explicit (ACC-027): Codex's read-only shell can read beyond the
+engine, the OS user can reach other run credentials, and both Agents share the owner's login.
+The defaults request connectors/apps/peer reach off; true opts in per Agent in emitted
+configuration, with the Codex peer limitation above. Effective native behavior and account
+identity still need the admin's sentinel-backed closeout. This order claims no completed
+increment-3 closeout or strong machine confinement.
+
+Validation on 2026-11-10: the full reference-model release suite passed 135 tests, with three
+standalone child-process fixtures ignored and exercised by their parent tests. The focused
+scripted S1 integration passed again after the final assertions; both Agent calls reached the
+engine under their own identities and neither turn payload was recorded. Each standalone
+package passed four tests (one packaging test and three wrapper tests). All three clippy runs
+with warnings denied and all three formatting checks passed. Both standalone cargo packaging
+commands completed, and the single new registration vector passed. The four Python repository
+checks, git diff --check and a scan of all changed text files for trailing whitespace and
+conflict markers passed. The default suite did not activate npm-gated tests; no npm artifact
+or real native client was fetched or run for this order. No files were staged or committed.
+
+### Fresh verification corrections (work order 023, second round)
+
+The admin accepted all six verifier findings, including both marked should. The corrections
+and regressions are:
+
+- CLI package admission recognizes conduit.yaml, conduit.yml and conduit.json, parsing each
+  syntax correctly. Metadata discovery resolves hard links and symbolic links with the core's
+  virtual unpack semantics. Since those helpers are private and the core is outside this
+  order's scope, the shell copies them for discovery; install-archive still owns admission.
+  CLI regressions install both alternate filenames and both linked manifest forms.
+- Codex receives each prompt verbatim through stdin and the fixed dash prompt argument.
+  The scripted client now implements that convention; regressions cover literal dash and
+  option-like prompts on initial and resumed turns.
+- Repeated session/thread init catalogs are observations of unverified freshness, reported
+  as unavailable on later turns, even if their names differ. First-turn startup catalogs
+  remain reported; absent lists remain not_reported. Observations retain raw reportedNames
+  separately from engine names. The standalone Claude fixture copies the recorded events
+  of experiment 009, attempt-3/claude-r2, including its stale second init, refused file call
+  and later notes call. That regression does not claim a current second-turn list.
+- Both MCP handlers observe cancellation while queued and again before launch. Active
+  cancellation ends/reaps the client and poisons the session. Each package's MCP regression
+  holds one turn, cancels a second queued turn, releases the first, and proves the queued
+  client work never launched; it also cancels active work and checks implicit restart refusal.
+- The S1 integration obtains scripted-client paths from cargo metadata's target_directory,
+  respecting CARGO_TARGET_DIR. It is rerun below with a custom target directory.
+
+The freshness output fields are declared in both package contracts; their pinned YAML
+copies, metadata archives, registration fixture and live S1 hashes were refreshed together.
+The first integration run exposed this missing output-schema update, which was corrected
+before validation. The CLI regression initially reused the preinstalled filesystem address
+with changed bytes and was correctly refused; it now uses a distinct test package address.
+
+The model contradiction is now numbered 3-02, as the admin requested. No specification or
+core decision changed. No Git index or history mutation was performed.
+
+Correction-round validation on 2026-11-10: the complete reference-model release suite,
+with RUST_TEST_THREADS=1, passed 136 tests, with 3 standalone child fixtures ignored and
+exercised by their parents. Each independent package passed six tests, including its
+packaging test and the new regressions. The S1 integration passed with both default package
+target directories and an explicit CARGO_TARGET_DIR pointing to reference-model/target;
+the latter checks each client's actual executable path as well as both distinct identities.
+The registration-live-agents vector passed with the refreshed metadata pins. Both standalone
+packaging commands, all three clippy runs with warnings denied and formatting checks, the
+four Python checks, git diff --check, fixture provenance/copy comparisons and the explicit
+scan of all changed text files passed. CONDUIT_TEST_NPM was absent; no npm-dependent test
+or real native-client closeout was activated.
+
+An earlier parallel full-suite attempt and a diagnostic duplicate were interrupted before
+a verdict; neither is reported as passing. The live serial log shows the existing tests
+progressing slowly, not a demonstrated deadlock. No source workaround was introduced for
+that run. The staged diff stayed empty and HEAD stayed at the admin's checkpoint.

@@ -141,3 +141,41 @@ pub fn s1_snapshots(repository: &Path) -> Result<Vec<Snapshot>> {
         })
         .collect()
 }
+
+/// CLI archive admission. No filesystem extraction; the core owns package validation.
+pub fn install_package(shell: &crate::Shell, repository: &Path, argument: &str) -> Result<()> {
+    let (path, hash) = argument
+        .rsplit_once('#')
+        .ok_or("--package needs ARCHIVE#SHA256")?;
+    let digest = format!("sha256:{}", hash.strip_prefix("sha256:").unwrap_or(hash));
+    let bytes = std::fs::read(path).map_err(|_| "cannot read package archive")?;
+    if conduit_core::packages::bytes_digest(&bytes) != digest {
+        return Err("package archive digest mismatch".into());
+    }
+    // Discover metadata with the core's virtual archive/link semantics, without extraction.
+    let manifest = archive_metadata::manifest(&bytes)?;
+    let address = manifest["address"]
+        .as_str()
+        .ok_or("package manifest has no address")?;
+    let version = manifest["version"]
+        .as_str()
+        .ok_or("package manifest has no version")?;
+    let directory = shell
+        .writer
+        .lock()
+        .map_err(|_| "writer lock poisoned")?
+        .store
+        .directory
+        .join("archive-catalog")
+        .join(digest.trim_start_matches("sha256:"));
+    let directory =
+        url::Url::from_directory_path(directory).map_err(|_| "invalid package directory")?;
+    let reply = shell.submit(serde_json::json!({"kind":"install-archive","archive":{"name":path,"address":address,"version":version,"digest":digest,"directory":directory.as_str(),"completion":{"status":"complete","bytes":bytes}},"snapshots":s1_snapshots(repository)?,"builtin":shell.context.builtin}), &crate::MissingExecutor)?;
+    if reply["accepted"] != true {
+        return Err(format!("package admission failed: {reply}"));
+    }
+    Ok(())
+}
+
+#[path = "archive_metadata.rs"]
+mod archive_metadata;

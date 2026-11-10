@@ -127,3 +127,19 @@ the repository root: `python3 tools/check_docs.py`, `python3 tools/set_names.py 
 in `reference-model/` and in each package directory, `cargo test --release`,
 `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` pass. Check the files you
 create for trailing white space yourself; do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 32 minutes, then a fresh verifier in 9. The worker reported
+one finding: the order asked for an optional `model` input bound to a variable, which MAN-017
+does not allow; the admin accepted its settlement, a required string with an empty default,
+logged as finding 3-02. The verifier found four defects and two smaller faults, each real:
+`--package` read only `conduit.yaml` and not a linked manifest; a turn whose message was `-`
+reached Codex as its marker for standard input; Claude Code's repeated start-of-session tool
+list was reported as current, which experiment 009 had warned against; a cancelled turn
+queued behind another could still start model work; and a test assumed Cargo's default
+target directory. The admin sent the worker back once with all six. The admin also updated
+`AGENTS.md` and `CONTRIBUTING.md`, which this order's scope left out, to say the names check
+covers `packages/`. The admin reran every check: 136 Rust tests in `reference-model/` and six
+in each package pass, and clippy, fmt and the five repository checks are clean. No real client
+ran; the [closeout plan](../proposals/first-build/increment-3/closeout.md) is for the admin.

@@ -25,6 +25,7 @@ report. An order's results are its pull request and the record in
 | [015](015-i2-06-requests-end.md) | I2-06: how a request ends, its repeats, and plain results |
 | [016](016-i2-07-setup-and-conduits.md) | I2-07: setup, and the opening and closing of Conduits |
 | [017](017-i2-08-records.md) | I2-08: records, inspection, and the bounds of repair |
+| [018](018-plain-errors-check.md) | The check of two protocol errors, -32602 and -32020, before increment 3 sends any call again (decision 8) |
 
 [The standing order of a verifier](verify.md), with its schema, is given to the fresh Codex
 session that checks each order's result before the admin session reviews it.

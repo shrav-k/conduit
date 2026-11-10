@@ -1,0 +1,49 @@
+{
+  "id": "archives-hardlink-escape",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "MAN-014",
+    "PKG-023"
+  ],
+  "title": "Archive installation: hardlink-escape",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/hardlink-escape.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-014",
+              "message": {
+                "text": "filesystem.tar.gz: escape: link outside archive: ../outside"
+              }
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "MAN-014",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

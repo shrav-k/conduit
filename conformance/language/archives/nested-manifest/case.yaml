@@ -1,0 +1,46 @@
+{
+  "id": "archives-nested-manifest",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "MAN-013",
+    "PKG-023"
+  ],
+  "title": "Archive installation: nested-manifest",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/nested-manifest.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-013"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "MAN-013",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

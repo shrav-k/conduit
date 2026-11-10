@@ -1,0 +1,111 @@
+{
+  "id": "archives-package-holder",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-017",
+    "PKG-023"
+  ],
+  "title": "Archive installation: package-holder",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/program.tar.gz",
+    "initial": "initial.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": [],
+          "package": {
+            "source": "installed-archive",
+            "address": "example.org/s1/filesystem",
+            "version": "0.1.0"
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-017",
+          "PKG-023"
+        ],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "source": "installed-archive",
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.0"
+              },
+              "files": {
+                "bin": {
+                  "kind": "directory"
+                },
+                "bin/server": {
+                  "kind": "file",
+                  "mode": 420,
+                  "bytes": [
+                    114,
+                    101,
+                    112,
+                    111,
+                    115,
+                    105,
+                    116,
+                    111,
+                    114,
+                    121,
+                    45,
+                    97,
+                    117,
+                    116,
+                    104,
+                    111,
+                    114,
+                    101,
+                    100,
+                    32,
+                    105,
+                    110,
+                    101,
+                    114,
+                    116,
+                    32,
+                    112,
+                    114,
+                    111,
+                    103,
+                    114,
+                    97,
+                    109,
+                    32,
+                    98,
+                    121,
+                    116,
+                    101,
+                    115,
+                    10
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-//! Resolving from immutable, explicitly preinstalled snapshots. This module never installs.
+//! Resolving an immutable catalog of snapshots and packages installed from archive inputs.
 use crate::{
     Decision, Result, decision,
     schemas::{Environment, Scope},
@@ -11,7 +11,7 @@ use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Project {
     pub manifest: Option<Value>,
@@ -19,7 +19,7 @@ pub struct Project {
     /// An absolute directory URL supplied by the boundary; never consulted as a filesystem.
     pub directory: Option<String>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Snapshot {
     pub source: SnapshotSource,
@@ -28,13 +28,23 @@ pub struct Snapshot {
     pub digest: String,
     pub project: Project,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum SnapshotSource {
     PreinstalledSnapshot,
+    InstalledArchive,
 }
 
-/// Owns copies. No mutation or installation interface, and no borrowed mutable inputs.
+pub(crate) fn catalog_entries(state: &crate::State, snapshots: Vec<Snapshot>) -> Vec<Snapshot> {
+    state
+        .installed_packages
+        .iter()
+        .map(|p| p.package.clone())
+        .chain(snapshots)
+        .collect()
+}
+
+/// Owns copies. Installation publishes a new catalog entry atomically in the state.
 #[derive(Clone, Debug)]
 pub struct Catalog {
     builtin: Project,
@@ -407,8 +417,9 @@ impl Catalog {
             if scope == "project" {
                 held["digest"] = json!(digest);
             } else if let Some(i) = scope.strip_prefix("snapshot-") {
-                held["digest"] =
-                    json!(self.snapshots[i.parse::<usize>().map_err(|e| e.to_string())?].digest);
+                let package = &self.snapshots[i.parse::<usize>().map_err(|e| e.to_string())?];
+                held["digest"] = json!(package.digest);
+                held["source"] = json!(package.source);
             }
             contexts.insert(scope.clone(), held);
         }
@@ -420,7 +431,7 @@ impl Catalog {
                 "NAM-020", "NAM-021", "NAM-022", "NAM-027", "NAM-028", "SCH-015", "SUB-010",
             ],
             &[],
-            json!({"source":"preinstalled-snapshot","snapshot_count":self.snapshots.len()}),
+            json!({"sources":self.snapshots.iter().map(|s| &s.source).collect::<Vec<_>>()}),
             vec![],
         ));
         decisions.push(decision(
@@ -440,7 +451,7 @@ impl Catalog {
             vec![],
         ));
         Ok(Resolution {
-            reply: json!({"accepted":true,"diagnostics":diagnostics,"digest":digest,"environment":env,"references":references,"expanded_manifest":expanded["project"],"contexts":contexts,"source":"preinstalled-snapshot"}),
+            reply: json!({"accepted":true,"diagnostics":diagnostics,"digest":digest,"environment":env,"references":references,"expanded_manifest":expanded["project"],"contexts":contexts,"source":if self.snapshots.iter().any(|s| s.source == SnapshotSource::InstalledArchive) {"package-catalog"} else {"preinstalled-snapshot"}}),
             decisions,
         })
     }

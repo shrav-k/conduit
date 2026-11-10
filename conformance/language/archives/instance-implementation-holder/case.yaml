@@ -1,0 +1,44 @@
+{
+  "id": "archives-instance-implementation-holder",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-029",
+    "MAN-016"
+  ],
+  "title": "Archive installation: instance-implementation-holder",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/program.tar.gz",
+    "initial": "initial.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "conflict",
+          "diagnostics": []
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-029",
+          "MAN-016"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

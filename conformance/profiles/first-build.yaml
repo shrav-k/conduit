@@ -44,12 +44,20 @@
     "DL6",
     "DL8",
     "DL10.nesting",
-    "DL15"
+    "DL15",
+    "DL7"
   ],
   "reserved_for_later_orders": [
     "DL2",
     "DL4",
     "DL12",
     "DL10.outputs"
-  ]
+  ],
+  "DL7": {
+    "archive_format": "gzip-compressed POSIX USTAR; no GNU or PAX extensions",
+    "members": "UTF-8 paths; regular files, directories, symbolic links and hard links to earlier regular files; at most 40 link expansions; last member at a path wins unless it replaces a nonempty directory or uses a non-directory parent",
+    "storage": "pure virtual directory retained in state; shell directory URL supplied, never read",
+    "cache": "no compressed archive cache",
+    "directory_entry_point": "runner supplies bytes; core fetches nothing"
+  }
 }

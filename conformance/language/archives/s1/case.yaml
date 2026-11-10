@@ -1,0 +1,378 @@
+{
+  "id": "archives-s1",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-006",
+    "PKG-003",
+    "PKG-021",
+    "NAM-014",
+    "NAM-020",
+    "SUB-008",
+    "PKG-004",
+    "PKG-022",
+    "PKG-026",
+    "PKG-017",
+    "PKG-028",
+    "MAN-011",
+    "MAN-013",
+    "MAN-014",
+    "PKG-023",
+    "NAM-013",
+    "PKG-025",
+    "PKG-027"
+  ],
+  "title": "S1 resolves identically from snapshots and after installation of repository-authored archives",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "fixture": "snapshot.json",
+    "filesystem-m": "../../../fixtures/s1/packages/filesystem/conduit.yaml",
+    "filesystem-d": "../../../fixtures/s1/packages/filesystem/contracts.yaml",
+    "filesystem-a": "../../../fixtures/s1/archives/filesystem.tar.gz",
+    "history-m": "../../../fixtures/s1/packages/history/conduit.yaml",
+    "history-d": "../../../fixtures/s1/packages/history/contracts.yaml",
+    "history-a": "../../../fixtures/s1/archives/history.tar.gz",
+    "agents-m": "../../../fixtures/s1/packages/agents/conduit.yaml",
+    "agents-d": "../../../fixtures/s1/packages/agents/contracts.yaml",
+    "agents-a": "../../../fixtures/s1/archives/agents.tar.gz",
+    "conduit.yaml": "../../../fixtures/s1/project/conduit.yaml",
+    "templates.yaml": "../../../fixtures/s1/project/templates.yaml",
+    "instances.yaml": "../../../fixtures/s1/project/instances.yaml",
+    "installed": "installed.json",
+    "filesystem": "filesystem.json",
+    "history": "history.json",
+    "agents": "agents.json",
+    "repeat": "repeat.json",
+    "conflict": "conflict.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "fixture"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "contexts": {
+            "core": {
+              "version": "0.1.0"
+            },
+            "snapshot-0": {
+              "address": "example.org/s1/filesystem",
+              "version": "0.1.0",
+              "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+            }
+          }
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-006",
+          "PKG-003",
+          "PKG-021",
+          "NAM-014",
+          "NAM-020",
+          "SUB-008"
+        ],
+        "absent": [
+          "/reply/contexts/core/digest"
+        ]
+      },
+      "capture": {
+        "environment": "/reply/environment",
+        "references": "/reply/references",
+        "digest": "/reply/digest",
+        "expanded_manifest": "/reply/expanded_manifest",
+        "core_address": "/reply/contexts/core/address",
+        "core_version": "/reply/contexts/core/version",
+        "core_packages": "/reply/contexts/core/packages",
+        "core_implementations": "/reply/contexts/core/implementations",
+        "core_relative_programs": "/reply/contexts/core/relative_programs",
+        "project_packages": "/reply/contexts/project/packages",
+        "project_implementations": "/reply/contexts/project/implementations",
+        "project_relative_programs": "/reply/contexts/project/relative_programs",
+        "project_digest": "/reply/contexts/project/digest",
+        "snapshot_0_address": "/reply/contexts/snapshot-0/address",
+        "snapshot_0_version": "/reply/contexts/snapshot-0/version",
+        "snapshot_0_packages": "/reply/contexts/snapshot-0/packages",
+        "snapshot_0_implementations": "/reply/contexts/snapshot-0/implementations",
+        "snapshot_0_relative_programs": "/reply/contexts/snapshot-0/relative_programs",
+        "snapshot_0_digest": "/reply/contexts/snapshot-0/digest",
+        "snapshot_1_address": "/reply/contexts/snapshot-1/address",
+        "snapshot_1_version": "/reply/contexts/snapshot-1/version",
+        "snapshot_1_packages": "/reply/contexts/snapshot-1/packages",
+        "snapshot_1_implementations": "/reply/contexts/snapshot-1/implementations",
+        "snapshot_1_relative_programs": "/reply/contexts/snapshot-1/relative_programs",
+        "snapshot_1_digest": "/reply/contexts/snapshot-1/digest",
+        "snapshot_2_address": "/reply/contexts/snapshot-2/address",
+        "snapshot_2_version": "/reply/contexts/snapshot-2/version",
+        "snapshot_2_packages": "/reply/contexts/snapshot-2/packages",
+        "snapshot_2_implementations": "/reply/contexts/snapshot-2/implementations",
+        "snapshot_2_relative_programs": "/reply/contexts/snapshot-2/relative_programs",
+        "snapshot_2_digest": "/reply/contexts/snapshot-2/digest"
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "filesystem"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": [],
+          "package": {
+            "source": "installed-archive",
+            "address": "example.org/s1/filesystem",
+            "version": "0.1.0",
+            "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-004",
+          "PKG-022",
+          "PKG-026",
+          "PKG-017",
+          "PKG-028",
+          "MAN-011",
+          "NAM-013"
+        ],
+        "state": {
+          "objects": [],
+          "installed_packages": [
+            {
+              "package": {
+                "source": "installed-archive",
+                "address": "example.org/s1/filesystem"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "history"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": [],
+          "package": {
+            "source": "installed-archive",
+            "address": "example.org/s1/history",
+            "version": "0.1.0",
+            "digest": "sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69"
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-004",
+          "PKG-022",
+          "PKG-026",
+          "PKG-017",
+          "PKG-028",
+          "MAN-011",
+          "NAM-013"
+        ],
+        "state": {
+          "objects": [],
+          "installed_packages": [
+            {
+              "package": {
+                "source": "installed-archive",
+                "address": "example.org/s1/filesystem"
+              }
+            },
+            {
+              "package": {
+                "source": "installed-archive",
+                "address": "example.org/s1/history"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "agents"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": [],
+          "package": {
+            "source": "installed-archive",
+            "address": "example.org/s1/agents",
+            "version": "0.1.0",
+            "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-004",
+          "PKG-022",
+          "PKG-026",
+          "PKG-017",
+          "PKG-028",
+          "MAN-011",
+          "NAM-013"
+        ],
+        "state": {
+          "objects": [],
+          "installed_packages": [
+            {
+              "package": {
+                "source": "installed-archive",
+                "address": "example.org/s1/filesystem"
+              }
+            },
+            {
+              "package": {
+                "source": "installed-archive",
+                "address": "example.org/s1/history"
+              }
+            },
+            {
+              "package": {
+                "source": "installed-archive",
+                "address": "example.org/s1/agents"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "installed"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "source": "package-catalog",
+          "contexts": {
+            "core": {
+              "address": "$core_address",
+              "version": "$core_version",
+              "packages": "$core_packages",
+              "implementations": "$core_implementations",
+              "relative_programs": "$core_relative_programs"
+            },
+            "project": {
+              "packages": "$project_packages",
+              "implementations": "$project_implementations",
+              "relative_programs": "$project_relative_programs",
+              "digest": "$project_digest"
+            },
+            "snapshot-0": {
+              "address": "$snapshot_0_address",
+              "version": "$snapshot_0_version",
+              "packages": "$snapshot_0_packages",
+              "implementations": "$snapshot_0_implementations",
+              "relative_programs": "$snapshot_0_relative_programs",
+              "digest": "$snapshot_0_digest",
+              "source": "installed-archive"
+            },
+            "snapshot-1": {
+              "address": "$snapshot_1_address",
+              "version": "$snapshot_1_version",
+              "packages": "$snapshot_1_packages",
+              "implementations": "$snapshot_1_implementations",
+              "relative_programs": "$snapshot_1_relative_programs",
+              "digest": "$snapshot_1_digest",
+              "source": "installed-archive"
+            },
+            "snapshot-2": {
+              "address": "$snapshot_2_address",
+              "version": "$snapshot_2_version",
+              "packages": "$snapshot_2_packages",
+              "implementations": "$snapshot_2_implementations",
+              "relative_programs": "$snapshot_2_relative_programs",
+              "digest": "$snapshot_2_digest",
+              "source": "installed-archive"
+            }
+          },
+          "environment": "$environment",
+          "references": "$references",
+          "digest": "$digest",
+          "expanded_manifest": "$expanded_manifest"
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-006",
+          "PKG-003",
+          "PKG-021",
+          "NAM-020",
+          "SUB-008"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "repeat"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "outcome": "succeeded",
+          "changed": false
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-027",
+          "PKG-003"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "conflict"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "diagnostics": [],
+          "reason": "conflict"
+        },
+        "stateUnchanged": true,
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-025",
+          "PKG-003"
+        ]
+      }
+    }
+  ]
+}

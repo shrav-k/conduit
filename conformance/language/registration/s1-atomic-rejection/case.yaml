@@ -28,7 +28,6 @@
     "conduit.yaml": "../../../fixtures/s1/project/conduit.yaml",
     "templates.yaml": "../../../fixtures/s1/project/templates.yaml",
     "instances.yaml": "../../../fixtures/s1/project/instances.yaml",
-    "npm-artifact": "../../../fixtures/s1/artifacts/server-filesystem-2.1.0.tgz",
     "initial": "../../../fixtures/root-system-state.json",
     "bad-instances": "project/instances.json"
   },

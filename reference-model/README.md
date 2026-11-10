@@ -222,7 +222,7 @@ and Package artifact bytes are hashed only as fixture evidence. The
 and Agent packages and S1's project, with real computed pins and no state changes or intents.
 Other vectors exercise accepted and rejected names, pins, exports, path expansion and digest
 invariance. This is context resolution; general registration, instance arguments, object
-references, installation and execution remain later work.
+references and execution remain later work. Archive installation is described below.
 
 ## Registration and resolving instances (I2-04)
 
@@ -259,3 +259,22 @@ registered, Conduits unopened, and no setup, run, call or external intent is mad
 SUB-006). Placement vectors use the established local node and the engine's own runner;
 provider invocation, general access evaluation and setup remain later orders. The earlier
 `submit` input remains the protected-first-start compatibility path.
+
+## Archive installation (I2-03, second part)
+
+[Archive admission](crates/core/src/archives.rs) consumes requested package identity, expected
+SHA-256 and a fetching completion containing compressed bytes. It performs no I/O. The core
+verifies the digest before decoding gzip/USTAR, checks member and link safety, and reads root
+manifest/documents through the loader's pure interface using supplied built-in Schema contracts.
+It rejects instances and mismatched manifest identity, then reuses the catalog resolver for
+dependency, export, contract and implementation checks. Only success publishes an
+`installed-archive` entry, retaining the virtual directory and regular-file modes in state.
+Subsequent resolving and registration include these entries alongside supplied snapshots.
+
+The profile's DL7 choice and [archive fixtures](../conformance/fixtures/install-archives/README.md)
+document the exact dialect and reproduction command. The S1 vector compares all resolved
+context fields before and after installing its three archives. Failed installs leave objects
+and installed entries unchanged. Repeats and conflicting digests use the existing catalog,
+even with an unavailable completion. The input represents archive admission; general
+management request authorization, dispatch records and physical package storage remain work
+for the convention and shell inputs. No vector fetches a package or runs a provider.

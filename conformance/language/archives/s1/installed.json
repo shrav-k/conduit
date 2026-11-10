@@ -1,0 +1,11 @@
+{
+  "snapshots": [],
+  "project": {
+    "files": {
+      "conduit.yaml": "conduit.yaml",
+      "templates.yaml": "templates.yaml",
+      "instances.yaml": "instances.yaml"
+    }
+  },
+  "artifacts": []
+}

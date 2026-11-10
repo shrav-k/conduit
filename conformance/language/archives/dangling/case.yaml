@@ -1,0 +1,46 @@
+{
+  "id": "archives-dangling",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "SUB-010",
+    "PKG-023"
+  ],
+  "title": "Archive installation: dangling",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/dangling.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SUB-010"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "SUB-010",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

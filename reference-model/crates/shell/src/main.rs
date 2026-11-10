@@ -6,11 +6,16 @@ use std::sync::Arc;
 
 fn run() -> Result<()> {
     let mut args = std::env::args().skip(1);
-    let command = args.next().ok_or("usage: conduit init|register|inspect|records --store DIR [PROJECT_DIR] [--label KEY=VALUE]")?;
+    let command = args.next().ok_or(
+        "usage: conduit init|register|inspect|records|serve|tools|call --store DIR [ARGUMENTS]",
+    )?;
     let mut store = None;
     let mut project = None;
     let mut labels = BTreeMap::new();
     let mut config = Config::default();
+    let mut url = None;
+    let mut positional = Vec::new();
+    let mut as_instance = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--store" => store = Some(PathBuf::from(args.next().ok_or("--store needs DIR")?)),
@@ -34,6 +39,11 @@ fn run() -> Result<()> {
                         .map_err(|_| "invalid output age")?,
                 )
             }
+            "--url" => url = Some(args.next().ok_or("--url needs engine address")?),
+            "--as" if command == "tools" => {
+                as_instance = Some(args.next().ok_or("--as needs INSTANCE")?)
+            }
+            _ if command == "call" && !arg.starts_with('-') => positional.push(arg),
             "--pass-environment" => config
                 .pass_environment
                 .push(args.next().ok_or("missing environment name")?),
@@ -53,19 +63,42 @@ fn run() -> Result<()> {
                         .map_err(|_| "invalid call timeout")?,
                 )
             }
-            "--url" => config.engine_url = args.next().ok_or("--url needs engine address")?,
             _ if command == "register" && !arg.starts_with('-') && project.is_none() => {
                 project = Some(PathBuf::from(arg))
             }
             _ => return Err("unknown command argument".into()),
         }
     }
-    if !["init", "register", "inspect", "records"].contains(&command.as_str()) {
-        return Err("unknown command; serve comes in order 022".into());
+    if ![
+        "init", "register", "inspect", "records", "serve", "call", "tools",
+    ]
+    .contains(&command.as_str())
+    {
+        return Err("unknown command".into());
     }
     let store = store.ok_or("--store DIR is required")?;
     if command != "init" && !store.join("state.json").is_file() {
         return Err("store is not initialized; run conduit init".into());
+    }
+    config.engine_url = url.unwrap_or(Config::for_store(&store)?.engine_url);
+    if command == "call" || command == "tools" {
+        if command == "call" && !(1..=2).contains(&positional.len()) {
+            return Err("call needs TOOL [ARGUMENTS-JSON]".into());
+        }
+        let arguments = positional
+            .get(1)
+            .map(|s| serde_json::from_str(s).map_err(|_| "invalid arguments JSON".to_string()))
+            .transpose()?
+            .unwrap_or(json!({}));
+        let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+        let result = runtime.block_on(conduit_shell::server::client(
+            &store,
+            as_instance.as_deref(),
+            positional.first().map(String::as_str),
+            arguments,
+        ))?;
+        println!("{result}");
+        return Ok(());
     }
     let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let shell = Arc::new(Shell::open(
@@ -73,14 +106,66 @@ fn run() -> Result<()> {
         boundary::context(&repository)?,
         config,
     )?);
+    if command == "serve" {
+        conduit_shell::server::preflight(&shell)?;
+        shell.issue_client_token(&object_id(&shell.state()?, "root")?)?;
+        let runner = Runner::new(&shell, std::env::current_exe().map_err(|e| e.to_string())?)?;
+        let executor = Arc::new(conduit_shell::server::ServingExecutor::new(
+            runner.executor(),
+        ));
+        let completion_executor: Arc<dyn conduit_shell::Executor> = executor.clone();
+        runner.set_completion_executor(Arc::downgrade(&completion_executor));
+        let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+        let shutdown = tokio_util::sync::CancellationToken::new();
+        // Install signal handling before potentially slow setup begins.
+        let signal = shutdown.clone();
+        let mut terminate = {
+            let _entered = runtime.enter();
+            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+                .map_err(|e| e.to_string())?
+        };
+        runtime.spawn(async move {
+            tokio::select! { _ = tokio::signal::ctrl_c() => {}, _ = terminate.recv() => {} }
+            signal.cancel();
+        });
+        let setup_shell = shell.clone();
+        let setup_executor = executor.clone();
+        let setup_shutdown = shutdown.clone();
+        let result = runtime.block_on(async {
+            tokio::task::spawn_blocking(move || {
+                set_up_instances(
+                    &setup_shell,
+                    setup_executor.as_ref(),
+                    None,
+                    Some(&setup_shutdown),
+                )
+            })
+            .await
+            .map_err(|_| "startup setup failed")??;
+            if shutdown.is_cancelled() {
+                return Ok(());
+            }
+            conduit_shell::server::serve(shell.clone(), executor.clone(), shutdown).await
+        });
+        // Release startup tickets if a signal interrupted setup before listening.
+        shell.submit(json!({"kind":"recover"}), executor.as_ref())?;
+        // Runner owns a runtime: drop it on this synchronous thread.
+        drop(completion_executor);
+        for diagnostic in runner.diagnostics() {
+            eprintln!("runner: {diagnostic}");
+        }
+        drop(runner);
+        return result;
+    }
     match command.as_str() {
-        "init" => println!(
-            "{}",
-            shell.submit(
+        "init" => {
+            let reply = shell.submit(
                 json!({"kind":"first-start","machine":conduit_shell::local_machine(labels)?}),
-                &MissingExecutor
-            )?
-        ),
+                &MissingExecutor,
+            )?;
+            shell.issue_client_token(&object_id(&shell.state()?, "root")?)?;
+            println!("{reply}");
+        }
         "records" => {
             let export = shell.submit(json!({"kind":"export-records"}), &MissingExecutor)?;
             for record in export["records"]
@@ -147,45 +232,94 @@ fn run() -> Result<()> {
                 println!("{reply}");
             }
             let runner = Runner::new(&shell, std::env::current_exe().map_err(|e| e.to_string())?)?;
-            for kind in ["Pool", "Resource", "Agent", "Interface"] {
-                for object in state.objects.iter().filter(|v| {
-                    v["kind"] == kind
-                        && v["state"] == "registered"
-                        && v.get("spec").is_none()
-                        && registered.iter().any(|new| new["id"] == v["id"])
-                }) {
-                    let tool = if kind == "Resource" {
-                        let route = state
-                            .objects
-                            .iter()
-                            .find(|v| {
-                                v["kind"] == "Conduit"
-                                    && reference_id(&v["consumer"]) == &json!(root)
-                                    && reference_id(&v["target"]) == reference_id(&object["owner"])
-                                    && v["operations"].as_array().is_some_and(|ops| {
-                                        ops.contains(&json!(format!(
-                                            "{}#set-up.v1",
-                                            shell.context.core_package
-                                        )))
-                                    })
-                            })
-                            .ok_or("no root setup route to owning Pool")?;
-                        format!(
-                            "{}.set-up.v1",
-                            local_name(route).ok_or("setup route lacks local name")?
-                        )
-                    } else {
-                        "management.set-up.v1".into()
-                    };
-                    let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":{"instance":{"kind":kind,"name":object["name"]}}}}), &runner)?;
-                    println!("{reply}");
-                }
-            }
+            set_up_instances(&shell, &runner, Some(registered), None)?;
             for diagnostic in runner.diagnostics() {
                 eprintln!("runner: {diagnostic}");
             }
         }
         _ => unreachable!(),
+    }
+    Ok(())
+}
+fn set_up_instances(
+    shell: &Shell,
+    executor: &dyn conduit_shell::Executor,
+    registered: Option<&[Value]>,
+    shutdown: Option<&tokio_util::sync::CancellationToken>,
+) -> Result<()> {
+    let state = shell.state()?;
+    let root = object_id(&state, "root")?;
+    for kind in ["Pool", "Resource", "Agent", "Interface"] {
+        for object in state.objects.iter().filter(|v| {
+            v["kind"] == kind
+                && (v["state"] == "registered"
+                    || (registered.is_none()
+                        && v["state"] == "ready"
+                        && v["resolved_implementations"]
+                            .as_object()
+                            .is_some_and(|items| {
+                                items.values().any(|item| {
+                                    item["source"] != "engine"
+                                        && (item["item"].get("command").is_some()
+                                            || item["item"].get("package").is_some())
+                                })
+                            })))
+                && v.get("spec").is_none()
+                && registered.is_none_or(|items| items.iter().any(|new| new["id"] == v["id"]))
+        }) {
+            if shutdown.is_some_and(|s| s.is_cancelled()) {
+                return Ok(());
+            }
+            let tool = if kind == "Resource" {
+                let route = state
+                    .objects
+                    .iter()
+                    .find(|v| {
+                        v["kind"] == "Conduit"
+                            && reference_id(&v["consumer"]) == &json!(root)
+                            && reference_id(&v["target"]) == reference_id(&object["owner"])
+                            && v["operations"].as_array().is_some_and(|ops| {
+                                ops.contains(&json!(format!(
+                                    "{}#set-up.v1",
+                                    shell.context.core_package
+                                )))
+                            })
+                    })
+                    .ok_or("no root setup route to owning Pool")?;
+                format!(
+                    "{}.set-up.v1",
+                    local_name(route).ok_or("setup route lacks local name")?
+                )
+            } else {
+                "management.set-up.v1".into()
+            };
+            let ticket = shell.begin(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":{"instance":{"kind":kind,"name":object["name"]}}}}), executor)?;
+            let reply = if let Some(shutdown) = shutdown {
+                loop {
+                    if let Some(reply) = ticket.try_reply()? {
+                        break reply;
+                    }
+                    if shutdown.is_cancelled() {
+                        if let Some(invocation) = ticket.invocation() {
+                            shell.submit(
+                                json!({"kind":"cancel","invocation":invocation}),
+                                executor,
+                            )?;
+                        }
+                        return Ok(());
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                }
+            } else {
+                ticket.wait()?
+            };
+            if registered.is_some() {
+                println!("{reply}");
+            }
+            if reply["isError"] != false {
+                return Err(format!("setup of {} failed: {reply}", object["name"]));
+            }
+        }
     }
     Ok(())
 }

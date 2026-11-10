@@ -2,6 +2,7 @@
 pub mod boundary;
 mod identity;
 pub mod runner;
+pub mod server;
 mod store;
 use chrono::{DateTime, SecondsFormat, Utc};
 use conduit_core::{Context, Input, State, Transition};
@@ -35,6 +36,18 @@ impl Default for Config {
             initialize_timeout: Duration::from_secs(30),
             call_timeout: Duration::from_secs(120),
         }
+    }
+}
+impl Config {
+    /// Clients read only the public endpoint, without opening/recovering a live store.
+    pub fn for_store(directory: &Path) -> Result<Self> {
+        let path = directory.join("engine-url.json");
+        let mut config = Self::default();
+        if path.try_exists().map_err(|e| e.to_string())? {
+            config.engine_url = serde_json::from_slice(&store::private_read(&path)?)
+                .map_err(|_| "invalid stored engine URL")?;
+        }
+        Ok(config)
     }
 }
 
@@ -146,17 +159,36 @@ impl Shell {
     pub fn open(directory: &Path, context: Context, config: Config) -> Result<Self> {
         let url = url::Url::parse(&config.engine_url).map_err(|_| "invalid engine URL")?;
         let loopback = matches!(url.host(), Some(url::Host::Domain("localhost")))
-            || matches!(url.host(), Some(url::Host::Ipv4(ip)) if ip.is_loopback())
-            || matches!(url.host(), Some(url::Host::Ipv6(ip)) if ip.is_loopback());
+            || matches!(url.host(), Some(url::Host::Ipv4(ip)) if ip == std::net::Ipv4Addr::LOCALHOST)
+            || matches!(url.host(), Some(url::Host::Ipv6(ip)) if ip == std::net::Ipv6Addr::LOCALHOST);
         if url.scheme() != "http"
             || !loopback
             || !url.username().is_empty()
             || url.password().is_some()
             || url.fragment().is_some()
+            || url.query().is_some()
+            || url.path() != "/mcp"
+            || url.port_or_known_default() == Some(0)
         {
-            return Err("this shell requires an HTTP loopback engine address".into());
+            return Err(
+                "this shell requires an HTTP engine address at 127.0.0.1, localhost or ::1".into(),
+            );
         }
         let store = Store::open(directory)?;
+        let address = store.directory.join("engine-url.json");
+        if address.try_exists().map_err(|e| e.to_string())? {
+            let fixed: String = serde_json::from_slice(&store::private_read(&address)?)
+                .map_err(|_| "invalid stored engine URL")?;
+            if fixed != config.engine_url {
+                return Err("engine address differs from the store's fixed token audience".into());
+            }
+        } else {
+            store::atomic_write(
+                &store.directory,
+                "engine-url.json",
+                &serde_json::to_vec(&config.engine_url).map_err(|e| e.to_string())?,
+            )?;
+        }
         let authority = identity::Authority::open(&store)?;
         let shell = Self {
             run_groups: Mutex::new(Vec::new()),
@@ -226,13 +258,42 @@ impl Shell {
     }
     pub fn materialize_identity(&self, descriptor: &Value) -> Result<RunIdentity> {
         let writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
-        self.authority.materialize(
+        let identity = self.authority.materialize(
             &writer.store.directory,
             descriptor,
             &self.config.engine_url,
             &writer.store.read()?.state,
             &self.context,
-        )
+        )?;
+        self.client_token(
+            &writer,
+            descriptor["materializeFor"]
+                .as_str()
+                .ok_or("missing identity subject")?,
+        )?;
+        Ok(identity)
+    }
+
+    fn client_token(&self, writer: &Writer, instance: &str) -> Result<()> {
+        let state = writer.store.read()?.state;
+        if !state.objects.iter().any(|o| {
+            o["id"] == instance
+                && o.get("spec").is_none()
+                && ["Interface", "Agent", "Resource", "Pool"]
+                    .iter()
+                    .any(|k| o["kind"] == *k)
+        }) {
+            return Err("token subject is not an instance".into());
+        }
+        let directory = writer.store.directory.join("client-tokens");
+        store::private_directory(&directory)?;
+        let token = self.authority.token(instance, &self.config.engine_url)?;
+        store::atomic_write(&directory, instance, token.as_bytes())
+    }
+
+    pub fn issue_client_token(&self, instance: &str) -> Result<()> {
+        let writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
+        self.client_token(&writer, instance)
     }
 
     fn transition(&self, state: &State, mut input: Value) -> Result<Transition> {

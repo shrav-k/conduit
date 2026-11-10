@@ -14,7 +14,8 @@ The increment's complete requirements remain in
 
 The unsupported public management paths already named in
 [the handoff](increment-3-handoff.md#current-implementation-limits-to-resolve-before-exposure)
-remain core implementation work. The shell propagates their embedding errors.
+remain core implementation work. The trusted shell API propagates their embedding errors;
+the consumer adapter bounds their exposure as described under I3-03 below.
 
 ## I3-01: store, loop and identities (work order 020)
 
@@ -222,3 +223,221 @@ child-engine fixture still uses WO021_ENGINE_TEST_PARENT. The declared Node >=24
 observed Node 21.5.0 qualification limit is also explicit in CONFORMANCE.md's DL16 package row.
 The full order checks, including the opt-in real npm suite, are rerun for this correction.
 Order 022's presented server remains outside this tree and this order's work.
+
+## I3-03: the consumer server (work order 022)
+
+[Order 022](../../work-orders/022-i3-03-presented-server.md) supplies the decisions.
+The [server adapter](../../../reference-model/crates/shell/src/server.rs) serves MCP over
+loopback with rmcp 3.9.0 and axum. This order changes no core decision or specification promise.
+The existing H03 management limits are implementation work, not new language findings.
+
+### Implementation choices
+
+- A private `engine-url.json` fixes the full endpoint before tokens are issued. Every later
+  open compares it with Config; client commands read it without taking the store lease.
+  `/mcp`, HTTP loopback and a nonzero port are required. `localhost` binds IPv4 loopback.
+- Every HTTP request verifies its Bearer token against current State. The adapter accepts
+  only its own exact Origin, binds legacy sessions to consumers, and never uses clientInfo
+  as identity. Readable unidentified calls are recorded as refused through identity none;
+  authenticated transport refusals use the core's readable-false input for invalid records.
+  Error bodies wait for that commit. The body limit is 4 MiB.
+- The core's tool publication is preserved with private cache scope and no shell-set ttlMs.
+  For 2026-07-28 rmcp supplies the protocol-required zero freshness default; legacy results
+  omit it. This is the nearest sound reading of decision 3, rather than a chosen cache lifetime.
+  The server declares listChanged and the implementation-interface extension. A decorating
+  Executor routes each committed transition's tool_list_changes to the matching consumer's
+  legacy sessions and modern subscriptions. Its broadcast queue holds 1,024 notices; a
+  lagged receiver closes. Notification delivery says nothing about a client's model catalog.
+- Blocking core/store work runs outside the async transport workers. A pending call checks
+  its internal ticket every 10 ms, with no additional deadline, and returns only the core's
+  final result/error after commit. A guard handles cancellation during begin or handler
+  teardown; each response body's lifetime token also reaches its handler, so stream closure
+  commits cancel for that invocation. Client cancellation does so too. Shutdown also commits
+  recovery for interrupted work.
+- Root receives a private owner helper token at initialization/serving. Materialized instances
+  also receive helper tokens in the store's 0700 client-tokens directory, files 0600.
+  `call` uses root and `tools --as` uses the named instance through ordinary MCP requests.
+  Neither command opens the writer lease or performs a direct core invocation.
+- Startup compares core publication with the handoff's dispatcher inventory. Unsupported
+  nonmanagement exposure stops startup. Management-only unfinished operations stay visible
+  and return -32603 naming the operation with no transition committed. The explicit inventory
+  and public invocation limits are in
+  [CONFORMANCE.md](../../../reference-model/CONFORMANCE.md#consumer-server-order-022).
+
+### Evidence and limits
+
+The [HTTP tests](../../../reference-model/crates/shell/src/server_tests.rs) connect rmcp
+clients as A and B using materialized run-directory tokens. They compare standalone tool
+schemas and annotations with core publication, exercise A's refused write and B's write/read,
+read durable request/invocation endings before accepting replies, and exercise pending
+completion and cancellation. T7 uses the management MCP client to close A's directory Conduit,
+replace it explicitly and set up A again; B's list and notification stream stay independent.
+Authentication cases include missing, forged, foreign-audience and absent-instance tokens,
+Origin rejection, malformed requests and keyed repeats. Both legacy notifications and modern
+subscriptions are covered. The CLI integration test starts the actual conduit serve process,
+uses tools/call as root, rejects an address change and stops it with SIGTERM.
+
+The checkout supplied to this worker has order 020's shell and paused registration; it has no
+runner module or dependencies from order 021, and no record of that order's implementation.
+This is an absent prerequisite, not a finding against the language. The CLI explicitly refuses
+setup or runnable implementations needing it. Scripted S1 HTTP coverage runs the library
+server, not a conduit serve subprocess with a real filesystem executor. No real filesystem,
+npm server, Agent or runner shutdown is demonstrated. CONDUIT_TEST_NPM runs the available
+suite only; the real-filesystem tests of order 021 are absent. Runner integration and real S1
+process coverage remain for the coordinator; the complete order 022 done-when is not claimed.
+
+Validation on 2026-11-10: both `cargo test --release` and the same command with
+`CONDUIT_TEST_NPM=1` passed all 108 available Rust tests. After the final missing-runner guard
+was corrected to recognize ready instances' package/command items, both CLI integration tests
+were rerun and passed, including a ready-S1 snapshot that must refuse to serve without the
+runner. Clippy with warnings denied, fmt, the four Python repository checks and whitespace
+checks passed. These runs add no real npm/filesystem evidence for the absent order 021.
+
+### After the verifier's review (work order 022, correction round)
+
+The admin accepted all three implementation faults reported by the fresh verifier. They
+require no specification change:
+
+- The checkpoint's legacy session transport did not connect a closed HTTP response stream
+  to handler cancellation. Its documentation claimed more than the explicit notification
+  test showed. Each response now owns a lifetime token carried in the request extensions;
+  dropping its body signals only that handler, which submits core cancel. Regressions close
+  raw HTTP connections without sending notifications/cancelled for both supported legacy
+  revisions and the modern revision. They require executor cancellation, durable unknown
+  invocation/request endings and an independent second call still pending.
+- The unfinished inventory skipped nonengine implementation sources and therefore custom
+  controls. It now inspects every actually published operation's contract in its held
+  environment, using the exact scope in the publisher's decision. A contract with changes
+  is unfinished regardless of type/template source. Regressions use a held custom control
+  with a conflicting other scope, reject nonmanagement exposure and check that management
+  still lists it but receives -32603 naming the operation, with the store unchanged.
+- A method string alone no longer makes an unidentified tools/call readable. The adapter
+  requires rmcp's typed CallToolRequest variant. Malformed requests continue through rmcp's
+  own rejection path without invoking the core or creating a record (IFC-036). Regressions
+  exercise a missing name, nonobject params and nonobject arguments, with absent or forged
+  proof, across all supported revisions. rmcp treats malformed object parameters as custom
+  requests and answers method-not-found; nonobject params fail its transport decoder.
+
+Order 021 remains absent and untouched. These corrections add no runner or real filesystem
+evidence and do not remove the integration limit above.
+
+An initial full release run passed all 111 available Rust tests. The first npm-gated run
+failed the new stream-close regression's 10-second cancellation wait; the other 20 shell
+tests passed. The focused stream regression and the full release run had passed that case.
+The regression now uses the suite's existing 60-second wait limit for observing cancellation,
+without adding an invocation deadline to the server. Final full-suite runs set
+RUST_TEST_THREADS=4 to reduce test contention; no tests are excluded.
+
+Final correction-round validation on 2026-11-10: both complete release suites, with and
+without CONDUIT_TEST_NPM=1, passed all 111 available tests, including all three correction
+regressions and both CLI integration tests. Clippy with warnings denied, formatting, the
+four Python repository checks and whitespace checks passed. The npm-gated command still
+supplies no real npm/filesystem evidence in this checkout without order 021.
+
+### Joined to order 021 (work order 022, merge round)
+
+The admin merged main, including order 021 and its correction round, into order 022. This
+round resolves all six conflict files without staging or changing Git history. Both orders'
+log sections and conformance choices remain; neither introduced a duplicate finding or
+numbered limit, so no renumbering was needed. The sole finding remains 3-01. Cargo regenerated
+the lockfile from the union of dependencies, including stdio and HTTP features on rmcp 3.9.0.
+The earlier absent-runner limits above describe those rounds and are superseded by this join.
+
+`conduit serve` now owns the real runner. Before listening it explicitly sets up registered
+S1 instances, and inspects ready instances with executable items so setup restarts runs that
+ended with the registration command. The shared registration/setup helper keeps the original
+root and owning-Pool management routes; it fails startup on a failed setup reply. The
+absent-runner refusal and its obsolete CLI regression are removed. Signals are handled during
+startup too; interrupted tickets are recovered and every process group ends before exit.
+The runner remains owned on the synchronous entry-point thread, since its Tokio runtime must
+be dropped there. The serving executor holds only an adapter to its inner executor, and a
+weak completion-executor reference makes deferred setup/dispatch completions deliver tool-list
+changes through the same serving decorator, without an ownership cycle.
+
+The runner writes private historical process-group diagnostics under store/run-groups, with
+only engine PID and group ID. The runner never uses them for recovery, inspection or termination:
+persisted PIDs may have been reused. Working directories remain empty at launch. The process
+test reads these IDs and checks the OS groups directly before and after stopping serve;
+this avoids the sandbox's refusal to execute ps. No credentials or child arguments are in
+those diagnostic files.
+
+The new [process test](../../../reference-model/crates/shell/tests/serve.rs), gated by
+CONDUIT_TEST_NPM, begins with registered S1 and outstanding setup. The real serve process
+initializes both unchanged filesystem servers. rmcp consumers use the run-directory tokens
+for A and B, with exactly five and six tools respectively. Base S1 Agents have no executable;
+the test materializes their identities with the same run-contract API the runner uses, and
+starts no models. A's write is refused; B writes and reads actual disk bytes. Missing and
+forged tokens receive 401 with WWW-Authenticate, leave the bytes intact and have durable
+refused request records. Each successful filesystem reply already has one invocation-ended
+and one request-ended record, with access decided before dispatch. T7 closes A's project
+Conduit through conduit call; A loses its project tools and its cached read is refused.
+B's tools stay identical, it writes while A is closed, and receives no notification. Explicit
+register-replacement followed by setup, both through conduit call, restores A's list and read
+access; B continues writing. SIGTERM ends serve successfully, leaves no in-progress invocation,
+and both observed filesystem process groups disappear.
+
+During development the focused process test first exposed startup trying to set up ready
+foundational Resources through a nonexistent owning-Pool route; ready-instance inspection is
+now limited to executable items. The next attempt hit the sandbox's ps restriction. A first
+version of the diagnostics also included already-ended npm helper groups; diagnostics now
+identify actual run groups only. These were shell/test fixes, not language findings.
+
+The same process test also reopens the ready store, proves B can read through fresh runner
+sessions, and checks both new process groups disappear after a second SIGTERM. The focused
+run passed on 2026-11-10. Two offline regressions passed too: deferred setup and dispatch
+transitions reach the configured completion decorator; and SIGTERM during an unanswered
+initialization cancels setup, ends that process and starts no later Resource. The startup
+worker observes cancellation while waiting for its ticket and is joined before runner drop,
+so it cannot race shutdown by submitting a later part. The startup-signal regression initially
+waited for shared when history was the first Resource; it now observes whichever starts first
+and requires the other not to start. No Resource order was changed.
+
+Merge-round validation on 2026-11-10: the complete offline release suite passed 131 tests,
+with two ignored child-process fixtures exercised by their parent tests. The focused real
+S1 process test passed its initial and ready-store starts, both clean stops, and every T7
+assertion. The focused completion-decorator and startup-signal regressions passed. Clippy
+with warnings denied, fmt, the four Python repository checks, git diff --check and an explicit
+scan of all eleven changed files for trailing whitespace and conflict markers passed.
+
+The complete CONDUIT_TEST_NPM=1 release suite also passed 131 tests, with the same two
+child-process fixtures ignored as standalone tests and exercised by their parents. This run
+activated the real npm registration, artifact-mismatch, runner S1 and serve S1 cases; the
+serve case passed T7, ready-store restart and both no-surviving-group checks. All checks used
+RUST_TEST_THREADS=4 for complete release suites. A test-only Conduit lookup was also corrected
+to read consumer reference maps as well as bare IDs. The final report lists each check's final
+result; no specification, core decision or conformance vector was changed in this round.
+
+### Second fresh verification of the join (work order 022, correction round)
+
+The admin accepted all four findings from the second fresh verifier of the joined orders
+021 and 022. These corrections change only the shell and its documentation:
+
+- A tools/call authenticated as B but carrying A's session ID now commits the core's
+  readable-false rejection before returning HTTP 401 with WWW-Authenticate. Its regression
+  reads the durable request-ended record as B and checks that nothing was dispatched.
+- Rejection inputs carry each syntactically valid nonempty serving and idempotency metadata
+  string independently, including when the other field is malformed. Attribution and record
+  construction remain in the core. Regressions cover rejected Origin, missing extension
+  capability and malformed metadata, and an onward rejection whose consumer differs from
+  its original caller; both access-decision and request-ended records are read from disk.
+- A legacy notification receiver that overflows now closes and removes its session through
+  rmcp's session manager, ending its HTTP streams. The adapter shares the ID assigned after
+  initialization with that session's forwarding task. A deterministic regression overflows
+  the 1,024-notice queue for each legacy revision, observes the stream end and 404 for the
+  old session, and receives a notification after reconnecting. Modern overflow already ends
+  its subscription stream. CONFORMANCE.md specifies both forms of closure and reconnect.
+- First start accepts only the HTTP layer's supported hosts, 127.0.0.1, localhost and ::1,
+  before fixing the store's token audience. A regression refuses other loopback hosts,
+  verifies no audience was persisted and accepts each supported host.
+
+No new language finding or conformance vector is introduced. No Git index or history change
+is part of this round.
+
+Validation on 2026-11-10: all eight focused HTTP tests passed. Both complete release suites,
+with and without CONDUIT_TEST_NPM=1, passed all 134 tests; two child-process fixtures were
+ignored as standalone tests and exercised by their parents. Each full suite used
+RUST_TEST_THREADS=4. The npm-enabled suite passed real registration, artifact-mismatch
+rejection, runner S1 and the serve-process S1 test, including T7, ready-store restart and
+shutdown. Clippy with warnings denied, formatting, all four Python repository checks,
+git diff --check and an explicit whitespace/conflict-marker scan of the five changed files
+passed. The index and history were left unchanged.

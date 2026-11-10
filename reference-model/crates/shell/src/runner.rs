@@ -134,6 +134,7 @@ struct Inner {
     cancelled_attempts: Mutex<BTreeSet<Attempt>>,
     cache_lock: AsyncMutex<()>,
     errors: Mutex<Vec<String>>,
+    completion_executor: Mutex<Option<Weak<dyn Executor>>>,
 }
 
 /// Own this alongside the shell. Dropping either owner ends every run; reopening starts
@@ -151,7 +152,7 @@ impl Runner {
             .store
             .directory
             .clone();
-        for name in ["npm", "npm-downloads", "work", "programs"] {
+        for name in ["npm", "npm-downloads", "work", "programs", "run-groups"] {
             private_directory(&directory.join(name))?;
         }
         crate::store::atomic_write(&directory, "npm-userconfig", b"")?;
@@ -174,9 +175,17 @@ impl Runner {
                 cancelled_attempts: Mutex::new(BTreeSet::new()),
                 cache_lock: AsyncMutex::new(()),
                 errors: Mutex::new(Vec::new()),
+                completion_executor: Mutex::new(None),
             }),
             _runtime: runtime,
         })
+    }
+    /// Decorate deferred transitions without prolonging the runner's lifetime.
+    pub fn set_completion_executor(&self, executor: Weak<dyn Executor>) {
+        *self.inner.completion_executor.lock().unwrap() = Some(executor);
+    }
+    pub fn executor(&self) -> Arc<dyn Executor> {
+        Arc::new(self.inner.clone())
     }
     /// Fixed diagnostics only: never child stderr, environment values, arguments or identity.
     pub fn diagnostics(&self) -> Vec<String> {
@@ -262,9 +271,18 @@ impl Executor for Arc<Inner> {
                     "failed"
                 }
             };
+            let executor = this
+                .completion_executor
+                .lock()
+                .unwrap()
+                .as_ref()
+                .and_then(Weak::upgrade);
             if let Some(shell) = this.shell.upgrade()
-                && let Err(e) =
-                    shell.setup_report(invocation, json!({"kind":"run","outcome":outcome}), &this)
+                && let Err(e) = shell.setup_report(
+                    invocation,
+                    json!({"kind":"run","outcome":outcome}),
+                    executor.as_deref().unwrap_or(&this),
+                )
             {
                 this.errors.lock().unwrap().push(e);
             }
@@ -448,6 +466,14 @@ impl Inner {
         };
         args.extend(package_arguments(item, inputs)?);
         let (mut child, group) = self.spawn(&program, &args, &work, &env, setup)?;
+        // Historical diagnostics only. Never use persisted PIDs to inspect or kill a
+        // process after reopening: the OS may have reused them for another process.
+        crate::store::atomic_write(
+            &self.directory.join("run-groups"),
+            &Uuid::new_v4().to_string(),
+            &serde_json::to_vec(&json!({"engine":std::process::id(),"group":group.pid}))
+                .map_err(|_| "process group diagnostic encoding failed")?,
+        )?;
         let responses = Arc::new(Mutex::new(HashMap::new()));
         let transport = Wire {
             reader: BufReader::new(child.stdout.take().ok_or("missing stdout")?).lines(),
@@ -983,8 +1009,19 @@ impl Inner {
             if let Some((_, id)) = this.requests.lock().unwrap().remove(&key) {
                 run.responses.lock().unwrap().remove(&id);
             }
+            let executor = this
+                .completion_executor
+                .lock()
+                .unwrap()
+                .as_ref()
+                .and_then(Weak::upgrade);
             if let Some(shell) = this.shell.upgrade()
-                && let Err(e) = shell.complete(&key.0, key.1, completion, &this)
+                && let Err(e) = shell.complete(
+                    &key.0,
+                    key.1,
+                    completion,
+                    executor.as_deref().unwrap_or(&this),
+                )
             {
                 this.errors.lock().unwrap().push(e);
             }

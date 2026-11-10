@@ -1,7 +1,7 @@
 # First-build conformance choices
 
 Not binding. The [specification](../spec/README.md) alone binds. This document states the
-choices implemented through increment 2 and shell order 020, under the admin's
+choices implemented through increment 2 and shell orders 020/021/022, under the admin's
 [decisions](../docs/proposals/first-build/increment-2/decisions.md) and
 [order 020](../docs/work-orders/020-i3-01-store-loop-identity.md), and distinguishes them
 from choices the shell must still make. It is not a declaration of whole-language conformance.
@@ -31,7 +31,7 @@ its stated slice of a promise; a coverage reason is not a passing vector.
 | DL12: tool schemas | Inline no optional contract references. Copy reached contracts once, with escaped local roots and finite recursive definitions; target-held contexts choose releases. | `e05-local`, `e05-two-contexts`, `e05-recursive`, `e05-siblings`, `e05-escaping`, [schemas.rs](crates/core/src/schemas.rs) |
 | DL12: result content | Preserve successful plain MCP content alongside structuredContent. For other successes use structuredContent without an optional serialized text copy. Errors carry a status text block; invalid/conflict also carry diagnostic structuredContent. | `s1-whole`, `requests-plain-content`, `requests-declared-outputs`, [result envelope](crates/core/src/requests.rs) |
 | DL13: instance proof | One store-private ECDSA P-256 key and self-signed CA certificate. The trust domain is 26 random lower-case letters/digits followed by .conduit.local. ES256 tokens carry the instance's SPIFFE ID, engine-address audience, iat, random jti and exp set to iat plus 100 calendar years (UTC, clamping February 29 to February 28 if necessary). Verification requires an integer exp strictly later than the current time, and checks signature, ES256, audience, SPIFFE form/trust domain and current instance existence on every request. Missing proof maps to none; invalid proof maps to unreadable. Every run gets a fresh private directory with the token, engine ID, public JWKS and CA PEM, under the names the run contract supplies. Credentials never enter core State, records or shell output. | [identity.rs](crates/shell/src/identity.rs), identity and S1 shell tests |
-| DL13: loopback boundary | This shell accepts an http engine address on loopback only. ca.crt checks nothing at this address; its root uses the same P-256 key as the JWT authority. Built-in runs now end with the engine on this one machine: a group leader watches an engine-only lifetime socket and kills its process group on EOF, including SIGKILL of the engine. Dropping either shell or runner also kills all groups. No consumer HTTP server is presented until order 022. | [shell](crates/shell/src/lib.rs), [handoff](../docs/proposals/first-build/increment-3-handoff.md#work-the-shells-orders-can-take) |
+| DL13: loopback boundary | This shell accepts an http engine address on loopback only. ca.crt checks nothing at this address; its root uses the same P-256 key as the JWT authority. Built-in runs now end with the engine on this one machine: a group leader watches an engine-only lifetime socket and kills its process group on EOF, including SIGKILL of the engine. Dropping either shell or runner also kills all groups. The order 022 adapter serves authenticated loopback HTTP with the runner as its executor. | [shell](crates/shell/src/lib.rs), [handoff](../docs/proposals/first-build/increment-3-handoff.md#work-the-shells-orders-can-take) |
 | DL10: process and call deadlines | MCP initialization: 30 seconds from opening the stdio session. Dispatch and a refresh-plus-read: 120 seconds per intent. Config and CLI can set both. Initialization timeout kills the group and reports failed; dispatch timeout reports missing with the original invocation and attempt and never resends a write. npm preparation helpers have a fixed 120-second deadline, plus at most 5 seconds for their exit status. | [runner.rs](crates/shell/src/runner.rs), deadline/exit/repair/cancellation tests in [runner tests](crates/shell/tests/runner.rs) |
 | DL16: packages and commands | npm is the only supported registryType; any other fails with its name. Package transport must be stdio. npm pack fetches the exact version with scripts disabled. SHA-256 is checked before decompression, manifest reading, dependency installation or execution. Verified artifacts are unpacked into a hash-keyed store cache, dependencies installed with npm install --omit=dev --ignore-scripts --legacy-peer-deps (no automatic peer installation; needed for the observed npm 10.2.4 resolver failure), and the sole bin run with node. The artifact hash does not pin the dependency graph (MAN-010). The runner does not check a Package's declared engines. The unchanged filesystem server 2.1.0 declares Node >=24, but S1 was exercised on Node 21.5.0: qualification covers those exercised operations on this machine only, not the declared Node platform range. npm uses a store-local download cache and empty user configuration, no global configuration, the public npm registry, and no audit/fund requests. Relative command paths are materialized from retained installed-package files under the store with their modes; absolute programs run as given, and bare names resolve through the run's PATH. | [runner.rs](crates/shell/src/runner.rs), installed-program unit test, opt-in hash mismatch and real S1 tests |
 | DL16: environment and working directory | Unix only, as the engine's operating-system user and existing login session. Clear the environment, then pass HOME, LOGNAME, PATH, SHELL, TERM and USER when present and not beginning with (). Config.pass_environment (CLI: repeated --pass-environment NAME), empty by default, names further inherited variables, also skipping function values. Package environment declarations supply fixed values and defaults over inheritance; supplied environment bindings and secrets override them, and the materialized identity's two variables win. Package argument and environment values substitute declared server.json variables once, preserving unresolved identifiers. Fixed positional values need no valueHint. The runner reads only the permitted inherited names. Each run starts in a fresh empty store/work directory, mode 0700, separate from shared data and identity files. This is no OS sandbox. | exact exec-environment and binding unit tests; synthetic GITHUB_TOKEN exclusion, working-directory and identity tests |
@@ -53,9 +53,9 @@ prints these measurements; they are not a persistence format or compaction polic
 | DL5 | Machine report intervals/deadlines, hostname override and voluntary runtime inspection intervals. The shell now discovers the OS hostname and OS/architecture labels at first start, plus explicitly supplied labels. |
 | DL7 | Physical package store, removal/mirror controls, general package-install command/API and complete install.v1 authorization/records/fetch orchestration. Archive admission and CLI directory registration with S1 preinstalled snapshots are implemented. |
 | DL8 | Live feed/cursor delivery. Physical records are now in the atomic State file. |
-| DL10 | Tool-list ttlMs and retirement orchestration deadlines. A store write/fsync error stops that shell operation as an embedding error; no intent or successful reply is issued for that operation. General disk-space management is pending. |
-| DL12 | Supported MCP revisions beyond the baseline, transport envelopes and accepted Origin values. |
-| DL13 | Token helpers, gate proof, TLS and authorization-server integration. No public OAuth issuer/grant or remote-runtime credential delivery is claimed by the loopback-only authority. |
+| DL10 | Retirement orchestration deadlines. A store write/fsync error stops that shell operation as an embedding error; no intent or successful reply is issued for that operation. General disk-space management is pending. |
+| DL12 | Additional MCP revisions and transports beyond the loopback adapter below. |
+| DL13 | Gate proof, TLS and authorization-server integration. No public OAuth issuer/grant or remote-runtime credential delivery is claimed by the loopback-only authority. |
 | DL16 | Platforms beyond Unix process groups and lifetime sockets; qualification beyond the npm filesystem server and local scripted servers. |
 | DL17 | Multi-machine restart/partition/fencing. No distributed configuration or guarantee is demonstrated by this core. |
 
@@ -66,3 +66,79 @@ claims their behavior. The [increment 2 log](../docs/proposals/first-build/log-i
 records its accepted implementation choices and language findings separately; the
 [increment 3 log](../docs/proposals/first-build/log-increment-3.md) records this worker's
 choices for coordinator review.
+
+## Consumer server (order 022)
+
+The shell adapter uses rmcp 3.9.0 and axum to serve Streamable HTTP at `/mcp`.
+It accepts revisions 2025-06-18, 2025-11-25 and 2026-07-28. The endpoint is fixed in
+`engine-url.json` before any instance token is issued; opening the store with another
+address fails. Only HTTP addresses with hosts `127.0.0.1`, `localhost` or `::1` and a nonzero
+port are accepted, matching the HTTP layer's Host allowlist. Other loopback hosts, including
+`127.0.0.2`, are refused at first start before the store fixes its audience. `localhost`
+binds IPv4 loopback. This is the same full address used as token audience.
+An absent or invalid Bearer credential receives HTTP 401 with WWW-Authenticate.
+Readable unauthenticated tool calls enter the core with identity none and are recorded as
+refused. Invalid signatures, audiences and removed subjects establish no instance.
+Present Origin values must equal the endpoint's own origin exactly; others receive 403.
+Authenticated malformed requests enter invoke with readable false, for the core's invalid
+ending and records, before their protocol error or HTTP status leaves. Session IDs are bound
+to the authenticated consumer; they do not establish identity themselves. An authenticated
+tools/call with another consumer's session ID commits a core rejection before HTTP 401.
+Rejection inputs retain each syntactically valid, nonempty serving and idempotency metadata
+string independently; the core owns caller attribution and records. A malformed
+tools/call with no established identity receives rmcp's own protocol response and creates no
+record, including missing names and nonobject parameters or arguments (IFC-036).
+
+For DL10/DL12, **no ttlMs is set by the shell** on discovery or tool lists. For
+2026-07-28 rmcp supplies the protocol-required zero default (no freshness); legacy results
+omit it. This is the nearest sound reading of order 022: no positive cache lifetime is chosen.
+Lists carry private cache scope. The server declares tools.listChanged and Conduit's implementation-interface extension
+at v0. Legacy sessions receive list-change notifications through their session stream;
+2026-07-28 clients opt into a tools-list subscription. Delivery is only to the changed
+consumer's sessions/subscriptions. A broadcast queue holds 1,024 pending change notices;
+on receiver overflow the adapter closes and removes that legacy session, ending its open
+HTTP streams. Requests using its old session ID receive 404; the client must initialize a new
+session and refresh its list, after which notification delivery resumes. For 2026-07-28,
+which has no legacy session, overflow ends the affected subscription stream; the client must
+open a new subscription and refresh its list.
+The engine does not infer a client's model catalog from what it sends. Model refresh and
+turn boundaries still need the real-client work of order 023 and the admin's closeout.
+
+Calls carry their serving and idempotency metadata into core invoke; no cached access permit
+is used. Core results are preserved, with rmcp providing the revision's transport envelope.
+Pending replies stay inside the shell until completion. Cancellation notifications reach the
+core's cancel. Each HTTP response owns a separate cancellation token, carried to its handler;
+dropping its body cancels that invocation even in legacy sessions, where rmcp's session
+transport does not connect stream closure to handler cancellation. Raw connection-close tests
+cover both legacy revisions and 2026-07-28, checking executor cancellation and durable unknown
+completion while a second invocation remains pending. The waiting adapter checks its ticket
+every 10 ms; there is no additional invocation deadline here. Shutdown cancels the transport
+and commits recovery for any work that remains interrupted. The HTTP body limit is 4 MiB.
+`conduit call` and `conduit tools` are MCP clients, without opening or recovering the live
+store. Root and materialized instances have owner-only helper tokens in `client-tokens`,
+a 0700 directory with 0600 files. Per-run identity directories retain the run-contract names.
+These helpers are for the store owner, not additional consumer authority.
+
+H03 is bounded explicitly. Public engine execution currently supports set-up.v1, open.v1,
+close.v1, register-replacement.v1, register.v1, replace.v1, inspect.v1, purge.v1 and
+reconcile.v1, subject to the core's existing preflights. Unregister.v1, retire.v1, install.v1,
+declare-lost.v1 and retire-with-resources.v1 remain unfinished public invocation paths;
+controls and control reconciliation also remain outside the handoff's implemented core slice.
+Startup inspects every published operation's held contract, using the publisher's resolved
+scope, and treats a contract with changes as an unfinished control regardless of its type or
+template implementation source. It compares publication with that inventory and refuses an
+unsupported nonmanagement consumer. Unfinished management tools remain in the core's list; calls answer
+JSON-RPC -32603 naming the operation, without committing a transition.
+
+`conduit serve` owns order 021's runner, explicitly sets up S1's registered instances and
+inspects ready instances to restart stopped runs before listening. Setup and dispatch
+completions use the serving executor so changes from deferred transitions reach the same
+consumer notification path. On signal the transport stops, interrupted work is recovered,
+and the runner ends every process group before the command exits. The opt-in process test
+uses real filesystem sessions and run-directory tokens (base S1 Agent identities are
+materialized by the test through the runner's API, since those Agents have no executable); it covers A/B access, T7 replacement
+through `conduit call`, private notifications, durable records and no surviving run groups.
+The runner keeps private historical engine/group PID diagnostics under store/run-groups,
+used by the test to observe actual group disappearance without process-table access. These
+files are never used to recover or terminate a process after restart. No real Agent client
+is demonstrated by these tests.

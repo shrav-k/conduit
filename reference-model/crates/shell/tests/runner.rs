@@ -277,6 +277,112 @@ fn scripted_server() {
     }
 }
 
+// Completion transitions must pass through the serving decorator, even though the
+// initial call returned Deferred on a different thread.
+struct CompletionObserver(std::sync::atomic::AtomicUsize);
+impl Executor for CompletionObserver {
+    fn tools_changed(&self, _: &[Value]) -> conduit_shell::Result<()> {
+        self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        Ok(())
+    }
+}
+#[test]
+fn deferred_setup_and_dispatch_reenter_the_completion_executor() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(parent.path(), Config::default());
+    register(&shell, parent.path(), false, "normal");
+    let runner = new_runner(&shell);
+    let observer = Arc::new(CompletionObserver(std::sync::atomic::AtomicUsize::new(0)));
+    let executor: Arc<dyn Executor> = observer.clone();
+    runner.set_completion_executor(Arc::downgrade(&executor));
+    establish(&shell, &runner);
+    until(|| observer.0.load(std::sync::atomic::Ordering::SeqCst) == 2);
+    let reply = invoke(
+        &shell,
+        &runner,
+        "agent-b",
+        "project.file.read.v1",
+        json!({"path":"hello.txt"}),
+    );
+    assert_eq!(outcome(&shell, &reply), "succeeded", "{reply}");
+    until(|| observer.0.load(std::sync::atomic::Ordering::SeqCst) == 3);
+}
+
+#[test]
+fn serve_signal_during_setup_ends_run_and_starts_no_later_part() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(parent.path(), Config::default());
+    register(&shell, parent.path(), false, "no-initialize");
+    drop(shell);
+    struct Server(std::process::Child);
+    impl Drop for Server {
+        fn drop(&mut self) {
+            let _ = self.0.kill();
+            let _ = self.0.wait();
+        }
+    }
+    let mut server = Server(
+        Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .arg("serve")
+            .arg("--store")
+            .arg(parent.path().join("store"))
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(fs::File::create(parent.path().join("serve.stderr")).unwrap())
+            .spawn()
+            .unwrap(),
+    );
+    let startup = Instant::now();
+    while !["shared", "history"]
+        .iter()
+        .any(|name| parent.path().join(name).join("pid").is_file())
+    {
+        assert!(
+            server.0.try_wait().unwrap().is_none(),
+            "serve exited during setup: {}",
+            fs::read_to_string(parent.path().join("serve.stderr")).unwrap()
+        );
+        assert!(
+            startup.elapsed() < Duration::from_secs(180),
+            "serve never started the first setup run"
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    let first = ["shared", "history"]
+        .into_iter()
+        .find(|name| parent.path().join(name).join("pid").is_file())
+        .unwrap();
+    let pid: i32 = fs::read_to_string(parent.path().join(first).join("pid"))
+        .unwrap()
+        .parse()
+        .unwrap();
+    assert_eq!(
+        unsafe { libc::kill(server.0.id() as i32, libc::SIGTERM) },
+        0
+    );
+    let mut status = None;
+    until(|| {
+        status = server.0.try_wait().unwrap();
+        status.is_some()
+    });
+    assert!(status.unwrap().success());
+    until(|| unsafe { libc::kill(pid, 0) } != 0);
+    for name in ["shared", "history"] {
+        if name != first {
+            assert!(!parent.path().join(name).join("pid").exists());
+        }
+    }
+    let shell = open(parent.path(), Config::default());
+    assert!(
+        shell
+            .state()
+            .unwrap()
+            .invocations
+            .iter()
+            .all(|v| v["state"] != "in-progress")
+    );
+}
+
 #[test]
 fn plain_wire_environment_workdir_records_and_restart() {
     let parent = tempfile::tempdir().unwrap();

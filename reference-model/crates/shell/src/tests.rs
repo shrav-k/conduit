@@ -1201,3 +1201,6 @@ fn killed_after_commit_before_send() {
 fn killed_after_send_before_completion_commit() {
     crash_test(true);
 }
+
+#[path = "server_tests.rs"]
+mod http;

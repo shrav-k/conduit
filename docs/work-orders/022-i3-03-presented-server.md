@@ -100,3 +100,24 @@ root: `python3 tools/check_docs.py`, `python3 tools/set_names.py --check`,
 in `reference-model/`, `cargo test --release`, `cargo clippy --all-targets -- -D warnings`,
 `cargo fmt --check` and `CONDUIT_TEST_NPM=1 cargo test --release` pass. Check the files you
 create for trailing white space yourself; do not stage anything.
+
+## Record
+
+Run on 2026-11-10, in parallel with order 021: the worker in 48 minutes, then a fresh verifier
+in 5. The verifier found three defects, each real: a closed response stream did not cancel its
+invocation (OPS-027), the inventory of unfinished operations skipped custom controls, and a
+malformed `tools/call` with no identity was recorded as a refusal instead of getting the
+protocol's error and no record (IFC-036). The admin sent the worker back with all three. Order
+021 merged meanwhile, and the merge of main into this order's tree conflicted in six files; a
+third round resolved them, joined `conduit serve` to the runner, and added the end-to-end test
+the order asked for, run as a process on S1 with the real filesystem server: A refused a write,
+B writing and reading back, no token and a forged token refused, T7's close of A's Conduit and
+its explicit restoration through `conduit call` with B unaffected and sent nothing, and no run
+left after the server stops. A second fresh verifier then read the joined result and found four
+more: a session mismatch with an established identity returned 401 with no record (REC-001),
+rejection records dropped the caller's idempotency and serving metadata (REC-002), a session
+that overflowed its notification queue stopped hearing changes while staying open (IFC-038),
+and loopback hosts the HTTP layer refuses were accepted at first start. A fourth round fixed
+all four, the last by refusing every loopback host but `127.0.0.1`, `localhost` and `::1`.
+The admin reran every check: with `CONDUIT_TEST_NPM=1`, 134 Rust tests pass, and clippy, fmt
+and the five repository checks are clean.

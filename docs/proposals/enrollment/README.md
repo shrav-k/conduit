@@ -2,7 +2,9 @@
 
 Not binding. The [specification](../../../spec/README.md) alone binds. Research and a proposal by the coordinator,
 2026-11-10, for the review that [ruling 50](../ruling-50/README.md) asks for before any promise is
-written.
+written. [Ruling 51](../ruling-51/README.md) accepted the decisions of the
+[networking paradigms](networking-paradigms.md) beside it, and added a managed and a peer mode
+for machines the owner controls; the seven decisions below await the detailed review.
 
 ## 1. The question, and what ruling 50 already settled
 

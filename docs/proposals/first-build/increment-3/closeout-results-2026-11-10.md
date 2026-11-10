@@ -63,10 +63,7 @@ project read ended `failed`: an operation with no effect, so the server's error 
 
 Each of these is unshown, not passed, and carried forward:
 
-- **The owner's user-level configuration.** Sentinels in the owner's own instruction files, hooks
-  and settings were not planted: the coordinator does not edit `~/.claude` or `~/.codex`. Only
-  project-level instruction files were tested. The flags that exclude user sources are the
-  evidence so far.
+- **The owner's user-level configuration**, for Codex: shown to leak, finding 3-07, below.
 - **Account services.** No connector or app read was attempted, so that Claude Code's claude.ai
   connectors and Codex's apps are off is shown by the flags, not by a refused use.
 - **Messages from other sessions.** Claude Code's refusal of an incoming cross-session message
@@ -74,6 +71,27 @@ Each of these is unshown, not passed, and carried forward:
 - **The reach inputs set true.** No Agent was run with `accountServices` or `peerMessaging` true.
 - **Codex's own tool list.** Its events give none, so the comparison with the engine's list is
   Claude Code's alone.
+
+## The owner's user-level configuration
+
+Run the same day, after the results above, with the owner's leave to edit their own files for
+the run alone. The admin saved `~/.claude/settings.json` and its digest, then planted three
+markers: a `~/.claude/CLAUDE.md` and a `~/.codex/AGENTS.md`, each asking the model to quote a
+word, and in `~/.claude/settings.json` a hook on session start and on each prompt that appends
+a line to a file under `<closeout>/evidence/`. Neither instruction file had existed.
+
+| Check | Result |
+| --- | --- |
+| Baseline outside the engine, in an empty directory | Claude Code quoted its word and named the file; the hook fired twice. Codex quoted its word |
+| Claude Code as Agent A, through the engine | Pass: it answered none, said no instruction file was loaded, and the hook did not fire |
+| Codex as Agent B, through the engine | Fail: it quoted its word and named `AGENTS.md` as its source |
+| Codex alone, a fresh thread with every flag the wrapper passes | Fail: it quoted its word. The file is read from Codex's home whatever the flags say (finding 3-07) |
+| The owner's files afterwards | Restored: the settings matched their saved digest, and both instruction files were removed |
+
+Codex's home, `~/.codex` unless `CODEX_HOME` names another, holds its login beside its
+instruction file, skills and memories, so the wrapper cannot exclude the one by pointing Codex
+elsewhere without deciding how the login reaches the new home. Claude Code's user skills,
+outside `--setting-sources ""`, were not tried either.
 
 ## Routes around the engine (ACC-027)
 

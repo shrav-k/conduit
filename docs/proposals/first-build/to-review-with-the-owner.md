@@ -45,6 +45,9 @@ the comparison by either set. A decision made after this date goes below as a ne
 | 13 | **Each Agent's client loads no instruction file or setting source of its own**: Claude Code with no setting source, Codex with no project document | Found with planted sentinels, which both clients loaded from a directory above their private working directory. It decides what an Agent knows beyond its turn and its tools | [log of increment 3](log-increment-3.md), 3-04 and 3-05 |
 | 14 | **The engine's credentials name an expiry 100 years ahead** (finding 3-01) | DL13 and JWT-SVID require an expiry; a credential lasts as long as its instance in this version, so the expiry only has to be far enough away | [log of increment 3](log-increment-3.md), 3-01 |
 
+On 2026-11-10 the coordinator walked the owner through items 11 to 14, recommending each be
+kept, and the owner answered that everything stands. Items 11 to 14 stand as decided.
+
 ## What the owner ruled, for reference
 
 Ruling 48 settled four points with the owner: an Agent's own reach off by default, the shared

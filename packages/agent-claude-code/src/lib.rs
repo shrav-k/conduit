@@ -204,7 +204,6 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
         for feature in [
             "shell_tool",
             "unified_exec",
-            "code_mode_host",
             "browser_use",
             "browser_use_external",
             "in_app_browser",

@@ -93,6 +93,9 @@ instruction file, skills and memories, so the wrapper cannot exclude the one by 
 elsewhere without deciding how the login reaches the new home. Claude Code's user skills,
 outside `--setting-sources ""`, were not tried either.
 
+The owner chose to state the leak for now (finding 3-07): each Codex Agent gets a home and a
+login of its own later, through a credential in a pool rather than one manual login per Agent.
+
 ## Routes around the engine (ACC-027)
 
 Every restriction here is mediated, and these are the routes known or seen:

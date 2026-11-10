@@ -1,0 +1,30 @@
+{
+  "observations": [
+    {
+      "patches": [],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000008000",
+            "00000000-0000-4000-8000-000000008001"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.declare-lost.v1",
+          "arguments": {
+            "node": {
+              "kind": "Resource",
+              "name": "local"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

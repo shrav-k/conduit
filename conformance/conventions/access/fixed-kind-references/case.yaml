@@ -1,0 +1,148 @@
+{
+  "id": "access-fixed-kind-references",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "OBJ-002",
+    "OBJ-006",
+    "ACC-033",
+    "LIF-034"
+  ],
+  "title": "Bare names retain their schema-fixed kind beside a same-name owner or Resource",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "initial.json",
+    "observations": "observations.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "access-fixture",
+        "file": "observations",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "reason": "refused"
+        },
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "LIF-034"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000009000",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:06:00Z",
+            "type": "access-decision",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000009001",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:06:00Z",
+            "type": "request-ended",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "access-fixture",
+        "file": "observations",
+        "index": 1
+      },
+      "expect": {
+        "reply": {
+          "reason": "refused"
+        },
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "LIF-034"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000009002",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:06:00Z",
+            "type": "access-decision",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000009003",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:06:00Z",
+            "type": "request-ended",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "access-fixture",
+        "file": "observations",
+        "index": 2
+      },
+      "expect": {
+        "reply": {
+          "reason": "refused"
+        },
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "ACC-033"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000009004",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:06:00Z",
+            "type": "access-decision",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000009005",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:06:00Z",
+            "type": "request-ended",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

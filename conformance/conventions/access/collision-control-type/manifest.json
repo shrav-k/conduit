@@ -1,0 +1,19 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/collision-control-type",
+  "implementations": {
+    "server": {
+      "implements": [
+        "#adjust.v1"
+      ],
+      "remote": {
+        "url": "https://example.invalid/tools",
+        "type": "streamable-http"
+      },
+      "plain": true,
+      "tools": {
+        "#adjust.v1": "tool"
+      }
+    }
+  }
+}

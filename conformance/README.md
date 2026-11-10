@@ -252,3 +252,38 @@ The [generated variations](fixtures/install-archives/README.md) prove rejection 
 rules with retained bytes and computed hashes. The installation input exercises archive
 admission and catalog publication; the general `install.v1` access/dispatch/record workflow
 remains a later convention input, as does the shell's persistence of the virtual directory.
+
+## Access and current tools (I2-05)
+
+The [access cases](conventions/access/s1-exact-access/case.yaml) register S1 from its real
+snapshots before querying access. `access-fixture` names a document with an `observations` array and selects its zero-based
+`index`: `patches` supply
+already established lifecycle facts on that registered state, `invocations` optionally supply
+trusted in-progress serving state, and `call` is the core's `access` or `list-tools` input.
+These observations do not claim setup, opening, closing, an invocation or dispatch. A patch
+identifies an instance by `id` or `name` and sets supplied members with `set`, or appends a
+supplied object with `append`. An optional `after` supplies a second observation; `changes`
+then compares the two private tool lists and names the consumers whose subscribed streams the
+shell must notify. The runner checks that each call preserves its actual supplied objects,
+invocations, installed packages and start state, produces no intent or invocation record, and
+that refused/unavailable replies contain only a reason and an optional restriction. Only its
+records and consumed record IDs continue into the outer sequence.
+
+The public core inputs take the established identity (`instance`, `none` or `unreadable`),
+the tool name, arguments, and optional serving ID. `readable` and `authority_readable` are
+boundary facts, never authorization supplied by a consumer. Registration's documents enter
+as the operation's ordinary `arguments.documents`. The core checks current operation lists,
+ACC-033's routing, bounds and carried filters, fills input defaults using target-held
+contracts, and records every decision. A permit returns the attributed request for the next
+stage; it creates no invocation and cannot be reused after the state changes. Dispatch and
+idempotency are the next order's work. The shell also owns protocol envelopes: these vectors
+check the core's reason and diagnostic projections, not a network JSON-RPC exchange.
+
+Unknown identity or tool means there may be no target or caller to record. Access projections
+therefore require those fields where applicable, rather than inventing an ID; every other
+transition's record projections continue to require a target. Lists are exact sorted arrays,
+private, and declare `listChanged`. The client experiments do not establish that a model's
+cached tool catalog follows these lists: even a cached or guessed call is decided anew here.
+The bounds case checks Pools, individual targets, operations, omitted/empty bounds and
+narrower/wider delegated bounds. The two plain-filter cases test both registration rejection
+and an onward call carrying a filter to a plain filesystem implementation.

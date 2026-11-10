@@ -1,0 +1,493 @@
+{
+  "observations": [
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000600",
+            "kind": "Conduit",
+            "name": "c600",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#register.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c600.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "kind": "Resource",
+                "from": "@core#node",
+                "owner": {
+                  "kind": "Pool",
+                  "name": "workspace"
+                },
+                "apiVersion": "@apiVersion"
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003048",
+            "00000000-0000-4000-8000-000000003049"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000600",
+            "kind": "Conduit",
+            "name": "c600",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#register.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000601",
+            "kind": "Conduit",
+            "name": "c601",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#register.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c600.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "kind": "Resource",
+                "from": "@core#node",
+                "owner": {
+                  "kind": "Pool",
+                  "name": "workspace"
+                },
+                "apiVersion": "@apiVersion"
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003050",
+            "00000000-0000-4000-8000-000000003051"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000600",
+            "kind": "Conduit",
+            "name": "c600",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#register.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c600.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "kind": "Pool",
+                "from": "new-pool",
+                "metadata": {
+                  "name": "new"
+                },
+                "apiVersion": "@apiVersion"
+              },
+              {
+                "kind": "Resource",
+                "from": "directory",
+                "owner": "new",
+                "apiVersion": "@apiVersion"
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003052",
+            "00000000-0000-4000-8000-000000003053"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000600",
+            "kind": "Conduit",
+            "name": "c600",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#register.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000601",
+            "kind": "Conduit",
+            "name": "c601",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "state": "ready",
+            "open": true,
+            "operations": [],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c600.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "kind": "Resource",
+                "from": "@core#node",
+                "owner": {
+                  "kind": "Pool",
+                  "name": "workspace"
+                },
+                "apiVersion": "@apiVersion"
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003054",
+            "00000000-0000-4000-8000-000000003055"
+          ]
+        }
+      }
+    }
+  ]
+}

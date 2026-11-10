@@ -1,4 +1,5 @@
 //! File input, case validation and assertions. This crate owns all I/O for the pure core.
+mod access;
 mod packages;
 mod schemas;
 use conduit_core::{Context, Input, State};
@@ -78,6 +79,11 @@ pub fn run_suite(repository: &Path) -> Result<Vec<CaseReport>> {
     let mut context = Context {
         core_package: spec.names().core_package.clone(),
         templates: BTreeMap::new(),
+        core_environment: schemas::environment(
+            repository,
+            &json!({"environment":{"scopes":{}}}),
+            &spec,
+        )?,
         record_source: profile["DL8"]["source"]
             .as_str()
             .ok_or("profile needs DL8.source")?
@@ -332,6 +338,22 @@ fn run_case(
             };
             let mut next = state.clone();
             let actual = match kind {
+                "access-fixture" => {
+                    let alias = input["file"].as_str().ok_or("missing access fixture")?;
+                    let path = case.files.get(alias).ok_or("undeclared access fixture")?;
+                    let observations = read_value(&base.join(path))?;
+                    let index =
+                        input["index"].as_u64().ok_or("missing observation index")? as usize;
+                    let observation = observations["observations"]
+                        .as_array()
+                        .and_then(|a| a.get(index))
+                        .ok_or("observation index out of range")?;
+                    let fixture = expand(observation, &symbols, spec)?;
+                    let t = access::run(&fixture, &state, context)?;
+                    next = t.state.clone();
+                    serde_json::to_value(t).map_err(|e| e.to_string())?
+                }
+
                 "install-archive" => {
                     let t = packages::install(base, &input, &case.files, &state, spec, context)?;
                     next = t.state.clone();
@@ -547,7 +569,10 @@ fn run_case(
                 .collect();
             for rule in rules.as_array().ok_or("invalid required promises")? {
                 if !cited.contains(rule.as_str().ok_or("invalid rule")?) {
-                    return Err(format!("uncited expected promise {rule}"));
+                    return Err(format!(
+                        "uncited expected promise {rule}; reply: {}",
+                        actual["reply"]
+                    ));
                 }
             }
         }

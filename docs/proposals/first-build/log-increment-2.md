@@ -519,3 +519,114 @@ The Rust generator verified all 27 archive fixtures and their digest index byte 
 All four Python repository checks passed, as did Git's whitespace check and a separate scan
 including untracked text files. No specification, branch, staging, commit, push or pull request
 was changed or made.
+
+## I2-05: access decisions and current tools
+
+Work order 014, 2026-11-09. No new language finding: the required cases have answers in the
+promises, and no specification text changed. The core now evaluates attributed tool requests
+and publishes exact private lists from registration's frozen contexts. ACC-033 routes management
+operations, requiring the additional existing owning Pool's authority before registration
+invalidity. Bounds cover Pools, targets and operation names, including narrower delegation;
+root protection, secret restrictions, serving identity, current authority and carried-filter
+support precede permission. Every decision cites promises and every access observation keeps
+an access record without creating an invocation. A permit is an input to the following stage,
+not a dispatch or a successful operation.
+
+The [access vectors](../../../conformance/conventions/access/s1-exact-access/case.yaml)
+register S1, then observe already established open/closed Conduits. They show A's five tools,
+B's six, independent history access, guessed and stale calls refused, server tools adding no
+implicit authority, identity/authority failures, bound boundaries and delegation, existing
+Pool registration authority, and both forms of S1's plain-filter rejection. List comparison
+produces notifications for only the changed consumer. This is evidence about the server's
+presentation and decisions, not that either real client's model refreshes its cached catalog;
+experiment 008's distinction remains.
+
+The registration vectors `requirement-contract-context` and `requirement-schema-default`
+had applied a non-core filter to `open.v1`, implemented by `engine`, which CON-022 forbids.
+Their operation lists are now empty, preserving their tests of reference resolution and
+default filling without requiring an implementation to support the filter. New registration
+checks enforce CON-022, CON-028 and IFC-014, including unopened Conduits. These are fixes
+against existing promises, not settlements or changes to language behavior.
+
+### I2-05: correction after the verifier
+
+Work order 014, returned once on 2026-11-09. The admin accepted five implementation defects.
+Each is decided by existing promises; none requires a language settlement or a specification
+change.
+
+1. **Entry authority.** ACC-033 rows 4 and 6 authorize an entry Resource's setup, retirement
+   and inspection against its owning Pool. POOL-001 fixes that owner, POOL-002 makes a Resource
+   for each entry, and POOL-014 resolves the outside entry reference to its Resource that is
+   not retired. Access resolution now selects that Resource before routing. The
+   [entry-authority vector](../../../conformance/conventions/access/entry-authority/case.yaml)
+   compares management-only with Pool-only authority for inspection, setup and retirement,
+   both by the entry reference and by the Resource's name. A retired predecessor comes first
+   in state; missing entries and entries with only retired Resources name no object.
+2. **Local cannot be lost.** LIF-034 requires refused whoever asks, explicitly including root.
+   ACC-032's permission for root to ask does not override it. Routing now resolves the `node`
+   input, and protects `local` before permission. The
+   [root-local-lost vector](../../../conformance/conventions/access/root-local-lost/case.yaml)
+   uses root's existing management Conduit, so ACC-032 cannot mask LIF-034.
+3. **The target-held Capability.** CON-017 governs the operation list resolved for a Conduit;
+   NAM-026 separately requires unavailable when the target's held Capability omits a listed
+   operation. Its observable distinguishes the absence of the Operation contract itself,
+   which IFC-012 and IFC-033 omit from publication. Access now compares the operation with
+   the members resolved in the target-held Capability's own scope. The
+   [capability-skew vector](../../../conformance/conventions/access/capability-skew/case.yaml)
+   keeps the Operation contract in an older context whose Capability omits it: the tool is
+   presented but its call reports unavailable. The matching newer Capability permits the call;
+   an entirely missing Operation contract still reports refused.
+4. **Only published names collide.** IFC-014 compares names that IFC-012 presents or would
+   present once opened. Publication and collision validation now share the same exclusions:
+   `get-secret.v1`, a control absent from either the Type or the template, and an operation
+   whose contract the target does not hold. Four acceptance vectors,
+   [secret](../../../conformance/conventions/access/collision-secret/case.yaml),
+   [Type control](../../../conformance/conventions/access/collision-control-type/case.yaml),
+   [template control](../../../conformance/conventions/access/collision-control-template/case.yaml)
+   and [missing contract](../../../conformance/conventions/access/collision-missing-contract/case.yaml),
+   register two unopened Conduits with the same local name and no presented tool in common.
+   The existing common-tool vector still rejects unopened Conduits.
+5. **The diagnostic identifies both tools.** IFC-014's observable requires the tool name and
+   the other Conduit. The diagnostic now keeps the matching name, the other Conduit's name
+   and its ID. The
+   [collision vector](../../../conformance/conventions/access/tool-collision/case.yaml)
+   asserts the full messages in both directions, including `project.directory.list.v1` and
+   the competing Conduit's identity.
+
+**Search after the authority fix.** Registration's `References::resolve` already resolves
+both outside entry references (POOL-014) and entry-local references (POOL-005/006) to the
+Resource, not its owner. Inspection, setup, retirement, reconciliation and bound targets use
+access's corrected resolver. Stored references select IDs; template `from` selects the named
+template; the later owner lookups in routing intentionally implement ACC-033.
+
+The search found another reference defect in access: bare names did not carry the kind fixed
+by their schema (OBJ-006). OBJ-002 permits a Pool and a Resource to share a name. A bare node
+name could therefore select its same-name owning Pool; a bare Resource `owner` could select
+a Resource instead of the named Pool and bypass the extra registration authority check.
+Fixed-kind lookups now apply to the `node`, `conduit` and registration `owner` fields. The
+[fixed-kind vector](../../../conformance/conventions/access/fixed-kind-references/case.yaml)
+puts the same-name objects first in state: bare `local` is still refused under LIF-034, its
+explicit Resource form agrees, and management alone cannot register into `workspace`.
+No additional form resolving to an owner was found.
+
+**Before-fix evidence.** Saved the original release runner before changing the implementation.
+It fails all seven new verifier vectors and the strengthened collision vector in isolated
+inventories. Only the temporary copies of those vectors had `required_promises` cleared, so
+these failures demonstrate behavior or diagnostic differences rather than missing new
+citations. The first three failures have one permit record instead of the two rejection
+records; the four collision acceptance cases have two rejection records instead of their
+required registration records; the diagnostic assertion fails on the original generic text.
+The fixed-kind vector also fails against the runner with the five verifier fixes but without
+the fixed-kind correction: it permits root's bare `local` request.
+
+**Worker choices.** Used established-state observations for access, a retired predecessor to
+check current entry selection, and actual registration for collision acceptance. Selected the
+first common tool name in sorted order and included the competing Conduit's name and ID in
+the diagnostic. Shared publication exclusions rather than maintaining two lists. Supplied
+Capability selections in earlier observation-only Conduits, matching registration's stored
+shape. These choices change no language behavior.
+
+**Validation after correction.** All 248 portable cases pass. Workspace release tests,
+Clippy with warnings denied, formatting, all four Python repository checks and Git's
+whitespace check pass. A separate scan of changed and untracked text files reports no trailing
+whitespace. No specification, branch, staging, commit, push or pull request was changed or made.

@@ -1,0 +1,2453 @@
+{
+  "observations": [
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000118",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003056",
+            "00000000-0000-4000-8000-000000003057"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000118",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1",
+              "example.org/s1/filesystem#file.write.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003058",
+            "00000000-0000-4000-8000-000000003059"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003060",
+            "00000000-0000-4000-8000-000000003061"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003062",
+            "00000000-0000-4000-8000-000000003063"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000612",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000612",
+            "name": "later",
+            "kind": "Resource",
+            "owner": {
+              "kind": "Pool",
+              "id": "00000000-0000-4000-8000-000000000116"
+            },
+            "state": "registered"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003064",
+            "00000000-0000-4000-8000-000000003065"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [],
+                  "targets": [
+                    {
+                      "kind": "Resource",
+                      "id": "00000000-0000-4000-8000-000000000118"
+                    }
+                  ],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000118",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003066",
+            "00000000-0000-4000-8000-000000003067"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [],
+                  "targets": [
+                    {
+                      "kind": "Resource",
+                      "id": "00000000-0000-4000-8000-000000000118"
+                    }
+                  ],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000117",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003068",
+            "00000000-0000-4000-8000-000000003069"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [],
+                  "targets": [],
+                  "operations": []
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000118",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003070",
+            "00000000-0000-4000-8000-000000003071"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {},
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000118",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003072",
+            "00000000-0000-4000-8000-000000003073"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "@core#open.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003074",
+            "00000000-0000-4000-8000-000000003075"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "@core#open.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [],
+                  "targets": [
+                    {
+                      "kind": "Resource",
+                      "id": "00000000-0000-4000-8000-000000000118"
+                    }
+                  ],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003076",
+            "00000000-0000-4000-8000-000000003077"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "@core#open.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000001"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003078",
+            "00000000-0000-4000-8000-000000003079"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "@core#open.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.write.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003080",
+            "00000000-0000-4000-8000-000000003081"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "@core#open.v1"
+            ],
+            "requirements": {},
+            "capability": "@core#access-control.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003082",
+            "00000000-0000-4000-8000-000000003083"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "registered",
+            "open": false,
+            "operations": [
+              "@core#reconcile.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [],
+                  "targets": [],
+                  "operations": []
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.open.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003084",
+            "00000000-0000-4000-8000-000000003085"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000118",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.close.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003086",
+            "00000000-0000-4000-8000-000000003087"
+          ]
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000610",
+            "kind": "Conduit",
+            "name": "c610",
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000004",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "@core#open.v1",
+              "@core#close.v1"
+            ],
+            "requirements": {
+              "limit": {
+                "requirement": "@core#bound.v1",
+                "arguments": {
+                  "pools": [
+                    {
+                      "kind": "Pool",
+                      "id": "00000000-0000-4000-8000-000000000116"
+                    }
+                  ],
+                  "targets": [],
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1"
+                  ]
+                }
+              }
+            },
+            "capability": "@core#access-control.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000611",
+            "kind": "Conduit",
+            "name": "c611",
+            "consumer": "00000000-0000-4000-8000-000000000005",
+            "target": "00000000-0000-4000-8000-000000000118",
+            "state": "ready",
+            "open": true,
+            "operations": [
+              "example.org/s1/filesystem#file.read.v1"
+            ],
+            "capability": "example.org/s1/filesystem#directory.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "c610.close.v1",
+          "arguments": {
+            "conduit": {
+              "kind": "Conduit",
+              "name": "c611"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000003088",
+            "00000000-0000-4000-8000-000000003089"
+          ]
+        }
+      }
+    }
+  ]
+}

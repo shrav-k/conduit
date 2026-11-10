@@ -818,6 +818,21 @@ impl References<'_> {
 
 fn implementations(h: &Held, spec: &Value, kind: &str, core: &str) -> Checked<Value> {
     if kind == "Conduit" {
+        let bounds: Vec<_> = items(spec, "requirements")
+            .into_iter()
+            .filter_map(|(name, r)| {
+                h.select(r["requirement"].as_str().unwrap_or(""), "Requirement", core)
+                    .ok()
+                    .filter(|(_, _, q)| q == &format!("{core}#bound.v1"))
+                    .map(|_| name)
+            })
+            .collect();
+        if bounds.len() > 1 {
+            return Err(fault(
+                "CON-028",
+                format!("bound applied more than once: {}", bounds.join(", ")),
+            ));
+        }
         let (ch, cap, _) = h.select(
             spec["capability"].as_str().unwrap_or(""),
             "Capability",
@@ -1377,13 +1392,8 @@ pub(crate) fn register(
         if doc["kind"] != "Resource" || doc.get("from").is_none() {
             continue;
         }
-        let owner = doc["owner"]
-            .as_str()
-            .or_else(|| doc["owner"]["name"].as_str());
         if let Some(pool) =
-            t.state.objects.iter().find(|o| {
-                o["kind"] == "Pool" && o["name"].as_str() == owner && o.get("spec").is_none()
-            })
+            crate::access::object(&t.state, &doc["owner"]).filter(|p| p["kind"] == "Pool")
             && pool["state"] != "retired"
         {
             pool_authority &= t
@@ -1638,6 +1648,21 @@ pub(crate) fn register(
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
         return reject(t, b.diagnostics, evidence, request, context);
     }
+    let mut all_resolved = b.state.objects.clone();
+    all_resolved.extend(resolved.iter().cloned());
+    for path in resolved.iter().filter(|o| o["kind"] == "Conduit") {
+        if let Some((rule, text)) = check_conduit(path, &all_resolved, context)? {
+            b.diagnostics.push(diagnostic(
+                rule,
+                path["name"].as_str().unwrap_or(""),
+                &text,
+                "error",
+            ));
+        }
+    }
+    if b.diagnostics.iter().any(|d| d["level"] == "error") {
+        return reject(t, b.diagnostics, evidence, request, context);
+    }
     // Nothing has been published before this point. The caller receives only this commit.
     let registered = b
         .templates
@@ -1708,4 +1733,156 @@ fn reject(
     end_request(t, evidence, request, None, reason, context)?;
     t.reply = json!({"accepted":false,"reason":reason,"diagnostics":diagnostics});
     Ok(())
+}
+
+/// Adapt frozen registration contexts to the schema publisher's view, without changing
+/// the stored instance or resolving its names against a newer submission.
+pub(crate) fn publication_object(object: &Value, context: &Context) -> Result<Value> {
+    let mut view = object.clone();
+    if let Some(held) = object.get("held") {
+        let h: Held = serde_json::from_value(held.clone()).map_err(|e| e.to_string())?;
+        let (th, ty, _) = h
+            .select(
+                object["type"].as_str().ok_or("missing Type")?,
+                "Type",
+                &context.core_package,
+            )
+            .map_err(|f| f.text)?;
+        view["schema_environment"] =
+            serde_json::to_value(&h.environment).map_err(|e| e.to_string())?;
+        view["contract_scope"] = json!(th.scope);
+        view["template_scope"] = json!(h.scope);
+        view["type_controls"] = json!(
+            list(&ty["spec"], "controls")
+                .iter()
+                .map(|op| th
+                    .select(op, "Operation", &context.core_package)
+                    .map(|(_, _, q)| q)
+                    .map_err(|f| f.text))
+                .collect::<Result<Vec<_>>>()?
+        );
+        if object.get("controls").is_some() {
+            let mut controls = json!({});
+            for (op, narrowing) in items(object, "controls") {
+                let (_, _, q) = h
+                    .select(&op, "Operation", &context.core_package)
+                    .map_err(|f| f.text)?;
+                controls[&q] = narrowing;
+            }
+            view["controls"] = controls;
+        }
+    } else if object.get("schema_environment").is_none() {
+        view["schema_environment"] =
+            serde_json::to_value(&context.core_environment).map_err(|e| e.to_string())?;
+        view["contract_scope"] = json!("core");
+    }
+    Ok(view)
+}
+
+fn check_conduit(
+    path: &Value,
+    all: &[Value],
+    context: &Context,
+) -> Result<Option<(&'static str, String)>> {
+    let core = &context.core_package;
+    let target = all
+        .iter()
+        .find(|o| o["id"] == *crate::access::id(&path["target"]))
+        .ok_or("missing target")?;
+    let bounds = items(path, "requirements")
+        .iter()
+        .filter(|(_, r)| r["requirement"] == context.qualified("bound.v1"))
+        .count();
+    if bounds > 1 || bounds == 1 && target["from"] != context.qualified("access") {
+        return Ok(Some((
+            "CON-028",
+            "bound is permitted once on a Conduit to access".into(),
+        )));
+    }
+    for (_, restriction) in items(path, "requirements") {
+        if restriction["requirement"]
+            .as_str()
+            .is_some_and(|r| r.starts_with(&format!("{core}#")))
+        {
+            continue;
+        }
+        for op in list(path, "operations") {
+            let supported = supports_filter(target, &op, &restriction["requirement"], context)?;
+            if !supported {
+                return Ok(Some((
+                    "CON-022",
+                    format!("filter {} unsupported for {op}", restriction["requirement"]),
+                )));
+            }
+        }
+    }
+    let local = |p: &Value| {
+        p["nested"]["name"]
+            .as_str()
+            .or_else(|| p["local_name"].as_str())
+            .or_else(|| p["name"].as_str())
+            .unwrap_or("")
+            .to_owned()
+    };
+    let names = |p: &Value| -> Result<BTreeSet<String>> {
+        let target = all
+            .iter()
+            .find(|o| o["id"] == *crate::access::id(&p["target"]))
+            .ok_or("missing target")?;
+        let target = publication_object(target, context)?;
+        let mut names = BTreeSet::new();
+        for operation in list(p, "operations") {
+            if crate::schemas::publication_omission(&target, &operation, context)?.is_none()
+                && let Some((_, export)) = operation.split_once('#')
+            {
+                names.insert(format!("{}.{export}", local(p)));
+            }
+        }
+        Ok(names)
+    };
+    let presented = names(path)?;
+    for other in all.iter().filter(|o| {
+        o["kind"] == "Conduit"
+            && o["id"] != path["id"]
+            && crate::access::id(&o["consumer"]) == crate::access::id(&path["consumer"])
+    }) {
+        if let Some(name) = names(other)?.intersection(&presented).next() {
+            return Ok(Some((
+                "IFC-014",
+                format!(
+                    "tool name {name} collides with Conduit {} ({})",
+                    other["name"].as_str().unwrap_or(""),
+                    other["id"].as_str().unwrap_or("")
+                ),
+            )));
+        }
+    }
+    Ok(None)
+}
+
+pub(crate) fn supports_filter(
+    target: &Value,
+    operation: &str,
+    requirement: &Value,
+    context: &Context,
+) -> Result<bool> {
+    let implementation = &target["resolved_implementations"][operation];
+    if implementation["source"] == "engine" || implementation["item"]["plain"] == true {
+        return Ok(false);
+    }
+    if let Some(held) = target.get("held") {
+        let mut h: Held = serde_json::from_value(held.clone()).map_err(|e| e.to_string())?;
+        h.scope = implementation["scope"]
+            .as_str()
+            .unwrap_or(&h.scope)
+            .to_owned();
+        Ok(list(&implementation["item"], "supports").iter().any(|r| {
+            h.select(r, "Requirement", &context.core_package)
+                .is_ok_and(|(_, _, q)| *requirement == q)
+        }))
+    } else {
+        Ok(list(&implementation["item"], "supports")
+            .iter()
+            .any(|r| requirement == r))
+    }
 }

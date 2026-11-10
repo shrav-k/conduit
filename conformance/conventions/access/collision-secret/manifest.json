@@ -1,0 +1,19 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/collision-secret",
+  "implementations": {
+    "server": {
+      "implements": [
+        "github.com/shrav-k/conduit/core#get-secret.v1"
+      ],
+      "remote": {
+        "url": "https://example.invalid/tools",
+        "type": "streamable-http"
+      },
+      "plain": true,
+      "tools": {
+        "github.com/shrav-k/conduit/core#get-secret.v1": "tool"
+      }
+    }
+  }
+}

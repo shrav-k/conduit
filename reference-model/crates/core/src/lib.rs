@@ -2,6 +2,7 @@
 //! The caller supplies the built-in templates, names, time, machine evidence and unique IDs.
 //! Unsupported cases and broken embedding inputs are errors, never Conduit reasons.
 
+pub mod access;
 pub mod archives;
 pub mod packages;
 pub mod registration;
@@ -19,6 +20,7 @@ pub struct Context {
     pub core_package: String,
     pub templates: BTreeMap<String, Value>,
     pub record_source: String,
+    pub core_environment: schemas::Environment,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -28,6 +30,8 @@ pub struct State {
     pub objects: Vec<Value>,
     pub records: Vec<Value>,
     pub allocated_ids: BTreeSet<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub invocations: Vec<Value>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub installed_packages: Vec<archives::InstalledPackage>,
 }
@@ -66,6 +70,13 @@ pub struct Request {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
+    Access {
+        evidence: Evidence,
+        request: access::AccessRequest,
+    },
+    ListTools {
+        identity: access::Identity,
+    },
     InstallArchive {
         archive: archives::ArchiveInput,
         snapshots: Vec<packages::Snapshot>,
@@ -205,6 +216,10 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
     };
     match input {
+        Input::Access { evidence, request } => {
+            access::decide(&mut transition, &evidence, &request, context)?
+        }
+        Input::ListTools { identity } => access::list(&mut transition, &identity, context)?,
         Input::InstallArchive {
             archive,
             snapshots,
@@ -585,8 +600,8 @@ fn first_start(
 
 fn permits(conduit: &Value, sender: &str, target: &Value, operation: &str) -> bool {
     conduit["kind"] == "Conduit"
-        && conduit["consumer"] == sender
-        && conduit["target"] == *target
+        && access::id(&conduit["consumer"]) == &json!(sender)
+        && access::id(&conduit["target"]) == target
         && conduit["open"] == true
         && conduit["state"] == "ready"
         && conduit["operations"]
@@ -594,31 +609,29 @@ fn permits(conduit: &Value, sender: &str, target: &Value, operation: &str) -> bo
             .is_some_and(|ops| ops.contains(&json!(operation)))
 }
 
-/// This increment handles root's established Conduits only. It checks their actual target
-/// and operation list; general access evaluation belongs to a later order.
-fn authorized_path(state: &State, request: &Request, context: &Context) -> Result<bool> {
-    let root = state
+/// Internal established path for the registration boundary. Tool calls use access::decide.
+fn authorized_path(state: &State, request: &Request, _context: &Context) -> Result<bool> {
+    let Some(sender) = state
         .objects
         .iter()
-        .find(|o| o["from"] == context.qualified("root"))
-        .ok_or("root is absent")?;
-    let conduit = state
-        .objects
-        .iter()
-        .find(|o| o["id"] == request.conduit)
-        .ok_or("unsupported authorization path")?;
-    if conduit["target"] != request.target {
-        return Err("request target differs from its Conduit target".into());
+        .find(|o| o["id"] == request.sender && o.get("spec").is_none())
+    else {
+        return Ok(false);
+    };
+    if request.sender != request.caller
+        || sender["kind"] != "Agent" && sender["kind"] != "Interface"
+    {
+        return Ok(false);
     }
-    if root["id"] != request.sender || request.sender != request.caller {
-        return Err("unsupported authorization path".into());
-    }
-    Ok(permits(
-        conduit,
-        &request.sender,
-        &json!(request.target),
-        &request.operation,
-    ))
+    Ok(state.objects.iter().any(|p| {
+        p["id"] == request.conduit
+            && permits(
+                p,
+                &request.sender,
+                &json!(request.target),
+                &request.operation,
+            )
+    }))
 }
 
 fn end_request(

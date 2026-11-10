@@ -1,0 +1,65 @@
+{
+  "id": "access-root-local-lost",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "LIF-034",
+    "ACC-032",
+    "ACC-033"
+  ],
+  "title": "Root cannot declare local lost through its existing management Conduit",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../../../fixtures/root-system-state.json",
+    "observations": "observations.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "access-fixture",
+        "file": "observations",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "reason": "refused"
+        },
+        "stateUnchanged": true,
+        "external_intents": [],
+        "required_promises": [
+          "LIF-034"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000008000",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:06:00Z",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000008001",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:06:00Z",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

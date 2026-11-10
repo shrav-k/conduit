@@ -1,0 +1,1652 @@
+{
+  "observations": [
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007000",
+            "00000000-0000-4000-8000-000000007001"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "manage.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007002",
+            "00000000-0000-4000-8000-000000007003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "pool.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "retired"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007004",
+            "00000000-0000-4000-8000-000000007005"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "manage.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "retired"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007006",
+            "00000000-0000-4000-8000-000000007007"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "pool.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "registered"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007008",
+            "00000000-0000-4000-8000-000000007009"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "pool.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "retired"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007010",
+            "00000000-0000-4000-8000-000000007011"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "manage.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007012",
+            "00000000-0000-4000-8000-000000007013"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "manage.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-b"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007014",
+            "00000000-0000-4000-8000-000000007015"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "manage.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "shared-directory"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007016",
+            "00000000-0000-4000-8000-000000007017"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "manage.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Agent",
+              "name": "missing"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007018",
+            "00000000-0000-4000-8000-000000007019"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "manage.retire.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Pool",
+              "name": "system"
+            }
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007020",
+            "00000000-0000-4000-8000-000000007021"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "manage.declare-lost.v1",
+          "arguments": {
+            "node": "local"
+          }
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000113",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000114",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000115",
+          "set": {
+            "state": "ready",
+            "open": true
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000109",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000112",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000116",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000117",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000118",
+          "set": {
+            "state": "ready"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000900",
+            "kind": "Conduit",
+            "name": "manage",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000003",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#object-management.v1"
+          }
+        },
+        {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000901",
+            "kind": "Conduit",
+            "name": "pool",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "operations": [
+              "@core#inspect.v1",
+              "@core#set-up.v1",
+              "@core#retire.v1",
+              "@core#unregister.v1",
+              "@core#retire-with-resources.v1",
+              "@core#reconcile.v1",
+              "@core#register-replacement.v1",
+              "@core#declare-lost.v1"
+            ],
+            "capability": "@core#pool-management.v1"
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000007022",
+            "00000000-0000-4000-8000-000000007023"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "pool.retire-with-resources.v1",
+          "arguments": {}
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "id": "access-capability-skew",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "CON-017",
+    "NAM-026",
+    "IFC-012",
+    "IFC-033"
+  ],
+  "title": "An older held Capability omits an operation whose contract is still held",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "initial.json",
+    "observations": "observations.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "access-fixture",
+        "file": "observations",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "tools": [
+            {
+              "name": "skew.read.v1"
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "external_intents": [],
+        "required_promises": [
+          "IFC-012"
+        ],
+        "records": []
+      }
+    },
+    {
+      "input": {
+        "kind": "access-fixture",
+        "file": "observations",
+        "index": 1
+      },
+      "expect": {
+        "reply": {
+          "reason": "unavailable"
+        },
+        "stateUnchanged": true,
+        "external_intents": [],
+        "required_promises": [
+          "NAM-026"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000008002",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:06:00Z",
+            "data": {
+              "dispatched": false,
+              "reason": "unavailable"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000008003",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:06:00Z",
+            "data": {
+              "dispatched": false,
+              "reason": "unavailable"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "access-fixture",
+        "file": "observations",
+        "index": 2
+      },
+      "expect": {
+        "reply": {
+          "permitted": true
+        },
+        "stateUnchanged": true,
+        "external_intents": [],
+        "required_promises": [
+          "ACC-001"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000008004",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:06:00Z",
+            "data": {
+              "dispatched": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "access-fixture",
+        "file": "observations",
+        "index": 3
+      },
+      "expect": {
+        "reply": {
+          "reason": "refused"
+        },
+        "stateUnchanged": true,
+        "external_intents": [],
+        "required_promises": [
+          "ACC-001"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000008006",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:06:00Z",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000008007",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:06:00Z",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -96,3 +96,14 @@ plan are current. From the repository root: `python3 tools/check_docs.py`,
 package directory, `cargo test --release`, `cargo clippy --all-targets -- -D warnings` and
 `cargo fmt --check` pass, and in `reference-model/`, `CONDUIT_TEST_NPM=1 cargo test --release`.
 Check the files you create for trailing white space yourself; do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 32 minutes, then a fresh verifier in 5, which found nothing
+to fix. The worker logged findings 3-03 to 3-05 as settled. It did not run the suite with
+`CONDUIT_TEST_NPM=1`, reading this order's network grant as not covering npm; the admin ran
+it. The admin also rewrapped the spec paragraphs the worker had left with long lines, without
+changing their content (each YAML file loads to the same value). The admin reran every
+check: 136 Rust tests in `reference-model/` with `CONDUIT_TEST_NPM=1` and six in each package
+pass, and clippy, fmt and the five repository checks are clean. The admin reruns the closeout
+with the real clients next.

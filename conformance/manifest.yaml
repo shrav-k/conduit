@@ -4166,6 +4166,16 @@
         "SCH-009"
       ],
       "safety_rows": []
+    },
+    {
+      "id": "requests-plain-read-text-only",
+      "case": "conventions/requests/plain-read-text-only/case.yaml",
+      "promises": [
+        "IFC-025",
+        "IFC-033",
+        "IFC-010"
+      ],
+      "safety_rows": []
     }
   ],
   "s1_coverage": [

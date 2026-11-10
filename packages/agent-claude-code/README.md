@@ -1,7 +1,7 @@
 # agent-claude-code
 
 Maintainer: the Conduit project's owner. Native-client launch baseline: Claude Code 2.1.318, from
-experiment 009. Work order 023 tested this package with its scripted client only; the real
+experiment 009. Work orders 023 and 024 tested this package with its scripted client only; the real
 client closeout is still required. No client version command or model was run for this order.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
@@ -55,11 +55,21 @@ Experiment 009's repeated Claude init is a regression fixture. Notifications sta
 turn. Closeout compares current client evidence with the engine's separate private list.
 
 Claude Code runs one streamed process for the wrapper's lifetime. Settings and MCP files are
-written in the run's directory. `--setting-sources project`, explicit `--settings`, explicit
-`--mcp-config` and `--strict-mcp-config` keep user sources out; hooks/plugins are disabled.
+written in the run's directory. `--setting-sources ""` excludes all setting sources,
+including project discovery of ancestor CLAUDE.md files (finding 3-04). The engine server
+and its header helper come solely from explicit `--mcp-config` with `--strict-mcp-config`;
+the engine allow rule comes solely from explicit `--settings`. Hooks/plugins are disabled.
 `--tools ""` removes built-in tools that reach the machine, while `mcp__engine__*` is allowed
 once. With accountServices false, claude.ai connectors are disabled. With peerMessaging false,
 SendMessage, ListAgents and RemoteTrigger are denied and crossSessionInbound is refuse. True
 selects and allows only those three peer tools beside engine tools and omits the inbound
 refusal, leaving the native client's inbound default. Machine tools remain unselected. Sentinels and a real incoming
 message must still demonstrate the flags/settings' actual behavior in closeout.
+
+The client's own tools that reach the machine, a shell, code execution, a browser, another
+Agent, hooks and plugins are off by default, alongside account services and messaging.
+With both reach inputs false, no built-in machine or peer tool is selected; engine MCP tools
+remain. Account connectors and the three named peer tools are explicit opt-in routes around
+the engine. Closeout must record any other native tool the client still exposes and test its
+reach. Shared login and OS-user access to files and run credentials remain mediated limits;
+these launch settings do not provide OS isolation.

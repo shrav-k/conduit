@@ -424,37 +424,37 @@
   when: >-
     An implementation marked `plain` answers a `tools/call` request.
   then: >-
-    A complete result that is not an error is the outcome succeeded. An error on an operation
-    whose contract states no `effect`, that is not a control and whose contract is not marked
-    `startsModelWork: true`, as IFC-033 tests for `readOnlyHint`, is failed, including a
-    JSON-RPC error for invalid parameters. A result whose `resultType` is `input_required` or
-    is a value the engine does not recognize, any other error but one after which the engine sends the call
-    once more under IFC-046, and no result at all, is unknown.
+    A complete result that is not an error is the outcome succeeded. An error on an operation whose
+    contract states no `effect`, that is not a control and whose contract is not marked
+    `startsModelWork: true`, as IFC-033 tests for `readOnlyHint`, is failed, including a JSON-RPC
+    error for invalid parameters. A result whose `resultType` is `input_required` or is a value the
+    engine does not recognize, any other error but one after which the engine sends the call once
+    more under IFC-046, and no result at all, is unknown.
   observable: >-
     A result is complete when its `resultType` is `complete` or absent, and is an error when its
     `isError` is true. A protocol error is a JSON-RPC error. The protocol's code for invalid
-    parameters is -32602, and an unknown tool is one case of it; arguments that the tool does
-    not accept, and a request whose parameters are malformed, are others. That code gives no
-    guarantee that a plain server has not acted: it is read as any other error, failed for
-    the operation just described and unknown otherwise. An engine rejection before sending
-    the call has its reason and no outcome under OPS-005. An error is failed only where the
-    operation does nothing that the error could leave half done: one that states no `effect` changes nothing outside itself, under CTR-002, but a
-    control applies values to its instance's settings, under CTR-006, and model work is the
-    effect of an operation marked `startsModelWork: true`, under IMP-001, whether or not either
-    states an `effect`. The protocol has a server answer -32021, naming in
-    `data.requiredCapabilities` what it needs, where processing the request needs a capability
-    that the request does not declare, and does not say that the server answers so before it
-    acts: a plain server may have begun the effect by then. So that error is read as any other:
-    failed for an operation that the table reads so, and unknown for any other, whose repeat is
-    then not dispatched to the plain implementation, under OPS-012. The engine declares only
-    what IFC-045 lets it. An error after which the call is sent once more under IFC-046 ends
-    nothing: the outcome is read from the response to the call sent again. The outcome the
-    engine records for a plain server follows that table and nothing else, except that a result
-    in which a declared output fails validation is unknown under OPS-007. Where the protocol's
-    tasks extension is used, under IFC-016, the table applies to what the task ended with: the
-    result of a task that completed, or the error of one that failed, such as -32021 where the
-    task came to need a capability that the call did not declare. A task that was cancelled, and
-    one that the server no longer holds, is no result at all.
+    parameters is -32602, and an unknown tool is one case of it; arguments that the tool does not
+    accept, and a request whose parameters are malformed, are others. That code gives no guarantee
+    that a plain server has not acted: it is read as any other error, failed for the operation just
+    described and unknown otherwise. An engine rejection before sending the call has its reason and
+    no outcome under OPS-005. An error is failed only where the operation does nothing that the
+    error could leave half done: one that states no `effect` changes nothing outside itself, under
+    CTR-002, but a control applies values to its instance's settings, under CTR-006, and model work
+    is the effect of an operation marked `startsModelWork: true`, under IMP-001, whether or not
+    either states an `effect`. The protocol has a server answer -32021, naming in
+    `data.requiredCapabilities` what it needs, where processing the request needs a capability that
+    the request does not declare, and does not say that the server answers so before it acts: a
+    plain server may have begun the effect by then. So that error is read as any other: failed for
+    an operation that the table reads so, and unknown for any other, whose repeat is then not
+    dispatched to the plain implementation, under OPS-012. The engine declares only what IFC-045
+    lets it. An error after which the call is sent once more under IFC-046 ends nothing: the outcome
+    is read from the response to the call sent again. The outcome the engine records for a plain
+    server follows that table and nothing else, except that a result in which a declared output
+    fails validation is unknown under OPS-007. Where the protocol's tasks extension is used, under
+    IFC-016, the table applies to what the task ended with: the result of a task that completed, or
+    the error of one that failed, such as -32021 where the task came to need a capability that the
+    call did not declare. A task that was cancelled, and one that the server no longer holds, is no
+    result at all.
   vectors: []
 
 - id: IFC-011
@@ -854,62 +854,63 @@
     began or repeats. The result's `isError` is true where the request ended with a reason or
     its outcome is failed or unknown, and in no other case, and such a result carries none of
     the operation's outputs, `diagnostics` apart. A result whose `isError` is not true holds the
-    operation's outputs in its `structuredContent`, which is present on every such result and
-    is an empty map where the operation declares no outputs. Where its `isError` is true, its
+    operation's outputs in its `structuredContent` where the operation declares outputs.
+    Where it declares no outputs, the result carries no `structuredContent`, except for
+    error diagnostics as stated below. Where its `isError` is true, its
     `content` holds first one text block that states its reason or its outcome and says nothing
     that the rest of the result does not say. Where its outcome came from a result of an
     implementation marked `plain`, its `content` holds that result's `content`, unchanged, after
     that block where there is one.
   observable: >-
-    A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`,
-    and a result for one that ended with a reason never carries
-    `io.github.shrav-k.conduit/outcome`. The values are those of OPS-001 and OPS-005. `isError`
-    keeps the protocol's meaning, the mark of a call that ended in an error, and the keys beside
-    it say why: `io.github.shrav-k.conduit/reason`, or an outcome that is failed or unknown. A
-    result whose `isError` is not true has the outcome succeeded, and its `structuredContent`
-    conforms to the `outputSchema` of IFC-033, as the protocol requires of a tool that declares
-    one. The protocol's revision 2026-07-28 does not say whether a result whose `isError` is
-    true must conform to `outputSchema`. This specification takes it that it need not: such a
-    result carries no outputs, and may carry `diagnostics`. A result whose outcome is succeeded
-    holds its outputs even where the Conduit through which its invocation was dispatched was
-    closed before it ended, under ACC-034: the result of `retire-with-resources.v1`, whose
+    A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`, and
+    a result for one that ended with a reason never carries `io.github.shrav-k.conduit/outcome`. The
+    values are those of OPS-001 and OPS-005. `isError` keeps the protocol's meaning, the mark of a
+    call that ended in an error, and the keys beside it say why: `io.github.shrav-k.conduit/reason`,
+    or an outcome that is failed or unknown. A result whose `isError` is not true has the outcome
+    succeeded. Where the operation declares outputs, its `structuredContent` conforms to the
+    `outputSchema` of IFC-033, as the protocol requires of a tool that declares one. The protocol
+    makes `outputSchema` optional. A client that sees one may prefer `structuredContent`; an empty
+    map for an operation that declares no outputs would hide its `content`. Such a tool has no
+    `outputSchema` and its successful result no `structuredContent`, preserving a plain result's
+    content unchanged. The protocol's revision 2026-07-28 does not say whether a result whose
+    `isError` is true must conform to `outputSchema`. This specification takes it that it need not:
+    such a result carries no outputs, and may carry `diagnostics`. A result whose outcome is
+    succeeded holds its outputs even where the Conduit through which its invocation was dispatched
+    was closed before it ended, under ACC-034: the result of `retire-with-resources.v1`, whose
     Conduit CON-008 closes before it ends, is one. A repeat of an invocation that has not ended
-    reports conflict under OPS-032, and one of an invocation that succeeded, of an operation
-    that declares outputs, where no filter applies and the engine no longer keeps its outputs,
-    or where a filter applies to the repeat and OPS-024 does not dispatch it, reports conflict
-    under OPS-034; the `ruleId` of its error
-    diagnostic tells the two apart, and its `isError` is true. What a request that is not
-    dispatched says beyond its reason, and beyond the restriction it names, it says there:
-    `diagnostics` in the `structuredContent` of its result is a list of diagnostics in the form
-    of `diagnostic.v1`, whether or not the operation's contract declares an output of that name,
-    as that of `register.v1` does. A result that reports invalid or conflict carries there an
-    error diagnostic: one whose `level` is `error` and whose `ruleId` is the ID of the promise
-    that decided the reason. A result that reports refused carries none, and says nothing there
-    of the objects its request names, under OPS-023. The result of a rejected registration
-    carries its diagnostics under OBJ-023, and that of a request to retire a Pool whose
-    Resources are in the way names those Resources there, under LIF-020. A request that the
-    engine does not dispatch because a restriction forbids it, or cannot be evaluated or
-    applied, names that restriction in `io.github.shrav-k.conduit/restriction`, as ACC-008,
-    ACC-014 and ACC-015 require. The ID in `io.github.shrav-k.conduit/invocation` is the one by
-    which `reconcile.v1` names the invocation, under OPS-014, so a consumer learns it from the
-    result, and a caller that lost a result repeats its request under OPS-009. A call that names
-    a tool the engine does not present is answered as IFC-012 states: at the baseline revision
-    with no tool result, its reason being in the `data` of the protocol's error. IFC-032 names
-    another, and IFC-036 the requests that the protocol has a server reject with an error of its
-    own. The `content` member is always present in a tool result, as the protocol requires, and
-    may be an empty list where the result is not an error and its outcome did not come from a
-    plain implementation. The text block of an error is there because the protocol has a client
-    give its model a tool result that is an error, and lets it keep `_meta`, and a protocol
-    error, from the model. The protocol recommends that a result with `structuredContent` also
-    carry it serialized in `content`; whether the engine does so, and what else it puts there,
-    is DL12 of the implementation-defined list. A plain implementation's `content` is passed on
-    because an existing server answers in text, which no contract can describe, under CTR-012.
-    The content of a succeeded plain invocation is kept and returned unchanged on a repeat
-    under OPS-009 for as long as DL10 keeps outputs, whether or not the operation declares
-    outputs; after its expiry a repeat reports conflict under OPS-034. It is never dispatched
-    again to recover that content.
-    This specification gives `content` no other meaning: an operation's outputs are in
-    `structuredContent`.
+    reports conflict under OPS-032, and one of an invocation that succeeded, of an operation that
+    declares outputs, where no filter applies and the engine no longer keeps its outputs, or where a
+    filter applies to the repeat and OPS-024 does not dispatch it, reports conflict under OPS-034;
+    the `ruleId` of its error diagnostic tells the two apart, and its `isError` is true. What a
+    request that is not dispatched says beyond its reason, and beyond the restriction it names, it
+    says there: `diagnostics` in the `structuredContent` of its result is a list of diagnostics in
+    the form of `diagnostic.v1`, whether or not the operation's contract declares an output of that
+    name, as that of `register.v1` does. A result that reports invalid or conflict carries there an
+    error diagnostic: one whose `level` is `error` and whose `ruleId` is the ID of the promise that
+    decided the reason. A result that reports refused carries none, and says nothing there of the
+    objects its request names, under OPS-023. The result of a rejected registration carries its
+    diagnostics under OBJ-023, and that of a request to retire a Pool whose Resources are in the way
+    names those Resources there, under LIF-020. A request that the engine does not dispatch because
+    a restriction forbids it, or cannot be evaluated or applied, names that restriction in
+    `io.github.shrav-k.conduit/restriction`, as ACC-008, ACC-014 and ACC-015 require. The ID in
+    `io.github.shrav-k.conduit/invocation` is the one by which `reconcile.v1` names the invocation,
+    under OPS-014, so a consumer learns it from the result, and a caller that lost a result repeats
+    its request under OPS-009. A call that names a tool the engine does not present is answered as
+    IFC-012 states: at the baseline revision with no tool result, its reason being in the `data` of
+    the protocol's error. IFC-032 names another, and IFC-036 the requests that the protocol has a
+    server reject with an error of its own. The `content` member is always present in a tool result,
+    as the protocol requires, and may be an empty list where the result is not an error and its
+    outcome did not come from a plain implementation. The text block of an error is there because
+    the protocol has a client give its model a tool result that is an error, and lets it keep
+    `_meta`, and a protocol error, from the model. The protocol recommends that a result with
+    `structuredContent` also carry it serialized in `content`; whether the engine does so, and what
+    else it puts there, is DL12 of the implementation-defined list. A plain implementation's
+    `content` is passed on because an existing server answers in text, which no contract can
+    describe, under CTR-012. The content of a succeeded plain invocation is kept and returned
+    unchanged on a repeat under OPS-009 for as long as DL10 keeps outputs, whether or not the
+    operation declares outputs; after its expiry a repeat reports conflict under OPS-034. It is
+    never dispatched again to recover that content. This specification gives `content` no other
+    meaning: an operation's outputs are in `structuredContent`.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decisions F1 and F7 of the
@@ -1091,53 +1092,52 @@
     that the target holds has no contract of the operation, no definition can be derived, and no
     tool is presented for the operation.
   observable: >-
-    A handle, whose schema is `github.com/shrav-k/conduit/core#handle.v1`, is so given the
-    schema of a string, in place or as a copy, which is what IFC-011 makes it on the wire. JSON
-    Schema resolves a `$ref` that is a JSON Pointer against the root of the schema that holds
-    it, so a contract's schema written in the place of a `$ref` would send its own pointers,
-    such as `#/$defs/name`, to the tool's root, and a contract that refers to itself, directly
-    or through others, has no finite form written in place. With one copy of each contract and
-    every `$ref` rewritten, a value is valid against the definition exactly when it is valid
-    against the contract's own schemas under SCH-001 and SCH-015, and, for a control, against
-    the template's too, under TPL-011. The definition can be read with no package at hand, and
-    every `$ref` in it is local, as the protocol lets no implementation dereference on its own a
-    `$ref` that resolves to a network URI. Two contracts of one name, reached through two
-    versions of one package under NAM-014, have two copies, since the key holds the version. A
-    key is not a reference, and no document writes one. A `$ref` to a copy is `#/$defs/` and the
-    key, with `~` written `~0` and `/` written `~1`, as RFC 6901 escapes a reference token, and
-    `#` written `%23`, as a URI fragment needs: the copy of `example.org/acme/files#path.v1`
-    from version 0.3.0 is under the key `example.org/acme/files@0.3.0#path.v1`, and a `$ref` to
-    it is `#/$defs/example.org~1acme~1files@0.3.0%23path.v1`. Where the contract's own schema
-    states `$defs` at its root, as CTR-012 lets an operation that is not a control, its members
-    keep their keys beside the copies. A key of the form given above for a contract's copy,
-    a qualified reference with `@` and the version after the address where a version is stated,
-    is reserved in the root `$defs` of every schema an author writes. A document that uses one
-    there is rejected under IFC-033 when its package is installed or when it is submitted,
-    with a diagnostic naming the reserved key and its position in the document. This applies
-    whether or not publication would reach a contract with that key. The definition is the
-    engine's, made for the wire:
-    CTR-012 and the profile govern the contract's schemas and not the definition, and the engine
-    checks a request and a result against the contract and the template, under NAM-023 and
-    TPL-011, so the definition changes nothing that the engine accepts. Which `$ref` the engine
-    replaces where it may is DL12. Where a control's contract gives the input `limit` the schema
-    `{type: integer, maximum: 100}` and the target's template adds `{maximum: 50}`, the tool
-    gives `limit` the schema `{allOf: [{type: integer, maximum: 100}, {maximum: 50}]}`, so a
-    caller that follows it does not send 75, which TPL-011 would report invalid. A control that
-    the target does not have has no tool, under IFC-012. Where the consumer, the Conduit and the
-    target hold different versions of the contract's package, the definition is that of the
-    version the target holds, as NAM-023 states. A result of the tool that is not an error
-    conforms to `outputSchema`, and IFC-025 says which results are errors. Where `readOnlyHint`
-    is not true, and where the contract does not state one of the other three hints, that hint
-    is left out of `annotations`, and the protocol's default for it holds. A Conduit may list an
-    operation that a later release of a package added to a capability, under NAM-024, while its
-    target holds an earlier version that has no contract of that name. No tool is presented for
-    that operation, and a call that names it is answered as IFC-012 answers a call to a tool
-    that is not presented: it reports refused. The tool of an operation that declares no outputs
-    has an `outputSchema` that describes a map with no properties, and a result of it that is
-    not an error holds an empty map, under IFC-025. The tool of an operation whose contract
+    A handle, whose schema is `github.com/shrav-k/conduit/core#handle.v1`, is so given the schema of
+    a string, in place or as a copy, which is what IFC-011 makes it on the wire. JSON Schema
+    resolves a `$ref` that is a JSON Pointer against the root of the schema that holds it, so a
+    contract's schema written in the place of a `$ref` would send its own pointers, such as
+    `#/$defs/name`, to the tool's root, and a contract that refers to itself, directly or through
+    others, has no finite form written in place. With one copy of each contract and every `$ref`
+    rewritten, a value is valid against the definition exactly when it is valid against the
+    contract's own schemas under SCH-001 and SCH-015, and, for a control, against the template's
+    too, under TPL-011. The definition can be read with no package at hand, and every `$ref` in it
+    is local, as the protocol lets no implementation dereference on its own a `$ref` that resolves
+    to a network URI. Two contracts of one name, reached through two versions of one package under
+    NAM-014, have two copies, since the key holds the version. A key is not a reference, and no
+    document writes one. A `$ref` to a copy is `#/$defs/` and the key, with `~` written `~0` and `/`
+    written `~1`, as RFC 6901 escapes a reference token, and `#` written `%23`, as a URI fragment
+    needs: the copy of `example.org/acme/files#path.v1` from version 0.3.0 is under the key
+    `example.org/acme/files@0.3.0#path.v1`, and a `$ref` to it is
+    `#/$defs/example.org~1acme~1files@0.3.0%23path.v1`. Where the contract's own schema states
+    `$defs` at its root, as CTR-012 lets an operation that is not a control, its members keep their
+    keys beside the copies. A key of the form given above for a contract's copy, a qualified
+    reference with `@` and the version after the address where a version is stated, is reserved in
+    the root `$defs` of every schema an author writes. A document that uses one there is rejected
+    under IFC-033 when its package is installed or when it is submitted, with a diagnostic naming
+    the reserved key and its position in the document. This applies whether or not publication would
+    reach a contract with that key. The definition is the engine's, made for the wire: CTR-012 and
+    the profile govern the contract's schemas and not the definition, and the engine checks a
+    request and a result against the contract and the template, under NAM-023 and TPL-011, so the
+    definition changes nothing that the engine accepts. Which `$ref` the engine replaces where it
+    may is DL12. Where a control's contract gives the input `limit` the schema `{type: integer,
+    maximum: 100}` and the target's template adds `{maximum: 50}`, the tool gives `limit` the schema
+    `{allOf: [{type: integer, maximum: 100}, {maximum: 50}]}`, so a caller that follows it does not
+    send 75, which TPL-011 would report invalid. A control that the target does not have has no
+    tool, under IFC-012. Where the consumer, the Conduit and the target hold different versions of
+    the contract's package, the definition is that of the version the target holds, as NAM-023
+    states. A result of the tool that is not an error conforms to `outputSchema` where the operation
+    declares outputs, and IFC-025 says which results are errors. Where `readOnlyHint` is not true,
+    and where the contract does not state one of the other three hints, that hint is left out of
+    `annotations`, and the protocol's default for it holds. A Conduit may list an operation that a
+    later release of a package added to a capability, under NAM-024, while its target holds an
+    earlier version that has no contract of that name. No tool is presented for that operation, and
+    a call that names it is answered as IFC-012 answers a call to a tool that is not presented: it
+    reports refused. The tool of an operation that declares no outputs has no `outputSchema`, and a
+    result of it that is not an error has no `structuredContent`, under IFC-025. The protocol makes
+    the schema optional; a client that sees one may prefer the structured result, and an empty map
+    would hide the content, including a plain read's text. The tool of an operation whose contract
     states no `inputSchema`, and so declares no inputs, has the `inputSchema` `{type: object}`,
-    since the protocol requires one of every tool, and its call carries no arguments, under
-    IFC-001.
+    since the protocol requires one of every tool, and its call carries no arguments, under IFC-001.
   vectors: []
 
 # --- Added by the fix pass of the fourth round of the re-audit

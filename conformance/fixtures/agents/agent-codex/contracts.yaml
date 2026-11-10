@@ -2,6 +2,12 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
   name: codex.v1
+  description: >-
+    Runs an explicit native-client conversation. The client's own account services,
+    messaging and machine tools are off by default: shell, code execution, browser,
+    other-Agent, hook and plugin reach is disabled. Access through Conduit is mediated,
+    not OS isolation. accountServices enables apps alone; machine features stay off.
+    apply_patch in the read-only sandbox and requests for user input remain available.
 spec:
   family: Agent
   schema:

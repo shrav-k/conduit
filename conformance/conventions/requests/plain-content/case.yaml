@@ -1431,8 +1431,7 @@
               "type": "text",
               "text": "server answer"
             }
-          ],
-          "structuredContent": {}
+          ]
         },
         "records": [
           {
@@ -1471,7 +1470,8 @@
           ]
         },
         "absent": [
-          "/reply/_meta/io.github.shrav-k.conduit~1reason"
+          "/reply/_meta/io.github.shrav-k.conduit~1reason",
+          "/reply/structuredContent"
         ]
       }
     },
@@ -1497,8 +1497,7 @@
               "type": "text",
               "text": "server answer"
             }
-          ],
-          "structuredContent": {}
+          ]
         },
         "required_promises": [
           "OPS-009"
@@ -1526,7 +1525,8 @@
           }
         ],
         "absent": [
-          "/reply/_meta/io.github.shrav-k.conduit~1reason"
+          "/reply/_meta/io.github.shrav-k.conduit~1reason",
+          "/reply/structuredContent"
         ]
       }
     },

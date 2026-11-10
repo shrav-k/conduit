@@ -12,6 +12,9 @@ The increment's complete requirements remain in
 | --- | --- | --- | --- | --- | --- |
 | 3-01 | contradiction | DL13, IFC-022, PRV-022 | Order 020's "no exp" conflicts with DL13's far-future expiration and [JWT-SVID section 3.3](https://github.com/spiffe/spiffe/blob/main/standards/JWT-SVID.md#33-expiration-time), which requires exp. The first round followed the order and failed to report the conflict; the verifier found it. | The correction issues exp at iat plus 100 calendar years and rejects expired tokens. | The admin settled it for far-future exp, with no change to spec/. The order's original instruction is superseded by this settlement. |
 | 3-02 | contradiction | MAN-017, SCH-009 | The order asked for an optional field; MAN-017 requires a bound input to be a required scalar. | The Agent Types require a model string with an empty-string default; authors can still omit it. | The admin settled it for an empty default, no change to spec/. |
+| 3-03 | contradiction | IFC-025, IFC-033, OPS-009 | A no-output plain read returned text in content but the empty outputSchema/structuredContent made Claude Code's model see only an empty map. | The core omits outputSchema and successful structuredContent for an operation declaring no outputs, preserves plain content and updates the repeat vectors. | Settled by the admin under ruling 46, point 4, in order 024: IFC-025, IFC-033 and OPS-009 now require omission and explain the optional schema/client preference; declared outputs keep their existing form. |
+| 3-04 | gap | ACC-027 | Claude Code loaded an ancestor CLAUDE.md from its private working directory with setting-sources project. A baseline confirmed the sentinel; a direct empty-sources trial excluded it. | Claude launches use --setting-sources empty; explicit --mcp-config and --settings alone carry the engine, helper and allow rule. | Settled by the admin in order 024; package/closeout change, no change to spec/. |
+| 3-05 | gap | ACC-027 | Codex read the shared file with its own shell without an engine request, could not write, and loaded ancestor AGENTS.md despite ignore-rules. The admin's direct trial disabled the listed machine features and project documents. | Codex disables all thirteen named features and sets project_doc_max_bytes=0 on first launch and resume; accountServices enables apps alone. | Settled by the admin in order 024; machine tools off by default is stated in both Types, READMEs and CONFORMANCE.md, with remaining routes and fresh real-client checks in closeout. No change to spec/. |
 
 The unsupported public management paths already named in
 [the handoff](increment-3-handoff.md#current-implementation-limits-to-resolve-before-exposure)
@@ -577,3 +580,31 @@ An earlier parallel full-suite attempt and a diagnostic duplicate were interrupt
 a verdict; neither is reported as passing. The live serial log shows the existing tests
 progressing slowly, not a demonstrated deadlock. No source workaround was introduced for
 that run. The staged diff stayed empty and HEAD stayed at the admin's checkpoint.
+
+## I3-05: first real-client findings (work order 024)
+
+[The order](../../work-orders/024-i3-05-closeout-fixes.md) records the admin's 2026-11-10
+observations and settles 3-03 to 3-05. The first attempt showed exact engine tool lists,
+A's engine-recorded read, no token or turn text in records, and no surviving process after
+server shutdown. It did not complete closeout: the read text was hidden from Claude's model,
+ancestor instructions loaded, and Codex's own shell bypassed the engine. These are the admin's
+observations, not a worker run with real clients.
+
+The new `requests-plain-read-text-only` vector checks that a plain read with text as its only
+content has no output schema and no successful structured result. It fails against the
+original core on `/reply/tool/outputSchema` and passes with the corrected core. The existing no-output result/repeat vectors and all sixteen whole-S1 plain results
+now assert absence of structuredContent. Implementation choice for coordinator review:
+interpret decision 1's omission as applying to successful results; preserve IFC-025's existing
+invalid/conflict error diagnostics, which are not operation outputs. Declared-output results
+retain their previous form. Output expiry and conflict behavior remain covered by plain-content.
+
+Both standalone packages and their portable contract fixtures are version 0.1.1. Their pins
+and the live S1 registration fixture/project are refreshed together. The shell integration
+test's generated registration manifest also selects 0.1.1. Each wrapper's MCP serverInfo
+version now comes from CARGO_PKG_VERSION, keeping it aligned with its package. The fixture archives
+remain metadata-only; executable host archives are built separately for the admin's rerun.
+Exact-argument scripted tests cover both turns and all accountServices/peerMessaging
+combinations. This worker ran no real Claude Code or Codex client. The updated
+[closeout plan](increment-3/closeout.md) requires effective ancestor-instruction baselines,
+the plain read's text reaching each model and Codex's outside-engine read attempt. The
+admin must still run it and report remaining native tools and all unshown properties.

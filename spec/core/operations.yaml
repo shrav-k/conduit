@@ -193,7 +193,8 @@
 #     permitted reports refused and says nothing else about the objects it names (OPS-023).
 #   - A result has `isError` true where the request ended with a reason or its outcome is
 #     failed or unknown, and in no other case; any other result holds the outputs in its
-#     `structuredContent`, an empty map where the operation declares none (IFC-025). A repeat
+#     `structuredContent` where it declares outputs, and omits that member where it declares
+#     none (IFC-025). A repeat
 #     of an invocation that has not ended reports conflict with the engine's ID for it
 #     (OPS-032). A repeat of one that succeeded is answered from what the engine keeps, and
 #     nothing is dispatched (OPS-009), unless the operation declares outputs that the engine

@@ -131,7 +131,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
         vec![
             "--print".into(),
             "--setting-sources".into(),
-            "project".into(),
+            "".into(),
             "--settings".into(),
             c.cwd.join("settings.json").display().to_string(),
             "--strict-mcp-config".into(),
@@ -201,6 +201,23 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
             .into(),
             "apps".into(),
         ]);
+        for feature in [
+            "shell_tool",
+            "unified_exec",
+            "code_mode_host",
+            "browser_use",
+            "browser_use_external",
+            "in_app_browser",
+            "computer_use",
+            "multi_agent",
+            "hooks",
+            "plugins",
+            "view_image",
+            "goals",
+            "image_generation",
+        ] {
+            args.extend(["--disable".into(), feature.into()]);
+        }
         for setting in [
             format!("mcp_servers.engine.url={}", json!(c.url)),
             format!(
@@ -211,6 +228,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
             "mcp_servers.engine.required=true".into(),
             "mcp_servers.engine.default_tools_approval_mode=\"approve\"".into(),
             "web_search=\"disabled\"".into(),
+            "project_doc_max_bytes=0".into(),
         ] {
             args.extend(["-c".into(), setting]);
         }

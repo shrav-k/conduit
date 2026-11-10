@@ -42,7 +42,7 @@ fn config(parent: &std::path::Path, account_services: bool, peer_messaging: bool
 }
 fn expected_args(c: &Config, thread: Option<&str>) -> Vec<String> {
     if CLAUDE {
-        let mut a: Vec<String> = ["--print", "--setting-sources", "project", "--settings"]
+        let mut a: Vec<String> = ["--print", "--setting-sources", "", "--settings"]
             .map(str::to_owned)
             .into();
         a.push(c.cwd.join("settings.json").display().to_string());
@@ -118,6 +118,23 @@ fn expected_args(c: &Config, thread: Option<&str>) -> Vec<String> {
             .into(),
             "apps".into(),
         ]);
+        for feature in [
+            "shell_tool",
+            "unified_exec",
+            "code_mode_host",
+            "browser_use",
+            "browser_use_external",
+            "in_app_browser",
+            "computer_use",
+            "multi_agent",
+            "hooks",
+            "plugins",
+            "view_image",
+            "goals",
+            "image_generation",
+        ] {
+            a.extend(["--disable".into(), feature.into()]);
+        }
         let expected_helper = format!(
             "'{}' --headers-helper --identity-dir '{}'",
             binary(),
@@ -133,6 +150,7 @@ fn expected_args(c: &Config, thread: Option<&str>) -> Vec<String> {
             "mcp_servers.engine.required=true".into(),
             "mcp_servers.engine.default_tools_approval_mode=\"approve\"".into(),
             "web_search=\"disabled\"".into(),
+            "project_doc_max_bytes=0".into(),
         ] {
             a.extend(["-c".into(), s]);
         }

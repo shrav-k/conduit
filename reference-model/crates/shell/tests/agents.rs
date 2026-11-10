@@ -146,7 +146,7 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
         } else {
             "claude-code.v1"
         };
-        fs::write(template.join("conduit.yaml"),format!("apiVersion: {}\npackages:\n  example.org/conduit/{name}:\n    version: 0.1.0\n    digest: sha256:{}\n",spec_api(&root),package.rsplit_once('#').unwrap().1)).unwrap();
+        fs::write(template.join("conduit.yaml"),format!("apiVersion: {}\npackages:\n  example.org/conduit/{name}:\n    version: 0.1.1\n    digest: sha256:{}\n",spec_api(&root),package.rsplit_once('#').unwrap().1)).unwrap();
         fs::write(template.join("template.yaml"),format!("apiVersion: {}\nkind: Agent\nmetadata:\n  name: test-template\nspec:\n  type: example.org/conduit/{name}#{ty}\n  config:\n    accountServices: false\n    peerMessaging: false\n",spec_api(&root))).unwrap();
         let out = Command::new(env!("CARGO_BIN_EXE_conduit"))
             .args(["register", "--store"])

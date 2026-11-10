@@ -142,6 +142,26 @@ pub fn s1_snapshots(repository: &Path) -> Result<Vec<Snapshot>> {
         .collect()
 }
 
+/// Metadata discovery for an explicit public install request. The engine reads and
+/// validates these archive bytes again; this command admits no package itself.
+pub fn install_arguments(argument: &str) -> Result<Value> {
+    let (path, hash) = argument
+        .rsplit_once('#')
+        .ok_or("install needs ARCHIVE#SHA256")?;
+    let path = std::path::Path::new(path)
+        .canonicalize()
+        .map_err(|_| "cannot read package archive")?;
+    let bytes = std::fs::read(&path).map_err(|_| "cannot read package archive")?;
+    let digest = format!("sha256:{}", hash.strip_prefix("sha256:").unwrap_or(hash));
+    if conduit_core::packages::bytes_digest(&bytes) != digest {
+        return Err("package archive digest mismatch".into());
+    }
+    let manifest = archive_metadata::manifest(&bytes)?;
+    Ok(
+        serde_json::json!({"address":manifest["address"],"version":manifest["version"],"digest":digest,"fetch":url::Url::from_file_path(path).map_err(|_| "invalid archive URL")?.as_str()}),
+    )
+}
+
 /// CLI archive admission. No filesystem extraction; the core owns package validation.
 pub fn install_package(shell: &crate::Shell, repository: &Path, argument: &str) -> Result<()> {
     let (path, hash) = argument

@@ -1,0 +1,684 @@
+{
+  "requests": [
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.install.v1",
+          "arguments": {
+            "address": "example.org/s1/filesystem",
+            "version": "0.2.0",
+            "digest": "sha256:cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436",
+            "fetch": "file:///fixture/filesystem-0.2.0.tar.gz"
+          }
+        },
+        "archive": {
+          "name": "filesystem-0.2.0.tar.gz",
+          "address": "example.org/s1/filesystem",
+          "version": "0.2.0",
+          "digest": "sha256:cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436",
+          "directory": "file:///fixture/filesystem-0.2.0/"
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "cb7c64f4-4f37-5341-9192-29952b274e0c",
+            "b33efd62-4192-59b9-b240-8ceff9db8d20",
+            "2f96e38c-453c-537e-a958-f51f86d12ec1",
+            "926672f2-2a24-59d7-b03d-7f585db73a2d",
+            "e73945be-1b20-5e16-abd1-a4d34c554516",
+            "f0bcbbac-77fd-5c1c-937a-fb2fd212758d",
+            "6d775115-1554-5dac-9422-0454d3c4009e",
+            "119dab8a-f7d4-51d7-b086-8c3e3061f3b6",
+            "023c8cfa-8a1f-5e2f-bf9e-95185135eb12",
+            "ae0fa0f3-13df-59ea-a965-a72d601cc745",
+            "92059687-c129-5976-8435-55c2fcb2c795",
+            "97d1afe6-f512-52f0-99f4-686c1ea6e502",
+            "03532078-6ff3-506a-baa3-050524829ddc",
+            "7c2eb56b-2400-5928-add9-55d747b8d31e",
+            "09935760-a507-5ba9-b2f9-f03e8e094e1e",
+            "f3741414-1a78-5179-bb91-5cb60d27e51b",
+            "4d865ca9-520d-559f-959c-628198129500",
+            "20127a3b-2c77-5681-90ae-d791caefc886",
+            "50682a1b-88a0-5e89-9ea7-b66c54c9cf03",
+            "cfc244e1-1385-5067-9d2b-bc9b499c2099",
+            "8d8b246c-8f41-5b3f-8505-fce37e2641cc",
+            "82c97189-81a7-5c5c-ac52-568e0e115490",
+            "1342c5aa-e2a9-544f-ab4f-40896847ac44",
+            "61e6366d-1a58-5e08-a75b-0c95b46497eb",
+            "341c68bf-8673-5e76-86a7-d61a0e1e4f75",
+            "b08580ed-1ecd-507b-86cd-9133211f0d0b",
+            "afe8bc83-f23e-5d53-aef6-a217ec2d521b",
+            "a205b424-3321-54ea-867c-4d67330d216d",
+            "97fcb38c-fc7e-546d-9f5d-12b346a4e026",
+            "08b9cf8d-b98e-5fd3-bc79-fda1f436ee65"
+          ],
+          "revisions": [
+            "025-r14-0",
+            "025-r14-1",
+            "025-r14-2",
+            "025-r14-3",
+            "025-r14-4",
+            "025-r14-5",
+            "025-r14-6",
+            "025-r14-7",
+            "025-r14-8",
+            "025-r14-9"
+          ],
+          "suffixes": [
+            "v1400",
+            "v1401",
+            "v1402",
+            "v1403",
+            "v1404"
+          ]
+        }
+      },
+      "archive_file": "filesystem-new"
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.install.v1",
+          "arguments": {
+            "address": "example.org/s1/filesystem",
+            "version": "0.2.0",
+            "digest": "sha256:cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436",
+            "fetch": "file:///missing"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "80041a9d-1e6f-526f-a2ae-d1e1c55ebae3",
+            "97b0b908-7380-5be4-94df-3a88270432fc",
+            "e452fac9-7c11-5b06-b961-88079b9e183f",
+            "4803a4f2-29dd-5d0b-87b9-3e35ff423cb6",
+            "0659db94-d44e-5074-bda2-021d21244d0f",
+            "ce4d8599-74cd-5d98-9267-4fa579fd9b9b",
+            "eeaf1e24-2fc4-5b0e-9151-883eba8d1403",
+            "b6e01a17-048a-5f84-8b05-e2b05947b925",
+            "aab79856-3b19-5e31-8a8c-ddc96a501989",
+            "0cfcb63d-133f-55b5-97e6-ad14b9fe1200",
+            "215880ba-eda6-5bbb-af67-49579317389d",
+            "deda05bf-d5df-5bfd-b286-71318d4a221a",
+            "ab44e47e-108b-58b0-8e27-306dff03d97a",
+            "d98b897b-3382-52dd-aade-5ccac5cfbe9b",
+            "40641427-6441-53ab-8647-ac8b929c33e3",
+            "47a74b0a-6721-5bb6-b135-f8a82dd7eb1b",
+            "a812c9ac-dd23-58de-b372-271a22c09c0d",
+            "a7066a6c-d122-5bca-8978-ce5414ecb476",
+            "96270a05-d9ad-5061-91f1-474e7efecc89",
+            "e125675b-0d29-5cc4-8116-3ccab9eb0beb",
+            "95853b83-c62d-507d-b134-15b395c7b069",
+            "9ad0a0ed-468f-5d46-a80b-129dc33b7c3b",
+            "39a92c76-eb77-54b6-8a56-591bc0e826d9",
+            "0462cbe0-d223-5970-b4bc-7b24cba21e5d",
+            "9fad02a3-ab5a-5ea4-bd5a-22e77f660bea",
+            "751a16e7-a90a-5202-93ff-3d2dd666f176",
+            "a92d1614-2dfe-5196-a1a3-18ff56f71858",
+            "187d71bc-0092-5203-8a23-683a58680daf",
+            "c66b7a4e-f3f9-5abb-b87b-1afbce9886f9",
+            "a034c779-437c-5d99-839e-9be1e434bfee"
+          ],
+          "revisions": [
+            "025-r15-0",
+            "025-r15-1",
+            "025-r15-2",
+            "025-r15-3",
+            "025-r15-4",
+            "025-r15-5",
+            "025-r15-6",
+            "025-r15-7",
+            "025-r15-8",
+            "025-r15-9"
+          ],
+          "suffixes": [
+            "v1500",
+            "v1501",
+            "v1502",
+            "v1503",
+            "v1504"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.install.v1",
+          "arguments": {
+            "address": "example.org/s1/filesystem",
+            "version": "0.2.0",
+            "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            "fetch": "file:///fixture/filesystem-0.2.0.tar.gz"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "b6ea75e9-b31f-5a7c-b1c0-19df455d8b0b",
+            "e919f979-9b94-50fd-b316-c4ece5974a72",
+            "789c7c62-ecd9-5d27-a44c-558625e4a766",
+            "eda1f2ca-1bb6-5dad-ae96-6a5857ad17d5",
+            "3f68082c-ab92-540d-9d1e-9488588abe67",
+            "9928db64-510c-5cbf-beeb-ac1d9f766b8a",
+            "56ebd565-f34f-5ab4-9cf7-fbd9a5bf3b51",
+            "6486a67c-bc61-5b07-8501-c330d182f78c",
+            "fdf46534-826c-5b12-897c-3c21a9decc7f",
+            "eab00490-f41c-5796-9a0d-e12d87cc64c1",
+            "5c56ff77-6769-583e-943c-a3d8f250e296",
+            "333078b7-5262-5989-901d-5219b425d4cf",
+            "e82f676b-f892-5a03-a9c1-aaf1d2ed1815",
+            "7cf7cb28-a381-51eb-9301-8093b2fe0cf5",
+            "79d78651-9c20-5e3e-a82a-75aed0003287",
+            "03c4f933-433c-510c-a3da-2ff007630b7e",
+            "91ad35d8-aa64-563e-89f6-0cffc62c0597",
+            "2e98c959-7a2f-550e-a570-ae8df2dd43d9",
+            "8970f76b-201c-5bba-80ea-794796e3c17c",
+            "b59c74b8-25df-593e-8591-c2904d267a7a",
+            "eab59229-5218-5d2e-98c7-9ac49816ec68",
+            "1c8afbdd-d464-5739-b5a8-5f2cea4219f5",
+            "96a392a9-66e1-5761-a0be-5a6b26fcf303",
+            "8256e2df-50df-5262-a6ba-d2f55dc5f464",
+            "3a25b959-601e-56d3-afbe-9ee3cf28708f",
+            "defddc08-8aea-5a11-ade6-75438b6a5535",
+            "1456d480-3cd6-5e88-8091-a06e48402dc2",
+            "560fca1e-b277-53c8-8cb1-d3c3cb6455b3",
+            "510c774e-548a-58c9-89a9-42fd7cd95319",
+            "e7e750a5-3837-57ab-bb5f-9f95bb371583"
+          ],
+          "revisions": [
+            "025-r16-0",
+            "025-r16-1",
+            "025-r16-2",
+            "025-r16-3",
+            "025-r16-4",
+            "025-r16-5",
+            "025-r16-6",
+            "025-r16-7",
+            "025-r16-8",
+            "025-r16-9"
+          ],
+          "suffixes": [
+            "v1600",
+            "v1601",
+            "v1602",
+            "v1603",
+            "v1604"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "root-workspace"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "14152324-a1fb-5713-9496-89e10854ca82",
+            "cb4f47cf-593e-545a-ba52-31eaf8ade404",
+            "178e7d62-2035-5bb2-be29-c08a2760291c",
+            "af10fa77-cc12-57ce-a0c7-995c9a64bdbd",
+            "e0123934-72a7-53f5-916e-7fd37dd5b2b8",
+            "de373c2b-b629-5795-bd46-f43aec3e8f63",
+            "0b4e3998-d774-56a0-8ad5-aec561d00306",
+            "4bc8d31a-7899-5578-8593-a121cfbe5fde",
+            "9dc0cb1d-764a-50cf-ba59-ad567d58e0f6",
+            "6f139e7b-db66-5b6b-ae74-e40e2d154ca3",
+            "eb2bc10c-bd74-5c4c-ba6d-c2368a209334",
+            "9980dfcd-22d4-5884-b166-65f562ee3668",
+            "20b9a8ac-6336-54da-af8c-ba93076cbe8a",
+            "e1b00f73-44be-553d-8100-02e813ed78ec",
+            "213163e4-d1ab-51df-b3a8-925f25ad28cd",
+            "004de441-593a-548a-9706-447db7d54fd4",
+            "7791df9b-c93b-5a9f-9b20-3a7c5c830c1c",
+            "4fb16962-2c1b-596c-9ec4-1bbeda90c76c",
+            "7523d5f3-98dd-58bb-8d56-c0b9a919cf90",
+            "eddac594-f160-50ee-b8f1-18d095b2a8c0",
+            "51205fa4-804f-50bd-b9ca-9dce582725bb",
+            "70259dd3-8b39-51ee-a511-13005a1491a7",
+            "de109a34-1bab-5bad-8f0b-6fa52808feaf",
+            "49f6fa02-4103-5568-b2fa-bc858bbc0642",
+            "bbeca58b-839e-593e-96d2-225e35bddbdf",
+            "5a4d7498-7fc9-579d-8be2-d81c31402635",
+            "56052926-a65f-595c-a3df-1b5f9cb019a6",
+            "393cb42c-b663-5efc-992c-47e9de9d82aa",
+            "a751bbcd-3ced-5bdc-bc4d-66a424819e92",
+            "1ce93c9c-97f6-5515-8a7a-7e2c057d3284"
+          ],
+          "revisions": [
+            "025-r17-0",
+            "025-r17-1",
+            "025-r17-2",
+            "025-r17-3",
+            "025-r17-4",
+            "025-r17-5",
+            "025-r17-6",
+            "025-r17-7",
+            "025-r17-8",
+            "025-r17-9"
+          ],
+          "suffixes": [
+            "v1700",
+            "v1701",
+            "v1702",
+            "v1703",
+            "v1704"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "packages": {
+                "example.org/s1/filesystem": {
+                  "version": "0.2.0",
+                  "digest": "sha256:cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436"
+                },
+                "example.org/s1/history": {
+                  "version": "0.1.0",
+                  "digest": "sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69"
+                },
+                "example.org/s1/agents": {
+                  "version": "0.1.0",
+                  "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
+                }
+              }
+            },
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Resource",
+                "metadata": {
+                  "name": "upgraded-directory"
+                },
+                "spec": {
+                  "type": "example.org/s1/filesystem#local-directory.v1",
+                  "inputs": {
+                    "root": {
+                      "schema": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "to": [
+                        "/config/root"
+                      ]
+                    }
+                  },
+                  "config": {}
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "upgraded-access"
+                },
+                "spec": {
+                  "capability": "example.org/s1/filesystem#directory.v1",
+                  "operations": [
+                    "example.org/s1/filesystem#file.read.v1",
+                    "example.org/s1/filesystem#directory.list.v1",
+                    "example.org/s1/filesystem#file.write.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Agent",
+                "metadata": {
+                  "name": "upgraded-agent"
+                },
+                "spec": {
+                  "type": "example.org/s1/agents#codex.v1",
+                  "config": {
+                    "accountServices": false,
+                    "peerMessaging": false
+                  }
+                }
+              },
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Resource",
+                "metadata": {
+                  "name": "shared-new"
+                },
+                "from": "upgraded-directory",
+                "owner": "workspace",
+                "arguments": {
+                  "root": "/another/shared"
+                }
+              },
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Agent",
+                "metadata": {
+                  "name": "new-consumer"
+                },
+                "from": "upgraded-agent"
+              },
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "upgraded"
+                },
+                "from": "upgraded-access",
+                "consumer": {
+                  "kind": "Agent",
+                  "name": "new-consumer"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "shared-new"
+                }
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "1c3255f1-1e41-5ca9-a7f3-5ccb3822d612",
+            "e43e1483-cebe-5ac9-b56f-c30a14629abf",
+            "b5402465-96d8-50dd-a759-c3d5f716d1ab",
+            "a72b84ae-da87-51ab-b0fe-4d187886e419",
+            "3fa75565-773b-56dc-9f8e-aa10b14ddf30",
+            "d9851d43-3c5d-51f3-9ea7-ec7b8e533d68",
+            "e4c438d4-19a9-51b3-8635-fdd242d6d91d",
+            "9d3bbb2f-b2fb-56e2-8c9e-a44178293c6a",
+            "ca0895f8-31d2-516b-a02a-c0192267fde7",
+            "6467fb77-4086-59bc-a9cc-f18c65924603",
+            "ff014b78-85e7-52e6-b910-f71e14a72ba4",
+            "c7b508a3-f809-58c0-900e-917bb5dd16c6",
+            "dc2b0840-4180-5279-9c68-b7430a6c1a1a",
+            "a0798a6a-8d92-553e-984d-581e85e5749a",
+            "b28f57a0-1332-55ec-999c-29583724b628",
+            "2b678fb6-ff5e-5a3c-bb09-0d75c6a11213",
+            "d618fae2-2c57-5d87-b616-a1ebfebea516",
+            "de067cc1-1c78-55a8-8122-8ba29b2325fa",
+            "7c130f22-7b39-5882-b74d-db37f5b0d585",
+            "f4077523-5b1c-5e68-ae7b-db4aa51a4cde",
+            "cc2c6d01-329c-59d0-a574-017c013fec58",
+            "1fa711f1-34a9-5ca6-9566-c5e2f8d505dd",
+            "f7b61e1f-72c7-5d53-bc18-30437834f2fb",
+            "823b399f-25dc-5212-8ef6-45bd0c554d13",
+            "3756745f-9902-586d-83bb-b4d62155f32d",
+            "f1489e6b-9cd2-52d2-8039-8d22cd944763",
+            "b5c0f3b7-0a84-5f8e-801c-27e007d32748",
+            "2c997591-0a62-56ad-a632-849e071a77cd",
+            "087fef7f-429f-562b-9e6d-aca759a13306",
+            "619f6394-1360-5a8e-93c1-ed3a582d9d5e"
+          ],
+          "revisions": [
+            "025-r18-0",
+            "025-r18-1",
+            "025-r18-2",
+            "025-r18-3",
+            "025-r18-4",
+            "025-r18-5",
+            "025-r18-6",
+            "025-r18-7",
+            "025-r18-8",
+            "025-r18-9"
+          ],
+          "suffixes": [
+            "v1800",
+            "v1801",
+            "v1802",
+            "v1803",
+            "v1804"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "upgraded"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "cf37fb9c-f7e2-5187-a447-3747a5d83441",
+            "257eb6f6-e806-59f4-83e5-3c2f8612d36b",
+            "db8d3114-e917-5f37-987d-b03ae7d508d5",
+            "4aaf6ff1-1488-5d7d-b32b-821c139e19be",
+            "90e4d4ad-0c9c-57a5-8c39-3e4af15b655b",
+            "fb591712-69c7-56c1-857d-7767a2edffe5",
+            "a440103a-cfba-5843-9607-455ef4d961c2",
+            "808f63d7-f8d8-5a95-ac72-84b17b304037",
+            "32494f30-7b0b-5337-8b03-59e67cf52bc2",
+            "03793876-f128-5d7c-9dfd-efe2d138a195",
+            "789aeb98-bd5f-54fd-aab6-5672e084ff77",
+            "c55a9b32-02b4-5564-bec9-50fcc254b9ab",
+            "cc44dab1-ff7c-52fd-a5c2-8ad8d7b96490",
+            "4f5cbfc5-4451-5850-b256-5f7edc978a7f",
+            "96b5d855-e020-560b-9bfa-79eb35de10dc",
+            "28f9a6e0-a42d-543d-8571-466c2834a7d9",
+            "e368f05b-9501-5489-a99e-86ac2d7f23b2",
+            "3f243faa-6093-5332-84eb-00af8e5387dd",
+            "ad88bf84-aade-50de-842d-2082c1d480c0",
+            "2d76964c-a7e6-5d7d-bf67-b87828a274b4",
+            "a11c1c12-beaf-5992-afb3-5397bb8baff3",
+            "0c988910-e229-5c49-91b6-c303a0f45f8a",
+            "343825bc-69f8-5ac4-9aa1-f5aeb6e765fa",
+            "d6ef8c40-46bd-594a-9cc3-fad7270c6dfb",
+            "5f0d0063-fb3c-5795-9222-eb8131885d19",
+            "52a3771b-ef6f-5f5d-91a6-97b5e4be124a",
+            "b858683f-2450-5d40-b79f-fcf590ce3a2f",
+            "572412ff-f6b0-5746-ad62-d640495c55ee",
+            "222caf79-b634-5d6c-8a9c-05ac9b57faae",
+            "c69a47d1-99ef-5b59-b44b-5b14a52e08f2"
+          ],
+          "revisions": [
+            "025-r19-0",
+            "025-r19-1",
+            "025-r19-2",
+            "025-r19-3",
+            "025-r19-4",
+            "025-r19-5",
+            "025-r19-6",
+            "025-r19-7",
+            "025-r19-8",
+            "025-r19-9"
+          ],
+          "suffixes": [
+            "v1900",
+            "v1901",
+            "v1902",
+            "v1903",
+            "v1904"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "root-workspace.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "shared"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "9aa9531a-9745-5828-923b-adb6c97a918f",
+            "c0afd05d-5ee1-55e0-b519-7b625716b1d4",
+            "1172d107-7ba7-52ca-9892-f89ed4df06a8",
+            "a531ab4e-fc5e-5099-99ca-0b422a5c3f6a",
+            "10e48711-d84b-581c-aadd-e217631d1309",
+            "ce091e67-eadc-589f-9f62-2c88e24e0b17",
+            "88746540-07d0-59a1-aa40-cb0d0f25ce4a",
+            "166ea3e7-59a6-5453-bfe5-f56b178da83e",
+            "39678a82-2b75-5725-970d-ad5fcbc04fc9",
+            "be7f4e35-1ed7-59fc-9485-309841e39ccd",
+            "e4222329-5005-5fd1-a393-d9282a4304a0",
+            "9fd0b9e7-d12b-5400-98b8-3b3aa50b1174",
+            "37ad4281-5d53-5826-8504-5544a1b0d535",
+            "7976c0c6-0fd8-5789-b1d8-79df551ebcbb",
+            "6c67da76-c878-5b30-be9e-05564f580826",
+            "cdff00f7-d770-5ba5-b403-3098936bbe5e",
+            "b0198abb-9bc8-55d0-8979-92b14fecdde5",
+            "5aee949d-9c34-54b5-b961-490df44a42a5",
+            "a7a0dec2-ea56-5b49-9d47-86476ed11be3",
+            "307a1891-029c-516c-91ae-f799a8621163",
+            "8083d83e-8d39-5624-97d9-05b308d0b45b",
+            "2811a65a-f625-5fc5-a954-94e1a6787b82",
+            "5026dfa8-83c0-5802-8947-ffe9a21d1cc8",
+            "5b80162c-0b8d-5e1b-a5dc-74c00cd4d0fd",
+            "5af2df2a-c58d-56a7-abf7-646e5bc08dae",
+            "0d96720b-8b0c-54be-a57f-8da1e11ea0de",
+            "8144c69c-ecf4-5752-8e43-d9454e84fad3",
+            "14dca985-8558-5cff-988b-f19dd734abf5",
+            "6a1ddab6-78e9-52ac-a2f8-2ea7c9b85a63",
+            "fdb22ae2-056c-51c6-bfdf-bdf1db6399c8"
+          ],
+          "revisions": [
+            "025-r20-0",
+            "025-r20-1",
+            "025-r20-2",
+            "025-r20-3",
+            "025-r20-4",
+            "025-r20-5",
+            "025-r20-6",
+            "025-r20-7",
+            "025-r20-8",
+            "025-r20-9"
+          ],
+          "suffixes": [
+            "v2000",
+            "v2001",
+            "v2002",
+            "v2003",
+            "v2004"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "root-workspace.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "shared-new"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "10670e2b-8faf-5895-af07-68de48627744",
+            "52bd032c-3e87-5c94-bc22-44a85179cacf",
+            "66d23836-b148-54e6-a83a-5e40bf7232c8",
+            "b531a400-84f7-5be5-8167-a7f189985f71",
+            "c28e36ee-94d2-58ab-9e97-d33d677c624b",
+            "d46de458-641c-55dd-ad2f-80c461dcf0d7",
+            "e7b62592-b8a6-5c15-99db-a93d5b30a2ba",
+            "f37d93a5-ff44-5287-a737-184582f890c6",
+            "e1b3391d-1c36-599f-9a01-1e17bad1c795",
+            "423bcf5d-95ca-53fe-854c-0fd8869d07d7",
+            "49b84c3f-e51c-5bec-b5cd-287d5b6249f2",
+            "a6efd3d0-62a9-5e67-ba96-5e6810b8a090",
+            "2b5355cc-67e7-5897-bd5a-c18ee2aa8732",
+            "82e2d984-96d0-52aa-8112-edc8ae28dd5a",
+            "f5982400-8ded-5374-8507-90d9e9e51256",
+            "8059682a-7d42-50f6-8659-8ba3cfdbc25c",
+            "2b63a0f4-a1de-52cd-8540-f80417341512",
+            "8d2b37e6-fd7a-559d-8b23-fa8c480d0984",
+            "74361fd0-3bba-5bf0-942d-598ac8bee55a",
+            "573a40db-c4ad-5c43-ab82-14781918d988",
+            "d5c07693-83f7-5160-b2c8-f8f3668db3c0",
+            "81d3bf70-953a-5ddc-86ab-1ddcafdbb645",
+            "69647d38-883a-56bb-9fd7-c2ffe8eef0ff",
+            "dc68e5df-08e4-5e43-87b9-d10c521ef876",
+            "9d823e91-4fa3-548d-825c-708acc6b3a8f",
+            "e5c01861-7c03-5b71-a342-06723848e15d",
+            "189a0475-3ca2-5f60-b6ae-2a414e2dd5cf",
+            "6939a300-04e3-5145-9c44-2c8f1a034586",
+            "36d717a7-ff99-5e31-b080-5b0898f821bb",
+            "9938aabd-1717-5a63-8420-f0eab6feab52"
+          ],
+          "revisions": [
+            "025-r21-0",
+            "025-r21-1",
+            "025-r21-2",
+            "025-r21-3",
+            "025-r21-4",
+            "025-r21-5",
+            "025-r21-6",
+            "025-r21-7",
+            "025-r21-8",
+            "025-r21-9"
+          ],
+          "suffixes": [
+            "v2100",
+            "v2101",
+            "v2102",
+            "v2103",
+            "v2104"
+          ]
+        }
+      }
+    }
+  ]
+}

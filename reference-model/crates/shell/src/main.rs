@@ -7,7 +7,7 @@ use std::sync::Arc;
 fn run() -> Result<()> {
     let mut args = std::env::args().skip(1);
     let command = args.next().ok_or(
-        "usage: conduit init|register|inspect|records|serve|tools|call --store DIR [ARGUMENTS]",
+        "usage: conduit init|register|submit|replace|install|retire|unregister|inspect|records|serve|tools|call --store DIR [ARGUMENTS]",
     )?;
     let mut store = None;
     let mut project = None;
@@ -47,7 +47,19 @@ fn run() -> Result<()> {
             "--as" if command == "tools" => {
                 as_instance = Some(args.next().ok_or("--as needs INSTANCE")?)
             }
-            _ if command == "call" && !arg.starts_with('-') => positional.push(arg),
+            _ if [
+                "call",
+                "install",
+                "submit",
+                "replace",
+                "retire",
+                "unregister",
+            ]
+            .contains(&command.as_str())
+                && !arg.starts_with('-') =>
+            {
+                positional.push(arg)
+            }
             "--pass-environment" => config
                 .pass_environment
                 .push(args.next().ok_or("missing environment name")?),
@@ -74,7 +86,18 @@ fn run() -> Result<()> {
         }
     }
     if ![
-        "init", "register", "inspect", "records", "serve", "call", "tools",
+        "init",
+        "register",
+        "inspect",
+        "records",
+        "serve",
+        "call",
+        "tools",
+        "install",
+        "submit",
+        "replace",
+        "retire",
+        "unregister",
     ]
     .contains(&command.as_str())
     {
@@ -85,6 +108,17 @@ fn run() -> Result<()> {
         return Err("store is not initialized; run conduit init".into());
     }
     config.engine_url = url.unwrap_or(Config::for_store(&store)?.engine_url);
+    if ["install", "submit", "replace", "retire", "unregister"].contains(&command.as_str()) {
+        let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+        return runtime.block_on(conduit_shell::author::run(
+            &command,
+            &store,
+            &positional,
+            &repository,
+        ));
+    }
+
     if command == "call" || command == "tools" {
         if command == "call" && !(1..=2).contains(&positional.len()) {
             return Err("call needs TOOL [ARGUMENTS-JSON]".into());

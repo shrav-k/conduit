@@ -253,6 +253,14 @@ impl Executor for Arc<Inner> {
                 json!({"kind":"inspect-run","state":if running {"running"} else {"stopped"}}),
             ));
         }
+        if operation.ends_with("#stop.v1") {
+            if let Some(run) = self.runs.lock().unwrap().remove(&subject) {
+                run.group.stop();
+            }
+            return Ok(Execution::SetupReport(
+                json!({"kind":"stop","outcome":"succeeded"}),
+            ));
+        }
         if !operation.ends_with("#run.v1") {
             return Ok(Execution::Missing);
         }

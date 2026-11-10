@@ -1,0 +1,962 @@
+{
+  "requests": [
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "root-workspace"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "d5227072-c766-593c-acfb-2f408b82c9db",
+            "2804e95f-d206-5938-aebe-a82c268f8bcc",
+            "1b52a556-5e04-5078-8031-08a14f3a8e2d",
+            "fc0e1e9a-04a8-5f72-8f7f-5f8025a6a29c",
+            "9819234e-4524-502b-a333-c048e2f8c5ec",
+            "3c04b575-5067-508a-88f9-c0e5ffd815a7",
+            "ce665006-c5d8-5fc6-a49a-4b28ba844b50",
+            "ea926dd0-440c-5603-b6d2-a86956988232",
+            "f6e37672-aa13-5a11-b31a-019e3d5c2729",
+            "eb605513-c4bd-5b84-b07d-f9de6e2164bd",
+            "2e49f524-ba05-5210-9724-bd448defb04c",
+            "dfcee5ee-d2bc-57a4-b175-04e64ae37770",
+            "aa515398-0aee-5207-86d1-7130ace0973f",
+            "4622ef90-ab70-5549-bf12-154bc402b277",
+            "ef985451-1c72-50fe-9c55-ab871e3cef15",
+            "39636aad-0bb3-5e78-a25c-85c904dacaff",
+            "a0df53e0-261d-51c5-b38c-7bb78fc515c7",
+            "d5719c20-712f-51ff-8369-09d82335cbef",
+            "76ca389f-0480-507b-a528-5acca64bb6de",
+            "e5544fb2-86ca-5206-b538-5abf638f624b",
+            "548cdc81-3c05-54e9-8798-a23ac3df878d",
+            "14688d5c-2b18-5387-a7a0-ea991d00b6b8",
+            "a2802bbd-bc3b-5618-9a9b-e24f8b538d61",
+            "1c56d442-82cd-50e4-9be6-8a368b200254",
+            "09f0994c-8e6f-5371-80a7-5ddf2de583ed",
+            "0ac44297-746e-5adc-abf5-f8a22bcfd33c",
+            "7914fbe7-b83d-55e0-b550-3ce6b5739660",
+            "d694494d-ffed-56e8-8189-3297a2670496",
+            "fce4c4c9-86cf-5a95-b28b-266ab43648d0",
+            "79ebeed8-2521-5473-a210-bb3567ed72a6"
+          ],
+          "revisions": [
+            "025-r1-0",
+            "025-r1-1",
+            "025-r1-2",
+            "025-r1-3",
+            "025-r1-4",
+            "025-r1-5",
+            "025-r1-6",
+            "025-r1-7",
+            "025-r1-8",
+            "025-r1-9"
+          ],
+          "suffixes": [
+            "v0100",
+            "v0101",
+            "v0102",
+            "v0103",
+            "v0104"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Agent",
+                "metadata": {
+                  "name": "agent-c"
+                },
+                "from": "reader-agent"
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "dc25d016-8ed3-57d9-98db-d374b4b52506",
+            "80b8cb7f-513a-5967-8fb3-1085db579ee5",
+            "ec04b8a2-764a-5a6d-aee4-0e182ea49ae5",
+            "bd2d6fd5-823e-5d5a-8432-d86361bf3324",
+            "2e0077e5-b5bb-5ae2-b2bf-4a75ef649e9d",
+            "ce0d575d-8118-527e-8896-148976e5ab4c",
+            "57e15b7d-b58b-5a83-b08b-69291d95ec83",
+            "6418f149-244b-56d9-9229-b6295b4a1fb2",
+            "98784f30-db80-58cb-ba48-b229d9d5645f",
+            "6473fe27-1845-5250-b4ea-34a275e07b9a",
+            "1292f2c6-3640-5bef-8d74-dbae5cb41d2a",
+            "40d18275-5c83-5bfb-93a5-287d07a67c78",
+            "b93986fb-b449-5721-bd93-66ebbcfb9c24",
+            "0890cb64-9750-5241-9bf3-28b760ed9b8d",
+            "5067e1fc-ef8b-526e-ad1c-ffb78ea942de",
+            "adbf0bd0-ee9d-50e5-be6b-a3b3638445bd",
+            "79b70d0a-d5b0-5476-a1be-4354fa9d7a03",
+            "aa795aa4-e4b0-53e3-bc83-0bd41e6be835",
+            "e3b1f6d6-ecda-5c8d-8855-8e0cba05a570",
+            "3b17b77c-722e-5494-bf1b-63b047269101",
+            "9e469230-ce70-52f2-a404-3b422abe9af5",
+            "ab1198ec-759c-5cfb-bc71-6359cb955950",
+            "999ad3c9-f0d0-5a1c-8da8-384eca17a48d",
+            "975f6edb-657f-5fe8-9a0e-3e4d745cad5e",
+            "1e6d1b60-efb1-5ec1-8b9b-eb9cccb59db1",
+            "511f184d-4bdd-5ddd-afe1-819ac9cab57b",
+            "a3d13ee8-5f05-5d89-b6bc-8b3f9674b362",
+            "c2abe71b-92b2-58cc-9055-71b59e77f8c9",
+            "9c1d0311-1bf5-572a-ad26-a59ad1e6d30b",
+            "83dc8253-5288-5f1f-a2ff-82f12f0465c5"
+          ],
+          "revisions": [
+            "025-r2-0",
+            "025-r2-1",
+            "025-r2-2",
+            "025-r2-3",
+            "025-r2-4",
+            "025-r2-5",
+            "025-r2-6",
+            "025-r2-7",
+            "025-r2-8",
+            "025-r2-9"
+          ],
+          "suffixes": [
+            "v0200",
+            "v0201",
+            "v0202",
+            "v0203",
+            "v0204"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-a"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "7cd95820-427c-50af-8398-18fbfd51fe42",
+            "fcbe9474-db8a-5c99-bace-cb1481af9423",
+            "27a0e189-2a06-5638-b927-5df2790ae052",
+            "66e00b29-d774-5789-a513-f561749d83a0",
+            "91483583-fe6e-5fe0-9660-d1cf6256f8f9",
+            "25bb75d5-bfd9-5573-aca0-20093600d0b6",
+            "06a57ce3-3b4b-5914-9cde-b246c0dc9d6e",
+            "6a4c5491-659b-5335-bc66-060f2976736c",
+            "3dc07bf4-4941-569f-a1ef-8b7ebb3d5c20",
+            "d1c608d4-3f82-5749-b0b7-c2079a956159",
+            "d3b1fd7c-724a-5c7e-81b4-f06d357aa389",
+            "fe2d714b-17a1-5327-aaf7-7d60a3fe5400",
+            "ebb79262-cdc7-5aeb-a8b4-eb55e3db6c12",
+            "bac9aab5-2fb9-5ca4-99a5-f6478e681bf6",
+            "57f89526-ede6-55ec-8c9b-dc2c15b7c56f",
+            "c2cdf154-29c2-507d-909b-753efd912dec",
+            "45107ac0-bd3e-5d62-a9c5-e401e8106d36",
+            "6813619b-2a02-52a6-835e-600d99c861b7",
+            "b6d66d40-d2ed-525c-92ad-e6c7d55efbfa",
+            "9d2a7249-973c-54ad-8a9c-8448ff0050e0",
+            "f3af75e7-9fa8-5912-9cfa-17d138fefb2e",
+            "621c242e-eeda-53d3-9d26-e71469692381",
+            "f405fd2b-ee29-59f2-a608-556611d1a7bb",
+            "1efef173-9e8a-5b08-ac5c-3423a66bdedf",
+            "7fd457a2-ba84-5316-99b2-30829cf49c95",
+            "e1375a87-e5aa-5ee3-ac5e-c94c1ad698ac",
+            "9c92b799-2e8b-503f-8961-330d9026204a",
+            "4e055e9a-9fef-5695-8240-e53ae246ff4e",
+            "a11e6d2e-3e17-597d-8112-13caa387edbf",
+            "5f09e4b4-cb39-559c-be29-4e5945cb664d"
+          ],
+          "revisions": [
+            "025-r3-0",
+            "025-r3-1",
+            "025-r3-2",
+            "025-r3-3",
+            "025-r3-4",
+            "025-r3-5",
+            "025-r3-6",
+            "025-r3-7",
+            "025-r3-8",
+            "025-r3-9"
+          ],
+          "suffixes": [
+            "v0300",
+            "v0301",
+            "v0302",
+            "v0303",
+            "v0304"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-b"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "c7593bfe-6fbf-5432-8d65-caa90c61d7b2",
+            "26cc2d89-2077-5dfc-ba20-129ba0889665",
+            "65e34350-9e3b-56b1-9f13-240a78b6d2e1",
+            "c101c6fa-6076-5181-9065-5d687579522d",
+            "1acc65f9-6aca-5222-a159-f1c49b42b45f",
+            "934a1503-86ed-530e-85ef-be9347cb58ea",
+            "12226e60-abe3-566f-99d2-5af05eb8db76",
+            "7752141f-931f-58a3-bbba-df897f09ec4d",
+            "d6a2ecf6-d499-51b4-8e78-1283e426a90f",
+            "cabadd99-b06e-5c09-8bb4-427cb59e1223",
+            "135b2906-3905-5464-a743-4c3ac0d1ec25",
+            "59d1050f-b669-5863-9653-89e3e8cc347f",
+            "65a305f6-1c5a-5692-b82b-13028c0be92e",
+            "1bba42e4-7e99-5d7d-bb61-0beb92befb03",
+            "8885c852-a0f9-518f-911a-8fa3462ee3ee",
+            "7269ffd8-0fc1-5281-b0f8-1f5d2da08f39",
+            "f3c17941-10c5-5216-9799-899f988d764c",
+            "3ffdd9c9-34d7-5043-9e4a-4f99f71b6dc9",
+            "2878a301-69c1-5f05-a552-e9f9a05fefb9",
+            "2a1ccad0-48aa-5e74-a869-312836dd469a",
+            "ae63e926-729b-5227-aad8-0947c15aabd6",
+            "39f4e588-1eb9-5176-aedd-0f3fdc2d487f",
+            "656b059f-48a7-57a2-943f-8ec4cfcd0549",
+            "a30bb9b3-b058-5e9f-bc40-85623a1563da",
+            "067c8be2-1838-5dbe-bf3b-1fb795586108",
+            "fb4997f7-b7dd-5f98-938b-948c1c53da0e",
+            "5e6da85d-f7ae-5131-9114-ae87376df97c",
+            "59b4391e-0336-5312-9b8b-5136bcfe806d",
+            "b85ebc60-7309-5f12-a2e1-920bdf44b0f1",
+            "0edda540-288c-53af-a7b9-afb6a0edb330"
+          ],
+          "revisions": [
+            "025-r4-0",
+            "025-r4-1",
+            "025-r4-2",
+            "025-r4-3",
+            "025-r4-4",
+            "025-r4-5",
+            "025-r4-6",
+            "025-r4-7",
+            "025-r4-8",
+            "025-r4-9"
+          ],
+          "suffixes": [
+            "v0400",
+            "v0401",
+            "v0402",
+            "v0403",
+            "v0404"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-c"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "e801db4a-520b-54b3-9ff5-f2bde1824cc2",
+            "0b95c38e-e893-5f34-8e79-bb5cc17182dc",
+            "6012f45f-a688-5108-9ae4-df019f0109d2",
+            "8602df01-356a-5b60-8506-4e49e6e467c8",
+            "19036fc9-60c6-50d3-bbce-77751ddc8b1a",
+            "2b9c1dd9-f868-5057-8bfb-d66ce0e7b472",
+            "590b5f46-5d1b-5987-8be8-8b3e97ca467d",
+            "a0912471-5981-5d72-bdf9-2cf5ed904d69",
+            "d38ba280-1eb7-5a3b-850c-8a2c8cc43a3c",
+            "a5dac83c-10da-513e-b508-da718a740c82",
+            "0579c8e3-1a5e-5bdc-a3c9-488ec1830863",
+            "9ce53b22-1d95-5e6a-8307-037ad88a9d3e",
+            "6cece328-a0f3-556f-8d17-534196815969",
+            "fd2eb1c3-d5ab-531e-9785-a3f5ef08511b",
+            "85f41ab4-d21c-5a7a-b186-509b63c120b1",
+            "3b371227-d8cd-54b7-a034-ab57f00cf844",
+            "c2544af8-3a03-5499-ab07-39be742bfb94",
+            "1b2cd76e-4e76-5cea-8121-d19e89c9c1bf",
+            "47a5e64d-2438-5f20-b155-0150bfde2b9c",
+            "844d352c-4b24-5192-b41b-61dcfc0f1cf7",
+            "885542c3-8cf7-5e97-bd2a-ba8ee9bb9803",
+            "9725ddf8-8fc8-5624-95c6-12ba84ac178f",
+            "815375d3-47db-5930-8e88-61e185d4efb9",
+            "48c994c5-17c1-57aa-a360-97fda6ef170b",
+            "93e584c8-d79b-530e-ad77-de9963bc5bd1",
+            "15e3090c-64ff-5d8c-a00b-d5f129ea2286",
+            "e0a141ef-a61c-5d3d-9816-a347bf796846",
+            "3c483ea6-bd52-5a95-93ac-3ba210546ef0",
+            "51e77b0f-94b5-5750-9943-52eab91544c3",
+            "cdcc49c1-28bf-5f1f-9bde-abbf6a059f8b"
+          ],
+          "revisions": [
+            "025-r5-0",
+            "025-r5-1",
+            "025-r5-2",
+            "025-r5-3",
+            "025-r5-4",
+            "025-r5-5",
+            "025-r5-6",
+            "025-r5-7",
+            "025-r5-8",
+            "025-r5-9"
+          ],
+          "suffixes": [
+            "v0500",
+            "v0501",
+            "v0502",
+            "v0503",
+            "v0504"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Conduit",
+              "name": "directory-read"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "112d8be1-246f-5895-b15c-3b82067f9196",
+            "d0dcdbd1-3b3e-5b1f-b00c-fbd21302b9a4",
+            "d02cf2e4-9abf-5ef2-b265-b8ca817228bf",
+            "71f83543-b57a-5358-9a4a-2be6d67182dd",
+            "7cdaf024-2bf6-519f-bcdc-9551e097061b",
+            "69493a6f-0e34-5b59-8916-013c94d2434d",
+            "580d33ca-dc2f-533b-9121-f80e42b46a82",
+            "e14267da-950a-5a23-8173-34014cfc880d",
+            "0de46c03-5612-50f7-9c13-7455b1a37d52",
+            "37873011-3733-5ab6-b1e4-277e331b2b18",
+            "315601cc-9d74-5b11-8ebf-79cf04eeae70",
+            "135f2069-14f5-529e-bd6c-6308d0ec822d",
+            "0ce9caa7-6376-502f-bcfe-ee98619029fe",
+            "552f2bfe-d3b8-5983-9514-01d9510554f0",
+            "7427edb7-4ff8-5661-8e04-563a2c2bd70f",
+            "85ae3e4b-e756-511b-b98e-7206c37eb96f",
+            "e7f2ebf0-802d-535f-94c3-db477dc80399",
+            "b2ee71fe-12bb-55da-9def-b993faf3e96f",
+            "6780353f-45ba-54a4-9e8d-23a0a7eeeee9",
+            "19045925-8aea-599a-b986-6abb88f27ed8",
+            "680dccff-1e27-5321-93ad-dd0cd9f28168",
+            "f11c21f0-ce37-5e34-aaa9-2099ced91bec",
+            "8c076d8a-503f-5cd7-8819-69034354f578",
+            "41cdaa79-2073-56d3-828f-1dfcefb4bc43",
+            "c36dc6cc-5303-56d8-955a-68ca88cde855",
+            "07a1125c-f638-52a7-99ba-6c39625aba15",
+            "61dc6d61-9a3a-5e4a-92a8-36eeb6313d37",
+            "0762418d-6113-5fbb-9d98-2dfc91ae74f9",
+            "e71f09f6-284c-5e29-995b-240fe89462fb",
+            "fcb07192-3b9b-563b-8874-53732f54f04c"
+          ],
+          "revisions": [
+            "025-r6-0",
+            "025-r6-1",
+            "025-r6-2",
+            "025-r6-3",
+            "025-r6-4",
+            "025-r6-5",
+            "025-r6-6",
+            "025-r6-7",
+            "025-r6-8",
+            "025-r6-9"
+          ],
+          "suffixes": [
+            "v0600",
+            "v0601",
+            "v0602",
+            "v0603",
+            "v0604"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.replace.v1",
+          "arguments": {
+            "template": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "kind": "Conduit",
+              "metadata": {
+                "name": "directory-read"
+              },
+              "spec": {
+                "capability": "example.org/s1/filesystem#directory.v1",
+                "operations": [
+                  "example.org/s1/filesystem#file.read.v1",
+                  "example.org/s1/filesystem#directory.list.v1",
+                  "example.org/s1/filesystem#file.write.v1"
+                ]
+              }
+            },
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "packages": {
+                "example.org/s1/filesystem": {
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                },
+                "example.org/s1/history": {
+                  "version": "0.1.0",
+                  "digest": "sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69"
+                },
+                "example.org/s1/agents": {
+                  "version": "0.1.0",
+                  "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
+                }
+              }
+            },
+            "revision": "$rev"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "a9a8b12c-64cf-55ab-83dc-249003b4de42",
+            "35983d02-9d12-5f1e-98b4-5995341a5bff",
+            "572438a1-0dcd-528f-a170-2e06691499fe",
+            "f47fd48d-c116-555c-a087-c35ab85f56c8",
+            "69433fd8-0d30-58a3-967c-1135c7c222ea",
+            "02f7463d-8cad-5b47-a217-87edb02c398b",
+            "2d419c15-a777-570c-8903-4ec580054293",
+            "5f103bee-dbe3-5d73-a164-0235d9950a42",
+            "3737ce6d-90d4-5ab2-9773-89ad18665343",
+            "5bc29a6a-c423-5906-a00e-63f14358fd78",
+            "98a27b42-72e0-50fa-b935-92603b48a18a",
+            "ad469e1d-40d4-5bd2-b4cc-c0a2c54d7926",
+            "31ff1138-8bd1-56f6-a0e4-ed1a7807884a",
+            "5c0d022e-a34e-5d7b-8dff-401e65864bc5",
+            "c277d6a2-e5ae-58f0-be54-0071b4b4be2b",
+            "6b563873-3f6d-56f6-b936-c1b3066efdab",
+            "830e919e-f8b3-558a-8b49-313ca90f44f5",
+            "8774e2e2-a88f-52ca-8f77-e2e77778a34d",
+            "720fcd23-cbe2-556d-8cce-50680d8f5e05",
+            "766486d0-0b0a-5c7f-82bb-391fee5b661a",
+            "49766ce1-0102-5d70-9ac5-508ce1478bba",
+            "90b43e80-f677-567e-ab04-21b3ece1655b",
+            "351d24a3-e11d-58ed-93bb-8f8be986275c",
+            "cecdd187-5c9d-5dac-b282-77c247d7bfba",
+            "3cd84710-a3d4-5f95-8a59-59ed57bae8dc",
+            "e7c97696-79c4-56bb-bc3a-cbfef6c20fd2",
+            "105e35b7-041f-58e2-991c-bf35d54379ac",
+            "b2568a32-c622-5832-96bf-b635ac45dbc1",
+            "130d8fc3-4137-5966-81d4-72b098606b05",
+            "9ac382f6-a2b9-59a3-a38b-69a610eaf9d9"
+          ],
+          "revisions": [
+            "025-r7-0",
+            "025-r7-1",
+            "025-r7-2",
+            "025-r7-3",
+            "025-r7-4",
+            "025-r7-5",
+            "025-r7-6",
+            "025-r7-7",
+            "025-r7-8",
+            "025-r7-9"
+          ],
+          "suffixes": [
+            "v0700",
+            "v0701",
+            "v0702",
+            "v0703",
+            "v0704"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.close.v1",
+          "arguments": {
+            "conduit": "directory-read-a0001"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "4abf861d-5f5d-5e04-9d27-2086d19de1f7",
+            "0f104621-b3a1-53b6-a139-37ccfd4d122e",
+            "d0a9b3f7-4058-5748-a868-adb2870bf2b3",
+            "595bc042-2b50-5494-bd12-8c3703b4098b",
+            "0ff945b6-a4ec-537d-9368-5c3382891941",
+            "5baa547a-6f0b-5953-b993-b6f3b817bfd9",
+            "ef19564a-c041-578a-8ca9-0981d2634dae",
+            "09d7211c-a6a8-5213-be0b-6437b2f7c371",
+            "ef1b67e6-579c-5b99-b8fa-06d0138b9710",
+            "40f028d6-af40-5d43-a8cb-b4b200f0618b",
+            "fbaa8bcf-5941-57f7-b1db-d8e14a5ad944",
+            "311d899d-8927-56f2-a66c-651b6871e911",
+            "a72c249b-163c-5294-9d5e-df91ee18f95a",
+            "03130bbc-4d7d-5e01-b992-5439ad55f4a4",
+            "0c5c047e-32c2-52e5-896d-45b6df7d7f6f",
+            "a0b9b1bb-1437-5f52-bbcb-65f42d5f453c",
+            "ee1d49ac-d2f7-593c-b30c-04a8b1696500",
+            "035871dd-f72d-5e7f-ac59-1daed7d1b4b1",
+            "647b3e17-a56f-5e04-a81b-62d9da80f407",
+            "abf82090-ff0b-5f1e-96b5-9e8dbbdca634",
+            "49dd77e6-a334-5472-93e1-90e7a9a4cd69",
+            "93ab5b35-18a0-5cdf-9502-200089861804",
+            "59dbc8ba-f42d-5611-83e3-ef8509125c69",
+            "4c03f88d-db5b-5971-8dac-9e48982c9aa8",
+            "72a1f0fe-cd0c-5308-8159-243645c53241",
+            "43e7cb09-41ac-5135-ac5a-4b485c0d3464",
+            "67313fa0-d2d2-587b-8421-b476b4dbb3d9",
+            "959df05a-3cca-5634-873b-6b851d022231",
+            "448cb506-5a8c-5614-80c6-78efdb51cfb2",
+            "aa9baef8-8c99-5951-8e58-5988852576c5"
+          ],
+          "revisions": [
+            "025-r8-0",
+            "025-r8-1",
+            "025-r8-2",
+            "025-r8-3",
+            "025-r8-4",
+            "025-r8-5",
+            "025-r8-6",
+            "025-r8-7",
+            "025-r8-8",
+            "025-r8-9"
+          ],
+          "suffixes": [
+            "v0800",
+            "v0801",
+            "v0802",
+            "v0803",
+            "v0804"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register-replacement.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-a"
+            },
+            "nested": "project"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "ef7efc47-bcf4-5ee7-8d21-acd8eb994a84",
+            "f470deff-5428-5b8e-8626-a1993f3cc697",
+            "a922b90f-0590-5655-8603-de40e6b73319",
+            "d642a44c-42c5-5bc3-bf72-d582d0d5c60b",
+            "69eb2e14-1502-54f7-9e0c-570b7fc05b6d",
+            "a4c5e7e6-c344-5d36-b417-6c24021a41a1",
+            "0869f09e-2092-5a33-a29b-755f5b6bab96",
+            "29ae7540-c0a9-5449-bf1f-1891f979c797",
+            "37878d4c-6ae3-59d8-9c88-7b1878aaf885",
+            "7966656c-93cb-5dd2-9733-0f8e011922a2",
+            "d80b7fa1-e88e-5a24-9824-8cc5dcfa0f3e",
+            "73d6669a-1080-5052-af20-063a2503245a",
+            "03ceb5e7-5ef7-51d7-afc0-c8677d5a0281",
+            "585f2d47-706e-51e3-be6b-a95291549554",
+            "bbb4b8ec-2259-5d5f-8e32-909f13dd311a",
+            "5a2e2e57-4d40-55a5-bab3-c5a7198180cd",
+            "85f18ec1-8674-556e-9286-0413a5bc698f",
+            "0aba0661-b9a6-5abb-a92c-124b540c4c4e",
+            "ad464bfa-7efc-5edf-90ce-dc7ad6ccd6fb",
+            "327a0eb8-c06b-53f4-a9f3-eadfaa042f06",
+            "017ee69d-334f-5ead-b352-fdea41433f35",
+            "1bdee608-7bbe-5422-a7f4-23014f074591",
+            "75d189e7-9fd7-54e3-b3f1-afec2a0e0e09",
+            "f272c8c2-83e3-531e-8a42-1de66e88b37e",
+            "c2891b5c-0822-5b7a-a70a-d91c9dfccc59",
+            "50e00488-ce80-55cc-bbd4-b710ec578eee",
+            "eea1ff60-bb43-5448-8888-a44e0880c8b6",
+            "8e3e19c5-3312-556a-be7a-e4619a21846e",
+            "caa8d1c2-1669-5f08-9ac2-a7d0021b7a3b",
+            "0a115f28-efc7-5191-80bb-a63afc7250bb"
+          ],
+          "revisions": [
+            "025-r9-0",
+            "025-r9-1",
+            "025-r9-2",
+            "025-r9-3",
+            "025-r9-4",
+            "025-r9-5",
+            "025-r9-6",
+            "025-r9-7",
+            "025-r9-8",
+            "025-r9-9"
+          ],
+          "suffixes": [
+            "v0900",
+            "v0901",
+            "v0902",
+            "v0903",
+            "v0904"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "$agent-a"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "e029a1d2-be32-5590-b98c-8191503101b3",
+            "85da07cc-432a-52ce-9062-3223664f39e3",
+            "5c58b0de-66ed-5f0d-8f81-dd9f3be509ed",
+            "c69947e0-0c89-5608-8e7a-e860c5b3fe43",
+            "5a871f50-7ed7-5f36-be6c-dec32db16ce3",
+            "635588d5-e2cf-5054-919a-24962db2c2e5",
+            "70626dda-7db6-519a-9122-4614781f8266",
+            "991ce3fe-ed3d-52b3-ae0d-99f60dda5529",
+            "3e5afa90-6bc3-510b-8596-054468f9d069",
+            "f09c926c-45c1-5443-809e-6fbc42d2e7e9",
+            "f32ef982-6b34-5153-92fc-09d23c40c4e9",
+            "bea71600-0b1c-5b7d-ba1b-952d7596ebd0",
+            "4fad81a0-90a1-5895-b1c6-4cab1fb7005f",
+            "86e207fc-0c1f-5948-b32e-0c0d2e3744df",
+            "6ceb7a13-e9af-5d61-809f-af9384d80cde",
+            "95ff37a5-5842-58d2-9388-b183132e55a4",
+            "c59675e3-ea26-51d0-a25b-1d003e25de37",
+            "e011f79e-b652-5b35-8195-6e18e07759e1",
+            "e8fdd8ba-6f6b-5632-b5c8-da8ec8159162",
+            "1d942844-21fc-5917-81e1-e7949ff9e0a4",
+            "8321c2ac-b340-52ad-981a-884489f7e466",
+            "ab76ddfc-b497-5a17-9354-c7770bff3374",
+            "eb916cf6-93a7-536a-89f1-db2914c535ad",
+            "cc235a59-63a5-518e-8b33-73a50778ad6b",
+            "07b92120-1dd3-5fef-91ad-b7a3b8719a06",
+            "e932c531-f1a2-5c73-9f94-277cfcccea5c",
+            "217a36ff-ec48-5557-83e2-cc6f329db4f8",
+            "9b52d981-6497-52b9-8579-e675289ab582",
+            "f4a1cbbf-d44a-5894-871f-99c0f9b0a567",
+            "576d0a5f-9caa-52e7-83b3-d4c90c5681ba"
+          ],
+          "revisions": [
+            "025-r10-0",
+            "025-r10-1",
+            "025-r10-2",
+            "025-r10-3",
+            "025-r10-4",
+            "025-r10-5",
+            "025-r10-6",
+            "025-r10-7",
+            "025-r10-8",
+            "025-r10-9"
+          ],
+          "suffixes": [
+            "v1000",
+            "v1001",
+            "v1002",
+            "v1003",
+            "v1004"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.close.v1",
+          "arguments": {
+            "conduit": "$pathC"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "7fae110b-a76a-59d2-8426-fcd107c6a2d7",
+            "60c49b4b-c4b6-5ae5-9147-3f82e2cb5096",
+            "6c50ac13-6274-51fa-b939-a15baa27e800",
+            "d071da52-cfd7-5a7c-a74f-4b6a87aff846",
+            "1fb780e6-1fbe-5775-a29a-7e7cb31efd12",
+            "c66734f1-6748-5b81-a68d-f3a42ac19fb0",
+            "3fd94b63-d966-5a7f-9f1d-4e24652a352e",
+            "7adc36a3-5ef4-563a-8b5a-d297afd60dd8",
+            "c1a4728e-a2fc-569d-bae4-3d663a44ec2c",
+            "0b113a3f-ffc9-5b95-bd25-4b9bf921c8b7",
+            "214eac6f-9d78-5700-ba20-d3a5301c675f",
+            "8fb8416b-66dc-56ff-b495-0e11e06675f8",
+            "8b184b03-04d6-592e-8705-a908be8a35b8",
+            "093a7aa9-65c2-52ba-971a-76e0cd66f5dc",
+            "e86fdf9d-1fed-576d-bf4c-34493ae422c1",
+            "2c18a596-8a73-5dee-87a1-694ce47f61a4",
+            "c65b1f7f-0032-5f61-a240-1841e727b444",
+            "8dcdad8e-8fc1-5178-9f17-294e1a3973c6",
+            "339aa08b-76c1-5207-8ab2-2362c36c36f9",
+            "79bc9b90-f3f6-556f-a5f0-a84710f130d1",
+            "3807169f-a92f-5d16-861a-7110992ef3f9",
+            "d22a081d-ff14-5d63-8c04-90d17250188a",
+            "fb4f7d84-26ae-5203-b8a2-3fc9c4a57300",
+            "9a2c96c2-743a-5398-be10-1f6abec3cdbe",
+            "992c7549-84da-5369-a8b3-0d2de8e057af",
+            "b7dfeadf-3b0d-5f34-933b-e43f339876d1",
+            "872ef612-9d0c-541d-9f25-38da639ecdbe",
+            "75005754-6002-5629-81f3-83f4cb7f41f6",
+            "68bced22-59cd-5353-8ee9-69048b1c61cf",
+            "06116251-4234-5ea5-9ad6-6cfc6701cfdd"
+          ],
+          "revisions": [
+            "025-r11-0",
+            "025-r11-1",
+            "025-r11-2",
+            "025-r11-3",
+            "025-r11-4",
+            "025-r11-5",
+            "025-r11-6",
+            "025-r11-7",
+            "025-r11-8",
+            "025-r11-9"
+          ],
+          "suffixes": [
+            "v1100",
+            "v1101",
+            "v1102",
+            "v1103",
+            "v1104"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register-replacement.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-c"
+            },
+            "nested": "project"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "e32f7f0f-0b05-56a8-82e9-c6db83fc883e",
+            "801e9de6-ee55-56dc-ac65-ff3c42a8e34b",
+            "5d988fff-14ab-5c16-af49-43c152a68a1e",
+            "036f601d-3fa9-5f94-ace3-9eb55750e2ba",
+            "72f64ca3-24f0-50c6-a770-8fd17f84819b",
+            "5316b71f-6586-5431-a084-fb73f26a59f2",
+            "444ba9be-0f2f-586d-b1ef-9cb383180d77",
+            "fed4beb8-1afc-5e68-aa0b-6103b3b8dc3f",
+            "0d7dcd07-60f0-5622-b7d6-670cd51704d0",
+            "605cd051-04ed-5a8f-87e2-617308be23c7",
+            "f4322abc-d986-582f-bb36-422c940a4446",
+            "44733074-4b25-5f4a-8109-4cbd29c2949c",
+            "e161647f-fe3c-5496-b44c-33f98d9389a6",
+            "e241cd1c-8416-5a86-b01d-7a9ec5c694b3",
+            "f2736d03-0506-5975-988f-20d70faad3eb",
+            "4d28b3ca-d799-5a02-87a5-ef6dca9634f7",
+            "120763f7-ed6f-5e13-90dc-abe182f634e7",
+            "e479cbc5-978f-50a0-a708-dbffc6244cc0",
+            "8b1455e5-04ff-5a82-b486-dc753a7f5321",
+            "03aaa502-bc5c-55f3-94ad-d827f28337df",
+            "1d87c735-1d1e-5ea2-a641-427c6e557e8d",
+            "57d9588e-262b-59cc-9e83-3d3df9b6848d",
+            "fabb118d-9494-55db-9acb-518264968198",
+            "7c158c96-0a7d-5b2d-920e-1de615bafa52",
+            "e43cd0a0-e598-5e4f-ab68-8e86e8a6a370",
+            "ced802ab-04a5-5eee-a872-eaec3b420feb",
+            "dbf55ab4-0a36-5e0b-a667-401c8e7dfbf3",
+            "47d626b7-3851-50c9-9262-01c07292be9e",
+            "eef39a41-5c4f-5219-b2ba-3903f4c14120",
+            "ab64a013-c54c-556c-8d52-4fb6c2fbc6dc"
+          ],
+          "revisions": [
+            "025-r12-0",
+            "025-r12-1",
+            "025-r12-2",
+            "025-r12-3",
+            "025-r12-4",
+            "025-r12-5",
+            "025-r12-6",
+            "025-r12-7",
+            "025-r12-8",
+            "025-r12-9"
+          ],
+          "suffixes": [
+            "v1200",
+            "v1201",
+            "v1202",
+            "v1203",
+            "v1204"
+          ]
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "$agent-c"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-10T12:00:00Z",
+          "ids": [
+            "3d2b6db8-a5ae-5d49-824c-9f83119fe666",
+            "cd0ebfdd-8408-56f3-9ca1-150e705b28b7",
+            "1bdd97a9-b33b-51d2-9ff9-3543f41d69d8",
+            "b9c668e4-79a0-582c-acbe-22fb4433a014",
+            "80efc252-9c77-598b-b4fe-2c12ae8b101f",
+            "e6c3ccea-62dd-5b91-ba82-f7080f00a1ea",
+            "d77638aa-3855-5b29-855a-0029f2a073de",
+            "1fcab1d8-2e9b-5054-a1a7-64933d659f0c",
+            "c149079d-77ea-5ecd-8e46-b15a467ac582",
+            "063f6302-7e10-5842-a756-8795544d4390",
+            "052e7eaa-2796-5b87-9b48-3da995db7899",
+            "8e6081b7-d283-54b9-b00f-3b7becafcee9",
+            "d1dd47df-1d21-5e06-9076-cd57ed6e73d0",
+            "34cac6bf-ce12-5548-86b9-c7ea206fe329",
+            "dcc983ee-dada-505b-8ee2-d6b8fcbdb567",
+            "ed7e8396-5ee8-565d-a975-75379d1da46f",
+            "0fed883a-5055-5fc8-af9b-d618a26831eb",
+            "43b39c33-f1a7-5f34-8227-fccb89bf041c",
+            "90d2fcad-1dbd-579b-8d6b-46240df87995",
+            "91822fc8-43a8-5f8d-8e49-5a03ec6e76ad",
+            "c152be56-fdeb-5c01-b7a5-ec688fd440cc",
+            "7c3d466e-f4fb-54a9-a189-eb083576f16d",
+            "6eeab0c9-b7d3-5b0b-97ce-0322154ff2bf",
+            "1cbec5a5-5a32-552f-9617-93685c69bb36",
+            "7a9aadb0-4da9-5dc5-bb8a-785343125d76",
+            "eb601676-9633-58ae-b34d-db93d7dc2c5f",
+            "e9be7e7c-df86-515c-9e7a-894f822e70cb",
+            "22bfdc6b-127e-5abc-816f-a8ebf837a670",
+            "716c5324-ae1c-5440-b13c-09a14322b771",
+            "290aca00-ae37-55d2-855a-3f7bdceadad3"
+          ],
+          "revisions": [
+            "025-r13-0",
+            "025-r13-1",
+            "025-r13-2",
+            "025-r13-3",
+            "025-r13-4",
+            "025-r13-5",
+            "025-r13-6",
+            "025-r13-7",
+            "025-r13-8",
+            "025-r13-9"
+          ],
+          "suffixes": [
+            "v1300",
+            "v1301",
+            "v1302",
+            "v1303",
+            "v1304"
+          ]
+        }
+      }
+    }
+  ]
+}

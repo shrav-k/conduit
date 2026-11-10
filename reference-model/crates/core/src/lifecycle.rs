@@ -16,6 +16,9 @@ pub enum Report {
         #[serde(default)]
         url: Option<String>,
     },
+    Stop {
+        outcome: String,
+    },
     Connected {
         part: String,
         outcome: String,
@@ -23,6 +26,8 @@ pub enum Report {
 }
 pub(crate) fn handles(op: &str, c: &Context) -> bool {
     [
+        "retire.v1",
+        "unregister.v1",
         "set-up.v1",
         "open.v1",
         "close.v1",
@@ -32,7 +37,9 @@ pub(crate) fn handles(op: &str, c: &Context) -> bool {
     .any(|n| op == c.qualified(n))
 }
 fn named<'a>(s: &'a State, route: &Value, c: &Context) -> Option<&'a Value> {
-    let key = if route["operation"] == c.qualified("open.v1")
+    let key = if route["operation"] == c.qualified("unregister.v1") {
+        "object"
+    } else if route["operation"] == c.qualified("open.v1")
         || route["operation"] == c.qualified("close.v1")
     {
         "conduit"
@@ -112,6 +119,14 @@ pub(crate) fn preflight(
             )));
         }
     }
+    if retire || op == c.qualified("unregister.v1") {
+        if let Some(reason) = crate::retirement::preflight(s, o, !retire) {
+            return Ok(Some(reason));
+        }
+        if !retire && o["revision"] != route["arguments"]["revision"] {
+            return Ok(Some(("conflict", "REV-002")));
+        }
+    }
     if s.invocations
         .iter()
         .any(|v| v["state"] == "in-progress" && v["object"] == o["id"] && v["management"] == true)
@@ -159,6 +174,9 @@ pub(crate) fn execute(
     t.state.invocations[i]["object"] = o["id"].clone();
     t.state.invocations[i]["management"] = json!(true);
     let op = v["operation"].as_str().unwrap();
+    if op == c.qualified("retire.v1") || op == c.qualified("unregister.v1") {
+        return crate::retirement::execute(t, a, c, i, &o);
+    }
     if op == c.qualified("open.v1") {
         if o["open"] != true {
             let object = t
@@ -682,7 +700,7 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
     }
     Ok(())
 }
-fn emit(
+pub(crate) fn emit(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
@@ -749,6 +767,22 @@ fn bindings(config: &Value, bindings: &Value) -> Result<Value> {
     }
     Ok(values)
 }
+pub(crate) fn run_inputs(o: &Value, v: &Value, c: &Context) -> Result<Value> {
+    let item = &v["setup"]["item"]["item"];
+    let environment = bindings(&o["config"], &item["environment"])?;
+    let arguments = bindings(&o["config"], &item["packageArguments"])?;
+    let run_schema = &c
+        .core_environment
+        .scopes
+        .values()
+        .flat_map(|s| s.contracts.values())
+        .find(|d| d["kind"] == "Operation" && d["metadata"]["name"] == "run.v1")
+        .ok_or("missing run contract")?["spec"]["inputSchema"]["properties"]["identity"];
+    let identity = json!({"materializeFor":v["object"],"environmentNames":run_schema["properties"]["environment"]["required"],"fileNames":run_schema["properties"]["files"]["required"]});
+    Ok(
+        json!({"item":item,"environment":environment,"packageArguments":arguments,"identity":identity}),
+    )
+}
 pub(crate) fn report(
     t: &mut Transition,
     evidence: &Evidence,
@@ -777,12 +811,16 @@ pub(crate) fn report(
         evidence,
         cursor: 0,
     };
+    if v.get("retirement").is_some() {
+        return crate::retirement::report(t, &mut a, c, i, report);
+    }
     let phase = v["setup"]["run_phase"].as_str().unwrap_or("ended");
     let report_facts = match &report {
         Report::InspectRun { state } => {
             json!({"operation":c.qualified("inspect-run.v1"),"runState":state})
         }
         Report::Run { outcome, .. } => json!({"operation":c.qualified("run.v1"),"outcome":outcome}),
+        Report::Stop { .. } => return Err("stop report for setup".into()),
         Report::Connected { part, outcome } => json!({"part":part,"outcome":outcome}),
     };
     if (phase == "inspect-run" && matches!(&report, Report::InspectRun { .. })
@@ -902,26 +940,9 @@ pub(crate) fn report(
                     }
                     return Ok(());
                 }
-                let item = &v["setup"]["item"]["item"];
-                let environment = bindings(&o["config"], &item["environment"])?;
-                let arguments = bindings(&o["config"], &item["packageArguments"])?;
-                let run_schema = &c
-                    .core_environment
-                    .scopes
-                    .values()
-                    .flat_map(|s| s.contracts.values())
-                    .find(|d| d["kind"] == "Operation" && d["metadata"]["name"] == "run.v1")
-                    .ok_or("missing run contract")?["spec"]["inputSchema"]["properties"]["identity"];
-                let identity = json!({"materializeFor":v["object"],"environmentNames":run_schema["properties"]["environment"]["required"],"fileNames":run_schema["properties"]["files"]["required"]});
+                let extra = run_inputs(o, &v, c)?;
                 t.state.invocations[i]["setup"]["run_phase"] = json!("run");
-                emit(
-                    t,
-                    &mut a,
-                    c,
-                    i,
-                    "run.v1",
-                    json!({"item":item,"environment":environment,"packageArguments":arguments,"identity":identity}),
-                )?;
+                emit(t, &mut a, c, i, "run.v1", extra)?;
                 return Ok(());
             }
             part(
@@ -1002,6 +1023,12 @@ pub(crate) fn child_answered(
     if t.state.invocations[i]["state"] != "in-progress" {
         return Ok(());
     }
+    if t.state.invocations[i].get("retirement").is_some() {
+        if t.state.invocations[i]["retirement"]["phase"] == "hook" {
+            return crate::retirement::hook_ended(t, a, c, i, outcome);
+        }
+        return Ok(());
+    }
     let phase = t.state.invocations[i]["setup"]["phase"]
         .as_str()
         .unwrap_or("")
@@ -1041,6 +1068,9 @@ pub(crate) fn cancel(
     c: &Context,
     i: usize,
 ) -> Result<()> {
+    if t.state.invocations[i].get("retirement").is_some() {
+        return crate::retirement::cancel(t, a, c, i);
+    }
     let v = t.state.invocations[i].clone();
     t.state.invocations[i]["cancelled"] = json!(true);
     let children: Vec<_> = t

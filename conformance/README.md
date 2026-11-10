@@ -340,6 +340,11 @@ object to represent an unregistered template. `@core#` also expands in fixture m
 Assertions `object_count` and `absent_objects` check exact cardinality and removal;
 `object_facts` and `invocation_facts` select objects by ID (or instance name) and compare
 required fields. `record_facts` requires matching records in the stated causal order.
+`stored_record_facts` applies that assertion to all records in the resulting state, including
+earlier transitions, so a removal case can prove that earlier records remain.
+A lifecycle fixture may name `archive_file`, an alias in its case's `files`; the runner supplies
+those compressed bytes as the call's archive completion, so public-install cases share the retained
+archive instead of embedding a second copy.
 These supplement the existing exact arrays and promise checks. The base case checks both
 open invocations' sender, original caller and parent links, stable nested IDs and revisions;
 the close case checks the exact remaining private tool list. For a development subset,

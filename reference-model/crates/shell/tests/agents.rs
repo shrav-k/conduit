@@ -335,6 +335,37 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
                 .as_str()
                 .is_some_and(|s| s.ends_with("#turn.v1"))
     }));
+    // Public retirement ends the actual scripted Agent wrapper, leaving the
+    // other Agent and the two filesystem runs available.
+    let retired = id(&shell, "agent-a");
+    let reply = cli(
+        store,
+        "call",
+        &[
+            "management.retire.v1",
+            r#"{"instance":{"kind":"Agent","name":"agent-a"}}"#,
+        ],
+    );
+    assert_eq!(reply["isError"], false, "{reply}");
+    assert_eq!(runner.running_count(), 3);
+    assert!(
+        !shell
+            .state()
+            .unwrap()
+            .objects
+            .iter()
+            .any(|o| o["id"] == retired)
+    );
+    assert!(
+        shell
+            .state()
+            .unwrap()
+            .records
+            .iter()
+            .any(|r| r["type"] == "object-change"
+                && r["data"]["target"] == retired
+                && r["data"]["action"] == "removed")
+    );
     shutdown.cancel();
     runtime.block_on(task).unwrap().unwrap();
     drop(completion);

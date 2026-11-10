@@ -1166,3 +1166,70 @@ async fn custom_controls_are_unfinished_for_consumers_and_management() {
     stop.cancel();
     task.await.unwrap().unwrap();
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn retired_agent_consumer_stream_ends_and_other_consumer_remains() {
+    use futures_util::StreamExt;
+    for revision in ["2025-06-18", "2025-11-25"] {
+        let temp = temporary();
+        let shell = Arc::new(fixed_shell(temp.path()));
+        let a = token(&shell, "agent-a");
+        let b = token(&shell, "agent-b");
+        let executor = Arc::new(ServingExecutor::new(Arc::new(MissingExecutor)));
+        let stop = CancellationToken::new();
+        let task = tokio::spawn(server::serve(shell.clone(), executor.clone(), stop.clone()));
+        ready(&shell.config.engine_url).await;
+        let session = raw_session(&shell.config.engine_url, &a, revision)
+            .await
+            .unwrap();
+        let http = reqwest::Client::new();
+        let response = http
+            .get(&shell.config.engine_url)
+            .bearer_auth(&a)
+            .header("accept", "text/event-stream")
+            .header("mcp-session-id", &session)
+            .header("mcp-protocol-version", revision)
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), 200);
+        let mut stream = response.bytes_stream();
+        stream.next().await.unwrap().unwrap();
+        let modern_client = modern(&shell.config.engine_url, &a).await;
+        let mut subscription = modern_client
+            .listen(
+                SubscriptionFilterBuilder::default()
+                    .tools_list_changed()
+                    .build(),
+            )
+            .await
+            .unwrap();
+        modern_client.list_tools(None).await.unwrap();
+        let other = connect(&shell.config.engine_url, &b, Arc::default()).await;
+        let list = other.list_tools(None).await.unwrap().tools;
+        let root = actor(&shell, "root");
+        let reply=shell.submit(json!({"kind":"invoke","request":{"identity":instance_value(&root),"tool":"management.retire.v1","arguments":{"instance":{"kind":"Agent","name":"agent-a"}}}}),executor.as_ref()).unwrap();
+        assert_eq!(reply["isError"], false, "{reply}");
+        tokio::time::timeout(Duration::from_secs(30), async {
+            while let Some(chunk) = stream.next().await {
+                chunk.unwrap();
+            }
+        })
+        .await
+        .unwrap();
+        tokio::time::timeout(Duration::from_secs(30), async {
+            while subscription.next().await.unwrap().is_some() {}
+        })
+        .await
+        .unwrap();
+        modern_client.cancel().await.unwrap();
+        assert_eq!(other.list_tools(None).await.unwrap().tools, list);
+        assert!(matches!(
+            shell.verify_token(Some(&a)).unwrap(),
+            conduit_core::access::Identity::Unreadable
+        ));
+        other.cancel().await.unwrap();
+        stop.cancel();
+        task.await.unwrap().unwrap();
+    }
+}

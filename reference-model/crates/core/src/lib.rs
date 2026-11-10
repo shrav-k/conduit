@@ -9,6 +9,7 @@ pub mod packages;
 pub mod records;
 pub mod registration;
 pub mod requests;
+mod retirement;
 pub mod schemas;
 
 use serde::{Deserialize, Serialize};
@@ -88,6 +89,8 @@ pub enum Input {
         request: access::AccessRequest,
         #[serde(default)]
         key: Option<String>,
+        #[serde(default)]
+        archive: Option<archives::ArchiveInput>,
     },
     Complete {
         evidence: Evidence,
@@ -277,7 +280,21 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
             evidence,
             request,
             key,
-        } => requests::invoke(&mut transition, &evidence, &request, key, context)?,
+            archive,
+        } => {
+            if archive.is_some() {
+                requests::invoke_archive(
+                    &mut transition,
+                    &evidence,
+                    &request,
+                    key,
+                    archive,
+                    context,
+                )?;
+            } else {
+                requests::invoke(&mut transition, &evidence, &request, key, context)?;
+            }
+        }
         Input::Complete {
             evidence,
             invocation,

@@ -546,3 +546,37 @@ running as one operating-system user. Codex still reads its home's `AGENTS.md` (
 Account-service refusal, incoming peer-message refusal, reach inputs set true, Codex's own
 tool list and independent proof of conversation continuity were not shown. Those limits
 carry forward to increment 4; the closeout did not pass them by inference from flags.
+
+## Change a serving project
+
+These commands are requests of `conduit serve`, as the root Interface. Keep it running in
+another terminal. `register` remains the command for first registration; `submit` adds a
+project to the serving store and explicitly opens its new root Conduits and sets up its new
+instances. Each request prints one JSON result line, including revision inspections.
+
+```sh
+reference-model/target/release/conduit install --store /tmp/conduit-live-store \
+  conformance/fixtures/s1/archives/filesystem-0.2.0.tar.gz#cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436
+reference-model/target/release/conduit submit --store /tmp/conduit-live-store /absolute/new-project
+reference-model/target/release/conduit replace --store /tmp/conduit-live-store \
+  /absolute/edited-project Conduit/directory-read
+reference-model/target/release/conduit retire --store /tmp/conduit-live-store Resource/old-directory
+reference-model/target/release/conduit unregister --store /tmp/conduit-live-store Resource/old-template
+```
+
+`install` reads the archive's manifest for its address/version, verifies the supplied digest,
+and requests public `install.v1` with an absolute file URL. Filesystem 0.2.0 runs npm server
+2.2.0 and still exposes only its three contracted operations. Its
+[fixture README](../conformance/fixtures/s1/README.md) gives the measured pins and rebuild
+command. Existing instances keep the versions they resolved; history keeps 0.1.0.
+
+`replace` reads the selected template from the directory and submits it with that project's
+manifest/contracts at its inspected revision. To apply a changed declared Conduit to an
+existing consumer, explicitly close its old nested Conduit, request `register-replacement.v1`
+and open the new Conduit (or set up the consumer), using `call`. The local tool names stay the
+same. Other holders keep their old definitions until their own replacement.
+
+`retire` closes target Conduits at once and stops the run; successful shutdown removes the
+instance automatically. `unregister` removes templates and retired instances whose shutdown
+is still unconfirmed, at their current revision. It reports conflict for a live instance.
+Both preserve records. A missing serving engine makes every command above exit nonzero.

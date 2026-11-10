@@ -114,3 +114,21 @@ in `reference-model/`, `cargo test --release`, `cargo clippy --all-targets -- -D
 `cargo fmt --check` and `CONDUIT_TEST_NPM=1 cargo test --release` pass. Running the npm tests is
 part of this order's network grant. Check the files you create for trailing white space
 yourself; do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 61 minutes, then a fresh verifier in 5, which found four
+defects and one weak test: unregistering a template asked for a stop meant for instances; a
+further retirement could start a run for a hook that is not dispatched again (TPL-018); a
+retirement on a lost node dropped its unfinished hook (PLC-027); `conduit submit` dropped the
+project directory, so relative fetches and programs could not get SUB-010's semantics; and T4's
+notice assertions passed with no notice sent. The admin settled each, the fourth by having
+`submit` refuse relative values until the specification decides how `register.v1` carries a
+directory (finding 4-03). The worker's second round took 40 minutes. A second fresh verifier
+found three more faults on retire hooks: a run prepared before choosing the hook's own
+implementation, a successful hook run left out of the retirement's parts, and an unknown run
+state recorded as an effectful part instead of the hook's part unavailable (TPL-018, OPS-022).
+None is on S1's path, which declares no retire hook; the admin merged with them logged as
+finding 4-04, for a follow-up order. The admin reran every check: 147 tests with
+`CONDUIT_TEST_NPM=1`, clippy, fmt and the five repository checks pass. The worker also reported
+an existing runner test that can read a PID file before it is written (finding 4-05).

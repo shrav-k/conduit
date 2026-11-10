@@ -1,4 +1,5 @@
 //! Durable boundary for the pure core, with an optional owned stdio runner.
+pub mod author;
 pub mod boundary;
 mod identity;
 pub mod runner;
@@ -143,6 +144,7 @@ struct Committed {
 }
 
 pub struct Shell {
+    directory: std::path::PathBuf,
     pub(crate) run_groups: Mutex<Vec<Arc<runner::ProcessGroup>>>,
     writer: Mutex<Writer>,
     authority: identity::Authority,
@@ -191,6 +193,7 @@ impl Shell {
         }
         let authority = identity::Authority::open(&store)?;
         let shell = Self {
+            directory: store.directory.clone(),
             run_groups: Mutex::new(Vec::new()),
             writer: Mutex::new(Writer {
                 store,
@@ -335,7 +338,40 @@ impl Shell {
             let parsed: Input = serde_json::from_value(input.clone())
                 .map_err(|e| format!("embedding input: {e}"))?;
             match conduit_core::step(state, parsed, &self.context) {
-                Ok(t) => return Ok(t),
+                Ok(t) => {
+                    if kind == "invoke"
+                        && input.get("archive").is_none()
+                        && t.decisions
+                            .iter()
+                            .any(|d| d.action == "archive-unavailable")
+                    {
+                        let args = &input["request"]["arguments"];
+                        let path = url::Url::parse(args["fetch"].as_str().ok_or("missing fetch")?)
+                            .map_err(|e| e.to_string())?
+                            .to_file_path()
+                            .map_err(|_| "invalid file URL")?;
+                        let completion = match std::fs::read(&path) {
+                            Ok(bytes) => json!({"status":"complete","bytes":bytes}),
+                            Err(_) => json!({"status":"unavailable"}),
+                        };
+                        let directory = url::Url::from_directory_path(
+                            self.directory.join("archive-catalog").join(
+                                args["digest"]
+                                    .as_str()
+                                    .unwrap_or("")
+                                    .trim_start_matches("sha256:"),
+                            ),
+                        )
+                        .map_err(|_| "invalid archive directory")?
+                        .to_string();
+                        input["archive"] = json!({"name":path.to_string_lossy(),"address":args["address"],"version":args["version"],"digest":args["digest"],"directory":directory,"completion":completion});
+                        let parsed = serde_json::from_value(input.clone())
+                            .map_err(|e| format!("embedding input: {e}"))?;
+                        return conduit_core::step(state, parsed, &self.context)
+                            .map_err(|e| format!("embedding error: {e}"));
+                    }
+                    return Ok(t);
+                }
                 Err(e) if e.starts_with("exhausted ") && supply == 256 => continue,
                 Err(e) => return Err(format!("embedding error: {e}")),
             }
@@ -469,8 +505,15 @@ impl Shell {
             None
         };
         self.retention(&writer, &mut stored)?;
-        let notifications =
+        let mut notifications =
             conduit_core::access::tool_list_changes(&before, &t.state, &self.context)?;
+        for o in before.objects.iter().filter(|o| {
+            o.get("spec").is_none() && (o["kind"] == "Agent" || o["kind"] == "Interface")
+        }) {
+            if !t.state.objects.iter().any(|n| n["id"] == o["id"]) {
+                notifications.push(json!({"consumer":o["id"],"method":"consumer-ended"}));
+            }
+        }
         Ok(Committed {
             ticket: Ticket { invocation, cell },
             intents: t.external_intents,
@@ -565,6 +608,11 @@ fn missing(intent: &Value, context: &Context) -> Result<Execution> {
             if intent["operation"] == format!("{}#run.v1", context.core_package) =>
         {
             Execution::SetupReport(json!({"kind":"run","outcome":"failed"}))
+        }
+        Some("builtin-runner" | "provider-call")
+            if intent["operation"] == format!("{}#stop.v1", context.core_package) =>
+        {
+            Execution::SetupReport(json!({"kind":"stop","outcome":"unknown"}))
         }
         Some("cancel" | "cancel-setup-parts") => Execution::Done,
         _ => return Err("embedding error: no missing-executor report for intent".into()),

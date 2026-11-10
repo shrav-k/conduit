@@ -923,6 +923,9 @@
                 "items": {
                   "type": "object"
                 }
+              },
+              "stored_record_facts": {
+                "type": "array"
               }
             },
             "required": []

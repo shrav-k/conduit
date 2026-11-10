@@ -1,0 +1,46 @@
+{
+  "id": "archives-wrong-address",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-017",
+    "PKG-023"
+  ],
+  "title": "Archive installation: wrong-address",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/wrong-address.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "PKG-017"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-017",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "history.tar.gz",
+  "address": "example.org/s1/history",
+  "version": "0.1.0",
+  "digest": "sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69",
+  "directory": null,
+  "completion": {
+    "status": "complete",
+    "file": "history-a"
+  }
+}

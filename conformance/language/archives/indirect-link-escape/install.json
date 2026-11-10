@@ -1,0 +1,11 @@
+{
+  "name": "filesystem.tar.gz",
+  "address": "example.org/s1/filesystem",
+  "version": "0.1.0",
+  "digest": "sha256:7e7990bdb9ffef2d3b0555b22ce250de287652d626476f004293c0b347bd42b2",
+  "directory": null,
+  "completion": {
+    "status": "complete",
+    "file": "archive"
+  }
+}

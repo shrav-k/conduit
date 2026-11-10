@@ -1,0 +1,46 @@
+{
+  "id": "archives-instance",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "MAN-011",
+    "PKG-023"
+  ],
+  "title": "Archive installation: instance",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/instance.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-011"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "MAN-011",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

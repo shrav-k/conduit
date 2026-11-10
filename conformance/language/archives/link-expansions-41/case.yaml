@@ -1,0 +1,48 @@
+{
+  "id": "archives-link-expansions-41",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-022",
+    "MAN-013",
+    "MAN-011",
+    "PKG-023"
+  ],
+  "title": "Archive installation: link-expansions-41",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/link-expansions-41.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "PKG-022"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-022",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

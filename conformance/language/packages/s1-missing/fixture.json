@@ -36,9 +36,9 @@
   },
   "artifacts": [
     {
-      "file": "npm-artifact",
       "address": "example.org/s1/filesystem",
-      "implementation": "filesystem-server"
+      "implementation": "filesystem-server",
+      "sha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df"
     }
   ]
 }

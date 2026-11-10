@@ -1,0 +1,46 @@
+{
+  "id": "archives-invalid-document",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "SUB-005",
+    "PKG-023"
+  ],
+  "title": "Archive installation: invalid-document",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/invalid-document.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SUB-005"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "SUB-005",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

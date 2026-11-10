@@ -2,6 +2,7 @@
 //! The caller supplies the built-in templates, names, time, machine evidence and unique IDs.
 //! Unsupported cases and broken embedding inputs are errors, never Conduit reasons.
 
+pub mod archives;
 pub mod packages;
 pub mod registration;
 pub mod schemas;
@@ -27,6 +28,8 @@ pub struct State {
     pub objects: Vec<Value>,
     pub records: Vec<Value>,
     pub allocated_ids: BTreeSet<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub installed_packages: Vec<archives::InstalledPackage>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -63,6 +66,11 @@ pub struct Request {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
+    InstallArchive {
+        archive: archives::ArchiveInput,
+        snapshots: Vec<packages::Snapshot>,
+        builtin: packages::Project,
+    },
     RegisterProject {
         snapshots: Vec<packages::Snapshot>,
         builtin: packages::Project,
@@ -197,6 +205,13 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
     };
     match input {
+        Input::InstallArchive {
+            archive,
+            snapshots,
+            builtin,
+        } => {
+            archives::install(&mut transition, archive, snapshots, builtin, context)?;
+        }
         Input::RegisterProject {
             snapshots,
             builtin,
@@ -206,7 +221,7 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         } => {
             registration::register(
                 &mut transition,
-                snapshots,
+                packages::catalog_entries(state, snapshots),
                 builtin,
                 project,
                 &evidence,
@@ -219,8 +234,12 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
             builtin,
             project,
         } => {
-            let resolution = packages::Catalog::new(builtin, snapshots, &context.core_package)?
-                .resolve(&project)?;
+            let resolution = packages::Catalog::new(
+                builtin,
+                packages::catalog_entries(state, snapshots),
+                &context.core_package,
+            )?
+            .resolve(&project)?;
             transition.reply = resolution.reply;
             transition.decisions = resolution.decisions;
         }

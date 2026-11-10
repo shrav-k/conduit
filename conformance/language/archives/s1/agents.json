@@ -1,0 +1,11 @@
+{
+  "name": "agents.tar.gz",
+  "address": "example.org/s1/agents",
+  "version": "0.1.0",
+  "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a",
+  "directory": null,
+  "completion": {
+    "status": "complete",
+    "file": "agents-a"
+  }
+}

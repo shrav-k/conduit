@@ -16,9 +16,9 @@ the review's BOM, pattern-token and artifact-pin amendments have cases too. The 
 case checks a document and claims no execution or dependency-graph verification.
 
 The [profile](profiles/first-build.yaml) states the admin's implementation choices. It also
-lists which choices this order implements and which belong to later orders. No package is
-installed by this suite. Future package fixtures must distinguish preinstalled snapshots from
-archive-install inputs with real bytes and hashes.
+lists which choices this order implements and which belong to later orders. The suite distinguishes preinstalled snapshots from
+archive-install inputs with real bytes, expected hashes and fetching completions. Archive
+installation implements DL7 in the profile.
 
 ## Inputs and files
 
@@ -163,8 +163,9 @@ names to aliases in the case's `files`, and can supply an absolute `file:` direc
 Each snapshot states `source: preinstalled-snapshot`, address, version, digest and a project
 recipe. An optional `archive` alias supplies retained digest evidence: the runner hashes those
 bytes but neither unpacks nor installs them. This is not evidence for PKG-022 or PKG-026.
-Optional `artifacts` entries name a file alias, snapshot address and implementation item; the
-runner checks its bytes against that item's Package `fileSha256`.
+Optional `artifacts` entries name a recorded `sha256`, snapshot address and implementation
+item; the runner compares that recorded value with the item's Package `fileSha256`. No
+third-party artifact bytes are retained or fetched.
 
 The core owns its catalog's snapshots and exposes no mutation interface. It checks the pins
 of every manifest, preserving each package's own dependency context, export visibility,
@@ -218,3 +219,36 @@ Input-supplied operations and explicit runtime selection have accepted and rejec
 including a wrong-family runtime rejected by the document schema. The three S1 cases assert
 every Conduit's endpoints, capability and exact operations, selected filesystem implementations
 and exact retained package identities.
+
+## Archive installation inputs
+
+I2-03's second part adds `install-archive`, naming an ordinary runner recipe. It supplies the
+archive's `name`, requested `address`, `version`, expected `digest`, optional absolute directory
+URL, and `completion`. A complete fetching result is `{status: complete, file: <archive alias>}`;
+the runner reads that alias and supplies the exact compressed bytes to the core. An unavailable
+result is `{status: unavailable}`. The boundary supplies the built-in schemas; the core
+constructs the strict loader in memory. No package source or provider is invoked.
+
+The core verifies PKG-004/026 before decompressing. It unpacks the profile's USTAR dialect
+in memory, checks all member paths and link targets, selects root documents under MAN-011,
+and uses the loader's pure project reader. Root manifest placement, requested address/version,
+instance prohibition, exports, dependencies and all existing package-resolution checks must
+pass before the package is published. Failures report PKG-023's invalid reason and preserve
+the installed catalog. An unavailable completion reports PKG-024; an existing address/version
+is decided without inspecting archive bytes under PKG-025/027.
+
+An installed entry has `source: installed-archive`, its exact identity, loaded documents and a
+virtual directory retaining every file's bytes and mode. It survives state serialization and
+is included in later resolution and registration. Snapshot recipes accept only
+`preinstalled-snapshot`; they cannot claim installation. The legacy `snapshot-N` scope names
+remain catalog positions for compatibility, while each context's `source` distinguishes its
+provenance. `stateUnchanged` checks installed entries as well as objects.
+
+The [S1 archive case](language/archives/s1/case.yaml) first resolves from snapshots, installs
+filesystem, history and Agent archives in order, then resolves with no supplied snapshots.
+It compares the environment, resolved references, original project digest, expanded manifest
+and every context field with the snapshot result, apart from the explicit source marker.
+The [generated variations](fixtures/install-archives/README.md) prove rejection and skipping
+rules with retained bytes and computed hashes. The installation input exercises archive
+admission and catalog publication; the general `install.v1` access/dispatch/record workflow
+remains a later convention input, as does the shell's persistence of the virtual directory.

@@ -531,6 +531,23 @@
                   "evidence",
                   "request"
                 ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "install-archive"
+                  },
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file"
+                ]
               }
             ]
           },
@@ -679,7 +696,8 @@
                         "request",
                         "submit-files",
                         "register-project",
-                        "registration-orders"
+                        "registration-orders",
+                        "install-archive"
                       ]
                     }
                   }

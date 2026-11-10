@@ -285,3 +285,73 @@ fn registration_allocation_failures_leave_objects_records_and_allocations_untouc
     assert_eq!(accepted.records.len(), 2);
     assert!(accepted.external_intents.is_empty());
 }
+
+#[test]
+fn archive_transition_is_deterministic_and_installed_state_survives_serialization() {
+    use conduit_core::{
+        archives::{ArchiveInput, FetchCompletion},
+        packages::{Project, bytes_digest},
+    };
+    let (context, _) = fixture();
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let spec = Specification::read(&root.join("spec")).unwrap();
+    let core = conduit_loader::read_project(&root.join("spec/core"), &spec).unwrap();
+    let mut documents: Vec<_> = core.documents.iter().map(|d| d.root.to_json()).collect();
+    let mut paths: Vec<_> = std::fs::read_dir(root.join("spec/schemas"))
+        .unwrap()
+        .map(|e| e.unwrap().path())
+        .filter(|p| p.extension().is_some_and(|e| e == "yaml"))
+        .collect();
+    paths.sort();
+    for path in paths {
+        documents.extend(read_file(&path).unwrap().iter().map(|d| d.root.to_json()));
+    }
+    let builtin = Project {
+        manifest: core.manifest.map(|d| d.root.to_json()),
+        documents,
+        directory: None,
+    };
+    let bytes =
+        std::fs::read(root.join("conformance/fixtures/s1/archives/filesystem.tar.gz")).unwrap();
+    let archive = ArchiveInput {
+        name: "filesystem.tar.gz".into(),
+        address: "example.org/s1/filesystem".into(),
+        version: "0.1.0".into(),
+        digest: bytes_digest(&bytes),
+        directory: None,
+        completion: FetchCompletion::Complete { bytes },
+    };
+    let input = Input::InstallArchive {
+        archive: archive.clone(),
+        snapshots: vec![],
+        builtin: builtin.clone(),
+    };
+    let empty = State::default();
+    let first = step(&empty, input.clone(), &context).unwrap();
+    let again = step(&empty, input, &context).unwrap();
+    assert_eq!(
+        serde_json::to_value(&first).unwrap(),
+        serde_json::to_value(again).unwrap()
+    );
+    assert_eq!(first.reply["accepted"], true);
+    assert_eq!(empty, State::default());
+    let restored: State =
+        serde_json::from_slice(&serde_json::to_vec(&first.state).unwrap()).unwrap();
+    assert_eq!(restored, first.state);
+    let mut repeat = archive;
+    repeat.completion = FetchCompletion::Unavailable;
+    let repeated = step(
+        &restored,
+        Input::InstallArchive {
+            archive: repeat,
+            snapshots: vec![],
+            builtin,
+        },
+        &context,
+    )
+    .unwrap();
+    assert_eq!(repeated.reply["outcome"], "succeeded");
+    assert_eq!(repeated.state, restored);
+    assert!(repeated.records.is_empty());
+    assert!(repeated.external_intents.is_empty());
+}

@@ -1,0 +1,63 @@
+{
+  "id": "archives-manifest-directory-parent",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-022",
+    "MAN-013",
+    "MAN-011",
+    "PKG-023"
+  ],
+  "title": "Archive installation: manifest-directory-parent",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/manifest-directory-parent.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": [],
+          "package": {
+            "source": "installed-archive",
+            "address": "example.org/s1/filesystem",
+            "version": "0.1.0"
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-022",
+          "MAN-013",
+          "MAN-011",
+          "PKG-023"
+        ],
+        "state": {
+          "objects": [],
+          "installed_packages": [
+            {
+              "package": {
+                "source": "installed-archive",
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.0"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "archives-unavailable",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-024"
+  ],
+  "title": "Archive installation: unavailable",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/s1/archives/filesystem.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "unavailable",
+          "diagnostics": []
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-024"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

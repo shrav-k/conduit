@@ -1,0 +1,46 @@
+{
+  "id": "archives-wrong-digest",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-026",
+    "PKG-023"
+  ],
+  "title": "Archive installation: wrong-digest",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/s1/archives/filesystem.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "PKG-026"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-026",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

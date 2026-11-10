@@ -50,3 +50,18 @@ As order 009's scope.
 The archive vectors pass and S1's filesystem package resolves after installation exactly as
 from its snapshot; nothing is fetched; every decision cites a promise; and the checks of order
 004's done-when pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 14 minutes, then a second round. Installation from an archive's bytes, given as an
+  input, under PKG-004, PKG-022, PKG-026 and MAN-013, with DL7's dialect in the profile; S1
+  resolves after installation as from its snapshot; the third-party tarball removed and its
+  hash kept as recorded data; archives the repository makes by a generator in Rust.
+- **Verifier**: 6 minutes. Four `must`: an archive could install at an address a submitted
+  project still holds; a link through a regular file was read as a directory; the limit of 40
+  link expansions allowed 39; and an escape's diagnostic did not name its member.
+- **Admin**: sent the worker back once; each finding was decided by its promises (PKG-029,
+  MAN-016, PKG-022, MAN-013, PKG-023 and the profile's DL7) and fixed with a vector that failed
+  before it. 230 vectors pass.

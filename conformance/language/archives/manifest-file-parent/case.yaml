@@ -1,0 +1,54 @@
+{
+  "id": "archives-manifest-file-parent",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "PKG-022",
+    "MAN-013",
+    "MAN-011",
+    "PKG-023",
+    "SUB-010"
+  ],
+  "title": "Archive installation: manifest-file-parent",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/manifest-file-parent.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "SUB-010"
+            },
+            {
+              "ruleId": "MAN-013"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "PKG-022",
+          "PKG-023",
+          "MAN-013",
+          "SUB-010"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

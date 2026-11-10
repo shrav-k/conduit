@@ -1,0 +1,49 @@
+{
+  "id": "archives-link-absolute",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "MAN-014",
+    "PKG-023"
+  ],
+  "title": "Archive installation: link-absolute",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/link-absolute.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-014",
+              "message": {
+                "text": "filesystem.tar.gz: escape: absolute link /outside"
+              }
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "MAN-014",
+          "PKG-023"
+        ],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

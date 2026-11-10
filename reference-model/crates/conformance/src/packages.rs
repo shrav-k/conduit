@@ -1,4 +1,4 @@
-//! File boundary for preinstalled snapshots. Archive bytes are hashed, never installed.
+//! File boundary for snapshots and supplied archive inputs. No fetching occurs here.
 use super::*;
 use conduit_core::packages::{Project, Snapshot, SnapshotSource};
 
@@ -31,7 +31,7 @@ struct Fixture {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Artifact {
-    file: String,
+    sha256: String,
     address: String,
     implementation: String,
 }
@@ -77,6 +77,9 @@ pub(super) fn run(
         serde_json::from_value(read_value(&base.join(path))?).map_err(|e| e.to_string())?;
     let mut snapshots = vec![];
     for recipe in fixture.snapshots {
+        if !matches!(recipe.source, SnapshotSource::PreinstalledSnapshot) {
+            return Err("fixture snapshots must be labelled preinstalled-snapshot".into());
+        }
         if let Some(alias) = recipe.archive {
             let path = files.get(&alias).ok_or("undeclared snapshot archive")?;
             let bytes = std::fs::read(base.join(path)).map_err(|e| e.to_string())?;
@@ -105,38 +108,11 @@ pub(super) fn run(
             [&artifact.implementation]["package"]["fileSha256"]
             .as_str()
             .ok_or("artifact item has no fileSha256")?;
-        let path = files
-            .get(&artifact.file)
-            .ok_or("undeclared artifact file")?;
-        let bytes = std::fs::read(base.join(path)).map_err(|e| e.to_string())?;
-        if conduit_core::packages::bytes_digest(&bytes) != format!("sha256:{pin}") {
-            return Err("Package artifact hash differs from retained bytes".into());
+        if pin != artifact.sha256 {
+            return Err("Package artifact pin differs from recorded SHA-256".into());
         }
     }
-    let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
-    let core = conduit_loader::read_project(&repository.join("spec/core"), spec)
-        .map_err(|e| e.to_string())?;
-    let mut documents = core
-        .documents
-        .iter()
-        .map(|d| d.root.to_json())
-        .collect::<Vec<_>>();
-    for entry in std::fs::read_dir(repository.join("spec/schemas")).map_err(|e| e.to_string())? {
-        let path = entry.map_err(|e| e.to_string())?.path();
-        if path.extension().is_some_and(|e| e == "yaml") {
-            documents.extend(
-                read_file(&path)
-                    .map_err(|e| e.to_string())?
-                    .iter()
-                    .map(|d| d.root.to_json()),
-            );
-        }
-    }
-    let builtin = Project {
-        manifest: core.manifest.map(|d| d.root.to_json()),
-        documents,
-        directory: Some("file:///builtin/".into()),
-    };
+    let builtin = builtin(spec)?;
     let mut project = load(
         fixture.project,
         base,
@@ -166,4 +142,71 @@ pub(super) fn run(
         }
     };
     conduit_core::step(state, input, context)
+}
+
+fn builtin(spec: &Specification) -> Result<Project> {
+    let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let core = conduit_loader::read_project(&repository.join("spec/core"), spec)
+        .map_err(|e| e.to_string())?;
+    let mut documents = core
+        .documents
+        .iter()
+        .map(|d| d.root.to_json())
+        .collect::<Vec<_>>();
+    let mut paths = std::fs::read_dir(repository.join("spec/schemas"))
+        .map_err(|e| e.to_string())?
+        .map(|entry| entry.map(|e| e.path()).map_err(|e| e.to_string()))
+        .collect::<Result<Vec<_>>>()?;
+    paths.sort();
+    for path in paths {
+        if path.extension().is_some_and(|e| e == "yaml") {
+            documents.extend(
+                read_file(&path)
+                    .map_err(|e| e.to_string())?
+                    .iter()
+                    .map(|d| d.root.to_json()),
+            );
+        }
+    }
+    Ok(Project {
+        manifest: core.manifest.map(|d| d.root.to_json()),
+        documents,
+        directory: Some("file:///builtin/".into()),
+    })
+}
+
+pub(super) fn install(
+    base: &Path,
+    input: &Value,
+    files: &BTreeMap<String, String>,
+    state: &State,
+    spec: &Specification,
+    context: &Context,
+) -> Result<conduit_core::Transition> {
+    let path = files
+        .get(input["file"].as_str().ok_or("missing archive fixture")?)
+        .ok_or("undeclared archive fixture")?;
+    let mut recipe = read_value(&base.join(path))?;
+    let completion = recipe
+        .get_mut("completion")
+        .ok_or("missing fetching completion")?;
+    if completion["status"] == "complete" {
+        let alias = completion["file"].as_str().ok_or("missing archive alias")?;
+        let path = files.get(alias).ok_or("undeclared archive alias")?;
+        let bytes = std::fs::read(base.join(path)).map_err(|e| e.to_string())?;
+        completion
+            .as_object_mut()
+            .ok_or("invalid completion")?
+            .remove("file");
+        completion["bytes"] = json!(bytes);
+    }
+    conduit_core::step(
+        state,
+        Input::InstallArchive {
+            archive: serde_json::from_value(recipe).map_err(|e| e.to_string())?,
+            snapshots: vec![],
+            builtin: builtin(spec)?,
+        },
+        context,
+    )
 }

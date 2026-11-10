@@ -1,0 +1,74 @@
+{
+  "started": true,
+  "objects": [
+    {
+      "kind": "Agent",
+      "name": "holder",
+      "id": "00000000-0000-4000-8000-000000000101",
+      "held": {
+        "scope": "project",
+        "environment": {
+          "scopes": {
+            "project": {
+              "address": "example.org/s1/filesystem",
+              "version": null,
+              "manifest": {},
+              "contracts": {
+                "held.v1": {
+                  "apiVersion": "github.com/shrav-k/conduit/v0",
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "held.v1"
+                  },
+                  "spec": {
+                    "family": "Agent",
+                    "schema": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "indexes": {
+          "project": {
+            "held.v1": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "kind": "Type",
+              "metadata": {
+                "name": "held.v1"
+              },
+              "spec": {
+                "family": "Agent",
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "contexts": {
+          "project": {
+            "address": "example.org/s1/filesystem",
+            "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "packages": {},
+            "implementations": {},
+            "relative_programs": []
+          }
+        }
+      },
+      "packages": [
+        {
+          "address": "example.org/s1/filesystem",
+          "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "spec": {
+        "type": "#held.v1"
+      }
+    }
+  ],
+  "records": [],
+  "allocated_ids": []
+}

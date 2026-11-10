@@ -24,8 +24,7 @@
     "agents-a": "../../../fixtures/s1/archives/agents.tar.gz",
     "conduit.yaml": "../../../fixtures/s1/project/conduit.yaml",
     "templates.yaml": "../../../fixtures/s1/project/templates.yaml",
-    "instances.yaml": "../../../fixtures/s1/project/instances.yaml",
-    "npm-artifact": "../../../fixtures/s1/artifacts/server-filesystem-2.1.0.tgz"
+    "instances.yaml": "../../../fixtures/s1/project/instances.yaml"
   },
   "steps": [
     {

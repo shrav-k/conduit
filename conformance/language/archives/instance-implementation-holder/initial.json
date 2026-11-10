@@ -1,0 +1,66 @@
+{
+  "started": true,
+  "objects": [
+    {
+      "kind": "Agent",
+      "name": "holder",
+      "id": "00000000-0000-4000-8000-000000000101",
+      "held": {
+        "scope": "project",
+        "environment": {
+          "scopes": {
+            "project": {
+              "address": "example.org/s1/filesystem",
+              "version": null,
+              "manifest": {},
+              "contracts": {}
+            }
+          }
+        },
+        "indexes": {
+          "project": {}
+        },
+        "contexts": {
+          "project": {
+            "address": "example.org/s1/filesystem",
+            "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "packages": {},
+            "implementations": {
+              "held.impl": {
+                "implements": [],
+                "command": [
+                  "/repository/program"
+                ]
+              }
+            },
+            "relative_programs": []
+          }
+        }
+      },
+      "packages": [
+        {
+          "address": "example.org/s1/filesystem",
+          "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "from": "removed-template",
+      "state": "retired",
+      "type": "#held.v1",
+      "config": {},
+      "resolved_implementations": {
+        "example.org/ops#run.v1": {
+          "scope": "project",
+          "name": "held.impl",
+          "item": {
+            "implements": [],
+            "command": [
+              "/repository/program"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "records": [],
+  "allocated_ids": []
+}

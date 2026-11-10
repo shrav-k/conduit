@@ -27,6 +27,15 @@ can still be struck. The coordinator keeps the list current as it decides more.
 | 9 | **Counting rules added after the baseline ran**: provider work listed apart, client concepts counted, requests and time without access listed, T4 and T5 against an allow list too, T3 to cover reach around Conduit | Rules set after one side's numbers are known are the easiest to challenge | [the first build](../../implementation/FIRST_BUILD.md#counting-rules-added-after-the-baseline-ran) |
 | 10 | **The choices on the implementation-defined list** for the first build, such as the digest of contents, generated names and the limits | They fix what the reference engine does where the language leaves it open | `reference-model/CONFORMANCE.md`, written by work order 019 |
 
+## The first review, 2026-11-10
+
+The coordinator walked the owner through items 1 to 10, recommending that each be kept, that a
+cap be added later to what item 3 keeps, and that item 9 be looked at together. The owner
+answered "Agree on all". Items 1 to 10 stand as decided. For item 3, the coordinator owes a
+limit on the content kept for repeats (taken into increment 3's work). Item 9's counting rules
+stand; they are reported apart from the rules set before the baseline, so a reader can judge
+the comparison by either set. A decision made after this date goes below as a new item.
+
 ## What the owner ruled, for reference
 
 Ruling 48 settled four points with the owner: an Agent's own reach off by default, the shared

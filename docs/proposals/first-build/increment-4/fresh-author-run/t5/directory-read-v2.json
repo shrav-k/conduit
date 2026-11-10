@@ -1,0 +1,14 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Conduit",
+  "metadata": {
+    "name": "directory-read-v2"
+  },
+  "spec": {
+    "capability": "example.org/s1/filesystem#directory.v1",
+    "operations": [
+      "example.org/s1/filesystem#file.read.v1",
+      "example.org/s1/filesystem#directory.list.v1"
+    ]
+  }
+}

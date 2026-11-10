@@ -1,0 +1,273 @@
+11:52:36 T1 START. Read TASKS.md and ENGINE.md; beginning author documentation and package discovery.
+11:52:36 MISTAKE: Before reading TASKS.md, searched ancestor AGENTS.md paths outside this directory; no files were returned. Found scope restriction in TASKS.md; all subsequent reads stay here.
+11:52:36 COMMAND: create append-only log.txt.
+11:52:52 MISTAKE: guessed five schema filenames ending .schema.json; cat reported absent. Will use rg --files before reading schema paths.
+11:52:52 UNCLEAR: package docs show obsolete conduit register --package although ENGINE.md explicitly provides install; using ENGINE.md.
+11:53:14 MISTAKE: tried PyYAML through python3; ModuleNotFoundError. Use JSON project documents and standard-library JSON tooling.
+11:53:14 COMMAND: create project/run.py helper and evidence directory; helper logs every mutating Conduit call and document creation.
+11:53:24 COMMAND t1-install-filesystem: conduit install <lab>/packages/filesystem.tar.gz#200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
+11:53:24 COMMAND: create project/evidence/t1-install-filesystem.jsonl
+11:53:24 COMMAND t1-install-claude: conduit install <lab>/packages/agent-claude-code.tar.gz#166ce271e4c5e83ff13c228fe56075f1fa7f98557b633dbe60f4d2fe1ee60e9e
+11:53:25 COMMAND: create project/evidence/t1-install-claude.jsonl
+11:53:25 COMMAND t1-install-codex: conduit install <lab>/packages/agent-codex.tar.gz#05b47a8571743789ae5b9fc060ce1cb43777b92c61206a617cf49334aee626d6
+11:53:27 COMMAND: create project/evidence/t1-install-codex.jsonl
+11:53:48 COMMAND: create project/t1/conduit.json
+11:53:48 COMMAND: create project/t1/pool-template.json
+11:53:48 COMMAND: create project/t1/pool.json
+11:53:48 COMMAND: create project/t1/directory-template.json
+11:53:48 COMMAND: create project/t1/directory.json
+11:53:48 COMMAND: create project/t1/a-template.json
+11:53:48 COMMAND: create project/t1/a.json
+11:53:48 COMMAND: create project/t1/a-turn-template.json
+11:53:48 COMMAND: create project/t1/a-turn.json
+11:53:48 COMMAND: create project/t1/b-template.json
+11:53:48 COMMAND: create project/t1/b.json
+11:53:48 COMMAND: create project/t1/b-turn-template.json
+11:53:48 COMMAND: create project/t1/b-turn.json
+11:53:48 COMMAND: create project/t1/directory-read.json
+11:53:48 COMMAND: create project/t1/directory-write.json
+11:53:48 COMMAND: create project/t1/a-directory.json
+11:53:48 COMMAND: create project/t1/b-directory.json
+11:53:48 COMMAND t1-submit: conduit submit <lab>/project/t1
+11:53:55 COMMAND: created and ran project/build_t1.py to author the initial project. Each document creation and submit logged by helper.
+11:54:06 COMMAND: create project/evidence/t1-submit.jsonl
+11:54:06 COMMAND: create project/evidence/t1-submit.stderr.txt
+11:54:30 MISTAKE T1: submit registered the project and began setups, then failed: no root management route to owning Pool. Found stderr and refused Resource inspection; add explicit root-to-team Pool management Conduit without resubmitting existing objects.
+11:54:30 UNCLEAR ENGINE.md: submit can partly succeed (registered objects and completed setups) before exit 1 without rollback; stdout success lines did not include final error, stderr did.
+11:54:30 UNCLEAR/MISTAKE ENGINE.md: tools --as a returned No such file or directory; downstream JSON parser also failed on empty stdout. NAME syntax or missing identity discovery is undocumented; will try Agent/a after opening routes.
+11:54:30 COMMAND: create project/t1-root-route/template.json
+11:54:30 COMMAND: create project/t1-root-route/instance.json
+11:54:30 COMMAND t1-root-route: conduit submit <lab>/project/t1-root-route
+11:54:45 COMMAND: create project/evidence/t1-root-route.jsonl
+11:54:45 COMMAND t1-setup-directory: conduit call team.set-up.v1 {"instance": {"kind": "Resource", "name": "directory"}}
+11:54:48 COMMAND: create project/evidence/t1-setup-directory.jsonl
+11:54:48 COMMAND: create project/evidence/t1-setup-directory.stderr.txt
+11:54:48 COMMAND t1-open-a-directory: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "a-directory"}}
+11:54:52 COMMAND: create project/evidence/t1-open-a-directory.jsonl
+11:54:52 COMMAND t1-open-b-directory: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "b-directory"}}
+11:54:57 COMMAND: create project/evidence/t1-open-b-directory.jsonl
+11:55:01 UNCLEAR: conduit --help returns unknown command; tools --as Agent/a returns unknown client instance, unlike --as a which returned missing file.
+11:55:07 MISTAKE T1: guessed team.set-up.v1 instead of root-team.set-up.v1; engine refused tool. IFC-012 specifies standalone Conduit name as tool prefix. Agent inspection also shows initial submit stopped before agent setup; resume explicitly.
+11:55:07 COMMAND t1-resume-setup-directory: conduit call root-team.set-up.v1 {"instance": {"kind": "Resource", "name": "directory"}}
+11:55:20 COMMAND: create project/evidence/t1-resume-setup-directory.jsonl
+11:55:20 COMMAND t1-resume-setup-a: conduit call management.set-up.v1 {"instance": {"kind": "Agent", "name": "a"}}
+11:55:25 UNCLEAR T4/T5/T6: providers declare no controls for permission, version or root changes. INS-020 preserves existing instances; use explicit Conduit close/recreate for access and Resource retire/recreate for version/root, preserving live agent instances.
+11:55:30 COMMAND: create project/evidence/t1-resume-setup-a.jsonl
+11:55:30 COMMAND t1-resume-setup-b: conduit call management.set-up.v1 {"instance": {"kind": "Agent", "name": "b"}}
+11:55:44 COMMAND: create project/turn.py for saved short agent prompts and explicit single turn requests.
+11:55:45 COMMAND: create project/evidence/t1-resume-setup-b.jsonl
+11:55:56 COMMAND: create project/prompts/t1-a.txt
+11:55:56 COMMAND t1-a: conduit call a-turn.turn.v1 {"message": "T1: List the shared directory <lab>/shared, read hello.txt, then try to write a new file a-t1-denied.txt with content forbidden. If the write tool is absent, establish that and report the attempt cannot be dispatched. Also try engine read of <lab>/TASKS.md outside the allowed server root; report refusal. Do not access any other path. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+11:55:56 COMMAND: create project/prompts/t1-b.txt
+11:55:56 COMMAND t1-b: conduit call b-turn.turn.v1 {"message": "T1: List <lab>/shared, read hello.txt, write a NEW file b-t1.txt there with content B wrote through Conduit T1, and read it back. Also try engine read of <lab>/TASKS.md outside the server root; report refusal. Do not access any other path. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+11:56:05 UNCLEAR resolved: tools --as a needs an agent identity created by setup; after setup the same command succeeds. Agent/a is not accepted. Missing-file error did not explain readiness prerequisite.
+11:56:17 COMMAND: create project/evidence/t1-tools-a.jsonl
+11:56:38 COMMAND: create project/evidence/t1-tools-b.jsonl
+11:56:46 COMMAND: create project/evidence/t1-a.jsonl
+11:57:01 COMMAND: create project/stages.py utilities for later incremental documents and saved inspections; no earlier project documents altered.
+11:57:17 COMMAND: create project/evidence/t1-b.jsonl
+11:57:25 UNCLEAR T1 verification: an unauthorized operation has no presented tool (IFC-012); A can demonstrate its absence, not dispatch a denied write. Outside-root read does return an actual provider denial. Later live revocation tests will also exercise stale tool calls where native clients permit them.
+11:57:31 COMMAND: create project/evidence/t1-inspect-a-directory.jsonl
+11:57:37 T1 END: A read/list succeeded, no write tool; B wrote/read b-t1.txt; both provider reads outside root denied. Evidence t1-a.jsonl and t1-b.jsonl. B startup clientTools not_reported, so model prose is not a startup catalog.
+11:57:37 T2 START: add file-history Resource, both agents read/write through separate Conduits.
+11:57:37 COMMAND t2-install-history: conduit install <lab>/packages/history.tar.gz#e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
+11:57:48 COMMAND: create project/evidence/t2-install-history.jsonl
+11:57:48 COMMAND: create project/t2/conduit.json
+11:57:48 COMMAND: create project/t2/history-template.json
+11:57:48 COMMAND: create project/t2/history.json
+11:57:48 COMMAND: create project/t2/a-history.json
+11:57:48 COMMAND: create project/t2/b-history.json
+11:57:48 COMMAND t2-submit: conduit submit <lab>/project/t2
+11:58:13 COMMAND: create project/evidence/t2-submit.jsonl
+11:58:13 COMMAND t2-open-a: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "a-history"}}
+11:58:14 UNCLEAR T2: history package is a filesystem convention, not an enforced messaging API. It explicitly permits underlying replacements and does not enforce uniqueness, author identity or chronological accuracy. Use fresh UTC-agent-suffix filenames; state limit in T3.
+11:58:20 COMMAND: create project/evidence/t2-open-a.jsonl
+11:58:20 COMMAND t2-open-b: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "b-history"}}
+11:58:30 COMMAND: create project/evidence/t2-open-b.jsonl
+11:58:32 COMMAND: create project/prompts/t2-a-post.txt
+11:58:32 COMMAND t2-a-post: conduit call a-turn.turn.v1 {"message": "T2: New engine history tools a-history now exist; refresh discovery if needed. Using a-history.file.write.v1, create <lab>/history/20261110T195802Z-a-t2-01.md with content \"A: hello B from the shared history.\" Then read that file through a-history.file.read.v1. Use no other tool. Report success or exact error. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+11:58:54 COMMAND: create project/evidence/t2-tools-a.jsonl
+11:59:13 COMMAND: create project/prompts/t2-b-post-read.txt
+11:59:13 COMMAND t2-b-post-read: conduit call b-turn.turn.v1 {"message": "T2: Discover the new b-history engine tools. Read <lab>/history/20261110T195802Z-a-t2-01.md through b-history.file.read.v1. Create a NEW post <lab>/history/20261110T195902Z-b-t2-01.md with content \"B: read A and reply through shared history.\" through b-history.file.write.v1, then read it back. Report the messages read. No other paths. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+11:59:14 COMMAND: create project/evidence/t2-tools-b.jsonl
+11:59:15 COMMAND: create project/evidence/t2-a-post.jsonl
+11:59:37 COMMAND: create project/evidence/t2-state-a.jsonl
+11:59:46 UNCLEAR T3: Agent A inspection says state ready and setup succeeded but Running=False/RunStopped with heartbeat from initial setup, despite successful real turns. Treat condition as stale observation, not proof the agent cannot run.
+11:59:46 UNCLEAR native catalogs: later Claude turns label startup lists session_init_unverified/unavailable even when tools execute; Codex T1 returned not_reported. Use engine tools plus dispatched-operation records and actual results for reach, not prose/startup lists alone.
+11:59:56 COMMAND: create project/evidence/t2-state-b.jsonl
+12:00:19 COMMAND: create project/prompts/t2-a-read-b.txt
+12:00:19 COMMAND t2-a-read-b: conduit call a-turn.turn.v1 {"message": "T2 final check: read <lab>/history/20261110T195902Z-b-t2-01.md through a-history.file.read.v1. Report its exact content and whether it succeeded. Only this one read. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:00:29 COMMAND: create project/evidence/t2-state-directory.jsonl
+12:00:29 COMMAND: create project/evidence/t2-a-read-b.jsonl
+12:00:29 COMMAND: create project/evidence/t2-a-read-b.stderr.txt
+12:00:39 COMMAND: create project/evidence/t2-state-messages.jsonl
+12:00:39 COMMAND: create project/evidence/t2-state-messages.stderr.txt
+12:00:43 COMMAND: create project/evidence/t2-b-post-read.jsonl
+12:00:52 MISTAKE/UNCLEAR T2: overlapped native turns and several inspection clients; t2-a-read-b and messages inspection failed before engine initialization with timeout. Found captured stderr; no invocation/result exists for failed turn. Cause uncertain; finish outstanding calls and retry the read explicitly, using fewer concurrent clients.
+12:00:52 COMMAND: create project/prompts/t2-a-read-b-retry.txt
+12:00:52 COMMAND t2-a-read-b-retry: conduit call a-turn.turn.v1 {"message": "T2 final check: previous request failed to initialize before a turn began. Read <lab>/history/20261110T195902Z-b-t2-01.md through a-history.file.read.v1. Report its exact content and success. Only this one read. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:01:20 COMMAND: create project/evidence/t2-a-read-b-retry.jsonl
+12:01:39 T2 END: both agents created/read their own posts and read the other agent post, verified by t2-a-post, t2-b-post-read and t2-a-read-b-retry successful results.
+12:01:39 T3 START: document declared/configured reach, mediated limits, and compare actual native agent checks.
+12:01:47 COMMAND: create project/prompts/t3-a.txt
+12:01:47 COMMAND t3-a: conduit call a-turn.turn.v1 {"message": "T3 reach check: list engine and native tool names currently visible to you. Our declared config has accountServices=false and peerMessaging=false. Read shared/hello.txt through a-directory using the full path <lab>/shared/hello.txt. Then try that SAME path through a-history.file.read.v1; it must be outside the history server root. Briefly report results and whether you have shell, browser, peer messaging, account connector, management or access tools. Do not claim OS isolation based on tool absence. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:01:52 COMMAND: create project/evidence/t3-state-messages.jsonl
+12:01:58 COMMAND: create project/prompts/t3-b.txt
+12:01:58 COMMAND t3-b: conduit call b-turn.turn.v1 {"message": "T3 reach check: list engine and native tool names currently visible to you, including any apply_patch or request-user-input tool. Our config has accountServices=false and peerMessaging=false. Read <lab>/shared/hello.txt through b-directory.file.read.v1, then try the SAME path through b-history.file.read.v1; it is outside history root. Briefly report results and whether shell, browser, peer messaging, account connectors, management or access tools exist. Do not claim OS isolation from absence. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:02:42 COMMAND: create project/evidence/t3-a.jsonl
+12:03:29 COMMAND: create project/evidence/t3-b.jsonl
+12:03:59 UNCLEAR T3: Codex reports native collaboration tools despite multi_agent disabled and peerMessaging=false; package docs already say peerMessaging changes no Codex argument. Startup catalog not_reported, so tool prose alone does not establish callable native reach. Request a minimal read-only current-thread list check and a harmless read-only-sandbox write probe here.
+12:03:59 COMMAND: create project/prompts/t3-b-native-check.txt
+12:03:59 COMMAND t3-b-native-check: conduit call b-turn.turn.v1 {"message": "T3 native reach verification, explicit exception to prior only-engine restriction for this turn: invoke native collaboration.list_agents exactly once (current thread only), without spawning or messaging anyone. Report success/error and count only, no unrelated names. Then use native apply_patch to try adding <lab>/shared/native-b-t3-probe.txt with content native sandbox probe. This is a disposable new file in our authorized project; report exact sandbox denial or success. Do not use engine tools, shell, imports, resources, external apps, or any other paths. Never read credentials/configuration. Keep reply under 150 words."}
+12:04:30 COMMAND: create project/evidence/t3-b-native-check.jsonl
+12:05:03 COMMAND: create project/t3-answer.md
+12:05:03 T3 END: wrote project/t3-answer.md from pinned documents, inspections, engine catalogs, native inventories and actual route checks. B native list_agents works; native apply_patch probe denied.
+12:05:03 T4 START: live swap directory rights to A read/write and B read-only, keeping both Agent instances and histories.
+12:05:03 COMMAND t4-close-a: conduit call access.close.v1 {"conduit": {"kind": "Conduit", "name": "a-directory"}}
+12:05:15 COMMAND: create project/evidence/t4-close-a.jsonl
+12:05:15 COMMAND t4-close-b: conduit call access.close.v1 {"conduit": {"kind": "Conduit", "name": "b-directory"}}
+12:05:29 COMMAND: create project/evidence/t4-close-b.jsonl
+12:05:29 COMMAND: create project/t4/a-directory.json
+12:05:29 COMMAND: create project/t4/b-directory.json
+12:05:29 COMMAND t4-submit: conduit submit <lab>/project/t4
+12:05:46 COMMAND: create project/evidence/t4-submit.jsonl
+12:05:46 COMMAND t4-open-a: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "a-directory"}}
+12:05:55 COMMAND: create project/evidence/t4-open-a.jsonl
+12:05:55 COMMAND t4-open-b: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "b-directory"}}
+12:06:09 COMMAND: create project/evidence/t4-open-b.jsonl
+12:06:24 COMMAND: create project/prompts/t4-a.txt
+12:06:24 COMMAND: create project/prompts/t4-b.txt
+12:06:24 COMMAND t4-b: conduit call b-turn.turn.v1 {"message": "T4 permissions changed live: b-directory now read-only. Read <lab>/shared/b-t1.txt. Try the previously available b-directory.file.write.v1 to create shared/b-t4-denied.txt at the full shared root with content forbidden; if absent report that. Also try writing that SAME denied file through b-history.file.write.v1; expect outside-root denial. Do not use native tools or other paths. Report exact outcomes. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:06:24 COMMAND t4-a: conduit call a-turn.turn.v1 {"message": "T4 permissions changed live: a-directory now includes write. Discover the new tool. Read <lab>/shared/hello.txt, create a NEW shared/a-t4.txt at that full shared root with content A can now write T4, then read it back. Only these operations; report exact outcomes. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:07:53 COMMAND: create project/evidence/t4-a.jsonl
+12:07:59 COMMAND: create project/evidence/t4-b.jsonl
+12:08:26 T4 END: A discovered new write tool and wrote/read a-t4.txt; B read b-t1.txt, directory write absent, history write outside root denied; denied file absent.
+12:08:26 T5 START: install filesystem 0.2.0, replace Resource template pin, retire old server Resource and recreate directory plus permission-preserving Conduits.
+12:08:26 UNCLEAR T5 resolved by package manifest: upstream 2.2.0 adds append_file/copy_file, but filesystem 0.2.0 exports/maps only read, list, write. Upgrade does not authorize those upstream extra tools; runtime version is evidenced by package pin/new instance rather than a version-query operation.
+12:08:26 COMMAND t5-install-filesystem: conduit install <lab>/packages/filesystem-0.2.0.tar.gz#cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436
+12:08:54 COMMAND: create project/evidence/t5-install-filesystem.jsonl
+12:08:54 COMMAND: create project/t5-template/conduit.json
+12:08:54 COMMAND: create project/t5-template/directory-template.json
+12:08:54 COMMAND t5-replace-template: conduit replace <lab>/project/t5-template Resource/directory-template
+12:09:36 COMMAND: create project/evidence/t5-replace-template.jsonl
+12:09:36 COMMAND t5-retire-directory: conduit retire Resource/directory
+12:10:09 COMMAND: create project/evidence/t5-retire-directory.jsonl
+12:10:09 COMMAND: create project/t5/conduit.json
+12:10:09 COMMAND: create project/t5/directory-read-v2.json
+12:10:09 COMMAND: create project/t5/directory-write-v2.json
+12:10:09 COMMAND: create project/t5/directory.json
+12:10:09 COMMAND: create project/t5/a-directory.json
+12:10:09 COMMAND: create project/t5/b-directory.json
+12:10:09 COMMAND t5-submit: conduit submit <lab>/project/t5
+12:11:06 COMMAND: create project/evidence/t5-submit.jsonl
+12:11:06 COMMAND t5-open-a: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "a-directory"}}
+12:11:16 COMMAND: create project/evidence/t5-open-a.jsonl
+12:11:16 COMMAND t5-open-b: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "b-directory"}}
+12:11:34 COMMAND: create project/evidence/t5-open-b.jsonl
+12:11:52 COMMAND: create project/evidence/t5-directory-state.jsonl
+12:12:05 COMMAND: create project/prompts/t5-a.txt
+12:12:05 COMMAND: create project/prompts/t5-b.txt
+12:12:05 COMMAND t5-a: conduit call a-turn.turn.v1 {"message": "T5 upgraded directory server: through a-directory read <lab>/shared/a-t4.txt; create <lab>/shared/a-t5.txt with content A writes after filesystem 0.2.0. Report both results. State whether append_file or copy_file engine tools exist. Only these two file calls. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:12:05 COMMAND t5-b: conduit call b-turn.turn.v1 {"message": "T5 upgraded directory server: read <lab>/shared/hello.txt through b-directory.file.read.v1. Try to use b-directory.file.write.v1 for shared/b-t5-denied.txt at that full root; if absent, report no call possible and do not use other routes. State whether append_file/copy_file engine tools exist. Keep reply short. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:13:24 COMMAND: create project/evidence/t5-b.jsonl
+12:13:34 COMMAND: create project/evidence/t5-a.jsonl
+12:14:15 COMMAND: create project/evidence/t5-directory-after-turns.jsonl
+12:14:15 T5 END: new Resource pin filesystem 0.2.0; A read existing a-t4.txt and wrote a-t5.txt, B read hello.txt and lacked write. Extra upstream tools absent. Saved post-turn provider dispatch records.
+12:14:15 T6 START: retire shared Resource and recreate same logical directory with root shared-new/, retaining upgraded pin and A read/write, B read-only.
+12:14:15 COMMAND t6-retire-directory: conduit retire Resource/directory
+12:14:46 COMMAND: create project/evidence/t6-retire-directory.jsonl
+12:14:46 COMMAND: create project/t6/directory.json
+12:14:46 COMMAND: create project/t6/a-directory.json
+12:14:46 COMMAND: create project/t6/b-directory.json
+12:14:46 COMMAND t6-submit: conduit submit <lab>/project/t6
+12:15:48 COMMAND: create project/evidence/t6-submit.jsonl
+12:15:48 COMMAND t6-open-a: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "a-directory"}}
+12:16:12 COMMAND: create project/evidence/t6-open-a.jsonl
+12:16:12 COMMAND t6-open-b: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "b-directory"}}
+12:16:23 COMMAND: create project/evidence/t6-open-b.jsonl
+12:16:23 COMMAND: create project/evidence/t6-open-b.stderr.txt
+12:16:46 COMMAND: create project/evidence/t6-directory-state.jsonl
+12:16:58 UNCLEAR T6: opening b-directory failed during engine initialization even with sequential CLI calls, so concurrency is not a sufficient explanation for the earlier timeouts. Error supplies no cause or invocation ID. Explicitly retry this open.
+12:16:58 MISTAKE T6: stage script did not check open_c return codes and continued to Resource inspection after B open exit 1. Found failure in printed exit status and captured stderr before agent tests. Future mutations explicitly checked.
+12:16:58 COMMAND t6-open-b-retry: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "b-directory"}}
+12:17:43 COMMAND: create project/evidence/t6-open-b-retry.jsonl
+12:17:57 COMMAND: create project/prompts/t6-b.txt
+12:17:57 COMMAND: create project/prompts/t6-a.txt
+12:17:57 COMMAND t6-a: conduit call a-turn.turn.v1 {"message": "T6 directory replaced: a-directory now serves <lab>/shared-new. Read shared-new/readme.txt at its full path. Write NEW shared-new/a-t6.txt with content A writes to replacement directory T6. Finally try a-directory.file.read.v1 on OLD <lab>/shared/hello.txt; expect outside-root denial. Exactly these three calls. Report short results. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:17:57 COMMAND t6-b: conduit call b-turn.turn.v1 {"message": "T6 directory replaced: through b-directory read <lab>/shared-new/readme.txt. Try b-directory read of OLD <lab>/shared/hello.txt; expect outside-root denial. Also establish that b-directory write is absent, so you cannot create shared-new/b-t6-denied.txt. Exactly two reads; no alternate write route. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:20:59 COMMAND: create project/evidence/t6-b.jsonl
+12:21:17 UNCLEAR T6: B turn returned isError=true/outcome=unknown after nearly three minutes, yet conduit call exited 0, contradicting ENGINE.md nonzero-on-unsuccessful wording. No diagnostic explains the unknown outcome. Will inspect actual dispatch/effect records and not blindly repeat model work.
+12:21:31 COMMAND: create project/evidence/t6-a.jsonl
+12:21:39 UNCLEAR T6: A also returned unknown/isError with exit 0. Original agent conversations may now be poisoned per package documentation; diagnose before any further turn.
+12:21:39 MISTAKE T6: repeated an unguarded tools-to-JSON-parser pipeline while engine initialization was failing; tools timed out and parser also raised JSONDecodeError. Read the on-disk core contract instead.
+12:21:42 COMMAND: create project/evidence/t6-directory-diagnose.jsonl
+12:21:42 COMMAND: create project/evidence/t6-directory-diagnose.stderr.txt
+12:22:07 T6 diagnosis: both original turns ended unknown, and a root tools request plus directory inspection failed engine initialization. No a-t6.txt exists. Do not infer no model work from absent file; inspect Agent and Resource records once engine answers.
+12:22:22 COMMAND: create project/evidence/t6-diagnose-a.jsonl
+12:24:07 T6 diagnosis update: A inspection proves native read of new readme succeeded, a-t6.txt write succeeded, and old-root read failed, even though enclosing turn ended unknown at its deadline. Effects completed after earlier file check. Keep unknown outer turn; do not replay its write.
+12:24:20 COMMAND: create project/evidence/t6-diagnose-b.jsonl
+12:24:31 COMMAND: create project/evidence/t6-tools-b.jsonl
+12:25:21 COMMAND: create project/checked.py to validate structured outcomes, preserve failures, and retry only pre-request initialization failures with no stdout.
+12:25:21 T6 END: direct Agent A/B records prove both new-root reads succeeded and both old-root reads failed; A write succeeded and a-t6.txt matches; B current engine catalog read-only. Enclosing turn outcomes remain unknown; no final native replies recovered.
+12:25:21 T7 START: first explicitly recreate both Agent wrappers after their failed turns (packages say conversations are poisoned); keep shared history Resource/files, upgraded directory and intended access. Then revoke A only, verify B, restore A. No unknown turn is repeated or falsely reconciled.
+12:25:21 COMMAND: create project/t6-recovery-notes.md
+12:25:21 COMMAND: create project/t7-recovery/a.json
+12:25:21 COMMAND: create project/t7-recovery/a-directory.json
+12:25:21 COMMAND: create project/t7-recovery/a-history.json
+12:25:21 COMMAND: create project/t7-recovery/a-turn.json
+12:25:21 COMMAND: create project/t7-recovery/b.json
+12:25:21 COMMAND: create project/t7-recovery/b-directory.json
+12:25:21 COMMAND: create project/t7-recovery/b-history.json
+12:25:21 COMMAND: create project/t7-recovery/b-turn.json
+12:25:21 COMMAND t7-retire-poisoned-a: conduit retire Agent/a
+12:26:01 COMMAND: create project/evidence/t7-retire-poisoned-a.jsonl
+12:26:01 COMMAND t7-retire-poisoned-b: conduit retire Agent/b
+12:26:35 COMMAND: create project/evidence/t7-retire-poisoned-b.jsonl
+12:26:35 COMMAND t7-recovery-submit: conduit submit <lab>/project/t7-recovery
+12:27:51 COMMAND: create project/evidence/local-artifacts-before-t7.json
+12:28:12 COMMAND: create project/evidence/t7-recovery-submit.jsonl
+12:28:12 COMMAND t7-recovery-open-a-directory: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "a-directory"}}
+12:28:24 COMMAND: create project/evidence/t7-recovery-open-a-directory.jsonl
+12:28:24 COMMAND t7-recovery-open-a-history: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "a-history"}}
+12:28:38 COMMAND: create project/evidence/t7-recovery-open-a-history.jsonl
+12:28:38 COMMAND t7-recovery-open-b-directory: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "b-directory"}}
+12:28:53 COMMAND: create project/evidence/t7-recovery-open-b-directory.jsonl
+12:28:53 COMMAND t7-recovery-open-b-history: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "b-history"}}
+12:29:08 COMMAND: create project/evidence/t7-recovery-open-b-history.jsonl
+12:29:08 COMMAND t7-revoke-a: conduit call access.close.v1 {"conduit": {"kind": "Conduit", "name": "a-directory"}}
+12:29:21 COMMAND: create project/evidence/t7-revoke-a.jsonl
+12:29:32 COMMAND: create project/evidence/t7-revoked-tools-a.jsonl
+12:29:42 COMMAND: create project/evidence/t7-revoked-tools-b.jsonl
+12:29:54 COMMAND: create project/prompts/t7-a-revoked.txt
+12:29:54 COMMAND: create project/prompts/t7-b-while-a-revoked.txt
+12:29:54 COMMAND t7-b-while-a-revoked: conduit call b-turn.turn.v1 {"message": "T7: A directory access is revoked. Make exactly ONE engine call: b-directory.file.read.v1 on <lab>/shared-new/readme.txt. Report exact content and success. Also state whether b-directory write exists; do not attempt an alternate write. Reply under 100 words. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:29:54 COMMAND t7-a-revoked: conduit call a-turn.turn.v1 {"message": "T7: Your directory Conduit has been revoked. State whether any a-directory read/list/write tool exists. Make exactly ONE engine call: try a-history.file.read.v1 on <lab>/shared-new/readme.txt, to check the remaining history route cannot bypass directory revocation. Report exact refusal. Do not write or use native tools. Reply under 100 words. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:30:57 COMMAND: create project/evidence/t7-b-while-a-revoked.jsonl
+12:31:20 COMMAND: create project/evidence/t7-a-revoked.jsonl
+12:31:27 T7 revoked phase VERIFIED: A current native catalog contains only history tools and history read of directory path denied; B actual directory read succeeds and write absent. Restore A with a newly registered write-enabled Conduit.
+12:31:27 COMMAND: create project/t7-restore/a-directory.json
+12:31:27 COMMAND t7-restore-submit: conduit submit <lab>/project/t7-restore
+12:31:43 UNCLEAR spec/core reconcile.v1 and OPS-014: T6 model work and nested file effects happened, but final Agent outputs were lost; occurred is one boolean and the turn declares startsModelWork without a separate effect. Unsure what whole-turn completion to attest, so retain unknown rather than assert full success/failure. Recovery is explicit new instances, with preserved evidence.
+12:31:43 UNCLEAR provider file.write.v1: write creates or replaces, with no atomic create-if-absent option. Fresh probe names were chosen from this run and prior listings; later local checks verify expected contents/absence, but the operation itself does not enforce freshness.
+12:31:53 COMMAND: create project/evidence/t7-restore-submit.jsonl
+12:31:53 COMMAND t7-restore-open-a: conduit call access.open.v1 {"conduit": {"kind": "Conduit", "name": "a-directory"}}
+12:32:07 COMMAND: create project/evidence/t7-restore-open-a.jsonl
+12:32:44 MISTAKE T6: requested three A file calls and two B calls in one turn despite a 180-second package deadline; under observed latency both enclosing turns timed out. Found unknown results and timed dispatch records. Use one-call checks for revocation and short restoration checks; explicitly recreated poisoned conversations, losing private continuity.
+12:32:52 COMMAND: create project/prompts/t7-a-restored.txt
+12:32:52 COMMAND t7-a-restored: conduit call a-turn.turn.v1 {"message": "T7 restoration: a-directory read/write restored. Make exactly TWO engine calls: write <lab>/shared-new/a-t7-restored.txt with content A access restored T7; then read that SAME file through a-directory.file.read.v1. Report content and outcomes under 100 words. No other calls. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:33:51 COMMAND: create project/evidence/t7-a-restored.jsonl
+12:34:22 COMMAND: create project/prompts/t7-b-after-restore.txt
+12:34:22 COMMAND t7-b-after-restore: conduit call b-turn.turn.v1 {"message": "T7 final: make exactly ONE engine call, b-directory.file.read.v1 on <lab>/shared-new/a-t7-restored.txt. Report exact content and success. Also state whether b-directory write exists; no other call. Reply under 80 words. Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents."}
+12:35:15 COMMAND: create project/evidence/t7-b-after-restore.jsonl
+12:36:01 COMMAND: create project/final_check.py for final catalogs, pins, preserved history and actual dispatch evidence; native T7 restored turns both succeeded.
+12:36:18 COMMAND: create project/evidence/final-tools-b.jsonl
+12:36:18 COMMAND: create project/evidence/final-tools-b-verified.json
+12:36:23 COMMAND: create project/evidence/final-tools-a.jsonl
+12:36:23 COMMAND: create project/evidence/final-tools-a-verified.json
+12:37:08 COMMAND: create project/evidence/final-history.jsonl
+12:37:08 COMMAND: create project/evidence/final-history-verified.json
+12:37:13 COMMAND: create project/evidence/final-directory.jsonl
+12:37:13 COMMAND: create project/evidence/final-directory-verified.json
+12:38:24 T7 END: revocation/restoration demonstrated by both native agents; final catalogs, filesystem 0.2.0 root shared-new, original shared history and current-agent dispatch checks all passed.
+12:38:24 COMMAND: create project/evidence/report.json and project/README.txt with final results and retained limitations.
+12:38:46 REPORT VERIFIED: report matches report.schema.json, all task evidence paths exist, all four final checks passed, and log event lines have date-based time prefixes. Work complete; two original T6 outer outcomes remain unknown as disclosed.

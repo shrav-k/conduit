@@ -1,0 +1,26 @@
+from run import write,run,BASE
+V='github.com/shrav-k/conduit/v0'
+FS='example.org/s1/filesystem#'
+A='example.org/conduit/agent-claude-code#'
+B='example.org/conduit/agent-codex#'
+def doc(kind,name,**kw): return dict(apiVersion=V,kind=kind,metadata={'name':name},**kw)
+def save(name,d): write('project/t1/'+name+'.json',d)
+pins={
+ 'example.org/s1/filesystem':('0.1.0','200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160'),
+ 'example.org/conduit/agent-claude-code':('0.1.1','166ce271e4c5e83ff13c228fe56075f1fa7f98557b633dbe60f4d2fe1ee60e9e'),
+ 'example.org/conduit/agent-codex':('0.1.1','05b47a8571743789ae5b9fc060ce1cb43777b92c61206a617cf49334aee626d6')}
+save('conduit',dict(apiVersion=V,packages={k:dict(version=v,digest='sha256:'+h) for k,(v,h) in pins.items()}))
+save('pool-template',doc('Pool','team-template',spec={'type':'github.com/shrav-k/conduit/core#pool.v1'}))
+save('pool',doc('Pool','team',**{'from':'team-template'}))
+save('directory-template',doc('Resource','directory-template',spec={'type':FS+'local-directory.v1','inputs':{'root':{'schema':{'type':'string','minLength':1},'to':['/config/root']}}}))
+save('directory',doc('Resource','directory',**{'from':'directory-template','owner':'team','arguments':{'root':str(BASE/'shared')}}))
+for agent,prefix,typ in [('a',A,'claude-code.v1'),('b',B,'codex.v1')]:
+ save(agent+'-template',doc('Agent',agent+'-template',spec={'type':prefix+typ,'config':{'accountServices':False,'peerMessaging':False}}))
+ save(agent,doc('Agent',agent,**{'from':agent+'-template'}))
+ save(agent+'-turn-template',doc('Conduit',agent+'-turn-template',spec={'capability':prefix+'conversation.v1','operations':[prefix+'turn.v1']}))
+ save(agent+'-turn',doc('Conduit',agent+'-turn',**{'from':agent+'-turn-template','consumer':{'kind':'Interface','name':'root'},'target':{'kind':'Agent','name':agent}}))
+for n,ops in [('directory-read',['file.read.v1','directory.list.v1']),('directory-write',['file.read.v1','directory.list.v1','file.write.v1'])]:
+ save(n,doc('Conduit',n,spec={'capability':FS+'directory.v1','operations':[FS+x for x in ops]}))
+for agent,template in [('a','directory-read'),('b','directory-write')]:
+ save(agent+'-directory',doc('Conduit',agent+'-directory',**{'from':template,'consumer':{'kind':'Agent','name':agent},'target':{'kind':'Resource','name':'directory'}}))
+run('t1-submit',['submit',str(BASE/'project/t1')])

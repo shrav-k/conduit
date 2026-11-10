@@ -1,0 +1,16 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Conduit",
+  "metadata": {
+    "name": "b-turn"
+  },
+  "from": "b-turn-template",
+  "consumer": {
+    "kind": "Interface",
+    "name": "root"
+  },
+  "target": {
+    "kind": "Agent",
+    "name": "b"
+  }
+}

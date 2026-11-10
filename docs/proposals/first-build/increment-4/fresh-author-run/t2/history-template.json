@@ -1,0 +1,13 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Resource",
+  "metadata": {
+    "name": "history-template"
+  },
+  "spec": {
+    "type": "example.org/s1/history#file-history.v1",
+    "config": {
+      "root": "<lab>/history"
+    }
+  }
+}

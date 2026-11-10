@@ -1,0 +1,21 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Resource",
+  "metadata": {
+    "name": "directory-template"
+  },
+  "spec": {
+    "type": "example.org/s1/filesystem#local-directory.v1",
+    "inputs": {
+      "root": {
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": [
+          "/config/root"
+        ]
+      }
+    }
+  }
+}

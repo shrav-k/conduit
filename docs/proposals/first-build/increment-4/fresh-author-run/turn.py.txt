@@ -1,0 +1,6 @@
+import sys,json
+from run import run,write
+label,agent,message=sys.argv[1:]
+message+=' Use only engine MCP tools. Never read credentials or owner configuration. Keep output short: exact tools attempted, results, and any absent tools. Do not ask questions or start other agents.'
+write('project/prompts/'+label+'.txt',message)
+run(label,['call',agent+'-turn.turn.v1',json.dumps({'message':message})])

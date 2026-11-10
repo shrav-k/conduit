@@ -33,9 +33,18 @@ decision 8; and the core as order 014 left it.
    reports conflict under OPS-034. Amend OPS-009, IFC-025 and DL10 to say so, add the vector, and
    log the fix in `docs/proposals/first-build/log-increment-2.md` as "Settled by the admin,
    decision 5", with "The owner can strike it".
-4. **Plain results** by the current table of IFC-010 and IFC-046, as decision 8 keeps it until
-   its check runs: success, `isError`, no result, `input_required`, `-32602` and `-32021`, as
-   S1-plain-ends lists, reads and writes apart.
+4. **Plain results**, with the table of IFC-010 and IFC-046 corrected by
+   [decision 8a](../proposals/first-build/increment-2/decisions.md), which settles the check of
+   [order 018](../proposals/first-build/check-plain-errors.md): `-32602` from a `plain` server is
+   treated as any other error of such a server, `failed` for an operation that has no effect,
+   is not a control and starts no model work, and `unknown` otherwise; and the engine sends a
+   call again after `-32020` only for an operation that has no effect or that its contract
+   declares safe to repeat, and otherwise ends it `unknown`. A rejection the engine makes
+   before it sends a call keeps its reason and has no outcome (OPS-005). Amend IFC-010 and
+   IFC-046, and OPS-003 or OPS-018 if they repeat the old reading, with vectors, and log each
+   as "Settled by the admin, decision 8a", with "The owner can strike it". Then cover every
+   result S1-plain-ends lists (success, `isError`, no result, `input_required`, `-32602`,
+   `-32020` and `-32021`), reads and writes apart.
 5. **Unknown outcomes and reconciliation**: an unknown write is never dispatched again by the
    core, not after a repeat and not after a restart from stored state (OPS-012, OPS-013,
    OPS-018, IMP-007); reconciliation by an authorized actor with the evidence it checked sets
@@ -50,7 +59,7 @@ decision 8; and the core as order 014 left it.
 
 As order 009's scope, and OPS-009 in `spec/conventions/operations.yaml`, IFC-025 in
 `spec/interface/implementation.yaml` and DL10 in `spec/implementation-defined.yaml` for
-decision 3.
+decision 3, and IFC-010, IFC-046, OPS-003 and OPS-018 for decision 4.
 
 ## Done when
 

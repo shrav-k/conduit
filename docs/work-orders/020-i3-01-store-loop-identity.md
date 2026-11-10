@@ -115,3 +115,18 @@ repository root: `python3 tools/check_docs.py`, `python3 tools/set_names.py --ch
 in `reference-model/`, `cargo test --release`, `cargo clippy --all-targets -- -D warnings` and
 `cargo fmt --check` pass. Check the files you create for trailing white space yourself; do not
 stage anything.
+
+## Record
+
+Run on 2026-11-10 by the dispatch of [work orders](../implementation/WORK_ORDERS.md): the
+worker in 37 minutes, then a fresh verifier in 7. The verifier found three defects, each real:
+a waiting caller could be given an earlier success instead of the core's refusal, or wait
+forever; outputs held under a pending repeat escaped the retention cap; and tokens carried no
+`exp`. The third was the admin's: this order said "no exp", against DL13 and JWT-SVID
+section 3.3. The admin settled it for an `exp` 100 years ahead, logged as finding 3-01 in the
+[log of increment 3](../proposals/first-build/log-increment-3.md), and sent the worker back
+once with all three. The second round added `request_replies` to the core's `Transition`, so
+the shell delivers the core's own reply, made `expire-outputs` reach outputs held in previous
+snapshots, and issued and checked the `exp`. The core's decisions did not change; every vector
+still passes. The admin reran every check: 105 Rust tests pass, and clippy, fmt and the five
+repository checks are clean.

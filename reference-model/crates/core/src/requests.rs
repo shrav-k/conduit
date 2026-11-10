@@ -82,6 +82,7 @@ fn envelope(
     }
     reply
 }
+
 // Record content follows the held Type, rather than the retention of the repeat
 // index. Redaction is schema-directed: arbitrary input member names are not secrets.
 struct RecordInputs<'a> {
@@ -988,6 +989,11 @@ pub(crate) fn finish(
         content,
         None,
     );
+    t.request_replies.push(crate::RequestReply {
+        invocation: v["id"].as_str().ok_or("invocation has no ID")?.into(),
+        attempt: v["attempt"].as_u64().ok_or("invocation has no attempt")?,
+        reply: t.reply.clone(),
+    });
     t.decisions.push(decision(
         "end-invocation",
         &[
@@ -1137,6 +1143,11 @@ pub(crate) fn complete(
                             None,
                             restriction,
                         )?;
+                        t.request_replies.push(crate::RequestReply {
+                            invocation: id.into(),
+                            attempt,
+                            reply: t.reply.clone(),
+                        });
                         return crate::lifecycle::child_answered(t, &mut a, c, &v, reason.unwrap());
                     }
                 }
@@ -1232,9 +1243,14 @@ pub(crate) fn expire(t: &mut Transition, id: &str) -> Result<()> {
         .iter_mut()
         .find(|v| v["id"] == id)
         .ok_or("expiry names no invocation")?;
-    v.as_object_mut()
-        .ok_or("invalid invocation")?
-        .remove("retained");
+    // Pending repeats can hold retained results in previous snapshots. Expiry is
+    // about outputs, never the invocation state or the snapshot that holds them.
+    let mut snapshot = Some(v);
+    while let Some(v) = snapshot {
+        let object = v.as_object_mut().ok_or("invalid invocation")?;
+        object.remove("retained");
+        snapshot = object.get_mut("previous");
+    }
     t.decisions.push(decision(
         "expire-kept-result",
         &["OPS-009", "OPS-034"],
@@ -1401,6 +1417,7 @@ mod tests {
                 records: vec![],
                 external_intents: vec![],
                 reply: Value::Null,
+                request_replies: vec![],
             },
             c,
         )

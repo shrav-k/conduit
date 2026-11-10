@@ -180,6 +180,15 @@ pub struct Decision {
     pub affected: Vec<String>,
 }
 
+/// A final core reply for callers waiting on one dispatched request attempt.
+/// It remains available even when the invocation is removed or a previous result restored.
+#[derive(Clone, Debug, Serialize)]
+pub struct RequestReply {
+    pub invocation: String,
+    pub attempt: u64,
+    pub reply: Value,
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct Transition {
     pub state: State,
@@ -187,6 +196,7 @@ pub struct Transition {
     pub records: Vec<Value>,
     pub external_intents: Vec<Value>,
     pub reply: Value,
+    pub request_replies: Vec<RequestReply>,
 }
 
 fn decision(
@@ -259,6 +269,7 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         records: vec![],
         external_intents: vec![],
         reply: Value::Null,
+        request_replies: vec![],
     };
     match input {
         Input::ExportRecords { unreadable } => records::export(&mut transition, &unreadable)?,

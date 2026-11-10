@@ -50,6 +50,7 @@ the promises and safety cases it touches, a format for the vectors and a sequenc
 | --- | --- | --- |
 | 1, the strict loader (A43) | [log-increment-1.md](log-increment-1.md) | Eighteen, all settled: three defects of a tool, two fixed with vectors and one stated in the tool; fifteen against the promises, including five after the review of 2026-11-09. Ruling 48, point 3, settles the pattern tokens; the other settlements are the coordinator's and can be struck |
 | 2, the core on S1 (A38, A39) | [log-increment-2.md](log-increment-2.md) | I2-01: required first-start cases decided; double-BOM YAML boundary 2-01 settled by the admin with a vector; the owner can strike it. Verification corrections cover registration authority, diagnostic precedence and lifecycle record targets |
+| 3, the shell | [log-increment-3.md](log-increment-3.md) | I3-01: durable store, loop, recovery, retained outputs and run identities; no language finding in order 020 |
 
 ## Noted for later increments
 

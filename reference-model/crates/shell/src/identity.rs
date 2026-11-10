@@ -220,8 +220,11 @@ impl Authority {
 }
 
 fn exists(state: &State, id: &str) -> bool {
-    state
-        .objects
-        .iter()
-        .any(|v| v["id"] == id && v.get("spec").is_none())
+    state.objects.iter().any(|v| {
+        v["id"] == id
+            && v.get("spec").is_none()
+            && ["Agent", "Interface", "Resource", "Pool"]
+                .iter()
+                .any(|kind| v["kind"] == *kind)
+    })
 }

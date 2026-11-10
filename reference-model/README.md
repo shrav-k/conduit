@@ -31,7 +31,7 @@ cargo run --release -p conduit-conformance
 `Cargo.lock` is committed, and the build output, `target/`, is ignored. The tests read the
 specification from `../spec/`, so they run inside a checkout of this repository.
 
-## The shell's store, runner and command line (I3-01/02)
+## The shell's store, runner and command line (I3-01/02/03)
 
 From this directory, with an existing parent directory for the store:
 
@@ -49,7 +49,7 @@ the submitted directory through the strict loader, then explicitly requests open
 submitted Conduits and setup. The built-in runner now starts S1's unchanged npm filesystem
 server for each held directory; those directories must already exist. Registration waits for
 initialization and setup to end. The command owns its runs and ends them when it exits;
-continuous ownership and the consumer HTTP server belong to order 022. Every open of a store
+`serve` owns the persistent runner and consumer HTTP server. Every open of a store
 first commits recovery, ending interrupted invocations unknown without replay. Inspection makes
 core inspect requests as root, one JSON line per object, including authority refusals.
 Records exports ordered CloudEvents as JSON lines and reports gaps on stderr.
@@ -62,7 +62,7 @@ final replies, correlated by invocation and attempt, so a refusal is delivered e
 core removes the invocation or restores its previous success. The [runner](crates/shell/src/runner.rs)
 executes committed run, dispatch, refresh and cancellation intents outside that mutex, returning
 completions through the shell. Runtime providers and remote connections remain unserved;
-missing/failed reports go through the core. No Agent client or consumer HTTP server runs here.
+missing/failed reports go through the core. The HTTP adapter serves consumers; no Agent client runs here.
 
 Config sets the engine address and output retention. CLI equivalents are `--url`,
 `--output-cap-bytes` and `--output-age-seconds`; defaults are a loopback address at port 3000
@@ -78,7 +78,7 @@ relative paths use retained installed-package files; absolute commands run as gi
 program names use the permitted PATH.
 
 Default tests stay offline. Run the real pinned filesystem server tests, including CLI
-registration and a hash mismatch before extraction, with:
+registration, a hash mismatch before extraction, and the S1 HTTP subprocess test, with:
 
 ```sh
 CONDUIT_TEST_NPM=1 cargo test --release
@@ -459,3 +459,37 @@ archive admission is not the complete install.v1 request workflow, and complete 
 retirement/stop-run paths still need core work before the shell exposes the full management
 interface. These limits and the increment's done-when are recorded in
 [the log](../docs/proposals/first-build/log-increment-2.md#i2-09-s1-whole-and-the-increment-3-handoff-work-order-019).
+
+## Consumer HTTP adapter (I3-03)
+
+Select the port at initialization; the token audience is then fixed for that store:
+
+```sh
+cargo run --release -p conduit-shell -- init --store /tmp/conduit-http --url http://127.0.0.1:3000/mcp
+cargo run --release -p conduit-shell -- serve --store /tmp/conduit-http
+```
+
+In another terminal, the store owner can use the root Interface through MCP:
+
+```sh
+cargo run --release -p conduit-shell -- tools --store /tmp/conduit-http
+cargo run --release -p conduit-shell -- call --store /tmp/conduit-http management.inspect.v1 '{"object":{"kind":"Interface","name":"root"}}'
+```
+
+`tools --as INSTANCE` uses that materialized instance's private helper token. Commands never
+print token files or recover the running store. SIGINT or SIGTERM stops the server.
+The adapter verifies Bearer tokens on every HTTP request, enforces its own Origin, presents
+exactly the core's private tools and forwards current-authority invokes. Pending calls wait
+for committed completion; cancellation reaches the core. Management operations still missing
+from the core answer internal error naming the unfinished operation and commit nothing.
+
+`serve` starts the built-in runner and completes S1's outstanding setup before listening.
+It inspects ready instances with runnable implementations too, so runs stopped after registration
+are started again through explicit setup. On shutdown it ends every run. The default scripted
+HTTP tests cover A/B tools and calls, durable records, cancellation and T7's close and explicit
+replacement followed by setup. The opt-in real S1 test starts `serve` as a process, connects
+with A/B run-directory tokens, exercises the filesystem and T7 through `conduit call`, checks
+private notifications and verifies both filesystem process groups disappear on SIGTERM.
+Base S1 Agents have no executable; the test materializes their identities through the same
+run-contract API as the runner, without executing Agents or models.
+See [CONFORMANCE.md](CONFORMANCE.md#consumer-server-order-022) for these boundaries.

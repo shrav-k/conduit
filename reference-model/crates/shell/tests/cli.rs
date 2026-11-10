@@ -131,3 +131,100 @@ fn real_npm_register_completes_setup_and_ends_runs_on_exit() {
             .contains("\"pending\"")
     );
 }
+
+#[test]
+fn serve_management_commands_and_fixed_audience() {
+    use std::time::{Duration, Instant};
+    let parent = tempfile::tempdir().unwrap();
+    let store = parent.path().join("store");
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    let url = format!("http://127.0.0.1:{port}/mcp");
+    command(&store, "init", &["--url", &url]);
+    let different = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args([
+            "serve",
+            "--store",
+            store.to_str().unwrap(),
+            "--url",
+            "http://127.0.0.1:1/mcp",
+        ])
+        .output()
+        .unwrap();
+    assert!(!different.status.success());
+    assert!(String::from_utf8_lossy(&different.stderr).contains("fixed token audience"));
+    struct Server(std::process::Child);
+    impl Drop for Server {
+        fn drop(&mut self) {
+            let _ = self.0.kill();
+            let _ = self.0.wait();
+        }
+    }
+    let mut server = Server(
+        Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .arg("serve")
+            .arg("--store")
+            .arg(&store)
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap(),
+    );
+    let start = Instant::now();
+    loop {
+        if std::net::TcpStream::connect(("127.0.0.1", port)).is_ok() {
+            break;
+        }
+        assert!(server.0.try_wait().unwrap().is_none(), "server exited");
+        assert!(start.elapsed() < Duration::from_secs(30));
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    let tools = command(&store, "tools", &[]);
+    let tools: Value = serde_json::from_slice(&tools.stdout).unwrap();
+    assert_eq!(tools["cacheScope"], "private");
+    assert!(
+        tools["tools"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|t| t["name"] == "access.close.v1")
+    );
+    let result = command(
+        &store,
+        "call",
+        &[
+            "management.inspect.v1",
+            r#"{"object":{"kind":"Interface","name":"root"}}"#,
+        ],
+    );
+    let result: Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(result["isError"], false);
+    let permission = std::fs::metadata(store.join("client-tokens")).unwrap();
+    use std::os::unix::fs::PermissionsExt;
+    assert_eq!(permission.permissions().mode() & 0o777, 0o700);
+    for file in std::fs::read_dir(store.join("client-tokens")).unwrap() {
+        assert_eq!(
+            file.unwrap().metadata().unwrap().permissions().mode() & 0o777,
+            0o600
+        );
+    }
+    let pid = server.0.id().to_string();
+    let signal = Command::new("kill").args(["-TERM", &pid]).status().unwrap();
+    assert!(signal.success());
+    let start = Instant::now();
+    loop {
+        if let Some(status) = server.0.try_wait().unwrap() {
+            assert!(status.success());
+            break;
+        }
+        assert!(start.elapsed() < Duration::from_secs(10));
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    let records = command(&store, "records", &[]);
+    assert!(
+        String::from_utf8(records.stdout)
+            .unwrap()
+            .contains("request-ended")
+    );
+}

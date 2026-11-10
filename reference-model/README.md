@@ -381,3 +381,20 @@ Template inspection omits status, as LIF-012 gives a template no lifecycle state
 successful registration/replacement repeats return their retained result without reapplying
 state-changing preconditions, after current authority checks. Registration results use
 `object.v1`'s portable nested `instance`/`name` fields rather than internal storage fields.
+
+## Integrated S1 and the shell boundary (I2-09)
+
+The [continuous S1 vector](../conformance/conventions/s1/whole/case.yaml) now takes an empty
+core through first start, resolution, registration and setup, then T1/T2 requests and T7's
+close, independent B access and explicit restoration. Its 58 steps use scripted completions;
+no real Agent or filesystem server runs. All requests it dispatches end with validated
+records. The [manifest](../conformance/manifest.yaml) inventories every study-section-2
+promise with vector IDs or an explicit reason for missing coverage, validated by the runner.
+
+[CONFORMANCE.md](CONFORMANCE.md) documents implemented and pending DL choices. The
+[increment 3 handoff](../docs/proposals/first-build/increment-3-handoff.md) lists every current
+input, intent and completion, the consumer tool contract and shell work items. In particular,
+archive admission is not the complete install.v1 request workflow, and complete public
+retirement/stop-run paths still need core work before the shell exposes the full management
+interface. These limits and the increment's done-when are recorded in
+[the log](../docs/proposals/first-build/log-increment-2.md#i2-09-s1-whole-and-the-increment-3-handoff-work-order-019).

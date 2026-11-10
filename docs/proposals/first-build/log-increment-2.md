@@ -1075,3 +1075,120 @@ separate record and invocation-index counts. After all temporary mutations were 
 `cargo test --release`, clippy with warnings denied and `cargo fmt --check` passed, as did the
 documentation, assigned-name, schema, roadmap, diff-whitespace and new-file trailing-whitespace
 checks. OPS-029's contradictory sentence remains the out-of-scope admin follow-up above.
+
+## I2-09: S1 whole and the increment 3 handoff (work order 019)
+
+Written by the worker, 2026-11-09. This section reports the core, not a real-Agent run.
+The [continuous case](../../../conformance/conventions/s1/whole/case.yaml), `s1-whole`, starts
+from empty state, with no established-state fixture or lifecycle patch. Its 58 steps perform
+first start, snapshot resolution, registration, setup of the Pool, both filesystem Resources
+and both Agents, and the four declared opens. A reads/lists the project and is refused a
+write; B reads/writes/reads. Both post/list/read history. Then root closes A's project
+Conduit: its old keyed call is refused, B writes/reads, and both retain history access.
+Explicit register-replacement makes a registered, unopened slot with a new ID; setup opens
+it, A reads again and still cannot write. Exact private tool lists, unchanged B/history,
+plain calls without Conduit metadata, final invocation outcomes and ordered request records
+are asserted. Every external dispatch receives a scripted completion; no server, process,
+Agent, file effect or model catalog is observed.
+
+### Increment 2's done-when, item by item
+
+| Item from the first build | Evidence and limit |
+| --- | --- |
+| S1's documents register and resolve | `s1-whole` resolves the actual filesystem/history/Agent snapshots and registers the ordinary S1 project after actual first start. It asserts the 19 new objects, package identities, endpoints, operation lists and lifecycle progress. `registration-s1-orders` additionally checks order independence; `archives-s1` checks real compressed bytes separately. |
+| Every decision cites a promise | The runner rejects every emitted decision with no promise or an unknown ID, on all core steps. DL choices occupy their own field. This is executable citation coverage, not a proof that every citation is sufficient. |
+| The safety vectors pass | The complete suite is required, including E05 standalone schema cases, access/refusal/bounds/filter boundaries, request endings/repeats/restart, partial setup/cancellation, E08's supplied trusted broker, E11 frozen contexts and E12 stale IDs. The run results below report actual checks, not expected passes. |
+| Each case the core cannot decide is a logged finding | Findings 2-01 through 2-08 are settled in this log, including the return reviews. This integrated trace needed no new language answer. Unsupported implementation paths and missing coverage are recorded below for the admin; they are not silently answered or represented as language settlements. |
+
+The [manifest](../../../conformance/manifest.yaml) now lists the study's complete inventory:
+308 distinct promises including OBS-001/002/006 in its closing paragraph. 217 have vectors;
+91 have explicit reasons. The runner validates the exact inventory and case references even
+on a development subset; a regression test removes a row, removes a reason and supplies a
+false case attribution, and each must fail. Case tags claim their asserted slice, not an
+entire promise. Loader workspace tests not yet ported to portable cases, missing semantic
+boundary pairs, release-skew/compatibility and shell-only evidence are distinguished in the
+reasons. No promise S1 touches is omitted without explanation. This does not turn the 91
+reasons into conformance results.
+
+### For the admin: implementation and coverage work
+
+**I2-09-implementation: implementation gap, not a new language finding.**
+The existing promises decide these behaviors; no new ruling was needed or made here.
+The [handoff](increment-3-handoff.md#current-implementation-limits-to-resolve-before-exposure)
+records the unsupported public core paths: complete retirement/stop-run, unregister,
+retire-with-resources, declare-lost, controls and the install.v1 invocation workflow.
+Archive admission is already pure and tested, but lacks that workflow's access, fetch,
+dispatch and records. Retirement/name-reuse safety observations do not execute a retirement.
+The current dispatcher reports an embedding error for unsupported engine operations; it must
+not be routed to an external server or implemented again by the shell. **The admin needs a
+core follow-up before claiming or exposing the complete management tool contract.** This is
+unfinished implementation, not a gap in what the promises decide. The manifest's reasons
+record each affected S1-inventory promise; H03/H12 in the handoff are order-sized work items.
+
+**I2-09-coverage: coverage gap, not an undecided language answer.**
+Port the loader-only rows as portable cases, add the individually named semantic boundary
+pairs (including capability/Type rejection, frozen placement, consumer crash, standalone
+Conduit opens, missing revisions and expected retirement conflicts), and qualify release
+compatibility before T5. Keep these as coverage work rather than relabelling broad happy-path
+vectors as complete promise proofs. Credential secrecy, actual process environment, client
+catalog behavior and around-engine reach require shell evidence; scripted core facts cannot
+supply it. This order changes no promise and records no recommendation as an accepted ruling.
+
+### Lean vectors: measured costs and proposed later order
+
+Before this order, `conformance/` held **8,202,082 bytes in 1,269 files**. Its 361 case files
+held **6,674,308 bytes**. The largest was setup-close, 92,353 bytes; setup-base was 91,376.
+These are case scripts containing repeated traces and expectations, not 361 independent
+90 KB state snapshots: 224 cases used an initial snapshot recipe, mostly referencing the
+same 10,700-byte root/system state. There were 207 repeated register-project inputs and
+129 expectations containing whole object arrays. Repeated supplied UUID pools, expanded
+registration records, package/contract contexts and pretty-printed expected states account
+for much of the size. For scale, compact JSON encoding of the legacy input evidence fields
+alone takes 980,757 bytes, expected record fields 1,083,521, and expected state fields
+1,236,657; these logical field counts are not additive measurements of disk space.
+
+The new continuous case keeps ordinary documents shared by file alias and uses existing fact
+projections for most later steps; it deliberately carries its own full first-start and S1
+registration assertions and supplied evidence. Its length is a reason to improve the runner
+format rather than copy this full trace into every future case. **No legacy vector is
+rewritten here.** A later order can:
+
+1. Add versioned runner-only shared scenario fixtures for common first start, registration,
+   setup traces and allocation evidence. Make prerequisites explicit, acyclic and immutable;
+   include no fixture syntax in Conduit documents. Avoid bootstrapping a test of setup from
+   a silently ready snapshot. Keep one continuous empty-state S1 case.
+2. Reuse ordinary package/project files and small declared variants, and deduplicate repeated
+   fixture documents by content. Preserve original manifest bytes/values and package digests;
+   never hide a changed submission behind a fixture merge.
+3. Replace large repeated expected states with exact identity/cardinality sets plus required
+   field projections and explicit absences. For records, keep exact event counts/order and
+   correlation, optional data only where its rule is under test (decision 7, REC-001/002).
+   Extend the existing record_facts matcher with exact cardinality/set checks before dropping
+   legacy exact record arrays; a subsequence alone must not permit extra effects.
+4. Offer named deterministic allocation blocks/captures at the runner boundary, expanded to
+   explicit Evidence before step. Keep uniqueness/exhaustion checks and report expanded input
+   on failure. Never let shorter fixtures supply time or entropy from ambient sources.
+5. Migrate by family, run both representations and compare transitions/verdicts, and retain
+   omission/extra-object, missing-record and wrong-correlation regression checks. Measure
+   bytes before/after and preserve case IDs, manifest attributions and readable failure paths.
+   Invocation-context compaction is a separate DL2 storage task, not a fixture rewrite.
+
+### Conformance choices, handoff and validation
+
+[CONFORMANCE.md](../../../reference-model/CONFORMANCE.md) consolidates the profile and
+orders 004-017: implemented portions of DL2-10/12/13/15, their sources/evidence, and the
+remaining DL1/3/5/7/8/10/12/13/16/17 choices. Removed DL11/14 are not reused. It makes no
+claim of a persistent shell or cryptographic identity implementation.
+[The handoff](increment-3-handoff.md) enumerates the actual core API, every current intent
+and completion shape, consumer contract, unsupported paths, the first build's ten needs and
+experiments 008/009's observed limitations as H01-H12. No network was used except crate
+fetching; no real client, credential directory or owner configuration was accessed.
+
+**Actual validation, 2026-11-09.** The workspace release suite passed, including all 362
+portable cases (the vector test took 148.86 seconds), record/schema/boundary regressions and
+the new inventory rejection test. After tightening the new case's unchanged-revision
+assertions and removing two inherited tags it did not independently demonstrate, the final
+58-step `s1-whole` subset passed again, with complete manifest validation. Clippy with warnings
+denied and formatting passed. The documentation, assigned-name, schema and roadmap checks
+passed, as did Git's whitespace check and a separate scan of all nine changed/new text files.
+No promise, legacy vector, owner configuration, branch, commit, Git index or remote was changed.

@@ -4073,6 +4073,2713 @@
         "REC-002",
         "OPS-023"
       ]
+    },
+    {
+      "id": "s1-whole",
+      "case": "conventions/s1/whole/case.yaml",
+      "promises": [
+        "FST-001",
+        "FST-002",
+        "FST-003",
+        "FST-005",
+        "NAM-020",
+        "PLC-008",
+        "PLC-026",
+        "PRV-014",
+        "REC-001",
+        "REC-002",
+        "REC-003",
+        "CON-004",
+        "ACC-005",
+        "TPL-012",
+        "PRV-007",
+        "LIF-003",
+        "REV-004",
+        "IMP-002",
+        "LIF-008",
+        "LIF-009",
+        "ACC-001",
+        "ACC-003",
+        "ACC-011",
+        "ACC-036",
+        "IFC-001",
+        "IFC-007",
+        "IFC-012",
+        "IFC-013",
+        "IFC-025",
+        "OPS-001",
+        "OPS-002",
+        "OPS-005",
+        "OPS-008",
+        "OPS-019",
+        "LIF-035",
+        "SUB-001",
+        "SUB-002",
+        "SUB-003",
+        "SUB-006",
+        "INS-013",
+        "INS-016",
+        "OBJ-003",
+        "OBJ-009",
+        "TPL-004",
+        "NAM-009",
+        "PLC-001",
+        "PLC-002",
+        "POOL-001",
+        "CON-001",
+        "CON-002",
+        "CON-011",
+        "CON-014",
+        "CON-016",
+        "LIF-002",
+        "LIF-024",
+        "REV-001",
+        "PRV-022",
+        "PKG-006",
+        "PKG-003",
+        "PKG-021",
+        "NAM-014",
+        "SUB-008"
+      ]
     }
-  ]
+  ],
+  "s1_coverage": [
+    {
+      "promise": "SUB-005",
+      "vectors": [
+        "loader-schema-attribution",
+        "loader-string-values",
+        "loader-leading-bom",
+        "e05-core-register",
+        "e05-core-replace",
+        "packages-duplicate-exports",
+        "registration-runtime-wrong-family",
+        "archives-invalid-document"
+      ]
+    },
+    {
+      "promise": "FST-001",
+      "vectors": [
+        "first-start",
+        "first-start-repeat",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "FST-002",
+      "vectors": [
+        "first-start",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "FST-003",
+      "vectors": [
+        "first-start",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "FST-005",
+      "vectors": [
+        "first-start",
+        "first-start-repeat",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "FST-006",
+      "vectors": [
+        "first-start-protected",
+        "first-start-protected-authorized",
+        "access-s1-pool-authority"
+      ]
+    },
+    {
+      "promise": "LIF-034",
+      "vectors": [
+        "first-start-lifecycle-protected",
+        "first-start-lifecycle-pool-target",
+        "access-routing",
+        "access-root-local-lost",
+        "access-fixed-kind-references"
+      ]
+    },
+    {
+      "promise": "NAM-020",
+      "vectors": [
+        "first-start",
+        "first-start-protected",
+        "first-start-protected-authorized",
+        "packages-core-no-manifest",
+        "packages-s1",
+        "archives-s1",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PLC-008",
+      "vectors": [
+        "first-start",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PLC-026",
+      "vectors": [
+        "first-start",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PRV-014",
+      "vectors": [
+        "first-start",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "OBJ-001",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "OBJ-002",
+      "vectors": [
+        "registration-existing-name",
+        "access-fixed-kind-references"
+      ]
+    },
+    {
+      "promise": "OBJ-003",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-pool-entries",
+        "registration-s1-orders",
+        "registration-generated-collision",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "OBJ-004",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "OBJ-006",
+      "vectors": [
+        "access-fixed-kind-references"
+      ]
+    },
+    {
+      "promise": "OBJ-007",
+      "vectors": [
+        "registration-reference-template"
+      ]
+    },
+    {
+      "promise": "OBJ-008",
+      "vectors": [
+        "registration-template-unresolved",
+        "registration-template-nested-notes",
+        "registration-template-entry-reference",
+        "registration-template-entry-missing",
+        "registration-template-nested-from-note"
+      ]
+    },
+    {
+      "promise": "OBJ-009",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-reference-config",
+        "registration-reference-missing",
+        "registration-reference-authored-id",
+        "registration-owner-missing",
+        "registration-s1-orders",
+        "registration-reference-chains",
+        "registration-nested-reference-input",
+        "registration-nested-reference-missing",
+        "registration-reference-patterns",
+        "registration-requirement-bound",
+        "registration-requirement-missing",
+        "registration-requirement-authored-id",
+        "registration-requirement-schema-default",
+        "registration-entry-placement-retained",
+        "registration-entry-retired-only",
+        "registration-entry-active-replacement",
+        "registration-runtime-explicit",
+        "registration-runtime-retired",
+        "registration-entry-runtime-retained",
+        "registration-template-entry-reference",
+        "registration-template-entry-missing",
+        "registration-requirement-contract-context",
+        "setup-restore-missing-template",
+        "setup-restore-retired-target",
+        "setup-review-replacement-reference",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "OBJ-010",
+      "vectors": [
+        "records-expected-id",
+        "records-input-reference"
+      ]
+    },
+    {
+      "promise": "OBJ-011",
+      "vectors": [],
+      "reason": "The continuous trace retains identities and instance definitions through close/replacement, but has no dedicated forbidden name/instance-edit case. Add one in the I2-09 coverage follow-up."
+    },
+    {
+      "promise": "OBJ-012",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "OBJ-013",
+      "vectors": [
+        "registration-standard-argument-owner",
+        "registration-standard-argument-placement",
+        "registration-standard-argument-runtime",
+        "registration-standard-argument-consumer",
+        "registration-standard-argument-target"
+      ]
+    },
+    {
+      "promise": "OBJ-014",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "OBJ-015",
+      "vectors": [],
+      "reason": "Related input/default/reference cases exist, but no case declares an isolated assertion of this complete rule. Port its positive and negative boundary checks in the coverage follow-up (I2-09)."
+    },
+    {
+      "promise": "OBJ-016",
+      "vectors": [],
+      "reason": "Related input/default/reference cases exist, but no case declares an isolated assertion of this complete rule. Port its positive and negative boundary checks in the coverage follow-up (I2-09)."
+    },
+    {
+      "promise": "OBJ-017",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "OBJ-018",
+      "vectors": [],
+      "reason": "S1 metadata is loaded and retained; no portable variant changes description/annotations to prove semantic neutrality. Add paired variants in the coverage follow-up."
+    },
+    {
+      "promise": "OBJ-019",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "OBJ-020",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "OBJ-021",
+      "vectors": [
+        "registration-reference-config",
+        "registration-reference-chains",
+        "registration-reference-null",
+        "registration-reference-patterns",
+        "registration-type-no-schema",
+        "registration-requirement-bound",
+        "registration-requirement-contract-context"
+      ]
+    },
+    {
+      "promise": "OBJ-022",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "OBJ-023",
+      "vectors": [],
+      "reason": "Registration rejection is covered under SUB-003 and specific rule IDs, but no vector isolates every invalid-versus-name-conflict diagnostic envelope. Add that complete matrix in the coverage follow-up."
+    },
+    {
+      "promise": "OBJ-024",
+      "vectors": [],
+      "reason": "The runner and loader read spec/names.yaml on every run; tools/set_names.py --check audits spelling. There is no portable name-assignment mutation vector."
+    },
+    {
+      "promise": "OBJ-025",
+      "vectors": [
+        "registration-existing-name"
+      ]
+    },
+    {
+      "promise": "INS-001",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "INS-002",
+      "vectors": [
+        "packages-from-needs-template",
+        "registration-template-missing",
+        "registration-template-family",
+        "setup-restore-missing-template",
+        "setup-restore-retired-target"
+      ]
+    },
+    {
+      "promise": "INS-003",
+      "vectors": [
+        "registration-arguments-unknown",
+        "registration-requirement-unknown"
+      ]
+    },
+    {
+      "promise": "INS-004",
+      "vectors": [
+        "registration-arguments-required",
+        "registration-s1-atomic-rejection",
+        "registration-s1-rejected-orders",
+        "registration-requirement-required"
+      ]
+    },
+    {
+      "promise": "INS-005",
+      "vectors": [
+        "registration-arguments-null",
+        "registration-arguments-invalid",
+        "registration-requirement-invalid"
+      ]
+    },
+    {
+      "promise": "INS-006",
+      "vectors": [
+        "registration-arguments-relative",
+        "registration-argument-overrides",
+        "registration-argument-map-default",
+        "registration-nested-reference-input",
+        "setup-review-replacement-reference"
+      ]
+    },
+    {
+      "promise": "INS-007",
+      "vectors": [
+        "registration-arguments-default",
+        "registration-argument-map-default"
+      ]
+    },
+    {
+      "promise": "INS-008",
+      "vectors": [
+        "registration-arguments-optional",
+        "registration-type-default"
+      ]
+    },
+    {
+      "promise": "INS-009",
+      "vectors": [
+        "registration-arguments-null",
+        "registration-frozen-template"
+      ]
+    },
+    {
+      "promise": "INS-010",
+      "vectors": [
+        "registration-destination-overlap"
+      ]
+    },
+    {
+      "promise": "INS-011",
+      "vectors": [
+        "registration-destination-parent"
+      ]
+    },
+    {
+      "promise": "INS-012",
+      "vectors": [
+        "registration-config-standard-defaults",
+        "registration-operations-input-accepted",
+        "registration-operations-input-rejected"
+      ]
+    },
+    {
+      "promise": "INS-013",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-s1-orders",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "INS-014",
+      "vectors": [
+        "registration-config-invalid"
+      ]
+    },
+    {
+      "promise": "INS-016",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-pool-entries",
+        "registration-s1-orders",
+        "registration-generated-collision",
+        "registration-nested-reference-input",
+        "registration-placement-label-darwin",
+        "records-broker",
+        "records-broker-filtered",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "INS-017",
+      "vectors": [],
+      "reason": "registration-s1-orders compares file/document permutations, not separate equal instantiations with generated identities projected out. That distinct comparison remains coverage debt."
+    },
+    {
+      "promise": "INS-018",
+      "vectors": [
+        "registration-arguments-relative"
+      ]
+    },
+    {
+      "promise": "INS-019",
+      "vectors": [
+        "registration-arguments-default",
+        "registration-arguments-optional",
+        "registration-type-default",
+        "registration-argument-overrides",
+        "registration-argument-map-default"
+      ]
+    },
+    {
+      "promise": "INS-020",
+      "vectors": [
+        "registration-frozen-template",
+        "setup-restore-current-template",
+        "setup-review-replacement-reference",
+        "records-replace"
+      ]
+    },
+    {
+      "promise": "INS-021",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "INS-023",
+      "vectors": [
+        "registration-operations-input-accepted",
+        "registration-operations-input-rejected"
+      ]
+    },
+    {
+      "promise": "INS-024",
+      "vectors": [
+        "registration-arguments-default"
+      ]
+    },
+    {
+      "promise": "INS-025",
+      "vectors": [
+        "registration-template-project-local",
+        "registration-template-kind-name"
+      ]
+    },
+    {
+      "promise": "TPL-001",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "TPL-002",
+      "vectors": [
+        "packages-type-family",
+        "registration-type-family"
+      ]
+    },
+    {
+      "promise": "TPL-003",
+      "vectors": [
+        "registration-implementation-engine"
+      ]
+    },
+    {
+      "promise": "TPL-004",
+      "vectors": [
+        "packages-qualified-implementation-override",
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-s1-orders",
+        "registration-implementation-default",
+        "registration-implementation-missing",
+        "registration-implementation-override",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "TPL-005",
+      "vectors": [
+        "registration-implementation-wrong-operation"
+      ]
+    },
+    {
+      "promise": "TPL-019",
+      "vectors": [
+        "registration-implementation-two-runs"
+      ]
+    },
+    {
+      "promise": "CTR-001",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "CTR-002",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "CTR-003",
+      "vectors": [],
+      "reason": "Capability-member resolution is exercised by S1, but non-core capabilities listing reserved operations have no specifically attributed portable rejection; add it in the coverage follow-up."
+    },
+    {
+      "promise": "CTR-004",
+      "vectors": [
+        "registration-type-no-schema"
+      ]
+    },
+    {
+      "promise": "CTR-007",
+      "vectors": [],
+      "reason": "No dedicated portable package variant gives two capability members one export name. This negative boundary remains coverage debt, not a language ambiguity."
+    },
+    {
+      "promise": "CTR-008",
+      "vectors": [],
+      "reason": "E05 evaluates Schema spec values, but no isolated case asserts the entire-spec rule against an incorrectly unwrapped spec. Add this distinction in the coverage follow-up."
+    },
+    {
+      "promise": "CTR-009",
+      "vectors": [],
+      "reason": "No dedicated portable variant defines a non-core reserved-to-root Operation. Add that admission rejection in the coverage follow-up."
+    },
+    {
+      "promise": "CTR-012",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-001",
+      "vectors": [
+        "e05-local",
+        "e05-siblings",
+        "schema-pattern-properties",
+        "schema-literal-data",
+        "schema-defaults",
+        "schema-formats",
+        "schema-pattern-property-ref"
+      ]
+    },
+    {
+      "promise": "SCH-002",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-003",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-004",
+      "vectors": [
+        "loader-format-letter-case",
+        "schema-formats"
+      ]
+    },
+    {
+      "promise": "SCH-005",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-006",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-007",
+      "vectors": [],
+      "reason": "Related input/default/reference cases exist, but no case declares an isolated assertion of this complete rule. Port its positive and negative boundary checks in the coverage follow-up (I2-09)."
+    },
+    {
+      "promise": "SCH-008",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-009",
+      "vectors": [
+        "schema-defaults",
+        "schema-root-ref-default",
+        "schema-conditional-default",
+        "schema-array-defaults",
+        "schema-applicator-defaults",
+        "schema-conflicting-defaults",
+        "schema-equal-defaults",
+        "registration-requirement-schema-default"
+      ]
+    },
+    {
+      "promise": "SCH-010",
+      "vectors": [
+        "schema-defaults",
+        "schema-map-default",
+        "schema-array-defaults",
+        "schema-applicator-defaults"
+      ]
+    },
+    {
+      "promise": "SCH-011",
+      "vectors": [],
+      "reason": "Related input/default/reference cases exist, but no case declares an isolated assertion of this complete rule. Port its positive and negative boundary checks in the coverage follow-up (I2-09)."
+    },
+    {
+      "promise": "SCH-012",
+      "vectors": [
+        "loader-string-values"
+      ]
+    },
+    {
+      "promise": "SCH-013",
+      "vectors": [
+        "loader-string-values",
+        "loader-leading-bom"
+      ]
+    },
+    {
+      "promise": "SCH-014",
+      "vectors": [],
+      "reason": "No actual MCP server catalog is ingested in this increment. Increment 3 must accept unchanged server schemas outside the authored Conduit profile at the shell edge."
+    },
+    {
+      "promise": "SCH-015",
+      "vectors": [
+        "e05-local",
+        "e05-two-contexts",
+        "e05-recursive",
+        "e05-siblings",
+        "e05-escaping",
+        "e05-core-register",
+        "e05-core-replace",
+        "e05-root-local",
+        "schema-root-ref-default",
+        "schema-conditional-default",
+        "schema-reference-kind",
+        "e05-control-local-targets",
+        "schema-conflicting-defaults",
+        "schema-equal-defaults",
+        "packages-exact",
+        "packages-schema-kind",
+        "registration-reference-chains"
+      ]
+    },
+    {
+      "promise": "SCH-016",
+      "vectors": [
+        "loader-pattern-tokens",
+        "schema-pattern-properties",
+        "schema-pattern-property-ref",
+        "schema-applicator-defaults"
+      ]
+    },
+    {
+      "promise": "SCH-017",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-018",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-019",
+      "vectors": [
+        "schema-invalid-default",
+        "schema-map-default"
+      ]
+    },
+    {
+      "promise": "SCH-020",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SCH-021",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "SUB-001",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-s1-orders",
+        "registration-s1-rejected-orders",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "SUB-002",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-template-project-local",
+        "registration-reference-config",
+        "registration-owner",
+        "registration-s1-orders",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "SUB-003",
+      "vectors": [
+        "first-start-protected",
+        "first-start-protected-authorized",
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-arguments-unknown",
+        "registration-arguments-invalid",
+        "registration-arguments-required",
+        "registration-destination-overlap",
+        "registration-destination-parent",
+        "registration-template-missing",
+        "registration-template-family",
+        "registration-duplicate",
+        "registration-existing-name",
+        "registration-reference-missing",
+        "registration-reference-authored-id",
+        "registration-reference-template",
+        "registration-owner-missing",
+        "registration-placement-not-node",
+        "registration-s1-atomic-rejection",
+        "registration-s1-orders",
+        "registration-s1-rejected-orders",
+        "registration-config-invalid",
+        "registration-implementation-missing",
+        "registration-implementation-wrong-operation",
+        "registration-implementation-engine",
+        "registration-implementation-two-runs",
+        "registration-type-family",
+        "registration-owner-retired",
+        "registration-placement-retired",
+        "registration-nested-reference-missing",
+        "registration-placement-label-linux",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "SUB-004",
+      "vectors": [
+        "registration-duplicate"
+      ]
+    },
+    {
+      "promise": "SUB-006",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-s1-orders",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "SUB-007",
+      "vectors": [],
+      "reason": "Ordinary re-registration cannot replace a template, but a dedicated existing-template positive/negative pair is not tagged in the portable suite. Add it in the coverage follow-up."
+    },
+    {
+      "promise": "SUB-008",
+      "vectors": [
+        "packages-exact",
+        "packages-local-contract",
+        "packages-relative-fetch-directory",
+        "packages-relative-program-directory",
+        "packages-program-path-punctuation",
+        "packages-digest-original",
+        "packages-digest-order-and-templates",
+        "packages-s1",
+        "registration-frozen-template",
+        "archives-s1",
+        "archives-registered-project-holder",
+        "records-replace",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "SUB-009",
+      "vectors": [
+        "records-replace"
+      ]
+    },
+    {
+      "promise": "SUB-010",
+      "vectors": [
+        "packages-fetch-is-inert",
+        "packages-relative-fetch-directory",
+        "packages-relative-program-directory",
+        "packages-encoded-fetch-path",
+        "packages-program-path-punctuation",
+        "packages-relative-program-parent-traversal",
+        "archives-dangling",
+        "archives-manifest-file-parent",
+        "archives-manifest-missing-parent",
+        "setup-review-relative-provider"
+      ]
+    },
+    {
+      "promise": "SUB-011",
+      "vectors": [
+        "loader-depth-limit"
+      ]
+    },
+    {
+      "promise": "NAM-001",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "NAM-002",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "NAM-003",
+      "vectors": [],
+      "reason": "Bare local names occur throughout registration, but no portable case contrasts a missing bare local name with a same-named package export. Add that isolation check."
+    },
+    {
+      "promise": "NAM-004",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "NAM-005",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "NAM-006",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "NAM-007",
+      "vectors": [
+        "packages-no-manifest-pin",
+        "packages-own-qualified"
+      ]
+    },
+    {
+      "promise": "NAM-008",
+      "vectors": [
+        "packages-unused-pin"
+      ]
+    },
+    {
+      "promise": "NAM-009",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-s1-orders",
+        "registration-implementation-default",
+        "archives-registered-project-holder",
+        "records-inspection",
+        "records-replace",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "NAM-010",
+      "vectors": [
+        "registration-frozen-template",
+        "registration-retained-package-missing",
+        "registration-retained-package-build-metadata"
+      ]
+    },
+    {
+      "promise": "NAM-011",
+      "vectors": [],
+      "reason": "Old held contexts are asserted by records-replace, but there is no case installing a second release and explicitly asserting unchanged old pins; this remains coverage debt for T5."
+    },
+    {
+      "promise": "NAM-012",
+      "vectors": [],
+      "reason": "Snapshot resolution and archive admission do not fetch; the explicit source-fetch dispatch and authorization of install.v1 are not implemented. Increment 3 must complete that path."
+    },
+    {
+      "promise": "NAM-013",
+      "vectors": [
+        "archives-s1"
+      ]
+    },
+    {
+      "promise": "NAM-014",
+      "vectors": [
+        "e05-two-contexts",
+        "e05-target-version",
+        "packages-exact",
+        "packages-independent-manifests",
+        "packages-s1",
+        "archives-s1",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "NAM-015",
+      "vectors": [],
+      "reason": "No dedicated portable pair registers or installs two compatibility-versioned contract export names together. Add one in the coverage follow-up."
+    },
+    {
+      "promise": "NAM-017",
+      "vectors": [],
+      "reason": "S1 uses one package release. A different-release consumer/target open pair has no vector; add it before claiming release-skew conformance."
+    },
+    {
+      "promise": "NAM-018",
+      "vectors": [
+        "packages-qualified-template",
+        "packages-data-not-selections"
+      ]
+    },
+    {
+      "promise": "NAM-021",
+      "vectors": [
+        "packages-core-project-address",
+        "packages-core-pin",
+        "packages-core-snapshot"
+      ]
+    },
+    {
+      "promise": "NAM-022",
+      "vectors": [
+        "packages-local-contract",
+        "packages-qualified-implementation-override",
+        "records-replace"
+      ]
+    },
+    {
+      "promise": "NAM-023",
+      "vectors": [
+        "e05-two-contexts",
+        "e05-missing-contract",
+        "e05-target-version"
+      ]
+    },
+    {
+      "promise": "NAM-024",
+      "vectors": [],
+      "reason": "Release compatibility across installed package versions has no portable admission pair. Required before T5; one-release S1 does not demonstrate this rule."
+    },
+    {
+      "promise": "NAM-025",
+      "vectors": [],
+      "reason": "This is a should recommendation for package authors, not a core acceptance verdict. The mandatory compatibility check is NAM-024, separately marked as uncovered."
+    },
+    {
+      "promise": "NAM-026",
+      "vectors": [
+        "access-capability-skew"
+      ]
+    },
+    {
+      "promise": "NAM-027",
+      "vectors": [
+        "packages-cross-kind-duplicate",
+        "packages-item-document-duplicate"
+      ]
+    },
+    {
+      "promise": "NAM-028",
+      "vectors": [
+        "packages-private-export",
+        "packages-missing-selection",
+        "packages-no-cross-scope-lookup",
+        "packages-contract-version-distinct",
+        "packages-qualified-template",
+        "records-replace"
+      ]
+    },
+    {
+      "promise": "PKG-001",
+      "vectors": [
+        "archives-invalid-version"
+      ]
+    },
+    {
+      "promise": "PKG-003",
+      "vectors": [
+        "packages-exact",
+        "packages-version-mismatch",
+        "packages-build-metadata",
+        "packages-prerelease-mismatch",
+        "packages-independent-manifests",
+        "packages-s1",
+        "registration-retained-package-build-metadata",
+        "archives-s1",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PKG-004",
+      "vectors": [
+        "archives-dot-entry",
+        "archives-nested-document",
+        "archives-symlink",
+        "archives-hardlink",
+        "archives-program",
+        "archives-digest-format",
+        "archives-s1"
+      ]
+    },
+    {
+      "promise": "PKG-005",
+      "vectors": [
+        "archives-registered-project-holder"
+      ]
+    },
+    {
+      "promise": "PKG-006",
+      "vectors": [
+        "packages-exact",
+        "packages-missing",
+        "packages-version-mismatch",
+        "packages-digest-mismatch",
+        "packages-prerelease-mismatch",
+        "packages-fetch-is-inert",
+        "packages-missing-with-fetch",
+        "packages-s1",
+        "packages-s1-missing",
+        "packages-s1-digest-mismatch",
+        "archives-s1",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PKG-007",
+      "vectors": [
+        "registration-retained-package-missing",
+        "registration-retained-package-build-metadata"
+      ]
+    },
+    {
+      "promise": "PKG-012",
+      "vectors": [
+        "packages-duplicate-exports"
+      ]
+    },
+    {
+      "promise": "PKG-017",
+      "vectors": [
+        "packages-build-metadata",
+        "packages-snapshot-address",
+        "packages-snapshot-version",
+        "archives-dot-entry",
+        "archives-nested-document",
+        "archives-symlink",
+        "archives-hardlink",
+        "archives-program",
+        "archives-wrong-address",
+        "archives-wrong-version",
+        "archives-s1",
+        "archives-project-unheld",
+        "archives-no-project-holder",
+        "archives-package-holder"
+      ]
+    },
+    {
+      "promise": "PKG-018",
+      "vectors": [
+        "packages-private-export"
+      ]
+    },
+    {
+      "promise": "PKG-019",
+      "vectors": [],
+      "reason": "S1 asserts the selected item and plain operation mapping, but not every malformed implements/binding combination. Add a dedicated complete admission pair in the coverage follow-up."
+    },
+    {
+      "promise": "PKG-020",
+      "vectors": [
+        "packages-plain-missing-tool",
+        "access-plain-registration"
+      ]
+    },
+    {
+      "promise": "PKG-021",
+      "vectors": [
+        "packages-exact",
+        "packages-digest-mismatch",
+        "packages-s1",
+        "packages-s1-digest-mismatch",
+        "archives-s1",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PKG-022",
+      "vectors": [
+        "archives-dot-entry",
+        "archives-nested-document",
+        "archives-symlink",
+        "archives-hardlink",
+        "archives-program",
+        "archives-link-cycle",
+        "archives-not-gzip",
+        "archives-not-tar",
+        "archives-s1",
+        "archives-manifest-file-parent",
+        "archives-manifest-missing-parent",
+        "archives-manifest-directory-parent",
+        "archives-link-expansions-39",
+        "archives-link-expansions-40",
+        "archives-link-expansions-41"
+      ]
+    },
+    {
+      "promise": "PKG-023",
+      "vectors": [
+        "archives-wrong-address",
+        "archives-wrong-version",
+        "archives-instance",
+        "archives-traversal",
+        "archives-absolute",
+        "archives-link-escape",
+        "archives-link-absolute",
+        "archives-hardlink-escape",
+        "archives-indirect-link-escape",
+        "archives-link-cycle",
+        "archives-dangling",
+        "archives-invalid-document",
+        "archives-nested-manifest",
+        "archives-not-gzip",
+        "archives-not-tar",
+        "archives-missing-dependency",
+        "archives-wrong-digest",
+        "archives-digest-format",
+        "archives-invalid-version",
+        "archives-s1",
+        "archives-manifest-file-parent",
+        "archives-manifest-missing-parent",
+        "archives-manifest-directory-parent",
+        "archives-link-expansions-39",
+        "archives-link-expansions-40",
+        "archives-link-expansions-41",
+        "archives-project-unheld",
+        "archives-no-project-holder",
+        "archives-package-holder"
+      ]
+    },
+    {
+      "promise": "PKG-024",
+      "vectors": [
+        "archives-unavailable"
+      ]
+    },
+    {
+      "promise": "PKG-025",
+      "vectors": [
+        "archives-s1"
+      ]
+    },
+    {
+      "promise": "PKG-026",
+      "vectors": [
+        "archives-dot-entry",
+        "archives-nested-document",
+        "archives-symlink",
+        "archives-hardlink",
+        "archives-program",
+        "archives-wrong-digest",
+        "archives-s1"
+      ]
+    },
+    {
+      "promise": "PKG-027",
+      "vectors": [
+        "archives-s1"
+      ]
+    },
+    {
+      "promise": "PKG-028",
+      "vectors": [
+        "archives-missing-dependency",
+        "archives-s1"
+      ]
+    },
+    {
+      "promise": "PKG-029",
+      "vectors": [
+        "archives-template-contract-holder",
+        "archives-instance-contract-holder",
+        "archives-template-implementation-holder",
+        "archives-instance-implementation-holder",
+        "archives-registered-project-holder"
+      ]
+    },
+    {
+      "promise": "MAN-001",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "MAN-002",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "MAN-003",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "MAN-004",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "MAN-005",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "MAN-006",
+      "vectors": [
+        "packages-relative-fetch-values"
+      ]
+    },
+    {
+      "promise": "MAN-007",
+      "vectors": [
+        "packages-absent-export"
+      ]
+    },
+    {
+      "promise": "MAN-009",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "MAN-010",
+      "vectors": [
+        "loader-package-pin-document",
+        "packages-relative-program-values",
+        "packages-package-binding",
+        "packages-package-binding-optional-null",
+        "packages-package-undeclared-binding",
+        "packages-relative-program-parent-traversal",
+        "setup-review-relative-provider"
+      ]
+    },
+    {
+      "promise": "MAN-011",
+      "vectors": [
+        "packages-snapshot-instance",
+        "archives-dot-entry",
+        "archives-nested-document",
+        "archives-symlink",
+        "archives-hardlink",
+        "archives-program",
+        "archives-instance",
+        "archives-s1",
+        "archives-manifest-file-parent",
+        "archives-manifest-missing-parent",
+        "archives-manifest-directory-parent",
+        "archives-link-expansions-39",
+        "archives-link-expansions-40",
+        "archives-link-expansions-41"
+      ]
+    },
+    {
+      "promise": "MAN-012",
+      "vectors": [],
+      "reason": "S1 selects the built-in engine item; no portable vector independently contrasts it with a user item trying to supply engine command/package/remote/supports fields. Add that boundary."
+    },
+    {
+      "promise": "MAN-013",
+      "vectors": [
+        "archives-nested-manifest",
+        "archives-s1",
+        "archives-manifest-file-parent",
+        "archives-manifest-missing-parent",
+        "archives-manifest-directory-parent",
+        "archives-link-expansions-39",
+        "archives-link-expansions-40",
+        "archives-link-expansions-41"
+      ]
+    },
+    {
+      "promise": "MAN-014",
+      "vectors": [
+        "archives-traversal",
+        "archives-absolute",
+        "archives-link-escape",
+        "archives-link-absolute",
+        "archives-hardlink-escape",
+        "archives-indirect-link-escape",
+        "archives-s1"
+      ]
+    },
+    {
+      "promise": "MAN-015",
+      "vectors": [
+        "packages-project-address-required"
+      ]
+    },
+    {
+      "promise": "MAN-016",
+      "vectors": [
+        "packages-project-installed-address",
+        "archives-template-contract-holder",
+        "archives-instance-contract-holder",
+        "archives-template-implementation-holder",
+        "archives-instance-implementation-holder",
+        "archives-registered-project-holder"
+      ]
+    },
+    {
+      "promise": "MAN-017",
+      "vectors": [
+        "packages-binding-required-scalar",
+        "packages-binding-optional",
+        "packages-binding-nonscalar",
+        "packages-binding-optional-parent",
+        "packages-binding-conjunction",
+        "packages-binding-local-schema",
+        "packages-binding-nonscalar-branch",
+        "packages-package-binding",
+        "packages-package-binding-null",
+        "packages-package-binding-optional-null",
+        "packages-binding-nullable-parent",
+        "packages-qualified-implementation-override"
+      ]
+    },
+    {
+      "promise": "POOL-001",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-owner",
+        "registration-s1-orders",
+        "access-entry-authority",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "POOL-004",
+      "vectors": [
+        "registration-owner",
+        "registration-owner-retired"
+      ]
+    },
+    {
+      "promise": "PLC-001",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-placement-not-node",
+        "registration-placement-explicit",
+        "registration-s1-orders",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PLC-002",
+      "vectors": [
+        "registration-s1",
+        "registration-s1-reverse",
+        "registration-s1-orders",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PLC-009",
+      "vectors": [],
+      "reason": "No relocation operation or template variant attempts to move an existing instance in these vectors. Add a frozen-placement mutation case before claiming this negative boundary."
+    },
+    {
+      "promise": "PLC-012",
+      "vectors": [],
+      "reason": "A/B colocation grants no extra directory write in s1-whole, but a dedicated no-Conduit colocated consumer case is absent. Add it in the coverage follow-up."
+    },
+    {
+      "promise": "PLC-015",
+      "vectors": [],
+      "reason": "S1 has no placement-node Conduit, but no portable case isolates that absence as its subject. Add an explicit placement authority assertion."
+    },
+    {
+      "promise": "PLC-020",
+      "vectors": [],
+      "reason": "S1 retains absolute root strings; actual interpretation on the node is implementation work. Increment 3 must qualify the unchanged filesystem server and its MCP Roots behavior."
+    },
+    {
+      "promise": "PRV-006",
+      "vectors": [
+        "registration-runtime-non-provider",
+        "registration-runtime-wrong-family",
+        "registration-runtime-explicit",
+        "registration-runtime-retired",
+        "registration-entry-runtime-retained"
+      ]
+    },
+    {
+      "promise": "CON-001",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "CON-002",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "CON-004",
+      "vectors": [
+        "setup-base",
+        "setup-sender",
+        "setup-sender-onward",
+        "setup-sender-no-access",
+        "setup-restore",
+        "setup-optional",
+        "setup-restore-current-template",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "CON-007",
+      "vectors": [],
+      "reason": "No vector crashes a consumer while holding its Conduits open. Core observations must preserve them; add the explicit crash/unreachability observation case."
+    },
+    {
+      "promise": "CON-008",
+      "vectors": [],
+      "reason": "Explicit close is shown by s1-whole; full retirement-driven removal is not supported by the current invocation dispatcher. Complete and vector retirement before claiming the whole rule."
+    },
+    {
+      "promise": "CON-011",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "CON-012",
+      "vectors": [],
+      "reason": "The base S1 and T7 use declared slots. A ready consumer receiving an additional standalone Conduit is not independently vectored; add that case."
+    },
+    {
+      "promise": "CON-013",
+      "vectors": [],
+      "reason": "The current trace restores a declared slot via setup, not a new standalone open for a ready consumer. Add the latter independent case."
+    },
+    {
+      "promise": "CON-014",
+      "vectors": [
+        "setup-close",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "CON-016",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "CON-017",
+      "vectors": [
+        "access-s1-exact-access",
+        "access-capability-skew"
+      ]
+    },
+    {
+      "promise": "CON-020",
+      "vectors": [],
+      "reason": "Strict-loader document/reader acceptance and rejection are workspace tests, including spec/schemas/examples; not yet ported individually to a portable case for this promise. Coverage debt recorded in I2-09, not whole-promise conformance."
+    },
+    {
+      "promise": "CON-021",
+      "vectors": [],
+      "reason": "S1 targets offer the selected capability, but a wrong-offer registration variant has no dedicated attributed case; add that rejection."
+    },
+    {
+      "promise": "CON-022",
+      "vectors": [
+        "access-plain-registration"
+      ]
+    },
+    {
+      "promise": "CON-023",
+      "vectors": [
+        "setup-target-registered"
+      ]
+    },
+    {
+      "promise": "CON-024",
+      "vectors": [
+        "access-routing",
+        "setup-target-registered"
+      ]
+    },
+    {
+      "promise": "CON-025",
+      "vectors": [
+        "setup-restore-missing-template",
+        "setup-restore-retired-target"
+      ]
+    },
+    {
+      "promise": "CON-027",
+      "vectors": [],
+      "reason": "Document schemas restrict endpoint families; the semantic wrong-family target/consumer pair has no dedicated attributed portable case. Add it."
+    },
+    {
+      "promise": "CON-031",
+      "vectors": [],
+      "reason": "Retirement boundaries are observed in setup-review cases, but no dedicated public open of a registered Conduit with a retired consumer is attributed here. Add it."
+    },
+    {
+      "promise": "ACC-005",
+      "vectors": [
+        "setup-base",
+        "setup-sender",
+        "setup-sender-onward",
+        "setup-sender-no-access",
+        "setup-restore",
+        "setup-optional",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "ACC-006",
+      "vectors": [
+        "access-bounds"
+      ]
+    },
+    {
+      "promise": "TPL-008",
+      "vectors": [],
+      "reason": "Setup parent/child invocation correlation is shown by setup-base; retirement is not supported through the general dispatcher. Full setup/retirement coverage awaits that implementation."
+    },
+    {
+      "promise": "TPL-009",
+      "vectors": [],
+      "reason": "The lifecycle interpreter handles setup, open, close and replacement; complete retirement with stop even after hook failure still needs core work and vectors, not a shell-side invented transition."
+    },
+    {
+      "promise": "TPL-012",
+      "vectors": [
+        "setup-base",
+        "setup-sender",
+        "setup-sender-onward",
+        "setup-sender-no-access",
+        "setup-run-unknown",
+        "setup-run-failed",
+        "setup-run-unknown-run",
+        "setup-optional",
+        "setup-hook-succeeded",
+        "setup-hook-failed",
+        "setup-hook-unknown",
+        "setup-pool-entry",
+        "setup-cancel",
+        "setup-run-partial",
+        "setup-run-connections",
+        "setup-review-hook-refused",
+        "setup-review-hook-refused-no-effect",
+        "setup-review-hook-unavailable",
+        "setup-review-hook-unavailable-no-effect",
+        "setup-review-pool-cancel",
+        "setup-review-retire-before-run",
+        "setup-review-retire-connection-succeeded",
+        "setup-review-retire-connection-unknown",
+        "setup-review-retire-run-succeeded",
+        "setup-review-retire-run-unknown",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "TPL-017",
+      "vectors": [
+        "setup-hook-succeeded",
+        "setup-hook-failed",
+        "setup-hook-unknown",
+        "setup-run-connections"
+      ]
+    },
+    {
+      "promise": "LIF-001",
+      "vectors": [],
+      "reason": "S1 asserts registered/ready states; retired inspection across all instance kinds has no complete portable set. Add those inspections with retirement support."
+    },
+    {
+      "promise": "LIF-002",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "LIF-003",
+      "vectors": [
+        "setup-base",
+        "setup-target-registered",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "LIF-004",
+      "vectors": [
+        "setup-sender",
+        "setup-sender-onward",
+        "setup-sender-no-access",
+        "setup-run-unknown",
+        "setup-run-failed",
+        "setup-run-unknown-run",
+        "setup-cancel",
+        "setup-run-partial"
+      ]
+    },
+    {
+      "promise": "LIF-005",
+      "vectors": [],
+      "reason": "Retirement is supplied as an observation in safety variants, not dispatched as a complete public core retirement. Implement and vector the transition before claiming this rule."
+    },
+    {
+      "promise": "LIF-006",
+      "vectors": [
+        "setup-review-retire-connection-succeeded",
+        "setup-review-retire-connection-unknown",
+        "setup-review-retire-run-succeeded",
+        "setup-review-retire-run-unknown"
+      ]
+    },
+    {
+      "promise": "LIF-008",
+      "vectors": [
+        "setup-restore",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "LIF-009",
+      "vectors": [
+        "setup-restore",
+        "setup-restore-current-template",
+        "setup-restore-missing-template",
+        "setup-restore-retired-target",
+        "setup-review-replacement-reference",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "LIF-012",
+      "vectors": [
+        "records-inspection"
+      ]
+    },
+    {
+      "promise": "LIF-013",
+      "vectors": [
+        "records-expected-id",
+        "records-inspection",
+        "records-purge",
+        "records-purge-succeeded",
+        "records-input-reference"
+      ]
+    },
+    {
+      "promise": "LIF-019",
+      "vectors": [
+        "setup-close-in-flight"
+      ]
+    },
+    {
+      "promise": "LIF-024",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "LIF-027",
+      "vectors": [
+        "setup-sender",
+        "setup-sender-onward",
+        "setup-sender-no-access",
+        "setup-run-unknown",
+        "setup-run-failed",
+        "setup-run-unknown-run",
+        "setup-cancel",
+        "setup-run-partial"
+      ]
+    },
+    {
+      "promise": "LIF-029",
+      "vectors": [
+        "setup-restore"
+      ]
+    },
+    {
+      "promise": "LIF-031",
+      "vectors": [
+        "records-expected-id"
+      ]
+    },
+    {
+      "promise": "LIF-032",
+      "vectors": [],
+      "reason": "No dedicated actor request targets both a template and a Conduit with set-up/retire. Add the four rejection cases in the coverage follow-up."
+    },
+    {
+      "promise": "LIF-035",
+      "vectors": [
+        "setup-close",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "LIF-037",
+      "vectors": [
+        "records-expected-id"
+      ]
+    },
+    {
+      "promise": "PRV-003",
+      "vectors": [
+        "setup-run-unknown",
+        "setup-run-failed",
+        "setup-run-unknown-run"
+      ]
+    },
+    {
+      "promise": "PRV-005",
+      "vectors": [
+        "setup-review-provider-records"
+      ]
+    },
+    {
+      "promise": "PRV-007",
+      "vectors": [
+        "setup-base",
+        "setup-run-unknown",
+        "setup-run-failed",
+        "setup-run-unknown-run",
+        "setup-pool-entry",
+        "setup-run-partial",
+        "setup-run-connections",
+        "setup-review-relative-provider",
+        "setup-review-retire-before-run",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PRV-008",
+      "vectors": [],
+      "reason": "No stop-run intent exists in the current lifecycle interpreter. Retirement/stop needs a core slice and completions before a shell order can execute it."
+    },
+    {
+      "promise": "PRV-009",
+      "vectors": [
+        "setup-run-unknown",
+        "setup-run-failed",
+        "setup-run-unknown-run",
+        "setup-review-conditions-builtin",
+        "setup-review-conditions-provider"
+      ]
+    },
+    {
+      "promise": "PRV-022",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "PRV-024",
+      "vectors": [],
+      "reason": "Identity intents carry only materialization requirements; no credential bytes enter this core. Increment 3 must show credential material never reaches diagnostics, records or public results."
+    },
+    {
+      "promise": "REV-001",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "REV-002",
+      "vectors": [
+        "records-replace"
+      ]
+    },
+    {
+      "promise": "REV-003",
+      "vectors": [],
+      "reason": "Template replacement is covered by records-replace; full stored-config/control change is outside this increment. Add the control/config boundary before claiming the whole rule."
+    },
+    {
+      "promise": "REV-004",
+      "vectors": [
+        "setup-base",
+        "records-replace",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "REV-005",
+      "vectors": [],
+      "reason": "The boundary supplies revisions; no dedicated portable test reuses an old revision value. Add this rejection/embedding-boundary check."
+    },
+    {
+      "promise": "REV-011",
+      "vectors": [],
+      "reason": "Revision-checked replacement is exercised, but a standalone missing-revision request is not attributed to this promise. Add that invalid-before-dispatch case."
+    },
+    {
+      "promise": "REV-014",
+      "vectors": [],
+      "reason": "Concurrent setup and retirement observations appear in setup-review cases; complete public overlapping setup/retire/change conflict coverage is not present. Add each pair."
+    },
+    {
+      "promise": "IMP-001",
+      "vectors": [],
+      "reason": "Base Agent types offer no model-work operation and launch no wrapper. Increment 3 must register real wrapper contracts and show explicit authorized turns only."
+    },
+    {
+      "promise": "IMP-002",
+      "vectors": [
+        "setup-base",
+        "setup-hook-succeeded",
+        "setup-hook-failed",
+        "setup-hook-unknown",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "IMP-003",
+      "vectors": [],
+      "reason": "Base types select no turn operation. A portable omitted-versus-false startsModelWork pair is absent; add it with wrapper contract vectors."
+    },
+    {
+      "promise": "ACC-001",
+      "vectors": [
+        "e05-closed",
+        "access-s1-exact-access",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "ACC-002",
+      "vectors": [
+        "access-s1-exact-access"
+      ]
+    },
+    {
+      "promise": "ACC-003",
+      "vectors": [
+        "access-s1-exact-access",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "ACC-008",
+      "vectors": [
+        "access-bounds"
+      ]
+    },
+    {
+      "promise": "ACC-009",
+      "vectors": [
+        "access-s1-exact-access"
+      ]
+    },
+    {
+      "promise": "ACC-011",
+      "vectors": [
+        "access-current-tools",
+        "setup-close",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "ACC-012",
+      "vectors": [
+        "access-bounds"
+      ]
+    },
+    {
+      "promise": "ACC-015",
+      "vectors": [
+        "access-s1-plain-filter",
+        "records-broker",
+        "records-broker-filtered"
+      ]
+    },
+    {
+      "promise": "ACC-016",
+      "vectors": [
+        "access-s1-plain-filter",
+        "records-broker",
+        "records-broker-filtered"
+      ]
+    },
+    {
+      "promise": "ACC-017",
+      "vectors": [
+        "access-s1-plain-filter",
+        "setup-close-in-flight",
+        "records-broker",
+        "records-broker-filtered"
+      ]
+    },
+    {
+      "promise": "ACC-019",
+      "vectors": [],
+      "reason": "Serving-chain refusals are asserted under IFC-028 in access/request cases; no dedicated case is tagged for arranging no later work. Add that end-of-serving boundary."
+    },
+    {
+      "promise": "ACC-022",
+      "vectors": [],
+      "reason": "First start copies the core access template, but no standalone portable assertion explicitly checks the absence of a bound on that path. Add that negative projection."
+    },
+    {
+      "promise": "ACC-024",
+      "vectors": [
+        "access-bounds"
+      ]
+    },
+    {
+      "promise": "ACC-027",
+      "vectors": [],
+      "reason": "Inspection reports mediated in the records implementation; real routes around the engine and runtime confinement have no core-only proof. Increment 3 must report mediated and inventory those routes."
+    },
+    {
+      "promise": "ACC-029",
+      "vectors": [
+        "access-bounds"
+      ]
+    },
+    {
+      "promise": "ACC-030",
+      "vectors": [
+        "access-bounds",
+        "records-broker",
+        "records-broker-filtered"
+      ]
+    },
+    {
+      "promise": "ACC-032",
+      "vectors": [
+        "access-routing",
+        "access-root-local-lost",
+        "records-purge-nonroot"
+      ]
+    },
+    {
+      "promise": "ACC-033",
+      "vectors": [
+        "first-start-protected",
+        "first-start-lifecycle-protected",
+        "first-start-protected-authorized",
+        "first-start-lifecycle-pool-target",
+        "access-s1-pool-authority",
+        "access-routing",
+        "access-entry-authority",
+        "access-root-local-lost",
+        "access-fixed-kind-references",
+        "requests-reconcile-true",
+        "requests-reconcile-false",
+        "requests-reconcile-invalid",
+        "records-expected-id",
+        "records-replay-register",
+        "records-replay-replace"
+      ]
+    },
+    {
+      "promise": "ACC-034",
+      "vectors": [
+        "access-s1-plain-filter",
+        "setup-close-in-flight"
+      ]
+    },
+    {
+      "promise": "ACC-036",
+      "vectors": [
+        "access-current-tools",
+        "setup-close",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "ACC-037",
+      "vectors": [
+        "access-identity",
+        "records-authority"
+      ]
+    },
+    {
+      "promise": "IFC-012",
+      "vectors": [
+        "e05-control",
+        "e05-control-absent-template",
+        "e05-control-absent-type",
+        "e05-closed",
+        "e05-secret-omitted",
+        "access-s1-exact-access",
+        "access-current-tools",
+        "access-capability-skew",
+        "access-collision-secret",
+        "access-collision-control-type",
+        "access-collision-control-template",
+        "access-collision-missing-contract",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "IFC-013",
+      "vectors": [
+        "access-current-tools",
+        "setup-close",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "IFC-014",
+      "vectors": [
+        "access-tool-collision",
+        "access-collision-secret",
+        "access-collision-control-type",
+        "access-collision-control-template",
+        "access-collision-missing-contract"
+      ]
+    },
+    {
+      "promise": "IFC-020",
+      "vectors": [
+        "access-s1-plain-filter",
+        "requests-identity-scope",
+        "records-broker",
+        "records-broker-filtered"
+      ]
+    },
+    {
+      "promise": "IFC-021",
+      "vectors": [
+        "access-s1-plain-filter"
+      ]
+    },
+    {
+      "promise": "IFC-022",
+      "vectors": [
+        "access-identity",
+        "records-expected-id"
+      ]
+    },
+    {
+      "promise": "IFC-028",
+      "vectors": [
+        "access-s1-plain-filter",
+        "requests-identity-scope"
+      ]
+    },
+    {
+      "promise": "IFC-032",
+      "vectors": [
+        "access-identity"
+      ]
+    },
+    {
+      "promise": "IFC-033",
+      "vectors": [
+        "e05-local",
+        "e05-two-contexts",
+        "e05-recursive",
+        "e05-siblings",
+        "e05-escaping",
+        "e05-core-register",
+        "e05-core-replace",
+        "e05-handle",
+        "e05-control",
+        "e05-control-absent-template",
+        "e05-control-absent-type",
+        "schema-pattern-properties",
+        "schema-literal-data",
+        "e05-root-local",
+        "e05-root-key",
+        "schema-nested-key-allowed",
+        "e05-missing-contract",
+        "e05-target-version",
+        "e05-control-local-targets",
+        "schema-pattern-property-ref",
+        "access-capability-skew",
+        "access-collision-secret",
+        "access-collision-control-type",
+        "access-collision-control-template",
+        "access-collision-missing-contract"
+      ]
+    },
+    {
+      "promise": "IFC-038",
+      "vectors": [
+        "access-current-tools"
+      ]
+    },
+    {
+      "promise": "OPS-001",
+      "vectors": [
+        "requests-read-success",
+        "requests-read-is-error",
+        "requests-read-missing",
+        "requests-read-input-required",
+        "requests-read-unknown-result-type",
+        "requests-read-invalid-parameters",
+        "requests-read-parameter-headers",
+        "requests-read-capability-error",
+        "requests-write-success",
+        "requests-write-is-error",
+        "requests-write-missing",
+        "requests-write-input-required",
+        "requests-write-unknown-result-type",
+        "requests-write-invalid-parameters",
+        "requests-write-parameter-headers",
+        "requests-write-capability-error",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "OPS-002",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "OPS-003",
+      "vectors": [
+        "requests-cancel-confirmed"
+      ]
+    },
+    {
+      "promise": "OPS-004",
+      "vectors": [],
+      "reason": "Unknown endings appear in request/setup cases, but no case claims a complete partial-effect evidence taxonomy. Scripted results cannot establish actual partial effects; qualify them at the shell edge."
+    },
+    {
+      "promise": "OPS-005",
+      "vectors": [
+        "requests-read-success",
+        "requests-read-is-error",
+        "requests-read-missing",
+        "requests-read-input-required",
+        "requests-read-unknown-result-type",
+        "requests-read-invalid-parameters",
+        "requests-read-parameter-headers",
+        "requests-read-capability-error",
+        "requests-write-success",
+        "requests-write-is-error",
+        "requests-write-missing",
+        "requests-write-input-required",
+        "requests-write-unknown-result-type",
+        "requests-write-invalid-parameters",
+        "requests-write-parameter-headers",
+        "requests-write-capability-error",
+        "requests-reason-order",
+        "requests-reason-reconsidered",
+        "requests-records-inputs-invalid",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "OPS-007",
+      "vectors": [
+        "requests-invalid-outputs",
+        "requests-aware-failed",
+        "requests-aware-unknown",
+        "requests-aware-malformed",
+        "requests-plain-model-work",
+        "requests-metadata-succeeded-reason-null",
+        "requests-metadata-succeeded-reason-number",
+        "requests-metadata-succeeded-reason-object",
+        "requests-metadata-succeeded-reason-array",
+        "requests-metadata-failed-reason-null",
+        "requests-metadata-failed-reason-number",
+        "requests-metadata-failed-reason-object",
+        "requests-metadata-failed-reason-array",
+        "requests-metadata-outcome-null",
+        "requests-metadata-outcome-number",
+        "requests-aware-capability-extension",
+        "requests-aware-capability-undeclared"
+      ]
+    },
+    {
+      "promise": "OPS-008",
+      "vectors": [
+        "requests-unknown-write",
+        "requests-key-scope",
+        "requests-identity-scope",
+        "requests-failed-read-repeat",
+        "requests-reason-reconsidered",
+        "records-purge",
+        "records-purge-succeeded",
+        "records-input-reference",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "OPS-009",
+      "vectors": [
+        "requests-plain-content",
+        "requests-key-scope",
+        "requests-defaults",
+        "requests-reconcile-true",
+        "requests-reconcile-false",
+        "requests-declared-outputs",
+        "requests-records-key",
+        "requests-records-inputs",
+        "requests-records-disabled",
+        "records-purge-succeeded",
+        "records-replay-register",
+        "records-replay-replace"
+      ]
+    },
+    {
+      "promise": "OPS-010",
+      "vectors": [
+        "requests-key-scope",
+        "requests-identity-scope",
+        "records-purge-succeeded"
+      ]
+    },
+    {
+      "promise": "OPS-011",
+      "vectors": [
+        "requests-key-scope"
+      ]
+    },
+    {
+      "promise": "OPS-012",
+      "vectors": [
+        "requests-unknown-write",
+        "requests-cancellation",
+        "requests-aware-failed",
+        "requests-aware-unknown",
+        "requests-aware-malformed",
+        "requests-unsafe-write-headers",
+        "requests-metadata-succeeded-reason-null",
+        "requests-metadata-succeeded-reason-number",
+        "requests-metadata-succeeded-reason-object",
+        "requests-metadata-succeeded-reason-array",
+        "requests-metadata-failed-reason-null",
+        "requests-metadata-failed-reason-number",
+        "requests-metadata-failed-reason-object",
+        "requests-metadata-failed-reason-array",
+        "requests-metadata-outcome-null",
+        "requests-metadata-outcome-number",
+        "requests-restart-interrupted",
+        "requests-effectful-plain-headers",
+        "requests-aware-headers-no-repair",
+        "records-purge",
+        "records-purge-succeeded"
+      ]
+    },
+    {
+      "promise": "OPS-013",
+      "vectors": [
+        "requests-unknown-write",
+        "requests-cancellation",
+        "requests-restart-interrupted"
+      ]
+    },
+    {
+      "promise": "OPS-014",
+      "vectors": [
+        "requests-reconcile-true",
+        "requests-reconcile-false",
+        "requests-restart-interrupted"
+      ]
+    },
+    {
+      "promise": "OPS-018",
+      "vectors": [
+        "requests-unknown-write",
+        "requests-unsafe-write-headers",
+        "requests-effectful-plain-headers",
+        "requests-aware-headers-no-repair"
+      ]
+    },
+    {
+      "promise": "OPS-019",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "OPS-022",
+      "vectors": [
+        "setup-sender",
+        "setup-sender-onward",
+        "setup-sender-no-access",
+        "setup-run-unknown",
+        "setup-run-failed",
+        "setup-run-unknown-run",
+        "setup-optional",
+        "setup-hook-succeeded",
+        "setup-hook-failed",
+        "setup-hook-unknown",
+        "setup-pool-entry",
+        "setup-run-partial",
+        "setup-run-connections",
+        "setup-review-dependencies-failed",
+        "setup-review-dependencies-succeeded",
+        "setup-review-hook-refused",
+        "setup-review-hook-refused-no-effect",
+        "setup-review-hook-unavailable",
+        "setup-review-hook-unavailable-no-effect",
+        "setup-review-pool-cancel",
+        "setup-review-relative-provider",
+        "setup-review-retire-before-run",
+        "setup-review-retire-connection-succeeded",
+        "setup-review-retire-connection-unknown",
+        "setup-review-retire-run-succeeded",
+        "setup-review-retire-run-unknown"
+      ]
+    },
+    {
+      "promise": "OPS-023",
+      "vectors": [
+        "first-start-protected",
+        "first-start-lifecycle-protected",
+        "first-start-protected-authorized",
+        "first-start-lifecycle-pool-target",
+        "access-s1-exact-access",
+        "access-identity",
+        "access-s1-pool-authority",
+        "access-routing",
+        "requests-reason-order",
+        "requests-reconcile-revision-in-progress",
+        "requests-reconcile-revision-succeeded",
+        "requests-records-inputs-invalid",
+        "records-expected-id",
+        "records-authority",
+        "records-keyed-refused",
+        "records-keyed-invalid",
+        "records-keyed-conflict"
+      ]
+    },
+    {
+      "promise": "OPS-024",
+      "vectors": [
+        "requests-reconcile-true",
+        "requests-reconcile-false",
+        "requests-aware-failed",
+        "requests-aware-unknown",
+        "requests-aware-malformed",
+        "requests-failed-read-repeat",
+        "requests-aware-capability-extension",
+        "requests-aware-capability-undeclared"
+      ]
+    },
+    {
+      "promise": "OPS-025",
+      "vectors": [
+        "requests-reason-reconsidered"
+      ]
+    },
+    {
+      "promise": "OPS-026",
+      "vectors": [
+        "schema-root-ref-default",
+        "requests-key-scope",
+        "requests-defaults"
+      ]
+    },
+    {
+      "promise": "OPS-027",
+      "vectors": [
+        "requests-cancellation",
+        "requests-cancel-confirmed",
+        "setup-cancel",
+        "setup-review-pool-cancel"
+      ]
+    },
+    {
+      "promise": "OPS-028",
+      "vectors": [
+        "setup-hook-succeeded",
+        "setup-hook-failed",
+        "setup-hook-unknown"
+      ]
+    },
+    {
+      "promise": "OPS-029",
+      "vectors": [
+        "access-routing",
+        "requests-reconcile-true",
+        "requests-reconcile-false",
+        "requests-reconcile-invalid",
+        "setup-close",
+        "records-expected-id"
+      ]
+    },
+    {
+      "promise": "OPS-030",
+      "vectors": [
+        "requests-reconcile-true",
+        "requests-reconcile-false",
+        "requests-reconcile-invalid",
+        "requests-restart-interrupted",
+        "requests-reconcile-revision-in-progress",
+        "requests-reconcile-revision-succeeded"
+      ]
+    },
+    {
+      "promise": "OPS-032",
+      "vectors": [
+        "requests-key-scope",
+        "requests-reason-order"
+      ]
+    },
+    {
+      "promise": "OPS-033",
+      "vectors": [
+        "requests-defaults",
+        "requests-reason-order",
+        "requests-reason-reconsidered"
+      ]
+    },
+    {
+      "promise": "OPS-034",
+      "vectors": [
+        "requests-plain-content",
+        "requests-declared-outputs"
+      ]
+    },
+    {
+      "promise": "IMP-007",
+      "vectors": [
+        "requests-unknown-write",
+        "requests-cancellation",
+        "requests-repair-read-success",
+        "requests-restart-interrupted"
+      ]
+    },
+    {
+      "promise": "IFC-001",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "IFC-007",
+      "vectors": [
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "IFC-010",
+      "vectors": [
+        "requests-read-success",
+        "requests-read-is-error",
+        "requests-read-missing",
+        "requests-read-input-required",
+        "requests-read-unknown-result-type",
+        "requests-read-invalid-parameters",
+        "requests-read-parameter-headers",
+        "requests-read-capability-error",
+        "requests-write-success",
+        "requests-write-is-error",
+        "requests-write-missing",
+        "requests-write-input-required",
+        "requests-write-unknown-result-type",
+        "requests-write-invalid-parameters",
+        "requests-write-parameter-headers",
+        "requests-write-capability-error",
+        "requests-invalid-outputs",
+        "requests-repair-read-success",
+        "requests-plain-model-work"
+      ]
+    },
+    {
+      "promise": "IFC-023",
+      "vectors": [],
+      "reason": "Core vectors supply semantic key inputs, not protocol metadata parsing. Increment 3 must extract/validate optional nonempty idempotency metadata at the wire edge."
+    },
+    {
+      "promise": "IFC-025",
+      "vectors": [
+        "access-identity",
+        "access-s1-pool-authority",
+        "access-bounds",
+        "requests-read-success",
+        "requests-read-is-error",
+        "requests-read-missing",
+        "requests-read-input-required",
+        "requests-read-unknown-result-type",
+        "requests-read-invalid-parameters",
+        "requests-read-parameter-headers",
+        "requests-read-capability-error",
+        "requests-write-success",
+        "requests-write-is-error",
+        "requests-write-missing",
+        "requests-write-input-required",
+        "requests-write-unknown-result-type",
+        "requests-write-invalid-parameters",
+        "requests-write-parameter-headers",
+        "requests-write-capability-error",
+        "requests-plain-content",
+        "requests-invalid-outputs",
+        "requests-aware-failed",
+        "requests-aware-unknown",
+        "requests-aware-malformed",
+        "requests-reason-order",
+        "requests-cancel-confirmed",
+        "requests-declared-outputs",
+        "requests-failed-read-repeat",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "IFC-045",
+      "vectors": [],
+      "reason": "No protocol server negotiates capabilities in increment 2. Increment 3 must advertise only the permitted capabilities and show its initialization exchange."
+    },
+    {
+      "promise": "IFC-046",
+      "vectors": [
+        "requests-read-success",
+        "requests-read-is-error",
+        "requests-read-missing",
+        "requests-read-input-required",
+        "requests-read-unknown-result-type",
+        "requests-read-invalid-parameters",
+        "requests-read-parameter-headers",
+        "requests-read-capability-error",
+        "requests-write-success",
+        "requests-write-is-error",
+        "requests-write-missing",
+        "requests-write-input-required",
+        "requests-write-unknown-result-type",
+        "requests-write-invalid-parameters",
+        "requests-write-parameter-headers",
+        "requests-write-capability-error",
+        "requests-repair-read-success",
+        "requests-unsafe-write-headers",
+        "requests-plain-model-work",
+        "requests-effectful-plain-headers",
+        "requests-aware-headers-no-repair"
+      ]
+    },
+    {
+      "promise": "REC-001",
+      "vectors": [
+        "first-start",
+        "first-start-protected",
+        "first-start-lifecycle-protected",
+        "first-start-protected-authorized",
+        "first-start-lifecycle-pool-target",
+        "records-inspection",
+        "records-purge",
+        "records-purge-succeeded",
+        "records-authority",
+        "records-input-reference",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "REC-002",
+      "vectors": [
+        "first-start",
+        "first-start-protected",
+        "first-start-lifecycle-protected",
+        "first-start-protected-authorized",
+        "first-start-lifecycle-pool-target",
+        "requests-records-key",
+        "requests-records-inputs",
+        "requests-records-disabled",
+        "requests-records-inputs-invalid",
+        "setup-close-in-flight",
+        "setup-review-provider-records",
+        "records-inspection",
+        "records-purge",
+        "records-purge-succeeded",
+        "records-authority",
+        "records-input-reference",
+        "records-replay-register",
+        "records-replay-replace",
+        "records-keyed-refused",
+        "records-keyed-invalid",
+        "records-keyed-conflict",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "REC-003",
+      "vectors": [
+        "first-start",
+        "first-start-repeat",
+        "first-start-lifecycle-protected",
+        "first-start-lifecycle-pool-target",
+        "records-purge",
+        "records-purge-succeeded",
+        "records-unreadable",
+        "s1-whole"
+      ]
+    },
+    {
+      "promise": "REC-004",
+      "vectors": [
+        "records-purge",
+        "records-purge-nonroot",
+        "records-purge-succeeded",
+        "records-input-reference"
+      ]
+    },
+    {
+      "promise": "REC-005",
+      "vectors": [
+        "records-inspection",
+        "records-unreadable"
+      ]
+    },
+    {
+      "promise": "REC-006",
+      "vectors": [
+        "records-purge",
+        "records-purge-succeeded",
+        "records-unreadable"
+      ]
+    },
+    {
+      "promise": "OBS-001",
+      "vectors": [],
+      "reason": "Runner setup reports are supplied observations; a dedicated before/after definition equality assertion for every report variant remains coverage debt."
+    },
+    {
+      "promise": "OBS-002",
+      "vectors": [
+        "setup-review-conditions-builtin",
+        "setup-review-conditions-provider"
+      ]
+    },
+    {
+      "promise": "OBS-006",
+      "vectors": [],
+      "reason": "Inspection is covered by records-inspection, but no isolated authority/effect-neutrality pair is tagged for this complete promise. Add it in the coverage follow-up."
+    }
+  ],
+  "s1_coverage_source": "docs/proposals/first-build/increment-2/plan.md section 2; case tags show slices, reasons record remaining coverage"
 }

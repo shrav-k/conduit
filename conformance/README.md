@@ -379,3 +379,29 @@ retained and replayed successful built-in outputs against their core Operation c
 Template inspection omits status under LIF-012; instance inspection keeps LIF-013's complete
 status. The missing-Resource pairs assert management's invalid diagnostic and the Pool-only
 caller's refusal without any object disclosure, as finding 2-08's admin settlement requires.
+
+## S1 whole and promise inventory (I2-09)
+
+[s1-whole](conventions/s1/whole/case.yaml) starts empty and runs 58 steps: first start,
+resolving real snapshots, registration, Pool/Resource/Agent setup, four declared opens,
+T1/T2 requests with scripted server results, T7's independent close, refused old keyed call,
+B still writing/reading, history still working, and explicit nested replacement before setup
+restores A. No fixture patch supplies lifecycle progress. Every dispatched external request
+ends before the trace finishes; plain intents contain no Conduit metadata. Scripted text is
+not evidence of real file effects, Agent behavior or confinement.
+
+The manifest's `s1_coverage` contains exactly the 308 promise IDs named in section 2 of the
+[study](../docs/proposals/first-build/increment-2/plan.md#2-the-promises-s1-touches), including
+its observation paragraph. Each row has vectors declaring that promise, or a specific reason
+why no vector does. A case tag demonstrates only its asserted slice; neither a tag nor an
+explicit reason proves a whole promise. The runner checks the inventory even with an ID
+prefix: missing/extra/duplicate rows, empty reasons, unknown vectors and vectors that do not
+declare the promise fail. The inventory currently has 217 rows with vectors and 91 with
+reasons, including loader tests not yet ported, missing boundary cases and shell work. Those
+reasons remain visible coverage debt, logged in the increment's I2-09 section.
+
+The first build's [conformance choices](../reference-model/CONFORMANCE.md) and the
+[increment 3 handoff](../docs/proposals/first-build/increment-3-handoff.md) state the current
+interface, outstanding core work and shell evidence. The increment log also proposes how a
+later order can reduce repeated fixtures and state/record assertions; this order does not
+rewrite the legacy vectors.

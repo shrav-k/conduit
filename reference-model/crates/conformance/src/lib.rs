@@ -141,6 +141,10 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
     let inventory = manifest["cases"]
         .as_array()
         .ok_or("coverage index has no cases")?;
+    let study =
+        std::fs::read_to_string(repository.join("docs/proposals/first-build/increment-2/plan.md"))
+            .map_err(|e| e.to_string())?;
+    validate_s1_coverage(&manifest, &study, &known_promises)?;
     let mut inventory_ids = BTreeSet::new();
     for entry in inventory {
         let id = entry["id"]
@@ -195,6 +199,68 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
         return Err("no cases matched the requested prefix".into());
     }
     Ok(reports)
+}
+
+/// Keep the study's complete S1 inventory visible, including unvectorized boundaries.
+/// A case tag is evidence for the stated slice, not proof of the whole promise.
+fn validate_s1_coverage(manifest: &Value, study: &str, known: &BTreeSet<String>) -> Result<()> {
+    let section = study
+        .split_once("## 2. The promises S1 touches")
+        .and_then(|(_, tail)| tail.split_once("## 3."))
+        .map(|(section, _)| section)
+        .ok_or("S1 study inventory section missing")?;
+    let expected: BTreeSet<_> = section
+        .split(|c: char| !c.is_ascii_alphanumeric() && c != '-')
+        .filter(|word| known.contains(*word))
+        .map(str::to_string)
+        .collect();
+    if expected.is_empty() {
+        return Err("S1 study inventory is empty".into());
+    }
+    let rows = manifest["s1_coverage"]
+        .as_array()
+        .ok_or("coverage index has no s1_coverage")?;
+    let mut found = BTreeSet::new();
+    for row in rows {
+        let promise = row["promise"].as_str().ok_or("S1 row has no promise")?;
+        if !found.insert(promise.to_string()) {
+            return Err(format!("duplicate S1 coverage row {promise}"));
+        }
+        let cases = row["vectors"].as_array().ok_or("S1 row needs vectors")?;
+        let reason = row["reason"].as_str().unwrap_or("").trim();
+        if cases.is_empty() == reason.is_empty() {
+            return Err(format!(
+                "{promise}: supply vectors or a reason, exclusively"
+            ));
+        }
+        let mut seen = BTreeSet::new();
+        for id in cases {
+            let id = id.as_str().ok_or("S1 vector ID is not a string")?;
+            if !seen.insert(id) {
+                return Err(format!("{promise}: duplicate S1 vector {id}"));
+            }
+            let case = manifest["cases"]
+                .as_array()
+                .ok_or("coverage index has no cases")?
+                .iter()
+                .find(|case| case["id"] == id)
+                .ok_or_else(|| format!("{promise}: unknown S1 vector {id}"))?;
+            if !case["promises"]
+                .as_array()
+                .is_some_and(|ids| ids.contains(&json!(promise)))
+            {
+                return Err(format!("{promise}: vector {id} does not claim it"));
+            }
+        }
+    }
+    if found != expected {
+        return Err(format!(
+            "S1 coverage differs from study: missing {:?}; extra {:?}",
+            expected.difference(&found).collect::<Vec<_>>(),
+            found.difference(&expected).collect::<Vec<_>>()
+        ));
+    }
+    Ok(())
 }
 
 fn expand(value: &Value, symbols: &BTreeMap<String, Value>, spec: &Specification) -> Result<Value> {
@@ -914,4 +980,28 @@ fn run_case(
         state = next;
     }
     Ok(storage)
+}
+
+#[cfg(test)]
+mod coverage_tests {
+    use super::*;
+
+    #[test]
+    fn unexplained_missing_and_false_coverage_fail() {
+        let known = BTreeSet::from(["ACC-001".into(), "IFC-045".into()]);
+        let study = "## 2. The promises S1 touches\nACC-001 IFC-045\n## 3.";
+        let valid = json!({"cases":[{"id":"access","promises":["ACC-001"]}],
+            "s1_coverage":[{"promise":"ACC-001","vectors":["access"]},
+            {"promise":"IFC-045","vectors":[],"reason":"Protocol negotiation is shell work."}]});
+        assert!(validate_s1_coverage(&valid, study, &known).is_ok());
+        let mut missing = valid.clone();
+        missing["s1_coverage"].as_array_mut().unwrap().pop();
+        assert!(validate_s1_coverage(&missing, study, &known).is_err());
+        let mut unexplained = valid.clone();
+        unexplained["s1_coverage"][1]["reason"] = json!(" ");
+        assert!(validate_s1_coverage(&unexplained, study, &known).is_err());
+        let mut false_claim = valid;
+        false_claim["s1_coverage"][1] = json!({"promise":"IFC-045","vectors":["access"]});
+        assert!(validate_s1_coverage(&false_claim, study, &known).is_err());
+    }
 }

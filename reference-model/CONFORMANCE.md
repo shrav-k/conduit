@@ -186,9 +186,11 @@ The client's own tools that reach the machine, a shell, code execution, a browse
 Agent, hooks and plugins are off by default, alongside account services and messaging
 (order 024, findings 3-04 and 3-05). Claude uses --setting-sources "" and --tools ""; only
 explicit --mcp-config/--settings supply the engine, header helper and allow rule. Codex uses
-project_doc_max_bytes=0 and --disable for shell_tool, unified_exec, code_mode_host, browser_use,
+project_doc_max_bytes=0 and --disable for shell_tool, unified_exec, browser_use,
 browser_use_external, in_app_browser, computer_use, multi_agent, hooks, plugins, view_image,
-goals and image_generation. accountServices true enables apps alone; the other features stay
+goals and image_generation, and leaves code_mode_host on, through which Codex calls MCP tools
+and whose code execution imports nothing that reaches the machine (finding 3-06).
+accountServices true enables apps alone; the other features stay
 off. Claude's peer opt-in remains limited to its three named tools.
 
 All restrictions are mediated (ACC-027). Neither wrapper provides OS-user isolation, and

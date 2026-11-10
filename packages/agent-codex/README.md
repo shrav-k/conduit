@@ -60,9 +60,11 @@ to stdin with the `-` prompt argument, including literal `-` and option-like tex
 `-c project_doc_max_bytes=0` also prevents ancestor/project AGENTS.md discovery, which
 `--ignore-rules` alone did not stop (finding 3-05). The sandbox is read-only and web search
 disabled. Every launch and exact-thread resume disables `shell_tool`, `unified_exec`,
-`code_mode_host`, `browser_use`, `browser_use_external`, `in_app_browser`, `computer_use`,
+`browser_use`, `browser_use_external`, `in_app_browser`, `computer_use`,
 `multi_agent`, `hooks`, `plugins`, `view_image`, `goals` and `image_generation` with
-`--disable`. Apps are explicitly disabled unless accountServices is
+`--disable`. It leaves `code_mode_host` on: Codex calls MCP tools, the engine's among them,
+through it, and its code execution imports nothing that reaches the machine (finding 3-06).
+Apps are explicitly disabled unless accountServices is
 true, when they are explicitly enabled. Codex has no separate peer-messaging launch switch
 in the qualified baseline; peerMessaging is accepted/bound but changes no Codex argument.
 The HTTP server is required and its default_tools_approval_mode is approve. Its header helper

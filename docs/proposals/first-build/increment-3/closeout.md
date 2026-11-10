@@ -57,9 +57,10 @@ Claude's true peer case selects only SendMessage, ListAgents and RemoteTrigger a
 tools, allows them beside engine tools, and omits the explicit inbound refusal. Verify the
 native inbound default accepts messages in this configuration, and that no machine tools
 become available. For every reach-input combination, review Codex's --disable flags for
-shell_tool, unified_exec, code_mode_host, browser_use, browser_use_external, in_app_browser,
+shell_tool, unified_exec, browser_use, browser_use_external, in_app_browser,
 computer_use, multi_agent, hooks, plugins, view_image, goals and image_generation. Only apps
-may be enabled by accountServices; none of those features may turn back on. No unqualified
+may be enabled by accountServices; none of those features may turn back on. `code_mode_host`
+stays on (finding 3-06). No unqualified
 inbound enum value is supplied. The false case retains --tools empty and the experiment 009 refuse setting. The worker could not qualify the true
 case on a real client; positive baseline and opt-in evidence remain required.
 

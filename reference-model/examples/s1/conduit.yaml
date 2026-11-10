@@ -1,0 +1,16 @@
+# Resolve only from preinstalled snapshots; the retained archives supply computed digests.
+# Install the three packages explicitly before registration; this manifest installs nothing.
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/s1/filesystem:
+    version: 0.1.0
+    digest: sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
+  example.org/s1/history:
+    version: 0.1.0
+    digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
+  example.org/conduit/agent-claude-code:
+    version: 0.1.0
+    digest: sha256:b18cf7c4deee67f9abd927b0728fbf92afc035075c519c91ab078c6778b47215
+  example.org/conduit/agent-codex:
+    version: 0.1.0
+    digest: sha256:eb0aa8d9fdd7f1d0f3a470ba9262ba44b617043fb35bc947b2b6e3062f67cbd8

@@ -154,7 +154,7 @@ Run these from the repository root before each commit:
 
 ```sh
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
-python3 tools/set_names.py --check   # the names under spec/ and reference-model/ agree with spec/names.yaml
+python3 tools/set_names.py --check   # the names under spec/, reference-model/, conformance/ and packages/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
@@ -193,8 +193,8 @@ The names the specification assigns (the core package's address, `apiVersion`, t
 its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,
 in `spec/names.yaml`. Never edit one by hand. Run
 `python3 tools/set_names.py` with the new values to see what would change, and add `--write` to
-rewrite every occurrence under `spec/` together, and under `reference-model/` and, once it
-exists, `conformance/`. The code under `reference-model/` reads the names from
+rewrite every occurrence under `spec/` together, and under `reference-model/`, `conformance/`
+and `packages/`. The code under `reference-model/` reads the names from
 `spec/names.yaml` and writes none of them, so the tool finds nothing to rewrite there. The tool
 does not change a document outside them that quotes a name, such as the example in
 `docs/OVERVIEW.md`: update it once the tool has run.

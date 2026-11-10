@@ -1,0 +1,30 @@
+[package]
+name = "agent-claude-code"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+[lib]
+name = "agent_adapter"
+
+[[bin]]
+name = "agent-claude-code"
+path = "src/main.rs"
+
+[[bin]]
+name = "scripted-client"
+path = "tests/fixtures/client.rs"
+
+[dependencies]
+anyhow = "1"
+serde_json = "1"
+rmcp = { version = "=3.9.0", features = ["client", "transport-io", "transport-streamable-http-client-reqwest"] }
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "stream"] }
+flate2 = "1"
+tar = "0.4"
+sha2 = "0.10"
+
+[dev-dependencies]
+tempfile = "3"

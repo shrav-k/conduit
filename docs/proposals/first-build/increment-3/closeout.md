@@ -1,5 +1,10 @@
 # Increment 3: admin closeout with the real clients
 
+The admin ran this plan on 2026-11-10; the [results](closeout-results-2026-11-10.md) say what
+it showed. The restoration of T7 below was corrected then: a replacement Conduit is opened with
+`access.open.v1`, by the ID that `register-replacement.v1` returns, and a Conduit is never set
+up (LIF-032).
+
 Not binding. The [specification](../../../../spec/README.md) alone binds. This is a plan from
 work orders 023 and 024, dated 2026-11-10, **not results**. The workers ran scripted clients
 only. Order 024 updates this plan after the admin's first real-client attempt found 3-03 to
@@ -146,8 +151,8 @@ reference-model/target/release/conduit call --store STORE turn-b.turn.v1 \
   '{"message":"Write and read a fresh project file with the engine tools and report the results."}'
 reference-model/target/release/conduit call --store STORE management.register-replacement.v1 \
   '{"instance":{"kind":"Agent","name":"agent-a"},"nested":"project"}'
-reference-model/target/release/conduit call --store STORE management.set-up.v1 \
-  '{"instance":{"kind":"Agent","name":"agent-a"}}'
+reference-model/target/release/conduit call --store STORE access.open.v1 \
+  '{"conduit":{"kind":"Conduit","id":"REPLACEMENT_ID"}}'
 reference-model/target/release/conduit call --store STORE turn-a.turn.v1 \
   '{"message":"Access was explicitly restored. Read hello.txt through the project engine tool once."}'
 ```

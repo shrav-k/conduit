@@ -70,9 +70,15 @@ fn cli(store: &Path, verb: &str, args: &[&str]) -> Value {
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
-    let reply: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_ne!(reply["isError"], true, "{reply}");
-    reply
+    let replies: Vec<Value> = String::from_utf8(output.stdout)
+        .unwrap()
+        .lines()
+        .map(|l| serde_json::from_str(l).unwrap())
+        .collect();
+    for reply in &replies {
+        assert_ne!(reply["isError"], true, "{reply}");
+    }
+    replies.last().unwrap().clone()
 }
 fn call(name: &str, arguments: Value) -> CallToolRequestParams {
     serde_json::from_value(json!({"name":name,"arguments":arguments})).unwrap()
@@ -254,6 +260,46 @@ fn real_npm_serve_s1_tokens_access_t7_and_shutdown() {
         assert_eq!(b.list_tools(None).await.unwrap().tools, list_b);
         tokio::time::sleep(Duration::from_millis(300)).await;
         assert_eq!(changes_b.load(Ordering::SeqCst), 0);
+        // T5/T6: install a new package version while serving, then submit a new
+        // Resource rooted elsewhere. Existing instances keep their old package.
+        let archive=repo.join("conformance/fixtures/s1/archives/filesystem-0.2.0.tar.gz");
+        let digest=conduit_core::packages::bytes_digest(&fs::read(&archive).unwrap());
+        cli(&store,"install",&[&format!("{}#{digest}",archive.display())]);
+        let upgrade=parent.path().join("upgrade"); fs::create_dir(&upgrade).unwrap();
+        let new_root=parent.path().join("another-shared"); fs::create_dir(&new_root).unwrap();
+        fs::write(new_root.join("hello.txt"),"read through 2.2.0").unwrap();
+        let spec=conduit_loader::Specification::read(&repo.join("spec")).unwrap();
+        let base=boundary::project(&repo.join("conformance/fixtures/s1/project"),&spec).unwrap();
+        let mut manifest=base.manifest.unwrap();
+        manifest["packages"]["example.org/s1/filesystem"]["version"]=json!("0.2.0");
+        manifest["packages"]["example.org/s1/filesystem"]["digest"]=json!(digest);
+        let mut resource=base.documents.iter().find(|d| d["kind"]=="Resource" && d["metadata"]["name"]=="shared-directory").unwrap().clone();
+        resource["metadata"]["name"]=json!("upgrade-directory");
+        let mut access=base.documents.iter().find(|d| d["kind"]=="Conduit" && d["metadata"]["name"]=="directory-read-write").unwrap().clone();
+        access["metadata"]["name"]=json!("upgrade-access");
+        let api=spec.names().api_version.clone();
+        let docs=json!([resource,access,
+            {"apiVersion":api,"kind":"Resource","metadata":{"name":"shared-upgraded"},"from":"upgrade-directory","owner":"workspace","arguments":{"root":new_root}},
+            {"apiVersion":api,"kind":"Conduit","metadata":{"name":"upgraded"},"from":"upgrade-access","consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Resource","name":"shared-upgraded"}}
+        ]);
+        fs::write(upgrade.join("conduit.json"),serde_json::to_vec(&manifest).unwrap()).unwrap();
+        fs::write(upgrade.join("documents.json"),serde_json::to_vec(&docs).unwrap()).unwrap();
+        cli(&store,"submit",&[upgrade.to_str().unwrap()]);
+        let list=cli(&store,"tools",&[]);
+        let names: Vec<_>=list["tools"].as_array().unwrap().iter().map(|t| t["name"].as_str().unwrap()).collect();
+        assert_eq!(names.iter().filter(|n| n.starts_with("upgraded.")).count(),3);
+        assert!(names.iter().all(|n| !n.contains("append_file") && !n.contains("copy_file")));
+        let read=cli(&store,"call",&["upgraded.file.read.v1",&json!({"path":new_root.join("hello.txt")}).to_string()]);
+        assert_eq!(read["content"][0]["text"],"read through 2.2.0");
+        for (name,version) in [("shared","0.1.0"),("shared-upgraded","0.2.0")] {
+            assert!(state(&store)["objects"].as_array().unwrap().iter().find(|o| o["name"]==name).unwrap()["packages"].as_array().unwrap().iter().any(|p| p["address"]=="example.org/s1/filesystem" && p["version"]==version));
+        }
+        let upgraded_group: Vec<_>=fs::read_dir(store.join("run-groups")).unwrap().map(|e| serde_json::from_slice::<Value>(&fs::read(e.unwrap().path()).unwrap()).unwrap()).filter(|v| v["engine"]==server.0.id()).map(|v| v["group"].as_i64().unwrap() as i32).filter(|g| !groups.contains(g)).collect();
+        assert_eq!(upgraded_group.len(),1);
+        cli(&store,"retire",&["Resource/shared-upgraded"]);
+        let start=Instant::now();
+        while unsafe { libc::kill(-upgraded_group[0],0) } == 0 { assert!(start.elapsed()<Duration::from_secs(30)); std::thread::sleep(Duration::from_millis(10)); }
+        assert!(state(&store)["objects"].as_array().unwrap().iter().all(|o| o["name"]!="shared-upgraded" && o["name"]!="upgraded"));
         a.cancel().await.unwrap(); b.cancel().await.unwrap();
     });
     stop_server(&mut server, &store, &groups);
@@ -367,4 +413,232 @@ fn stop_server(server: &mut Server, store: &Path, groups: &[i32]) {
             .iter()
             .all(|i| i["state"] != "in-progress")
     );
+}
+
+#[test]
+fn submit_refuses_relative_values_before_sending_registration() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    cli(
+        &store,
+        "init",
+        &["--url", &format!("http://127.0.0.1:{port}/mcp")],
+    );
+    let mut server = start_server(&store, port);
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let api = conduit_loader::Specification::read(&repo.join("spec"))
+        .unwrap()
+        .names()
+        .api_version
+        .clone();
+    let core = boundary::context(&repo).unwrap().core_package;
+    let project = temp.path().join("project");
+    fs::create_dir(&project).unwrap();
+    let doc = json!({"apiVersion":api,"kind":"Pool","metadata":{"name":"relative-template"},"spec":{"type":format!("{core}#pool.v1")}});
+    let manifest = json!({"apiVersion":api,"address":"example.org/test/relative-submit"});
+    let before = state(&store);
+    for location in [
+        "manifest-fetch",
+        "manifest-program",
+        "document-fetch",
+        "document-program",
+    ] {
+        let mut manifest = manifest.clone();
+        let mut doc = doc.clone();
+        match location {
+            "manifest-fetch" => {
+                manifest["packages"] = json!({"example.org/test/dependency":{"version":"0.1.0","digest":format!("sha256:{}","0".repeat(64)),"fetch":"../dependency.tar.gz"}})
+            }
+            "manifest-program" => {
+                manifest["implementations"] = json!({"local":{"implements":[format!("{core}#retire-hook.v1")],"command":["./program"]}})
+            }
+            "document-fetch" => doc["spec"]["config"] = json!({"fetch":"./dependency.tar.gz"}),
+            "document-program" => doc["spec"]["config"] = json!({"command":["../program"]}),
+            _ => unreachable!(),
+        }
+        fs::write(
+            project.join("conduit.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        fs::write(
+            project.join("documents.json"),
+            serde_json::to_vec(&doc).unwrap(),
+        )
+        .unwrap();
+        let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .args(["submit", "--store"])
+            .arg(&store)
+            .arg(&project)
+            .output()
+            .unwrap();
+        assert!(!output.status.success(), "{location}");
+        assert!(
+            String::from_utf8_lossy(&output.stderr)
+                .contains("a submission through the serving engine takes absolute values only"),
+            "{location}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(output.stdout.is_empty(), "{location}");
+        assert_eq!(state(&store), before, "{location}: request reached engine");
+    }
+    for (name, program) in [
+        ("absolute-program", "/test/program"),
+        ("path-program", "program"),
+    ] {
+        let mut manifest = manifest.clone();
+        let mut doc = doc.clone();
+        manifest["address"] = json!(format!("example.org/test/{name}"));
+        manifest["implementations"] =
+            json!({"local":{"implements":[format!("{core}#retire-hook.v1")],"command":[program]}});
+        doc["metadata"]["name"] = json!(name);
+        fs::write(
+            project.join("conduit.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        fs::write(
+            project.join("documents.json"),
+            serde_json::to_vec(&doc).unwrap(),
+        )
+        .unwrap();
+        cli(&store, "submit", &[project.to_str().unwrap()]);
+        assert!(
+            state(&store)["objects"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|o| o["name"] == name)
+        );
+    }
+    stop_server(&mut server, &store, &[]);
+}
+
+#[test]
+fn author_commands_require_serve_and_make_recorded_requests() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    cli(
+        &store,
+        "init",
+        &["--url", &format!("http://127.0.0.1:{port}/mcp")],
+    );
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let api = conduit_loader::Specification::read(&repo.join("spec"))
+        .unwrap()
+        .names()
+        .api_version
+        .clone();
+    let core = boundary::context(&repo).unwrap().core_package;
+    let project = temp.path().join("project");
+    fs::create_dir(&project).unwrap();
+    let mut documents = json!([
+        {"apiVersion":api,"kind":"Pool","metadata":{"name":"change-pool"},"spec":{"type":format!("{core}#pool.v1")}},
+        {"apiVersion":api,"kind":"Pool","metadata":{"name":"new-pool"},"from":"change-pool"},
+        {"apiVersion":api,"kind":"Conduit","metadata":{"name":"new-admin"},"spec":{"capability":format!("{core}#pool-management.v1"),"operations":[format!("{core}#set-up.v1"),format!("{core}#retire.v1"),format!("{core}#inspect.v1")]}},
+        {"apiVersion":api,"kind":"Conduit","metadata":{"name":"new-route"},"from":"new-admin","consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Pool","name":"new-pool"}}
+    ]);
+    fs::write(
+        project.join("documents.json"),
+        serde_json::to_vec(&documents).unwrap(),
+    )
+    .unwrap();
+    let archive = repo.join("conformance/fixtures/s1/archives/filesystem-0.2.0.tar.gz");
+    let digest = conduit_core::packages::bytes_digest(&fs::read(&archive).unwrap());
+    let package = format!("{}#{digest}", archive.display());
+    for (verb, args) in [
+        ("install", vec![package.as_str()]),
+        ("submit", vec![project.to_str().unwrap()]),
+        (
+            "replace",
+            vec![project.to_str().unwrap(), "Pool/change-pool"],
+        ),
+        ("retire", vec!["Pool/new-pool"]),
+        ("unregister", vec!["Pool/change-pool"]),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .arg(verb)
+            .arg("--store")
+            .arg(&store)
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains("conduit serve must hold this store")
+        );
+    }
+    let mut server = start_server(&store, port);
+    cli(&store, "install", &[&package]);
+    cli(&store, "submit", &[project.to_str().unwrap()]);
+    assert!(
+        state(&store)["objects"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|o| o["name"] == "new-pool" && o["state"] == "ready")
+    );
+    let prior = state(&store)["objects"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|o| o["name"] == "change-pool")
+        .unwrap()["revision"]
+        .clone();
+    documents[0]["metadata"]["description"] = json!("changed by author command");
+    fs::write(
+        project.join("documents.json"),
+        serde_json::to_vec(&documents).unwrap(),
+    )
+    .unwrap();
+    let replaced = cli(
+        &store,
+        "replace",
+        &[project.to_str().unwrap(), "Pool/change-pool"],
+    );
+    assert_ne!(replaced["structuredContent"]["revision"], prior);
+    let conflict = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args([
+            "unregister",
+            "--store",
+            store.to_str().unwrap(),
+            "Pool/new-pool",
+        ])
+        .output()
+        .unwrap();
+    assert!(!conflict.status.success());
+    assert!(String::from_utf8_lossy(&conflict.stdout).contains("conflict"));
+    cli(&store, "unregister", &["Pool/change-pool"]);
+    cli(&store, "retire", &["Pool/new-pool"]);
+    assert!(
+        state(&store)["objects"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|o| o["name"] != "new-pool" && o["name"] != "change-pool")
+    );
+    let current = state(&store);
+    for operation in [
+        "install.v1",
+        "register.v1",
+        "replace.v1",
+        "retire.v1",
+        "unregister.v1",
+    ] {
+        assert!(
+            current["records"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|r| r["type"] == "invocation-dispatched"
+                    && r["data"]["operation"] == format!("{core}#{operation}"))
+        );
+    }
+    stop_server(&mut server, &store, &[]);
 }

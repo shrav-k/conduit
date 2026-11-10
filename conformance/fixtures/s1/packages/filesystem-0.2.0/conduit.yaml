@@ -1,0 +1,35 @@
+# Installable package. Artifact SHA-256 computed from the published npm 2.2.0 archive.
+# Bind one root directory to the unchanged server; expose only the three mapped tools.
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/s1/filesystem
+version: 0.2.0
+exports:
+- local-directory.v1
+- directory.v1
+- file.read.v1
+- directory.list.v1
+- file.write.v1
+implementations:
+  filesystem-server:
+    implements:
+    - '#file.read.v1'
+    - '#directory.list.v1'
+    - '#file.write.v1'
+    package:
+      registryType: npm
+      identifier: '@modelcontextprotocol/server-filesystem'
+      version: 2.2.0
+      fileSha256: 'a31b8e4e56fd436436290f68cfb1eebb4f7323f346a15d867f53ea0e3adc0889'
+      transport:
+        type: stdio
+      packageArguments:
+      - type: positional
+        valueHint: root
+        isRequired: true
+    packageArguments:
+      root: /root
+    plain: true
+    tools:
+      '#file.read.v1': read_text_file
+      '#directory.list.v1': list_directory
+      '#file.write.v1': write_file

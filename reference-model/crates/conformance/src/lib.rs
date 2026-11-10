@@ -526,10 +526,14 @@ fn run_case(
                             implementation["item"]["plain"] = json!(false);
                         }
                     }
+                    let mut call = fixture["call"].clone();
+                    if let Some(alias) = fixture["archive_file"].as_str() {
+                        let (_, bytes) = file_bytes(alias)?;
+                        call["archive"]["completion"] = json!({"status":"complete","bytes":bytes});
+                    }
                     let t = conduit_core::step(
                         &next,
-                        serde_json::from_value(fixture["call"].clone())
-                            .map_err(|e| e.to_string())?,
+                        serde_json::from_value(call).map_err(|e| e.to_string())?,
                         context,
                     )?;
                     if kind == "request-fixture"
@@ -845,15 +849,21 @@ fn run_case(
                 }
             }
         }
-        if let Some(facts) = fields.remove("record_facts") {
-            let mut cursor = 0;
-            let records = actual["records"].as_array().ok_or("missing records")?;
-            for fact in facts.as_array().ok_or("record_facts must be an array")? {
-                let found = records[cursor..]
-                    .iter()
-                    .position(|r| projection(r, fact, "record_facts").is_ok())
-                    .ok_or_else(|| format!("missing ordered record {fact}"))?;
-                cursor += found + 1;
+        for key in ["record_facts", "stored_record_facts"] {
+            if let Some(facts) = fields.remove(key) {
+                let mut cursor = 0;
+                let records = if key == "stored_record_facts" {
+                    &next.records
+                } else {
+                    actual["records"].as_array().ok_or("missing records")?
+                };
+                for fact in facts.as_array().ok_or("record facts must be an array")? {
+                    let found = records[cursor..]
+                        .iter()
+                        .position(|r| projection(r, fact, key).is_ok())
+                        .ok_or_else(|| format!("missing ordered record {fact}"))?;
+                    cursor += found + 1;
+                }
             }
         }
         if let Some(absent) = fields.remove("absent_objects") {

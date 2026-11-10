@@ -4176,6 +4176,43 @@
         "IFC-010"
       ],
       "safety_rows": []
+    },
+    {
+      "id": "change-t4",
+      "case": "conventions/changes/t4/case.yaml",
+      "promises": [
+        "SUB-009",
+        "LIF-009",
+        "INS-020",
+        "IFC-012",
+        "IFC-038"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "change-t5",
+      "case": "conventions/changes/t5/case.yaml",
+      "promises": [
+        "PKG-005",
+        "PKG-020",
+        "PKG-025",
+        "IFC-012",
+        "NAM-011"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "change-retirement",
+      "case": "conventions/changes/retirement/case.yaml",
+      "promises": [
+        "LIF-019",
+        "LIF-024",
+        "LIF-035",
+        "LIF-036",
+        "CON-025",
+        "REV-012"
+      ],
+      "safety_rows": []
     }
   ],
   "s1_coverage": [
@@ -4598,8 +4635,10 @@
         "registration-frozen-template",
         "setup-restore-current-template",
         "setup-review-replacement-reference",
-        "records-replace"
-      ]
+        "records-replace",
+        "change-t4"
+      ],
+      "reason": ""
     },
     {
       "promise": "INS-021",
@@ -4962,8 +5001,10 @@
     {
       "promise": "SUB-009",
       "vectors": [
-        "records-replace"
-      ]
+        "records-replace",
+        "change-t4"
+      ],
+      "reason": ""
     },
     {
       "promise": "SUB-010",
@@ -5052,8 +5093,10 @@
     },
     {
       "promise": "NAM-011",
-      "vectors": [],
-      "reason": "Old held contexts are asserted by records-replace, but there is no case installing a second release and explicitly asserting unchanged old pins; this remains coverage debt for T5."
+      "vectors": [
+        "change-t5"
+      ],
+      "reason": ""
     },
     {
       "promise": "NAM-012",
@@ -5188,8 +5231,10 @@
     {
       "promise": "PKG-005",
       "vectors": [
-        "archives-registered-project-holder"
-      ]
+        "archives-registered-project-holder",
+        "change-t5"
+      ],
+      "reason": ""
     },
     {
       "promise": "PKG-006",
@@ -5255,8 +5300,10 @@
       "promise": "PKG-020",
       "vectors": [
         "packages-plain-missing-tool",
-        "access-plain-registration"
-      ]
+        "access-plain-registration",
+        "change-t5"
+      ],
+      "reason": ""
     },
     {
       "promise": "PKG-021",
@@ -5332,8 +5379,10 @@
     {
       "promise": "PKG-025",
       "vectors": [
-        "archives-s1"
-      ]
+        "archives-s1",
+        "change-t5"
+      ],
+      "reason": ""
     },
     {
       "promise": "PKG-026",
@@ -5679,8 +5728,10 @@
       "promise": "CON-025",
       "vectors": [
         "setup-restore-missing-template",
-        "setup-restore-retired-target"
-      ]
+        "setup-restore-retired-target",
+        "change-retirement"
+      ],
+      "reason": ""
     },
     {
       "promise": "CON-027",
@@ -5821,8 +5872,10 @@
         "setup-restore-missing-template",
         "setup-restore-retired-target",
         "setup-review-replacement-reference",
-        "s1-whole"
-      ]
+        "s1-whole",
+        "change-t4"
+      ],
+      "reason": ""
     },
     {
       "promise": "LIF-012",
@@ -5843,14 +5896,18 @@
     {
       "promise": "LIF-019",
       "vectors": [
-        "setup-close-in-flight"
-      ]
+        "setup-close-in-flight",
+        "change-retirement"
+      ],
+      "reason": ""
     },
     {
       "promise": "LIF-024",
       "vectors": [
-        "s1-whole"
-      ]
+        "s1-whole",
+        "change-retirement"
+      ],
+      "reason": ""
     },
     {
       "promise": "LIF-027",
@@ -5886,8 +5943,10 @@
       "promise": "LIF-035",
       "vectors": [
         "setup-close",
-        "s1-whole"
-      ]
+        "s1-whole",
+        "change-retirement"
+      ],
+      "reason": ""
     },
     {
       "promise": "LIF-037",
@@ -6182,8 +6241,11 @@
         "access-collision-control-type",
         "access-collision-control-template",
         "access-collision-missing-contract",
-        "s1-whole"
-      ]
+        "s1-whole",
+        "change-t4",
+        "change-t5"
+      ],
+      "reason": ""
     },
     {
       "promise": "IFC-013",
@@ -6271,8 +6333,10 @@
     {
       "promise": "IFC-038",
       "vectors": [
-        "access-current-tools"
-      ]
+        "access-current-tools",
+        "change-t4"
+      ],
+      "reason": ""
     },
     {
       "promise": "OPS-001",

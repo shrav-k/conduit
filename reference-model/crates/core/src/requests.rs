@@ -574,6 +574,21 @@ pub(crate) fn invoke(
     invoke_part(t, &mut a, request, key, c, None)
 }
 
+pub(crate) fn invoke_archive(
+    t: &mut Transition,
+    evidence: &Evidence,
+    request: &access::AccessRequest,
+    key: Option<String>,
+    archive: Option<crate::archives::ArchiveInput>,
+    c: &Context,
+) -> Result<()> {
+    let mut a = Allocation {
+        evidence,
+        cursor: 0,
+    };
+    invoke_inner(t, &mut a, request, key, c, None, archive)
+}
+
 pub(crate) fn invoke_part(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -581,6 +596,19 @@ pub(crate) fn invoke_part(
     key: Option<String>,
     c: &Context,
     parent: Option<&Value>,
+) -> Result<()> {
+    invoke_inner(t, a, request, key, c, parent, None)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn invoke_inner(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    request: &access::AccessRequest,
+    key: Option<String>,
+    c: &Context,
+    parent: Option<&Value>,
+    archive: Option<crate::archives::ArchiveInput>,
 ) -> Result<()> {
     if key.as_ref().is_some_and(String::is_empty) {
         return Err("empty idempotency key at boundary".into());
@@ -755,7 +783,11 @@ pub(crate) fn invoke_part(
     if (previous.is_none() || redispatch)
         && let Some((reason, rule)) = crate::lifecycle::preflight(&t.state, &route, c)?
     {
-        return reject(t, a, c, &route, reason, rule, None, None);
+        reject(t, a, c, &route, reason, rule, None, None)?;
+        if let Some(message) = crate::retirement::blocking_diagnostic(&t.state, &route, rule) {
+            t.reply["structuredContent"]["diagnostics"][0]["message"]["text"] = json!(message);
+        }
+        return Ok(());
     }
     if (previous.is_none() || redispatch)
         && let Some((reason, rule)) = crate::records::preflight(&t.state, &route, c, a)?
@@ -854,6 +886,78 @@ pub(crate) fn invoke_part(
     } else {
         None
     };
+    let installation = if op == c.qualified("install.v1") {
+        let args = &route["arguments"];
+        let fetch = args["fetch"].as_str().and_then(|s| url::Url::parse(s).ok());
+        let installed = packages::catalog_entries(&t.state, t.state.preinstalled_snapshots.clone())
+            .iter()
+            .any(|p| {
+                p.address == args["address"]
+                    && packages::version_equal(&p.version, args["version"].as_str().unwrap_or(""))
+            });
+        if args.get("fetch").is_some()
+            && fetch
+                .as_ref()
+                .is_none_or(|u| !u.username().is_empty() || u.password().is_some())
+            || !installed
+                && fetch
+                    .as_ref()
+                    .is_none_or(|u| u.scheme() != "file" || u.to_file_path().is_err())
+        {
+            reject(t, a, c, &route, "invalid", "PKG-023", None, None)?;
+            t.reply["structuredContent"]["diagnostics"][0]["message"]["text"] = json!(
+                "install fetch requires an absolute local file URL; https fetching and package-source providers are unfinished"
+            );
+            return Ok(());
+        }
+        let input = archive.unwrap_or(crate::archives::ArchiveInput {
+            name: args["fetch"].as_str().unwrap_or("install.v1").into(),
+            address: args["address"].as_str().unwrap().into(),
+            version: args["version"].as_str().unwrap().into(),
+            digest: args["digest"].as_str().unwrap().into(),
+            directory: None,
+            completion: crate::archives::FetchCompletion::Unavailable,
+        });
+        if input.address != args["address"]
+            || input.version != args["version"]
+            || input.digest != args["digest"]
+        {
+            return Err("installation evidence does not match the request".into());
+        }
+        let mut trial = t.clone();
+        crate::archives::install(
+            &mut trial,
+            input,
+            t.state.preinstalled_snapshots.clone(),
+            c.builtin.clone().ok_or("missing built-in project")?,
+            c,
+        )?;
+        if trial.reply["accepted"] != true {
+            let reason = trial.reply["reason"].as_str().unwrap_or("invalid");
+            let rule = trial.reply["diagnostics"]
+                .as_array()
+                .and_then(|d| d.first())
+                .and_then(|d| d["ruleId"].as_str())
+                .unwrap_or(if reason == "conflict" {
+                    "PKG-025"
+                } else {
+                    "PKG-024"
+                });
+            t.decisions
+                .extend(trial.decisions.into_iter().skip(t.decisions.len()));
+            reject(t, a, c, &route, reason, rule, None, None)?;
+            if trial.reply["diagnostics"]
+                .as_array()
+                .is_some_and(|d| !d.is_empty())
+            {
+                t.reply["structuredContent"] = json!({"diagnostics":trial.reply["diagnostics"]});
+            }
+            return Ok(());
+        }
+        Some(trial)
+    } else {
+        None
+    };
     let id = match &previous {
         Some(p) => p["id"].clone(),
         None => json!(a.next(&mut t.state)?),
@@ -866,6 +970,7 @@ pub(crate) fn invoke_part(
         && !reconcile
         && !crate::lifecycle::handles(op, c)
         && !crate::records::handles(op, c)
+        && op != c.qualified("install.v1")
     {
         return Err("engine operation belongs to its lifecycle or records transition".into());
     }
@@ -938,7 +1043,36 @@ pub(crate) fn invoke_part(
             json!({"checked":args["checked"]}),
             vec![],
         ));
+        if args["occurred"] == true
+            && t.state.invocations[reconciled]["operation"] == c.qualified("retire.v1")
+        {
+            let object = t.state.invocations[reconciled]["object"].clone();
+            if access::object(&t.state, &object).is_some() {
+                crate::retirement::remove(t, a, c, i, &object)?;
+            }
+        }
         finish(t, a, c, i, "succeeded", json!({}), json!([]))?;
+    } else if let Some(trial) = installation {
+        t.state.installed_packages = trial.state.installed_packages;
+        t.decisions.extend(trial.decisions);
+        if trial.reply["changed"] != false {
+            record(
+                t,
+                a,
+                c,
+                "object-change",
+                json!({"action":"package-installed","target":route["target"],"invocation":id,"address":route["arguments"]["address"],"version":route["arguments"]["version"],"digest":route["arguments"]["digest"]}),
+            )?;
+        }
+        finish(
+            t,
+            a,
+            c,
+            i,
+            "succeeded",
+            json!({"diagnostics":trial.reply["diagnostics"]}),
+            json!([]),
+        )?;
     } else if crate::records::handles(op, c) {
         crate::records::execute(t, a, c, i)?;
     } else if crate::lifecycle::handles(op, c) {
@@ -1212,7 +1346,9 @@ pub(crate) fn cancel(
         evidence,
         cursor: 0,
     };
-    if t.state.invocations[i].get("setup").is_some() {
+    if t.state.invocations[i].get("setup").is_some()
+        || t.state.invocations[i].get("retirement").is_some()
+    {
         return crate::lifecycle::cancel(t, &mut a, c, i);
     }
     t.external_intents
@@ -1276,6 +1412,11 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
     };
     for i in 0..t.state.invocations.len() {
         if t.state.invocations[i]["state"] == "in-progress" {
+            if let Some(id) = t.state.invocations[i].get("retirement_of")
+                && let Some(o) = t.state.objects.iter_mut().find(|o| o["id"] == *id)
+            {
+                o["shutdown"] = json!("unknown");
+            }
             finish(t, &mut a, c, i, "unknown", json!({}), json!([]))?;
         }
     }
@@ -1300,13 +1441,31 @@ pub(crate) fn setup_hook(
     object: &Value,
     implementation: &Value,
 ) -> Result<()> {
+    hook(t, a, c, parent, object, implementation, "setup-hook.v1")
+}
+
+fn previous_hook(s: &crate::State, object: &Value, operation: &str) -> Option<usize> {
+    s.invocations.iter().position(|v| {
+        v["hook"] == true && v["target"] == object["id"] && v["operation"] == operation
+    })
+}
+
+pub(crate) fn hook_needs_dispatch(s: &crate::State, object: &Value, operation: &str) -> bool {
+    previous_hook(s, object, operation).is_none_or(|i| s.invocations[i]["state"] == "failed")
+}
+
+pub(crate) fn hook(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    parent: usize,
+    object: &Value,
+    implementation: &Value,
+    name: &str,
+) -> Result<()> {
     let p = t.state.invocations[parent].clone();
-    let op = c.qualified("setup-hook.v1");
-    let previous = t
-        .state
-        .invocations
-        .iter()
-        .position(|v| v["hook"] == true && v["target"] == object["id"] && v["operation"] == op);
+    let op = c.qualified(name);
+    let previous = previous_hook(&t.state, object, &op);
     if let Some(i) = previous
         && t.state.invocations[i]["state"] != "failed"
     {
@@ -1333,7 +1492,10 @@ pub(crate) fn setup_hook(
         .and_then(|i| t.state.invocations[i]["attempt"].as_u64())
         .unwrap_or(0)
         + 1;
-    let v = json!({"id":id,"key":format!("{}:{op}",object["id"].as_str().unwrap()),"hook":true,"setup_parent":p["id"],"serving":p["id"],"sender":p["sender"],"caller":p["caller"],"target":object["id"],"operation":op,"arguments":{},"filters":p["filters"],"state":"in-progress","plain":implementation["item"]["plain"] == true,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":false,"attempt":attempt,"config":object["config"],"revision":object["revision"]});
+    let mut v = json!({"id":id,"key":format!("{}:{op}",object["id"].as_str().unwrap()),"hook":true,"setup_parent":p["id"],"serving":p["id"],"sender":p["sender"],"caller":p["caller"],"target":object["id"],"operation":op,"arguments":{},"filters":p["filters"],"state":"in-progress","plain":implementation["item"]["plain"] == true,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":false,"attempt":attempt,"config":object["config"],"revision":object["revision"]});
+    if let Some(id) = p.get("retirement_of") {
+        v["retirement_of"] = id.clone();
+    }
     if let Some(i) = previous {
         t.state.invocations[i] = v.clone();
     } else {

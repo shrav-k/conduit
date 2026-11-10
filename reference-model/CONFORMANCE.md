@@ -48,10 +48,10 @@ prints these measurements; they are not a persistence format or compaction polic
 
 | DL item | What has not been chosen or implemented here |
 | --- | --- |
-| DL1 | Ordering of otherwise unordered/cyclic Resource retirement. Complete public retirement is outside the current core slice. |
+| DL1 | Ordering of otherwise unordered/cyclic Resource retirement by retire-with-resources.v1, which remains unfinished. Single-instance public retirement is implemented. |
 | DL3 | Actor-reply waiting policy and delivery while the server cannot receive; no such provider runs here. |
 | DL5 | Machine report intervals/deadlines, hostname override and voluntary runtime inspection intervals. The shell now discovers the OS hostname and OS/architecture labels at first start, plus explicitly supplied labels. |
-| DL7 | Physical package store, removal/mirror controls, general package-install command/API and complete install.v1 authorization/records/fetch orchestration. Archive admission and CLI directory registration with S1 preinstalled snapshots are implemented. |
+| DL7 | Package removal/mirror controls, https fetching and package-source providers remain unfinished. Public install.v1 supports local file URLs, authorization, admission and records; installed bytes and virtual files are persisted in State. |
 | DL8 | Live feed/cursor delivery. Physical records are now in the atomic State file. |
 | DL10 | Retirement orchestration deadlines. A store write/fsync error stops that shell operation as an embedding error; no intent or successful reply is issued for that operation. General disk-space management is pending. |
 | DL12 | Additional MCP revisions and transports beyond the loopback adapter below. |
@@ -120,9 +120,9 @@ a 0700 directory with 0600 files. Per-run identity directories retain the run-co
 These helpers are for the store owner, not additional consumer authority.
 
 H03 is bounded explicitly. Public engine execution currently supports set-up.v1, open.v1,
-close.v1, register-replacement.v1, register.v1, replace.v1, inspect.v1, purge.v1 and
-reconcile.v1, subject to the core's existing preflights. Unregister.v1, retire.v1, install.v1,
-declare-lost.v1 and retire-with-resources.v1 remain unfinished public invocation paths;
+close.v1, register-replacement.v1, register.v1, replace.v1, inspect.v1, purge.v1,
+reconcile.v1, install.v1, retire.v1 and unregister.v1, subject to the core's preflights.
+Declare-lost.v1 and retire-with-resources.v1 remain unfinished public invocation paths;
 controls and control reconciliation also remain outside the handoff's implemented core slice.
 Startup inspects every published operation's held contract, using the publisher's resolved
 scope, and treats a contract with changes as an unfinished control regardless of its type or
@@ -210,7 +210,7 @@ remain as IFC-025 requires. The plain-read-text-only vector checks publication a
 sole text content, and the repeat vectors check omission on successful repeated requests.
 
 CLI --package is an explicit local archive-admission step via install-archive, **not** the
-unfinished public install.v1 operation. It accepts repeated ARCHIVE#SHA256 arguments and
+public install.v1 operation. It accepts repeated ARCHIVE#SHA256 arguments and
 checks the compressed bytes before reading manifest metadata. Core admission still checks
 the digest, archive paths and contracts. Admission is per archive; earlier accepted packages
 remain installed if a later archive or registration fails. The submitted project manifest is
@@ -225,3 +225,81 @@ starting a client. A queued cancelled turn starts no work; active cancellation k
 the client and poisons the conversation, so later turns cannot implicitly restart it.
 CLI package metadata discovery accepts conduit.yaml, conduit.yml and conduit.json, and
 resolves archive links in memory with the core's virtual unpack semantics before admission.
+
+## I4-01: operations for changing S1
+
+Public `install.v1` admits the same virtual archives as `install-archive`, with the request's
+access decision, invocation and ending records. The shell first evaluates a pure trial
+transition. Only its `archive-unavailable` decision permits a file read; the trial is not
+committed. It reads the absolute local `file:` URL under the store's writer lock, supplies the
+completion, and commits the core's rechecked transition. A new admission also emits an
+`object-change` event with action `package-installed`, correlated with its management
+invocation (DL8). Invalid archives and unavailable
+files have no dispatched invocation. Already installed versions cause no fetch, including
+when the given fetch no longer exists; another digest conflicts. Installed packages are
+available to the next request. `https` and package-source providers remain unfinished and
+report invalid with an explicit diagnostic. No network fetching is added here.
+The archive catalog's virtual directory is store/archive-catalog/DIGEST; retained files stay
+in State and the runner materializes selected relative programs as before. There is no cache,
+mirror or physical extraction policy beyond that existing runner behavior.
+
+Public retirement marks the instance retired and closes/removes target Conduits in the
+initial committed transition, before shutdown work runs. A dispatched setup is remembered
+through its invocation, independently of output retention. A never-set-up instance is removed
+without a hook or stop (LIF-025, LIF-035). Otherwise a selected retire hook uses the existing
+hook invocation/repeat machinery. Before inspecting, starting or connecting to its
+implementation, retirement decides whether a new hook attempt is permitted. A retained success
+or unknown outcome goes straight to the stop. For a permitted attempt, a stopped run is started
+for it, or a remote connection is requested, before the hook. A retired placement node makes
+that hook part unavailable without dispatch or run; a successful stop still leaves shutdown
+unknown. A previously successful hook on that node allows removal once the stop succeeds.
+The stop is requested whatever the hook returns, including on
+cancellation. Part outcomes determine shutdown: success removes the instance and its consumer
+Conduits, failure leaves shutdown pending (unknown on a lost node), and uncertainty leaves it
+unknown. A further
+retirement is explicit. Reconciliation of a retirement as having occurred confirms shutdown
+and removes the instance. Recovery marks interrupted retirements unknown without replay.
+Runtime providers, remote connections and secrets still have the unserved boundaries listed
+above; this order qualifies the built-in runner on S1, not those providers.
+
+`unregister.v1` checks the current revision and retirement state, asks once more for the stop
+of a selected run, then removes the instance whatever that stop returned. A template is removed
+directly after authorization and revision checks, without a stop. Records and frozen references
+remain. Successful retirement already removes an
+instance, so the unregister vector deliberately uses an unknown retirement, not a successfully
+retired instance that no longer exists. This is the nearest sound reading of order 025's
+retirement vector under LIF-017 and LIF-035, not a change to those promises.
+The runner stops the run's Unix process group immediately with its existing SIGKILL mechanism;
+no graceful-stop interval is chosen. Retired consumers' legacy sessions are closed/removed,
+and modern subscription streams end, once the consumer is removed; other consumers continue.
+These stream endings also apply when the consumer had an empty tool list.
+
+The author commands `install`, `submit`, `replace`, `retire` and `unregister` are root MCP
+clients. They open no writer and perform no recovery. A two-second TCP reachability preflight
+and a ten-second MCP initialization limit make a missing server an error; operation execution
+retains the server's existing deadlines. Commands print each requested result as one JSON line,
+including revision inspections, and stop with nonzero status on a failed management result.
+`submit` opens newly registered root-consumer Conduits, then sets up newly registered Pools,
+Resources, Agents and Interfaces in that order, through public requests. It keeps successful
+earlier steps if a later one fails. It neither substitutes packages nor changes documents.
+`replace` submits only the selected template, its project's contracts and its manifest,
+reading the revision through `inspect.v1`; an intervening change remains a core conflict.
+`register.v1` carries no project directory, so `submit` cannot preserve SUB-010's directory
+semantics for relative values. Before sending registration, it checks the manifest and documents
+for relative `fetch` values and relative programs (a first `command` entry containing `/` that
+is not absolute). It refuses them with a nonzero exit and explains that a submission through
+the serving engine takes absolute values only. Bare program names still use PATH, under
+MAN-010. The gap between SUB-010 and the operation's input awaits the admin's finding log;
+the specification is unchanged.
+Resource inspection/setup/retirement choose the root's open route to its owning Pool from a
+read-only store snapshot; every server request rechecks authority. There is no automatic
+repointing of frozen references or migration of existing Agent sessions.
+
+Filesystem 0.2.0 is an installable fixture, not a preinstalled snapshot. Its Type, contracts
+and tools map are unchanged, with the npm artifact 2.2.0 pinned by its measured SHA-256.
+History keeps filesystem 0.1.0. The portable cases `change-t4`, `change-t5` and
+`change-retirement`, shell change tests, author-command process test, consumer-stream test and
+opt-in npm serve test cover these paths. The npm test installs while serving, sets up a new
+Resource at another directory, reads through server 2.2.0, checks the three-tool exposure and
+held 0.1.0 instance, then retires the new run. No native Claude or Codex client runs in this
+order; the Agent retirement test uses the existing scripted clients.

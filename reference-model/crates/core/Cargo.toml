@@ -21,3 +21,5 @@ percent-encoding = "2"
 flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
 tar = { version = "0.4", default-features = false }
 chrono = { version = "0.4", default-features = false, features = ["std"] }
+
+url = "2"

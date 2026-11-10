@@ -36,7 +36,10 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 
 pub const REVISIONS: [&str; 3] = ["2025-06-18", "2025-11-25", "2026-07-28"];
-const EXECUTABLE_ENGINE_OPERATIONS: [&str; 9] = [
+const EXECUTABLE_ENGINE_OPERATIONS: [&str; 12] = [
+    "install.v1",
+    "retire.v1",
+    "unregister.v1",
     "set-up.v1",
     "open.v1",
     "close.v1",
@@ -279,12 +282,21 @@ impl ServerHandler for Handler {
             let mut changes = self.executor.changes.subscribe();
             let peer = context.peer;
             let shutdown = self.shutdown.clone();
+            let shell = self.shell.clone();
             tokio::spawn(async move {
                 loop {
                     tokio::select! {
                         _=shutdown.cancelled()=>break,
                         event=changes.recv()=>match event {
-                            Ok(id) if id == identity => {if peer.notify_tool_list_changed().await.is_err(){break;}}
+                            Ok(id) if id == identity => {
+                                let exists = shell.state().is_ok_and(|s| s.objects.iter().any(|o| o["id"]==identity));
+                                if !exists {
+                                    let session = binding.wait_for(Option::is_some).await.ok().and_then(|value| value.clone());
+                                    if let Some(session) = session { let _ = manager.close_session(&session).await; sessions.lock().unwrap().remove(session.as_ref()); }
+                                    break;
+                                }
+                                if peer.notify_tool_list_changed().await.is_err(){break;}
+                            }
                             Err(broadcast::error::RecvError::Closed)=>break,
                             Err(broadcast::error::RecvError::Lagged(_))=>{
                                 let session = binding.wait_for(Option::is_some).await
@@ -346,7 +358,10 @@ impl ServerHandler for Handler {
                 _=context.cancelled()=>return Ok(()),
                 _=self.shutdown.cancelled()=>return Ok(()),
                 event=changes.recv()=>match event {
-                    Ok(id) if id == identity=>context.sink().notify_tool_list_changed().await.map_err(|_|internal("subscription closed"))?,
+                    Ok(id) if id == identity=> {
+                        if !self.shell.state().map_err(internal)?.objects.iter().any(|o| o["id"]==identity) { return Ok(()); }
+                        context.sink().notify_tool_list_changed().await.map_err(|_|internal("subscription closed"))?;
+                    },
                     Err(_)=>return Ok(()),
                     _=>{}
                 }
@@ -776,7 +791,10 @@ pub async fn client(
         reqwest::Client::new(),
         StreamableHttpClientTransportConfig::with_uri(config.engine_url).auth_header(token),
     );
-    let service = ().serve(transport).await.map_err(|_| "cannot connect to engine")?;
+    let service = tokio::time::timeout(std::time::Duration::from_secs(10), ().serve(transport))
+        .await
+        .map_err(|_| "cannot connect to engine: initialization timed out")?
+        .map_err(|_| "cannot connect to engine")?;
     let response = if let Some(tool) = tool {
         let request = serde_json::from_value(json!({"name":tool,"arguments":arguments}))
             .map_err(|_| "arguments must be a JSON object")?;

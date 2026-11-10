@@ -42,7 +42,11 @@ manifest; and the core as order 017 left it.
 5. **The done-when of increment 2**, checked and reported item by item: S1's documents register
    and resolve; every decision cites a promise; the safety vectors pass; each case the core could
    not decide is a logged finding, settled or left for the admin.
-6. **A finding**: as order 004's decision 6 says.
+6. **Lean vectors**: `conformance/` holds about 8 MB of cases, many of them whole states of up to
+   90 KB. Report what makes them large, and propose how to keep them small and readable, such
+   as shared fixtures for a common state and projections in place of whole states, as decision
+   7 asks of records. Do not rewrite them in this order; say what a later order would change.
+7. **A finding**: as order 004's decision 6 says.
 
 ## Scope
 

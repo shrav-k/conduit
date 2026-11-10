@@ -85,7 +85,7 @@ by outstanding phase/part. No intent here requests an autonomous repeat or model
 
 | kind | Exact outer fields besides kind | Shell action and returning input |
 | --- | --- | --- |
-| dispatch | invocation, attempt, target, implementation, call | Execute the supplied tools/call against the selected implementation. Return complete with the same invocation/attempt. A setup hook uses this shape too, with its own invocation and no Conduit metadata (TPL-017, ACC-018, IFC-001/006/007). |
+| dispatch | invocation, attempt, target, implementation, call | Execute the supplied tools/call against the selected implementation. Return complete with the same invocation/attempt. A setup hook uses this shape too, with its own invocation; a nonplain hook omits only the conduit metadata member and retains the other required metadata (TPL-017, ACC-018, IFC-001/006/007). |
 | refresh-tools-and-call | invocation, attempt, target, implementation, call | Refresh parameter headers/tool information and send the safe read once within that attempt. Return complete. Do not generalize it to effectful writes or SDK automatic retries (IFC-046). |
 | builtin-runner | operation, invocation, caller, subject, inputs | Inspect or start the subject's run. Return setup-report, not complete for the outer setup (PRV-007/009). |
 | provider-call | operation, invocation, caller, subject, inputs, provider, config, revision | Call the selected runtime provider without creating a request invocation. Translate its response to setup-report; run success requires its URL (PRV-005/007/009). |
@@ -126,8 +126,10 @@ Completion inputs have these shapes:
 Instead of result, completion may be `{kind: protocol-error, code: integer, data?: value}`
 or `{kind: missing}`. Plain content is interpreted by IFC-010 and preserved on success;
 Conduit-aware results must carry a valid outcome/reason envelope and valid outputs. Missing,
-malformed and unconfirmed effects end unknown. In particular, a plain -32602 is unknown,
-not proof of failure; -32020 on an effectful operation is unknown and never a resend.
+malformed and unconfirmed effects end unknown. Under IFC-010, a plain -32602 is failed only
+for an operation with no declared effect, that is not a control and starts no model work;
+otherwise it is unknown. The code alone is no proof that the server has not acted.
+A -32020 on an effectful operation is unknown and never a resend.
 Work order 018's [check](check-plain-errors.md) and admin decision 8a supersede the study's
 original safety assumption (OPS-003/018, IFC-010/046).
 

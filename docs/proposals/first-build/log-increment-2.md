@@ -1192,3 +1192,31 @@ assertions and removing two inherited tags it did not independently demonstrate,
 denied and formatting passed. The documentation, assigned-name, schema and roadmap checks
 passed, as did Git's whitespace check and a separate scan of all nine changed/new text files.
 No promise, legacy vector, owner configuration, branch, commit, Git index or remote was changed.
+
+### I2-09 return review
+
+The admin accepted four verifier findings. The handoff now gives IFC-010's full conditions
+for a plain -32602: failed only for an operation with no declared effect, no control and no
+model work, and unknown otherwise. Its dispatch table says that a nonplain setup hook omits
+only the conduit metadata member and keeps the other required metadata (IFC-006).
+The conformance document's DL15 entry now states the implemented shortening rule: retain at
+most the first 57 characters of the template name, then append a hyphen and five-character
+suffix.
+
+The continuous S1 case now asserts exact ordered record arrays for the twelve previously
+unchecked management/setup steps: the initial open, Pool setup, each Resource's setup and
+reports, B's setup, close, replacement registration and replacement setup. A's existing
+three-record dispatch subsequence is also replaced with its complete fifteen-record sequence,
+so both Agents' nested opens and all their request endings are required. These thirteen
+steps assert 75 records, including caller/consumer/Conduit/operation/invocation correlation,
+applicable serving and idempotency keys, lifecycle changes, and invocation/request endings.
+Exact arrays also reject additional or reordered records. No core behavior changed.
+
+**Return-review verification.** A temporary runner harness first ran `s1-whole` successfully,
+then reran the case 75 times, removing one of these records from the observed transition
+immediately before expectation matching on each run. This deliberately bypassed the global
+record invariants, so the vector's own expectations had to catch every omission. All 75 runs
+failed at the affected step's `/records` expectation with one fewer record than required.
+The runner source was restored; no fault injection remains. The release
+workspace tests passed on the restored source, including all 362 portable cases; clippy
+with warnings denied and formatting passed too.

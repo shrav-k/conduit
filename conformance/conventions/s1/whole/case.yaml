@@ -1615,6 +1615,77 @@ steps:
       _meta:
         io.github.shrav-k.conduit/outcome: succeeded
     external_intents: []
+    records:
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010201
+        operation: '@core#open.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000010200
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010201
+        operation: '@core#open.v1'
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000010202
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: opened
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010201
+        object: 00000000-0000-4000-8000-000000000115
+        operation: '@core#open.v1'
+        state: ready
+        target: 00000000-0000-4000-8000-000000000115
+      id: 00000000-0000-4000-8000-000000010203
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010201
+        object: 00000000-0000-4000-8000-000000000115
+        operation: '@core#open.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000010204
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010201
+        object: 00000000-0000-4000-8000-000000000115
+        operation: '@core#open.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000010205
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
 - input:
     kind: invoke
     evidence:
@@ -1685,6 +1756,77 @@ steps:
       _meta:
         io.github.shrav-k.conduit/outcome: succeeded
     external_intents: []
+    records:
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010401
+        operation: '@core#set-up.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000010400
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010401
+        operation: '@core#set-up.v1'
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000010402
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: setup-ended
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010401
+        object: 00000000-0000-4000-8000-000000000116
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000010403
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010401
+        object: 00000000-0000-4000-8000-000000000116
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000010404
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000010401
+        object: 00000000-0000-4000-8000-000000000116
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000010405
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
 - input:
     kind: invoke
     evidence:
@@ -1754,6 +1896,35 @@ steps:
   expect:
     reply:
       pending: true
+    records:
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-shared-10400
+        invocation: 00000000-0000-4000-8000-000000010601
+        operation: '@core#set-up.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000010600
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-shared-10400
+        invocation: 00000000-0000-4000-8000-000000010601
+        operation: '@core#set-up.v1'
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000010602
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
   capture:
     shared: /reply/invocation
 - input:
@@ -1838,6 +2009,24 @@ steps:
           - jwks.json
           - engine-id
           - token
+    records:
+    - type: object-change
+      data:
+        action: setup-part-reported
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-shared-10400
+        invocation: 00000000-0000-4000-8000-000000010601
+        object: 00000000-0000-4000-8000-000000000118
+        operation: '@core#set-up.v1'
+        partOperation: '@core#inspect-run.v1'
+        runState: stopped
+        target: 00000000-0000-4000-8000-000000000118
+      id: 00000000-0000-4000-8000-000000010800
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
 - input:
     kind: setup-report
     evidence:
@@ -1903,6 +2092,71 @@ steps:
       _meta:
         io.github.shrav-k.conduit/outcome: succeeded
     external_intents: []
+    records:
+    - type: object-change
+      data:
+        action: setup-part-reported
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-shared-10400
+        invocation: 00000000-0000-4000-8000-000000010601
+        object: 00000000-0000-4000-8000-000000000118
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        partOperation: '@core#run.v1'
+        target: 00000000-0000-4000-8000-000000000118
+      id: 00000000-0000-4000-8000-000000011000
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: setup-ended
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-shared-10400
+        invocation: 00000000-0000-4000-8000-000000010601
+        object: 00000000-0000-4000-8000-000000000118
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000118
+      id: 00000000-0000-4000-8000-000000011001
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-shared-10400
+        invocation: 00000000-0000-4000-8000-000000010601
+        object: 00000000-0000-4000-8000-000000000118
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000011002
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-shared-10400
+        invocation: 00000000-0000-4000-8000-000000010601
+        object: 00000000-0000-4000-8000-000000000118
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000011003
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
 - input:
     kind: invoke
     evidence:
@@ -1972,6 +2226,35 @@ steps:
   expect:
     reply:
       pending: true
+    records:
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-history-11000
+        invocation: 00000000-0000-4000-8000-000000011201
+        operation: '@core#set-up.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000011200
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-history-11000
+        invocation: 00000000-0000-4000-8000-000000011201
+        operation: '@core#set-up.v1'
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000011202
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
   capture:
     history: /reply/invocation
 - input:
@@ -2056,6 +2339,24 @@ steps:
           - jwks.json
           - engine-id
           - token
+    records:
+    - type: object-change
+      data:
+        action: setup-part-reported
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-history-11000
+        invocation: 00000000-0000-4000-8000-000000011201
+        object: 00000000-0000-4000-8000-000000000117
+        operation: '@core#set-up.v1'
+        partOperation: '@core#inspect-run.v1'
+        runState: stopped
+        target: 00000000-0000-4000-8000-000000000117
+      id: 00000000-0000-4000-8000-000000011400
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
 - input:
     kind: setup-report
     evidence:
@@ -2121,6 +2422,71 @@ steps:
       _meta:
         io.github.shrav-k.conduit/outcome: succeeded
     external_intents: []
+    records:
+    - type: object-change
+      data:
+        action: setup-part-reported
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-history-11000
+        invocation: 00000000-0000-4000-8000-000000011201
+        object: 00000000-0000-4000-8000-000000000117
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        partOperation: '@core#run.v1'
+        target: 00000000-0000-4000-8000-000000000117
+      id: 00000000-0000-4000-8000-000000011600
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: setup-ended
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-history-11000
+        invocation: 00000000-0000-4000-8000-000000011201
+        object: 00000000-0000-4000-8000-000000000117
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000117
+      id: 00000000-0000-4000-8000-000000011601
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-history-11000
+        invocation: 00000000-0000-4000-8000-000000011201
+        object: 00000000-0000-4000-8000-000000000117
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000011602
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000115
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-history-11000
+        invocation: 00000000-0000-4000-8000-000000011201
+        object: 00000000-0000-4000-8000-000000000117
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000116
+      id: 00000000-0000-4000-8000-000000011603
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
 - input:
     kind: invoke
     evidence:
@@ -2212,24 +2578,232 @@ steps:
       serving: 00000000-0000-4000-8000-000000011801
       setup_parent: 00000000-0000-4000-8000-000000011801
       state: succeeded
-    record_facts:
-    - type: invocation-dispatched
+    records:
+    - type: access-decision
       data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-11600
         invocation: 00000000-0000-4000-8000-000000011801
-        caller: 00000000-0000-4000-8000-000000000005
-        consumer: 00000000-0000-4000-8000-000000000005
+        operation: '@core#set-up.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000011800
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
     - type: invocation-dispatched
       data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-11600
+        invocation: 00000000-0000-4000-8000-000000011801
+        operation: '@core#set-up.v1'
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000011802
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
         invocation: 00000000-0000-4000-8000-000000011804
-        caller: 00000000-0000-4000-8000-000000000005
-        consumer: 00000000-0000-4000-8000-000000000005
+        operation: '@core#open.v1'
+        permitted: true
         serving: 00000000-0000-4000-8000-000000011801
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000011803
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
     - type: invocation-dispatched
       data:
-        invocation: 00000000-0000-4000-8000-000000011810
+        attempt: 1
         caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
         consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011804
+        operation: '@core#open.v1'
         serving: 00000000-0000-4000-8000-000000011801
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000011805
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: opened
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011804
+        object: 00000000-0000-4000-8000-000000000110
+        operation: '@core#open.v1'
+        serving: 00000000-0000-4000-8000-000000011801
+        state: ready
+        target: 00000000-0000-4000-8000-000000000110
+      id: 00000000-0000-4000-8000-000000011806
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011804
+        object: 00000000-0000-4000-8000-000000000110
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 00000000-0000-4000-8000-000000011801
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000011807
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011804
+        object: 00000000-0000-4000-8000-000000000110
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 00000000-0000-4000-8000-000000011801
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000011808
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011810
+        operation: '@core#open.v1'
+        permitted: true
+        serving: 00000000-0000-4000-8000-000000011801
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000011809
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011810
+        operation: '@core#open.v1'
+        serving: 00000000-0000-4000-8000-000000011801
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000011811
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: opened
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011810
+        object: 00000000-0000-4000-8000-000000000111
+        operation: '@core#open.v1'
+        serving: 00000000-0000-4000-8000-000000011801
+        state: ready
+        target: 00000000-0000-4000-8000-000000000111
+      id: 00000000-0000-4000-8000-000000011812
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011810
+        object: 00000000-0000-4000-8000-000000000111
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 00000000-0000-4000-8000-000000011801
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000011813
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000011810
+        object: 00000000-0000-4000-8000-000000000111
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 00000000-0000-4000-8000-000000011801
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000011814
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: setup-ended
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-11600
+        invocation: 00000000-0000-4000-8000-000000011801
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000109
+      id: 00000000-0000-4000-8000-000000011815
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-11600
+        invocation: 00000000-0000-4000-8000-000000011801
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000011816
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-11600
+        invocation: 00000000-0000-4000-8000-000000011801
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000011817
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
   capture:
     aSetup: /reply/_meta/io.github.shrav-k.conduit~1invocation
 - input:
@@ -2380,6 +2954,232 @@ steps:
         slot: conduits
         name: project
       revision: reg-14
+    records:
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-b-11800
+        invocation: 00000000-0000-4000-8000-000000012001
+        operation: '@core#set-up.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000012000
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-b-11800
+        invocation: 00000000-0000-4000-8000-000000012001
+        operation: '@core#set-up.v1'
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000012002
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012004
+        operation: '@core#open.v1'
+        permitted: true
+        serving: 00000000-0000-4000-8000-000000012001
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000012003
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012004
+        operation: '@core#open.v1'
+        serving: 00000000-0000-4000-8000-000000012001
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000012005
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: opened
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012004
+        object: 00000000-0000-4000-8000-000000000113
+        operation: '@core#open.v1'
+        serving: 00000000-0000-4000-8000-000000012001
+        state: ready
+        target: 00000000-0000-4000-8000-000000000113
+      id: 00000000-0000-4000-8000-000000012006
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012004
+        object: 00000000-0000-4000-8000-000000000113
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 00000000-0000-4000-8000-000000012001
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000012007
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012004
+        object: 00000000-0000-4000-8000-000000000113
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 00000000-0000-4000-8000-000000012001
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000012008
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012010
+        operation: '@core#open.v1'
+        permitted: true
+        serving: 00000000-0000-4000-8000-000000012001
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000012009
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012010
+        operation: '@core#open.v1'
+        serving: 00000000-0000-4000-8000-000000012001
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000012011
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: opened
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012010
+        object: 00000000-0000-4000-8000-000000000114
+        operation: '@core#open.v1'
+        serving: 00000000-0000-4000-8000-000000012001
+        state: ready
+        target: 00000000-0000-4000-8000-000000000114
+      id: 00000000-0000-4000-8000-000000012012
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012010
+        object: 00000000-0000-4000-8000-000000000114
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 00000000-0000-4000-8000-000000012001
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000012013
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 00000000-0000-4000-8000-000000012010
+        object: 00000000-0000-4000-8000-000000000114
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 00000000-0000-4000-8000-000000012001
+        target: 00000000-0000-4000-8000-000000000004
+      id: 00000000-0000-4000-8000-000000012014
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: object-change
+      data:
+        action: setup-ended
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-b-11800
+        invocation: 00000000-0000-4000-8000-000000012001
+        object: 00000000-0000-4000-8000-000000000112
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000112
+      id: 00000000-0000-4000-8000-000000012015
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-b-11800
+        invocation: 00000000-0000-4000-8000-000000012001
+        object: 00000000-0000-4000-8000-000000000112
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000012016
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-b-11800
+        invocation: 00000000-0000-4000-8000-000000012001
+        object: 00000000-0000-4000-8000-000000000112
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 00000000-0000-4000-8000-000000012017
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:30:00Z'
 - input:
     kind: list-tools
     identity:
@@ -3721,6 +4521,92 @@ steps:
     - id: 00000000-0000-4000-8000-000000000114
       open: true
       revision: reg-14
+    records:
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000002401
+        operation: '@core#close.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000004
+      id: 01900000-0000-4000-8000-000000002400
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:24Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000002401
+        operation: '@core#close.v1'
+        target: 00000000-0000-4000-8000-000000000004
+      id: 01900000-0000-4000-8000-000000002402
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:24Z'
+    - type: object-change
+      data:
+        action: closed
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000002401
+        object: 00000000-0000-4000-8000-000000000111
+        operation: '@core#close.v1'
+        shutdown: confirmed
+        state: retired
+        target: 00000000-0000-4000-8000-000000000111
+      id: 01900000-0000-4000-8000-000000002403
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:24Z'
+    - type: object-change
+      data:
+        action: removed
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000002401
+        object: 00000000-0000-4000-8000-000000000111
+        operation: '@core#close.v1'
+        target: 00000000-0000-4000-8000-000000000111
+      id: 01900000-0000-4000-8000-000000002404
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:24Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000002401
+        object: 00000000-0000-4000-8000-000000000111
+        operation: '@core#close.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000004
+      id: 01900000-0000-4000-8000-000000002405
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:24Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000002401
+        object: 00000000-0000-4000-8000-000000000111
+        operation: '@core#close.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000004
+      id: 01900000-0000-4000-8000-000000002406
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:24Z'
 - input:
     kind: list-tools
     identity:
@@ -4283,6 +5169,77 @@ steps:
     object_count: 26
     required_promises:
     - LIF-009
+    records:
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003401
+        operation: '@core#register-replacement.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000003
+      id: 01900000-0000-4000-8000-000000003400
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:34Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003401
+        operation: '@core#register-replacement.v1'
+        target: 00000000-0000-4000-8000-000000000003
+      id: 01900000-0000-4000-8000-000000003402
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:34Z'
+    - type: object-change
+      data:
+        action: registered
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003401
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#register-replacement.v1'
+        state: registered
+        target: 01900000-0000-4000-8000-000000003403
+      id: 01900000-0000-4000-8000-000000003404
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:34Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003401
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#register-replacement.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 01900000-0000-4000-8000-000000003405
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:34Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003401
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#register-replacement.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 01900000-0000-4000-8000-000000003406
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:34Z'
   capture:
     replacement: /reply/structuredContent/object/id
 - input:
@@ -4373,6 +5330,157 @@ steps:
       revision: reg-12
     absent_objects:
     - 00000000-0000-4000-8000-000000000111
+    records:
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-12800
+        invocation: 01900000-0000-4000-8000-000000003501
+        operation: '@core#set-up.v1'
+        permitted: true
+        target: 00000000-0000-4000-8000-000000000003
+      id: 01900000-0000-4000-8000-000000003500
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-12800
+        invocation: 01900000-0000-4000-8000-000000003501
+        operation: '@core#set-up.v1'
+        target: 00000000-0000-4000-8000-000000000003
+      id: 01900000-0000-4000-8000-000000003502
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: access-decision
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003504
+        operation: '@core#open.v1'
+        permitted: true
+        serving: 01900000-0000-4000-8000-000000003501
+        target: 00000000-0000-4000-8000-000000000004
+      id: 01900000-0000-4000-8000-000000003503
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: invocation-dispatched
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003504
+        operation: '@core#open.v1'
+        serving: 01900000-0000-4000-8000-000000003501
+        target: 00000000-0000-4000-8000-000000000004
+      id: 01900000-0000-4000-8000-000000003505
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: object-change
+      data:
+        action: opened
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003504
+        object: 01900000-0000-4000-8000-000000003403
+        operation: '@core#open.v1'
+        serving: 01900000-0000-4000-8000-000000003501
+        state: ready
+        target: 01900000-0000-4000-8000-000000003403
+      id: 01900000-0000-4000-8000-000000003506
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003504
+        object: 01900000-0000-4000-8000-000000003403
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 01900000-0000-4000-8000-000000003501
+        target: 00000000-0000-4000-8000-000000000004
+      id: 01900000-0000-4000-8000-000000003507
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000007
+        consumer: 00000000-0000-4000-8000-000000000005
+        invocation: 01900000-0000-4000-8000-000000003504
+        object: 01900000-0000-4000-8000-000000003403
+        operation: '@core#open.v1'
+        outcome: succeeded
+        serving: 01900000-0000-4000-8000-000000003501
+        target: 00000000-0000-4000-8000-000000000004
+      id: 01900000-0000-4000-8000-000000003508
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: object-change
+      data:
+        action: setup-ended
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-12800
+        invocation: 01900000-0000-4000-8000-000000003501
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000109
+      id: 01900000-0000-4000-8000-000000003509
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: invocation-ended
+      data:
+        attempt: 1
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-12800
+        invocation: 01900000-0000-4000-8000-000000003501
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 01900000-0000-4000-8000-000000003510
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
+    - type: request-ended
+      data:
+        caller: 00000000-0000-4000-8000-000000000005
+        conduit: 00000000-0000-4000-8000-000000000006
+        consumer: 00000000-0000-4000-8000-000000000005
+        idempotencyKey: setup-agent-a-12800
+        invocation: 01900000-0000-4000-8000-000000003501
+        object: 00000000-0000-4000-8000-000000000109
+        operation: '@core#set-up.v1'
+        outcome: succeeded
+        target: 00000000-0000-4000-8000-000000000003
+      id: 01900000-0000-4000-8000-000000003511
+      specversion: '1.0'
+      source: urn:conduit:first-build
+      time: '2026-11-09T12:01:35Z'
 - input:
     kind: list-tools
     identity:

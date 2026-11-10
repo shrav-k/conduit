@@ -4,8 +4,8 @@ Not binding. The specification in [spec/](../spec/README.md) alone binds, and th
 it: where the two differ, the code is wrong, or the difference is a finding of the first build.
 
 This is the codebase of the first build, as [ruling 46](../docs/proposals/ruling-46/README.md)
-shaped it: one Cargo workspace in Rust that will hold the pure core, the reference model (A38),
-in which every decision cites a promise, and later the shell that makes it runnable, the first
+shaped it: one Cargo workspace in Rust holding the pure core, the reference model (A38),
+in which every decision cites a promise, and the shell that makes it runnable, the first
 slice of the reference engine (A50). [The first build](../docs/implementation/FIRST_BUILD.md)
 pre-registers its increments and what each must show, and the
 [roadmap](../ROADMAP.md#the-order-of-the-work) says where it stands. Each increment logs what it
@@ -13,7 +13,8 @@ finds under [docs/proposals/first-build/](../docs/proposals/first-build/README.m
 
 It holds the strict loader of increment 1 (A43), in [crates/loader](crates/loader), whose
 package is `conduit-loader`; the pure `conduit-core` in [crates/core](crates/core); and the
-`conduit-conformance` runner in [crates/conformance](crates/conformance). The shell comes later.
+`conduit-conformance` runner in [crates/conformance](crates/conformance); and the
+`conduit-shell` library with its `conduit` binary in [crates/shell](crates/shell).
 
 ## Running it
 
@@ -30,12 +31,49 @@ cargo run --release -p conduit-conformance
 `Cargo.lock` is committed, and the build output, `target/`, is ignored. The tests read the
 specification from `../spec/`, so they run inside a checkout of this repository.
 
+## The shell's store and command line (I3-01)
+
+From this directory, with an existing parent directory for the store:
+
+```sh
+cargo run --release -p conduit-shell -- init --store /tmp/conduit-store
+cargo run --release -p conduit-shell -- register --store /tmp/conduit-store ../conformance/fixtures/s1/project
+cargo run --release -p conduit-shell -- inspect --store /tmp/conduit-store
+cargo run --release -p conduit-shell -- records --store /tmp/conduit-store
+```
+
+First start uses the machine's hostname, OS and architecture, plus no custom labels unless
+`--label KEY=VALUE` is supplied. Registration preinstalls S1's three package snapshots, reads
+the submitted directory through the strict loader, then explicitly requests opening root's
+submitted Conduits and setup. With no runner yet, it says which runner intent waits and
+prints no successful pending reply. Every open of a store first commits recovery; opening
+it after that paused command ends the interrupted invocation unknown. Inspection makes
+core inspect requests as root, one JSON line per object, including authority refusals.
+Records exports ordered CloudEvents as JSON lines and reports gaps on stderr.
+
+The shell holds an exclusive store lease. One mutex serializes read/step/commit; executors
+run outside it, and their completions reenter it. The whole State and records are committed
+in one atomic, fsynced file before work or final replies. Pending requests have an internal
+Ticket that waits for a core ending. Transition.request_replies carries the core's exact
+final replies, correlated by invocation and attempt, so a refusal is delivered even if the
+core removes the invocation or restores its previous success. Orders 021 and 022 implement the Executor methods and
+the server; this order starts no process, serves no HTTP and runs no Agent.
+
+Config sets the engine address and output retention. CLI equivalents are `--url`,
+`--output-cap-bytes` and `--output-age-seconds`; defaults are a loopback address at port 3000
+with path /mcp, 64 MiB and seven days. Credential directories and authority files are private,
+and actual credentials never enter core inputs or output. The same-key CA file checks
+nothing at the loopback HTTP address. The supported choices and remaining boundaries are in
+[CONFORMANCE.md](CONFORMANCE.md); implementation details and tests are in
+[the increment 3 log](../docs/proposals/first-build/log-increment-3.md).
+
 ## What increment 2 covers so far
 
 I2-01 implements deterministic first start: exactly five ready objects and root's two open
 declared Conduits, retaining their built-in template provenance, ownership, placement and
 machine labels. `conduit-core::step` takes immutable state, an input and a supplied context,
-and returns state, promise-citing decisions, records, external intents and a semantic reply.
+and returns state, promise-citing decisions, records, external intents, a semantic reply and
+correlated final replies for dispatched request attempts.
 Time, UUID allocations, revisions, generated suffixes and the local machine report enter as
 values. No core code reads a file, clock, network or process. Allocation errors leave the
 caller's state untouched. Restart uses retained state and makes no new identities.

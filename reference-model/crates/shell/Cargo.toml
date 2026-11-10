@@ -1,0 +1,31 @@
+[package]
+name = "conduit-shell"
+version = "0.1.0"
+description = "Durable first-build shell around the pure Conduit core."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "conduit"
+path = "src/main.rs"
+
+[dependencies]
+conduit-core = { path = "../core" }
+conduit-loader = { path = "../loader" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["unbounded_depth"] }
+chrono = { version = "0.4", features = ["clock"] }
+uuid = { version = "1", features = ["v4"] }
+getrandom = "0.3"
+fs2 = "0.4"
+hostname = "0.4"
+url = "2"
+base64 = "0.22"
+p256 = { version = "0.13", features = ["ecdsa", "pkcs8", "pem"] }
+rcgen = "0.14"
+
+[dev-dependencies]
+tempfile = "3"
+x509-parser = "0.18"

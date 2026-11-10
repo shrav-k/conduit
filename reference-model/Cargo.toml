@@ -1,7 +1,8 @@
 # The first build (ruling 46): one codebase, a pure core, the reference model, and a thin shell.
 # Increment 2 adds the pure core and the conformance runner.
+# Increment 3 adds the durable shell and its conduit command.
 [workspace]
-members = ["crates/loader", "crates/core", "crates/conformance"]
+members = ["crates/loader", "crates/core", "crates/conformance", "crates/shell"]
 resolver = "3"
 
 [workspace.package]

@@ -53,6 +53,7 @@ pub(crate) fn preflight(
             records: vec![],
             external_intents: vec![],
             reply: Value::Null,
+            request_replies: vec![],
         };
         register_project(&mut trial, args, c, a, route)?;
         if trial.reply["accepted"] != true {
@@ -99,6 +100,7 @@ fn replacement(s: &State, args: &Value, c: &Context, a: &Allocation<'_>) -> Resu
         records: vec![],
         external_intents: vec![],
         reply: Value::Null,
+        request_replies: vec![],
     };
     let evidence = crate::Evidence {
         time: a.evidence.time.clone(),

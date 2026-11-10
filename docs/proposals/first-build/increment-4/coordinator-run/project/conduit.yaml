@@ -1,0 +1,11 @@
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/s1/filesystem:
+    version: 0.1.0
+    digest: sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
+  example.org/conduit/agent-claude-code:
+    version: 0.1.1
+    digest: sha256:166ce271e4c5e83ff13c228fe56075f1fa7f98557b633dbe60f4d2fe1ee60e9e
+  example.org/conduit/agent-codex:
+    version: 0.1.1
+    digest: sha256:05b47a8571743789ae5b9fc060ce1cb43777b92c61206a617cf49334aee626d6

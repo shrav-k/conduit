@@ -1,0 +1,16 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Conduit",
+  "metadata": {
+    "name": "b-history"
+  },
+  "from": "directory-write",
+  "consumer": {
+    "kind": "Agent",
+    "name": "b"
+  },
+  "target": {
+    "kind": "Resource",
+    "name": "messages"
+  }
+}

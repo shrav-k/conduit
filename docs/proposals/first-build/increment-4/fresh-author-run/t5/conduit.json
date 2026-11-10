@@ -1,0 +1,9 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "packages": {
+    "example.org/s1/filesystem": {
+      "version": "0.2.0",
+      "digest": "sha256:cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436"
+    }
+  }
+}

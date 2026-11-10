@@ -1,0 +1,17 @@
+import json
+from run import run,log
+
+def checked(label,args,mutate=True):
+    for i in range(1,4):
+        attempt=label if i==1 else label+'-init-retry-'+str(i)
+        p=run(attempt,args,mutate)
+        if not p.stdout.strip() and 'cannot connect to engine: initialization timed out' in p.stderr:
+            log('UNCLEAR '+attempt+': initialization timeout before request; explicit next attempt authorized by task, no invocation result or output to replay.')
+            continue
+        if p.returncode: raise RuntimeError(attempt+' failed: '+p.stderr)
+        for line in p.stdout.splitlines():
+            d=json.loads(line)
+            if d.get('isError') or d.get('_meta',{}).get('io.github.shrav-k.conduit/reason') or d.get('_meta',{}).get('io.github.shrav-k.conduit/outcome','succeeded')!='succeeded':
+                raise RuntimeError(attempt+' did not succeed; preserved result, no automatic repeat')
+        return p
+    raise RuntimeError(label+' exhausted initialization attempts')

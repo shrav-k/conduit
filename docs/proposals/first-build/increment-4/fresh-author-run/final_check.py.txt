@@ -1,0 +1,37 @@
+import sys,json,contextlib,io
+from stages import BASE,FS,FS2,write
+from checked import checked
+which=sys.argv[1]
+if which.startswith('tools-'):
+    a=which[-1]
+    with contextlib.redirect_stdout(io.StringIO()): p=checked('final-'+which,['tools','--as',a],False)
+    names={t['name'] for t in json.loads(p.stdout)['tools']}
+    expected={a+'-history.'+n for n in ['directory.list.v1','file.read.v1','file.write.v1']}
+    expected|={a+'-directory.'+n for n in ['directory.list.v1','file.read.v1']}
+    if a=='a': expected.add('a-directory.file.write.v1')
+    assert names==expected,(names,expected)
+    result={'agent':a,'tools':sorted(names),'matches_intended_access':True}
+else:
+    name='directory' if which=='directory' else 'messages'
+    with contextlib.redirect_stdout(io.StringIO()): p=checked('final-'+which,['call','root-team.inspect.v1',json.dumps({'object':{'kind':'Resource','name':name}})],False)
+    d=json.loads(p.stdout)['structuredContent']
+    result={k:d[k] for k in ['id','declared','packages','status']}
+    assert d['status']['state']=='ready'
+    if which=='directory':
+        assert d['declared']['config']['root']==str(BASE/'shared-new')
+        assert d['packages']==[dict(address=FS[:-1],**FS2)]
+        objects=json.loads((BASE/'project/evidence/t7-recovery-submit.jsonl').read_text().splitlines()[0])['structuredContent']['objects']
+        agents={o['name']:o['id'] for o in objects if o['kind']=='Agent'}
+        expected={(agents[a],FS+op,str(BASE/'shared-new/a-t7-restored.txt')) for a,op in [('a','file.write.v1'),('a','file.read.v1'),('b','file.read.v1')]}
+        observed={(x['data'].get('caller'),x['data'].get('operation'),x['data'].get('inputs',{}).get('path')) for x in d['records'] if x['type']=='invocation-ended' and x['data'].get('outcome')=='succeeded'}
+        assert expected<=observed
+        assert (BASE/'shared-new/a-t7-restored.txt').read_text()=='A access restored T7'
+        result['verified_successful_current_agent_calls']=[list(t) for t in sorted(expected)]
+    else:
+        old=json.loads((BASE/'project/evidence/t3-state-messages.jsonl').read_text())['structuredContent']
+        assert d['id']==old['id'] and d['packages']==old['packages'] and d['declared']['config']==old['declared']['config']
+        posts={p.name:p.read_text() for p in (BASE/'history').iterdir()}
+        assert posts=={'20261110T195802Z-a-t2-01.md':'A: hello B from the shared history.','20261110T195902Z-b-t2-01.md':'B: read A and reply through shared history.'}
+        result['original_history_retained']=True
+write('project/evidence/final-'+which+'-verified.json',result)
+print(which,'PASS',flush=True)

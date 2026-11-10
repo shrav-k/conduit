@@ -1,0 +1,196 @@
+{
+ "summary": "Completed T1\u2013T7. Final state: filesystem 0.2.0 serves shared-new/; A has read/write access and B has read-only access. Both retain shared-history access. T6\u2019s final replies timed out, but agent dispatch records demonstrated the required behavior. Agent conversations were explicitly recreated before T7. Full report: project/evidence/report.json. Timestamped log: log.txt.",
+ "tasks": [
+  {
+   "task": "T1",
+   "done": true,
+   "how_checked": "A read/listed files and had no write tool. B wrote and read back b-t1.txt. Both received outside-root read denials.",
+   "files": [
+    "project/evidence/t1-a.jsonl",
+    "project/evidence/t1-b.jsonl"
+   ]
+  },
+  {
+   "task": "T2",
+   "done": true,
+   "how_checked": "Both agents posted, read their own posts, and read each other\u2019s posts. A\u2019s final cross-read succeeded after an initialization-only retry.",
+   "files": [
+    "project/evidence/t2-a-post.jsonl",
+    "project/evidence/t2-b-post-read.jsonl",
+    "project/evidence/t2-a-read-b-retry.jsonl"
+   ]
+  },
+  {
+   "task": "T3",
+   "done": true,
+   "how_checked": "Documented configured and demonstrated reach. Both history routes denied directory reads. B\u2019s native list_agents worked; its native write probe was sandbox-denied.",
+   "files": [
+    "project/t3-answer.md",
+    "project/evidence/t3-a.jsonl",
+    "project/evidence/t3-b.jsonl",
+    "project/evidence/t3-b-native-check.jsonl"
+   ]
+  },
+  {
+   "task": "T4",
+   "done": true,
+   "how_checked": "Changed Conduits while preserving the original agent instances. A wrote/read a-t4.txt. B still read, lacked directory write, and could not write there through history.",
+   "files": [
+    "project/t4/a-directory.json",
+    "project/t4/b-directory.json",
+    "project/evidence/t4-a.jsonl",
+    "project/evidence/t4-b.jsonl"
+   ]
+  },
+  {
+   "task": "T5",
+   "done": true,
+   "how_checked": "Installed 0.2.0, replaced the template pin, and recreated the Resource. Inspection and actual agent dispatches confirmed the new pin with A read/write and B read-only.",
+   "files": [
+    "project/t5-template/conduit.json",
+    "project/evidence/t5-a.jsonl",
+    "project/evidence/t5-b.jsonl",
+    "project/evidence/t5-directory-after-turns.jsonl"
+   ]
+  },
+  {
+   "task": "T6",
+   "done": true,
+   "how_checked": "Agent records show both new-directory reads succeeded, both old-path reads failed, and A\u2019s write succeeded. B\u2019s catalog remained read-only. Both enclosing turns ended unknown; their lost final replies were not counted as successful replies.",
+   "files": [
+    "project/t6/directory.json",
+    "project/evidence/t6-diagnose-a.jsonl",
+    "project/evidence/t6-diagnose-b.jsonl",
+    "project/evidence/t6-tools-b.jsonl",
+    "project/t6-recovery-notes.md"
+   ]
+  },
+  {
+   "task": "T7",
+   "done": true,
+   "how_checked": "After agent recovery, revoked A\u2019s directory route: A had no directory tools and its history bypass was denied; B still read. Restored A: A wrote/read a new file, and B read it without gaining write. Final catalog, pin, history and dispatch checks passed.",
+   "files": [
+    "project/evidence/t7-a-revoked.jsonl",
+    "project/evidence/t7-b-while-a-revoked.jsonl",
+    "project/evidence/t7-a-restored.jsonl",
+    "project/evidence/t7-b-after-restore.jsonl",
+    "project/evidence/final-directory-verified.json",
+    "project/evidence/final-history-verified.json"
+   ]
+  }
+ ],
+ "mistakes": [
+  {
+   "task": "T1",
+   "what": "Searched ancestor AGENTS.md paths outside the directory before reading TASKS.md. No contents were returned.",
+   "how_found": "Read the directory restriction; restricted subsequent reads."
+  },
+  {
+   "task": "T1",
+   "what": "Guessed five nonexistent .schema.json filenames.",
+   "how_found": "cat reported missing files; switched to discovered schema paths."
+  },
+  {
+   "task": "T1",
+   "what": "Assumed python3 had PyYAML.",
+   "how_found": "ModuleNotFoundError; used JSON documents and standard-library tooling."
+  },
+  {
+   "task": "T1",
+   "what": "Omitted the root Interface\u2019s management Conduit to the new Pool.",
+   "how_found": "Submission partially completed, then stderr reported the missing route. Added it separately and resumed setup."
+  },
+  {
+   "task": "T1",
+   "what": "Queried --as a before setup, guessed Agent/a, and parsed empty failed-command output.",
+   "how_found": "Missing-file, unknown-client and JSON errors. Bare a worked after setup."
+  },
+  {
+   "task": "T1",
+   "what": "Guessed team.set-up.v1 instead of root-team.set-up.v1.",
+   "how_found": "Tool refusal; IFC-012 clarified the Conduit-name prefix."
+  },
+  {
+   "task": "T2",
+   "what": "Overlapped several inspection clients with native turns, then suspected concurrency caused initialization failures.",
+   "how_found": "Captured timeouts; later sequential failures showed that explanation was unproven."
+  },
+  {
+   "task": "T6",
+   "what": "The stage script continued after B\u2019s open failed because it did not check that return code.",
+   "how_found": "Noticed exit 1 before agent tests; explicitly retried and added structured-outcome checks."
+  },
+  {
+   "task": "T6",
+   "what": "Repeated an unguarded tools-to-JSON pipeline while initialization was failing.",
+   "how_found": "Timeout followed by JSONDecodeError; read the local core contract instead."
+  },
+  {
+   "task": "T6",
+   "what": "Requested more operations per turn than observed latency allowed within the 180-second deadline.",
+   "how_found": "Both turns ended unknown. Audited nested calls, avoided replaying writes, and explicitly recreated poisoned conversations."
+  }
+ ],
+ "unclear": [
+  {
+   "where": "Package documentation versus ENGINE.md",
+   "what": "Package docs use obsolete register --package syntax. Used ENGINE.md\u2019s install command."
+  },
+  {
+   "where": "ENGINE.md / submit",
+   "what": "Registration and some setup can succeed before submit exits unsuccessfully. Success stdout and the final stderr error must both be checked."
+  },
+  {
+   "where": "CLI discovery and naming",
+   "what": "--help is unsupported. --as needs a bare name and completed setup, but its missing-file error does not explain that prerequisite. IFC-012 supplies tool prefixes."
+  },
+  {
+   "where": "T4\u2013T6 / provider contracts",
+   "what": "No relevant live controls are offered. Existing instances retain their definitions, so used explicit Conduit and Resource replacements."
+  },
+  {
+   "where": "Negative permission checks",
+   "what": "Unauthorized operations have no presented tool, so some forbidden writes cannot be dispatched. Verified absence plus actual denials through alternative routes."
+  },
+  {
+   "where": "History contract",
+   "what": "Posting is a filesystem convention. Append-only behavior, identity, uniqueness and timestamp accuracy are not enforced."
+  },
+  {
+   "where": "file.write.v1",
+   "what": "Writes create or replace; no atomic create-if-absent option establishes freshness."
+  },
+  {
+   "where": "Inspection status",
+   "what": "Old Running=False/RunStopped conditions coexist with ready state and successful real calls. They do not reliably indicate current usability."
+  },
+  {
+   "where": "Native client catalogs",
+   "what": "Later Claude startup lists are unverified; Codex reports no startup catalog. Used engine catalogs and dispatch records separately."
+  },
+  {
+   "where": "Codex native reach",
+   "what": "Native list_agents worked despite disabled multi_agent and peerMessaging=false. Other reported collaboration routes were not exercised. Mediated access is not OS isolation."
+  },
+  {
+   "where": "Engine initialization",
+   "what": "Intermittent timeouts occurred with concurrent and sequential calls. Errors supplied no underlying cause. Retried only initialization failures before request dispatch."
+  },
+  {
+   "where": "Filesystem 0.2.0",
+   "what": "The package maps only read/list/write despite upstream append/copy additions. No version-query operation exists; verified the pin, replacement Resource and actual calls."
+  },
+  {
+   "where": "ENGINE.md / T6 results",
+   "what": "Both unknown/isError turn results exited zero, contrary to documented failure-exit behavior. Structured outcomes required explicit checking."
+  },
+  {
+   "where": "reconcile.v1 / OPS-014",
+   "what": "Nested effects completed despite lost final replies. Could not confidently attest whole-turn completion using occurred\u2019s single boolean; retained unknown outcomes and explicitly recreated conversations."
+  }
+ ],
+ "could_not": [
+  "Recover the final text and client catalogs of the two original T6 turns; their enclosing outcomes remain unknown.",
+  "Preserve private native conversation continuity after T6 failures. Both agents were explicitly recreated; shared history and its posts were preserved."
+ ]
+}

@@ -1,0 +1,8 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Pool",
+  "metadata": {
+    "name": "team"
+  },
+  "from": "team-template"
+}

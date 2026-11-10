@@ -1,0 +1,24 @@
+from run import BASE,write,run,log
+import json
+V='github.com/shrav-k/conduit/v0'
+FS='example.org/s1/filesystem#'
+FS1={'version':'0.1.0','digest':'sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160'}
+FS2={'version':'0.2.0','digest':'sha256:cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436'}
+def doc(kind,name,**kw): return dict(apiVersion=V,kind=kind,metadata={'name':name},**kw)
+def save(stage,name,data): write('project/'+stage+'/'+name+'.json',data)
+def call(label,tool,args): return run(label,['call',tool,json.dumps(args)])
+def open_c(label,name): return call(label,'access.open.v1',{'conduit':{'kind':'Conduit','name':name}})
+def close_c(label,name): return call(label,'access.close.v1',{'conduit':{'kind':'Conduit','name':name}})
+def route(name,agent,template='directory-write',target='directory'):
+ return doc('Conduit',name,**{'from':template,'consumer':{'kind':'Agent','name':agent},'target':{'kind':'Resource','name':target}})
+def submit(stage):
+ p=run(stage+'-submit',['submit',str(BASE/'project'/stage)])
+ if p.returncode: raise RuntimeError('Submission failed '+stage)
+ return p
+
+def inspect(label,kind,name,tool='management.inspect.v1'):
+ p=run(label,['call',tool,json.dumps({'object':{'kind':kind,'name':name}})],False)
+ if p.returncode: raise RuntimeError('inspect failed '+label)
+ return json.loads(p.stdout)['structuredContent']
+def tools(label,agent):
+ return run(label,['tools','--as',agent],False)

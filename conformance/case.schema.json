@@ -569,6 +569,143 @@
                   "file",
                   "index"
                 ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "invoke"
+                  },
+                  "evidence": {
+                    "type": "object"
+                  },
+                  "request": {
+                    "type": "object"
+                  },
+                  "key": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "request"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "complete"
+                  },
+                  "evidence": {
+                    "type": "object"
+                  },
+                  "invocation": {
+                    "type": "string"
+                  },
+                  "attempt": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "completion": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "invocation",
+                  "attempt",
+                  "completion"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "cancel"
+                  },
+                  "evidence": {
+                    "type": "object"
+                  },
+                  "invocation": {
+                    "type": "string"
+                  },
+                  "confirmation": {
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "invocation"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "expire-outputs"
+                  },
+                  "invocation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "invocation"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "request-fixture"
+                  },
+                  "file": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file",
+                  "index"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "restore-state"
+                  },
+                  "records_purged": {
+                    "type": "boolean"
+                  },
+                  "evidence": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
               }
             ]
           },
@@ -606,7 +743,9 @@
               },
               "external_intents": {
                 "type": "array",
-                "maxItems": 0
+                "items": {
+                  "type": "object"
+                }
               },
               "required_promises": {
                 "type": "array",
@@ -860,7 +999,11 @@
                   "properties": {
                     "kind": {
                       "not": {
-                        "const": "access-fixture"
+                        "enum": [
+                          "access-fixture",
+                          "invoke",
+                          "request-fixture"
+                        ]
                       }
                     }
                   }

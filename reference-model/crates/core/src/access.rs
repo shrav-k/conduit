@@ -191,11 +191,11 @@ pub fn tool_list_changes(before: &State, after: &State, context: &Context) -> Re
     }
     Ok(changes)
 }
-struct Verdict {
-    reason: Option<&'static str>,
-    rules: Vec<&'static str>,
-    restriction: Option<Value>,
-    route: Value,
+pub(crate) struct Verdict {
+    pub(crate) reason: Option<&'static str>,
+    pub(crate) rules: Vec<&'static str>,
+    pub(crate) restriction: Option<Value>,
+    pub(crate) route: Value,
 }
 impl Verdict {
     fn reason(reason: &'static str, rule: &'static str) -> Self {
@@ -299,7 +299,12 @@ fn routing<'a>(
     Ok((route, named))
 }
 
-fn evaluate(state: &State, request: &AccessRequest, context: &Context) -> Result<Verdict> {
+pub(crate) fn evaluate(
+    state: &State,
+    request: &AccessRequest,
+    context: &Context,
+    defer: bool,
+) -> Result<Verdict> {
     if !request.readable {
         return Ok(Verdict::reason("invalid", "OPS-023"));
     }
@@ -380,7 +385,7 @@ fn evaluate(state: &State, request: &AccessRequest, context: &Context) -> Result
         return Ok(Verdict::reason("refused", "SEC-007"));
     }
     let mut verdict = evaluate_path(
-        &view, request, context, instance, &caller, filters, path, op,
+        &view, request, context, instance, &caller, filters, path, op, defer,
     )?;
     if verdict.route.is_null() {
         verdict.route = json!({"consumer":instance["id"],"caller":caller,"conduit":path["id"],"target":path["target"],"operation":op});
@@ -398,6 +403,7 @@ fn evaluate_path(
     mut filters: Vec<Value>,
     path: &Value,
     op: &str,
+    defer: bool,
 ) -> Result<Verdict> {
     let target = object(state, &path["target"]).ok_or("missing Conduit target")?;
 
@@ -538,7 +544,7 @@ fn evaluate_path(
         &scope,
         &schema,
         &request.arguments,
-        true,
+        contract["spec"].get("changes").is_none(),
         &context.core_package,
     )?;
     if !schemas::standalone_valid(&publication["tool"]["inputSchema"], &args)? {
@@ -578,14 +584,21 @@ fn evaluate_path(
     {
         return Ok(Verdict::reason("invalid", "FST-006"));
     }
-    if target["state"] != "ready" && target["resolved_implementations"][op]["source"] != "engine" {
+    if !defer
+        && target["state"] != "ready"
+        && target["resolved_implementations"][op]["source"] != "engine"
+    {
         return Ok(Verdict::reason("unavailable", "CON-024"));
     }
-    if !schemas::capability_includes(target, &path["capability"], op, &context.core_package)? {
+    if !defer
+        && !schemas::capability_includes(target, &path["capability"], op, &context.core_package)?
+    {
         return Ok(Verdict::reason("unavailable", "NAM-026"));
     }
     for filter in &filters {
-        if !crate::registration::supports_filter(target, op, &filter["requirement"], context)? {
+        if !defer
+            && !crate::registration::supports_filter(target, op, &filter["requirement"], context)?
+        {
             return Ok(Verdict::restriction("unavailable", "ACC-015", filter));
         }
     }
@@ -615,7 +628,7 @@ pub(crate) fn decide(
     request: &AccessRequest,
     context: &Context,
 ) -> Result<()> {
-    let mut verdict = evaluate(&t.state, request, context)?;
+    let mut verdict = evaluate(&t.state, request, context, false)?;
     verdict.rules.extend([
         "OPS-023", "IFC-025", "REC-001", "REC-002", "REC-003", "ACC-027", "ACC-036",
     ]);

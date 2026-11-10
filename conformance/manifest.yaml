@@ -2735,6 +2735,758 @@
         "ACC-033",
         "LIF-034"
       ]
+    },
+    {
+      "id": "requests-read-success",
+      "case": "conventions/requests/read-success/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-read-is-error",
+      "case": "conventions/requests/read-is-error/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-read-missing",
+      "case": "conventions/requests/read-missing/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-read-input-required",
+      "case": "conventions/requests/read-input-required/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-read-unknown-result-type",
+      "case": "conventions/requests/read-unknown-result-type/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-read-invalid-parameters",
+      "case": "conventions/requests/read-invalid-parameters/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-read-parameter-headers",
+      "case": "conventions/requests/read-parameter-headers/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-read-capability-error",
+      "case": "conventions/requests/read-capability-error/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-write-success",
+      "case": "conventions/requests/write-success/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-write-is-error",
+      "case": "conventions/requests/write-is-error/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-write-missing",
+      "case": "conventions/requests/write-missing/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-write-input-required",
+      "case": "conventions/requests/write-input-required/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-write-unknown-result-type",
+      "case": "conventions/requests/write-unknown-result-type/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-write-invalid-parameters",
+      "case": "conventions/requests/write-invalid-parameters/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-write-parameter-headers",
+      "case": "conventions/requests/write-parameter-headers/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-write-capability-error",
+      "case": "conventions/requests/write-capability-error/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-025",
+        "OPS-001",
+        "OPS-005",
+        "IFC-046"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-plain-content",
+      "case": "conventions/requests/plain-content/case.yaml",
+      "promises": [
+        "OPS-009",
+        "OPS-034",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-unknown-write",
+      "case": "conventions/requests/unknown-write/case.yaml",
+      "promises": [
+        "OPS-008",
+        "OPS-012",
+        "OPS-013",
+        "OPS-018",
+        "IMP-007"
+      ],
+      "safety_rows": [
+        "S1-unknown-write"
+      ]
+    },
+    {
+      "id": "requests-key-scope",
+      "case": "conventions/requests/key-scope/case.yaml",
+      "promises": [
+        "OPS-008",
+        "OPS-009",
+        "OPS-010",
+        "OPS-011",
+        "OPS-032",
+        "OPS-026"
+      ],
+      "safety_rows": [
+        "S1-key-scope"
+      ]
+    },
+    {
+      "id": "requests-defaults",
+      "case": "conventions/requests/defaults/case.yaml",
+      "promises": [
+        "OPS-009",
+        "OPS-026",
+        "OPS-033"
+      ],
+      "safety_rows": [
+        "S1-key-scope"
+      ]
+    },
+    {
+      "id": "requests-identity-scope",
+      "case": "conventions/requests/identity-scope/case.yaml",
+      "promises": [
+        "OPS-008",
+        "OPS-010",
+        "IFC-020",
+        "IFC-028"
+      ],
+      "safety_rows": [
+        "S1-key-scope"
+      ]
+    },
+    {
+      "id": "requests-reconcile-true",
+      "case": "conventions/requests/reconcile-true/case.yaml",
+      "promises": [
+        "OPS-014",
+        "OPS-030",
+        "OPS-029",
+        "ACC-033",
+        "OPS-009",
+        "OPS-024"
+      ],
+      "safety_rows": [
+        "S1-reconcile"
+      ]
+    },
+    {
+      "id": "requests-reconcile-false",
+      "case": "conventions/requests/reconcile-false/case.yaml",
+      "promises": [
+        "OPS-014",
+        "OPS-030",
+        "OPS-029",
+        "ACC-033",
+        "OPS-009",
+        "OPS-024"
+      ],
+      "safety_rows": [
+        "S1-reconcile"
+      ]
+    },
+    {
+      "id": "requests-cancellation",
+      "case": "conventions/requests/cancellation/case.yaml",
+      "promises": [
+        "OPS-027",
+        "OPS-013",
+        "OPS-012",
+        "IMP-007"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-invalid-outputs",
+      "case": "conventions/requests/invalid-outputs/case.yaml",
+      "promises": [
+        "OPS-007",
+        "IFC-010",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-aware-failed",
+      "case": "conventions/requests/aware-failed/case.yaml",
+      "promises": [
+        "OPS-006",
+        "OPS-007",
+        "OPS-012",
+        "OPS-024",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-aware-unknown",
+      "case": "conventions/requests/aware-unknown/case.yaml",
+      "promises": [
+        "OPS-006",
+        "OPS-007",
+        "OPS-012",
+        "OPS-024",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-aware-malformed",
+      "case": "conventions/requests/aware-malformed/case.yaml",
+      "promises": [
+        "OPS-006",
+        "OPS-007",
+        "OPS-012",
+        "OPS-024",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-reason-order",
+      "case": "conventions/requests/reason-order/case.yaml",
+      "promises": [
+        "OPS-023",
+        "OPS-033",
+        "OPS-032",
+        "OPS-005",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-repair-read-success",
+      "case": "conventions/requests/repair-read-success/case.yaml",
+      "promises": [
+        "IFC-046",
+        "IFC-010",
+        "IMP-007"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-unsafe-write-headers",
+      "case": "conventions/requests/unsafe-write-headers/case.yaml",
+      "promises": [
+        "IFC-046",
+        "OPS-012",
+        "OPS-018"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-cancel-confirmed",
+      "case": "conventions/requests/cancel-confirmed/case.yaml",
+      "promises": [
+        "OPS-027",
+        "OPS-003",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-declared-outputs",
+      "case": "conventions/requests/declared-outputs/case.yaml",
+      "promises": [
+        "OPS-009",
+        "OPS-034",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-reconcile-invalid",
+      "case": "conventions/requests/reconcile-invalid/case.yaml",
+      "promises": [
+        "OPS-029",
+        "OPS-030",
+        "OPS-031",
+        "ACC-033"
+      ],
+      "safety_rows": [
+        "S1-reconcile"
+      ]
+    },
+    {
+      "id": "requests-failed-read-repeat",
+      "case": "conventions/requests/failed-read-repeat/case.yaml",
+      "promises": [
+        "OPS-024",
+        "OPS-008",
+        "IFC-025"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-reason-reconsidered",
+      "case": "conventions/requests/reason-reconsidered/case.yaml",
+      "promises": [
+        "OPS-025",
+        "OPS-005",
+        "OPS-033",
+        "OPS-008"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-plain-model-work",
+      "case": "conventions/requests/plain-model-work/case.yaml",
+      "promises": [
+        "IFC-010",
+        "IFC-046",
+        "OPS-007"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-succeeded-reason-null",
+      "case": "conventions/requests/metadata-succeeded-reason-null/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-succeeded-reason-number",
+      "case": "conventions/requests/metadata-succeeded-reason-number/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-succeeded-reason-object",
+      "case": "conventions/requests/metadata-succeeded-reason-object/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-succeeded-reason-array",
+      "case": "conventions/requests/metadata-succeeded-reason-array/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-failed-reason-null",
+      "case": "conventions/requests/metadata-failed-reason-null/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-failed-reason-number",
+      "case": "conventions/requests/metadata-failed-reason-number/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-failed-reason-object",
+      "case": "conventions/requests/metadata-failed-reason-object/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-failed-reason-array",
+      "case": "conventions/requests/metadata-failed-reason-array/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-outcome-null",
+      "case": "conventions/requests/metadata-outcome-null/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-metadata-outcome-number",
+      "case": "conventions/requests/metadata-outcome-number/case.yaml",
+      "promises": [
+        "IFC-009",
+        "OPS-007",
+        "OPS-012"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-aware-capability-extension",
+      "case": "conventions/requests/aware-capability-extension/case.yaml",
+      "promises": [
+        "OPS-007",
+        "IFC-008",
+        "IFC-047",
+        "OPS-024"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-aware-capability-undeclared",
+      "case": "conventions/requests/aware-capability-undeclared/case.yaml",
+      "promises": [
+        "OPS-007",
+        "IFC-008",
+        "IFC-047",
+        "OPS-024"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-restart-interrupted",
+      "case": "conventions/requests/restart-interrupted/case.yaml",
+      "promises": [
+        "IMP-007",
+        "OPS-012",
+        "OPS-013",
+        "OPS-014",
+        "OPS-030"
+      ],
+      "safety_rows": [
+        "S1-unknown-write"
+      ]
+    },
+    {
+      "id": "requests-reconcile-revision-in-progress",
+      "case": "conventions/requests/reconcile-revision-in-progress/case.yaml",
+      "promises": [
+        "OPS-023",
+        "OPS-031",
+        "OPS-030"
+      ],
+      "safety_rows": [
+        "S1-reconcile"
+      ]
+    },
+    {
+      "id": "requests-reconcile-revision-succeeded",
+      "case": "conventions/requests/reconcile-revision-succeeded/case.yaml",
+      "promises": [
+        "OPS-023",
+        "OPS-031",
+        "OPS-030"
+      ],
+      "safety_rows": [
+        "S1-reconcile"
+      ]
+    },
+    {
+      "id": "requests-records-key",
+      "case": "conventions/requests/records-key/case.yaml",
+      "promises": [
+        "REC-002",
+        "OPS-009"
+      ],
+      "safety_rows": [
+        "S1-key-scope"
+      ]
+    },
+    {
+      "id": "requests-records-inputs",
+      "case": "conventions/requests/records-inputs/case.yaml",
+      "promises": [
+        "REC-002",
+        "OPS-009"
+      ],
+      "safety_rows": [
+        "S1-key-scope"
+      ]
+    },
+    {
+      "id": "requests-records-disabled",
+      "case": "conventions/requests/records-disabled/case.yaml",
+      "promises": [
+        "REC-002",
+        "OPS-009"
+      ],
+      "safety_rows": [
+        "S1-key-scope"
+      ]
+    },
+    {
+      "id": "requests-effectful-plain-headers",
+      "case": "conventions/requests/effectful-plain-headers/case.yaml",
+      "promises": [
+        "IFC-046",
+        "OPS-012",
+        "OPS-018"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-aware-headers-no-repair",
+      "case": "conventions/requests/aware-headers-no-repair/case.yaml",
+      "promises": [
+        "IFC-046",
+        "OPS-012",
+        "OPS-018"
+      ],
+      "safety_rows": [
+        "S1-plain-ends"
+      ]
+    },
+    {
+      "id": "requests-records-inputs-invalid",
+      "case": "conventions/requests/records-inputs-invalid/case.yaml",
+      "promises": [
+        "REC-002",
+        "OPS-005",
+        "OPS-023"
+      ],
+      "safety_rows": [
+        "S1-key-scope"
+      ]
     }
   ]
 }

@@ -295,3 +295,20 @@ optional `serving` and carried `filters`; `retirement_of` identifies retirement 
 ACC-039. They are trusted state, never caller-supplied trace metadata. The invocation stage
 will produce that state itself. These observations exercise access without claiming lifecycle
 transitions or provider execution.
+
+
+I2-06 adds `invoke`, `complete`, `cancel`, `recover` and `expire-outputs` in the pure core's `requests`
+module. Access and invocation dispatch are one transition. The invocation index in `State`
+is independent of records and survives serialization. Recovery ends interrupted attempts
+unknown and emits no dispatch intent.
+Results and reasons use IFC-025's envelope, with the prefix read from `spec/names.yaml` at
+the boundary. Selected contracts are retained for output validation; attempt numbers reject
+stale completions. Succeeded plain content is retained with outputs until explicit DL10
+expiry. Reconciliation uses current ACC-033 authority and records checked evidence.
+
+Dispatch, parameter-header repair and cancellation return intents only; the shell must
+persist state and records before carrying them out. General lifecycle/control reconciliation
+and records purge remain later orders. The
+[request vectors](../conformance/README.md#request-endings-i2-06) describe their observations,
+and the [finding log](../docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
+records the admin’s narrowing of header repair and the return-review regressions.

@@ -193,8 +193,9 @@
     engine serves, under IFC-038; the time allowed for a call, a retire hook's among them,
     after which its part ends unknown and the stop is asked for under TPL-009; how long the
     outputs of a succeeded invocation, other than one whose outcome a reconciliation set, are
-    kept for a repeat under OPS-009, after which a repeat reports conflict under OPS-034,
-    unless OPS-024 dispatches it; and behavior when storage is exhausted.
+    kept for a repeat under OPS-009, including the content of a succeeded plain invocation
+    whether or not its operation declares outputs, after which a repeat reports conflict under
+    OPS-034, unless OPS-024 dispatches it; and behavior when storage is exhausted.
 - id: DL12
   subject: Protocol revisions, `content`, `Origin` and the schemas of tools
   document: >-

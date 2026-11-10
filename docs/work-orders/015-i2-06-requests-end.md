@@ -65,3 +65,20 @@ decision 3, and IFC-010, IFC-046, OPS-003 and OPS-018 for decision 4.
 
 The vectors pass, with no unknown write dispatched again and F1 shown; every decision cites a
 promise; and the checks of order 004's done-when pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 26 minutes, then a second round. How a request ends, repeats from the invocation
+  index, plain results with decision 8a, unknown outcomes, reconciliation and cancellation, and
+  F1 by decision 5; 37 vectors, then 306 in all. It stopped at one gap (2-07): no contract
+  declares an effectful plain operation safe to repeat.
+- **Verifier**: 6 minutes. Six `must`: malformed metadata read as an outcome; capability errors
+  that the promises make failed read as unknown; interrupted calls left in progress after a
+  restart; conflict reported before invalidity; and records without the idempotency key or the
+  inputs S1 asks them to keep.
+- **Admin**: settled 2-07 by narrowing decision 8a (after -32020, only an operation with no
+  effect is sent again), and sent the worker back once with it and the six findings, each
+  decided by its promises and fixed with a vector that failed before. Marked the two cases of
+  -32602 and -32020 settled in the tracker.

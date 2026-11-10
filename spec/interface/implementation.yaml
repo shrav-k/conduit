@@ -426,17 +426,19 @@
   then: >-
     A complete result that is not an error is the outcome succeeded. An error on an operation
     whose contract states no `effect`, that is not a control and whose contract is not marked
-    `startsModelWork: true`, as IFC-033 tests for `readOnlyHint`, and a JSON-RPC error for
-    invalid parameters, is failed. A result whose `resultType` is `input_required` or is a value
-    the engine does not recognize, any other error but one after which the engine sends the call
+    `startsModelWork: true`, as IFC-033 tests for `readOnlyHint`, is failed, including a
+    JSON-RPC error for invalid parameters. A result whose `resultType` is `input_required` or
+    is a value the engine does not recognize, any other error but one after which the engine sends the call
     once more under IFC-046, and no result at all, is unknown.
   observable: >-
     A result is complete when its `resultType` is `complete` or absent, and is an error when its
     `isError` is true. A protocol error is a JSON-RPC error. The protocol's code for invalid
     parameters is -32602, and an unknown tool is one case of it; arguments that the tool does
-    not accept, and a request whose parameters are malformed, are others. Invalid parameters
-    apart, an error is failed only where the operation does nothing that the error could leave
-    half done: one that states no `effect` changes nothing outside itself, under CTR-002, but a
+    not accept, and a request whose parameters are malformed, are others. That code gives no
+    guarantee that a plain server has not acted: it is read as any other error, failed for
+    the operation just described and unknown otherwise. An engine rejection before sending
+    the call has its reason and no outcome under OPS-005. An error is failed only where the
+    operation does nothing that the error could leave half done: one that states no `effect` changes nothing outside itself, under CTR-002, but a
     control applies values to its instance's settings, under CTR-006, and model work is the
     effect of an operation marked `startsModelWork: true`, under IMP-001, whether or not either
     states an `effect`. The protocol has a server answer -32021, naming in
@@ -902,6 +904,10 @@
     carry it serialized in `content`; whether the engine does so, and what else it puts there,
     is DL12 of the implementation-defined list. A plain implementation's `content` is passed on
     because an existing server answers in text, which no contract can describe, under CTR-012.
+    The content of a succeeded plain invocation is kept and returned unchanged on a repeat
+    under OPS-009 for as long as DL10 keeps outputs, whether or not the operation declares
+    outputs; after its expiry a repeat reports conflict under OPS-034. It is never dispatched
+    again to recover that content.
     This specification gives `content` no other meaning: an operation's outputs are in
     `structuredContent`.
   vectors: []
@@ -1448,14 +1454,20 @@
     protocol's error for a revision that it does not support, and the engine has not sent that
     call once more already.
   then: >-
-    The engine sends the call once more: after -32020, once it has read the implementation's
-    `tools/list` again, and after an error for the revision, at a revision that both support,
-    where there is one. The two are one call, and what it ends with is read from the response
-    to the second.
+    After -32020 the engine sends the call once more only for an operation whose contract
+    states no `effect`, that is not a control and starts no model work; it first reads the
+    implementation's `tools/list` again. Otherwise it ends the invocation
+    unknown and sends nothing more. After an error for the revision it sends the call once
+    more at a revision that both support, where there is one. The two are one call, and what
+    it ends with is read from the response to the second.
   observable: >-
-    The protocol has a server reject such a call before acting on it, and has a client read the
-    tool list again and send the call again after -32020, and send it again at another revision
-    after a version error, under IFC-001 and IFC-003. A call for a request or a hook sent so is
+    The protocol's -32020 gives no guarantee that a plain server has not acted, so an effectful
+    call is never repeated after that code. A deduplicates mark does not authorize a resend,
+    and neither does an annotation's idempotentHint. A plain call receives no idempotency
+    key under IFC-007. The protocol has a client
+    read the tool list again after -32020, and send a call again at another revision after a
+    version error, under IFC-001 and IFC-003; the safety condition above governs the resend
+    after -32020. A call for a request or a hook sent so is
     one dispatch of one attempt, under IMP-007, and one invocation, not two: its first error is
     read neither as an outcome, under IFC-010 and OPS-007, nor as a reason. Where no revision
     is supported by both, or the second call is rejected again, nothing more is sent, and that

@@ -78,6 +78,12 @@ pub fn run_suite(repository: &Path) -> Result<Vec<CaseReport>> {
     let profile = read_value(&repository.join("conformance/profiles/first-build.yaml"))?;
     let mut context = Context {
         core_package: spec.names().core_package.clone(),
+        meta_prefix: read_file(&repository.join("spec/names.yaml")).unwrap()[0]
+            .root
+            .to_json()["metaPrefix"]
+            .as_str()
+            .unwrap()
+            .into(),
         templates: BTreeMap::new(),
         core_environment: schemas::environment(
             repository,
@@ -338,6 +344,113 @@ fn run_case(
             };
             let mut next = state.clone();
             let actual = match kind {
+                "request-fixture" => {
+                    let alias = input["file"].as_str().ok_or("missing request fixture")?;
+                    let path = case.files.get(alias).ok_or("undeclared request fixture")?;
+                    let fixtures = read_value(&base.join(path))?;
+                    let index = input["index"]
+                        .as_u64()
+                        .ok_or("missing request observation index")?
+                        as usize;
+                    let fixture = expand(
+                        fixtures["requests"]
+                            .get(index)
+                            .ok_or("request observation out of range")?,
+                        &symbols,
+                        spec,
+                    )?;
+                    access::patch(&mut next, &fixture["patches"])?;
+                    for update in fixture["contract_updates"].as_array().into_iter().flatten() {
+                        let object = next
+                            .objects
+                            .iter_mut()
+                            .find(|o| o["id"] == update["target"])
+                            .ok_or("contract observation target missing")?;
+                        let mut found = false;
+                        for scope in object["held"]["environment"]["scopes"]
+                            .as_object_mut()
+                            .ok_or("missing scopes")?
+                            .values_mut()
+                        {
+                            for doc in scope["contracts"]
+                                .as_object_mut()
+                                .ok_or("missing contracts")?
+                                .values_mut()
+                            {
+                                if doc["kind"].as_str()
+                                    == Some(update["kind"].as_str().unwrap_or("Operation"))
+                                    && doc["metadata"]["name"] == update["name"]
+                                {
+                                    for (k, v) in update["set"]
+                                        .as_object()
+                                        .ok_or("missing contract update")?
+                                    {
+                                        doc["spec"][k] = v.clone();
+                                    }
+                                    found = true;
+                                }
+                            }
+                        }
+                        if !found {
+                            return Err("contract observation names no matching contract".into());
+                        }
+                    }
+                    if fixture["aware"] == true {
+                        let object = next
+                            .objects
+                            .iter_mut()
+                            .find(|o| o["id"] == fixture["target"])
+                            .ok_or("aware observation target missing")?;
+                        for implementation in object["resolved_implementations"]
+                            .as_object_mut()
+                            .ok_or("missing implementations")?
+                            .values_mut()
+                        {
+                            implementation["item"]["plain"] = json!(false);
+                        }
+                    }
+                    let t = conduit_core::step(
+                        &next,
+                        serde_json::from_value(fixture["call"].clone())
+                            .map_err(|e| e.to_string())?,
+                        context,
+                    )?;
+                    if t.state.objects != next.objects
+                        || t.state.installed_packages != next.installed_packages
+                    {
+                        return Err("request changed objects or packages outside its scope".into());
+                    }
+                    next = t.state.clone();
+                    serde_json::to_value(t).map_err(|e| e.to_string())?
+                }
+                "restore-state" => {
+                    // A boundary snapshot after restart, optionally observing records already
+                    // purged by the records service. This does not implement purge.v1.
+                    let bytes = serde_json::to_vec(&state).map_err(|e| e.to_string())?;
+                    next = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+                    if input["records_purged"] == true {
+                        next.records.clear();
+                    }
+                    let evidence = input
+                        .get("evidence")
+                        .cloned()
+                        .unwrap_or_else(|| json!({"time":"2026-11-09T00:00:00Z","ids":[]}));
+                    if next.invocations.iter().any(|v| v["state"] == "in-progress")
+                        && input.get("evidence").is_none()
+                    {
+                        return Err("interrupted recovery requires supplied record evidence".into());
+                    }
+                    let t = conduit_core::step(
+                        &next,
+                        Input::Recover {
+                            evidence: serde_json::from_value(evidence)
+                                .map_err(|e| e.to_string())?,
+                        },
+                        context,
+                    )?;
+                    next = t.state.clone();
+                    serde_json::to_value(t).map_err(|e| e.to_string())?
+                }
                 "access-fixture" => {
                     let alias = input["file"].as_str().ok_or("missing access fixture")?;
                     let path = case.files.get(alias).ok_or("undeclared access fixture")?;
@@ -511,7 +624,11 @@ fn run_case(
                         .map_err(|e| format!("record.v1: {e}"))?;
                 }
                 let appended = actual["records"].as_array().ok_or("missing records")?;
-                let mut retained = state.records.clone();
+                let mut retained = if kind == "restore-state" && input["records_purged"] == true {
+                    vec![]
+                } else {
+                    state.records.clone()
+                };
                 retained.extend(appended.iter().cloned());
                 if next.records != retained {
                     return Err(

@@ -21,6 +21,12 @@ fn fixture() -> (Context, Value) {
     (
         Context {
             core_package: specification.names().core_package.clone(),
+            meta_prefix: read_file(&root.join("spec/names.yaml")).unwrap()[0]
+                .root
+                .to_json()["metaPrefix"]
+                .as_str()
+                .unwrap()
+                .into(),
             templates,
             record_source: "urn:conduit:first-build".into(),
             core_environment: conduit_core::schemas::Environment {

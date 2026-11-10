@@ -22,6 +22,11 @@ them. None adds or removes a feature or changes what Conduit is for, so none goe
 | 9 | How much of the Agent types increment 2 needs | Registration only. Their wrappers and launch, with every flag and helper that [the first build](../../../implementation/FIRST_BUILD.md#what-increment-3-needs) lists, are increment 3's |
 | 10 | The sequence of orders | Section 7's nine orders, I2-01 to I2-09, in its order, each a work order of its own; the admin may split or join them as their results come in |
 
+Decision 8a was narrowed by finding 2-07: after `-32020` the engine sends a call again only
+for an operation with no declared `effect`, that is not a control and starts no model work;
+any other ends `unknown`. No contract declares an effectful `plain` operation safe to repeat,
+and none is added.
+
 ## What each order carries from here
 
 - I2-01 starts from decisions 3 and 4.

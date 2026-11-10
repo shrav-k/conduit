@@ -1,0 +1,1506 @@
+{
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "fixture": "../../../language/registration/s1/fixture.json",
+    "filesystem-m": "../../../fixtures/s1/packages/filesystem/conduit.yaml",
+    "filesystem-d": "../../../fixtures/s1/packages/filesystem/contracts.yaml",
+    "filesystem-a": "../../../fixtures/s1/archives/filesystem.tar.gz",
+    "history-m": "../../../fixtures/s1/packages/history/conduit.yaml",
+    "history-d": "../../../fixtures/s1/packages/history/contracts.yaml",
+    "history-a": "../../../fixtures/s1/archives/history.tar.gz",
+    "agents-m": "../../../fixtures/s1/packages/agents/conduit.yaml",
+    "agents-d": "../../../fixtures/s1/packages/agents/contracts.yaml",
+    "agents-a": "../../../fixtures/s1/archives/agents.tar.gz",
+    "conduit.yaml": "../../../fixtures/s1/project/conduit.yaml",
+    "templates.yaml": "../../../fixtures/s1/project/templates.yaml",
+    "instances.yaml": "../../../fixtures/s1/project/instances.yaml",
+    "initial": "../../../fixtures/root-system-state.json",
+    "requests": "requests.json"
+  },
+  "id": "requests-restart-interrupted",
+  "promises": [
+    "IMP-007",
+    "OPS-012",
+    "OPS-013",
+    "OPS-014",
+    "OPS-030"
+  ],
+  "title": "Interrupted dispatch becomes unknown on restart and can only be reconciled",
+  "steps": [
+    {
+      "input": {
+        "kind": "register-project",
+        "file": "fixture",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000100",
+            "00000000-0000-4000-8000-000000000101",
+            "00000000-0000-4000-8000-000000000102",
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105",
+            "00000000-0000-4000-8000-000000000106",
+            "00000000-0000-4000-8000-000000000107",
+            "00000000-0000-4000-8000-000000000108",
+            "00000000-0000-4000-8000-000000000109",
+            "00000000-0000-4000-8000-000000000110",
+            "00000000-0000-4000-8000-000000000111",
+            "00000000-0000-4000-8000-000000000112",
+            "00000000-0000-4000-8000-000000000113",
+            "00000000-0000-4000-8000-000000000114",
+            "00000000-0000-4000-8000-000000000115",
+            "00000000-0000-4000-8000-000000000116",
+            "00000000-0000-4000-8000-000000000117",
+            "00000000-0000-4000-8000-000000000118",
+            "00000000-0000-4000-8000-000000000119",
+            "00000000-0000-4000-8000-000000000120",
+            "00000000-0000-4000-8000-000000000121",
+            "00000000-0000-4000-8000-000000000122",
+            "00000000-0000-4000-8000-000000000123",
+            "00000000-0000-4000-8000-000000000124",
+            "00000000-0000-4000-8000-000000000125",
+            "00000000-0000-4000-8000-000000000126",
+            "00000000-0000-4000-8000-000000000127",
+            "00000000-0000-4000-8000-000000000128",
+            "00000000-0000-4000-8000-000000000129",
+            "00000000-0000-4000-8000-000000000130",
+            "00000000-0000-4000-8000-000000000131",
+            "00000000-0000-4000-8000-000000000132",
+            "00000000-0000-4000-8000-000000000133",
+            "00000000-0000-4000-8000-000000000134",
+            "00000000-0000-4000-8000-000000000135",
+            "00000000-0000-4000-8000-000000000136",
+            "00000000-0000-4000-8000-000000000137",
+            "00000000-0000-4000-8000-000000000138",
+            "00000000-0000-4000-8000-000000000139",
+            "00000000-0000-4000-8000-000000000140",
+            "00000000-0000-4000-8000-000000000141"
+          ],
+          "revisions": [
+            "reg-0",
+            "reg-1",
+            "reg-2",
+            "reg-3",
+            "reg-4",
+            "reg-5",
+            "reg-6",
+            "reg-7",
+            "reg-8",
+            "reg-9",
+            "reg-10",
+            "reg-11",
+            "reg-12",
+            "reg-13",
+            "reg-14",
+            "reg-15",
+            "reg-16",
+            "reg-17",
+            "reg-18",
+            "reg-19"
+          ],
+          "suffixes": [
+            "a0000",
+            "a0001",
+            "a0002",
+            "a0003",
+            "a0004",
+            "a0005"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000006",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        },
+        "reverse": false
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "external_intents": [],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000000119",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000100",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000120",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000101",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000121",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000102",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000122",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000103",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000123",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000104",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000124",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000105",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000125",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000106",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000126",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000107",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000127",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000108",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000128",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000109",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000129",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000110",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000130",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000111",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000131",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000112",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000132",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000113",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000133",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000114",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000134",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000115",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000135",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000116",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000136",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000117",
+              "action": "registered"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000137",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000118",
+              "action": "registered"
+            }
+          }
+        ],
+        "required_promises": [
+          "ACC-033"
+        ],
+        "state": {
+          "objects": [
+            {
+              "id": "00000000-0000-4000-8000-000000000001"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000002"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000003"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000004"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000005"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000006"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000007"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000050"
+            },
+            {
+              "kind": "Agent",
+              "name": "reader-agent",
+              "id": "00000000-0000-4000-8000-000000000100",
+              "spec": {
+                "type": "example.org/s1/agents#claude-code.v1"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/agents",
+                  "version": "0.1.0",
+                  "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
+                }
+              ]
+            },
+            {
+              "kind": "Agent",
+              "name": "writer-agent",
+              "id": "00000000-0000-4000-8000-000000000101",
+              "spec": {
+                "type": "example.org/s1/agents#codex.v1"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/agents",
+                  "version": "0.1.0",
+                  "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "directory-read",
+              "id": "00000000-0000-4000-8000-000000000102",
+              "spec": {
+                "capability": "example.org/s1/filesystem#directory.v1"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "directory-read-write",
+              "id": "00000000-0000-4000-8000-000000000103",
+              "spec": {
+                "capability": "example.org/s1/filesystem#directory.v1"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "history-post-read",
+              "id": "00000000-0000-4000-8000-000000000104",
+              "spec": {
+                "capability": "example.org/s1/filesystem#directory.v1"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "workspace-admin",
+              "id": "00000000-0000-4000-8000-000000000105",
+              "spec": {
+                "capability": "github.com/shrav-k/conduit/core#pool-management.v1"
+              },
+              "packages": [
+                {
+                  "address": "github.com/shrav-k/conduit/core",
+                  "version": "0.1.0"
+                }
+              ]
+            },
+            {
+              "kind": "Pool",
+              "name": "workspace-pool",
+              "id": "00000000-0000-4000-8000-000000000106",
+              "spec": {
+                "type": "github.com/shrav-k/conduit/core#pool.v1"
+              },
+              "packages": [
+                {
+                  "address": "github.com/shrav-k/conduit/core",
+                  "version": "0.1.0"
+                }
+              ]
+            },
+            {
+              "kind": "Resource",
+              "name": "message-history",
+              "id": "00000000-0000-4000-8000-000000000107",
+              "spec": {
+                "type": "example.org/s1/history#file-history.v1"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                },
+                {
+                  "address": "example.org/s1/history",
+                  "version": "0.1.0",
+                  "digest": "sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69"
+                }
+              ],
+              "resolved_implementations": {
+                "example.org/s1/filesystem#file.read.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                },
+                "example.org/s1/filesystem#directory.list.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                },
+                "example.org/s1/filesystem#file.write.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "kind": "Resource",
+              "name": "shared-directory",
+              "id": "00000000-0000-4000-8000-000000000108",
+              "spec": {
+                "type": "example.org/s1/filesystem#local-directory.v1"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ],
+              "resolved_implementations": {
+                "example.org/s1/filesystem#file.read.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                },
+                "example.org/s1/filesystem#directory.list.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                },
+                "example.org/s1/filesystem#file.write.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "kind": "Agent",
+              "name": "agent-a",
+              "id": "00000000-0000-4000-8000-000000000109",
+              "state": "registered",
+              "config": {
+                "accountServices": false,
+                "peerMessaging": false
+              },
+              "placement": {
+                "kind": "Resource",
+                "id": "00000000-0000-4000-8000-000000000002"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/agents",
+                  "version": "0.1.0",
+                  "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "history-post-read-a0000",
+              "id": "00000000-0000-4000-8000-000000000110",
+              "state": "registered",
+              "nested": {
+                "parent": "00000000-0000-4000-8000-000000000109",
+                "slot": "conduits",
+                "name": "history"
+              },
+              "open": false,
+              "consumer": {
+                "kind": "Agent",
+                "id": "00000000-0000-4000-8000-000000000109"
+              },
+              "target": {
+                "kind": "Resource",
+                "id": "00000000-0000-4000-8000-000000000117"
+              },
+              "capability": "example.org/s1/filesystem#directory.v1",
+              "operations": [
+                "example.org/s1/filesystem#file.read.v1",
+                "example.org/s1/filesystem#directory.list.v1",
+                "example.org/s1/filesystem#file.write.v1"
+              ],
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "directory-read-a0001",
+              "id": "00000000-0000-4000-8000-000000000111",
+              "state": "registered",
+              "nested": {
+                "parent": "00000000-0000-4000-8000-000000000109",
+                "slot": "conduits",
+                "name": "project"
+              },
+              "open": false,
+              "consumer": {
+                "kind": "Agent",
+                "id": "00000000-0000-4000-8000-000000000109"
+              },
+              "target": {
+                "kind": "Resource",
+                "id": "00000000-0000-4000-8000-000000000118"
+              },
+              "capability": "example.org/s1/filesystem#directory.v1",
+              "operations": [
+                "example.org/s1/filesystem#file.read.v1",
+                "example.org/s1/filesystem#directory.list.v1"
+              ],
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ]
+            },
+            {
+              "kind": "Agent",
+              "name": "agent-b",
+              "id": "00000000-0000-4000-8000-000000000112",
+              "state": "registered",
+              "config": {
+                "accountServices": false,
+                "peerMessaging": false
+              },
+              "placement": {
+                "kind": "Resource",
+                "id": "00000000-0000-4000-8000-000000000002"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/agents",
+                  "version": "0.1.0",
+                  "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "history-post-read-a0002",
+              "id": "00000000-0000-4000-8000-000000000113",
+              "state": "registered",
+              "nested": {
+                "parent": "00000000-0000-4000-8000-000000000112",
+                "slot": "conduits",
+                "name": "history"
+              },
+              "open": false,
+              "consumer": {
+                "kind": "Agent",
+                "id": "00000000-0000-4000-8000-000000000112"
+              },
+              "target": {
+                "kind": "Resource",
+                "id": "00000000-0000-4000-8000-000000000117"
+              },
+              "capability": "example.org/s1/filesystem#directory.v1",
+              "operations": [
+                "example.org/s1/filesystem#file.read.v1",
+                "example.org/s1/filesystem#directory.list.v1",
+                "example.org/s1/filesystem#file.write.v1"
+              ],
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "directory-read-write-a0003",
+              "id": "00000000-0000-4000-8000-000000000114",
+              "state": "registered",
+              "nested": {
+                "parent": "00000000-0000-4000-8000-000000000112",
+                "slot": "conduits",
+                "name": "project"
+              },
+              "open": false,
+              "consumer": {
+                "kind": "Agent",
+                "id": "00000000-0000-4000-8000-000000000112"
+              },
+              "target": {
+                "kind": "Resource",
+                "id": "00000000-0000-4000-8000-000000000118"
+              },
+              "capability": "example.org/s1/filesystem#directory.v1",
+              "operations": [
+                "example.org/s1/filesystem#file.read.v1",
+                "example.org/s1/filesystem#directory.list.v1",
+                "example.org/s1/filesystem#file.write.v1"
+              ],
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "root-workspace",
+              "id": "00000000-0000-4000-8000-000000000115",
+              "state": "registered",
+              "open": false,
+              "consumer": {
+                "kind": "Interface",
+                "id": "00000000-0000-4000-8000-000000000005"
+              },
+              "target": {
+                "kind": "Pool",
+                "id": "00000000-0000-4000-8000-000000000116"
+              },
+              "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
+              "operations": [
+                "github.com/shrav-k/conduit/core#register.v1",
+                "github.com/shrav-k/conduit/core#register-replacement.v1",
+                "github.com/shrav-k/conduit/core#inspect.v1",
+                "github.com/shrav-k/conduit/core#set-up.v1",
+                "github.com/shrav-k/conduit/core#retire.v1",
+                "github.com/shrav-k/conduit/core#reconcile.v1"
+              ],
+              "packages": [
+                {
+                  "address": "github.com/shrav-k/conduit/core",
+                  "version": "0.1.0"
+                }
+              ]
+            },
+            {
+              "kind": "Pool",
+              "name": "workspace",
+              "id": "00000000-0000-4000-8000-000000000116",
+              "state": "registered",
+              "config": {},
+              "packages": [
+                {
+                  "address": "github.com/shrav-k/conduit/core",
+                  "version": "0.1.0"
+                }
+              ]
+            },
+            {
+              "kind": "Resource",
+              "name": "history",
+              "id": "00000000-0000-4000-8000-000000000117",
+              "state": "registered",
+              "config": {
+                "root": "/tmp/conduit-s1/history"
+              },
+              "placement": {
+                "kind": "Resource",
+                "id": "00000000-0000-4000-8000-000000000002"
+              },
+              "owner": {
+                "kind": "Pool",
+                "id": "00000000-0000-4000-8000-000000000116"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                },
+                {
+                  "address": "example.org/s1/history",
+                  "version": "0.1.0",
+                  "digest": "sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69"
+                }
+              ],
+              "resolved_implementations": {
+                "example.org/s1/filesystem#file.read.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                },
+                "example.org/s1/filesystem#directory.list.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                },
+                "example.org/s1/filesystem#file.write.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "kind": "Resource",
+              "name": "shared",
+              "id": "00000000-0000-4000-8000-000000000118",
+              "state": "registered",
+              "config": {
+                "root": "/tmp/conduit-s1/shared"
+              },
+              "placement": {
+                "kind": "Resource",
+                "id": "00000000-0000-4000-8000-000000000002"
+              },
+              "owner": {
+                "kind": "Pool",
+                "id": "00000000-0000-4000-8000-000000000116"
+              },
+              "packages": [
+                {
+                  "address": "example.org/s1/filesystem",
+                  "version": "0.1.0",
+                  "digest": "sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160"
+                }
+              ],
+              "resolved_implementations": {
+                "example.org/s1/filesystem#file.read.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                },
+                "example.org/s1/filesystem#directory.list.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                },
+                "example.org/s1/filesystem#file.write.v1": {
+                  "source": "type",
+                  "selection": "example.org/s1/filesystem#filesystem-server",
+                  "scope": "snapshot-0",
+                  "item": {
+                    "implements": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ],
+                    "package": {
+                      "registryType": "npm",
+                      "identifier": "@modelcontextprotocol/server-filesystem",
+                      "version": "2.1.0",
+                      "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+                      "transport": {
+                        "type": "stdio"
+                      },
+                      "packageArguments": [
+                        {
+                          "type": "positional",
+                          "valueHint": "root",
+                          "isRequired": true
+                        }
+                      ]
+                    },
+                    "packageArguments": {
+                      "root": "/root"
+                    },
+                    "plain": true,
+                    "tools": {
+                      "#file.read.v1": "read_text_file",
+                      "#directory.list.v1": "list_directory",
+                      "#file.write.v1": "write_file"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "request-fixture",
+        "file": "requests",
+        "index": 0
+      },
+      "expect": {
+        "state": {
+          "started": true
+        },
+        "external_intents": [
+          {
+            "kind": "dispatch",
+            "invocation": "00000000-0000-4000-8000-000000010001",
+            "attempt": 1,
+            "target": "00000000-0000-4000-8000-000000000118",
+            "call": {
+              "method": "tools/call",
+              "params": {
+                "name": "write_file",
+                "arguments": {
+                  "path": "hello.txt",
+                  "content": "post"
+                }
+              }
+            }
+          }
+        ],
+        "reply": {
+          "pending": true,
+          "invocation": "00000000-0000-4000-8000-000000010001",
+          "attempt": 1
+        },
+        "required_promises": [
+          "OPS-008",
+          "OPS-026",
+          "IMP-007"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000010000",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:30:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000118"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000010002",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "invocation-dispatched",
+            "time": "2026-11-09T12:30:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000118"
+            }
+          }
+        ]
+      },
+      "capture": {
+        "i": "/reply/invocation"
+      }
+    },
+    {
+      "input": {
+        "kind": "restore-state",
+        "evidence": {
+          "time": "2026-11-10T12:30:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000020000",
+            "00000000-0000-4000-8000-000000020001",
+            "00000000-0000-4000-8000-000000020002",
+            "00000000-0000-4000-8000-000000020003",
+            "00000000-0000-4000-8000-000000020004",
+            "00000000-0000-4000-8000-000000020005",
+            "00000000-0000-4000-8000-000000020006",
+            "00000000-0000-4000-8000-000000020007"
+          ]
+        }
+      },
+      "expect": {
+        "reply": {
+          "restored": true
+        },
+        "external_intents": [],
+        "required_promises": [
+          "IMP-007"
+        ],
+        "state": {
+          "invocations": [
+            {
+              "id": "$i",
+              "state": "unknown",
+              "attempt": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "request-fixture",
+        "file": "requests",
+        "index": 6
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "unknown",
+            "io.github.shrav-k.conduit/invocation": "$i"
+          },
+          "isError": true
+        },
+        "external_intents": [],
+        "state": {
+          "invocations": [
+            {
+              "id": "$i",
+              "state": "unknown",
+              "attempt": 1
+            }
+          ]
+        },
+        "absent": [
+          "/reply/_meta/io.github.shrav-k.conduit~1reason"
+        ],
+        "required_promises": [
+          "OPS-012"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "complete",
+        "evidence": {
+          "time": "2026-11-10T12:30:00Z",
+          "ids": []
+        },
+        "invocation": "$i",
+        "attempt": 1,
+        "completion": {
+          "kind": "result",
+          "result": {
+            "content": []
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "ignored": true
+        },
+        "external_intents": [],
+        "state": {
+          "invocations": [
+            {
+              "id": "$i",
+              "state": "unknown"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "request-fixture",
+        "file": "requests",
+        "index": 3
+      },
+      "expect": {
+        "state": {
+          "started": true
+        },
+        "external_intents": [],
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/outcome": "succeeded",
+            "io.github.shrav-k.conduit/invocation": "00000000-0000-4000-8000-000000010041"
+          },
+          "isError": false,
+          "content": [],
+          "structuredContent": {}
+        },
+        "required_promises": [
+          "OPS-014",
+          "ACC-033"
+        ],
+        "records": [
+          {
+            "id": "00000000-0000-4000-8000-000000010040",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:30:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000116"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000010042",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "invocation-dispatched",
+            "time": "2026-11-09T12:30:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000116"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000010043",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "invocation-ended",
+            "time": "2026-11-09T12:30:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000118",
+              "invocation": "$i",
+              "outcome": "failed",
+              "actor": "00000000-0000-4000-8000-000000000005",
+              "checked": "Inspected the target file."
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000010044",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "invocation-ended",
+            "time": "2026-11-09T12:30:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000116"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000010045",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:30:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000116"
+            }
+          }
+        ]
+      },
+      "capture": {
+        "reconciler": "/reply/_meta/io.github.shrav-k.conduit~1invocation"
+      }
+    },
+    {
+      "input": {
+        "kind": "restore-state"
+      },
+      "expect": {
+        "external_intents": [],
+        "state": {
+          "invocations": [
+            {
+              "id": "$i",
+              "state": "failed"
+            },
+            {
+              "id": "$reconciler",
+              "state": "succeeded"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

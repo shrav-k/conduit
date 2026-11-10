@@ -25,6 +25,12 @@ url = "2"
 base64 = "0.22"
 p256 = { version = "0.13", features = ["ecdsa", "pkcs8", "pem"] }
 rcgen = "0.14"
+rmcp = { version = "=3.9.0", features = ["client", "transport-io"] }
+tokio = { version = "1", features = ["full"] }
+libc = "0.2"
+sha2 = "0.10"
+flate2 = "1"
+tar = "0.4"
 
 [dev-dependencies]
 tempfile = "3"

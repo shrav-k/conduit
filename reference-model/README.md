@@ -31,12 +31,13 @@ cargo run --release -p conduit-conformance
 `Cargo.lock` is committed, and the build output, `target/`, is ignored. The tests read the
 specification from `../spec/`, so they run inside a checkout of this repository.
 
-## The shell's store and command line (I3-01)
+## The shell's store, runner and command line (I3-01/02)
 
 From this directory, with an existing parent directory for the store:
 
 ```sh
 cargo run --release -p conduit-shell -- init --store /tmp/conduit-store
+mkdir -p /tmp/conduit-s1/shared /tmp/conduit-s1/history
 cargo run --release -p conduit-shell -- register --store /tmp/conduit-store ../conformance/fixtures/s1/project
 cargo run --release -p conduit-shell -- inspect --store /tmp/conduit-store
 cargo run --release -p conduit-shell -- records --store /tmp/conduit-store
@@ -45,9 +46,11 @@ cargo run --release -p conduit-shell -- records --store /tmp/conduit-store
 First start uses the machine's hostname, OS and architecture, plus no custom labels unless
 `--label KEY=VALUE` is supplied. Registration preinstalls S1's three package snapshots, reads
 the submitted directory through the strict loader, then explicitly requests opening root's
-submitted Conduits and setup. With no runner yet, it says which runner intent waits and
-prints no successful pending reply. Every open of a store first commits recovery; opening
-it after that paused command ends the interrupted invocation unknown. Inspection makes
+submitted Conduits and setup. The built-in runner now starts S1's unchanged npm filesystem
+server for each held directory; those directories must already exist. Registration waits for
+initialization and setup to end. The command owns its runs and ends them when it exits;
+continuous ownership and the consumer HTTP server belong to order 022. Every open of a store
+first commits recovery, ending interrupted invocations unknown without replay. Inspection makes
 core inspect requests as root, one JSON line per object, including authority refusals.
 Records exports ordered CloudEvents as JSON lines and reports gaps on stderr.
 
@@ -56,12 +59,32 @@ run outside it, and their completions reenter it. The whole State and records ar
 in one atomic, fsynced file before work or final replies. Pending requests have an internal
 Ticket that waits for a core ending. Transition.request_replies carries the core's exact
 final replies, correlated by invocation and attempt, so a refusal is delivered even if the
-core removes the invocation or restores its previous success. Orders 021 and 022 implement the Executor methods and
-the server; this order starts no process, serves no HTTP and runs no Agent.
+core removes the invocation or restores its previous success. The [runner](crates/shell/src/runner.rs)
+executes committed run, dispatch, refresh and cancellation intents outside that mutex, returning
+completions through the shell. Runtime providers and remote connections remain unserved;
+missing/failed reports go through the core. No Agent client or consumer HTTP server runs here.
 
 Config sets the engine address and output retention. CLI equivalents are `--url`,
 `--output-cap-bytes` and `--output-age-seconds`; defaults are a loopback address at port 3000
-with path /mcp, 64 MiB and seven days. Credential directories and authority files are private,
+with path /mcp, 64 MiB and seven days. Runner settings are `initialize_timeout` (30 seconds),
+`call_timeout` (120 seconds) and `pass_environment` (empty); CLI equivalents are
+`--initialize-timeout-seconds`, `--call-timeout-seconds` and repeated `--pass-environment NAME`.
+The runner supports npm Packages over stdio, verifies their artifact SHA-256 before unpacking,
+installs dependencies without scripts, and keeps a hash-keyed cache under the store. This
+pins the artifact, not its dependency graph. Each run has a private empty working directory,
+a process group, a lifetime guard and one MCP session with no Roots capability. Dropping the
+shell or runner, or killing the engine, ends the group and its descendants. Commands at
+relative paths use retained installed-package files; absolute commands run as given and bare
+program names use the permitted PATH.
+
+Default tests stay offline. Run the real pinned filesystem server tests, including CLI
+registration and a hash mismatch before extraction, with:
+
+```sh
+CONDUIT_TEST_NPM=1 cargo test --release
+```
+
+Credential directories and authority files are private,
 and actual credentials never enter core inputs or output. The same-key CA file checks
 nothing at the loopback HTTP address. The supported choices and remaining boundaries are in
 [CONFORMANCE.md](CONFORMANCE.md); implementation details and tests are in

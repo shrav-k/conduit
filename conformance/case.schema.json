@@ -548,6 +548,27 @@
                   "kind",
                   "file"
                 ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "access-fixture"
+                  },
+                  "file": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file",
+                  "index"
+                ]
               }
             ]
           },
@@ -578,10 +599,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "type": "object",
-                      "required": [
-                        "target"
-                      ]
+                      "type": "object"
                     }
                   }
                 }
@@ -831,6 +849,40 @@
                     "required_promises",
                     "stateUnchanged"
                   ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "input": {
+                  "properties": {
+                    "kind": {
+                      "not": {
+                        "const": "access-fixture"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "expect": {
+                  "properties": {
+                    "records": {
+                      "items": {
+                        "properties": {
+                          "data": {
+                            "required": [
+                              "target"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }

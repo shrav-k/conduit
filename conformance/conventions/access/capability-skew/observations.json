@@ -1,0 +1,164 @@
+{
+  "observations": [
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000006",
+          "set": {
+            "open": false
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000007",
+          "set": {
+            "open": false
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000050",
+          "set": {
+            "open": false
+          }
+        }
+      ],
+      "call": {
+        "kind": "list-tools",
+        "identity": {
+          "kind": "instance",
+          "id": "00000000-0000-4000-8000-000000000005"
+        }
+      }
+    },
+    {
+      "patches": [],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000008002",
+            "00000000-0000-4000-8000-000000008003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "skew.read.v1",
+          "arguments": {}
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000900",
+          "set": {
+            "schema_environment": {
+              "scopes": {
+                "old": {
+                  "address": "example.org/skew",
+                  "version": "1.1.0",
+                  "manifest": {},
+                  "contracts": {
+                    "read.v1": {
+                      "apiVersion": "github.com/shrav-k/conduit/v0",
+                      "kind": "Operation",
+                      "metadata": {
+                        "name": "read.v1"
+                      },
+                      "spec": {
+                        "inputSchema": {
+                          "type": "object"
+                        }
+                      }
+                    },
+                    "cap.v1": {
+                      "apiVersion": "github.com/shrav-k/conduit/v0",
+                      "kind": "Capability",
+                      "metadata": {
+                        "name": "cap.v1"
+                      },
+                      "spec": {
+                        "operations": [
+                          "#read.v1"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000008004",
+            "00000000-0000-4000-8000-000000008005"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "skew.read.v1",
+          "arguments": {}
+        }
+      }
+    },
+    {
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000900",
+          "set": {
+            "schema_environment": {
+              "scopes": {
+                "old": {
+                  "address": "example.org/skew",
+                  "version": "1.0.0",
+                  "manifest": {},
+                  "contracts": {
+                    "cap.v1": {
+                      "apiVersion": "github.com/shrav-k/conduit/v0",
+                      "kind": "Capability",
+                      "metadata": {
+                        "name": "cap.v1"
+                      },
+                      "spec": {
+                        "operations": []
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000008006",
+            "00000000-0000-4000-8000-000000008007"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "skew.read.v1",
+          "arguments": {}
+        }
+      }
+    }
+  ]
+}

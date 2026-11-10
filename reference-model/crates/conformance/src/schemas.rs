@@ -2,7 +2,11 @@
 use super::*;
 use conduit_core::schemas::{Environment, Scope};
 
-fn environment(repository: &Path, fixture: &Value, spec: &Specification) -> Result<Environment> {
+pub(super) fn environment(
+    repository: &Path,
+    fixture: &Value,
+    spec: &Specification,
+) -> Result<Environment> {
     let mut env: Environment =
         serde_json::from_value(fixture["environment"].clone()).map_err(|e| e.to_string())?;
     let mut contracts = BTreeMap::new();
@@ -294,6 +298,9 @@ mod tests {
             core_package: spec.names().core_package.clone(),
             templates: BTreeMap::new(),
             record_source: "urn:test".into(),
+            core_environment: Environment {
+                scopes: BTreeMap::new(),
+            },
         };
         for (case, kind) in [
             ("schema-invalid-default", "schema-admission"),
@@ -342,6 +349,9 @@ mod regression_vectors {
             core_package: spec.names().core_package.clone(),
             templates: BTreeMap::new(),
             record_source: "urn:test".into(),
+            core_environment: Environment {
+                scopes: BTreeMap::new(),
+            },
         };
         let path = repository.join(format!("conformance/interface/schemas/{name}/case.yaml"));
         let case: Case = serde_json::from_value(read_value(&path).unwrap()).unwrap();

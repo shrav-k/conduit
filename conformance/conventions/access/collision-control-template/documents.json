@@ -1,0 +1,159 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "adjust.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "limit"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "limit"
+        ]
+      },
+      "changes": {
+        "limit": "/limit"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "cap.v1"
+    },
+    "spec": {
+      "operations": [
+        "#adjust.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "target.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "offers": [
+        "#cap.v1"
+      ],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "controls": [
+        "#adjust.v1"
+      ],
+      "implementation": {
+        "#adjust.v1": "#server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "target-template"
+    },
+    "spec": {
+      "type": "#target.v1",
+      "controls": {}
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "link"
+    },
+    "spec": {
+      "capability": "#cap.v1",
+      "operations": [
+        "#adjust.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "consumer-template"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1",
+      "conduits": {
+        "c": {
+          "from": "link",
+          "target": {
+            "kind": "Resource",
+            "name": "target"
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "target"
+    },
+    "from": "target-template",
+    "owner": "system"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "consumer"
+    },
+    "from": "consumer-template"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "c"
+    },
+    "from": "link",
+    "consumer": {
+      "kind": "Interface",
+      "name": "consumer"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "target"
+    }
+  }
+]

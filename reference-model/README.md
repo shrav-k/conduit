@@ -278,3 +278,20 @@ and installed entries unchanged. Repeats and conflicting digests use the existin
 even with an unavailable completion. The input represents archive admission; general
 management request authorization, dispatch records and physical package storage remain work
 for the convention and shell inputs. No vector fetches a package or runs a provider.
+
+I2-05 adds the pure `access` and `list-tools` inputs and `access::tool_list_changes`.
+Identity and whether authority can be read are supplied boundary facts. Each access reply
+is a reason or a permit carrying the resolved consumer, caller, Conduit, target, operation,
+default-filled arguments and filters. The access record is kept before the permit is returned;
+no invocation is created or dispatched by this stage. The following invocation stage must use
+it atomically with the same state. A later request always decides access again.
+
+Tool publication reads registration's frozen contract contexts and resolved references, and
+first-start objects use the supplied core contract environment. Each instance's current list
+is private and comes only from its open Conduits. The list-change helper compares established
+states and returns notifications addressed to consumers; the shell delivers them to subscribed
+streams. Supplied serving invocations retain `id`, `target`, `caller`, `conduit`, `state`,
+optional `serving` and carried `filters`; `retirement_of` identifies retirement work for
+ACC-039. They are trusted state, never caller-supplied trace metadata. The invocation stage
+will produce that state itself. These observations exercise access without claiming lifecycle
+transitions or provider execution.

@@ -23,6 +23,9 @@ fn fixture() -> (Context, Value) {
             core_package: specification.names().core_package.clone(),
             templates,
             record_source: "urn:conduit:first-build".into(),
+            core_environment: conduit_core::schemas::Environment {
+                scopes: BTreeMap::new(),
+            },
         },
         input,
     )

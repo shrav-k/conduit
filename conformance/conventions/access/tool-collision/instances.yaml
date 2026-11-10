@@ -1,0 +1,50 @@
+# Illustrative absolute paths on the one machine of S1; the shell prepares these directories.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: workspace
+from: workspace-pool
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: shared
+from: shared-directory
+owner: workspace
+arguments:
+  root: /tmp/conduit-s1/shared
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: history
+from: message-history
+owner: workspace
+arguments:
+  root: /tmp/conduit-s1/history
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: agent-a
+from: reader-agent
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: agent-b
+from: writer-agent
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-workspace
+from: workspace-admin
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Pool
+  name: workspace
+---
+{"apiVersion": "github.com/shrav-k/conduit/v0", "kind": "Conduit", "metadata": {"name": "project"}, "from": "directory-read", "consumer": {"kind": "Agent", "name": "agent-a"}, "target": {"kind": "Resource", "name": "shared"}}

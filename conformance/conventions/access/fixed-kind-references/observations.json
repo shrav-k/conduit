@@ -1,0 +1,83 @@
+{
+  "observations": [
+    {
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009000",
+            "00000000-0000-4000-8000-000000009001"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.declare-lost.v1",
+          "arguments": {
+            "node": "local"
+          }
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009002",
+            "00000000-0000-4000-8000-000000009003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.declare-lost.v1",
+          "arguments": {
+            "node": {
+              "kind": "Resource",
+              "name": "local"
+            }
+          }
+        }
+      }
+    },
+    {
+      "call": {
+        "kind": "access",
+        "evidence": {
+          "time": "2026-11-09T12:06:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009004",
+            "00000000-0000-4000-8000-000000009005"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Resource",
+                "metadata": {
+                  "name": "new-resource"
+                },
+                "from": "some-template",
+                "owner": "workspace"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

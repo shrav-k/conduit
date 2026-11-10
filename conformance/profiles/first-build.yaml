@@ -45,12 +45,12 @@
     "DL8",
     "DL10.nesting",
     "DL15",
-    "DL7"
+    "DL7",
+    "DL4",
+    "DL12"
   ],
   "reserved_for_later_orders": [
     "DL2",
-    "DL4",
-    "DL12",
     "DL10.outputs"
   ],
   "DL7": {

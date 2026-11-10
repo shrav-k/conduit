@@ -7,9 +7,7 @@
     },
     "spec": {
       "capability": "github.com/shrav-k/conduit/core#access-control.v1",
-      "operations": [
-        "github.com/shrav-k/conduit/core#open.v1"
-      ],
+      "operations": [],
       "requirements": {
         "limit": {
           "requirement": "example.org/requirements#limit.v1",

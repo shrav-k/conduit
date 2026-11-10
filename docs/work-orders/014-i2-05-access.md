@@ -49,3 +49,19 @@ As order 009's scope.
 The vectors pass, with A and B each shown exactly their tools and every request outside them
 refused without an invocation or a disclosure; every decision cites a promise; and the checks of
 order 004's done-when pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 22 minutes, then a second round. The pure access decision and each instance's
+  exact tool list; 10 vectors, 240 in all, then 248.
+- **Verifier**: 6 minutes. Five `must`, two of them holes in access itself: a Pool entry's
+  reference resolved to the Pool, so authority over management alone reached the entry's
+  Resource; and an operation was allowed that the target's held Capability did not include.
+  Also: root could declare `local` lost; tool-name collisions counted operations never shown as
+  tools; and a collision's diagnostic named neither the tool nor the other Conduit.
+- **Admin**: sent the worker back once, and had it search, after the first fix, for any other
+  reference that resolves to an owner rather than to what it names. It found one: a bare name
+  ignored the kind its schema fixes and could select an owner of the same name (OBJ-006). Each
+  of the six was decided by its promises and fixed with a vector that failed before it.

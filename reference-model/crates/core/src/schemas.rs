@@ -897,6 +897,93 @@ impl Environment {
     }
 }
 
+pub(crate) fn operation(
+    target: &Value,
+    operation: &str,
+    core: &str,
+) -> Result<(Environment, String, Value)> {
+    let env: Environment =
+        serde_json::from_value(target["schema_environment"].clone()).map_err(|e| e.to_string())?;
+    let contract = env.resolve(
+        target["contract_scope"]
+            .as_str()
+            .ok_or("missing contract scope")?,
+        operation,
+        core,
+    )?;
+    let doc = env.scope(&contract.0)?.contracts[&contract.1].clone();
+    Ok((env, contract.0, doc))
+}
+
+/// NAM-026 compares selections in the Capability's own held scope.
+pub(crate) fn capability_includes(
+    target: &Value,
+    capability: &Value,
+    operation: &str,
+    core: &str,
+) -> Result<bool> {
+    let (env, scope, contract) = self::operation(
+        target,
+        capability.as_str().ok_or("missing Capability")?,
+        core,
+    )?;
+    if contract["kind"] != "Capability" {
+        return Err("Conduit contract is not a Capability".into());
+    }
+    let wanted = env.resolve(
+        target["contract_scope"]
+            .as_str()
+            .ok_or("missing contract scope")?,
+        operation,
+        core,
+    )?;
+    for member in contract["spec"]["operations"]
+        .as_array()
+        .into_iter()
+        .flatten()
+    {
+        if env.resolve(
+            &scope,
+            member.as_str().ok_or("invalid Capability operation")?,
+            core,
+        )? == wanted
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+// Keep IFC-012 exclusions identical for publication and IFC-014's would-present check.
+pub(crate) fn publication_omission(
+    target: &Value,
+    operation: &str,
+    context: &Context,
+) -> Result<Option<(&'static str, &'static str)>> {
+    if operation == context.qualified("get-secret.v1") {
+        return Ok(Some(("SEC-007", "refused")));
+    }
+    let (_, _, doc) = match self::operation(target, operation, &context.core_package) {
+        Ok(c) => c,
+        Err(e) if e.starts_with("SCH-015: unresolved") => return Ok(Some(("NAM-023", "refused"))),
+        Err(e) => return Err(e),
+    };
+    if doc["kind"] != "Operation" {
+        return Err("tool contract is not an Operation".into());
+    }
+    if doc["spec"].get("changes").is_some()
+        && (!target["type_controls"]
+            .as_array()
+            .is_some_and(|a| a.contains(&json!(operation)))
+            || target
+                .get("controls")
+                .is_some_and(|m| m.get(operation).is_none()))
+    {
+        return Ok(Some(("TPL-013", "invalid")));
+    }
+    Ok(None)
+}
+
 pub fn publish(
     state: &State,
     consumer: &str,
@@ -904,6 +991,8 @@ pub fn publish(
     operation: &str,
     context: &Context,
 ) -> Result<(Value, Decision)> {
+    let view = crate::access::publication_state(state, context)?;
+    let state = &view;
     let path = state
         .objects
         .iter()
@@ -928,69 +1017,35 @@ pub fn publish(
             ),
         ));
     }
-    if operation == format!("{}#get-secret.v1", context.core_package) {
-        return Ok((
-            json!({"tool":null,"reason":"refused"}),
-            decision(
-                "omit-secret-tool",
-                &["IFC-012", "SEC-007"],
-                &[],
-                json!({"operation":operation}),
-                vec![],
-            ),
-        ));
-    }
     let target = state
         .objects
         .iter()
         .find(|o| o["id"] == path["target"])
         .ok_or("missing target")?;
-    let env: Environment =
-        serde_json::from_value(target["schema_environment"].clone()).map_err(|e| e.to_string())?;
+    if let Some((rule, reason)) = publication_omission(target, operation, context)? {
+        let (action, rules): (&str, &[&str]) = match rule {
+            "SEC-007" => ("omit-secret-tool", &["IFC-012", "SEC-007"]),
+            "NAM-023" => ("omit-missing-contract", &["IFC-033", "NAM-023"]),
+            _ => ("omit-absent-control", &["IFC-012", "TPL-013"]),
+        };
+        return Ok((
+            json!({"tool":null,"reason":reason}),
+            decision(action, rules, &[], json!({"operation":operation}), vec![]),
+        ));
+    }
+    let (env, contract_scope, doc) = self::operation(target, operation, &context.core_package)?;
     let scope = target["contract_scope"]
         .as_str()
         .ok_or("missing target contract scope")?;
-    let contract = match env.resolve(scope, operation, &context.core_package) {
-        Ok(c) => c,
-        Err(e) if e.starts_with("SCH-015: unresolved") => {
-            return Ok((
-                json!({"tool":null,"reason":"refused"}),
-                decision(
-                    "omit-missing-contract",
-                    &["IFC-033", "NAM-023"],
-                    &[],
-                    json!({"operation":operation}),
-                    vec![],
-                ),
-            ));
-        }
-        Err(e) => return Err(e),
-    };
-    let doc = &env.scope(&contract.0)?.contracts[&contract.1];
-    if doc["kind"] != "Operation" {
-        return Err("tool contract is not an Operation".into());
-    }
+    let contract = Contract(
+        contract_scope,
+        doc["metadata"]["name"]
+            .as_str()
+            .ok_or("missing operation name")?
+            .into(),
+    );
     let spec = &doc["spec"];
     let control = spec.get("changes").is_some();
-    if control
-        && (!target["type_controls"]
-            .as_array()
-            .is_some_and(|a| a.contains(&json!(operation)))
-            || target
-                .get("controls")
-                .is_some_and(|m| m.get(operation).is_none()))
-    {
-        return Ok((
-            json!({"tool":null,"reason":"invalid"}),
-            decision(
-                "omit-absent-control",
-                &["IFC-012", "TPL-013"],
-                &[],
-                json!({"operation":operation}),
-                vec![],
-            ),
-        ));
-    }
     let mut input = spec
         .get("inputSchema")
         .cloned()

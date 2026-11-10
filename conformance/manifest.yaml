@@ -2555,6 +2555,186 @@
       "safety_rows": [
         "archive-installation"
       ]
+    },
+    {
+      "id": "access-s1-exact-access",
+      "case": "conventions/access/s1-exact-access/case.yaml",
+      "promises": [
+        "ACC-001",
+        "ACC-002",
+        "ACC-003",
+        "ACC-009",
+        "IFC-012",
+        "CON-017",
+        "OPS-023"
+      ]
+    },
+    {
+      "id": "access-identity",
+      "case": "conventions/access/identity/case.yaml",
+      "promises": [
+        "IFC-022",
+        "IFC-032",
+        "ACC-037",
+        "OPS-023",
+        "IFC-025"
+      ]
+    },
+    {
+      "id": "access-current-tools",
+      "case": "conventions/access/current-tools/case.yaml",
+      "promises": [
+        "IFC-012",
+        "IFC-013",
+        "IFC-038",
+        "ACC-011",
+        "ACC-036"
+      ]
+    },
+    {
+      "id": "access-s1-pool-authority",
+      "case": "conventions/access/s1-pool-authority/case.yaml",
+      "promises": [
+        "ACC-033",
+        "OPS-023",
+        "IFC-025",
+        "FST-006"
+      ]
+    },
+    {
+      "id": "access-bounds",
+      "case": "conventions/access/bounds/case.yaml",
+      "promises": [
+        "ACC-006",
+        "ACC-008",
+        "ACC-012",
+        "ACC-024",
+        "ACC-029",
+        "ACC-030",
+        "IFC-025"
+      ]
+    },
+    {
+      "id": "access-s1-plain-filter",
+      "case": "conventions/access/s1-plain-filter/case.yaml",
+      "promises": [
+        "ACC-015",
+        "ACC-016",
+        "ACC-017",
+        "IFC-020",
+        "IFC-021",
+        "IFC-028",
+        "ACC-034"
+      ]
+    },
+    {
+      "id": "access-plain-registration",
+      "case": "conventions/access/plain-registration/case.yaml",
+      "promises": [
+        "CON-022",
+        "PKG-020"
+      ]
+    },
+    {
+      "id": "access-routing",
+      "case": "conventions/access/routing/case.yaml",
+      "promises": [
+        "ACC-033",
+        "OPS-023",
+        "OPS-029",
+        "CON-024",
+        "LIF-034",
+        "ACC-032"
+      ]
+    },
+    {
+      "id": "access-duplicate-bound",
+      "case": "conventions/access/duplicate-bound/case.yaml",
+      "promises": [
+        "CON-028"
+      ]
+    },
+    {
+      "id": "access-tool-collision",
+      "case": "conventions/access/tool-collision/case.yaml",
+      "promises": [
+        "IFC-014"
+      ]
+    },
+    {
+      "id": "access-entry-authority",
+      "case": "conventions/access/entry-authority/case.yaml",
+      "promises": [
+        "ACC-033",
+        "POOL-001",
+        "POOL-002",
+        "POOL-014"
+      ]
+    },
+    {
+      "id": "access-root-local-lost",
+      "case": "conventions/access/root-local-lost/case.yaml",
+      "promises": [
+        "LIF-034",
+        "ACC-032",
+        "ACC-033"
+      ]
+    },
+    {
+      "id": "access-capability-skew",
+      "case": "conventions/access/capability-skew/case.yaml",
+      "promises": [
+        "CON-017",
+        "NAM-026",
+        "IFC-012",
+        "IFC-033"
+      ]
+    },
+    {
+      "id": "access-collision-secret",
+      "case": "conventions/access/collision-secret/case.yaml",
+      "promises": [
+        "IFC-012",
+        "IFC-014",
+        "IFC-033"
+      ]
+    },
+    {
+      "id": "access-collision-control-type",
+      "case": "conventions/access/collision-control-type/case.yaml",
+      "promises": [
+        "IFC-012",
+        "IFC-014",
+        "IFC-033"
+      ]
+    },
+    {
+      "id": "access-collision-control-template",
+      "case": "conventions/access/collision-control-template/case.yaml",
+      "promises": [
+        "IFC-012",
+        "IFC-014",
+        "IFC-033"
+      ]
+    },
+    {
+      "id": "access-collision-missing-contract",
+      "case": "conventions/access/collision-missing-contract/case.yaml",
+      "promises": [
+        "IFC-012",
+        "IFC-014",
+        "IFC-033"
+      ]
+    },
+    {
+      "id": "access-fixed-kind-references",
+      "case": "conventions/access/fixed-kind-references/case.yaml",
+      "promises": [
+        "OBJ-002",
+        "OBJ-006",
+        "ACC-033",
+        "LIF-034"
+      ]
     }
   ]
 }

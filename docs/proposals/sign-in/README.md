@@ -1,7 +1,8 @@
 # Signing in: how an engine gets a person through a login it cannot do itself
 
 Not binding. The [specification](../../../spec/README.md) alone binds. Research and a proposal by
-the coordinator, 2026-11-10, for the owner to discuss. It answers the owner's question about
+the coordinator, 2026-11-10. The owner ruled on its three points the same day, in
+[ruling 49](../ruling-49/README.md). It answers the owner's question about
 adding accounts through Conduit's own flow ([the owner's direction](../owner-direction/2026-11-10.md),
 A5): when a login needs a browser, how does the prompt reach a person, how is it completed, and
 how are many accounts, such as several Google accounts, kept apart?

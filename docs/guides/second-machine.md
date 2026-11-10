@@ -5,6 +5,10 @@ its probe without an engine. The second machine is the Windows computer, running
 WSL2: the engine stops the programs it runs by process group, which Linux has and Windows does
 not. A native Windows build can come later.
 
+**For testing only** ([ruling 50](../proposals/ruling-50/README.md)): adding a machine is to be
+done through Conduit, by an enrollment still to be designed. This manual setup serves A74, the
+probe that needs no engine, and S3 until enrollment exists.
+
 This is a plan, written before any of it has been tried on this computer. Tell the coordinator
 where a step differs.
 

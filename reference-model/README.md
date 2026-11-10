@@ -16,6 +16,14 @@ package is `conduit-loader`; the pure `conduit-core` in [crates/core](crates/cor
 `conduit-conformance` runner in [crates/conformance](crates/conformance); and the
 `conduit-shell` library with its `conduit` binary in [crates/shell](crates/shell).
 
+State on 2026-11-10: increment 1, the loader, was done on 2026-11-09; increment 2, S1 whole on
+the pure core by vectors, and increment 3, the shell, were done on 2026-11-10. The shell ran
+real Claude Code and Codex as Agents through T1, T2 and T7; the
+[closeout results](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+separate what was shown from what was not. Increment 4, S1 complete with author measurements,
+is next. The sections below describe the implemented slice as of 2026-11-10, distinguishing
+each order's tests from that later closeout; they do not claim whole-language conformance.
+
 ## Running it
 
 The toolchain is pinned in [rust-toolchain.toml](rust-toolchain.toml), Rust 1.97.1, which
@@ -30,6 +38,15 @@ cargo run --release -p conduit-conformance
 
 `Cargo.lock` is committed, and the build output, `target/`, is ignored. The tests read the
 specification from `../spec/`, so they run inside a checkout of this repository.
+
+For real Agents, follow [live S1](examples/s1/README.md): build and pack both Agent packages,
+set their host archive digests in a copy of the project, prepare the shared and history
+directories, and register and serve it. Claude Code and Codex must be installed, on the
+runner's PATH and signed in. As of the 2026-11-10 closeout they use the owner's shared logins;
+setup starts wrappers only, and each `conduit call` to a turn tool starts model work explicitly.
+The owner's [setup guides](../docs/guides/README.md) prepare later experiments. The separate
+homes and engine-mediated sign-in of [ruling 49](../docs/proposals/ruling-49/README.md) are
+pending as of 2026-11-10, not prerequisites already supplied by this shell.
 
 ## The shell's store, runner and command line (I3-01/02/03)
 
@@ -62,7 +79,8 @@ final replies, correlated by invocation and attempt, so a refusal is delivered e
 core removes the invocation or restores its previous success. The [runner](crates/shell/src/runner.rs)
 executes committed run, dispatch, refresh and cancellation intents outside that mutex, returning
 completions through the shell. Runtime providers and remote connections remain unserved;
-missing/failed reports go through the core. The HTTP adapter serves consumers; no Agent client runs here.
+missing/failed reports go through the core. The base S1 fixture used above has no executable
+Agent; [live S1](examples/s1/README.md) supplies the real-client wrappers instead.
 
 Config sets the engine address and output retention. CLI equivalents are `--url`,
 `--output-cap-bytes` and `--output-age-seconds`; defaults are a loopback address at port 3000
@@ -90,7 +108,7 @@ nothing at the loopback HTTP address. The supported choices and remaining bounda
 [CONFORMANCE.md](CONFORMANCE.md); implementation details and tests are in
 [the increment 3 log](../docs/proposals/first-build/log-increment-3.md).
 
-## What increment 2 covers so far
+## What increment 2 covers
 
 I2-01 implements deterministic first start: exactly five ready objects and root's two open
 declared Conduits, retaining their built-in template provenance, ownership, placement and
@@ -121,15 +139,18 @@ the validator. The published schema itself contains the original patterns.
 
 The core exposes `evaluate-schema`, `check-authored` and `tool-definition` inputs. The first
 fills supplied values (with an operation-input mode and an output mode that fills nothing).
-The second is the semantic admission check for schemas after strict loading, shared by future
-installation/submission transitions; it checks default validity and reserved root copy keys.
+The second is the semantic admission check for schemas after strict loading, shared by
+archive admission and registration; it checks default validity and reserved root copy keys.
 The third reads the operation and schemas held by an explicitly supplied target and open
 Conduit. It handles control narrowing and omission, handles, descriptions and hints. These
 vectors start with established snapshots and claim no package installation, registration or
 opening. The runner checks every snapshot contract through the loader, uses the actual core
 contracts, and compares authored and standalone verdicts for every E05 sample in both schema
 directions. Standalone validation checks all references are local and resolve before compiling
-with no package resolver. Conflicting unconditional defaults stop for the admin (finding 2-03).
+with no package resolver. As of 2026-11-10, conflicting unconditional defaults are rejected
+under SCH-009 when installed or submitted; equal defaults are one default. Finding
+[2-03](../docs/proposals/first-build/log-increment-2.md#2-03-conflicting-unconditional-defaults)
+records the admin's settlement and its vectors; the owner can strike it.
 
 These I2-02 cases do not exercise registration, access, invocation handling or the shell.
 Unsupported inputs are embedding errors, not invented Conduit reasons. The
@@ -188,8 +209,8 @@ a file. What reads the file system is at the edge: `read_file`, `read_project` a
   and the failing keyword's location (`keywordLocation`, and `absoluteKeywordLocation` where
   known, to be carried in the SARIF result's `properties`).
 
-It does not resolve references, instantiate templates or apply the rules of
-`tools/check_schemas.py` that no schema can express: those come with the core, in increment 2.
+The loader does not resolve references, instantiate templates or apply the rules of
+`tools/check_schemas.py` that no schema can express: the core implements those in increment 2.
 
 ## The tests, and the done-when
 
@@ -212,8 +233,12 @@ specification is the source of truth, and the first build's findings change it: 
 time, the tests always run against the specification as it stands, and nothing is copied. The
 names that [spec/names.yaml](../spec/names.yaml) defines, the core package's address among
 them, are read from that file too, and never written here: `tools/set_names.py --check` scans
-this directory, and a test writes its documents with the names it reads. The shell, which must
-carry the core package with it (NAM-020), will decide how to embed it.
+this directory, and a test writes its documents with the names it reads. As of 2026-11-10 the
+shell CLI also reads `spec/` from this checkout; a standalone distribution carrying the core
+package (NAM-020) remains work for later.
+
+The crate choices below record the loader work of 2026-11-09; their upstream status is as
+recorded then.
 
 **YAML: [saphyr-parser](https://crates.io/crates/saphyr-parser) 0.3.3.** `serde_yaml` is no
 longer maintained: its last release is `0.9.34+deprecated`. `serde_yml`, a fork of it, is
@@ -282,8 +307,8 @@ and Package artifact bytes are hashed only as fixture evidence. The
 [S1 vector](../conformance/language/packages/s1/case.yaml) resolves the filesystem, history,
 and Agent packages and S1's project, with real computed pins and no state changes or intents.
 Other vectors exercise accepted and rejected names, pins, exports, path expansion and digest
-invariance. This is context resolution; general registration, instance arguments, object
-references and execution remain later work. Archive installation is described below.
+invariance. This input performs context resolution only; registration, instance arguments,
+object references and execution are described in the later sections, as is archive admission.
 
 ## Registration and resolving instances (I2-04)
 
@@ -369,7 +394,7 @@ expiry. Reconciliation uses current ACC-033 authority and records checked eviden
 
 Dispatch, parameter-header repair and cancellation return intents only; the shell must
 persist state and records before carrying them out. General lifecycle/control reconciliation
-and records purge remain later orders. The
+remains outside this slice; records purge is described under I2-08 below. The
 [request vectors](../conformance/README.md#request-endings-i2-06) describe their observations,
 and the [finding log](../docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
 records the admin’s narrowing of header repair and the return-review regressions.
@@ -396,8 +421,8 @@ invocation; later requests check access again. An explicit nested replacement re
 registration resolver with trusted frozen references and the referenced template's current
 definition. Preinstalled catalog snapshots are retained in state for that validation;
 actor-authored resolved references remain invalid. Replacement registers a new identity
-and opens nothing. Full inspection, general retirement and lifecycle reconciliation remain
-work beyond these setup/open/close transitions.
+and opens nothing. Full inspection is described under I2-08 below; general retirement and
+lifecycle reconciliation remain beyond the implemented setup/open/close transitions.
 
 Order 016's return review adds reference dependency scheduling for Pool entries, propagation
 of hook reasons and cancelled entry outcomes, and collection of every dispatched setup part
@@ -511,6 +536,13 @@ Conduits. No real client was run by order 023. Its default release tests build b
 packages, exercise unmodified archives through the CLI, then install test archives with the
 explicit scripted-client argument and run S1's two Agents through the actual runner/HTTP
 server. A scripted filesystem replaces npm in this test; each Agent makes an engine-recorded
-request with its own run identity. This needs only crates and loopback networking. The
-[admin closeout plan](../docs/proposals/first-build/increment-3/closeout.md) covers the real
-clients, owner-source sentinels, apps, messaging, login and T7 still to be shown.
+request with its own run identity. This needs only crates and loopback networking.
+
+The admin subsequently ran the real clients on 2026-11-10; the
+[closeout results](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+record T1, T2 and T7, project-instruction exclusion, refused outside-file reads, request
+records and shutdown observations. Access remains mediated, with both Agents and the engine
+running as one operating-system user. Codex still reads its home's `AGENTS.md` (finding 3-07).
+Account-service refusal, incoming peer-message refusal, reach inputs set true, Codex's own
+tool list and independent proof of conversation continuity were not shown. Those limits
+carry forward to increment 4; the closeout did not pass them by inference from flags.

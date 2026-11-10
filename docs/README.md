@@ -25,12 +25,15 @@ than repeat them.
 | Understand Conduit | [README](../README.md) → [spec/README.md](../spec/README.md) → [spec/definitions.md](../spec/definitions.md). The [overview](OVERVIEW.md) is a plain-language tour, and [spec/schemas/examples/](../spec/schemas/examples/) holds worked documents. |
 | Write documents, as an author | The [overview](OVERVIEW.md) → the specification's [path for an author of documents](../spec/README.md#an-author-of-documents), with [what access does not narrow](../spec/README.md#what-access-does-not-narrow). |
 | Write a contract or a provider | The specification's [path for a writer of contracts and providers](../spec/README.md#a-writer-of-contracts-and-providers). |
-| Implement the specification: the reference model, the vectors or a first provider | [The first build](implementation/FIRST_BUILD.md), then the specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch (next row). |
+| Run what exists | [The first build's commands](../reference-model/README.md#running-it) → [live S1](../reference-model/examples/s1/README.md) for real Agents. As of 2026-11-10 the shell has run T1, T2 and T7; its [closeout](proposals/first-build/increment-3/closeout-results-2026-11-10.md) states the evidence and limits. |
+| Read the text cold | [Cold readers' instructions](guides/cold-readers.md) → [for the next reader](AUDIT.md#for-the-next-reader). |
+| Set up the owner's accounts and machines | [Setup guides](guides/README.md), including ruling 49's sign-in flow, pending as of 2026-11-10. |
+| Implement the specification: the reference model, the vectors or a first provider | [The first build](implementation/FIRST_BUILD.md), then the specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch; see the Build an engine row. |
 | Learn the state of the work | [Roadmap](../ROADMAP.md) → [where things stand](AUDIT.md#where-things-stand) → [action items](AUDIT.md#action-items) in the plan audit. |
 | Propose an experiment or a probe | [Experiments and probes](../ROADMAP.md#experiments-and-probes) in the roadmap → [proposing an experiment](../ROADMAP.md#proposing-an-experiment) → [experiments/](../experiments/README.md). |
 | Understand a ruling | [Ruling log](AUDIT.md#ruling-log) → the [record](#records-of-rulings) of that batch → [research](research/README.md) for the evidence. |
 | Contribute | [AGENTS.md](../AGENTS.md) → [contributor guide](../CONTRIBUTING.md). |
-| Build an engine | Not from this branch. See [independent builds](implementation/INDEPENDENT_BUILDS.md). Builders work from a separate branch, which is not yet published. |
+| Build an engine | Independent builders do not read this branch. See [independent builds](implementation/INDEPENDENT_BUILDS.md). As of 2026-11-10 their separate branch is not yet published; the first build above is distinct. |
 | See how the design got here | The [archive](archive/README.md), whose index lists, with links, the documents that the specification superseded and that ruling 39 removed from the tree, and the [history of the plan audit](archive/plan-audit-history.md). |
 
 ## What each document is
@@ -39,7 +42,7 @@ than repeat them.
 
 | Location | What it is |
 | --- | --- |
-| [../spec/](../spec/README.md) | The specification: the language, the shared conventions and the implementation interface, as numbered promises, with definitions, JSON Schemas of the documents, example documents and the core package. A draft: every area is written, and no conformance vector exists yet. It alone binds. |
+| [../spec/](../spec/README.md) | The specification: the language, the shared conventions and the implementation interface, as numbered promises, with definitions, JSON Schemas of the documents, example documents and the core package. As of 2026-11-10 it remains a draft; [conformance vectors](../conformance/README.md) now test slices of promises on S1, with missing coverage in the [manifest](../conformance/manifest.yaml). It alone binds. |
 
 ### Entry points and tracker
 
@@ -51,6 +54,7 @@ than repeat them.
 | [../ROADMAP.md](../ROADMAP.md) | The roadmap: the order of the work, with the state of each step, every experiment and probe, planned, running or done, with what it feeds, and the experiment program with its scenarios. Not binding. |
 | [AUDIT.md](AUDIT.md) | The plan audit, which tracks the work with the roadmap: where things stand, the owner's ruling log, what waits for the owner, priorities, and the action items that are not experiments or probes. Not a specification: a ruling changes nothing until it is applied to the documents it affects. |
 | [OVERVIEW.md](OVERVIEW.md) | A plain-language overview of the language, written from the specification. Not binding. |
+| [guides/](guides/README.md) | The owner's setup guides and the collaborators' cold-reading instructions, added as of 2026-11-10. Not binding. |
 | [LANGUAGE_DEFECTS.md](LANGUAGE_DEFECTS.md) | The register of the first sweep: 167 places where the protocol topics, since removed, would have let two engine builders diverge, and what became of each. Findings against `spec/` are in the [re-audit record](proposals/reaudit/README.md). |
 | [../tools/](../tools) | The checkers: `check_docs.py` for links and anchors, `set_names.py` for the names `spec/names.yaml` defines, `check_schemas.py` for the schemas, the core package and the examples, `check_roadmap.py` for the rows of the action items in the plan audit and the roadmap, and `check_doc_migration.py`, the record of one past migration. The first four are the checks run before each commit; [what each needs](../CONTRIBUTING.md#checks) is in the contributor guide. |
 
@@ -102,17 +106,20 @@ specification governs.
 | [proposals/ruling-45/](proposals/ruling-45/README.md) | 45 | The ruling on two proposals of the collaborator `allocmemory`, pull requests 9 and 10, in the owner's words: what was kept of each, and where it went, and the pass that decides how the roadmap is shown, with [its log](proposals/ruling-45/log-roadmap.md). |
 | [proposals/ruling-46/](proposals/ruling-46/README.md) | 46 | The ruling on the first build, in the owner's words: one codebase with a pure core and a thin runnable shell, its real Agents, its success criteria, how what it finds refines the language, and its providers. |
 | [proposals/ruling-48/](proposals/ruling-48/README.md) | 48 | The ruling on what the first build's review put to the owner, in the owner's words: an Agent's own reach off by default, the login an engine-run Agent uses, the tokens a `pattern` may use, a fresh Codex author for S1, and Codex workers under the admin session. |
-| [proposals/first-build/](proposals/first-build/README.md) | 46 | What the first build finds in the language, one log per increment, under ruling 46, point 4: each gap, ambiguity, contradiction or needless complexity against the IDs of its promises, with what the build did and the fix, made with a vector or left for the owner. [Increment 1](proposals/first-build/log-increment-1.md), the strict loader, has thirteen. |
+| [proposals/ruling-49/](proposals/ruling-49/README.md) | 49 | Ruled on 2026-11-10: sign-in prompts through URL elicitation to the root Interface alone in v0, with the expected account checked and a wrong sign-in refused and undone. Its specification and implementation work are pending as of that date. |
+| [proposals/first-build/](proposals/first-build/README.md) | 46 | What the first build finds in the language, one log per increment, under ruling 46, point 4: each gap, ambiguity, contradiction or needless complexity against the IDs of its promises, with what the build did and the fix, made with a vector or left for the owner. As of 2026-11-10, increment 1 has eighteen findings, increment 2 eight, increment 3 seven, and increment 4 has begun recording findings; see the logs for each settlement and limit. |
 
 ### Process for the builds
 
 | Location | What it is |
 | --- | --- |
-| [implementation/INDEPENDENT_BUILDS.md](implementation/INDEPENDENT_BUILDS.md) | The process, the independence rules and the readiness gate for the two independent builds. The roles and rules are accepted (ruling 11). The builds have not started. |
+| [implementation/INDEPENDENT_BUILDS.md](implementation/INDEPENDENT_BUILDS.md) | The process, the independence rules and the readiness gate for the two independent builds. The roles and rules are accepted (ruling 11). As of 2026-11-10 the independent builds have not started. |
 | [implementation/ENGINE_BUILD_BRIEF.md](implementation/ENGINE_BUILD_BRIEF.md) | The brief each builder receives. A draft; not issued. |
 | [implementation/WORK_ORDERS.md](implementation/WORK_ORDERS.md) | How the work is divided under ruling 48: the coordinator, the admin session, plans and decides; Codex workers carry out work orders, each written before it runs, kept in [work-orders/](work-orders/README.md). Not binding. |
 | [implementation/FIRST_BUILD.md](implementation/FIRST_BUILD.md) | The pre-registration of the first build (A68), as ruling 46 shaped it: what it is, the theses it tests, its four increments and what each must show, the success criteria, the tasks and measures it shares with the baseline for S1, and how its findings are logged. Not binding. |
-| [../reference-model/](../reference-model/README.md) | The codebase of the first build (ruling 46): a Cargo workspace in Rust for the core, the reference model, and later the shell. It holds the strict loader of increment 1 (A43), which reads documents and project directories and validates them against the schemas; its README says how to run its tests and why each crate was chosen. Not binding. |
+| [../reference-model/](../reference-model/README.md) | As of 2026-11-10, the first build's Rust workspace holds the strict loader, pure core, vector runner and runnable engine shell. Increments 1 to 3 are done; increment 4 is next. Its README gives commands, and [CONFORMANCE.md](../reference-model/CONFORMANCE.md) states its choices and remaining implementation work. Not binding. |
+| [../conformance/](../conformance/README.md) | As of 2026-11-10, portable cases for slices of the promises, a first-build profile, fixtures and a coverage manifest. Missing coverage is stated separately from passing vectors. Not binding. |
+| [work-orders/](work-orders/README.md) | Orders for Codex workers under ruling 48, with report schemas and the link to the admin's record. As of 2026-11-10 the index stops at 019; later orders are linked from the build logs. |
 
 ### Evidence and history
 
@@ -120,7 +127,7 @@ specification governs.
 | --- | --- |
 | [research/](research/README.md) | Dated primary sources, source pins, comparisons and probe results. Evidence for the rulings; nothing in it binds, and every packet but the naming research, the secrets research and the research on work across machines predates the specification. |
 | [archive/](archive/README.md) | Closed reviews, the accounting of one migration, attributed collaborator proposals including dissent, the [history of the plan audit](archive/plan-audit-history.md), and the [list of documents removed from the tree](archive/README.md#removed-from-the-tree) with links to their last versions. History; nothing in it binds. |
-| [../experiments/](../experiments/README.md) | Measured evidence. Two experiments, both in Rust: a model-checking evaluation (004) and a probe of the macOS keychain, a candidate store for the first providers (005); the index says what became of 001 to 003. No experiment has run a Conduit engine, because none exists. Every experiment and probe, planned, running or done, has its row in the roadmap's [register](../ROADMAP.md#experiments-and-probes). |
+| [../experiments/](../experiments/README.md) | As of 2026-11-10: Rust evaluations and harnesses for model checking (004), the keychain (005), the S1 baseline (007), real-client behavior (008) and native launch (009), plus the subscription-terms desk check (010). The index records what became of 001 to 003. The real-engine evidence is the first build's [closeout](proposals/first-build/increment-3/closeout-results-2026-11-10.md). Every experiment and probe has a row in the roadmap's [register](../ROADMAP.md#experiments-and-probes). |
 
 ## Repository boundaries
 
@@ -128,11 +135,12 @@ One main repository is accepted. It uses Apache-2.0 for original material, and p
 naming remains deferred under the
 [publication policy](../CONTRIBUTING.md#project-ownership-and-publication).
 
-The repository holds no engine code and no release scheme. The top-level directory
-`reference-model/` holds the first build's code, which is not yet an engine; `conformance/` and
-`packages/` are planned and do not exist yet; see
-[independent builds](implementation/INDEPENDENT_BUILDS.md#repository-layout-and-isolation).
-`packages/` is to hold the first providers, one Rust crate per provider (ruling 40).
+As of 2026-11-10, `reference-model/` holds the first build's core and engine shell,
+`conformance/` holds its vectors, and `packages/` holds the Claude Code and Codex Agent
+packages. Providers belong under `packages/`, one Rust crate per provider (ruling 40).
+The [independent builds](implementation/INDEPENDENT_BUILDS.md#repository-layout-and-isolation)
+remain separate, later work. The first build is not a release or a declaration of
+whole-language conformance.
 There is one specification, `spec/`, and nothing else is to become a second one. A website, if
 one is made, renders these sources.
 
@@ -141,7 +149,7 @@ one is made, renders these sources.
 Accepted behavior is a promise in `spec/`, in the terms of `spec/definitions.md`. A change needs
 an owner ruling, recorded in the [ruling log](AUDIT.md#ruling-log) of the plan audit with its
 record under `proposals/`. The one other way is a decision on a finding of the re-audit, under
-ruling 37, which is logged as the coordinator's
+ruling 37, or of the first build under ruling 46, point 4, logged as the coordinator's
 ([who decides what](AUDIT.md#who-decides-what)).
 
 Keep a proposal that is not yet ruled under `proposals/`, a source claim in `research/`, and a

@@ -31,7 +31,14 @@ behind a contract that any existing tool can implement, and the user picks it. S
 [Providers](#providers).
 
 An author writes documents. An engine is a running program that implements the specification.
-No engine exists yet.
+As of 2026-11-10, the [first build](../reference-model/README.md) has a strict loader, a pure
+core, the reference model, conformance vectors and a runnable shell. The shell ran real Claude
+Code and Codex as Agents on S1 through shared files, message history, and closing and explicitly
+restoring access ([dated results](proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
+It is a partial implementation; its [conformance document](../reference-model/CONFORMANCE.md)
+states its choices and limits. This tour describes the language, including parts the build
+does not yet implement. The build-state statements were updated on 2026-11-10; the date above
+records the last full read of the tour against the specification.
 
 ## The five families
 
@@ -666,8 +673,11 @@ For everything that is not connection and access, such as schemas, packages, the
 the providers do, the specification adopts existing standards
 ([schema profile](../spec/schema-profile.md)).
 
-No promise is yet tested by a conformance vector, and there is no reference model. The
-[plan audit](AUDIT.md#where-things-stand) tracks the state of the work.
+As of 2026-11-10, [conformance vectors](../conformance/README.md) test slices of the promises
+on the pure reference model, including a continuous S1 case. The
+[coverage manifest](../conformance/manifest.yaml) lists vectors and reasons for missing
+coverage; a reason is not a passing test. The [roadmap](../ROADMAP.md#the-order-of-the-work)
+records increments 1 to 3 done, with increment 4, S1 complete with author measurements, next.
 
 ## One user journey
 

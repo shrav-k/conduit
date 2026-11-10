@@ -48,10 +48,10 @@ the promises and safety cases it touches, a format for the vectors and a sequenc
 
 | Increment | Log | Findings |
 | --- | --- | --- |
-| 1, the strict loader (A43) | [log-increment-1.md](log-increment-1.md) | Eighteen, all settled: three defects of a tool, two fixed with vectors and one stated in the tool; fifteen against the promises, including five after the review of 2026-11-09. Ruling 48, point 3, settles the pattern tokens; the other settlements are the coordinator's and can be struck |
-| 2, the core on S1 (A38, A39) | [log-increment-2.md](log-increment-2.md) | I2-01: required first-start cases decided; double-BOM YAML boundary 2-01 settled by the admin with a vector; the owner can strike it. Verification corrections cover registration authority, diagnostic precedence and lifecycle record targets |
-| 3, the shell | [log-increment-3.md](log-increment-3.md) | Seven: 3-01 to 3-06 settled by the admin, from orders 020 to 024 and the closeout with the real clients; 3-07, Codex reading its home's instructions, stated as a leak by the owner's choice |
-| 4, S1 complete | [log-increment-4.md](log-increment-4.md) | 4-01, no way to change what exists but by templates and new objects: the owner chose to measure T4 to T6 by the routes allowed first |
+| 1, the strict loader (A43) | [log-increment-1.md](log-increment-1.md) | As of 2026-11-10: eighteen, all settled; three defects of a tool, two fixed with vectors and one stated in the tool; fifteen against the promises, including five after the review of 2026-11-09. Ruling 48, point 3, settles the pattern tokens; the other settlements are the coordinator's and can be struck |
+| 2, the core on S1 (A38, A39) | [log-increment-2.md](log-increment-2.md) | As of 2026-11-10: eight, 2-01 to 2-08, all settled by the admin and strikeable by the owner. I2-09 runs S1 whole on the core, with the coverage manifest, conformance document and shell handoff; implementation and coverage gaps remain separately recorded |
+| 3, the shell | [log-increment-3.md](log-increment-3.md) | As of 2026-11-10: seven; 3-01 to 3-06 settled by the admin, from orders 020 to 024 and the closeout with the real clients; 3-07, Codex reading its home's instructions, stated as a leak by the owner's choice |
+| 4, S1 complete | [log-increment-4.md](log-increment-4.md) | As of 2026-11-10: two; for 4-01, no way to change what exists but by templates and new objects, the owner chose to measure T4 to T6 by the routes allowed first; for 4-02, the admin settled that each Agent Type offers a choice of subscription or API-key sign-in, to be carried out by a later order and strikeable by the owner |
 
 ## Noted for later increments
 

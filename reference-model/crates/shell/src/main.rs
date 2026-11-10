@@ -1,21 +1,8 @@
-use conduit_shell::{
-    Config, Execution, Executor, MissingExecutor, Result, RunIdentity, Shell, boundary,
-};
+use conduit_shell::{Config, MissingExecutor, Result, Shell, boundary, runner::Runner};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
-use std::sync::Mutex;
-
-#[derive(Default)]
-struct AwaitRunner {
-    intents: Mutex<Vec<Value>>,
-}
-impl Executor for AwaitRunner {
-    fn builtin_runner(&self, intent: &Value, _: Option<&RunIdentity>) -> Result<Execution> {
-        self.intents.lock().map_err(|_| "runner wait lock poisoned")?.push(json!({"kind":intent["kind"],"operation":intent["operation"],"invocation":intent["invocation"]}));
-        Ok(Execution::Deferred)
-    }
-}
+use std::sync::Arc;
 
 fn run() -> Result<()> {
     let mut args = std::env::args().skip(1);
@@ -47,6 +34,25 @@ fn run() -> Result<()> {
                         .map_err(|_| "invalid output age")?,
                 )
             }
+            "--pass-environment" => config
+                .pass_environment
+                .push(args.next().ok_or("missing environment name")?),
+            "--initialize-timeout-seconds" => {
+                config.initialize_timeout = std::time::Duration::from_secs(
+                    args.next()
+                        .ok_or("missing initialize timeout")?
+                        .parse()
+                        .map_err(|_| "invalid initialize timeout")?,
+                )
+            }
+            "--call-timeout-seconds" => {
+                config.call_timeout = std::time::Duration::from_secs(
+                    args.next()
+                        .ok_or("missing call timeout")?
+                        .parse()
+                        .map_err(|_| "invalid call timeout")?,
+                )
+            }
             "--url" => config.engine_url = args.next().ok_or("--url needs engine address")?,
             _ if command == "register" && !arg.starts_with('-') && project.is_none() => {
                 project = Some(PathBuf::from(arg))
@@ -62,7 +68,11 @@ fn run() -> Result<()> {
         return Err("store is not initialized; run conduit init".into());
     }
     let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
-    let shell = Shell::open(&store, boundary::context(&repository)?, config)?;
+    let shell = Arc::new(Shell::open(
+        &store,
+        boundary::context(&repository)?,
+        config,
+    )?);
     match command.as_str() {
         "init" => println!(
             "{}",
@@ -136,7 +146,7 @@ fn run() -> Result<()> {
                 let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":"access.open.v1","arguments":{"conduit":conduit["name"]}}}), &MissingExecutor)?;
                 println!("{reply}");
             }
-            let runner = AwaitRunner::default();
+            let runner = Runner::new(&shell, std::env::current_exe().map_err(|e| e.to_string())?)?;
             for kind in ["Pool", "Resource", "Agent", "Interface"] {
                 for object in state.objects.iter().filter(|v| {
                     v["kind"] == kind
@@ -167,20 +177,12 @@ fn run() -> Result<()> {
                     } else {
                         "management.set-up.v1".into()
                     };
-                    let ticket = shell.begin(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":{"instance":{"kind":kind,"name":object["name"]}}}}), &runner)?;
-                    if let Some(reply) = ticket.try_reply()? {
-                        println!("{reply}");
-                    } else {
-                        let intents = runner
-                            .intents
-                            .lock()
-                            .map_err(|_| "runner wait lock poisoned")?;
-                        for intent in intents.iter() {
-                            eprintln!("waiting for runner intent: {intent}");
-                        }
-                        return Ok(());
-                    }
+                    let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":{"instance":{"kind":kind,"name":object["name"]}}}}), &runner)?;
+                    println!("{reply}");
                 }
+            }
+            for diagnostic in runner.diagnostics() {
+                eprintln!("runner: {diagnostic}");
             }
         }
         _ => unreachable!(),
@@ -206,7 +208,12 @@ fn object_id(state: &conduit_core::State, name: &str) -> Result<String> {
         .ok_or_else(|| format!("missing first-start object {name}"))
 }
 fn main() {
-    if let Err(error) = run() {
+    let result = if std::env::args().nth(1).as_deref() == Some("__run-guard") {
+        conduit_shell::runner::guard_main()
+    } else {
+        run()
+    };
+    if let Err(error) = result {
         eprintln!("conduit: {error}");
         std::process::exit(1);
     }

@@ -1,6 +1,7 @@
-//! Durable boundary for the pure core. No process, server or Agent is started here.
+//! Durable boundary for the pure core, with an optional owned stdio runner.
 pub mod boundary;
 mod identity;
+pub mod runner;
 mod store;
 use chrono::{DateTime, SecondsFormat, Utc};
 use conduit_core::{Context, Input, State, Transition};
@@ -20,6 +21,9 @@ pub struct Config {
     pub max_output_bytes: usize,
     pub max_output_age: Duration,
     pub engine_url: String,
+    pub pass_environment: Vec<String>,
+    pub initialize_timeout: Duration,
+    pub call_timeout: Duration,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -27,6 +31,9 @@ impl Default for Config {
             max_output_bytes: 64 * 1024 * 1024,
             max_output_age: Duration::from_secs(7 * 24 * 60 * 60),
             engine_url: "http://127.0.0.1:3000/mcp".into(),
+            pass_environment: Vec::new(),
+            initialize_timeout: Duration::from_secs(30),
+            call_timeout: Duration::from_secs(120),
         }
     }
 }
@@ -123,6 +130,7 @@ struct Committed {
 }
 
 pub struct Shell {
+    pub(crate) run_groups: Mutex<Vec<Arc<runner::ProcessGroup>>>,
     writer: Mutex<Writer>,
     authority: identity::Authority,
     pub context: Context,
@@ -151,6 +159,7 @@ impl Shell {
         let store = Store::open(directory)?;
         let authority = identity::Authority::open(&store)?;
         let shell = Self {
+            run_groups: Mutex::new(Vec::new()),
             writer: Mutex::new(Writer {
                 store,
                 waiters: BTreeMap::new(),
@@ -460,6 +469,16 @@ impl Shell {
             queue.extend(next.intents);
         }
         Ok(())
+    }
+}
+
+impl Drop for Shell {
+    fn drop(&mut self) {
+        if let Ok(groups) = self.run_groups.lock() {
+            for group in groups.iter() {
+                group.stop();
+            }
+        }
     }
 }
 

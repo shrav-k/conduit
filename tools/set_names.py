@@ -18,7 +18,7 @@ them. This tool keeps the two in step.
             define;
           - a name that appears nowhere;
           - a variable whose name begins as those of `identity` do, with `CONDUIT_`, and that
-            is neither of them.
+            is neither of them nor an explicitly allowed build test switch.
         The check reads text and knows nothing of YAML. It takes a token of the form
         `<dotted name>/<key>` to be a `_meta` key, and an address whose last part is the
         core package's last part to be meant as the core package.
@@ -68,6 +68,9 @@ TEXT_SUFFIXES = {".yaml", ".yml", ".md", ".json", ".rs", ".toml", ".txt"}
 INTERFACE = ROOT / "spec" / "interface" / "implementation.yaml"
 # Prefixes of `_meta` keys that are not Conduit's: the Model Context Protocol's own.
 FOREIGN_META_PREFIXES = ("io.modelcontextprotocol/",)
+# Build-only switches are not run identity variables. Keep this exception exact so
+# other CONDUIT_ spellings, including identity typos, still fail the check.
+BUILD_TEST_VARIABLES = {"CONDUIT_TEST_NPM"}
 # A run of characters that can make up a name, a reference or a path.
 TOKEN = re.compile(r"[A-Za-z0-9._/#:-]+")
 DNS_NAME = re.compile(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+")
@@ -245,7 +248,8 @@ def check(roots: list[str]) -> int:
             found = []
             for m in VARIABLE.finditer(line):
                 token = m.group(0)
-                if any(token.startswith(s) for s in stems) and token not in variables:
+                if (any(token.startswith(s) for s in stems)
+                        and token not in variables and token not in BUILD_TEST_VARIABLES):
                     found.append(f"variable {token!r} begins as those of `identity` do and is "
                                  f"neither {' nor '.join(sorted(variables))}")
             for old in retired:

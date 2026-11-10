@@ -102,3 +102,19 @@ root: `python3 tools/check_docs.py`, `python3 tools/set_names.py --check`,
 in `reference-model/`, `cargo test --release`, `cargo clippy --all-targets -- -D warnings`,
 `cargo fmt --check` and `CONDUIT_TEST_NPM=1 cargo test --release` pass. Check the files you
 create for trailing white space yourself; do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 49 minutes, in parallel with order 022, then a fresh verifier
+in 7. The verifier found five defects, each real, all in how the runner composes a server's
+command line and environment from its Package: bare program names resolved inside the package
+rather than through `PATH`, symlinks with `..` refused, a fixed positional argument without
+`valueHint` refused, Package environment values and defaults never applied, and server.json
+variables in argument values never substituted. The admin sent the worker back once with all
+five and two further decisions: the names checker gains an exact exception for the test switch
+`CONDUIT_TEST_NPM`, rather than the switch being spelled by concatenation to get past it; and
+the filesystem server 2.1.0 declares Node 24 or later but was qualified on Node 21.5.0, which
+`CONFORMANCE.md` and the log of increment 3 now state as a limit (the runner does not check a
+Package's declared engines). The admin reran every check: with `CONDUIT_TEST_NPM=1`, 122 Rust
+tests pass, including S1's setup, reads, writes and history against the real server and its
+refusal of a path outside the root, and clippy, fmt and the five repository checks are clean.

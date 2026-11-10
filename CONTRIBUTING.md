@@ -1,8 +1,12 @@
 # Contributing to Conduit
 
 Conduit is a configuration language for the relationships between independent agents and the
-things they share. This repository holds its design: a draft specification and the records
-behind it. There is no engine, no reference model and no published package yet.
+things they share. As of 2026-11-10, this repository holds its draft specification, the records
+behind it, and the first build: a strict loader, a pure core, the reference model, conformance
+vectors and a runnable engine shell. The shell ran real Claude Code and Codex as Agents on S1
+through T1, T2 and T7 ([dated results](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
+The [roadmap](ROADMAP.md#the-order-of-the-work) puts increment 4, S1 complete with author
+measurements, next. This is not a release or a claim of whole-language conformance.
 
 Read in this order: the [README](README.md), [spec/README.md](spec/README.md),
 [spec/definitions.md](spec/definitions.md), then the [plan audit](docs/AUDIT.md) for the state
@@ -11,6 +15,9 @@ The [documentation map](docs/README.md) lists every other document, and the
 [reading paths](spec/README.md#reading-paths) of the specification say what to read for writing
 documents, for writing contracts and providers, and for building an engine.
 [AGENTS.md](AGENTS.md) states the same rules in short form.
+For a review of the text, follow the [cold readers' instructions](docs/guides/cold-readers.md).
+To run the build, start with [reference-model/](reference-model/README.md#running-it); the
+[guides](docs/guides/README.md) cover the owner's setup for later experiments.
 
 ## What binds
 
@@ -27,7 +34,7 @@ source material for the type contracts still to be written. A behavior that is m
   [spec/definitions.md](spec/definitions.md). A change needs an owner ruling, recorded in the
   [ruling log](docs/AUDIT.md#ruling-log) of the plan audit with its record under
   `docs/proposals/`. The one other way is a decision on a finding of the re-audit, under
-  ruling 37, which is logged as the coordinator's
+  ruling 37, or a finding of the first build under ruling 46, point 4, logged as the coordinator's
   ([who decides what](docs/AUDIT.md#who-decides-what)).
 - **A proposal for a ruling** is a record under `docs/proposals/`, with the options and a
   recommendation. The owner makes the rulings. Do not record a recommendation as accepted.
@@ -36,8 +43,14 @@ source material for the type contracts still to be written. A behavior that is m
   [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read the protocol topics that ruling 39 removed.
 - **The state of the work** is tracked in the [plan audit](docs/AUDIT.md), and its order and its
   experiments and probes in the [roadmap](ROADMAP.md).
-- **The build process** for the independent builds, and the brief each builder receives, are in
-  [docs/implementation/](docs/implementation/INDEPENDENT_BUILDS.md).
+- **The first build** follows [its increments](docs/implementation/FIRST_BUILD.md) and logs
+  findings under [docs/proposals/first-build/](docs/proposals/first-build/README.md), with the
+  fix in the specification and a vector. Under [ruling 48](docs/proposals/ruling-48/README.md),
+  the coordinator plans and decides and Codex workers carry out
+  [work orders](docs/implementation/WORK_ORDERS.md). Workers do not commit or publish; the
+  admin session reviews and handles that work.
+- **The independent builds** are separate, later work. Their process and the brief each
+  builder receives are in [docs/implementation/](docs/implementation/INDEPENDENT_BUILDS.md).
 - **Research**, meaning sourced comparisons and the analysis of probe results, goes in
   [docs/research/](docs/research/README.md). Attribute source versions and distinguish inference
   from observed behavior. The content of existing research packets is not edited.
@@ -48,8 +61,9 @@ source material for the type contracts still to be written. A behavior that is m
   and what it feeds, and follow [the rules for proposing one](ROADMAP.md#proposing-an-experiment).
 - **Code** is Rust, with a lockfile, a pinned toolchain and ignored build output: a probe or an
   evaluation in its own directory under [experiments/](experiments/README.md); a provider
-  package, one crate per provider, under a top-level `packages/` directory (ruling 40), which
-  does not exist yet; and the first build, its core and its shell, in the workspace under
+  package, one crate per provider, under [packages/](packages/) (ruling 40), which as of
+  2026-11-10 holds the Claude Code and Codex Agent packages; and the first build, its core and
+  its shell, in the workspace under
   [reference-model/](reference-model/README.md) (ruling 46). The only exception is the Python
   checkers in `tools/`.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
@@ -96,7 +110,7 @@ python3 tools/set_names.py --check   # the names under spec/, reference-model/, 
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
-(cd reference-model && cargo test --release)   # the first build: the strict loader's tests
+(cd reference-model && cargo test --release)   # the first build: loader, core, vectors and shell
 ```
 
 What each check needs:
@@ -150,9 +164,14 @@ What the checks cover:
 - `cargo test --release` in `reference-model/` runs the first build's tests: the strict loader
   reads every example under `spec/schemas/examples/` and checks its verdict against the one
   `check_schemas.py` gives, which a fixture records, and reads documents and directories case
-  by case. [reference-model/README.md](reference-model/README.md) lists the tests.
+  by case. As of 2026-11-10 it also tests the pure core, portable vectors, durable shell,
+  runner and HTTP adapter, with scripted clients by default.
+  [reference-model/README.md](reference-model/README.md) gives the commands and limits.
 
-None of them checks behavior. That needs an engine, and no engine exists.
+The Python and whitespace checks do not establish engine behavior. As of 2026-11-10, the Rust
+tests exercise the implemented slice; real-client evidence is recorded separately in the
+[increment 3 closeout](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md).
+Passing these checks does not establish whole-language conformance.
 
 The dated migration has a separate historical audit:
 

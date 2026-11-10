@@ -62,3 +62,13 @@ in the report. From the repository root, `python3 tools/check_docs.py`,
 `python3 tools/set_names.py --check`, `python3 tools/check_schemas.py`,
 `python3 tools/check_roadmap.py` and `git diff --check` pass. Check the files you create for
 trailing white space yourself; do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 9 minutes, then a fresh verifier in 2, which found one stale
+statement left in scope. The worker's cold reading reported 25 findings: 16 in scope, fixed,
+and 9 in documents outside it. The admin widened the scope for a second round to those nine,
+with limits: in `spec/` only its README's non-normative status and contents, in `docs/AUDIT.md`
+only current-status summaries and never a row of the ruling log. The admin checked that no
+promise and no ruling-log row changed. The checks pass; the worker's Rust run in its sandbox
+could not bind a loopback port, and no code changed.

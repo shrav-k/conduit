@@ -24,16 +24,18 @@ Context Protocol (MCP).
 
 ## What exists
 
-This repository holds the design of the language. It holds no engine.
+As of 2026-11-10, this repository holds the draft language and the first build: a strict loader,
+a pure core, the reference model, and a runnable engine shell. The build covers S1, shared
+access for two Agents; it is not a complete implementation of the specification.
 
-| Part | State on 2026-11-09 |
+| Part | State on 2026-11-10 |
 | --- | --- |
-| [Specification](spec/README.md) | A draft. Every area of the language is written as numbered promises, counted by file and by layer in its [contents table](spec/README.md#contents). A promise is one rule, stated so that it can be checked. With them are the definitions of the terms, JSON Schemas of the documents, example documents and the core package, which is the package built into every engine. "Draft" means that the specification is not complete and is not a release: no promise is yet tested by a conformance vector, which is a test case that any engine can be run against. Secrets are in it ([secrets.yaml](spec/promises/secrets.yaml)): a document refers to a secret and never holds it, and each kind of store is reached through a contract that a package implements. It works across machines: the server of a run that a runtime provider other than the engine's own runner makes, and a server reached by `remote` that takes Conduit's keys, stand behind a gate that admits only a request that proves the engine sent it, in one of two standard forms, mutual TLS or a signed token, and the engine's address always accepts the token form, which is the Model Context Protocol's own authorization. What this version leaves out or does not narrow is in its [limits](spec/README.md#limits-of-this-version). [Its reading paths](spec/README.md#reading-paths) say what to read for writing documents, for writing contracts and providers, and for building an engine. |
+| [Specification](spec/README.md) | A draft, incomplete and not a release. Every area is written as numbered promises: one rule each, stated so it can be checked. It includes definitions, JSON Schemas, examples and the built-in core package. The first build now tests slices of promises with [conformance vectors](conformance/README.md); its [coverage manifest](conformance/manifest.yaml) distinguishes vectors from missing coverage. The specification declares secrets and work across machines, but the first build has not demonstrated all of them. See the specification's [limits](spec/README.md#limits-of-this-version) and [reading paths](spec/README.md#reading-paths), and the build's [conformance document](reference-model/CONFORMANCE.md) for its implemented scope. |
 | How it got here | The owner accepted the specification as it stood at ruling 39, and rulings 40 to 43 had it rewritten around provider contracts, which took graphs, runtimes declared in templates, policies and composite Conduits, among other things, out of this version. Readers who were given only the specification, or the whole repository, read it in six rounds and reported what they found; every finding is resolved and logged ([re-audit](docs/proposals/reaudit/README.md)). Round 5 read the rewrite: six readers reported 119 findings, ten of them unsafe, and every one is fixed or rejected; the 29 findings of the check of its fixes are all resolved, the last, V6, by the coordinator. Round 6 was the owner's cold read by Codex, of the whole repository: six findings, two of them safety-critical, all fixed, and a critique of the design ([record](docs/proposals/reaudit/round-6/README.md)). The owner accepted the decisions on it in ruling 44, which makes the next milestone a working build; the [roadmap](ROADMAP.md#the-order-of-the-work) says what it holds and what comes after it. The tracker ([docs/AUDIT.md](docs/AUDIT.md), called the plan audit) says [where the work stands](docs/AUDIT.md#where-things-stand) and [what waits for the owner](docs/AUDIT.md#waiting-for-the-owner). |
 | [Roadmap](ROADMAP.md) | The order of the work, with the state of each step, and every experiment and probe, planned, running or done, with what it feeds. Check it before proposing an experiment. Not binding. |
-| [Reference model](reference-model/README.md) | Begun. `reference-model/` is the codebase of the first build (ruling 46), and holds its first piece: the strict loader in Rust, which reads documents and project directories as the specification says and validates them against its schemas. It has no core yet and runs no engine. Where the build stands is in the [roadmap](ROADMAP.md#the-order-of-the-work). |
-| Engine | Does not exist. |
-| Code | Five Python tools in `tools/`: four checks that are run before each commit, and the record of one past migration. The strict loader in Rust, in [reference-model/](reference-model/README.md). A model-checking evaluation in Rust ([Experiment 004](experiments/004-stateright-evaluation/README.md)) and a probe of the macOS keychain, for the first secret store ([Experiment 005](experiments/005-macos-keychain/README.md)). None of it runs Conduit. |
+| [Reference model](reference-model/README.md) | The first build's Rust workspace: the strict loader (increment 1, done 2026-11-09), the pure core on S1 and its vector runner (increment 2, done 2026-11-10), and the shell (increment 3, done 2026-11-10). Each decision of the core cites a promise. [The build logs](docs/proposals/first-build/README.md) record its findings; the [roadmap](ROADMAP.md#the-order-of-the-work) lists increment 4, S1 complete with author measurements, next. |
+| Engine | The shell ran real Claude Code and Codex as Agents on one machine through S1's T1 (shared files), T2 (message history) and T7 (close and explicitly restore access). The [dated closeout](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md) records results and unshown checks. Access is mediated; both Agents run as the engine's operating-system user with shared logins, and Codex still reads its home's instructions. Separate homes and sign-in through the root Interface are ruled in [ruling 49](docs/proposals/ruling-49/README.md), pending implementation. The two independent builds are later work, not this shell. |
+| Code and evidence | Five Python tools in `tools/`; the Rust workspace in [reference-model/](reference-model/README.md); standalone [Claude Code](packages/agent-claude-code/README.md) and [Codex](packages/agent-codex/README.md) Agent packages; and Rust evaluations and harnesses under [experiments/](experiments/README.md). The experiments include model checking, the keychain, the S1 baseline, real-client behavior and native launch; Experiment 010 is a desk check of subscription terms. |
 
 ## What binds
 
@@ -55,16 +57,14 @@ The specification in [spec/](spec/README.md) alone binds. Nothing else in this r
 
 ## Start here
 
-Read these in order. It is the order for work on the specification. A reader who wants the idea
-before the detail can read the [overview](docs/OVERVIEW.md) first: it is a plain-language tour
-with one worked example, and it does not bind.
+Follow these links in order, stopping at the path you need:
 
 | # | Read | For |
 | --- | --- | --- |
-| 1 | [Specification](spec/README.md) | What the specification is, its three layers, its contents and the form of a promise. |
-| 2 | [Definitions](spec/definitions.md) | The terms in force, each with one meaning. |
-| 3 | [Plan audit](docs/AUDIT.md) | The tracker: the state of the work, the owner's rulings and the open action items. |
-| 4 | [Roadmap](ROADMAP.md) | The order of the work, what comes next, and every experiment and probe; check it before proposing one. |
+| 1 | [Overview](docs/OVERVIEW.md) | Understand the language through a plain-language tour and one worked example. |
+| 2 | [Specification](spec/README.md) | Read the rules that bind, beginning with its definitions and the reading path for your role. |
+| 3 | [Run the first build](reference-model/README.md#running-it) | Run the tests and vectors, then follow the shell and live S1 instructions for real Agents. |
+| 4 | [Guides](docs/guides/README.md) | Find the owner's setup guides and the collaborators' cold-reading instructions. |
 
 Then, as needed:
 
@@ -73,6 +73,7 @@ Then, as needed:
 | [Overview](docs/OVERVIEW.md) | A plain-language tour of the language with one worked example. Not binding. |
 | [Example documents](spec/schemas/examples/) | Valid and invalid documents, checked against the schemas. |
 | [Documentation map](docs/README.md) | Every other document, with what it is and whether it is current. |
+| [Plan audit](docs/AUDIT.md) and [roadmap](ROADMAP.md) | The owner's rulings, open action items, order of work and experiment register; check the register before proposing an experiment. |
 | [AGENTS.md](AGENTS.md) | The rules for agents and contributors, including what not to edit and the checks to run. |
 | [Contributing](CONTRIBUTING.md) | Where each kind of work belongs, and the license. |
 

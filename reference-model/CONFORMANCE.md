@@ -196,6 +196,9 @@ off. Claude's peer opt-in remains limited to its three named tools.
 All restrictions are mediated (ACC-027). Neither wrapper provides OS-user isolation, and
 the shared login and same-user access to other run credentials remain limits. Codex's former
 read-only shell bypass is disabled; the admin must retry the outside-file read in closeout.
+Codex reads the instruction file of its home, `$CODEX_HOME/AGENTS.md`, whatever its flags
+say, and the wrapper uses the owner's home, so the owner's own Codex instructions reach every
+Codex Agent (finding 3-07): a stated leak until each Codex Agent has a home of its own.
 The direct trial still listed apply_patch in its read-only sandbox and a request for user
 input. Closeout must report those and any other native tools still on, plus any account/peer
 channel enabled by an input, separately from successful MCP access enforcement.

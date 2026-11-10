@@ -566,6 +566,7 @@ fn evaluate_path(
         "register-replacement.v1",
         "open.v1",
         "close.v1",
+        "declare-lost.v1",
     ]
     .iter()
     .any(|name| op == context.qualified(name))

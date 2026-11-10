@@ -553,6 +553,14 @@ These commands are requests of `conduit serve`, as the root Interface. Keep it r
 another terminal. `register` remains the command for first registration; `submit` adds a
 project to the serving store and explicitly opens its new root Conduits and sets up its new
 instances. Each request prints one JSON result line, including revision inspections.
+A failed startup setup leaves `serve` listening so a missing Conduit can be submitted and the
+instance set up through it with `call`.
+
+`conduit inspect --store DIR` works while serving as root MCP inspection requests, and locally
+when the store is not held. Its instance rows include a CLI-only `consumedConduits` list beside
+`result`: declared and standalone Conduits with name, target and open boolean. This inventory
+uses a read-only state snapshot, as the author commands do; it is not atomic with concurrent
+changes. The operation's result and specification are unchanged.
 
 ```sh
 reference-model/target/release/conduit install --store /tmp/conduit-live-store \

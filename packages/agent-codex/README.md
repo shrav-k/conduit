@@ -61,7 +61,7 @@ to stdin with the `-` prompt argument, including literal `-` and option-like tex
 `--ignore-rules` alone did not stop (finding 3-05). The sandbox is read-only and web search
 disabled. Every launch and exact-thread resume disables `shell_tool`, `unified_exec`,
 `browser_use`, `browser_use_external`, `in_app_browser`, `computer_use`,
-`multi_agent`, `hooks`, `plugins`, `view_image`, `goals` and `image_generation` with
+`multi_agent`, `multi_agent_v2`, `multi_agent_v2_dynamic_tools`, `hooks`, `plugins`, `view_image`, `goals` and `image_generation` with
 `--disable`. It leaves `code_mode_host` on: Codex calls MCP tools, the engine's among them,
 through it, and its code execution imports nothing that reaches the machine (finding 3-06).
 Apps are explicitly disabled unless accountServices is
@@ -83,3 +83,13 @@ arguments. Closeout must ask Codex to read an outside sentinel without engine to
 observe the result, not infer confinement from absent engine requests. Shared OS identity,
 access to other run credentials and the shared login still prevent strong isolation. Any
 opted-in app or other remaining native tool is a route around the engine and must be reported.
+
+Work order 027 keeps version 0.1.1 and disables both multi_agent_v2 and
+multi_agent_v2_dynamic_tools as well as multi_agent on initial turns and resumes, regardless
+of either reach input. The bundled 0.167.0-alpha.3.2 binary's feature list names both;
+its strings include the collaboration tools. That binary rejected --ignore-user-config,
+so the metadata-only feature listing used an empty temporary CODEX_HOME instead. With the
+three explicit disable flags, the feature listing reports all three false. No client session
+or model work ran for this check. **The admin's real-client check is pending:** confirm that
+spawn_agent, send_message, list_agents, wait_agent, interrupt_agent and followup_task are no
+longer offered under collaboration. Scripted argument tests do not establish that result.

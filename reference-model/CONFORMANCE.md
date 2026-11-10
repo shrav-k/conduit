@@ -303,3 +303,48 @@ opt-in npm serve test cover these paths. The npm test installs while serving, se
 Resource at another directory, reads through server 2.2.0, checks the three-tool exposure and
 held 0.1.0 instance, then retires the new run. No native Claude or Codex client runs in this
 order; the Agent retirement test uses the existing scripted clients.
+
+## I4-02: startup repair, retirement parts and inspection
+
+Retirement selects the retire hook's implementation before inspecting a run. A remote hook
+connects independently of any other selected runnable item; stopping the instance's run still
+follows the hook. A run started for the hook and a connection made for it are retained among
+retirement's parts, including successes. The run has an effect; the connection has none.
+An unknown run state dispatches no hook and contributes an unavailable hook with no effect.
+A failed or unknown preparation also leaves the hook unavailable. The shell's three retire-hook
+regressions register real contracts and drive explicit boundary reports; they do not qualify
+remote transport or runtime providers, which remain unfinished as above.
+
+`serve` continues after an instance's setup request fails, printing the failure on stderr and
+retaining the core's state and records. If root has no route to a Resource's Pool, startup
+requests setup through management; the core refuses it and records that refusal. Startup
+creates no missing Conduit. The serving engine then accepts a repair submission and a further
+explicit setup through the newly opened route. Store, preflight and embedding errors still
+stop startup. First-registration setup failures still make `register` exit nonzero.
+
+`inspect` uses root MCP requests while the store's writer is held, and keeps the existing local
+workflow when it can open the store. It uses the same read-only state snapshot as the author
+commands for object enumeration and route selection; every request rechecks authority.
+Each successful CLI inspection row for an instance additionally carries `consumedConduits`, including declared and
+standalone Conduits, with each Conduit's actual name, target kind/name/ID and open boolean.
+This supplement uses that snapshot and is outside `result`, not an addition to `inspect.v1`.
+There is no defined inventory for standalone consumer Conduits or their open state in that
+operation's output: `declared` describes the object's declaration, while `status` defines no
+such inventory. This is reported as a gap for the coordinator; the specification is unchanged.
+Refused inspections receive no supplement; finding 4-08 remains open.
+CLI inspection is not an atomic inventory across concurrent management requests.
+
+OPS-029 diagnostics identify the kind and reference supplied by the caller and say it does
+not exist. They explain that a closed Conduit and a removed instance no longer exist, without
+claiming that every missing name previously existed. Refused requests retain their existing
+non-disclosing response. The runner tests now wait for parseable PID contents; the runner's
+implementation is unchanged.
+
+The Codex package remains 0.1.1. It additionally disables multi_agent_v2 and
+multi_agent_v2_dynamic_tools on first launch and exact-thread resume, for every combination of
+the reach inputs. The local bundled binary rejects --ignore-user-config, so its feature list
+was instead read with an empty temporary CODEX_HOME. It lists both features, and lists all
+three multi_agent switches false when explicitly disabled. Its strings also contain the
+collaboration tools. This metadata and the argument tests do not establish their absence in
+a real client; the admin's check is pending. No native Agent client or model work ran here.
+Findings 4-01, 4-03, 4-08 and 4-11 remain open.

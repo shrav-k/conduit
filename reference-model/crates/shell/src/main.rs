@@ -139,11 +139,19 @@ fn run() -> Result<()> {
         return Ok(());
     }
     let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
-    let shell = Arc::new(Shell::open(
-        &store,
-        boundary::context(&repository)?,
-        config,
-    )?);
+    let shell = match Shell::open(&store, boundary::context(&repository)?, config) {
+        Ok(shell) => Arc::new(shell),
+        Err(error) if command == "inspect" && error == "store already has an active shell" => {
+            let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+            return runtime.block_on(conduit_shell::author::run(
+                "inspect",
+                &store,
+                &[],
+                &repository,
+            ));
+        }
+        Err(error) => return Err(error),
+    };
     if command == "serve" {
         conduit_shell::server::preflight(&shell)?;
         shell.issue_client_token(&object_id(&shell.state()?, "root")?)?;
@@ -232,7 +240,10 @@ fn run() -> Result<()> {
                     .unwrap_or_else(|| "management.inspect.v1".into());
                 let reference = json!({"kind":object["kind"],"name":object["name"]});
                 let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":{"object":reference}}}), &MissingExecutor)?;
-                println!("{}", json!({"object":reference,"result":reply}));
+                println!(
+                    "{}",
+                    conduit_shell::author::inspection_row(&state.objects, object, reply)
+                );
             }
         }
         "register" => {
@@ -312,25 +323,22 @@ fn set_up_instances(
                 return Ok(());
             }
             let tool = if kind == "Resource" {
-                let route = state
-                    .objects
-                    .iter()
-                    .find(|v| {
-                        v["kind"] == "Conduit"
-                            && reference_id(&v["consumer"]) == &json!(root)
-                            && reference_id(&v["target"]) == reference_id(&object["owner"])
-                            && v["operations"].as_array().is_some_and(|ops| {
-                                ops.contains(&json!(format!(
-                                    "{}#set-up.v1",
-                                    shell.context.core_package
-                                )))
-                            })
-                    })
-                    .ok_or("no root setup route to owning Pool")?;
-                format!(
-                    "{}.set-up.v1",
-                    local_name(route).ok_or("setup route lacks local name")?
-                )
+                let route = state.objects.iter().find(|v| {
+                    v["kind"] == "Conduit"
+                        && reference_id(&v["consumer"]) == &json!(root)
+                        && reference_id(&v["target"]) == reference_id(&object["owner"])
+                        && v["open"] == true
+                        && v["operations"].as_array().is_some_and(|ops| {
+                            ops.contains(&json!(format!(
+                                "{}#set-up.v1",
+                                shell.context.core_package
+                            )))
+                        })
+                });
+                route
+                    .and_then(local_name)
+                    .map(|name| format!("{name}.set-up.v1"))
+                    .unwrap_or_else(|| "management.set-up.v1".into())
             } else {
                 "management.set-up.v1".into()
             };
@@ -358,7 +366,11 @@ fn set_up_instances(
                 println!("{reply}");
             }
             if reply["isError"] != false {
-                return Err(format!("setup of {} failed: {reply}", object["name"]));
+                let message = format!("setup of {} failed: {reply}", object["name"]);
+                if registered.is_some() {
+                    return Err(message);
+                }
+                eprintln!("conduit: {message}");
             }
         }
     }

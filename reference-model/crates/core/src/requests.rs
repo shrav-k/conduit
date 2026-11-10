@@ -503,6 +503,13 @@ pub(crate) fn reject(
         json!([]),
         restriction,
     );
+    if rule == "OPS-029"
+        && let Some(named) = missing_reference(route, c)
+    {
+        t.reply["structuredContent"]["diagnostics"][0]["message"]["text"] = json!(format!(
+            "{named} does not exist. A closed Conduit and a removed instance no longer exist."
+        ));
+    }
     if rule == "ACC-001" || rule == "TPL-013" {
         t.reply = json!({"error":{"code":-32602,"message":"The tool is not presented.","data":{mark(c,"reason"):reason}}});
     }
@@ -520,6 +527,32 @@ pub(crate) fn reject(
         vec![],
     ));
     end(t, a, c, route, None, Some(reason), id)
+}
+
+fn missing_reference(route: &Value, c: &Context) -> Option<String> {
+    let operation = route["operation"].as_str()?;
+    let core_op = operation.strip_prefix(&format!("{}#", c.core_package))?;
+    let (key, fixed_kind) = match core_op {
+        "inspect.v1" | "unregister.v1" => ("object", "Object"),
+        "replace.v1" => ("template", "Object"),
+        "set-up.v1" | "retire.v1" | "register-replacement.v1" => ("instance", "Object"),
+        "open.v1" | "close.v1" => ("conduit", "Conduit"),
+        "declare-lost.v1" => ("node", "Resource"),
+        "reconcile.v1" => ("invocation", "Invocation"),
+        _ => return None,
+    };
+    let reference = &route["arguments"][key];
+    let kind = reference["kind"].as_str().unwrap_or(fixed_kind);
+    let name = reference
+        .as_str()
+        .or_else(|| reference["name"].as_str())
+        .or_else(|| reference["metadata"]["name"].as_str())
+        .or_else(|| reference["id"].as_str())?;
+    let mut label = format!("{kind}/{name}");
+    if let Some(entry) = reference["entry"].as_str() {
+        label.push_str(&format!(" (entry {entry})"));
+    }
+    Some(label)
 }
 fn intent(v: &Value, c: &Context) -> Value {
     let implementation = &v["implementation"];
@@ -635,6 +668,14 @@ fn invoke_inner(
     }
     let v = access::evaluate(&t.state, request, c, true)?;
     let mut route = v.route;
+    // OPS-029 follows authorization. Preserve the caller's spelling for its diagnostic
+    // even when access evaluation has no resolved object from which to build a route.
+    if v.rules.contains(&"OPS-029") {
+        if !route.is_object() {
+            route = json!({});
+        }
+        route["arguments"] = request.arguments.clone();
+    }
     if let Some(parent) = parent
         && route.is_object()
     {

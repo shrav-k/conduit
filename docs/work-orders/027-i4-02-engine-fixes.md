@@ -71,3 +71,15 @@ repository root: `python3 tools/check_docs.py`, `python3 tools/set_names.py --ch
 `reference-model/`, `CONDUIT_TEST_NPM=1 cargo test --release`. Report the total passed and failed
 across all test binaries of each cargo run. Check the files you create for trailing white space
 yourself; do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 43 minutes, then a fresh verifier in 4, which found one fault:
+the missing-object diagnostic chose its input by name, not by operation. The worker's second
+round fixed it. The admin reran every check: 153 tests in `reference-model/` with
+`CONDUIT_TEST_NPM=1` and 6 in `packages/agent-codex`, clippy, fmt and the repository checks pass.
+Decision 6 did not hold with the real client: with `multi_agent`, `multi_agent_v2` and
+`multi_agent_v2_dynamic_tools` disabled, and in further trials `collaboration_modes`,
+`in_app_local_automation` and `agents.max_depth=0`, Codex 0.167.0 still listed its six
+`collaboration.*` tools. Finding 4-06 stays open. The trials also showed `sleep_tool` controls
+`clock.sleep`, and that a trial without the wrapper's `web_search="disabled"` lists `web__run`.

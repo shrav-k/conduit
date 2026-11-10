@@ -1,0 +1,49 @@
+11:04:09 T1 start: write the project, A reads the shared directory, B reads and writes it
+11:04:30 T1 project written: conduit.yaml, templates.yaml, instances.yaml
+11:04:37 T1 init and register run
+11:04:51 T1 mistake 1: register stopped with 'no root setup route to owning Pool': root needs a Conduit to the Pool to set up its Resource. Fix: submit a pool-management Conduit
+11:10:07 T1: serve also exits with 'no root setup route to owning Pool' (it sets up registered instances first), so submit cannot run: the store is stuck. Recovery: discard the store, add the two documents to the project, start again
+11:10:38 T1 register again: exit above
+11:11:15 T1 serve started
+11:12:26 T1 checks done (A read, A write refused?, B read/write)
+11:12:42 T1 end
+11:12:42 T2 start: a shared message history both post to and read. Agents exist, so: a history Resource and one standalone Conduit per Agent
+11:12:51 T2 submitted
+11:13:07 T2 mistake 2: submit refused ('refused', no reason given): registering a Resource owned by workspace needs register.v1 on root's Conduit to the Pool; pool-admin lacks it. Fix: a second root Conduit to the Pool that lists register.v1
+11:13:49 T2 fix and resubmit run
+11:14:09 T2: history Conduits registered but not open (submit opens only root's); open each with access.open.v1
+11:16:21 T2 checks done
+11:16:21 T2 end
+11:16:30 T3 start: what each Agent can reach, from what is declared, including reach around the engine
+11:16:41 T3: conduit inspect refused while serving; used management.inspect.v1 through call
+11:17:08 T3 answer written (evidence/t3-answer.md): tools --as x2 answers engine reach; inspect of an Agent omits standalone Conduits it consumes
+11:17:08 T3 end
+11:17:21 T4 start: A may also write, B may only read. Route (4-01): replace templates read and read-write, then close, register-replacement and open each Agent's project
+11:18:08 T4 templates replaced
+11:18:17 T4 agent-a close project 713ee6fc-39fb-4d2b-b8ad-26c241f2f224
+11:18:46 T4 agent-a open replacement 26b5cb6d-45d4-4748-967c-fe8db3c4e59b
+11:18:46 T4 agent-b close project 8e133fc4-fbe0-4000-befe-ab728b6844a1
+11:19:16 T4 agent-b open replacement 8b6d963c-c682-4593-8d5b-fce96b873131
+11:20:58 T4 checks done
+11:20:58 T4 end
+11:21:16 T5 start: upgrade the server behind the directory to 2.2.0. Route: install filesystem 0.2.0, a new Resource on it for the same directory, standalone Conduits per Agent, retire the old Resource
+11:21:33 T5 installed filesystem 0.2.0
+11:22:28 T5 submitted shared-2 and project-a/project-b
+11:23:02 T5 opened project-a/project-b
+11:23:28 T5 retired old Resource shared
+11:25:37 T5 checks done
+11:25:37 T5 end
+11:25:58 finding: Codex lists collaboration.spawn_agent/send_message etc. despite --disable multi_agent (4-06)
+11:25:58 T6 start: replace the directory with another (shared-new), keeping access. Route: new Resource, close and unregister project-a/b, register them again on it (same names), open, retire shared-2
+11:26:59 T6 closed and unregistered project-a/b
+11:27:10 T6 mistake 3: unregister reported invalid (OPS-029): closing a Conduit already removed it, so the names were free; the diagnostic does not say so
+11:28:17 T6 submitted and opened project-a/b on shared-new
+11:28:44 T6 retired shared-2
+11:31:36 T6 checks done
+11:31:36 T6 end
+11:31:45 T7 start: revoke A's access to the directory, check B, restore A
+11:31:57 T7 closed project-a
+11:33:34 T7 checks while closed done
+11:34:16 T7 restored project-a (submit again, open)
+11:35:32 T7 checks done
+11:35:32 T7 end

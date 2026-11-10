@@ -1,0 +1,24 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: shared-new
+from: directory-2
+owner: workspace
+arguments:
+  root: <lab>/shared-new
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: project-a
+from: read-write-2
+consumer: {kind: Agent, name: agent-a}
+target: {kind: Resource, name: shared-new}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: project-b
+from: read-2
+consumer: {kind: Agent, name: agent-b}
+target: {kind: Resource, name: shared-new}

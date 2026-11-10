@@ -1,0 +1,50 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: workspace
+from: workspace-pool
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: shared
+from: directory
+owner: workspace
+arguments:
+  root: <lab>/shared
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: agent-a
+from: claude-reader
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: agent-b
+from: codex-writer
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-a
+from: claude-turn
+consumer: {kind: Interface, name: root}
+target: {kind: Agent, name: agent-a}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-b
+from: codex-turn
+consumer: {kind: Interface, name: root}
+target: {kind: Agent, name: agent-b}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-workspace
+from: pool-admin
+consumer: {kind: Interface, name: root}
+target: {kind: Pool, name: workspace}

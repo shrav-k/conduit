@@ -15,6 +15,11 @@ fn main() {
                     r.promises.join(", ")
                 );
             }
+            for r in &reports {
+                for sample in &r.storage {
+                    println!("D19 {} {}", r.id, sample);
+                }
+            }
             println!("{} cases passed", reports.len());
         }
         Err(error) => {

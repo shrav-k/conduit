@@ -19,7 +19,24 @@
   "DL8": {
     "source": "urn:conduit:first-build",
     "sources": 1,
-    "export": "explicit ordered CloudEvents"
+    "export": "explicit ordered CloudEvents",
+    "event_actions": {
+      "object-change": [
+        "registered",
+        "lifecycle-changed",
+        "opened",
+        "closed",
+        "removed",
+        "setup-ended",
+        "setup-part-reported",
+        "template-replaced",
+        "records-purged"
+      ]
+    },
+    "purge": "strictly before the RFC 3339 instant; permanent purge certificates; invocation state and retained outputs unchanged",
+    "gaps": "export: gaps/complete; inspection: recordGaps/recordsComplete; all known source gaps shown conservatively",
+    "provider_calls": "made and ended; CloudEvent subject is the run instance; no request route or serving",
+    "inspection": "required id/revision/packages/declared/status/records; exact ordered records and unreconciled IDs; requirement implementation references and mediated mode"
   },
   "DL10": {
     "nesting": 128,
@@ -61,5 +78,12 @@
     "storage": "pure virtual directory retained in state; shell directory URL supplied, never read",
     "cache": "no compressed archive cache",
     "directory_entry_point": "runner supplies bytes; core fetches nothing"
+  },
+  "D19": {
+    "encoding": "compact UTF-8 serde_json of arrays",
+    "records": "records array",
+    "record_gap_metadata": "record_gaps array, reported separately",
+    "invocation_index": "invocations array including held contexts and retained results",
+    "growth": "signed byte difference from preceding step; individual invocation byte counts with keyed status and state"
   }
 }

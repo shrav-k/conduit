@@ -111,7 +111,7 @@ pub(crate) fn publication_state(state: &State, context: &Context) -> Result<Stat
     }
     Ok(view)
 }
-fn established<'a>(
+pub(crate) fn established<'a>(
     state: &'a State,
     identity: &Identity,
 ) -> std::result::Result<&'a Value, (&'static str, &'static str)> {
@@ -242,7 +242,12 @@ fn routing<'a>(
     let mgmt = management(state, "management", context)?;
     let core_op = op.strip_prefix(&format!("{}#", context.core_package));
     let named = match core_op {
-        Some("inspect.v1" | "unregister.v1" | "replace.v1") => object(state, &args["object"]),
+        Some("inspect.v1" | "unregister.v1") => object(state, &args["object"]),
+        Some("replace.v1") => state.objects.iter().find(|o| {
+            o["kind"] == args["template"]["kind"]
+                && o["name"] == args["template"]["metadata"]["name"]
+                && o.get("spec").is_some()
+        }),
         Some("set-up.v1" | "retire.v1" | "register-replacement.v1") => {
             object(state, &args["instance"])
         }
@@ -648,6 +653,16 @@ pub(crate) fn decide(
         }
         None => json!({"permitted":true,"request":verdict.route}),
     };
+    if !request.readable && established(&t.state, &request.identity).is_err() {
+        t.decisions.push(decision(
+            "unreadable-unidentified-request",
+            &["IFC-036", "REC-001", "OPS-023"],
+            &[],
+            json!({}),
+            vec![],
+        ));
+        return Ok(());
+    }
     let mut data = json!({"tool":request.tool,"permitted":reason.is_none(),"dispatched":false});
     for key in ["caller", "consumer", "conduit", "target", "operation"] {
         if let Some(value) = verdict.route.get(key) {
@@ -664,13 +679,18 @@ pub(crate) fn decide(
         data["restriction"] = restriction;
     }
     if data.get("caller").is_none()
-        && request.readable
-        && request.authority_readable
         && let Ok(instance) = established(&t.state, &request.identity)
     {
         data["consumer"] = instance["id"].clone();
         if request.serving.is_none() {
             data["caller"] = instance["id"].clone();
+        } else if let Some(parent) = request.serving.as_ref().and_then(|s| {
+            t.state
+                .invocations
+                .iter()
+                .find(|v| v["id"] == *s && v["target"] == instance["id"])
+        }) {
+            data["caller"] = parent["caller"].clone();
         }
     }
     if data.get("caller").is_none() {
@@ -678,6 +698,9 @@ pub(crate) fn decide(
             Identity::Unreadable => "unreadable",
             _ => "not-established",
         });
+    }
+    if let Some(arguments) = verdict.route.get("arguments") {
+        data["arguments"] = arguments.clone();
     }
     let mut allocation = Allocation {
         evidence,
@@ -688,8 +711,7 @@ pub(crate) fn decide(
     } else {
         vec!["access-decision"]
     } {
-        t.records
-            .push(allocation.record(&mut t.state, context, event, data.clone())?);
+        crate::requests::record(t, &mut allocation, context, event, data.clone())?;
     }
     t.decisions.push(decision(
         "decide-current-access",

@@ -4,6 +4,22 @@ fn all_portable_cases_pass() {
     let reports = conduit_conformance::run_suite(&repository).unwrap_or_else(|e| panic!("{e}"));
     let ids: std::collections::BTreeSet<_> = reports.iter().map(|r| r.id.as_str()).collect();
     for required in [
+        "records-replay-register",
+        "records-replay-replace",
+        "records-keyed-refused",
+        "records-keyed-invalid",
+        "records-keyed-conflict",
+        "records-input-reference",
+        "records-authority",
+        "records-inspection",
+        "records-unreadable",
+        "records-purge",
+        "records-purge-succeeded",
+        "records-purge-nonroot",
+        "records-expected-id",
+        "records-replace",
+        "records-broker",
+        "records-broker-filtered",
         "setup-review-conditions-builtin",
         "setup-review-conditions-provider",
         "setup-review-dependencies-failed",

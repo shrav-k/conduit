@@ -43,3 +43,23 @@ As order 009's scope.
 
 The vectors pass; every record validates against `record.v1`; the runner reports D19's counts;
 every decision cites a promise; and the checks of order 004's done-when pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-09.
+
+- **Worker**: 41 minutes, then a second round. Every record validated against `record.v1`,
+  inspection, retention and purge that leave the invocation index whole, repair's bounds, and
+  D19's counts (a keyed unknown write's index entry kept 373,365 bytes after a purge, as REC-004
+  and OPS-008 require); 11 vectors, then 361 in all. It stopped at 2-08: which Pool's authority
+  inspects an object that no longer exists.
+- **Verifier**: 6 minutes. Three `must`: a successful keyed registration repeated could report
+  conflict; template inspection could give a status its schema forbids; and a refused keyed
+  request could lose its key in the record.
+- **Admin**: settled 2-08 by the least disclosure (only management's authority reaches an object
+  that does not exist; a Pool's alone is refused), and sent the worker back once with it and the
+  three findings, each fixed with a vector that failed before. It then found that OPS-029 had
+  decided 2-08's case the other way, on purpose, and kept its settlement as a choice against
+  disclosure, amending OPS-029 and saying so in the log: this is the decision of increment 2 the
+  owner may most want to look at. `conformance/` now holds about 8 MB of cases, many of them full
+  states; order 019 is asked to report how to keep them lean.

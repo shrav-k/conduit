@@ -144,7 +144,7 @@ pub(super) fn run(
     conduit_core::step(state, input, context)
 }
 
-fn builtin(spec: &Specification) -> Result<Project> {
+pub(super) fn builtin(spec: &Specification) -> Result<Project> {
     let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let core = conduit_loader::read_project(&repository.join("spec/core"), spec)
         .map_err(|e| e.to_string())?;

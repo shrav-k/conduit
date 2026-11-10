@@ -1,0 +1,164 @@
+{
+  "id": "records-keyed-invalid",
+  "title": "Keyed invalid retains its key before invocation allocation",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "REC-002",
+    "OPS-023"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../initial.json",
+    "fixture": "../fixture.json",
+    "manifest": "../manifest.json",
+    "documents": "../documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "f68b3fb2-5e24-53d5-aaa5-4b81ffc6d5de",
+            "b1b92700-8e4b-5fdd-a463-d850c2cc922e",
+            "330952b6-f732-5dc4-855a-ff47d9a5bef5",
+            "125af81a-d7e5-5fde-8da6-ce996d58d82f",
+            "2af5c68a-77ca-5b49-8733-21d2e85d32f6",
+            "18a0d79d-bb3f-5443-9d63-c7d4c6c248ed",
+            "e248903c-73ea-5f1c-83c1-3c8313a600f1",
+            "18045749-0e7e-5a0c-a09d-110013dd8a7e",
+            "492524c1-6006-58ca-ab96-d90fd8e0d964",
+            "be22a759-09fd-554e-8c78-2832cfa394a5",
+            "cf152e30-5f00-5233-b956-2313b3c1ed8a",
+            "0e3854e1-43e3-5a4a-b923-f5dc992b5e68",
+            "12b157e8-2b72-506a-b3c8-b0078a6de871",
+            "7f047921-daf7-5114-bbb2-39da6e3a4d2d",
+            "40361e2b-302e-575b-97f1-c44439d10516",
+            "b3177aef-b016-59d1-a81e-4629e3cf1c86",
+            "56214a7b-be78-515b-a600-42112461c18d",
+            "094e6aeb-3dbc-54ca-94a8-57ab713e0e1f",
+            "3d3a2f8e-fe8c-5872-8737-b4cf95f8bdbf",
+            "6e87321b-d641-550d-ad9e-ab4a04b8d99d",
+            "b796dae4-62d9-5f74-9d3a-a98a9ef3f05b",
+            "835e86d7-2ec6-517b-a5ac-920f1cb29350",
+            "6218c6b6-fd7e-5f74-84b5-f487473166dc",
+            "17e985e0-9aa8-59d3-9212-50dbec8d0fac",
+            "fe58bac8-e6fc-50d4-b5dd-8dbf88a66d86",
+            "fcdeb743-bf38-592a-aa6f-f9a77d5d5ec0",
+            "999bdfe2-14bc-5a58-a699-3598aa031da6",
+            "9cf15586-8864-5142-baca-15914544e62a",
+            "1cfab613-8f63-5122-9b91-5ebc4986323e",
+            "e319a6a4-bdc3-56a3-b8a1-6e327711dc38",
+            "ca797190-eede-58bc-9bc6-93ca60f16ba4",
+            "1608f744-0199-5933-a3dd-2a01b1e56e63",
+            "5fb410a5-7ab2-5016-a0ce-0c78b1e2a81a",
+            "7d9e54c8-8e73-5bf2-b1d7-21695b84d5cb",
+            "290de755-a939-5cad-85e0-0591a1d5fd78",
+            "8461769a-17e2-5929-9023-4c2d8fb70e5f",
+            "b1854fce-9513-5134-8884-ae2028a6e3ac",
+            "6d488ffb-a022-5bb3-a6a8-5ba10f676f28",
+            "d95cae67-89d7-5776-ac61-253e0ebf76be",
+            "d16f9326-dcb0-5213-953c-7d9552c148c4",
+            "0dd11573-8a96-5a45-8bea-ae1b3802bb86",
+            "3977e087-30b0-501e-86f4-4d53f2367286",
+            "6a3de782-c63d-56c4-98c3-7432cd0c6d4d",
+            "d508babe-d307-5dcd-9606-412f29202493",
+            "6bc070d9-bc0f-51a2-9bfd-e65fdfc86f46",
+            "22967bc9-ec41-56bd-972c-2688afad8add",
+            "c94189b1-c69b-58fc-851d-61bf620671d1",
+            "54d6cf47-00b4-59f2-898e-ca821f18800f",
+            "2b090d0d-fff0-59d7-ab76-740a84c3dc69",
+            "9dd2153c-c5cb-5b1f-a827-b7a467faa10a",
+            "8fbdb31d-913e-51af-911a-f7486afc10ef",
+            "08ca4ba2-c0f7-5b34-b037-570aa7ab2b16",
+            "8756c590-4c05-5810-938a-1413bc60842c",
+            "7abe0af9-f8d9-5d1a-9b90-bfeacda3b80e",
+            "93ad3b87-ee85-5d5c-a914-5b38d82baf59",
+            "b6c53d4f-1d3a-53de-8f16-3d5fc4503088",
+            "f116ce39-118f-59ff-8149-ac0b2db8e7c3",
+            "aece5c1f-88e2-583e-90a7-239eadb15db1",
+            "524d50c9-0a68-514b-a71c-858e693d4774",
+            "f73bb2b8-62a9-5692-9102-3bf52fbeecb8"
+          ],
+          "revisions": [
+            "more-r0",
+            "more-r1",
+            "more-r2",
+            "more-r3",
+            "more-r4",
+            "more-r5",
+            "more-r6",
+            "more-r7",
+            "more-r8",
+            "more-r9"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "missing"
+            }
+          }
+        },
+        "key": "keyed-invalid"
+      },
+      "expect": {
+        "external_intents": [],
+        "stateUnchanged": true,
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          }
+        },
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "idempotencyKey": "keyed-invalid"
+            },
+            "id": "f68b3fb2-5e24-53d5-aaa5-4b81ffc6d5de",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:05:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "idempotencyKey": "keyed-invalid",
+              "reason": "invalid"
+            },
+            "id": "b1b92700-8e4b-5fdd-a463-d850c2cc922e",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:05:00Z"
+          }
+        ],
+        "absent": [
+          "/records/0/data/invocation",
+          "/records/1/data/invocation"
+        ],
+        "required_promises": [
+          "REC-002"
+        ]
+      }
+    }
+  ]
+}

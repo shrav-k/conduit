@@ -1410,7 +1410,7 @@ pub(crate) fn register(
     t: &mut Transition,
     snapshots: Vec<Snapshot>,
     builtin: Project,
-    mut project: Project,
+    project: Project,
     evidence: &Evidence,
     request: &Request,
     context: &Context,
@@ -1453,6 +1453,20 @@ pub(crate) fn register(
         t.reply = json!({"accepted":false,"reason":"refused"});
         return Ok(());
     }
+    prepare(t, snapshots, builtin, project, evidence, request, context)
+}
+
+/// Resolve and stage an already authorized submission, also used for one-template replacement.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn prepare(
+    t: &mut Transition,
+    snapshots: Vec<Snapshot>,
+    builtin: Project,
+    mut project: Project,
+    evidence: &Evidence,
+    request: &Request,
+    context: &Context,
+) -> Result<()> {
     // Canonical traversal fixes allocations, diagnostics and nested names independently of file order.
     project.documents.sort_by_key(|d| {
         (
@@ -1707,7 +1721,15 @@ pub(crate) fn register(
         .templates
         .iter()
         .chain(&resolved)
-        .map(|o| json!({"kind":o["kind"],"name":o["name"],"id":o["id"],"nested":o.get("nested")}))
+        .map(|o| {
+            // object.v1 names the enclosing instance, not the core's storage slot
+            // (INS-016). An ordinary object has no nested member.
+            let mut result = json!({"kind":o["kind"],"name":o["name"],"id":o["id"]});
+            if let Some(nested) = o.get("nested") {
+                result["nested"] = json!({"instance":nested["parent"],"name":nested["name"]});
+            }
+            result
+        })
         .collect::<Vec<_>>();
     for snapshot in &b.snapshots {
         if snapshot.source == packages::SnapshotSource::PreinstalledSnapshot

@@ -742,8 +742,11 @@
     `reconcile.v1`, whichever target would have authorized the reconciliation while the instance
     existed: its outcome becomes succeeded or failed under OPS-014, and nothing else changes,
     because nothing is left to change. For a control, REV-010 says what such a reconciliation
-    names. Which target that is can be told only for an object that exists, and a request that
-    names one that does not exist reports invalid under OPS-029.
+    names. An object that does not exist has no owning Pool. Authority to inspect it, or to
+    act on it by a stale reference, is `management`'s alone. With that authority the request
+    reports invalid under OPS-029. A caller with only a Pool's authority reports refused before
+    any diagnostic, under OPS-023, and learns nothing of whether the object existed. Where the
+    object exists, the applicable target is the one the rows above name.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decisions U6 and U7).

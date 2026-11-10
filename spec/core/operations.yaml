@@ -362,8 +362,10 @@ metadata:
     Read a template or an instance: what was declared, its status and the records about it.
     Inspecting a Resource is authorized against the Pool that owns it, or against `management`
     where that Pool is retired; inspecting anything else is authorized against `management`. A
-    request that names an object that does not exist reports invalid, whichever of the two it is
-    made of. `packages` lists the packages the object holds: a package's item has `address`,
+    request that names an object that does not exist is authorized against `management` alone:
+    it has no owning Pool. With that authority it reports invalid; a caller with only a Pool's
+    authority reports refused, before any diagnostic, and learns nothing of whether it existed,
+    under OPS-023. `packages` lists the packages the object holds: a package's item has `address`,
     `version` and `digest`; the core package's item has no `digest`; and the item of the
     submitted project whose contracts the object holds has `address`, the digest that
     identifies that submission's contracts, and `version` where its manifest states one.

@@ -1,0 +1,261 @@
+{
+  "id": "records-authority",
+  "title": "Known caller is retained when authority is unreadable; unknown identity and unreadable requests are honest",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "REC-001",
+    "REC-002",
+    "ACC-037",
+    "IFC-036",
+    "OPS-023"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../initial.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "009a33d5-e441-564c-9aaa-42a5779e07ba",
+            "fcc2f7e6-b251-59ae-8673-10966d104752",
+            "1bd19041-a32e-5c45-b541-aed9735ce18d",
+            "c88a7d66-f283-576b-9a1b-83e9e9132735"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "guessed",
+          "arguments": {
+            "private": "never report this"
+          },
+          "authority_readable": false
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "stateUnchanged": true,
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "unavailable"
+          }
+        },
+        "records": [
+          {
+            "id": "009a33d5-e441-564c-9aaa-42a5779e07ba",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "reason": "unavailable",
+              "caller": "00000000-0000-4000-8000-000000000005"
+            }
+          },
+          {
+            "id": "fcc2f7e6-b251-59ae-8673-10966d104752",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "reason": "unavailable",
+              "caller": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        ],
+        "required_promises": [
+          "REC-002"
+        ],
+        "absent": [
+          "/records/0/data/inputs",
+          "/records/0/data/arguments",
+          "/records/1/data/inputs"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "d3ba3577-f23a-5dea-91ac-0994f6eea96e",
+            "9c2c6ec5-06c6-58d5-8ea0-f58d4ba4c687",
+            "4d6f2eea-6223-5bd0-83ec-73c17035b157",
+            "16c656b0-ec5a-5f29-a9a5-41acd4209143"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "unreadable"
+          },
+          "tool": "guessed",
+          "arguments": {
+            "private": "never report this"
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "stateUnchanged": true,
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "unavailable"
+          }
+        },
+        "records": [
+          {
+            "id": "d3ba3577-f23a-5dea-91ac-0994f6eea96e",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "reason": "unavailable",
+              "identityStatus": "unreadable"
+            }
+          },
+          {
+            "id": "9c2c6ec5-06c6-58d5-8ea0-f58d4ba4c687",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "reason": "unavailable",
+              "identityStatus": "unreadable"
+            }
+          }
+        ],
+        "required_promises": [
+          "REC-002"
+        ],
+        "absent": [
+          "/records/0/data/inputs",
+          "/records/0/data/arguments",
+          "/records/1/data/inputs",
+          "/records/0/data/caller",
+          "/records/1/data/caller"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "b0876d97-b475-5916-baee-70d543936545",
+            "da831470-33b2-56cd-979f-a118cddfe069",
+            "73db8586-c7ca-5f96-8bad-e76ae225efa5",
+            "22c44184-4bcf-51aa-a9f3-39653e7bc01b"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "guessed",
+          "arguments": {
+            "private": "never report this"
+          },
+          "readable": false
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "stateUnchanged": true,
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          }
+        },
+        "records": [
+          {
+            "id": "b0876d97-b475-5916-baee-70d543936545",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "reason": "invalid",
+              "caller": "00000000-0000-4000-8000-000000000005"
+            }
+          },
+          {
+            "id": "da831470-33b2-56cd-979f-a118cddfe069",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "reason": "invalid",
+              "caller": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        ],
+        "required_promises": [
+          "REC-002"
+        ],
+        "absent": [
+          "/records/0/data/inputs",
+          "/records/0/data/arguments",
+          "/records/1/data/inputs"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "a8ef081c-6cdb-5a84-8d1b-6c816bdbea25",
+            "f57134ac-7f34-594a-830d-53b47aa3b8ba",
+            "1f2e743c-1d80-5a2f-977c-d874195e409e",
+            "d90b85c3-8db9-5c83-9cdd-d6c270aa61af"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "none"
+          },
+          "tool": "guessed",
+          "arguments": {
+            "private": "never report this"
+          },
+          "readable": false
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "stateUnchanged": true,
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "invalid"
+          }
+        },
+        "records": [],
+        "required_promises": [
+          "REC-001",
+          "IFC-036"
+        ]
+      }
+    }
+  ]
+}

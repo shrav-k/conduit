@@ -864,8 +864,11 @@
     existence and access applies to it as to a request without it. It is compared only after the
     access decision, and after every check that gives invalid, as OPS-023 orders the reasons: a
     request that is not permitted reports refused and says nothing of the object or its ID, and
-    one whose reference resolves to nothing reports invalid under OPS-029, whatever ID it
-    expected, as Kubernetes answers a precondition on an object that does not exist with Not
+    one whose reference resolves to nothing needs `management`'s authority alone, because it
+    has no owning Pool, under ACC-033. With that authority it reports invalid under OPS-029,
+    whatever ID it expected; a caller with only a Pool's authority reports refused, before any
+    diagnostic, and learns nothing of whether the object existed. Kubernetes answers a
+    precondition on an object that does not exist with Not
     Found. So the ID it reveals is that of an object the request was permitted to act on. Where
     the name was given to another object after the first was removed, under LIF-035 and OBJ-002,
     a request that expects the first object's ID reaches neither, as Kubernetes's

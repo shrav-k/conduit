@@ -6,6 +6,7 @@ pub mod access;
 pub mod archives;
 pub mod lifecycle;
 pub mod packages;
+pub mod records;
 pub mod registration;
 pub mod requests;
 pub mod schemas;
@@ -19,6 +20,7 @@ type Result<T> = std::result::Result<T, String>;
 /// Values read at the edge from the specification, not a second copy of its assigned names.
 #[derive(Clone, Debug)]
 pub struct Context {
+    pub builtin: Option<packages::Project>,
     pub core_package: String,
     pub meta_prefix: String,
     pub templates: BTreeMap<String, Value>,
@@ -33,6 +35,8 @@ pub struct State {
     pub objects: Vec<Value>,
     pub records: Vec<Value>,
     pub allocated_ids: BTreeSet<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub record_gaps: Vec<Value>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub invocations: Vec<Value>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -75,6 +79,10 @@ pub struct Request {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
+    ExportRecords {
+        #[serde(default)]
+        unreadable: Vec<String>,
+    },
     Invoke {
         evidence: Evidence,
         request: access::AccessRequest,
@@ -222,8 +230,11 @@ impl Allocation<'_> {
         event: &str,
         data: Value,
     ) -> Result<Value> {
-        let record = json!({"specversion":"1.0", "id": self.next(state)?,
+        let mut record = json!({"specversion":"1.0", "id": self.next(state)?,
             "source":context.record_source, "type": event, "time":self.evidence.time, "data":data});
+        if let Some(subject) = record["data"].as_object_mut().unwrap().remove("subject") {
+            record["subject"] = subject;
+        }
         state.records.push(record.clone());
         Ok(record)
     }
@@ -250,6 +261,7 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
     };
     match input {
+        Input::ExportRecords { unreadable } => records::export(&mut transition, &unreadable)?,
         Input::Invoke {
             evidence,
             request,
@@ -306,6 +318,15 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
             evidence,
             request,
         } => {
+            let mut documents = project.documents.clone();
+            documents.sort_by_key(|d| {
+                (
+                    d["kind"].to_string(),
+                    d["metadata"]["name"].to_string(),
+                    d.to_string(),
+                )
+            });
+            let arguments = json!({"documents":documents,"manifest":project.manifest});
             registration::register(
                 &mut transition,
                 packages::catalog_entries(state, snapshots),
@@ -313,6 +334,13 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
                 project,
                 &evidence,
                 &request,
+                context,
+            )?;
+            records::registration_boundary(
+                &mut transition,
+                &evidence,
+                &request,
+                arguments,
                 context,
             )?;
         }

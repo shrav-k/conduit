@@ -32,6 +32,11 @@
             "00000000-0000-4000-8000-000000000101",
             "00000000-0000-4000-8000-000000000102",
             "00000000-0000-4000-8000-000000000103",
+            "4a61c62e-a43e-5dbb-882d-0a75a8bfd43b",
+            "81461ddf-8bc6-5341-b34a-84a386f95a87",
+            "446e208a-2e1a-576b-a23f-09af0a0f29fc",
+            "d9e7e6ac-f1c0-5a31-b7b2-18aa1776e4e1",
+            "10fe81b2-d906-52df-a449-c83db4591a31",
             "00000000-0000-4000-8000-000000000104",
             "00000000-0000-4000-8000-000000000105",
             "00000000-0000-4000-8000-000000000106",
@@ -142,10 +147,42 @@
         },
         "records": [
           {
+            "id": "81461ddf-8bc6-5341-b34a-84a386f95a87",
+            "type": "access-decision",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "4a61c62e-a43e-5dbb-882d-0a75a8bfd43b",
+              "permitted": true
+            }
+          },
+          {
+            "id": "446e208a-2e1a-576b-a23f-09af0a0f29fc",
+            "type": "invocation-dispatched",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "4a61c62e-a43e-5dbb-882d-0a75a8bfd43b"
+            }
+          },
+          {
             "type": "object-change",
             "data": {
               "target": "00000000-0000-4000-8000-000000000100",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "4a61c62e-a43e-5dbb-882d-0a75a8bfd43b"
             },
             "id": "00000000-0000-4000-8000-000000000102",
             "specversion": "1.0",
@@ -156,12 +193,45 @@
             "type": "object-change",
             "data": {
               "target": "00000000-0000-4000-8000-000000000101",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "4a61c62e-a43e-5dbb-882d-0a75a8bfd43b"
             },
             "id": "00000000-0000-4000-8000-000000000103",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "time": "2026-11-09T12:00:00Z"
+          },
+          {
+            "id": "d9e7e6ac-f1c0-5a31-b7b2-18aa1776e4e1",
+            "type": "invocation-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "4a61c62e-a43e-5dbb-882d-0a75a8bfd43b",
+              "outcome": "succeeded"
+            }
+          },
+          {
+            "id": "10fe81b2-d906-52df-a449-c83db4591a31",
+            "type": "request-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "4a61c62e-a43e-5dbb-882d-0a75a8bfd43b",
+              "outcome": "succeeded"
+            }
           }
         ]
       }

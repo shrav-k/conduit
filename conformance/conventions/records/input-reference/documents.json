@@ -1,0 +1,100 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "act.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "maximum": 10
+          },
+          "peer": {
+            "$ref": "github.com/shrav-k/conduit/core#resource-reference.v1"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "effect": "Writes one value."
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "work.v1"
+    },
+    "spec": {
+      "operations": [
+        "#act.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "worker.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer"
+          }
+        }
+      },
+      "offers": [
+        "#work.v1"
+      ],
+      "implementation": {
+        "#act.v1": "#worker-impl"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "worker"
+    },
+    "spec": {
+      "type": "#worker.v1",
+      "config": {
+        "version": 1
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "old"
+    },
+    "from": {
+      "kind": "Resource",
+      "name": "worker"
+    },
+    "owner": "system"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "peer"
+    },
+    "from": {
+      "kind": "Resource",
+      "name": "worker"
+    },
+    "owner": "system"
+  }
+]

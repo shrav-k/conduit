@@ -27,6 +27,7 @@ selecting a Conduit answer. No specification change was made by this order.
 | 2-05 | A plain server's invalid-parameters error does not prove no effect | Contradiction | IFC-010, OPS-003, OPS-018 | Settled by the admin, decision 8a |
 | 2-06 | A plain server's parameter-header error does not authorize repeating an effect | Contradiction | IFC-046, OPS-018 | Settled by the admin, decision 8a |
 | 2-07 | How a contract declares an effectful plain operation safe to repeat | Gap | IFC-046, OPS-012 | Settled by the admin, narrowing decision 8a |
+| 2-08 | Which Pool authorizes inspection of a missing Resource | Ambiguity | ACC-033, OPS-023, OPS-029, LIF-037 | Settled by the admin |
 
 ## 2-01. Two initial YAML byte order marks
 
@@ -931,3 +932,146 @@ break; references determine their dependencies. A retirement-prevented required 
 represented as `retired-before-part` with no effect. Running conditions use `RunRunning`,
 `RunStopped` and `RunUnknown` reasons, and a provider UUID URN or the built-in runner's URN
 as their source. These are core and runner representations of the cited promises.
+
+
+## I2-08: records, inspection and repair (work order 017)
+
+The worker applied decision 7's six event types. Registration now records its access,
+dispatch and ending, with an invocation entry, without changing earlier object allocations. The preparation boundary canonically orders
+documents for its retained index so SUB-001 permutations remain equivalent.
+Provider inspection/run reports now emit completion records with the run instance in the
+CloudEvent subject. Each record is validated against `record.v1`; the runner additionally
+checks applicable invocation, caller, route, key, serving and outcome fields and access before
+dispatch. The existing provider-record vector now asserts the subject at the CloudEvent root
+and both halves of the provider call.
+
+The eleven `records-*` vectors cover inspection, unreadable ranges, purge, its root reservation,
+strict cutoff and permanent certificates, unknown and succeeded repeats after purge, E11,
+E12 and E08, including the broker's carried filter. The authority vector retains a known
+caller when Conduit state is unreadable, omits an unreadable identity, and records no request
+that is both unreadable and unidentified, under REC-001 and IFC-036. E11 resolves the replacement against the
+new manifest and contracts, preserves the template ID, changes its revision only for changed
+contents/context, keeps old instances frozen and resolves new instances against the new
+context. E12 observes removal/name reuse and checks stale inspection/setup IDs with owning-Pool
+authority, refusal without it, invalid ID addressing through management, lost credentials and
+a successful follow-up with the current ID. It claims no retirement recovery. E08's approved
+onward registration is supplied by a simulated trusted adapter, and creates no setup or run.
+The adapter's approval logic remains separate provider evidence.
+
+**Implementation choices.** The built-in project is supplied in Context for resolving
+values-only management submissions. Replacement validation uses a private staging state and
+supplied evidence, commits no staged allocations, and invokes no implementation. Purge
+certificates use `object-change` with `action: records-purged`, cutoff and removed source/ID
+pairs. Gaps retain source/ID metadata and are conservatively shown on every inspection until
+more precise object association exists. Export's unreadable IDs describe a temporary read
+failure; they do not delete data. Typed input references are associated with their object IDs when dispatched, using the
+schema-directed walk also used for record redaction; inspection does not retarget them when
+a name is reused. The input-reference vector checks unknown work naming another Resource,
+including after purge and name reuse. The profile documents these representations. D19 counts
+compact serialized UTF-8 JSON arrays: records, gap metadata and invocations separately,
+including held contexts and retained outputs, with signed per-step growth and per-invocation
+bytes, key status and outcome. No key expires and no index is compacted.
+
+### 2-08. Inspection of a missing Resource through a Pool
+
+**Class:** ambiguity. **Promises:** ACC-033, OPS-023, OPS-029, LIF-037.
+**State:** Settled by the admin, on the return review of work order 017, 2026-11-09.
+The owner can strike it.
+
+**The ambiguity.** The description of `inspect.v1` and OPS-029 said a missing object reports
+invalid through management or a Pool. ACC-033 requires the Resource's owning Pool, which
+cannot be established for an absent object. OPS-023 puts authority before diagnostics, and
+LIF-037 says an expected ID supplies no authority.
+
+**The admin's decision.** Least disclosure: an object that does not exist has no owning Pool.
+Authority to inspect it, or to act on it by a stale reference, is management's alone. A caller
+with only a Pool's authority is refused, before any diagnostic, and learns nothing of whether
+it existed. Where the object exists, ACC-033's owning-Pool rule applies. With management
+authority, naming a missing object reports invalid. The worker amended `inspect.v1`, ACC-033
+and LIF-037 in the extended scope.
+
+**Vector.** [records-expected-id](../../../conformance/conventions/records/expected-id/case.yaml)
+now pairs the formerly stopped Pool-only caller naming a missing Resource with the management
+caller naming the same Resource, both with and without a stale expected ID. It asserts refused
+without diagnostic, output or object/ID disclosure for the former, invalid for the latter,
+no dispatch and unchanged objects. The supplied core's routing already implements this
+least-disclosure rule; the new pairs passed before the edits.
+
+**OPS-029, amended by the admin.** OPS-029's observable said: "So a request for `inspect.v1` that
+names nothing reports invalid whether it is made through a Conduit to `management` or to a Pool",
+on the reasoning that refused can be told only for a thing that exists. So the case was not
+undecided, as 2-08 first read it: OPS-029 decided it the other way. The admin keeps its
+settlement, as a choice against disclosure rather than the filling of a gap: names are global
+per kind (OBJ-002), so under the old text a caller with a Pool's authority alone could tell a
+name that exists nowhere (invalid) from one that exists in another Pool (refused). The admin
+amended OPS-029's sentence to match, the same day. The owner can strike it, which would restore
+OPS-029's text and reverse 2-08.
+
+**Measured D19 sample, 2026-11-09.** In `records-purge`, record storage fell from 9,187 to
+4,495 serialized bytes. The keyed unknown write's invocation entry stayed at 373,365 bytes.
+The entire invocation array grew from 499,935 to 622,636 bytes because the purge itself is
+another retained invocation. These counts include the representation's held contexts; they
+are measurements of this vector, not a capacity projection or a proposed compaction policy.
+
+**Verification before the return review.** The runner passed all 356 cases, including the eleven new records cases.
+The workspace's release tests, clippy with warnings denied and formatting check passed, as
+did the documentation, assigned-name, schema, roadmap and whitespace checks. The runner's
+negative checks reject missing applicable record fields, dispatch before its access record,
+and inspection that omits a record or an unknown invocation.
+
+### Return review of work order 017
+
+1. **Retained successful registration and replacement — OPS-009, ACC-033, OPS-023.** The
+   records preflight now runs only for a new invocation or a dispatched new attempt, just as
+   lifecycle preflight does. The current authority and input checks remain before the repeat
+   answer. [records-replay-register](../../../conformance/conventions/records/replay-register/case.yaml)
+   and [records-replay-replace](../../../conformance/conventions/records/replay-replace/case.yaml)
+   compare the retained outputs and invocation ID, unchanged objects, and exactly an access
+   decision and request ending, with no dispatch. Both failed on the supplied tree: OBJ-002
+   and REV-002 conflicts respectively.
+2. **Template inspection — LIF-012, LIF-013 and inspect.v1's outputSchema.** LIF-012 says,
+   "It exists until it is unregistered, and has no lifecycle state", and "Inspecting a template
+   returns no lifecycle state, and no operation gives it one." LIF-013's `when` is "An instance
+   is inspected". The contract makes `status` optional and requires `state` whenever it is
+   present. These decide the case: omit template status, retain all instance status, and invent
+   no template state. [records-inspection](../../../conformance/conventions/records/inspection/case.yaml)
+   now forbids template status and cites LIF-012; it failed before the fix. The runner validates
+   generated and retained successful built-in outputs and successful repeat replies against
+   the actual core contracts. Its negative schema test rejects status without state, and its
+   inspection checks reject a lifecycle state on a template.
+   This validation also exposed `register.v1` emitting `nested: null` for ordinary objects
+   and internal parent/slot fields for nested ones. The `object.v1` contract and INS-016
+   decide the result shape: omit `nested` for ordinary objects and return `instance`/`name`
+   for nested ones. The [Pool-entry registration](../../../conformance/language/registration/pool-entries/case.yaml)
+   vector now asserts those exact required fields and the absence of storage fields.
+3. **Keys before invocation allocation — REC-002.** Its `then` requires the supplied key,
+   and its observable says "Each of those is present in every record to which it applies."
+   [records-keyed-refused](../../../conformance/conventions/records/keyed-refused/case.yaml),
+   [records-keyed-invalid](../../../conformance/conventions/records/keyed-invalid/case.yaml)
+   and [records-keyed-conflict](../../../conformance/conventions/records/keyed-conflict/case.yaml)
+   assert the key on both records with no invocation allocated. All three already passed on
+   the supplied tree: an earlier assignment put the key directly into the route. The worker
+   consolidated propagation into the identity/key copy after route normalization, removing
+   that earlier assignment. The runner now compares both outer records directly with the
+   supplied request key, independently of any invocation entry; its negative test removes
+   either key, both keys, and changes one key. No original-tree failure is claimed here.
+
+**Choices made by the worker.** Centralize the supplied key with the request identity rather
+than assign it twice. Validate built-in outputs in the runner against its actual core schema
+environment, including newly retained successes and replies from earlier invocations. These
+are implementation and verification choices, not new language semantics.
+
+**Regression evidence.** With the other fixes present, disabling the repeat-preflight guard
+failed each replay vector with its original conflict; disabling template-status omission
+failed inspection's actual output-schema check; omitting the consolidated key copy failed
+each of the three keyed ending vectors with a missing request key. Reverting registration's
+result shape failed the Pool-entry vector under `object.v1`. Disabling either new runner
+validator failed its corresponding negative unit test. These are nine expected failures,
+not successful conformance results; all temporary mutations were restored. The supplied-tree
+keyed rejection vectors passed before consolidation, as recorded above.
+
+**Verification after the return review.** The full runner passed all 361 vectors, with D19's
+separate record and invocation-index counts. After all temporary mutations were restored,
+`cargo test --release`, clippy with warnings denied and `cargo fmt --check` passed, as did the
+documentation, assigned-name, schema, roadmap, diff-whitespace and new-file trailing-whitespace
+checks. OPS-029's contradictory sentence remains the out-of-scope admin follow-up above.

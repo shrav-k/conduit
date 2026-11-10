@@ -80,6 +80,11 @@
             "00000000-0000-4000-8000-000000000135",
             "00000000-0000-4000-8000-000000000136",
             "00000000-0000-4000-8000-000000000137",
+            "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d",
+            "2580ff08-33c0-5df7-bc2e-667fd645230e",
+            "8867543d-df39-54be-b92b-8e08d51a079c",
+            "c6dcad32-9c34-5e09-9edf-d61d475d06b0",
+            "973c82af-e3b7-5cb5-b616-f0ad7563a38c",
             "00000000-0000-4000-8000-000000000138",
             "00000000-0000-4000-8000-000000000139",
             "00000000-0000-4000-8000-000000000140",
@@ -132,6 +137,37 @@
         "external_intents": [],
         "records": [
           {
+            "id": "2580ff08-33c0-5df7-bc2e-667fd645230e",
+            "type": "access-decision",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d",
+              "permitted": true
+            }
+          },
+          {
+            "id": "8867543d-df39-54be-b92b-8e08d51a079c",
+            "type": "invocation-dispatched",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
+            }
+          },
+          {
             "id": "00000000-0000-4000-8000-000000000119",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
@@ -139,7 +175,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000100",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -150,7 +187,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000101",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -161,7 +199,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000102",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -172,7 +211,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000103",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -183,7 +223,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000104",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -194,7 +235,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000105",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -205,7 +247,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000106",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -216,7 +259,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000107",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -227,7 +271,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000108",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -238,7 +283,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000109",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -249,7 +295,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000110",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -260,7 +307,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000111",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -271,7 +319,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000112",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -282,7 +331,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000113",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -293,7 +343,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000114",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -304,7 +355,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000115",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -315,7 +367,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000116",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -326,7 +379,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000117",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
             }
           },
           {
@@ -337,7 +391,40 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000118",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d"
+            }
+          },
+          {
+            "id": "c6dcad32-9c34-5e09-9edf-d61d475d06b0",
+            "type": "invocation-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d",
+              "outcome": "succeeded"
+            }
+          },
+          {
+            "id": "973c82af-e3b7-5cb5-b616-f0ad7563a38c",
+            "type": "request-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d",
+              "outcome": "succeeded"
             }
           }
         ],
@@ -1373,6 +1460,11 @@
         ],
         "state": {
           "invocations": [
+            {
+              "id": "aebf1fb4-cf2c-5889-bf3e-cc65101e1c0d",
+              "state": "succeeded",
+              "operation": "@core#register.v1"
+            },
             {
               "id": "$i",
               "state": "succeeded",

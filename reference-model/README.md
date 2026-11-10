@@ -346,3 +346,38 @@ times until status changes. Selected runtime calls reject retained relative-prog
 provenance before dispatching `run.v1`, and their records use the provider's own projection
 without request route metadata. Replacement configuration accepts references frozen by
 registration while actor-authored IDs remain rejected.
+
+I2-08 completes the records of registration and provider completion, adds `inspect.v1`,
+root-only `purge.v1`, revision-checked `replace.v1` and values-only `register.v1` through the
+invocation boundary. Replacement uses registration's resolver with the new project's
+contracts and manifest; it preserves the template ID and every old instance's held context.
+An equal replacement preserves its revision. Expected IDs are checked after authority and
+input validity, with both IDs in a conflict diagnostic. The E08 fixture explicitly models a
+trusted broker's onward request; its approval logic is provider evidence, not an engine policy.
+
+`export-records` is the profile's explicit record export boundary. It returns the exact ordered
+CloudEvents, `gaps` and `complete`. Its optional `unreadable` IDs simulate a temporarily
+unreadable range without deleting it. Purge keeps a permanent `object-change` certificate with
+`action: records-purged`, the cutoff and the IDs and sources removed. Later purges preserve
+certificates. Inspection includes the resolved declaration, packages, lifecycle and observed
+status, conditions, the complete `unreconciled` list from invocation state, and all matching
+records in source order. `recordGaps` and `recordsComplete` report omissions conservatively:
+a known gap in the single record source is shown even if its object association was lost.
+Neither inspection nor export initiates repair or provider work.
+
+The runner validates every emitted and retained record against the actual `record.v1`, then
+checks applicable invocation fields, provider subjects and access before dispatch. Inspection
+records and unknown invocations are checked as exact lists, including after purge. Each `D19`
+line contains a case and step, serialized UTF-8 JSON bytes of the record array and invocation
+index separately, their signed growth since the preceding step, and each invocation's bytes,
+keyed status and outcome. Record-gap metadata is reported separately. These are measurements
+of this representation, including retained outputs and held contexts, not estimates of a
+storage backend's cost. An empty array occupies two bytes. Purge leaves prior invocation
+entries and retained results intact; there is no compaction or key expiry.
+
+The return review validates successful built-in outputs against their core contracts and
+checks supplied keys on outer access/ending records independently of invocation correlation.
+Template inspection omits status, as LIF-012 gives a template no lifecycle state. Keyed
+successful registration/replacement repeats return their retained result without reapplying
+state-changing preconditions, after current authority checks. Registration results use
+`object.v1`'s portable nested `instance`/`name` fields rather than internal storage fields.

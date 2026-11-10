@@ -713,7 +713,7 @@ fn emit(
             a,
             c,
             "provider-call",
-            json!({"target":runtime["id"],"subject":o["id"],"operation":c.qualified(operation),"invocation":v["id"],"caller":v["caller"],"arguments":intent["inputs"]}),
+            json!({"phase":"made","target":runtime["id"],"subject":o["id"],"operation":c.qualified(operation),"invocation":v["id"],"caller":v["caller"],"arguments":intent["inputs"]}),
         )?;
     }
     t.external_intents.push(intent);
@@ -785,6 +785,33 @@ pub(crate) fn report(
         Report::Run { outcome, .. } => json!({"operation":c.qualified("run.v1"),"outcome":outcome}),
         Report::Connected { part, outcome } => json!({"part":part,"outcome":outcome}),
     };
+    if (phase == "inspect-run" && matches!(&report, Report::InspectRun { .. })
+        || phase == "run" && matches!(&report, Report::Run { .. }))
+        && let Some(o) = access::object(&t.state, &v["object"])
+        && let Some(runtime) = o.get("runtime").and_then(|r| access::object(&t.state, r))
+    {
+        let outcome = match &report {
+            Report::InspectRun { .. } => "succeeded",
+            Report::Run { outcome, .. } => outcome.as_str(),
+            _ => unreachable!(),
+        };
+        let outputs = match &report {
+            Report::InspectRun { state } => json!({"state":state}),
+            Report::Run { url, .. } => json!({"url":url}),
+            _ => unreachable!(),
+        };
+        requests::record(
+            t,
+            &mut a,
+            c,
+            "provider-call",
+            json!({"target":runtime["id"],"subject":o["id"],"operation":report_facts["operation"],"invocation":v["id"],"caller":v["caller"],"phase":"ended","outcome":outcome,"outputs":outputs}),
+        )?;
+    }
+    let mut change_facts = report_facts;
+    if let Some(op) = change_facts.as_object_mut().unwrap().remove("operation") {
+        change_facts["partOperation"] = op;
+    }
     change(
         t,
         &mut a,
@@ -792,7 +819,7 @@ pub(crate) fn report(
         i,
         &v["object"],
         "setup-part-reported",
-        report_facts,
+        change_facts,
     )?;
     cite(
         t,

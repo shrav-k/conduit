@@ -20,6 +20,7 @@ fn fixture() -> (Context, Value) {
     let input = case[0].root.to_json()["steps"][0]["input"].clone();
     (
         Context {
+            builtin: None,
             core_package: specification.names().core_package.clone(),
             meta_prefix: read_file(&root.join("spec/names.yaml")).unwrap()[0]
                 .root
@@ -205,7 +206,7 @@ fn registration_requires_both_open_conduits_listing_the_operation() {
 #[test]
 fn registration_allocation_failures_leave_objects_records_and_allocations_untouched() {
     use conduit_core::packages::Project;
-    let (context, input) = fixture();
+    let (mut context, input) = fixture();
     let initial = step(
         &State::default(),
         serde_json::from_value(input).unwrap(),
@@ -229,7 +230,7 @@ fn registration_allocation_failures_leave_objects_records_and_allocations_untouc
     }
     let evidence = Evidence {
         time: "2026-11-09T12:00:00Z".into(),
-        ids: (100..104)
+        ids: (100..109)
             .map(|i| format!("00000000-0000-4000-8000-{i:012}"))
             .collect(),
         revisions: vec!["t".into(), "i".into()],
@@ -255,6 +256,18 @@ fn registration_allocation_failures_leave_objects_records_and_allocations_untouc
         documents,
         directory: None,
     };
+    let resolution =
+        conduit_core::packages::Catalog::new(builtin.clone(), vec![], &context.core_package)
+            .unwrap()
+            .resolve(&Project {
+                manifest: None,
+                documents: vec![],
+                directory: None,
+            })
+            .unwrap();
+    context.core_environment =
+        serde_json::from_value(resolution.reply["environment"].clone()).unwrap();
+    context.builtin = Some(builtin.clone());
     let original = initial.clone();
     for fault in ["exhausted", "reused"] {
         let mut allocations = evidence.clone();
@@ -291,7 +304,7 @@ fn registration_allocation_failures_leave_objects_records_and_allocations_untouc
     .unwrap();
     assert_eq!(accepted.reply["accepted"], true);
     assert_eq!(accepted.state.objects.len(), initial.objects.len() + 2);
-    assert_eq!(accepted.records.len(), 2);
+    assert_eq!(accepted.records.len(), 6);
     assert!(accepted.external_intents.is_empty());
 }
 

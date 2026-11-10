@@ -732,11 +732,14 @@
     an object; `register-replacement.v1` for the instance that it names in `instance`, which
     holds the nested instantiation; `replace.v1` for the template that its document names; and
     `reconcile.v1` for an invocation. An object that has been unregistered or removed no longer
-    exists. Refused means that no open Conduit permits the request, and whether the Conduit's
-    target is the one that ACC-033 fixes for a thing can be told only for a thing that exists.
-    So a request for `inspect.v1` that names nothing reports invalid whether it is made through
-    a Conduit to `management` or to a Pool, and one that names a Resource through a Conduit to
-    `management` reports refused while the Pool that owns the Resource is not retired. A bound
+    exists. Refused means that no open Conduit permits the request. For a thing that exists,
+    ACC-033 fixes the target whose Conduit permits it; a thing that does not exist has no owning
+    Pool, so only a Conduit to `management` can reach it. So a request for `inspect.v1` that
+    names nothing reports invalid when it is made through a Conduit to `management`, and refused
+    when it is made through a Conduit to a Pool alone, under OPS-023, so that a caller with only
+    a Pool's authority learns nothing of whether a name exists outside that Pool; and one that
+    names a Resource through a Conduit to `management` reports refused while the Pool that owns
+    the Resource is not retired. A bound
     is judged against what exists, and does not make such a request report refused: a request
     for `open.v1` that names no Conduit reports invalid whatever the bound of the actor's
     Conduit to `access`. A request from an actor with no open Conduit that lists the operation

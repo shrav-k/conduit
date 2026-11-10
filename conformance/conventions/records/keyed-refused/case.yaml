@@ -1,0 +1,166 @@
+{
+  "id": "records-keyed-refused",
+  "title": "Keyed refused retains its key before invocation allocation",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "REC-002",
+    "OPS-023"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../initial.json",
+    "fixture": "../fixture.json",
+    "manifest": "../manifest.json",
+    "documents": "../documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:05:00Z",
+          "ids": [
+            "db0719a0-0884-5501-860e-2724a7b910d5",
+            "6f6dd038-3da1-5bb9-8d61-07aac5311b0f",
+            "0c887c3e-991c-5422-901d-0b36e357216e",
+            "b2abfb6c-a501-5cfd-833d-435d5f32b22f",
+            "73c7894a-6f45-5709-b118-7897543b65d1",
+            "1293775f-bdfa-522f-8817-942943addc41",
+            "311d2416-5f79-5486-bcd9-5fd214cabd9f",
+            "68cbfe74-79f8-5b61-9935-7a5bdf75ba3b",
+            "e33bd75d-fedd-5009-84fd-78b6bf1bf58f",
+            "0f97f6be-a753-5fe3-aa3b-e3a185a233df",
+            "2870b335-c490-582c-a194-ab8b1f5b6ef0",
+            "3dccbdc5-4f1f-5227-8ee6-96b1db7e002b",
+            "e2c41728-6679-55e8-a5fc-75c91e543eb7",
+            "e1278c4a-f589-53ad-9894-88307e053864",
+            "6e8b2960-5dd0-53b6-8ab9-2c79a9e3e708",
+            "e18c0050-bc98-540b-acc4-50cc6df2c8c6",
+            "09a337f2-e0df-5dbe-b4d8-223fb3431fed",
+            "ff54fc00-07e1-5e31-9b64-fd23bc2cfdfe",
+            "16ad6e23-0664-52df-a71f-7d02d7a92a23",
+            "3e2356e6-c075-547d-a7d0-1655adb02e20",
+            "fb3b4722-8c26-5237-a363-08fdf9379c42",
+            "3576d3c5-aafb-5526-bbcd-88a425423834",
+            "4ea3fb6d-6709-5712-a76a-83f587d0db45",
+            "94adb151-ca4e-5acb-a502-1df05c7a7f4a",
+            "72d25a23-cbe4-5535-b7a7-4661fea68841",
+            "411e7f63-b967-54e6-806b-437319ba13f4",
+            "13cd0bd5-e94f-5c56-a4d5-cb67af059cdc",
+            "9999f5df-cd48-5a01-82b8-4c58accf5331",
+            "a7fbf593-e3b8-54f0-b219-4d199cbf8721",
+            "14ce2c5a-63db-5eca-8b33-1a93d412c10d",
+            "a2ffcc56-cc9c-5b98-a4c3-3b3f10a82e1e",
+            "c96199a5-6652-5027-95ef-98ae8d794760",
+            "6c9976e1-0904-5045-be19-c68d5466be59",
+            "43047e8c-4816-554a-a8cf-1c00f9ca17c4",
+            "60f05170-78fd-5e4e-8227-7c707ba71cc7",
+            "4762b86a-9f38-5d81-8387-58859bf10b25",
+            "4badda2e-3bd7-5e21-8417-a5580fff92e0",
+            "5e2ee8bc-96c5-5039-b173-cce607ece574",
+            "84c6e8bf-a276-5d83-8a6b-2ef8435c123a",
+            "01950963-b97c-5528-8421-8d122b542ce1",
+            "85eff15e-c862-56ce-bf89-6418d738ceed",
+            "ca13932d-ff52-5243-a2ce-672e29ce0af1",
+            "a503f9ee-79ef-596e-b3b2-26efe6acdffe",
+            "3a76fcbb-a08e-5fc8-a338-fa427de41f43",
+            "8fce1604-1ae6-5f6c-9214-92fd382d8bcf",
+            "5814bf13-c608-540f-a9d9-2f86ae9a67e1",
+            "2f8063a2-453e-5995-a4b3-0333ee6f6aa3",
+            "7655aa25-9e04-5ad2-8c59-be3e649bd4dc",
+            "aeabaef9-c5e3-5ed7-9f10-e6ecd72f765f",
+            "42d4c5a7-1bb0-5c93-9877-03b2882cef66",
+            "5a3667a5-a547-5b0d-a02e-6fd72a3f5c07",
+            "59485555-63ea-5b0a-bc5a-cf360303de3a",
+            "1a898cf1-5e56-53ef-8637-83e873ac4801",
+            "0e9cf48c-960b-57c4-9aa3-b0ccdf726d8e",
+            "9a95b540-a929-5c99-8c6d-3da3542d7070",
+            "b3c2c589-9f80-56ed-a8da-f921597c6d61",
+            "4514752a-80f3-594a-8f3c-77df76c05924",
+            "ec609a19-0543-52c0-8e0c-f54b7a7183ac",
+            "7417b138-3603-5766-aaa3-094932ae2cb7",
+            "cf21b4d8-bec2-5b4f-a96f-91aad6038072"
+          ],
+          "revisions": [
+            "more-r0",
+            "more-r1",
+            "more-r2",
+            "more-r3",
+            "more-r4",
+            "more-r5",
+            "more-r6",
+            "more-r7",
+            "more-r8",
+            "more-r9"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "unpresented.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Resource",
+              "name": "missing"
+            }
+          }
+        },
+        "key": "keyed-refused"
+      },
+      "expect": {
+        "external_intents": [],
+        "stateUnchanged": true,
+        "reply": {
+          "error": {
+            "data": {
+              "io.github.shrav-k.conduit/reason": "refused"
+            }
+          }
+        },
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "idempotencyKey": "keyed-refused"
+            },
+            "id": "db0719a0-0884-5501-860e-2724a7b910d5",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:05:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "idempotencyKey": "keyed-refused",
+              "reason": "refused"
+            },
+            "id": "6f6dd038-3da1-5bb9-8d61-07aac5311b0f",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:05:00Z"
+          }
+        ],
+        "absent": [
+          "/records/0/data/invocation",
+          "/records/1/data/invocation"
+        ],
+        "required_promises": [
+          "REC-002"
+        ]
+      }
+    }
+  ]
+}

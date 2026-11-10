@@ -1,6 +1,7 @@
 //! File input, case validation and assertions. This crate owns all I/O for the pure core.
 mod access;
 mod packages;
+mod records;
 mod schemas;
 use conduit_core::{Context, Input, State};
 use conduit_loader::{
@@ -40,6 +41,7 @@ pub struct CaseReport {
     pub id: String,
     pub promises: Vec<String>,
     pub steps: usize,
+    pub storage: Vec<Value>,
 }
 
 fn read_value(path: &Path) -> Result<Value> {
@@ -82,6 +84,7 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
         .map_err(|e| e.to_string())?;
     let profile = read_value(&repository.join("conformance/profiles/first-build.yaml"))?;
     let mut context = Context {
+        builtin: Some(packages::builtin(&spec)?),
         core_package: spec.names().core_package.clone(),
         meta_prefix: read_file(&repository.join("spec/names.yaml")).unwrap()[0]
             .root
@@ -176,12 +179,13 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
         if !case.id.starts_with(prefix) {
             continue;
         }
-        run_case(&path, &case, &spec, &context, &known_promises)
+        let storage = run_case(&path, &case, &spec, &context, &known_promises)
             .map_err(|e| format!("{} [{}]: {e}", case.id, case.promises.join(", ")))?;
         reports.push(CaseReport {
             id: case.id,
             promises: case.promises,
             steps: case.steps.len(),
+            storage,
         });
     }
     if ids != inventory_ids {
@@ -330,7 +334,7 @@ fn run_case(
     spec: &Specification,
     context: &Context,
     known: &BTreeSet<String>,
-) -> Result<()> {
+) -> Result<Vec<Value>> {
     if case.profile != "first-build" || case.title.is_empty() || case.layers.is_empty() {
         return Err("unsupported profile or initial recipe".into());
     }
@@ -343,6 +347,7 @@ fn run_case(
             serde_json::from_value(value).map_err(|e| format!("invalid state snapshot: {e}"))?
         }
     };
+    let mut storage = vec![];
     let mut symbols = BTreeMap::new();
     let record_validator = spec
         .contract_validator("record.v1")
@@ -476,6 +481,7 @@ fn run_case(
                     let bytes = serde_json::to_vec(&state).map_err(|e| e.to_string())?;
                     next = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
                     if input["records_purged"] == true {
+                        next.record_gaps.push(json!({"cause":"purged-observation","records":next.records.iter().map(|r| json!({"source":r["source"],"id":r["id"]})).collect::<Vec<_>>()}));
                         next.records.clear();
                     }
                     let evidence = input
@@ -662,13 +668,28 @@ fn run_case(
                         return Err("decision lacks a requiring known promise".into());
                     }
                 }
-                for r in actual["records"]
-                    .as_array()
-                    .ok_or("transition has no records")?
-                {
+                for r in next.records.iter().chain(
+                    actual["records"]
+                        .as_array()
+                        .ok_or("transition has no records")?
+                        .iter(),
+                ) {
                     record_validator
                         .validate(r)
                         .map_err(|e| format!("record.v1: {e}"))?;
+                    if ![
+                        "access-decision",
+                        "request-ended",
+                        "invocation-dispatched",
+                        "invocation-ended",
+                        "provider-call",
+                        "object-change",
+                    ]
+                    .iter()
+                    .any(|e| r["type"] == *e)
+                    {
+                        return Err("undocumented record event type".into());
+                    }
                     if r["type"] == "provider-call" {
                         for field in [
                             "serving",
@@ -691,12 +712,23 @@ fn run_case(
                 } else {
                     state.records.clone()
                 };
+                // A successful purge is the only core transition permitted to remove records.
+                let purged: BTreeSet<String> = appended
+                    .iter()
+                    .filter(|r| r["data"]["action"] == "records-purged")
+                    .flat_map(|r| r["data"]["purged"].as_array().into_iter().flatten())
+                    .map(|r| format!("{}:{}", r["source"], r["id"]))
+                    .collect();
                 retained.extend(appended.iter().cloned());
+                retained.retain(|r| !purged.contains(&format!("{}:{}", r["source"], r["id"])));
                 if next.records != retained {
                     return Err(
                         "REC-003: records were changed or omitted from the transition".into(),
                     );
                 }
+            }
+            if actual.get("decisions").is_some() {
+                records::transition(&actual, &state, &next, context, input["key"].as_str())?;
             }
             for condition in next
                 .objects
@@ -861,7 +893,7 @@ fn run_case(
             }
         }
         projection(&actual, &Value::Object(fields), "")
-            .map_err(|e| format!("step {}: {e}", index + 1))?;
+            .map_err(|e| format!("step {}: {e}; reply: {}", index + 1, actual["reply"]))?;
         if let Some(captures) = raw_step["capture"].as_object() {
             for (name, pointer) in captures {
                 if symbols.contains_key(name) {
@@ -873,7 +905,13 @@ fn run_case(
                 symbols.insert(name.clone(), value.clone());
             }
         }
+        if actual.get("decisions").is_some() {
+            let bytes = |v: &Vec<Value>| -> Result<i64> {
+                Ok(serde_json::to_vec(v).map_err(|e| e.to_string())?.len() as i64)
+            };
+            storage.push(json!({"step":index+1,"input":raw_step["input"]["kind"],"records_bytes":bytes(&next.records)?,"record_gap_bytes":bytes(&next.record_gaps)?,"invocation_index_bytes":bytes(&next.invocations)?,"records_growth":bytes(&next.records)?-bytes(&state.records)?,"invocation_index_growth":bytes(&next.invocations)?-bytes(&state.invocations)?,"invocations":next.invocations.iter().map(|v| json!({"id":v["id"],"keyed":v["key"].is_string(),"state":v["state"],"bytes":serde_json::to_vec(v).unwrap().len()})).collect::<Vec<_>>()}));
+        }
         state = next;
     }
-    Ok(())
+    Ok(storage)
 }

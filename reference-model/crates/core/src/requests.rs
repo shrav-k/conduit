@@ -89,6 +89,7 @@ struct RecordInputs<'a> {
     state: &'a crate::State,
     c: &'a Context,
     excluded: Vec<Value>,
+    referenced: Vec<Value>,
 }
 impl RecordInputs<'_> {
     #[allow(clippy::too_many_arguments)]
@@ -107,6 +108,27 @@ impl RecordInputs<'_> {
         }
         let schema = root.pointer(schema_at).ok_or("missing record schema")?;
         if let Some(r) = schema["$ref"].as_str() {
+            let core_reference = r.strip_prefix(&format!("{}#", self.c.core_package));
+            if let Some(reference_kind) = core_reference.filter(|n| n.ends_with("reference.v1")) {
+                let kind = match reference_kind {
+                    "agent-reference.v1" => Some("Agent"),
+                    "interface-reference.v1" => Some("Interface"),
+                    "resource-reference.v1" | "secret-reference.v1" => Some("Resource"),
+                    "pool-reference.v1" => Some("Pool"),
+                    "conduit-reference.v1" => Some("Conduit"),
+                    _ => None,
+                };
+                let reference = match (kind, value.as_str()) {
+                    (Some(kind), Some(name)) => json!({"kind":kind,"name":name}),
+                    _ => value.clone(),
+                };
+                if let Some(object) = access::object(self.state, &reference)
+                    && !self.referenced.contains(&object["id"])
+                {
+                    self.referenced.push(object["id"].clone());
+                }
+            }
+
             if r == self.c.qualified("secret-reference.v1") {
                 // Only a resolved Resource reference may reach a record (SEC-004).
                 if value["kind"] == "Resource"
@@ -286,6 +308,7 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
     if let Some(v) = invocation {
         for (dest, source) in [
             ("idempotencyKey", "key"),
+            ("target", "target"),
             ("caller", "caller"),
             ("consumer", "sender"),
             ("conduit", "conduit"),
@@ -362,6 +385,7 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
                     state: &t.state,
                     c,
                     excluded: vec![],
+                    referenced: vec![],
                 };
                 let original = value.clone();
                 redactor.redact(&scope, schema, "", &original, "", &mut value, 0)?;
@@ -373,6 +397,27 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn referenced_objects(
+    state: &crate::State,
+    target: &Value,
+    op: &str,
+    arguments: &Value,
+    c: &Context,
+) -> Result<Vec<Value>> {
+    let (env, scope, contract) = schemas::operation(target, op, &c.core_package)?;
+    let mut walk = RecordInputs {
+        env: &env,
+        state,
+        c,
+        excluded: vec![],
+        referenced: vec![],
+    };
+    if let Some(schema) = contract["spec"].get("inputSchema") {
+        walk.redact(&scope, schema, "", arguments, "", &mut arguments.clone(), 0)?;
+    }
+    Ok(walk.referenced)
 }
 
 pub(crate) fn record(
@@ -460,6 +505,12 @@ pub(crate) fn reject(
     if rule == "ACC-001" || rule == "TPL-013" {
         t.reply = json!({"error":{"code":-32602,"message":"The tool is not presented.","data":{mark(c,"reason"):reason}}});
     }
+    if rule == "LIF-037" {
+        let args = &route["arguments"];
+        if let Some(o) = access::object(&t.state, args.get("object").unwrap_or(&args["instance"])) {
+            t.reply["structuredContent"]["diagnostics"] = json!([{"ruleId":rule,"level":"error","message":{"text":format!("expected ID {}, resolved ID {}", args["expectedId"],o["id"])},"properties":{"expectedId":args["expectedId"],"actualId":o["id"]}}]);
+        }
+    }
     t.decisions.push(decision(
         "end-with-reason",
         &[rule, "OPS-005", "OPS-023", "IFC-025"],
@@ -533,6 +584,26 @@ pub(crate) fn invoke_part(
     if key.as_ref().is_some_and(String::is_empty) {
         return Err("empty idempotency key at boundary".into());
     }
+    if !request.readable && access::established(&t.state, &request.identity).is_err() {
+        t.reply = envelope(
+            c,
+            None,
+            Some("invalid"),
+            None,
+            "IFC-036",
+            json!({}),
+            json!([]),
+            None,
+        );
+        t.decisions.push(decision(
+            "unreadable-unidentified-request",
+            &["IFC-036", "REC-001", "OPS-023"],
+            &[],
+            json!({}),
+            vec![],
+        ));
+        return Ok(());
+    }
     let v = access::evaluate(&t.state, request, c, true)?;
     let mut route = v.route;
     if let Some(parent) = parent
@@ -549,21 +620,61 @@ pub(crate) fn invoke_part(
     {
         route["arguments"] = request.arguments.clone();
     }
-    if let Some(key) = &key {
-        route["idempotencyKey"] = json!(key);
-    }
     if parent.is_none()
         && let Some(serving) = &request.serving
     {
         route["serving"] = json!(serving);
     }
-    record(
-        t,
-        a,
-        c,
-        "access-decision",
-        json!({"target":route["target"],"consumer":route["consumer"],"caller":route["caller"],"tool":request.tool,"conduit":route["conduit"],"operation":route["operation"],"serving":route["serving"],"idempotencyKey":key,"arguments":route["arguments"],"permitted":v.reason.is_none()}),
-    )?;
+    let mut access_data = route.clone();
+    if !access_data.is_object() {
+        access_data = json!({});
+    }
+    access_data.as_object_mut().unwrap().remove("filters");
+    access_data["tool"] = json!(request.tool);
+    access_data["permitted"] = json!(v.reason.is_none());
+    if let Some(reason) = v.reason {
+        access_data["reason"] = json!(reason);
+        access_data["dispatched"] = json!(false);
+    }
+    if access_data.get("caller").is_none()
+        && let Ok(instance) = access::established(&t.state, &request.identity)
+    {
+        access_data["consumer"] = instance["id"].clone();
+        if request.serving.is_none() {
+            access_data["caller"] = instance["id"].clone();
+        } else if let Some(parent) = request.serving.as_ref().and_then(|s| {
+            t.state
+                .invocations
+                .iter()
+                .find(|v| v["id"] == *s && v["target"] == instance["id"])
+        }) {
+            access_data["caller"] = parent["caller"].clone();
+        }
+    }
+    if access_data.get("caller").is_none() {
+        access_data["identityStatus"] = json!(if matches!(
+            request.identity,
+            access::Identity::Unreadable
+        ) {
+            "unreadable"
+        } else {
+            "not-established"
+        });
+    }
+    if let Some(key) = &key {
+        access_data["idempotencyKey"] = json!(key);
+    }
+    // An undispatched ending has no invocation to enrich it: carry its identity
+    // and supplied key directly from this request (REC-002).
+    if !route.is_object() {
+        route = json!({});
+    }
+    for field in ["caller", "consumer", "identityStatus", "idempotencyKey"] {
+        if let Some(value) = access_data.get(field) {
+            route[field] = value.clone();
+        }
+    }
+    record(t, a, c, "access-decision", access_data)?;
     let mut access_rules = v.rules.clone();
     access_rules.extend(["REC-001", "REC-002", "SEC-004"]);
     t.decisions.push(decision(
@@ -603,6 +714,9 @@ pub(crate) fn invoke_part(
     let mut redispatch = false;
     if let Some(old) = &previous {
         let id = &old["id"];
+        if old["digest"] == digest {
+            link_access(t, id);
+        }
         let conflict = if old["digest"] != digest {
             Some("OPS-010")
         } else if old["state"] == "in-progress" {
@@ -639,6 +753,11 @@ pub(crate) fn invoke_part(
     }
     if (previous.is_none() || redispatch)
         && let Some((reason, rule)) = crate::lifecycle::preflight(&t.state, &route, c)?
+    {
+        return reject(t, a, c, &route, reason, rule, None, None);
+    }
+    if (previous.is_none() || redispatch)
+        && let Some((reason, rule)) = crate::records::preflight(&t.state, &route, c, a)?
     {
         return reject(t, a, c, &route, reason, rule, None, None);
     }
@@ -740,11 +859,19 @@ pub(crate) fn invoke_part(
     if implementation.is_null() {
         return Err("missing selected implementation".into());
     }
-    if implementation["source"] == "engine" && !reconcile && !crate::lifecycle::handles(op, c) {
+    if implementation["source"] == "engine"
+        && !reconcile
+        && !crate::lifecycle::handles(op, c)
+        && !crate::records::handles(op, c)
+    {
         return Err("engine operation belongs to its lifecycle or records transition".into());
     }
     let plain = implementation["item"]["plain"] == true;
     let mut invocation = json!({"id":id,"key":key,"sender":route["consumer"],"caller":route["caller"],"target":route["target"],"conduit":route["conduit"],"operation":op,"arguments":route["arguments"],"digest":digest,"filters":route["filters"],"state":"in-progress","plain":plain,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":plain || contract["spec"].get("outputSchema").is_some(),"attempt":previous.as_ref().and_then(|v|v["attempt"].as_u64()).unwrap_or(0)+1,"wire_retried":false,"config":target["config"],"revision":target["revision"]});
+    let related = referenced_objects(&t.state, &target, op, &route["arguments"], c)?;
+    if !related.is_empty() {
+        invocation["input_objects"] = json!(related);
+    }
     if let Some(serving) = &request.serving {
         invocation["serving"] = json!(serving);
     }
@@ -764,6 +891,7 @@ pub(crate) fn invoke_part(
         t.state.invocations.push(invocation.clone());
         t.state.invocations.len() - 1
     };
+    link_access(t, &id);
     record(
         t,
         a,
@@ -808,6 +936,8 @@ pub(crate) fn invoke_part(
             vec![],
         ));
         finish(t, a, c, i, "succeeded", json!({}), json!([]))?;
+    } else if crate::records::handles(op, c) {
+        crate::records::execute(t, a, c, i)?;
     } else if crate::lifecycle::handles(op, c) {
         crate::lifecycle::execute(t, a, c, i)?;
     } else {
@@ -816,6 +946,20 @@ pub(crate) fn invoke_part(
     }
     Ok(())
 }
+fn link_access(t: &mut Transition, id: &Value) {
+    if let Some(r) = t
+        .records
+        .iter_mut()
+        .rev()
+        .find(|r| r["type"] == "access-decision")
+    {
+        r["data"]["invocation"] = id.clone();
+        if let Some(stored) = t.state.records.iter_mut().find(|s| s["id"] == r["id"]) {
+            *stored = r.clone();
+        }
+    }
+}
+
 pub(crate) fn finish(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -1236,6 +1380,7 @@ mod tests {
             scopes: BTreeMap::from([("core".into(), scope)]),
         };
         let c = Context {
+            builtin: None,
             core_package: core.into(),
             meta_prefix: "test/".into(),
             templates: BTreeMap::new(),

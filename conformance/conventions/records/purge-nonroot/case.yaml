@@ -1,0 +1,68 @@
+{
+  "id": "records-purge-nonroot",
+  "title": "purge nonroot",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "REC-004",
+    "ACC-032"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../initial.json",
+    "fixture": "../fixture.json",
+    "manifest": "../manifest.json",
+    "documents": "../documents.json",
+    "requests": "requests.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 0
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000900",
+              "reason": "refused"
+            },
+            "id": "00000000-0000-4000-8000-000000100800",
+            "time": "2026-11-09T12:00:00Z",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000900",
+              "reason": "refused"
+            },
+            "id": "00000000-0000-4000-8000-000000100801",
+            "time": "2026-11-09T12:00:00Z",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build"
+          }
+        ],
+        "required_promises": [
+          "ACC-032"
+        ]
+      }
+    }
+  ]
+}

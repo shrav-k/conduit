@@ -39,6 +39,11 @@
             "00000000-0000-4000-8000-000000000107",
             "00000000-0000-4000-8000-000000000108",
             "00000000-0000-4000-8000-000000000109",
+            "efe16cd3-bd12-5aaf-9506-af481d67e427",
+            "c0b453f7-f420-5192-a853-a51f333b972f",
+            "23658c62-d4b1-537d-87c3-3fe1d41ca884",
+            "6fd316fa-b556-50bb-8d53-fde6cd0850e0",
+            "d0816d38-ffa7-5e8e-92fc-71749bab3e23",
             "00000000-0000-4000-8000-000000000110",
             "00000000-0000-4000-8000-000000000111",
             "00000000-0000-4000-8000-000000000112",
@@ -93,7 +98,42 @@
           "OBJ-003"
         ],
         "reply": {
-          "accepted": true
+          "accepted": true,
+          "objects": [
+            {
+              "kind": "Pool",
+              "name": "pool",
+              "id": "00000000-0000-4000-8000-000000000100"
+            },
+            {
+              "kind": "Resource",
+              "name": "resource",
+              "id": "00000000-0000-4000-8000-000000000101"
+            },
+            {
+              "kind": "Pool",
+              "name": "p",
+              "id": "00000000-0000-4000-8000-000000000102"
+            },
+            {
+              "kind": "Resource",
+              "name": "resource-a0000",
+              "id": "00000000-0000-4000-8000-000000000103",
+              "nested": {
+                "instance": "00000000-0000-4000-8000-000000000102",
+                "name": "one"
+              }
+            },
+            {
+              "kind": "Resource",
+              "name": "resource-a0001",
+              "id": "00000000-0000-4000-8000-000000000104",
+              "nested": {
+                "instance": "00000000-0000-4000-8000-000000000102",
+                "name": "two"
+              }
+            }
+          ]
         },
         "state": {
           "objects": [
@@ -188,6 +228,37 @@
         },
         "records": [
           {
+            "id": "c0b453f7-f420-5192-a853-a51f333b972f",
+            "type": "access-decision",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427",
+              "permitted": true
+            }
+          },
+          {
+            "id": "23658c62-d4b1-537d-87c3-3fe1d41ca884",
+            "type": "invocation-dispatched",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427"
+            }
+          },
+          {
             "id": "00000000-0000-4000-8000-000000000105",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
@@ -195,7 +266,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000100",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427"
             }
           },
           {
@@ -206,7 +278,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000101",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427"
             }
           },
           {
@@ -217,7 +290,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000102",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427"
             }
           },
           {
@@ -228,7 +302,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000103",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427"
             }
           },
           {
@@ -239,14 +314,49 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000104",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427"
+            }
+          },
+          {
+            "id": "6fd316fa-b556-50bb-8d53-fde6cd0850e0",
+            "type": "invocation-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427",
+              "outcome": "succeeded"
+            }
+          },
+          {
+            "id": "d0816d38-ffa7-5e8e-92fc-71749bab3e23",
+            "type": "request-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "efe16cd3-bd12-5aaf-9506-af481d67e427",
+              "outcome": "succeeded"
             }
           }
         ],
         "absent": [
-          "/state/objects/10/arguments",
-          "/state/objects/11/arguments",
-          "/state/objects/12/arguments"
+          "/reply/objects/0/nested",
+          "/reply/objects/1/nested",
+          "/reply/objects/2/nested",
+          "/reply/objects/3/nested/parent",
+          "/reply/objects/3/nested/slot"
         ]
       }
     }

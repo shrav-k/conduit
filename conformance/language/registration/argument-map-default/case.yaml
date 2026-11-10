@@ -33,6 +33,11 @@
             "00000000-0000-4000-8000-000000000101",
             "00000000-0000-4000-8000-000000000102",
             "00000000-0000-4000-8000-000000000103",
+            "67edf5de-0787-5e76-9811-8e0cb909b7d5",
+            "3afc5ea5-cd1c-58ee-9d3f-152c123e670c",
+            "99f85dec-0482-5685-875d-e9c5b8afc210",
+            "7b5a680b-52d3-5cda-be97-d93c57e55362",
+            "1058fe39-3fb3-50e4-96cf-c8960c51937d",
             "00000000-0000-4000-8000-000000000104",
             "00000000-0000-4000-8000-000000000105",
             "00000000-0000-4000-8000-000000000106",
@@ -141,6 +146,37 @@
         },
         "records": [
           {
+            "id": "3afc5ea5-cd1c-58ee-9d3f-152c123e670c",
+            "type": "access-decision",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "67edf5de-0787-5e76-9811-8e0cb909b7d5",
+              "permitted": true
+            }
+          },
+          {
+            "id": "99f85dec-0482-5685-875d-e9c5b8afc210",
+            "type": "invocation-dispatched",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "67edf5de-0787-5e76-9811-8e0cb909b7d5"
+            }
+          },
+          {
             "id": "00000000-0000-4000-8000-000000000102",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
@@ -148,7 +184,8 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000100",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "67edf5de-0787-5e76-9811-8e0cb909b7d5"
             }
           },
           {
@@ -159,7 +196,40 @@
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000101",
-              "action": "registered"
+              "action": "registered",
+              "invocation": "67edf5de-0787-5e76-9811-8e0cb909b7d5"
+            }
+          },
+          {
+            "id": "7b5a680b-52d3-5cda-be97-d93c57e55362",
+            "type": "invocation-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "67edf5de-0787-5e76-9811-8e0cb909b7d5",
+              "outcome": "succeeded"
+            }
+          },
+          {
+            "id": "1058fe39-3fb3-50e4-96cf-c8960c51937d",
+            "type": "request-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "67edf5de-0787-5e76-9811-8e0cb909b7d5",
+              "outcome": "succeeded"
             }
           }
         ]

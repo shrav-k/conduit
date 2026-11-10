@@ -355,3 +355,27 @@ setup. The runner validates every condition against `condition.v1` and rejects r
 fields on every provider-call record, in addition to the vectors' positive and absent-field
 assertions. The condition cases check unchanged transition times, changed statuses, preserved
 unrelated conditions and the last successful heartbeat when observation becomes unknown.
+
+Work order 017 adds the `records-*` cases for inspection, explicit export, unreadable ranges,
+root-only purge and its permanent certificates, E11 replacement and old contexts, E12 stale
+expected IDs after observed name reuse, and E08's trusted broker and carried-filter boundary.
+The E12 observation supplies the state after removal/name reuse; it does not claim retirement
+recovery. The broker fixture supplies the trusted adapter's approved onward request; it does
+not test that adapter's approval implementation. New registration occurrences use additional
+supplied IDs, preserving the earlier vectors' object allocations.
+
+`export-records` takes optional `unreadable` record IDs as read-availability evidence. The
+profile defines its gap fields and event actions. Every transition validates all retained and
+new records, checks applicable correlation and provider fields, and compares inspection's
+records and unknown invocation IDs as exact ordered lists. `D19` output measures record,
+record-gap and invocation-index bytes separately and reports the growth per step and each
+invocation's key status and outcome. Projection of other implementation-defined fields never
+makes a required portable field optional.
+
+The return review adds keyed successful registration/replacement replays and keyed refused,
+invalid and preflight-conflict endings. The runner compares each supplied key directly with
+both outer request records, even without an invocation entry, and validates generated,
+retained and replayed successful built-in outputs against their core Operation contracts.
+Template inspection omits status under LIF-012; instance inspection keeps LIF-013's complete
+status. The missing-Resource pairs assert management's invalid diagnostic and the Pool-only
+caller's refusal without any object disclosure, as finding 2-08's admin settlement requires.

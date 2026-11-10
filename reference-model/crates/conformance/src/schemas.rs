@@ -295,6 +295,7 @@ mod tests {
         let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let spec = Specification::read(&repository.join("spec")).unwrap();
         let context = Context {
+            builtin: None,
             core_package: spec.names().core_package.clone(),
             meta_prefix: read_file(&repository.join("spec/names.yaml")).unwrap()[0]
                 .root
@@ -352,6 +353,7 @@ mod regression_vectors {
         let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let spec = Specification::read(&repository.join("spec")).unwrap();
         let context = Context {
+            builtin: None,
             core_package: spec.names().core_package.clone(),
             meta_prefix: read_file(&repository.join("spec/names.yaml")).unwrap()[0]
                 .root

@@ -1,0 +1,709 @@
+{
+  "id": "records-keyed-conflict",
+  "title": "Keyed conflict retains its key before invocation allocation",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "REC-002",
+    "OPS-023"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../initial.json",
+    "fixture": "../fixture.json",
+    "manifest": "../manifest.json",
+    "documents": "../documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "register-project",
+        "file": "fixture",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000100100",
+            "00000000-0000-4000-8000-000000100101",
+            "00000000-0000-4000-8000-000000100102",
+            "00000000-0000-4000-8000-000000100103",
+            "07cddd95-441c-5b76-933f-5b90dff660c6",
+            "f4996773-47f0-5a51-baf5-d2140a958726",
+            "ef0efb09-a424-5542-81e4-a310255bc79d",
+            "6e3f3d22-8e36-5195-9d72-d91d5c8b30d2",
+            "d3204a79-0136-55ca-b3aa-a0855359daf1",
+            "00000000-0000-4000-8000-000000100104",
+            "00000000-0000-4000-8000-000000100105",
+            "00000000-0000-4000-8000-000000100106",
+            "00000000-0000-4000-8000-000000100107",
+            "00000000-0000-4000-8000-000000100108",
+            "00000000-0000-4000-8000-000000100109",
+            "00000000-0000-4000-8000-000000100110",
+            "00000000-0000-4000-8000-000000100111",
+            "00000000-0000-4000-8000-000000100112",
+            "00000000-0000-4000-8000-000000100113",
+            "00000000-0000-4000-8000-000000100114",
+            "00000000-0000-4000-8000-000000100115",
+            "00000000-0000-4000-8000-000000100116",
+            "00000000-0000-4000-8000-000000100117",
+            "00000000-0000-4000-8000-000000100118",
+            "00000000-0000-4000-8000-000000100119",
+            "00000000-0000-4000-8000-000000100120",
+            "00000000-0000-4000-8000-000000100121",
+            "00000000-0000-4000-8000-000000100122",
+            "00000000-0000-4000-8000-000000100123",
+            "00000000-0000-4000-8000-000000100124",
+            "00000000-0000-4000-8000-000000100125",
+            "00000000-0000-4000-8000-000000100126",
+            "00000000-0000-4000-8000-000000100127",
+            "00000000-0000-4000-8000-000000100128",
+            "00000000-0000-4000-8000-000000100129",
+            "00000000-0000-4000-8000-000000100130",
+            "00000000-0000-4000-8000-000000100131",
+            "00000000-0000-4000-8000-000000100132",
+            "00000000-0000-4000-8000-000000100133",
+            "00000000-0000-4000-8000-000000100134",
+            "00000000-0000-4000-8000-000000100135",
+            "00000000-0000-4000-8000-000000100136",
+            "00000000-0000-4000-8000-000000100137",
+            "00000000-0000-4000-8000-000000100138",
+            "00000000-0000-4000-8000-000000100139",
+            "00000000-0000-4000-8000-000000100140",
+            "00000000-0000-4000-8000-000000100141",
+            "00000000-0000-4000-8000-000000100142",
+            "00000000-0000-4000-8000-000000100143",
+            "00000000-0000-4000-8000-000000100144",
+            "00000000-0000-4000-8000-000000100145",
+            "00000000-0000-4000-8000-000000100146",
+            "00000000-0000-4000-8000-000000100147",
+            "00000000-0000-4000-8000-000000100148",
+            "00000000-0000-4000-8000-000000100149"
+          ],
+          "revisions": [
+            "replacement-r0",
+            "replacement-r1",
+            "replacement-r2",
+            "replacement-r3",
+            "replacement-r4",
+            "replacement-r5",
+            "replacement-r6",
+            "replacement-r7",
+            "replacement-r8",
+            "replacement-r9",
+            "replacement-r10",
+            "replacement-r11",
+            "replacement-r12",
+            "replacement-r13",
+            "replacement-r14",
+            "replacement-r15",
+            "replacement-r16",
+            "replacement-r17",
+            "replacement-r18",
+            "replacement-r19"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03",
+            "abc04"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000006",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        }
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "external_intents": [],
+        "state": {
+          "started": true
+        },
+        "required_promises": [
+          "REC-001",
+          "REC-002"
+        ],
+        "records": [
+          {
+            "id": "f4996773-47f0-5a51-baf5-d2140a958726",
+            "type": "access-decision",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "07cddd95-441c-5b76-933f-5b90dff660c6",
+              "permitted": true
+            }
+          },
+          {
+            "id": "ef0efb09-a424-5542-81e4-a310255bc79d",
+            "type": "invocation-dispatched",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "07cddd95-441c-5b76-933f-5b90dff660c6"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000100102",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000100100",
+              "invocation": "07cddd95-441c-5b76-933f-5b90dff660c6"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000100103",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000100101",
+              "invocation": "07cddd95-441c-5b76-933f-5b90dff660c6"
+            }
+          },
+          {
+            "id": "6e3f3d22-8e36-5195-9d72-d91d5c8b30d2",
+            "type": "invocation-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "07cddd95-441c-5b76-933f-5b90dff660c6",
+              "outcome": "succeeded"
+            }
+          },
+          {
+            "id": "d3204a79-0136-55ca-b3aa-a0855359daf1",
+            "type": "request-ended",
+            "source": "urn:conduit:first-build",
+            "specversion": "1.0",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000005",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "conduit": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "invocation": "07cddd95-441c-5b76-933f-5b90dff660c6",
+              "outcome": "succeeded"
+            }
+          }
+        ]
+      },
+      "capture": {
+        "template": "/reply/objects/0/id",
+        "old": "/reply/objects/1/id"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000101100",
+            "00000000-0000-4000-8000-000000101101",
+            "00000000-0000-4000-8000-000000101102",
+            "00000000-0000-4000-8000-000000101103",
+            "00000000-0000-4000-8000-000000101104",
+            "00000000-0000-4000-8000-000000101105",
+            "00000000-0000-4000-8000-000000101106",
+            "00000000-0000-4000-8000-000000101107",
+            "00000000-0000-4000-8000-000000101108",
+            "00000000-0000-4000-8000-000000101109",
+            "00000000-0000-4000-8000-000000101110",
+            "00000000-0000-4000-8000-000000101111",
+            "00000000-0000-4000-8000-000000101112",
+            "00000000-0000-4000-8000-000000101113",
+            "00000000-0000-4000-8000-000000101114",
+            "00000000-0000-4000-8000-000000101115",
+            "00000000-0000-4000-8000-000000101116",
+            "00000000-0000-4000-8000-000000101117",
+            "00000000-0000-4000-8000-000000101118",
+            "00000000-0000-4000-8000-000000101119",
+            "00000000-0000-4000-8000-000000101120",
+            "00000000-0000-4000-8000-000000101121",
+            "00000000-0000-4000-8000-000000101122",
+            "00000000-0000-4000-8000-000000101123",
+            "00000000-0000-4000-8000-000000101124",
+            "00000000-0000-4000-8000-000000101125",
+            "00000000-0000-4000-8000-000000101126",
+            "00000000-0000-4000-8000-000000101127",
+            "00000000-0000-4000-8000-000000101128",
+            "00000000-0000-4000-8000-000000101129",
+            "00000000-0000-4000-8000-000000101130",
+            "00000000-0000-4000-8000-000000101131",
+            "00000000-0000-4000-8000-000000101132",
+            "00000000-0000-4000-8000-000000101133",
+            "00000000-0000-4000-8000-000000101134",
+            "00000000-0000-4000-8000-000000101135",
+            "00000000-0000-4000-8000-000000101136",
+            "00000000-0000-4000-8000-000000101137",
+            "00000000-0000-4000-8000-000000101138",
+            "00000000-0000-4000-8000-000000101139",
+            "00000000-0000-4000-8000-000000101140",
+            "00000000-0000-4000-8000-000000101141",
+            "00000000-0000-4000-8000-000000101142",
+            "00000000-0000-4000-8000-000000101143",
+            "00000000-0000-4000-8000-000000101144",
+            "00000000-0000-4000-8000-000000101145",
+            "00000000-0000-4000-8000-000000101146",
+            "00000000-0000-4000-8000-000000101147",
+            "00000000-0000-4000-8000-000000101148",
+            "00000000-0000-4000-8000-000000101149"
+          ],
+          "revisions": [
+            "new-r0",
+            "new-r1",
+            "new-r2",
+            "new-r3",
+            "new-r4",
+            "new-r5",
+            "new-r6",
+            "new-r7",
+            "new-r8",
+            "new-r9",
+            "new-r10",
+            "new-r11",
+            "new-r12",
+            "new-r13",
+            "new-r14",
+            "new-r15",
+            "new-r16",
+            "new-r17",
+            "new-r18",
+            "new-r19"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03",
+            "abc04"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.replace.v1",
+          "arguments": {
+            "template": {
+              "apiVersion": "@apiVersion",
+              "kind": "Resource",
+              "metadata": {
+                "name": "worker"
+              },
+              "spec": {
+                "type": "#worker.v1",
+                "config": {
+                  "version": 1
+                }
+              }
+            },
+            "contracts": [
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Operation",
+                "metadata": {
+                  "name": "act.v1"
+                },
+                "spec": {
+                  "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "integer",
+                        "maximum": 20
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ]
+                  },
+                  "effect": "Writes one value."
+                }
+              },
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Capability",
+                "metadata": {
+                  "name": "work.v1"
+                },
+                "spec": {
+                  "operations": [
+                    "#act.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Type",
+                "metadata": {
+                  "name": "worker.v1"
+                },
+                "spec": {
+                  "family": "Resource",
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "offers": [
+                    "#work.v1"
+                  ],
+                  "implementation": {
+                    "#act.v1": "#worker-impl"
+                  }
+                }
+              }
+            ],
+            "manifest": {
+              "apiVersion": "@apiVersion",
+              "address": "example.org/repair",
+              "implementations": {
+                "worker-impl": {
+                  "implements": [
+                    "#act.v1"
+                  ],
+                  "command": [
+                    "/opt/new"
+                  ]
+                }
+              }
+            },
+            "revision": "replacement-r0"
+          }
+        }
+      },
+      "expect": {
+        "external_intents": [],
+        "reply": {
+          "structuredContent": {
+            "revision": "new-r0",
+            "diagnostics": []
+          }
+        },
+        "object_facts": [
+          {
+            "id": "$old",
+            "config": {
+              "version": 1
+            },
+            "held": {
+              "indexes": {
+                "project": {
+                  "worker-impl": {
+                    "spec": {
+                      "command": [
+                        "/opt/old"
+                      ]
+                    }
+                  }
+                }
+              },
+              "contexts": {
+                "project": {
+                  "digest": "sha256:246bbed3c41fae6d9f0e4b3cdd699dbcfe2f3d27a5057584ff3d3e4c27e924a0"
+                }
+              },
+              "environment": {
+                "scopes": {
+                  "project": {
+                    "contracts": {
+                      "act.v1": {
+                        "spec": {
+                          "inputSchema": {
+                            "properties": {
+                              "value": {
+                                "maximum": 10
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "required_promises": [
+          "SUB-009",
+          "INS-020",
+          "REV-002"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "0a4bfb8c-ad99-52e8-8bef-dc939e96c5aa",
+            "f045b0f4-af70-5426-ad5c-daaf5612036e",
+            "47efec0d-e1bc-52c8-ad7a-2cf9d226594b",
+            "6a73880d-3ef5-5692-9419-afabf29ec6d5",
+            "cdf72d3e-f685-5d81-8490-cf99c490886b",
+            "3e6e7fcc-d2d4-5335-9ff9-48b30e86443d",
+            "fad6780b-d6af-5832-9b40-e892a42d8514",
+            "f55aaa12-7fc7-54e8-9cb4-ccc0213c573b",
+            "0932b75e-267b-512b-825c-df740ba1db37",
+            "81cd75ed-fd53-55b0-bebe-68b0ffe3f4a8",
+            "d5487abf-3577-5989-8587-b9e8f0dce3b1",
+            "bad96b22-eb04-525a-9e0a-fcbfbb57705d",
+            "54a398d4-65b8-5f18-b115-67b0f79461a3",
+            "c6edca3f-c6ff-5256-909c-975c96700620",
+            "c01f7701-0a8b-557d-97be-bb3492298ebd",
+            "5566c23d-8e19-5dab-8b84-35b4b669bf40",
+            "15589a4c-87e4-57fb-9939-fc4e2ed77135",
+            "78542f3f-2686-5916-b758-7a29deecb0e0",
+            "c6bdf710-b42e-5698-8309-81d588ab0978",
+            "9e58eb06-f8ce-513a-ae0c-8e8d7fbb11e4",
+            "8041f9a9-fd1c-5678-bf06-2569e7f08055",
+            "cdd621f2-5cec-5a81-9128-978c699ee66c",
+            "a5bd7590-0c18-56dd-ac89-924540059479",
+            "272a4e13-39eb-5b87-ad26-99666daee013",
+            "383d9d51-765d-5669-b015-06e5c67a988b",
+            "5e59662d-4f8e-5123-a69c-32fe5358c57c",
+            "664fc85a-0c6e-56f9-908d-c98fa217eeed",
+            "e8cf899e-96d5-56c0-96f4-186efca5d350",
+            "a91b0e7e-7f85-56b7-b803-2d7cf282d7ad",
+            "e4ebfca3-83db-5a73-b9f6-992b5a03de67",
+            "9d5e1dd8-cb49-592b-bdec-0380755ef2f1",
+            "93abe333-9160-534c-a48a-b7ade7b66ee8",
+            "c9f7f6dd-0ffc-5f9a-88c6-96faaa6596cd",
+            "b99068e8-068d-531b-bf4f-31150834dd2c",
+            "7c374ce3-dc36-5615-ac0b-78cac1032c43",
+            "1baf0240-8c82-5995-8970-b7c7cacdd312",
+            "41ca0e01-6eba-55e0-8a1a-e464ff7dc785",
+            "39f3ae0c-f238-5fdd-a425-40f1fc5adf28",
+            "706e799e-057d-5d0c-af2f-4bf00cd642bd",
+            "983d3ff1-dbe3-54ff-9441-6d9d7f3246b9",
+            "595a4954-6258-5b54-a31a-db7f114d1811",
+            "cfab62f2-54a8-5f11-b3b6-a0592fd28d52",
+            "26b3c647-b62e-525d-b781-4778cdc5ee5c",
+            "4304ee7f-c6be-5b86-9028-1c2d9c001b25",
+            "507f2f67-3b93-5561-ac9b-7b84cd0a44f2",
+            "aab9de9e-cc2b-57c1-8cbf-60b3120dba47",
+            "752cbe16-b7ba-52a2-a1c6-10c6262ddde6",
+            "76d9b494-0c6f-551d-8719-c2f1e172ae08",
+            "b5caf0df-bdb3-510a-9534-9f877c01e17a",
+            "7a907c08-06a3-509f-a8ee-86db7041a914",
+            "e109be29-ce2d-5291-9b53-501ad13dc673",
+            "1b9f02b8-ddd8-52f7-99b2-3c379655a1f6",
+            "4b018df9-f15e-51b0-a755-ee16319517ec",
+            "6c59ffa8-d4b5-5bef-86d0-672b6814e14b",
+            "51088bef-1194-53c2-9410-6cf3faddd2ea",
+            "5d05bf80-8fdd-591f-bd3f-2803a6faa483",
+            "363c3d51-664f-57a6-8d96-b3ce9326245d",
+            "61ccba05-4ccb-530c-9930-e5bb3d5543c4",
+            "3e1624e1-03ce-5715-a8b1-0e9d9dead090",
+            "7b7521d3-6e00-5ced-a6b4-3bf8bc272b9b"
+          ],
+          "revisions": [
+            "replacement-r0",
+            "replacement-r1",
+            "replacement-r2",
+            "replacement-r3",
+            "replacement-r4",
+            "replacement-r5",
+            "replacement-r6",
+            "replacement-r7",
+            "replacement-r8",
+            "replacement-r9",
+            "replacement-r10",
+            "replacement-r11",
+            "replacement-r12",
+            "replacement-r13",
+            "replacement-r14",
+            "replacement-r15",
+            "replacement-r16",
+            "replacement-r17",
+            "replacement-r18",
+            "replacement-r19"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03",
+            "abc04"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.replace.v1",
+          "arguments": {
+            "template": {
+              "apiVersion": "@apiVersion",
+              "kind": "Resource",
+              "metadata": {
+                "name": "worker"
+              },
+              "spec": {
+                "type": "#worker.v1",
+                "config": {
+                  "version": 1
+                }
+              }
+            },
+            "contracts": [
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Operation",
+                "metadata": {
+                  "name": "act.v1"
+                },
+                "spec": {
+                  "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "integer",
+                        "maximum": 20
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ]
+                  },
+                  "effect": "Writes one value."
+                }
+              },
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Capability",
+                "metadata": {
+                  "name": "work.v1"
+                },
+                "spec": {
+                  "operations": [
+                    "#act.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Type",
+                "metadata": {
+                  "name": "worker.v1"
+                },
+                "spec": {
+                  "family": "Resource",
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "offers": [
+                    "#work.v1"
+                  ],
+                  "implementation": {
+                    "#act.v1": "#worker-impl"
+                  }
+                }
+              }
+            ],
+            "manifest": {
+              "apiVersion": "@apiVersion",
+              "address": "example.org/repair",
+              "implementations": {
+                "worker-impl": {
+                  "implements": [
+                    "#act.v1"
+                  ],
+                  "command": [
+                    "/opt/new"
+                  ]
+                }
+              }
+            },
+            "revision": "replacement-r0"
+          }
+        },
+        "key": "keyed-conflict"
+      },
+      "expect": {
+        "external_intents": [],
+        "stateUnchanged": true,
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "conflict"
+          }
+        },
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "idempotencyKey": "keyed-conflict"
+            },
+            "id": "0a4bfb8c-ad99-52e8-8bef-dc939e96c5aa",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "idempotencyKey": "keyed-conflict",
+              "reason": "conflict"
+            },
+            "id": "f045b0f4-af70-5426-ad5c-daaf5612036e",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z"
+          }
+        ],
+        "absent": [
+          "/records/0/data/invocation",
+          "/records/1/data/invocation"
+        ],
+        "required_promises": [
+          "REC-002"
+        ]
+      }
+    }
+  ]
+}

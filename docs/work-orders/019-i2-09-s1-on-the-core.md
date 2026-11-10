@@ -57,3 +57,17 @@ As order 009's scope, and the two new files of decisions 3 and 4.
 S1 runs whole on the core by vectors; the coverage manifest has no unexplained gap; the
 conformance document and the handoff are written; the done-when of increment 2 is reported item
 by item; every decision cites a promise; and the checks of order 004's done-when pass.
+
+## Record
+
+Written by the admin when it merged the order, on 2026-11-10.
+
+- **Worker**: a first run of 2026-11-09 was lost with the session's scratch space, before it was
+  committed; the order ran again, 16 minutes, then a second round. S1 runs whole on the core as
+  a 58-step vector; every promise S1 touches has vectors (217) or a stated reason (91); the
+  first build's conformance document and the handoff to increment 3 are written; increment 2's
+  done-when is reported item by item.
+- **Verifier**: 5 minutes. Three `must` in the handoff and the conformance document, and one
+  `should`: steps of the whole-S1 vector that did not check their records.
+- **Admin**: sent the worker back once; each of the 75 record expectations added now fails the
+  vector when removed. Marked increment 2 done.

@@ -4,6 +4,7 @@ fn all_portable_cases_pass() {
     let reports = conduit_conformance::run_suite(&repository).unwrap_or_else(|e| panic!("{e}"));
     let ids: std::collections::BTreeSet<_> = reports.iter().map(|r| r.id.as_str()).collect();
     for required in [
+        "s1-whole",
         "records-replay-register",
         "records-replay-replace",
         "records-keyed-refused",

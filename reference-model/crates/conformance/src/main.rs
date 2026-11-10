@@ -4,7 +4,8 @@ fn main() {
         .nth(1)
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.."));
-    match conduit_conformance::run_suite(&repository) {
+    let prefix = std::env::args().nth(2).unwrap_or_default();
+    match conduit_conformance::run_matching(&repository, &prefix) {
         Ok(reports) => {
             for r in &reports {
                 println!(

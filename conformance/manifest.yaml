@@ -3487,6 +3487,416 @@
       "safety_rows": [
         "S1-key-scope"
       ]
+    },
+    {
+      "id": "setup-base",
+      "case": "conventions/setup/base/case.yaml",
+      "promises": [
+        "CON-004",
+        "ACC-005",
+        "TPL-012",
+        "PRV-007",
+        "LIF-003",
+        "REV-004",
+        "IMP-002"
+      ]
+    },
+    {
+      "id": "setup-sender",
+      "case": "conventions/setup/sender/case.yaml",
+      "promises": [
+        "ACC-005",
+        "CON-004",
+        "TPL-012",
+        "OPS-022",
+        "LIF-004",
+        "LIF-027"
+      ]
+    },
+    {
+      "id": "setup-sender-onward",
+      "case": "conventions/setup/sender-onward/case.yaml",
+      "promises": [
+        "ACC-005",
+        "CON-004",
+        "TPL-012",
+        "OPS-022",
+        "LIF-004",
+        "LIF-027"
+      ]
+    },
+    {
+      "id": "setup-sender-no-access",
+      "case": "conventions/setup/sender-no-access/case.yaml",
+      "promises": [
+        "ACC-005",
+        "CON-004",
+        "TPL-012",
+        "OPS-022",
+        "LIF-004",
+        "LIF-027"
+      ]
+    },
+    {
+      "id": "setup-target-registered",
+      "case": "conventions/setup/target-registered/case.yaml",
+      "promises": [
+        "CON-023",
+        "CON-024",
+        "LIF-003"
+      ]
+    },
+    {
+      "id": "setup-close",
+      "case": "conventions/setup/close/case.yaml",
+      "promises": [
+        "ACC-011",
+        "ACC-036",
+        "CON-014",
+        "LIF-035",
+        "OPS-029",
+        "IFC-013"
+      ]
+    },
+    {
+      "id": "setup-close-in-flight",
+      "case": "conventions/setup/close-in-flight/case.yaml",
+      "promises": [
+        "ACC-034",
+        "ACC-017",
+        "REC-002",
+        "LIF-019"
+      ]
+    },
+    {
+      "id": "setup-restore",
+      "case": "conventions/setup/restore/case.yaml",
+      "promises": [
+        "LIF-008",
+        "LIF-009",
+        "LIF-029",
+        "CON-004",
+        "ACC-005"
+      ]
+    },
+    {
+      "id": "setup-run-unknown",
+      "case": "conventions/setup/run-unknown/case.yaml",
+      "promises": [
+        "PRV-003",
+        "PRV-007",
+        "PRV-009",
+        "TPL-012",
+        "OPS-022",
+        "LIF-004",
+        "LIF-027"
+      ]
+    },
+    {
+      "id": "setup-run-failed",
+      "case": "conventions/setup/run-failed/case.yaml",
+      "promises": [
+        "PRV-003",
+        "PRV-007",
+        "PRV-009",
+        "TPL-012",
+        "OPS-022",
+        "LIF-004",
+        "LIF-027"
+      ]
+    },
+    {
+      "id": "setup-run-unknown-run",
+      "case": "conventions/setup/run-unknown-run/case.yaml",
+      "promises": [
+        "PRV-003",
+        "PRV-007",
+        "PRV-009",
+        "TPL-012",
+        "OPS-022",
+        "LIF-004",
+        "LIF-027"
+      ]
+    },
+    {
+      "id": "setup-optional",
+      "case": "conventions/setup/optional/case.yaml",
+      "promises": [
+        "CON-004",
+        "ACC-005",
+        "TPL-012",
+        "OPS-022"
+      ]
+    },
+    {
+      "id": "setup-hook-succeeded",
+      "case": "conventions/setup/hook-succeeded/case.yaml",
+      "promises": [
+        "TPL-012",
+        "TPL-017",
+        "OPS-021",
+        "OPS-028",
+        "OPS-022",
+        "IMP-002"
+      ]
+    },
+    {
+      "id": "setup-hook-failed",
+      "case": "conventions/setup/hook-failed/case.yaml",
+      "promises": [
+        "TPL-012",
+        "TPL-017",
+        "OPS-021",
+        "OPS-028",
+        "OPS-022",
+        "IMP-002"
+      ]
+    },
+    {
+      "id": "setup-hook-unknown",
+      "case": "conventions/setup/hook-unknown/case.yaml",
+      "promises": [
+        "TPL-012",
+        "TPL-017",
+        "OPS-021",
+        "OPS-028",
+        "OPS-022",
+        "IMP-002"
+      ]
+    },
+    {
+      "id": "setup-pool-entry",
+      "case": "conventions/setup/pool-entry/case.yaml",
+      "promises": [
+        "TPL-012",
+        "POOL-013",
+        "POOL-015",
+        "PRV-007",
+        "OPS-022"
+      ]
+    },
+    {
+      "id": "setup-cancel",
+      "case": "conventions/setup/cancel/case.yaml",
+      "promises": [
+        "OPS-027",
+        "TPL-012",
+        "LIF-004",
+        "LIF-027"
+      ]
+    },
+    {
+      "id": "setup-run-partial",
+      "case": "conventions/setup/run-partial/case.yaml",
+      "promises": [
+        "TPL-012",
+        "PRV-007",
+        "OPS-022",
+        "LIF-004",
+        "LIF-027"
+      ]
+    },
+    {
+      "id": "setup-restore-current-template",
+      "case": "conventions/setup/restore-current-template/case.yaml",
+      "promises": [
+        "LIF-009",
+        "INS-020",
+        "CON-004"
+      ]
+    },
+    {
+      "id": "setup-restore-missing-template",
+      "case": "conventions/setup/restore-missing-template/case.yaml",
+      "promises": [
+        "LIF-009",
+        "INS-002",
+        "CON-025",
+        "OBJ-009"
+      ]
+    },
+    {
+      "id": "setup-restore-retired-target",
+      "case": "conventions/setup/restore-retired-target/case.yaml",
+      "promises": [
+        "LIF-009",
+        "INS-002",
+        "CON-025",
+        "OBJ-009"
+      ]
+    },
+    {
+      "id": "setup-run-connections",
+      "case": "conventions/setup/run-connections/case.yaml",
+      "promises": [
+        "TPL-012",
+        "IFC-041",
+        "PRV-007",
+        "TPL-017",
+        "OPS-022"
+      ]
+    },
+    {
+      "id": "setup-review-conditions-builtin",
+      "case": "conventions/setup/review-conditions-builtin/case.yaml",
+      "promises": [
+        "LIF-011",
+        "OBS-002",
+        "OBS-003",
+        "PRV-009"
+      ]
+    },
+    {
+      "id": "setup-review-conditions-provider",
+      "case": "conventions/setup/review-conditions-provider/case.yaml",
+      "promises": [
+        "LIF-011",
+        "OBS-002",
+        "OBS-003",
+        "PRV-009"
+      ]
+    },
+    {
+      "id": "setup-review-dependencies-failed",
+      "case": "conventions/setup/review-dependencies-failed/case.yaml",
+      "promises": [
+        "POOL-006",
+        "POOL-013",
+        "OPS-022"
+      ]
+    },
+    {
+      "id": "setup-review-dependencies-succeeded",
+      "case": "conventions/setup/review-dependencies-succeeded/case.yaml",
+      "promises": [
+        "POOL-006",
+        "POOL-013",
+        "OPS-022"
+      ]
+    },
+    {
+      "id": "setup-review-hook-refused",
+      "case": "conventions/setup/review-hook-refused/case.yaml",
+      "promises": [
+        "IFC-026",
+        "IFC-027",
+        "OPS-022",
+        "TPL-012"
+      ]
+    },
+    {
+      "id": "setup-review-hook-refused-no-effect",
+      "case": "conventions/setup/review-hook-refused-no-effect/case.yaml",
+      "promises": [
+        "IFC-026",
+        "IFC-027",
+        "OPS-022",
+        "TPL-012"
+      ]
+    },
+    {
+      "id": "setup-review-hook-unavailable",
+      "case": "conventions/setup/review-hook-unavailable/case.yaml",
+      "promises": [
+        "IFC-026",
+        "IFC-027",
+        "OPS-022",
+        "TPL-012"
+      ]
+    },
+    {
+      "id": "setup-review-hook-unavailable-no-effect",
+      "case": "conventions/setup/review-hook-unavailable-no-effect/case.yaml",
+      "promises": [
+        "IFC-026",
+        "IFC-027",
+        "OPS-022",
+        "TPL-012"
+      ]
+    },
+    {
+      "id": "setup-review-pool-cancel",
+      "case": "conventions/setup/review-pool-cancel/case.yaml",
+      "promises": [
+        "POOL-013",
+        "OPS-027",
+        "OPS-022",
+        "TPL-012"
+      ]
+    },
+    {
+      "id": "setup-review-provider-records",
+      "case": "conventions/setup/review-provider-records/case.yaml",
+      "promises": [
+        "PRV-005",
+        "REC-002",
+        "POOL-013"
+      ]
+    },
+    {
+      "id": "setup-review-relative-provider",
+      "case": "conventions/setup/review-relative-provider/case.yaml",
+      "promises": [
+        "PRV-007",
+        "SUB-010",
+        "MAN-010",
+        "OPS-022"
+      ]
+    },
+    {
+      "id": "setup-review-replacement-reference",
+      "case": "conventions/setup/review-replacement-reference/case.yaml",
+      "promises": [
+        "LIF-009",
+        "OBJ-009",
+        "INS-006",
+        "INS-020"
+      ]
+    },
+    {
+      "id": "setup-review-retire-before-run",
+      "case": "conventions/setup/review-retire-before-run/case.yaml",
+      "promises": [
+        "TPL-012",
+        "PRV-007",
+        "OPS-022"
+      ]
+    },
+    {
+      "id": "setup-review-retire-connection-succeeded",
+      "case": "conventions/setup/review-retire-connection-succeeded/case.yaml",
+      "promises": [
+        "TPL-012",
+        "OPS-022",
+        "LIF-006"
+      ]
+    },
+    {
+      "id": "setup-review-retire-connection-unknown",
+      "case": "conventions/setup/review-retire-connection-unknown/case.yaml",
+      "promises": [
+        "TPL-012",
+        "OPS-022",
+        "LIF-006"
+      ]
+    },
+    {
+      "id": "setup-review-retire-run-succeeded",
+      "case": "conventions/setup/review-retire-run-succeeded/case.yaml",
+      "promises": [
+        "TPL-012",
+        "OPS-022",
+        "LIF-006"
+      ]
+    },
+    {
+      "id": "setup-review-retire-run-unknown",
+      "case": "conventions/setup/review-retire-run-unknown/case.yaml",
+      "promises": [
+        "TPL-012",
+        "OPS-022",
+        "LIF-006"
+      ]
     }
   ]
 }

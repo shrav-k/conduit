@@ -70,8 +70,8 @@ contracts, and compares authored and standalone verdicts for every E05 sample in
 directions. Standalone validation checks all references are local and resolve before compiling
 with no package resolver. Conflicting unconditional defaults stop for the admin (finding 2-03).
 
-General registration, access, invocation handling and the shell belong to
-later orders. Unsupported inputs are embedding errors, not invented Conduit reasons. The
+These I2-02 cases do not exercise registration, access, invocation handling or the shell.
+Unsupported inputs are embedding errors, not invented Conduit reasons. The
 [increment's log](../docs/proposals/first-build/log-increment-2.md) records the settled BOM case
 and the verification corrections: registration checks the existing owning Pool's authority
 before exposing protected-template diagnostics, and lifecycle records keep the Conduit's
@@ -257,7 +257,7 @@ rejected under `arguments` even if the template declares an input of that name (
 S1 registers nine templates, six named instances and four nested Conduits. Instances are
 registered, Conduits unopened, and no setup, run, call or external intent is made (INS-016,
 SUB-006). Placement vectors use the established local node and the engine's own runner;
-provider invocation, general access evaluation and setup remain later orders. The earlier
+later sections describe the access, invocation and setup transitions. The earlier
 `submit` input remains the protected-first-start compatibility path.
 
 ## Archive installation (I2-03, second part)
@@ -312,3 +312,37 @@ and records purge remain later orders. The
 [request vectors](../conformance/README.md#request-endings-i2-06) describe their observations,
 and the [finding log](../docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
 records the admin’s narrowing of header repair and the return-review regressions.
+
+I2-07 adds the pure `lifecycle` module. `invoke` now carries out `set-up.v1`,
+`open.v1`, `close.v1` and `register-replacement.v1` through the same access and
+invocation index. Setup stores its parts with its invocation. Declared opens and Pool
+entry setups are separate invocations, with the sending instance's authority and the
+original caller; runner actions are intents, not requests through invented Conduits.
+A failed required part stops later parts and leaves successful earlier parts in place.
+
+`setup-report` supplies an outstanding inspection, run or connection completion. The
+built-in runner uses `builtin-runner` intents; a selected runtime uses `provider-call`
+intents. Run inspection precedes a new run; a running report asks for none and an unknown
+report makes the part unavailable. Runs and remote connections occupy the same setup
+position, and the hook waits for all of them. Run inputs contain configuration bindings
+and an opaque identity materialization descriptor whose required names come from the
+supplied core contract. Credential materialization, authentication, connections and processes
+belong to the shell. Hook invocations have no Conduit and use a stable per-instance key.
+
+Closing removes the Conduit immediately and records the consumer's lost reach without
+changing its lifecycle or revision. Pending results still complete through their retained
+invocation; later requests check access again. An explicit nested replacement reuses the
+registration resolver with trusted frozen references and the referenced template's current
+definition. Preinstalled catalog snapshots are retained in state for that validation;
+actor-authored resolved references remain invalid. Replacement registers a new identity
+and opens nothing. Full inspection, general retirement and lifecycle reconciliation remain
+work beyond these setup/open/close transitions.
+
+Order 016's return review adds reference dependency scheduling for Pool entries, propagation
+of hook reasons and cancelled entry outcomes, and collection of every dispatched setup part
+after retirement. Required parts prevented by retirement count as unsuccessful; no later
+part starts. Running observations upsert complete `condition.v1` values and retain transition
+times until status changes. Selected runtime calls reject retained relative-program
+provenance before dispatching `run.v1`, and their records use the provider's own projection
+without request route metadata. Replacement configuration accepts references frozen by
+registration while actor-authored IDs remain rejected.

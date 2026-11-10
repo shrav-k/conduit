@@ -706,6 +706,67 @@
                 "required": [
                   "kind"
                 ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "lifecycle-fixture"
+                  },
+                  "file": {
+                    "type": "string"
+                  },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "kind",
+                  "file",
+                  "index"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "setup-report"
+                  },
+                  "evidence": {
+                    "type": "object"
+                  },
+                  "invocation": {
+                    "type": "string"
+                  },
+                  "report": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "invocation",
+                  "report"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "list-tools"
+                  },
+                  "identity": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "identity"
+                ]
               }
             ]
           },
@@ -824,6 +885,25 @@
                     "index",
                     "message_contains"
                   ]
+                }
+              },
+              "object_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "object_facts": {
+                "type": "array"
+              },
+              "invocation_facts": {
+                "type": "array"
+              },
+              "absent_objects": {
+                "type": "array"
+              },
+              "record_facts": {
+                "type": "array",
+                "items": {
+                  "type": "object"
                 }
               }
             },
@@ -1002,7 +1082,9 @@
                         "enum": [
                           "access-fixture",
                           "invoke",
-                          "request-fixture"
+                          "request-fixture",
+                          "lifecycle-fixture",
+                          "setup-report"
                         ]
                       }
                     }

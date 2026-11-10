@@ -1,0 +1,115 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "ref.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "$ref": "github.com/shrav-k/conduit/core#resource-reference.v1"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "resource"
+    },
+    "spec": {
+      "type": "#ref.v1",
+      "inputs": {
+        "peer": {
+          "schema": {
+            "$ref": "github.com/shrav-k/conduit/core#resource-reference.v1"
+          },
+          "to": [
+            "/config/target"
+          ]
+        }
+      },
+      "config": {}
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "target"
+    },
+    "from": "resource",
+    "owner": "system",
+    "arguments": {
+      "peer": {
+        "kind": "Resource",
+        "name": "target"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "pool"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1",
+      "entries": {
+        "one": {
+          "from": "resource",
+          "arguments": {
+            "peer": {
+              "kind": "Resource",
+              "name": "target"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "p"
+    },
+    "from": "pool"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "pool-admin"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#register-replacement.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "root-p"
+    },
+    "from": "pool-admin",
+    "consumer": {
+      "kind": "Interface",
+      "name": "root"
+    },
+    "target": {
+      "kind": "Pool",
+      "name": "p"
+    }
+  }
+]

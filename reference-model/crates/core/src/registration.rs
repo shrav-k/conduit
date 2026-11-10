@@ -266,6 +266,7 @@ struct Builder<'a> {
     templates: Vec<Value>,
     reserved_names: BTreeSet<(String, String)>,
     snapshots: Vec<Snapshot>,
+    trusted: bool,
 }
 impl Builder<'_> {
     fn template(
@@ -275,6 +276,23 @@ impl Builder<'_> {
         held: &Held,
         instantiating: bool,
     ) -> Checked<(Value, Held, Value)> {
+        if let Some(id) = from.get("id") {
+            if !self.trusted {
+                return Err(fault("INS-002", "authored template ID"));
+            }
+            let template = self
+                .state
+                .objects
+                .iter()
+                .find(|o| o["id"] == *id && o["kind"] == kind && o.get("spec").is_some())
+                .ok_or_else(|| fault("INS-002", "stored template no longer exists"))?;
+            return self.template(
+                &json!({"kind":kind,"name":template["name"]}),
+                kind,
+                held,
+                instantiating,
+            );
+        }
         let spelling = from
             .as_str()
             .or_else(|| from["name"].as_str())
@@ -290,6 +308,21 @@ impl Builder<'_> {
                 &format!("Template:{kind}"),
                 &self.context.core_package,
             )?;
+            if self.trusted && instantiating && h.scope != "project" && h.scope != "core" {
+                let package = &h.contexts[&h.scope];
+                if !self.snapshots.iter().any(|s| {
+                    package["address"] == s.address
+                        && package["digest"] == s.digest
+                        && package["version"]
+                            .as_str()
+                            .is_some_and(|v| packages::version_equal(v, &s.version))
+                }) {
+                    return Err(fault(
+                        "PKG-007",
+                        "the stored template package is no longer installed",
+                    ));
+                }
+            }
             return Ok((doc, h, json!(q)));
         }
         let name = spelling.strip_prefix('#').unwrap_or(spelling);
@@ -921,7 +954,12 @@ fn implementations(h: &Held, spec: &Value, kind: &str, core: &str) -> Checked<Va
     Ok(result)
 }
 
-fn resolve_instance(object: &Value, all: &[Value], context: &Context) -> Checked<Value> {
+fn resolve_instance(
+    object: &Value,
+    all: &[Value],
+    context: &Context,
+    trusted: bool,
+) -> Checked<Value> {
     let mut o = object.clone();
     let core = &context.core_package;
     let h: Held =
@@ -948,7 +986,7 @@ fn resolve_instance(object: &Value, all: &[Value], context: &Context) -> Checked
     for (key, k) in standards {
         let implicit =
             (key == "owner" && slot == "entries") || (key == "consumer" && slot == "conduits");
-        o[key] = refs.resolve(&o[key], k, entry_pool, !implicit)?;
+        o[key] = refs.resolve(&o[key], k, entry_pool, !implicit && !trusted)?;
         let target = all
             .iter()
             .find(|v| v["id"] == o[key]["id"])
@@ -987,7 +1025,7 @@ fn resolve_instance(object: &Value, all: &[Value], context: &Context) -> Checked
                 format!("configuration fails Type {q}: {failure}"),
             ));
         }
-        o["config"] = refs.schema(&th, schema, schema, &config, entry_pool, true, 0)?;
+        o["config"] = refs.schema(&th, schema, schema, &config, entry_pool, !trusted, 0)?;
         if !th
             .valid(schema, &o["config"], core)
             .map_err(|e| fault("INS-014", e))?
@@ -1044,7 +1082,7 @@ fn resolve_instance(object: &Value, all: &[Value], context: &Context) -> Checked
                 &input["schema"],
                 &value,
                 entry_pool,
-                true,
+                !trusted,
                 0,
             )?;
         }
@@ -1062,7 +1100,7 @@ fn resolve_instance(object: &Value, all: &[Value], context: &Context) -> Checked
             &input["schema"],
             &value,
             entry_pool,
-            true,
+            !trusted,
             0,
         )?;
         for pointer in list(&input, "to") {
@@ -1098,7 +1136,7 @@ fn resolve_instance(object: &Value, all: &[Value], context: &Context) -> Checked
     if ["Agent", "Resource"].contains(&kind.as_str()) {
         let placement = supplied_placement.unwrap_or(json!("local"));
         let placement = refs
-            .resolve(&placement, Some("Resource"), entry_pool, true)
+            .resolve(&placement, Some("Resource"), entry_pool, !trusted)
             .map_err(|f| fault("PLC-001", f.text))?;
         let node = all
             .iter()
@@ -1112,7 +1150,7 @@ fn resolve_instance(object: &Value, all: &[Value], context: &Context) -> Checked
         }
         o["placement"] = placement;
         if let Some(runtime) = &supplied_runtime {
-            let runtime = refs.resolve(runtime, Some("Resource"), entry_pool, true)?;
+            let runtime = refs.resolve(runtime, Some("Resource"), entry_pool, !trusted)?;
             let provider = all
                 .iter()
                 .find(|n| n["id"] == runtime["id"])
@@ -1506,6 +1544,7 @@ pub(crate) fn register(
         templates: vec![],
         reserved_names: named.keys().cloned().collect(),
         snapshots,
+        trusted: false,
     };
     for doc in &project.documents {
         if packages::contract(doc) || doc.get("from").is_some() {
@@ -1583,7 +1622,7 @@ pub(crate) fn register(
     }
     let mut resolved = vec![];
     for object in &b.objects {
-        match resolve_instance(object, &all, context) {
+        match resolve_instance(object, &all, context, false) {
             Ok(o) => resolved.push(o),
             Err(f) => b.diagnostics.push(diagnostic(
                 f.rule,
@@ -1670,6 +1709,13 @@ pub(crate) fn register(
         .chain(&resolved)
         .map(|o| json!({"kind":o["kind"],"name":o["name"],"id":o["id"],"nested":o.get("nested")}))
         .collect::<Vec<_>>();
+    for snapshot in &b.snapshots {
+        if snapshot.source == packages::SnapshotSource::PreinstalledSnapshot
+            && !b.state.preinstalled_snapshots.contains(snapshot)
+        {
+            b.state.preinstalled_snapshots.push(snapshot.clone());
+        }
+    }
     b.state.objects.extend(b.templates);
     b.state.objects.extend(resolved);
     for object in &registered {
@@ -1775,6 +1821,22 @@ pub(crate) fn publication_object(object: &Value, context: &Context) -> Result<Va
         view["schema_environment"] =
             serde_json::to_value(&context.core_environment).map_err(|e| e.to_string())?;
         view["contract_scope"] = json!("core");
+    }
+    if object.get("held").is_none()
+        && object["type"]
+            .as_str()
+            .is_some_and(|ty| ty.starts_with(&format!("{}#", context.core_package)))
+    {
+        let (_, _, ty) = crate::schemas::operation(
+            &view,
+            object["type"].as_str().unwrap(),
+            &context.core_package,
+        )?;
+        for op in list(&ty["spec"], "requires") {
+            if view["resolved_implementations"].get(&op).is_none() {
+                view["resolved_implementations"][&op] = json!({"source":"engine"});
+            }
+        }
     }
     Ok(view)
 }
@@ -1885,4 +1947,93 @@ pub(crate) fn supports_filter(
             .iter()
             .any(|r| requirement == r))
     }
+}
+
+/// Reuse the registration resolver for an explicit nested replacement. The resolved
+/// declaration is trusted stored data; actor submissions still reject authored IDs.
+pub(crate) fn replacement(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    context: &Context,
+    parent: &Value,
+    name: &Value,
+) -> Result<Value> {
+    let slot = if parent["kind"] == "Pool" {
+        "entries"
+    } else {
+        "conduits"
+    };
+    let name = name.as_str().ok_or("replacement slot is not a name")?;
+    let mut doc = parent[slot][name].clone();
+    doc["kind"] = json!(if slot == "entries" {
+        "Resource"
+    } else {
+        "Conduit"
+    });
+    let held: Held = serde_json::from_value(parent["held"].clone()).map_err(|e| e.to_string())?;
+    let mut b = Builder {
+        context,
+        evidence: a.evidence,
+        state: t.state.clone(),
+        allocation: Allocation {
+            evidence: a.evidence,
+            cursor: a.cursor,
+        },
+        suffix: 0,
+        objects: vec![],
+        diagnostics: vec![],
+        templates: vec![],
+        reserved_names: BTreeSet::new(),
+        snapshots: packages::catalog_entries(&t.state, t.state.preinstalled_snapshots.clone()),
+        trusted: true,
+    };
+    b.expand(&doc, &held, Some((parent, slot, name)), 0)?;
+    for object in &mut b.objects {
+        let h: Held = serde_json::from_value(object["held"].clone()).map_err(|e| e.to_string())?;
+        match implementations(
+            &h,
+            object,
+            object["kind"].as_str().unwrap(),
+            &context.core_package,
+        ) {
+            Ok(table) => object["resolved_implementations"] = table,
+            Err(f) => return Ok(json!({"rule":f.rule,"message":f.text})),
+        }
+        object["packages"] = h.package_list(
+            object,
+            object["kind"].as_str().unwrap(),
+            &object["resolved_implementations"],
+            &context.core_package,
+        )?;
+    }
+    if let Some(d) = b.diagnostics.first() {
+        return Ok(json!({"rule":d["ruleId"],"message":d["message"]["text"]}));
+    }
+    let all: Vec<_> = b.state.objects.iter().chain(&b.objects).cloned().collect();
+    let mut resolved = vec![];
+    for object in &b.objects {
+        match resolve_instance(object, &all, context, true) {
+            Ok(o) => resolved.push(o),
+            Err(f) => return Ok(json!({"rule":f.rule,"message":f.text})),
+        }
+    }
+    let all: Vec<_> = b.state.objects.iter().chain(&resolved).cloned().collect();
+    for o in resolved.iter().filter(|o| o["kind"] == "Conduit") {
+        if let Some((rule, message)) = check_conduit(o, &all, context)? {
+            return Ok(json!({"rule":rule,"message":message}));
+        }
+    }
+    let object = resolved.first().ok_or("replacement produced no object")?;
+    let result = json!({"object":{"kind":object["kind"],"name":object["name"],"id":object["id"]},"diagnostics":[]});
+    let p = b
+        .state
+        .objects
+        .iter_mut()
+        .find(|o| o["id"] == parent["id"])
+        .unwrap();
+    p["slots"][slot][name] = json!({"kind":object["kind"],"id":object["id"]});
+    b.state.objects.extend(resolved);
+    a.cursor = b.allocation.cursor;
+    t.state = b.state;
+    Ok(result)
 }

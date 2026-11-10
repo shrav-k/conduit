@@ -64,6 +64,11 @@ fn paths(directory: &Path, found: &mut Vec<PathBuf>) -> Result<()> {
 
 /// Run every discovered case. Unsupported inputs and invalid assertions fail, never skip.
 pub fn run_suite(repository: &Path) -> Result<Vec<CaseReport>> {
+    run_matching(repository, "")
+}
+
+/// Run a development subset by stable ID prefix; inventory validation still covers all cases.
+pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> {
     let mut cases = vec![];
     paths(&repository.join("conformance"), &mut cases)?;
     cases.sort();
@@ -168,6 +173,9 @@ pub fn run_suite(repository: &Path) -> Result<Vec<CaseReport>> {
                 return Err(format!("{}: unknown promise {promise}", case.id));
             }
         }
+        if !case.id.starts_with(prefix) {
+            continue;
+        }
         run_case(&path, &case, &spec, &context, &known_promises)
             .map_err(|e| format!("{} [{}]: {e}", case.id, case.promises.join(", ")))?;
         reports.push(CaseReport {
@@ -178,6 +186,9 @@ pub fn run_suite(repository: &Path) -> Result<Vec<CaseReport>> {
     }
     if ids != inventory_ids {
         return Err("coverage index lists missing cases".into());
+    }
+    if reports.is_empty() {
+        return Err("no cases matched the requested prefix".into());
     }
     Ok(reports)
 }
@@ -199,7 +210,14 @@ fn expand(value: &Value, symbols: &BTreeMap<String, Value>, spec: &Specification
         ),
         Value::Object(o) => Value::Object(
             o.iter()
-                .map(|(k, v)| Ok((k.clone(), expand(v, symbols, spec)?)))
+                .map(|(k, v)| {
+                    let key = if let Some(local) = k.strip_prefix("@core#") {
+                        format!("{}#{local}", spec.names().core_package)
+                    } else {
+                        k.clone()
+                    };
+                    Ok((key, expand(v, symbols, spec)?))
+                })
                 .collect::<Result<_>>()?,
         ),
         v => v.clone(),
@@ -221,6 +239,10 @@ fn projection(actual: &Value, expected: &Value, pointer: &str) -> Result<()> {
             }
             Ok(())
         }
+        (Value::Object(a), Value::Object(e)) if e.is_empty() && !a.is_empty() => Err(format!(
+            "{pointer}: expected an empty map, found {} fields",
+            a.len()
+        )),
         (Value::Array(a), Value::Array(e)) if a.len() == e.len() => {
             for (i, (av, ev)) in a.iter().zip(e).enumerate() {
                 projection(av, ev, &format!("{pointer}/{i}"))?;
@@ -328,6 +350,9 @@ fn run_case(
     let diagnostic_validator = spec
         .contract_validator("diagnostic.v1")
         .map_err(|e| e.to_string())?;
+    let condition_validator = spec
+        .contract_validator("condition.v1")
+        .map_err(|e| e.to_string())?;
     for (index, raw_step) in case.steps.iter().enumerate() {
         let run = || -> Result<(Value, State)> {
             let input = expand(&raw_step["input"], &symbols, spec)?;
@@ -344,7 +369,7 @@ fn run_case(
             };
             let mut next = state.clone();
             let actual = match kind {
-                "request-fixture" => {
+                "request-fixture" | "lifecycle-fixture" => {
                     let alias = input["file"].as_str().ok_or("missing request fixture")?;
                     let path = case.files.get(alias).ok_or("undeclared request fixture")?;
                     let fixtures = read_value(&base.join(path))?;
@@ -360,6 +385,12 @@ fn run_case(
                         spec,
                     )?;
                     access::patch(&mut next, &fixture["patches"])?;
+                    if kind == "lifecycle-fixture"
+                        && let Some(invocations) = fixture.get("invocations")
+                    {
+                        next.invocations = serde_json::from_value(invocations.clone())
+                            .map_err(|e| e.to_string())?;
+                    }
                     for update in fixture["contract_updates"].as_array().into_iter().flatten() {
                         let object = next
                             .objects
@@ -395,6 +426,21 @@ fn run_case(
                             return Err("contract observation names no matching contract".into());
                         }
                     }
+                    for update in fixture["implementation_updates"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                    {
+                        let object = next
+                            .objects
+                            .iter_mut()
+                            .find(|o| o["id"] == update["target"])
+                            .ok_or("implementation observation target missing")?;
+                        object["resolved_implementations"][update["operation"]
+                            .as_str()
+                            .ok_or("missing observed operation")?] =
+                            update["implementation"].clone();
+                    }
                     if fixture["aware"] == true {
                         let object = next
                             .objects
@@ -415,8 +461,9 @@ fn run_case(
                             .map_err(|e| e.to_string())?,
                         context,
                     )?;
-                    if t.state.objects != next.objects
-                        || t.state.installed_packages != next.installed_packages
+                    if kind == "request-fixture"
+                        && (t.state.objects != next.objects
+                            || t.state.installed_packages != next.installed_packages)
                     {
                         return Err("request changed objects or packages outside its scope".into());
                     }
@@ -622,6 +669,21 @@ fn run_case(
                     record_validator
                         .validate(r)
                         .map_err(|e| format!("record.v1: {e}"))?;
+                    if r["type"] == "provider-call" {
+                        for field in [
+                            "serving",
+                            "conduit",
+                            "consumer",
+                            "idempotencyKey",
+                            "filters",
+                        ] {
+                            if r["data"].get(field).is_some() {
+                                return Err(format!(
+                                    "PRV-005 / REC-002: provider record has {field}"
+                                ));
+                            }
+                        }
+                    }
                 }
                 let appended = actual["records"].as_array().ok_or("missing records")?;
                 let mut retained = if kind == "restore-state" && input["records_purged"] == true {
@@ -635,6 +697,15 @@ fn run_case(
                         "REC-003: records were changed or omitted from the transition".into(),
                     );
                 }
+            }
+            for condition in next
+                .objects
+                .iter()
+                .flat_map(|o| o["status"]["conditions"].as_array().into_iter().flatten())
+            {
+                condition_validator
+                    .validate(condition)
+                    .map_err(|e| format!("condition.v1: {e}"))?;
             }
             for diagnostics in [
                 actual.get("diagnostics"),
@@ -654,6 +725,46 @@ fn run_case(
         let (actual, next) = run().map_err(|e| format!("step {}: {e}", index + 1))?;
         let expected = expand(&raw_step["expect"], &symbols, spec)?;
         let mut fields = expected.as_object().ok_or("missing expectation")?.clone();
+        if let Some(count) = fields.remove("object_count") {
+            projection(&json!(next.objects.len()), &count, "/object_count")?;
+        }
+        for (key, values) in [
+            ("object_facts", &next.objects),
+            ("invocation_facts", &next.invocations),
+        ] {
+            if let Some(facts) = fields.remove(key) {
+                for fact in facts.as_array().ok_or("facts must be an array")? {
+                    let found = values
+                        .iter()
+                        .find(|v| {
+                            fact.get("id").is_some_and(|id| v["id"] == *id)
+                                || fact
+                                    .get("name")
+                                    .is_some_and(|n| v["name"] == *n && v.get("spec").is_none())
+                        })
+                        .ok_or_else(|| format!("{key}: missing {fact}"))?;
+                    projection(found, fact, key)?;
+                }
+            }
+        }
+        if let Some(facts) = fields.remove("record_facts") {
+            let mut cursor = 0;
+            let records = actual["records"].as_array().ok_or("missing records")?;
+            for fact in facts.as_array().ok_or("record_facts must be an array")? {
+                let found = records[cursor..]
+                    .iter()
+                    .position(|r| projection(r, fact, "record_facts").is_ok())
+                    .ok_or_else(|| format!("missing ordered record {fact}"))?;
+                cursor += found + 1;
+            }
+        }
+        if let Some(absent) = fields.remove("absent_objects") {
+            for id in absent.as_array().ok_or("absent_objects must be an array")? {
+                if next.objects.iter().any(|o| o["id"] == *id) {
+                    return Err(format!("unexpected object {id}"));
+                }
+            }
+        }
         if let Some(unchanged) = fields.remove("stateUnchanged") {
             if unchanged != true {
                 return Err("stateUnchanged must be true when present".into());

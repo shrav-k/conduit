@@ -335,17 +335,19 @@ pub(crate) fn evaluate(
             if v["state"] != "in-progress" {
                 return Ok(Verdict::reason("refused", "ACC-019"));
             }
-            let Some(path) = state
-                .objects
-                .iter()
-                .find(|p| p["id"] == v["conduit"] && open(p))
-            else {
-                return Ok(Verdict::reason("refused", "ACC-034"));
-            };
-            if object(state, &path["consumer"])
-                .is_some_and(|c| c["state"] == "retired" && v["retirement_of"] != c["id"])
-            {
-                return Ok(Verdict::reason("refused", "ACC-039"));
+            if v["hook"] != true {
+                let Some(path) = state
+                    .objects
+                    .iter()
+                    .find(|p| p["id"] == v["conduit"] && open(p))
+                else {
+                    return Ok(Verdict::reason("refused", "ACC-034"));
+                };
+                if object(state, &path["consumer"])
+                    .is_some_and(|c| c["state"] == "retired" && v["retirement_of"] != c["id"])
+                {
+                    return Ok(Verdict::reason("refused", "ACC-039"));
+                }
             }
             cursor = match v.get("serving").and_then(Value::as_str) {
                 None => None,

@@ -174,3 +174,53 @@ Report, as numbers:
 - the traces listed, and those flagged.
 
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 beside orders 101 to 105: the worker in 25 minutes (1,526 s), then a fresh
+verifier in 8 minutes (454 s). That verifier found five promises classed as not safety that its
+test makes safety promises: INS-005, CON-014, POOL-009, OBJ-003 and INS-014. A second round of 3
+minutes (187 s) moved them. A fresh verifier in 4 minutes (262 s) then found three more, on the
+same grounds: SCT-005, POOL-016 and PLC-002. The lane coordinator moved those three after the
+second round:
+
+- SCT-005 as access: a translated body that differed would grant access the author did not
+  write;
+- POOL-016 and PLC-002 as result: a Resource placed on another machine serves a request from the
+  wrong machine.
+
+Neither verifier could rerun the tools' unit tests in its read-only sandbox. The first could not
+run the bash comparison of IDs there either, so it compared them in memory instead.
+
+The catalogue classes 502 promises:
+
+- 394 safety promises: access 193, secret 39, effect 119, result 43;
+- 1 for the coordinator: IFC-007, whether the metadata sent to a plain server discloses too much;
+- 107 others.
+
+By layer, the safety promises are 133 of the language, 217 of the conventions and 44 of the
+interface. G5's list, the safety promises in the seven convention files, holds 128. The wider
+reading, the convention layer anywhere, holds 217; that choice is for the owner.
+
+Of S1's 34 traces, 27 are safety traces. Each of them has at least one safety promise among its
+requiring promises. The other 7 are flagged as publication only: the six E05 schema traces and
+E05-handle. Which traces already have a vector is not this order's question; SV2's reviewed table
+answers it, since ruling 68 says the manifest's group tags are not safety tags.
+
+The worker read the promise files one at a time as decision 10 asked, except for one slip at
+revisions.yaml, which it corrected before going on. Its findings are for the admin's lane:
+
+- SC-F1: `conformance/s1-safety-cases.md` is stale. Its bootstrap trace expects two root
+  Conduits, not three. Its plain-ends trace expects failed for -32602 where IFC-010 now gives
+  unknown for an effectful operation. Its closing paragraphs still call settled questions open.
+- SC-F2: `spec/definitions.md`'s row for plain still gives failed for invalid parameters without
+  limiting it to read-only operations, which could license an unsafe retry.
+- SC-F3: OPS-009, OPS-034 and IFC-019 are ambiguous on a filtered repeat of a plain operation
+  that succeeded with content but declared no outputs.
+- SC-F4: other summaries in `spec/definitions.md` are stale: the diagnostic, the target, the
+  manifest's count of document kinds, the core package's root Conduits, and the sign-in
+  elicitation.
+
+The coordinator checked every total and the comparison of IDs before the merge, and ran
+check_docs, check_rulings, set_names, check_schemas and check_roadmap, and the private-path grep,
+all clean.

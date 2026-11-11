@@ -1,55 +1,10 @@
 # Revisions: the shared convention on revision-checked change.
-# Owner rulings of 2026-11-05 (plan-audit rulings 20, 32 and 33). Draft: no vector exists yet.
-# The ruling on the core package and the schemas (ruling 37) changed REV-006, REV-007 and
-# REV-010 to REV-012. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed REV-007. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) changed REV-003, REV-004, REV-006, REV-007,
-# REV-009, REV-010 and REV-012: a rename advances the revision, and a control's `changes` maps
-# each input to the setting it sets. Its closing pass
-# (docs/proposals/reaudit/round-2/log-closing.md) changed REV-006, REV-007, REV-010 and
-# REV-013, and its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed REV-010. No
-# promise of this file has been removed.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed REV-010: a control of an instance that no longer exists is
-# reconciled with no revision and no settings. It removed none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed REV-010.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# REV-010: a reconciliation of a control names a revision only where it stores settings. It
-# added none and removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), removed REV-008 (decision 15: a control
-# applies exactly what it is sent and returns no `settings`, so no confirmed settings are left
-# to check; REV-015 checks the values against the type's schema before dispatch in its place).
-# It is the first promise removed from this file, and its ID is not reused. It changed
-# REV-001, REV-003, REV-004, REV-006, REV-007 and REV-010 to REV-013, and added REV-014, on a
-# request to set up, retire or change an instance that is busy, and REV-015, on a control
-# whose values would make the configuration fail the type's schema. What changed is in
-# docs/proposals/ruling-41/log-G4.md.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
-# in docs/proposals/ruling-41/open-decisions.md, changed REV-012 and REV-014: the engine's own
-# retirements of the instances of a location declared lost, and its closings of Conduits at
-# once, dispatch nothing and are not held back; the setups and retirements that the engine
-# dispatches within an actor's invocation count as an actor's; and every repeat answered
-# without a dispatch, OPS-034's among them, is excepted. It added none and removed none. What
-# changed is in docs/proposals/ruling-42/log-conventions.md.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in REV-014. It removed none
-# and added none.
-# The fix pass of the fifth round of the re-audit
-# (docs/proposals/reaudit/round-5/log-fix-F3.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-5/DECISIONS.md, changed REV-007, REV-010 and REV-012, under which
-# a control that ends after its instance was retired, or its reconciliation, records the outcome
-# and stores nothing (M35); and REV-014, which counts a reconciliation of a setup or a
-# retirement as one (M36), and a request for `retire-with-resources.v1` as a retirement of the
-# Pool (M38). It added none and removed none.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: REV-008 → REV-015 (validation before dispatch) (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: REV-001
   layer: convention
@@ -166,8 +121,7 @@
     against each setting the control addressed.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32; decision Q4 and finding 37 of the
-# --- re-audit's third reader).
+
 
 - id: REV-010
   layer: convention
@@ -247,7 +201,7 @@
     REV-010.
   vectors: []
 
-# --- Added by the follow-up rulings (plan-audit ruling 33; decision F11 of the re-audit).
+
 
 - id: REV-013
   layer: convention
@@ -265,8 +219,7 @@
     against the configuration as it stood then.
   vectors: []
 
-# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decisions 23 and 15 of the
-# --- principles review).
+
 
 - id: REV-014
   layer: convention

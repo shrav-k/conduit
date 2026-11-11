@@ -5,8 +5,8 @@
 # `pool-management.v1`, as every Pool type does (CTR-004), and its template `team` selects an
 # implementation of the project for `inspect.v1`, which the engine implements. A schema cannot
 # tell: it needs the core package's manifest.
-# Added by ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/teams

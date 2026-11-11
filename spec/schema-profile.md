@@ -1,56 +1,8 @@
 # Schema and syntax profile
 
-Draft. The owner accepted this profile as it stands at
-[ruling 39](../docs/proposals/ruling-39/README.md), which accepted every logged decision of the
-coordinator and choice of an editor. Plan-audit rulings 23, 24, 32, 33 and 37 of 2026-11-05
-first accepted it. Decision DA3 of the [docs audit](../docs/proposals/docs-audit/GAPS.md), the
-[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md)
-and the [decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md), which
-are the coordinator's and which ruling 39 accepted, changed it since. The fourth round changed
-what this page says of when a `default` is applied.
-[Ruling 41](../docs/proposals/ruling-41/README.md), of 2026-11-06, which applies
-[ruling 40](../docs/proposals/ruling-40/README.md) and accepts the
-[principles review](../docs/proposals/principles-review/README.md), widened the profile to
-JSON Schema 2020-12's applicator vocabulary and its validation vocabulary less `multipleOf`
-(decision 20), added the format `uri-reference`, and added the standards of server.json,
-SARIF, CloudEvents and Kubernetes conditions (decisions 21, 24 and 25).
-[Ruling 42](../docs/proposals/ruling-42/README.md), of the same day, struck none of the
-decisions that the coordinator settled on the questions the rewrite left open; two of them
-changed this page, which now says how a value bound by an implementation item is converted to
-a string, with RFC 8785 for a number, and how an argument of a Package is named. Its names, which the
-[vocabulary audit](../docs/proposals/vocabulary-audit/README.md) proposed, then changed what
-this page says of an item's keys, `packageArguments` in place of `arguments`, of a Package's
-`fileSha256`, which pins it in place of the item's `digest`, and of a condition, whose
-`origin` is `source` and which has no `observedGeneration`, as the
-[log of those renames](../docs/proposals/ruling-42/log-rename-b.md) lists.
-[Ruling 43](../docs/proposals/ruling-43/README.md), of the same day, on work across machines,
-changed what this page says of an implementation item, which binds no variable by a name that
-`identity` carries and, reached by `remote` and not plain, names no `Authorization` header,
-and of a `remote` URL, to which a header that carries a secret is bound only where SEC-024 lets
-it go, as the [log of its docs editor](../docs/proposals/ruling-43/log-docs.md) says. The
-[integration of the fixes of round 5](../docs/proposals/reaudit/round-5/log-fixes.md) changed
-what it says of a `remote` URL, which holds no variable and to which an item selected for
-`get-secret.v1` is bound only where SEC-024 lets it stand, and of the place an item binds,
-which is confined to a string, a number, a boolean or null. Its
-[verification](../docs/proposals/reaudit/round-5/log-fixes.md#verification) said above that
-ruling 42 struck none of the coordinator's decisions (V10).
-[Ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, on round 6 of the re-audit,
-changed what this page says of the root of an Operation contract's schemas, where the whole
-profile may now be used beside `type: object`, a control's apart (D14); added what the schema of
-a tool that the engine presents is made of (finding 6-1-04); and added how two pointers are
-compared (finding 6-1-03), as the
-[log of its docs editor](../docs/proposals/reaudit/round-6/log-specdocs.md) says. The
-[verification of round 6](../docs/proposals/reaudit/round-6/log-integration.md#verification)
-added that a copy's key holds a version only where the package or project states one (R-08).
-The coordinator's decisions on the findings of increment 1 of the first build, under
-[ruling 46](../docs/proposals/ruling-46/README.md), point 4, which the owner can strike, added
-that every file is UTF-8, with a byte order mark initially allowed only in YAML (finding
-1-05); that only two of I-JSON's rules apply, and what a surrogate that is not paired makes of
-a file (1-12); and that the letters of the grammars cited match either case (1-13), as the
-[log of increment 1](../docs/proposals/first-build/log-increment-1.md) says. Its review of
-2026-11-09 then allowed one leading byte order mark in either syntax and made UTF-8 this
-profile's own rule (1-15). Ruling 48, point 3, restricted patterns to the interoperable tokens
-of JSON Schema 2020-12, core, section 6.4 (1-17).
+Draft. This page lists the selected standards and the limits of the schema and syntax profile.
+The decision records and their reasons are listed in
+[Where the reasons are](README.md#where-the-reasons-are).
 
 Schemas are not what distinguishes Conduit. This part of the specification invents nothing: it
 selects existing standards and narrows them. Where a standard defines a meaning, that meaning

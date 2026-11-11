@@ -1,48 +1,7 @@
 # Schemas and document syntax. See ../schema-profile.md for the standards these refer to.
-# Owner rulings of 2026-11-05 (plan-audit rulings 23, 24, 32 and 33) and earlier accepted
-# syntax rules. Consolidation pass 1 added SCH-015 to SCH-017. The follow-up decisions (ruling
-# 33) added SCH-018. The ruling on the core package and the schemas (ruling 37) changed SCH-008
-# and SCH-015. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed SCH-009 and added SCH-019 to SCH-021. The second
-# round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed SCH-001, SCH-008
-# to SCH-010, SCH-014, SCH-016 and SCH-019, and its closing pass reworded one sentence of
-# SCH-008. No promise of this file has been removed. Draft: no vector exists yet.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# SCH-009: the default of a property is filled in every value that a schema governs, before the
-# value is validated or compared. It added none and removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), changed SCH-008 and SCH-009, since the profile
-# now holds JSON Schema's applicator vocabulary and a `default` is rejected under its
-# conditional keywords too (decision 20), and SCH-019, since an Operation contract's input
-# states its `default` in its `inputSchema` (decision 16a). It removed none and added none. The
-# log is docs/proposals/ruling-41/log-G6.md.
-# The editorial fixes of ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06; the
-# vocabulary audit's E12, log docs/proposals/ruling-42/log-editorial.md) changed SCH-015, under
-# which a qualified reference or a `#name` references the schema that is the contract's `spec`,
-# as JSON Schema says of `$ref`, where it said that it stands for it. It removed none and added
-# none.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# changed SCH-009, whose observable says the `arguments` of a filter that an implementation is
-# sent, where it said a restriction, since only filters are sent (the vocabulary audit's N16).
-# It removed none and added none.
-# The verification of round 6 of the re-audit, under ruling 44
-# (docs/proposals/ruling-44/README.md; docs/proposals/reaudit/round-6/log-integration.md,
-# "Verification"), changed SCH-009, whose observable says that a `default` that the root of an
-# Operation contract's `inputSchema` reaches only through a keyword beside its `properties`,
-# which D14 now allows, is not applied (C-03, R-09). It removed none and added none.
-# The coordinator's decisions on the findings of increment 1 of the first build, under ruling
-# 46, point 4 (docs/proposals/first-build/log-increment-1.md), changed SCH-006 and SCH-020: a
-# number written with a fraction whose binary64 value is whole is held to SCH-006's range
-# (1-10); SCH-016: a key of `patternProperties` is a pattern too, and a schema whose pattern is
-# not one of ECMA-262 is rejected as SCH-002 rejects a keyword outside the profile (1-03); and
-# SCH-018: a JSON file whose value is not an array holds that value as one document, which the
-# schemas judge (1-07). It removed none and added none. The owner can strike each.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: SCH-001
   layer: language
@@ -266,7 +225,7 @@
     dialect.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
 
 - id: SCH-015
   layer: language
@@ -328,7 +287,7 @@
     a string.
   vectors: []
 
-# --- Added by the follow-up decisions (plan-audit ruling 33; decision F26 of the re-audit).
+
 
 - id: SCH-018
   layer: language
@@ -347,8 +306,7 @@
     diagnostics, under SCH-013. A JSON manifest that holds an array is rejected under MAN-001.
   vectors: []
 
-# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP5 and
-# --- GP6 of docs/proposals/docs-audit/GAPS.md).
+
 
 - id: SCH-019
   layer: language

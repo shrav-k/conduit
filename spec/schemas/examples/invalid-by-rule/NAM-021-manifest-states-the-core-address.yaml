@@ -4,6 +4,8 @@
 # whose implementation items state none of `command`, `package` and `remote` (MAN-012). That
 # form is for the one manifest that is built into the engine. A schema cannot tell: whether a
 # manifest was handed over is not in the manifest.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: github.com/shrav-k/conduit/core

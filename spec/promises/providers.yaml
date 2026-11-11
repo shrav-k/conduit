@@ -1,10 +1,5 @@
 # Providers: what the engine reaches behind a contract that the user picks.
-# Ruling 40 (docs/proposals/ruling-40/README.md, 2026-11-06): Conduit innovates only on
-# connection and access, and everything else is a provider behind a contract, swappable by the
-# user. Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review (docs/proposals/principles-review/README.md, decisions 2, 8, 21, 26 and 31
-# and alignment C58), added this file, PRV-001 to PRV-018, and removed nothing from it. A
-# provider is a Resource whose type offers one of the core package's provider capabilities:
+# A provider is a Resource whose type offers one of the core package's provider capabilities:
 # `runtime-provider.v1`, which runs an instance's implementation, stops it and reports its
 # state; `machine-provider.v1`, which reports the machines and places instances on them;
 # `package-source.v1`, which fetches a package's archive for the URL schemes it claims; and
@@ -15,140 +10,10 @@
 # Standards followed: the Container Runtime Interface and RuntimeClass of Kubernetes, and the
 # task drivers of Nomad, for the runtime provider; the node lifecycle of Kubernetes and its
 # well-known labels for the machine provider; and Git's remote helpers, picked by the scheme of
-# a URL, for package sources. The names of the provider capabilities and their operations are
-# those that ruling 42 accepted from the vocabulary audit that ruling 41 ordered. The log of the
-# editor who wrote this file is docs/proposals/ruling-41/log-G2.md. The integration of the
-# rewrite (docs/proposals/ruling-41/log-integration.md) changed PRV-001 and PRV-002, which name
-# a secret Resource as secrets.yaml does. Its coverage check (the same log, "Coverage check")
-# changed PRV-003, PRV-006, PRV-007 and PRV-008, and added PRV-019, under which a runtime
-# provider runs an item only on the machine of the instance's location, so the engine's own
-# runner runs only on `local`'s, and PRV-020, under which a runtime provider is not retired
-# while an instance that exists names it. Draft: no vector exists yet.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), accepting the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md and the owner's answers D8, D10, D11
-# and D17, changed PRV-001, which points to SEC-022 for a Type that offers `secret-reveal.v1`
-# and to PKG-020 for a plain implementation; PRV-003, whose runner gives no `endpoint` and
-# passes what PRV-023 says; PRV-004, which is keyed on the operation; PRV-005, under which a
-# provider call declares Conduit's extension and its result is read as a request's; PRV-006,
-# which rejects a retired runtime provider; PRV-007, which gives each value as a string, keys
-# `secrets` by name, gives `identity`, and asks no other runtime provider to run a program at a
-# relative path; PRV-008, under which a request to unregister asks for the stop once more;
-# PRV-009; PRV-011, which delivers a secret under the name it is given; PRV-013 and PRV-014,
-# under which a hostname is reported in canonical form and a location outlives its machines
-# provider; PRV-015, which reports unavailable where the machines provider cannot place now;
-# PRV-018, which points to `identity`; PRV-019; and PRV-020. It added PRV-021, a stop that a
-# runtime provider cannot carry out now (D11), PRV-022, the variables and files of `identity`
-# (D17), and PRV-023, what the engine's own runner passes of the engine's environment (D8). It
-# removed none. Its log is docs/proposals/ruling-42/log-machines.md. The integration of ruling
-# 42 (docs/proposals/ruling-42/log-integration.md) changed PRV-001, whose rule on plain
-# implementations names the three capabilities of PKG-020; PRV-003, under which the engine gives
-# its own runner what `run.v1` would give, `identity` among it, without a call; PRV-015, under
-# which the provider is not asked where the selector would name `kubernetes.io/hostname` twice;
-# and PRV-021, whose `then` takes D11's words: the contract states what the provider does with a
-# stop it cannot carry out now.
-# The names of ruling 42 (the vocabulary audit's N2, N3 and N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the machines provider to the machine
-# provider, the engine's own machine to the engine's own machine provider, location to node and
-# "stand for" to "represent", in PRV-001 to PRV-003, PRV-006 to PRV-008, PRV-013 to PRV-015 and
-# PRV-018 to PRV-021, and the input `location` of `run.v1` to `machine` in PRV-007 and PRV-019.
-# PRV-014 and PRV-021 write a Kubernetes Node, so that it is not read as a node. It removed none
-# and added none.
-# The names of ruling 42 (the vocabulary audit's N1, N5, N6, N14 to N16, N19 and N20; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`
-# in PRV-001 and PRV-004, and `reveal-secret.v1` to `get-secret.v1` in PRV-001; the output
-# `endpoint` of `run.v1` to `url` in PRV-003, PRV-007 and PRV-018; its input `arguments`, and
-# the item's, to `packageArguments` in PRV-007; the `origin` of a condition to its `source` in
-# PRV-009; the keys `restrictions` and `operationIdentity`, which a provider call does not
-# carry, to `filters` and `idempotencyKey` in PRV-005; "its own setting for restarts" to its own
-# restart policy in PRV-010; and the trust domain of a secret to its domain of trust in PRV-011.
-# It removed none and added none.
-# The editorial fixes of ruling 42 (the vocabulary audit's E9 and E18; log
-# docs/proposals/ruling-42/log-editorial.md) changed PRV-011, and PRV-022 in the same way, whose
-# `when` says a provider call to `run.v1`, where it said a request for it, since a provider call
-# is not a request under PRV-005; and PRV-001, whose observable says that a secret Resource's
-# implementation may be plain, where it said a plain store. It removed none and added none.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# added PRV-024, under which no record, inspection result, observation, diagnostic, result or
-# `_meta` holds any part of `identity`, as the owner's answer D17 has it. It changed PRV-003,
-# whose built-in implementations are no Resource, where it said that none represents them;
-# PRV-018, under which every run is given `identity`, on the engine's own runner too; PRV-021,
-# whose observable says that what becomes of a stop that a provider holds when it is retired is
-# part of what its contract states; PRV-022, under which no provider call carries a refreshed
-# credential and no record holds `identity`, under PRV-024; and PRV-023, which passes a
-# variable of the six only where its value does not begin with `()`, as the SDKs do, passes
-# on an operating system such as Windows the variables that DL16 names in their place, and
-# says that the runner passes no other variable, since a process that runs as the engine's
-# user may still read the engine's environment. It removed none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06) accepted the proposal on work
-# across machines (docs/proposals/multi-machine/README.md), with D5's second part as option b
-# and Q1 tightened, and settled the items of docs/proposals/ruling-42/log-integration.md that
-# waited on it. Applying them, it changed PRV-002 and PRV-003, whose servers and processes the
-# engine reaches over stdio, behind no gate, PRV-003 also saying that a process of the engine's
-# own operating-system user can make the engine's proof (Q5); PRV-007, whose `identity` holds
-# the names that PRV-022 fixes and whose server stands behind a gate; PRV-008 and PRV-009, whose
-# calls give the run's machine under PRV-027, and whose `inspect-run.v1` may report the `url` at
-# which the run is now reached; PRV-011, which carries a secret to another machine only over a
-# channel that authenticates that machine and keeps the value confidential; PRV-012, which also
-# covers a `package` whose transport the provider does not run; PRV-014, under which `gone` is
-# only for a machine that the provider knows no longer exists, in the rule where the observable
-# said it; PRV-018, under which no address, machine, network, runtime provider or run that a
-# request came from establishes the instance; PRV-020 and PRV-021, under which a stop that a
-# provider cannot carry out now is kept where neither a restart of the engine nor the provider's
-# own retirement loses it; PRV-022, which fixes the names of what `identity` holds, carries it
-# as a secret's value, lets the run's gate use it, and says that a credential lasts as long as
-# its instance; and PRV-023, under which a variable of `identity` wins over one of the engine's
-# environment. It added PRV-025, the gate in front of every server that the engine does not run
-# itself (D5); PRV-026, a provider's run made again after the engine restarts (Q3); and PRV-027,
-# the machine given to `stop.v1` and `inspect-run.v1` (X10 of the verification of ruling 42). It
-# removed none. Its log is docs/proposals/ruling-43/log-providers.md. The integration of ruling
-# 43 then had PRV-025's `then` except the provider's own user or group, and state its contract,
-# for a run alone, since a server reached by `remote` is its own gate; and had PRV-022's
-# observable cite Kubernetes' own files without writing their names, so that a change of the
-# names of `identity` by tools/set_names.py leaves the citation true
-# (docs/proposals/ruling-43/log-integration.md).
-# The verification of ruling 43 (docs/proposals/ruling-43/log-integration.md, "Verification")
-# changed PRV-002, PRV-007, PRV-020, PRV-021, PRV-022, PRV-025 and PRV-026: `identity` also
-# holds `jwks.json` and `engine-id`, its variables win over every other source, and every file
-# but `tls.crt` and `tls.key` is given to every run; a gate admits only a credential that names
-# an enforcement point, and no run runs as the user it excepts; a held stop is carried out by
-# something that runs without the provider's server; and a secret Resource that the engine's
-# own runner ran is run again too. It added PRV-028, under which what answers at a run's `url`
-# proves by its certificate that it serves the instance (point 4 of the gate in the proposal).
-# The fix pass of the fifth round of the re-audit
-# (docs/proposals/reaudit/round-5/log-fix-F1.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-5/DECISIONS.md, which no ruling has accepted, changed PRV-002 and
-# PRV-026, under which a secret Resource's process on the engine's own runner ends with the
-# engine (M08), and a provider's run is made again when the part of the engine that held it
-# stops (M09); PRV-003, whose own runner runs a `package` item only over stdio and of a registry
-# type that DL16 states (M07); PRV-004, which also rejects such a Conduit template when it is
-# registered (M04); PRV-005 and PRV-028, which use words in the senses that the definitions give
-# them (M17); PRV-006, under which this version reports every restriction as mediated (M16);
-# PRV-007, which asks for a run only where the runtime provider reports it `stopped`, and asks
-# for none where it reports `unknown` (M03); PRV-012 and PRV-025, under which a run that a
-# provider does not carry out ends failed (M19), PRV-025 also saying when a connection is silent
-# (M11) and that a server treats any disconnect as a cancellation (M15); PRV-014, which reports
-# no hostname longer than 63 characters (M20); PRV-015, which asks the machine provider to place
-# only an instance for which an item that is run is selected (M22); and PRV-022, under which a
-# `CONDUIT_URL` given as the run sees it keeps the engine's address whole (M13, M17), and an
-# `http` URL on loopback is given only to a run on the engine's own runner that ends with an
-# engine that can neither restart on another machine nor run as several parts (M47). It wrote
-# the sentences at the head of this file that describe it as it stands in the names in force
-# (M21). It removed none and added none.
-# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
-# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed PRV-007, whose
-# guard on a program given as a relative path holds whether or not SUB-010 has resolved it
-# (M27), and PRV-008, PRV-020 and PRV-027, under which a request to unregister any retired
-# instance asks for the stop once more (M41). It removed none and added none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed PRV-007, which says what an actor can do where a runtime provider
-# reports a run `unknown` (V5, V2-03); PRV-025, which says why a token that a gate passes on
-# gives the server nothing (V7); and PRV-026, under which a read for the machine provider's run
-# is made whatever its machine's state (V2-04). It added none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
-# (log docs/proposals/reaudit/round-6/log-promises.md), changed PRV-016: the Type of a
-# package-source provider lists no control that changes `/schemes`, so the schemes it claims
-# are fixed for its life (finding 6-1-05); and PRV-013, whose observable says so. It added none
-# and removed none.
+# a URL, for package sources.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: PRV-001
   layer: language
@@ -662,10 +527,7 @@
     changing who may reach what.
   vectors: []
 
-# --- Added by the coverage check of ruling 41 (docs/proposals/ruling-41/log-integration.md,
-# --- "Coverage check"): an instance runs on the machine of its location, which ruling 40
-# --- (point 3b, revised) keeps among Conduit's own promises, and a runtime provider that an
-# --- instance names is not retired while that instance exists.
+
 
 - id: PRV-019
   layer: convention
@@ -713,11 +575,7 @@
     before it, under LIF-021. Where the actor is not permitted, OPS-023 gives refused first.
   vectors: []
 
-# --- Added by ruling 42 (docs/proposals/ruling-42/README.md), on the owner's answers D11, D17
-# --- and D8 in docs/proposals/ruling-41/open-decisions.md: what a runtime provider does with a
-# --- stop that it cannot carry out now, how a run reaches the engine and presents itself as its
-# --- instance, and what the engine's own runner passes to a process of the engine's own
-# --- environment.
+
 
 - id: PRV-021
   layer: convention
@@ -852,8 +710,7 @@
     and login session are DL16 of the implementation-defined list.
   vectors: []
 
-# --- Added by the verification of ruling 42 (docs/proposals/ruling-42/log-integration.md,
-# --- "Verification"), on the owner's answer D17: what no record holds of `identity`.
+
 
 - id: PRV-024
   layer: convention
@@ -874,12 +731,7 @@
     keeps `identity` as it keeps such a value, under PRV-022.
   vectors: []
 
-# --- Added by ruling 43 (docs/proposals/ruling-43/README.md), accepting the proposal on work
-# --- across machines (docs/proposals/multi-machine/README.md): the gate in front of every
-# --- server that the engine does not run itself (D5), the run of a provider made again after
-# --- the engine restarts (Q3), and the machine given to `stop.v1` and `inspect-run.v1`, which
-# --- settles X10 of the verification of ruling 42
-# --- (docs/proposals/ruling-42/log-integration.md).
+
 
 - id: PRV-025
   layer: convention
@@ -1018,10 +870,7 @@
     under REC-002.
   vectors: []
 
-# --- Added by the verification of ruling 43 (docs/proposals/ruling-43/log-integration.md,
-# --- "Verification"), on point 4 of the gate in the proposal on work across machines
-# --- (docs/proposals/multi-machine/README.md#the-gate-in-substance): what answers at a run's
-# --- `url` proves that it serves the instance.
+
 
 - id: PRV-028
   layer: convention

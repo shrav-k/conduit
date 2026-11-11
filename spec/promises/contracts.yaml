@@ -1,74 +1,16 @@
 # Contracts: the five kinds of contract and what each holds.
-# Owner rulings of 2026-11-05 (plan-audit rulings 31 to 33). A contract is a document with the
-# same envelope as any other, as a Kubernetes resource definition is itself a resource. Every
-# field below is one that an existing promise already relies on. The JSON Schemas of these
-# documents are in spec/schemas/contracts.yaml. Consolidation pass 1 took PLC-014 and part of
-# PKG-011 into CTR-004, and added CTR-007. The follow-up decisions (ruling 33) added CTR-008,
-# the kind `Schema`. The ruling on the core package and the schemas (ruling 37) changed CTR-001
-# to CTR-004 and CTR-008, and added CTR-009. The conversion of the older text (decision DA3 of
-# the docs audit, docs/proposals/docs-audit/GAPS.md) changed CTR-002 and CTR-004 to CTR-006, and
-# added CTR-010. The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md)
-# changed CTR-002 to CTR-007 and CTR-010: a contract that breaks one of them is rejected when
-# its package is installed or its project is submitted, a control's `changes` is a map from an
-# input's name to the pointer it sets, and a Type of the family Pool offers
-# `pool-management.v1`. Its closing pass (docs/proposals/reaudit/round-2/log-closing.md)
-# changed CTR-002, which gained the mark `arrangesLaterWork`, and CTR-005, on what `obliges`
-# adds. Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed CTR-002 and CTR-005:
-# a requirement that does not narrow requests states no `obliges`. The follow-up to that pass
-# changed CTR-005: a composition obliges the consumer where any constituent that narrows does.
-# No promise of this file has been removed. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed CTR-002, CTR-003, CTR-005 and CTR-010, and added CTR-011: `bound.v1`
-# is never a constituent of a composition. It removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), removed CTR-010 and CTR-011 under the review's
-# decision 7: a requirement is no longer built from constituents, several requirements are
-# applied side by side in a Conduit template's `requirements` instead, and nothing replaces the
-# two. It changed CTR-002 and CTR-004 to CTR-006: an Operation contract is written as the Model
-# Context Protocol writes a tool, with `inputSchema` and `outputSchema` (decision 16), a Type's
-# `placement` is a label selector and its runtimes go (decisions 2 and 8a), a requirement is
-# applied only to a Conduit and loses `appliesTo`, `narrows` and `obliges` (decisions 3a, 7, 14
-# and alignment C20), and a control returns no `settings` (decision 15). It added CTR-012. The
-# log is docs/proposals/ruling-41/log-G6.md.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md. Applying them, it changed the
-# observable of CTR-012: why `type: object` is required at the root of both schemas (row 44).
-# It added none and removed none.
-# The names of ruling 42 (the vocabulary audit's N9 and N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of a Type to
-# `nodeSelector`, and location to node, in CTR-004. It removed none and added none.
-# The names of ruling 42 (the vocabulary audit's N15; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed operation identity to idempotency key in
-# CTR-002. It removed none and added none.
-# The editorial fixes of ruling 42 (the vocabulary audit's E3; log
-# docs/proposals/ruling-42/log-editorial.md) changed CTR-002, whose observable says that
-# `deduplicates` is not the Model Context Protocol's `idempotentHint`. It removed none and
-# added none.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed CTR-012,
-# whose observable says a map where it said an object (M17). It added none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
-# (log docs/proposals/reaudit/round-6/log-promises.md), changed CTR-006: no two pointers of a
-# control's `changes` are equal or lie one inside another, compared by their reference tokens
-# (finding 6-1-03); and CTR-012: the root of an Operation contract that is not a control may
-# hold any keyword of the profile beside `type: object`, and a control's keeps the four keys
-# (D14). It added none and removed none. The verification of round 6
-# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed CTR-004, under
-# which a type's default for a hook that it does not require is reported in a diagnostic that
-# does not reject (C-05, R-10); CTR-005, whose filter is applied to each call for a request
-# (R-05); and CTR-012, under which a `default` that the root reaches only through a keyword
-# beside its `properties` fills nothing (C-03, R-09). It added none and removed none.
-# Ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md) changed CTR-002: an Operation contract states
-# no `implementation`, and the engine implements the operations that the core package's
-# `engine` lists. It added none and removed none.
+# A contract is a document with the same envelope as any other, as a Kubernetes resource
+# definition is itself a resource. Every field below is one that an existing promise already
+# relies on. The JSON Schemas of these documents are in spec/schemas/contracts.yaml.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# CTR-010: nothing replaces it (ruling 41).
+# CTR-011: nothing replaces it (ruling 41).
+# Removed: PKG-011 → TPL-004 and CTR-004 (ruling 32).
+# Removed: PLC-014 → CTR-004 (ruling 32).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: CTR-001
   layer: language
@@ -238,7 +180,7 @@
     before it dispatches, under REV-015.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
 
 - id: CTR-007
   layer: language
@@ -254,7 +196,7 @@
     of its operations one name.
   vectors: []
 
-# --- Added by the follow-up decisions (plan-audit ruling 33; decision F21 of the re-audit).
+
 
 - id: CTR-008
   layer: language
@@ -272,8 +214,7 @@
     schemas are Schema contracts, and so are the schemas of documents under spec/schemas/.
   vectors: []
 
-# --- Added with the core package (plan-audit ruling 37; change X4 of the ruling on the core
-# --- package and the schemas).
+
 
 - id: CTR-009
   layer: language
@@ -290,8 +231,7 @@
     ACC-032 says what it means.
   vectors: []
 
-# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decision 16a of the principles
-# --- review, docs/proposals/principles-review/README.md).
+
 
 - id: CTR-012
   layer: language

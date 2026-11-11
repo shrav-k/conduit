@@ -10,15 +10,8 @@ This remains a draft: the model and vectors do not yet cover the whole specifica
 next cold read follows the first build. Ruling 38, point 4, asks for agreement between the
 reference model, vectors and promises, and no unsafe finding in the latest round of readers.
 
-This page describes the specification as it stands now. How it came to stand so, ruling by
-ruling, and where the record of each decision is, are under [History](#history) at the end.
-As of 2026-11-10, the logs of [increment 2](../docs/proposals/first-build/log-increment-2.md)
-and [increment 3](../docs/proposals/first-build/log-increment-3.md) record the subsequent
-settlements applied to the promises, including schema defaults, plain errors and successful
-content without declared outputs. The shell's [closeout](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
-ran real Claude Code and Codex as Agents through S1's T1, T2 and T7. Increment 4 is in progress:
-the coordinator's and fresh author's [runs](../docs/proposals/first-build/README.md#the-logs)
-completed T1 to T7 but both failed the owner's bar for authoring work.
+This page describes the specification as it stands now. The decision records are listed under
+[Where the reasons are](#where-the-reasons-are).
 
 As of 2026-11-10, rulings 49 to 59 are accepted. Their specification changes are not yet
 written here; rulings 57 and 58 also govern documentation upkeep:
@@ -38,21 +31,6 @@ written here; rulings 57 and 58 also govern documentation upkeep:
 The [language's shape](../docs/proposals/language-shape/README.md) and the
 [Project model](../docs/proposals/owner-direction/2026-11-10-projects.md) are being settled
 first, so that each change is written once. These records do not supply promises missing here.
-
-The review of increment 1 of the first build on 2026-11-09 applied these changes:
-schema rejections cite SUB-005 and the failing keyword's location, either syntax accepts one
-leading byte order mark, SUB-011 has a floor and covers files, submissions and archives, and
-MAN-010 states what a pin holds. Ruling 48, point 3, restricts SCH-016 to interoperable pattern
-tokens. The [log](../docs/proposals/first-build/log-increment-1.md#after-the-review-of-2026-11-09)
-records those fixes and their vectors. Before them, the coordinator settled the findings under
-[ruling 46](../docs/proposals/ruling-46/README.md), point 4, of 2026-11-09, which
-the [log of increment 1](../docs/proposals/first-build/log-increment-1.md) lists and the owner
-can strike: it changed SCH-006, SCH-016, SCH-018, SCH-020, SUB-005, SUB-010, MAN-011, DL10 and
-the [schema profile](schema-profile.md), and added SUB-011. Before it,
-[ruling 45](../docs/proposals/ruling-45/README.md), of the same day, added six
-[core terms](definitions.md#core-terms) to the definitions, and
-[ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, settled
-[round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit.
 
 The specification alone binds. Nothing under [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) binds:
 it is the design as it stood before the specification, superseded, and kept as source material
@@ -125,7 +103,7 @@ this version is reported as mediated, under ACC-027.
 
 One thing is left out of this version on purpose: work that outlasts its invocation. No
 operation arranges, through the engine, work that starts or runs after its own invocation has
-ended; work that is to happen later is asked for later, by an actor (ACC-019, ruling 38). The
+ended; work that is to happen later is asked for later, by an actor (ACC-019). The
 requests that the engine makes on behalf of an invocation that has ended are two reads of a
 secret: the read again for a connection that a setup made, once the engine has lost its values
 (SEC-023), and, once the engine has restarted, the reads before it runs again a provider whose
@@ -276,7 +254,7 @@ manifests, the core package as documents and the manifest's file format exist: t
 `schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the reference model exist on
 S1, with the scope and remaining work stated above and in the
 [conformance document](../reference-model/CONFORMANCE.md).
-[History](#history) lists the rulings and decisions applied to the promises.
+[Where the reasons are](#where-the-reasons-are) lists the decision records.
 
 The core package is one package kept in two directories. `core/` holds its manifest and
 everything a promise says it exports. `schemas/` holds the schemas of documents, which are
@@ -292,8 +270,7 @@ layer `interface`, and a few rules on documents in the other two directories hav
 ### Promise files that rulings removed
 
 A promise file whose every promise a ruling removed is taken out of the tree and listed here,
-with the IDs it held, so that none of them is ever reused (the owner's answer on the planner's
-choice P2, recorded in [ruling 41](../docs/proposals/ruling-41/README.md#after-the-ruling)).
+with the IDs it held, so that none of them is ever reused.
 
 | File | IDs it held | Removed by |
 | --- | --- | --- |
@@ -322,6 +299,11 @@ Rules for writing one:
 5. A promise with no vector is not yet testable and does not count as covered.
 
 The `layer` field lets coverage be counted by layer.
+
+A YAML head comment holds what its file contains, its standing, reading notes, standards,
+open issues and a register of removed IDs, including where each went and that IDs are not
+reused. Specification files carry no change narrative; the reasons are in the records listed
+under [Where the reasons are](#where-the-reasons-are).
 
 ## Conformance
 
@@ -387,14 +369,13 @@ that outlasts its invocation is left out, as [What this is](#what-this-is) says.
   the broker applies no filter: the onward request would carry it, `management` cannot apply it,
   and the request would report unavailable (ACC-017, ACC-015). The scenarios S1 and S2 measure
   whether this is good enough; where it is clumsy, a focused constraint, such as a list of the
-  templates that a Conduit to `management` allows, comes back to the owner (ruling 44).
+  templates that a Conduit to `management` allows, comes back to the owner.
 
 ### What the guarantee for secrets covers
 
 This is a statement of the limit of the promises on secrets, not a promise, and nothing tests
-it. It is section 4 of the [principles review](../docs/proposals/principles-review/README.md),
-which ruling 41 accepted, with the limits that follow from the decisions and answers that
-ruling 42 accepted and from ruling 43.
+it. Each point cites the promises that state its parts; the reasons are in the
+[decision records](#where-the-reasons-are).
 
 - The machine that the engine runs on and its operating-system user, and the place where the
   chosen runtime provider keeps a run's values (PRV-011), are inside the domain of trust of
@@ -537,143 +518,18 @@ a service mesh or the protocol's authorization, as each provider's contract stat
 PRV-025). [schema-profile.md](schema-profile.md) lists what is relied on for documents, and the
 comment at the head of each promise file names the standards that its promises follow.
 
-## History
+## Where the reasons are
 
-This section is the record of how the specification came to stand as the sections above
-describe it. Nothing in it binds that the promises do not state.
+These records hold the decisions and their reasons. The specification governs where they differ.
 
-The owner accepted the specification as it stood at
-[ruling 39](../docs/proposals/ruling-39/README.md), of 2026-11-06, which accepted every
-decision of the coordinator and every choice of an editor that the records log, before and
-since ruling 37. [Ruling 40](../docs/proposals/ruling-40/README.md) and
-[ruling 41](../docs/proposals/ruling-41/README.md), of the same day, then changed it: Conduit
-innovates only on connection and access, and everything else is a provider behind a contract
-that the user picks. At ruling 41 the owner accepted, as recommended, every decision of the
-[principles review](../docs/proposals/principles-review/README.md), and the secret type as its
-section 4 reduces it, and then the planner's choices of the
-[work order](../docs/proposals/ruling-41/PLAN.md) that applies them, with one changed. The
-specification as it stands is that rewrite. The logs of its editors, beside the work order
-in `docs/proposals/ruling-41/`, list every change, the choices that the editors made beyond
-the work order, which the coordinator confirms or strikes, and the questions they left open.
-A [coverage check](../docs/proposals/ruling-41/log-integration.md#coverage-check) then read
-the rewrite against every decision; its log lists what it fixed, and the questions it left were
-settled in the [open questions after the rewrite](../docs/proposals/ruling-41/open-decisions.md)
-and by rulings 42 and 43. [Ruling 42](../docs/proposals/ruling-42/README.md), of the same day,
-struck none of the decisions that the coordinator settled on the
-[questions the rewrite left open](../docs/proposals/ruling-41/open-decisions.md), and accepted
-the recommended answers to seven of the nine put to the owner; the logs of its editors are
-beside its record. The other two, D5 and D20, are about work across machines, which the owner
-asked to have researched further; ruling 43 has since ruled them, as the end of this paragraph
-says. The secret type is ruled: its promises are [promises/secrets.yaml](promises/secrets.yaml),
-and the [secrets proposal](../docs/proposals/secrets/README.md) is the reasoning behind it. The
-names that the review and the work order coined are settled: ruling 42 also accepted the names
-and the editorial fixes that the
-[vocabulary audit](../docs/proposals/vocabulary-audit/README.md) proposes. The names are
-applied, and so are the editorial fixes, as the
-[log of the editorial fixes](../docs/proposals/ruling-42/log-editorial.md) lists. The audit's
-names for machines and placement, N2, N3 and N8 to N11, are as the
-[log of their renames](../docs/proposals/ruling-42/log-rename-a.md) lists: a node, of the type
-`node.v1`, represents a machine that the machine provider reports; a Type or an implementation
-item states its label selector as `nodeSelector`, of the schema `labels.v1`; `run.v1` gives the
-machine in its input `machine`; and the engine declares a node lost when its machine is
-reported gone. The others, N1, N5 to N7 and N12 to N20, are as the
-[log of the other renames](../docs/proposals/ruling-42/log-rename-b.md) lists: a secret
-Resource's type offers `secret-provider.v1`, whose operation is `get-secret.v1`; `run.v1`
-returns `url`; a `package` item binds `packageArguments` and is pinned by its Package's
-`fileSha256` or, for an `oci` image, by a digest in its `identifier`; a caller attaches an idempotency key; a record and a condition name their source;
-the filters a request carries are sent in `io.github.shrav-k.conduit/filters`, under Conduit's
-extension `io.github.shrav-k.conduit/implementation-interface`; and an engine documents its
-choices in its conformance document. A
-[verification](../docs/proposals/ruling-42/log-integration.md#verification) of the result then
-fixed what three readers found that follows from ruling 42; what it left was settled in the
-[record of ruling 42](../docs/proposals/ruling-42/README.md#after-the-ruling) and in
-[the items that waited on ruling 43](../docs/proposals/ruling-43/log-integration.md#the-items-that-waited-on-this-ruling),
-apart from the few points that the tracker lists
-[for the next reader](../docs/AUDIT.md#for-the-next-reader).
-[Ruling 43](../docs/proposals/ruling-43/README.md), of the same day, then accepted the
-[proposal on work across machines](../docs/proposals/multi-machine/README.md), with two
-revisions, which rules D5 and D20 and five smaller questions and settles what that verification
-left for it. The logs of its editors, and the
-[log of its integration](../docs/proposals/ruling-43/log-integration.md), are beside its record;
-the [verification](../docs/proposals/ruling-43/log-integration.md#verification) at the end of
-that log fixed what three readers found that follows from the ruling; what it left was settled
-in the record's section
-[After the ruling](../docs/proposals/ruling-43/README.md#after-the-ruling).
-
-The records under `docs/proposals/` say who decided what and when: the owner's rulings, listed
-in the [ruling log](../docs/AUDIT.md#ruling-log), and the decisions of the session that
-coordinates the re-audit ([who decides what](../docs/AUDIT.md#who-decides-what)), logged in
-[GAPS.md](../docs/proposals/docs-audit/GAPS.md) and in the decisions of
-[round 2](../docs/proposals/reaudit/round-2/DECISIONS.md), of
-[round 3](../docs/proposals/reaudit/round-3/DECISIONS.md), of
-[round 4](../docs/proposals/reaudit/round-4/DECISIONS.md) and of
-[round 5](../docs/proposals/reaudit/round-5/DECISIONS.md), with the choices that its
-[fix log](../docs/proposals/reaudit/round-5/log-fixes.md) records, and of
-[round 6](../docs/proposals/reaudit/round-6/DECISIONS.md), with the choices that the logs beside
-it record, and since ruling 39 also in the
-[open questions after the rewrite](../docs/proposals/ruling-41/open-decisions.md) and in the
-sections "After the ruling" of the records of
-[ruling 42](../docs/proposals/ruling-42/README.md#after-the-ruling) and
-[ruling 43](../docs/proposals/ruling-43/README.md#after-the-ruling). The owner can strike any
-decision or choice made since ruling 39 ([who decides what](../docs/AUDIT.md#who-decides-what)
-lists where they are). The comment at the head of each file says which pass changed which
-promise. Later work is left out of this version
-([ruling 38](../docs/proposals/ruling-38/README.md)).
-
-The rulings of the [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the
-decisions of the [re-audit](../docs/proposals/reaudit/README.md), the
-[ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the
-[decisions of the docs audit](../docs/proposals/docs-audit/GAPS.md), which converted the
-behaviors that the older text accepted and the specification did not state, the
-[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md),
-the [decisions of its third round](../docs/proposals/reaudit/round-3/DECISIONS.md), the
-[decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md),
-[ruling 38](../docs/proposals/ruling-38/README.md),
-[ruling 39](../docs/proposals/ruling-39/README.md),
-[ruling 40](../docs/proposals/ruling-40/README.md),
-[ruling 41](../docs/proposals/ruling-41/README.md),
-[ruling 42](../docs/proposals/ruling-42/README.md), with the names and the editorial fixes of
-the vocabulary audit, [ruling 43](../docs/proposals/ruling-43/README.md), the
-[decisions of the fifth round of the re-audit](../docs/proposals/reaudit/round-5/DECISIONS.md),
-with the [verification of its fixes](../docs/proposals/reaudit/round-5/log-fixes.md#verification),
-and [ruling 44](../docs/proposals/ruling-44/README.md), on its sixth round, have been applied to
-the promises.
-
-[Ruling 44](../docs/proposals/ruling-44/README.md), of 2026-11-07, then settled
-[round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit, the owner's cold read by
-Codex of `main` at `c4d7d33`, whose two reports are six findings and a critique of whether
-Conduit is simple and useful. As the ruling accepted them: an error -32021 for a client
-capability that a call did not declare is read as any other error, unless Conduit's own contract
-binds the server to have done nothing, as the new IFC-047 binds an implementation that carries
-Conduit's keys (IFC-010, IFC-045, IFC-047, OPS-007); a repeat to which a filter applies is never
-answered with outputs that the filter has not judged, and one of an operation that states no
-effect, is not a control and starts no model work is dispatched again so that the filter decides
-afresh (OPS-009, OPS-024, OPS-034, ACC-008); no two pointers of a control's `changes` overlap
-(CTR-006); the schema of a tool that the engine presents is a self-contained bundle (IFC-033);
-the schemes that a package-source provider claims are fixed for its life (PRV-016); and the
-entry points no longer say that a point of round 5 waits for the owner. Of the four points that
-were left open, a type's default for a hook that it does not require is not used, and a
-diagnostic reports it (TPL-004, CTR-004); the tracker keeps the other three. Of the critique's
-simplifications, a tool shows the narrowing and the controls of the target's template (D07;
-IFC-033, IFC-012), replacing a template resolves the project handed over with it as registration
-does (D11; SUB-009), and an ordinary Operation's schemas may use the whole profile at their root
-(D14; CTR-012). The access convention states, as limits of this version, that a bound does not
-limit filters and that access to `management` cannot be narrowed to one template, with the
-broker that narrows it (ACC-029, ACC-030;
-[What access does not narrow](#what-access-does-not-narrow); D03, D04); ACC-033 lists its
-routing as one decision list, with no change of behavior (D18); and this page puts the current
-design first, with [reading paths](#reading-paths) (D21). Two further simplifications, as the
-owner revised them after the ruling
-([After the ruling](../docs/proposals/ruling-44/README.md#after-the-ruling)), are applied, as
-[their log](../docs/proposals/reaudit/round-6/log-d06-d12.md) lists: no Operation contract
-states a default implementation, a template's selection or its type's default chooses what
-runs, and the engine implements the operations that the core package's implementation `engine`
-lists, with no selection (D06; CTR-002, TPL-003, TPL-004); and names stay the only address,
-LIF-031 unchanged, while `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take an
-optional `expectedId`, which reports conflict where the object named has another ID (D12;
-LIF-037). Round 6's [decisions](../docs/proposals/reaudit/round-6/DECISIONS.md) list
-what changed for each item, and the logs of its editors, with
-[the integration](../docs/proposals/reaudit/round-6/log-integration.md) that made their files
-agree, are beside them; the integration's
-[verification](../docs/proposals/reaudit/round-6/log-integration.md#verification) lists what two
-further readers of the result found and what was fixed.
+- [The core package and schemas](../docs/proposals/core-and-schemas/README.md): the batch's decisions and alternatives.
+- [Round 5 decisions](../docs/proposals/reaudit/round-5/DECISIONS.md): the fifth re-audit's settlements.
+- [Round 6 decisions](../docs/proposals/reaudit/round-6/DECISIONS.md): the sixth re-audit's settlements.
+- [Open decisions after the rewrite](../docs/proposals/ruling-41/open-decisions.md): the coordinator's decisions and questions for the owner.
+- [The planner's choices](../docs/proposals/ruling-41/PLAN.md#planners-choices) and [the owner's changes](../docs/proposals/ruling-41/README.md#after-the-ruling): applying ruling 41.
+- [The principles review](../docs/proposals/principles-review/README.md): connection and access, with providers behind contracts.
+- [The secrets proposal](../docs/proposals/secrets/README.md): the secret type's reasoning and options.
+- [The vocabulary audit](../docs/proposals/vocabulary-audit/README.md): the terms and names in force.
+- [Work across machines](../docs/proposals/multi-machine/README.md): identity, proof and enforcement.
+- [The first build's register](../docs/proposals/first-build/README.md): the increments and their findings and settlements.
+- [The ruling log](../docs/AUDIT.md#ruling-log): the owner's rulings and their records.

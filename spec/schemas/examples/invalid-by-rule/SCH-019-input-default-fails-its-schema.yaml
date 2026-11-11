@@ -4,6 +4,8 @@
 # input `maxEntries`, a property of its `inputSchema`, allows 1 to 100 through a Schema
 # contract of the same project and states the default 500, and the template's input `limit`
 # allows 1 upwards and states 0.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

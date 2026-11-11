@@ -1,38 +1,3 @@
-# Plan-audit ruling 37 (2026-11-05) first accepted this file, with the core package and the
-# manifest's promises; the record is docs/proposals/core-and-schemas/README.md. What the docs
-# audit, rounds 2 to 4 of the re-audit and ruling 38 changed since is logged in the records
-# that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, changed `type-spec.v1` (no runtimes; `placement` a label selector; a
-# Pool type's `offers` holds `pool-management.v1`, stated here), `operation-spec.v1` (an
-# Operation contract is written as the Model Context Protocol writes a tool, with
-# `inputSchema`, `outputSchema` and three hints), `requirement-spec.v1` (`inputs` alone) and
-# `applied-requirement.v1` (applied to a Conduit alone), under decisions 2, 3a, 7, 8a, 14,
-# 16 and 20 and alignment C20. The log is docs/proposals/ruling-41/log-core.md.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the owner's answer D10,
-# changed only the comment below on what the engine checks: a Type that offers
-# `secret-reveal.v1` offers no other capability (SEC-022). The log is
-# docs/proposals/ruling-42/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N8 to N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of `type-spec.v1` to
-# `nodeSelector`, of the schema `labels.v1`, which was `label-selector.v1`, and location to node
-# in its description.
-# The names of ruling 42 (the vocabulary audit's N1; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`
-# in the comment below.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit (log
-# docs/proposals/reaudit/round-6/log-core.md), opened the root of an Operation contract's
-# `inputSchema` and `outputSchema` to the whole profile beside `type: object`, and kept the four
-# keys of the root for a control, whose `spec` holds `changes` (D14, CTR-012); and said below
-# what the engine checks of a control's pointers (finding 6-1-03, CTR-006) and of the controls
-# of a package-source provider's Type (finding 6-1-05, PRV-016).
-# Ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md) took `implementation` out of
-# `operation-spec.v1`: an Operation contract states no default implementation (CTR-002).
-#
 # The five kinds of contract document, and an applied requirement.
 # JSON Schema 2020-12, within spec/schema-profile.md.
 #
@@ -86,6 +51,9 @@
 # that a `default` satisfies its schema (SCH-019); and compatibility between releases (NAM-024).
 # tools/check_schemas.py also checks some of these, as far as the documents in front of it show:
 # spec/schemas/README.md, "What a schema cannot express", says which.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

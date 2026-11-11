@@ -1,30 +1,3 @@
-# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since is logged in the records that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, took `appliesTo` and `narrows` out of both contracts (alignment C20 and
-# decisions 3a and 7), made `bound.v1` a restriction that the engine applies itself, which
-# names the operations of a submitted project as `address#name` too (decisions 11 and 28),
-# and made `shared-host.v1` compare the `kubernetes.io/hostname` labels of the two ends'
-# locations, once, when the Conduit is instantiated (decision 8b). The log is
-# docs/proposals/ruling-41/log-core.md. The coverage check of the rewrite
-# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed the description of
-# `bound.v1`, whose `operations` are compared as names (ACC-029).
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying rows 6, 10 and 36 of
-# the coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, said in the
-# description of `bound.v1` that an item of `operations` covers the operation of that name in
-# every submission at its address, and in a package installed there later. The log is
-# docs/proposals/ruling-42/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in this comment and in the
-# description of `shared-host.v1`.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") said in the description of `shared-host.v1` that a Conduit an end of which
-# runs nothing is not instantiated, under CON-006 (V2-01).
-#
 # The two Requirement contracts of the core package.
 #
 # Promises encoded:
@@ -65,6 +38,9 @@
 # Conduit that applies it and whose target is not `access` is not instantiated (CON-028).
 # Each input of `bound.v1` states `default: []`, so each may be left out without being
 # marked optional (OBJ-015), and each default satisfies its input's schema (SCH-019).
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Requirement

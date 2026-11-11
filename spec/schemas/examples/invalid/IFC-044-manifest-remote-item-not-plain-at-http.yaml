@@ -5,6 +5,8 @@
 # item at `http://127.0.0.1:8080/mcp`. A local server that takes Conduit's keys runs as a
 # `command` or `package` item on the engine's own runner, over stdio; a plain item may stand at
 # an `http` URL.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/files

@@ -3,8 +3,9 @@
 # where that value has no fractional part it is held to the range of SCH-006, so that no
 # integer outside the range is read. The `maximum` below is read as 9,007,199,254,740,994,
 # which is outside it. A reader that judges the range on the decimal written alone would accept
-# it. The first build's log of increment 1 (docs/proposals/first-build/log-increment-1.md)
-# added it.
+# it.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

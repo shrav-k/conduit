@@ -5,6 +5,8 @@
 # configuration, and the template `notes` selects it, so whoever writes an instance's
 # configuration could send the run's credential to an address of their choosing. A schema
 # cannot tell: the item is valid alone, and the rule is on the template that selects it.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/notes

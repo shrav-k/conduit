@@ -1,47 +1,20 @@
 # Nothing starts model work or repeats an effect implicitly.
-# Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). Whether an operation starts
-# model work is declared in its contract, as the Model Context Protocol's tool annotations
-# declare that a tool is read-only or destructive, so "who may cause whom to spend" can be read
-# from the documents. Repeating an invocation is governed by conventions/operations.yaml.
-# IMP-003 to IMP-005 and IMP-009 are rules on documents and have the layer `language`. The
-# second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed IMP-005,
-# IMP-006 and IMP-009, and its closing pass named the mark `arrangesLaterWork` in IMP-006. Its
-# last pass (docs/proposals/reaudit/round-2/log-tail.md) changed IMP-006 and IMP-008, and added
-# IMP-010, a rule on documents of the layer `language`, and IMP-011: what IMP-004 and IMP-008
-# state for model work, stated for later work. The follow-up to that pass changed IMP-006,
-# IMP-010 and IMP-011, and added IMP-012, of the layer `language`: what IMP-005 and IMP-009
-# state for model work. No promise of this file has been removed. Draft: no vector exists yet.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# IMP-004, IMP-006, IMP-010 and IMP-012: the rules on a graph that starts model work or arranges
-# later work cover every graph selected for a template's instances, however it was selected. It
-# added none and removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md. It removed IMP-006, IMP-010,
-# IMP-011 and IMP-012, on later work, which is not part of this version. Those IDs are
-# not reused.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, removed IMP-004, IMP-005 and IMP-009 (decision 1: no graphs; IMP-002 and
-# IMP-008 cover the setup hook and the retire hook); changed IMP-002 and IMP-008; and added
-# none. IMP-003 is now the one rule on documents in this file. What changed is in
-# docs/proposals/ruling-41/log-G1.md. Those IDs are not reused.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
-# in docs/proposals/ruling-41/open-decisions.md, changed IMP-007: the further setup or
-# retirement that dispatches a new attempt of a hook is the repeat, and its caller is the
-# attempt's. It added none and removed none. What changed is in
-# docs/proposals/ruling-42/log-conventions.md.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed IMP-007, under which a call sent once more under IFC-046 is part of
-# the same dispatch (V2). It added none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit
-# (docs/proposals/reaudit/round-6/), changed IMP-007, which now covers an invocation that
-# succeeded, of which OPS-024 dispatches a new attempt for a repeat of an operation with no
-# effect to which a filter applies (6-1-02). It added none and removed none. What changed is in
-# docs/proposals/reaudit/round-6/log-conventions.md.
+# Whether an operation starts model work is declared in its contract, as the Model Context
+# Protocol's tool annotations declare that a tool is read-only or destructive, so "who may cause
+# whom to spend" can be read from the documents. Repeating an invocation is governed by
+# conventions/operations.yaml. IMP-003 is a rule on documents and has the layer `language`.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: IMP-004 → IMP-002 and IMP-008 (the hooks) (ruling 41).
+# Removed: IMP-005 → IMP-002 and IMP-008 (the hooks) (ruling 41).
+# IMP-006: nothing replaces it (ruling 38).
+# Removed: IMP-009 → IMP-002 and IMP-008 (the hooks) (ruling 41).
+# IMP-010: nothing replaces it (ruling 38).
+# IMP-011: nothing replaces it (ruling 38).
+# IMP-012: nothing replaces it (ruling 38).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: IMP-001
   layer: convention
@@ -102,7 +75,7 @@
     An invocation that was in progress across a restart has the outcome unknown.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32; decision U3 of the re-audit).
+
 
 - id: IMP-008
   layer: convention

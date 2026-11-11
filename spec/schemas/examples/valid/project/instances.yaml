@@ -1,7 +1,7 @@
 # Example. One instance document of each family, made from the templates in templates.yaml.
 # The node `local` and the Resource `access` exist from first start (FST-001).
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed location to node
-# here, and the Pool's input `location` to `node`.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool

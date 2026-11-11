@@ -1,46 +1,16 @@
 # Pools: ownership and entries.
-# Owner rulings of 2026-11-05 (plan-audit rulings 21, 28, 29, 31, 32 and 33). Ownership is one
-# stored fact, as a resource's group is in Azure and an object's namespace is in Kubernetes;
-# every power over a Pool or its Resources is a Conduit (conventions/access.yaml). The Resources
-# of a Pool's entries are instantiated with the Pool, as a template's declared Conduits are
-# instantiated with their consumer. Setting up a Pool sets up its entries' Resources in
-# dependency order, as `docker compose up` does. POOL-008 was removed earlier: entries are
-# instantiated together.
-# Removed by consolidation pass 1: POOL-010 was folded into LIF-009.
-# The ruling on the core package and the schemas (ruling 37) changed POOL-005 and POOL-012.
-# The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed
-# POOL-003, POOL-006, POOL-009 and POOL-012 to POOL-015. POOL-012 now leaves the shape of an
-# entry to OBJ-014. Its closing pass changed POOL-016. The follow-up to its last pass
-# (docs/proposals/reaudit/round-2/log-tail.md) changed POOL-004 and added POOL-017, of the layer
-# `convention`: no Resource is registered into a retired Pool. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed POOL-004, which now rejects a Resource document whose owner is a
-# retired Pool, and POOL-017, which keeps the request under LIF-009 alone and now reports
-# invalid. It removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review (docs/proposals/principles-review/README.md, decisions 1, 5, 8c and 31b),
-# changed POOL-003, POOL-009, POOL-013, POOL-015 and POOL-016: an entry's Resource is set up as
-# a part of the Pool's setup, with no graph; an input may give an entry its runtime provider;
-# and an entry placed by no input is placed by the machines provider. It removed none and added
-# none. Its log is docs/proposals/ruling-41/log-G2.md. The integration of the rewrite
-# (docs/proposals/ruling-41/log-integration.md) changed POOL-012, which names `runtime` among
-# the keys an entry may not carry, as OBJ-014 does. Its coverage check (the same log,
-# "Coverage check") changed POOL-009: an entry given no runtime runs only on `local`'s machine.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), accepting the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md, changed POOL-009: an entry given no
-# runtime that has an item that is run is placed only where `local`'s hostname label matches,
-# and an input whose destination is an entry's `runtime` states no `default`; and POOL-016,
-# which moved from the layer `language` to `convention`, since it calls a provider, and reports
-# unavailable where the machines provider cannot place now. It removed none and added none. Its
-# log is docs/proposals/ruling-42/log-machines.md.
-# The names of ruling 42 (the vocabulary audit's N2 and N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in POOL-004, the machines
-# provider to the machine provider in POOL-016, and "for which `local` stands" to "that `local`
-# represents" in POOL-009. It removed none and added none.
+# Ownership is one stored fact, as a resource's group is in Azure and an object's namespace is in
+# Kubernetes; every power over a Pool or its Resources is a Conduit (conventions/access.yaml).
+# The Resources of a Pool's entries are instantiated with the Pool, as a template's declared
+# Conduits are instantiated with their consumer. Setting up a Pool sets up its entries' Resources
+# in dependency order, as `docker compose up` does.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: POOL-008 → POOL-006 (entries instantiated together; earlier removal accepted) (ruling 39).
+# Removed: POOL-010 → LIF-009 (ruling 32).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: POOL-001
   layer: language
@@ -208,7 +178,7 @@
     LIF-009, and a diagnostic names the retired Resource.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32, decisions G3 and A1).
+
 
 - id: POOL-014
   layer: language
@@ -242,7 +212,7 @@
     authorized in the same way, as ACC-005 states for the opening of a declared Conduit.
   vectors: []
 
-# --- Added by the follow-up rulings (plan-audit ruling 33; decision F15 of the re-audit).
+
 
 - id: POOL-016
   layer: convention
@@ -264,9 +234,7 @@
     supplied is part of the entry the Pool holds, and a replacement takes it.
   vectors: []
 
-# --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;
-# --- decision 2 of "The last pass, and what it left" in DECISIONS.md). It is of the layer
-# --- `convention`.
+
 
 - id: POOL-017
   layer: convention

@@ -1,91 +1,19 @@
 # Placement: where an Agent or Resource runs.
-# Owner rulings of 2026-11-05 (plan-audit rulings 7, 8, 17, 28, 29, 32 and 33). Since ruling 41,
-# a node represents a machine that the machine provider reports (spec/promises/providers.yaml),
+# A node represents a machine that the machine provider reports (spec/promises/providers.yaml),
 # and what a type or an implementation needs of a node is a label selector, matched against the
-# labels reported for it, as a Kubernetes `nodeSelector` is. Removed by consolidation pass 1:
-# PLC-010 was folded into OBS-003 and LIF-010, and PLC-014 into CTR-004. PLC-011 was split into
-# PLC-011 and PLC-017.
-# The follow-up rulings removed nothing. The ruling on the core package and the schemas (ruling
-# 37) changed PLC-008 and PLC-016. The conversion of the older text (decision DA3 of the docs
-# audit, docs/proposals/docs-audit/GAPS.md) added PLC-020. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) changed PLC-001, PLC-005, PLC-008, PLC-016 and
-# PLC-020, and added PLC-021, of the layer `convention`, which took from PLC-008 how a
-# location's facts are changed. Its closing pass changed PLC-017 and PLC-021 and reworded one
-# sentence of PLC-007. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed PLC-011, PLC-016 and PLC-017, and added PLC-022, of the layer
-# `convention`, which took a rule from the observable of PLC-016. It removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review (docs/proposals/principles-review/README.md, decision 8), removed PLC-003,
-# PLC-004, PLC-016 and PLC-022, with the default location, which placement by the machines
-# provider replaces (PLC-002, PRV-015), and PLC-021, with a location's facts, which the
-# labels of PLC-026 replace; changed PLC-002, PLC-007, PLC-008, PLC-011, PLC-012, PLC-013,
-# PLC-017 and PLC-020; and added PLC-023 to PLC-026. Its log is
-# docs/proposals/ruling-41/log-G2.md. The integration of the rewrite
-# (docs/proposals/ruling-41/log-integration.md) changed PLC-002, whose machines provider is
-# one that is not retired, as PRV-003 has it, and PLC-005, which no longer offers a declared
-# Conduit to a location as an example, since a location offers no capability. Its coverage
-# check (the same log, "Coverage check") changed PLC-008; PLC-017, which no longer speaks of
-# the status of an instance already removed; PLC-023, which also covers asking for a run or a
-# stop, and PLC-023 and PLC-024, which leave out the machine for which `local` stands; and
-# added PLC-027 and PLC-028.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), accepting the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md and the owner's answer D11, changed
-# PLC-005, which rejects a `runtime` given by a template as well as a placement; PLC-007, whose
-# label selector holds `local`'s hostname for an instance that has an item that is run and names
-# no `runtime`; PLC-017 and PLC-024, which take effect at once; PLC-023, under which a machine
-# that a report omits counts as unreachable; PLC-025, which compares the selectors of the items
-# a template selects with each other too; PLC-026, under which a hostname is compared in
-# canonical form and a location stands for a hostname whichever machines provider reports it;
-# and PLC-027, under which a request to unregister is the acknowledgment that the retire hook
-# will never run, and asks for the stop once more. It removed none and added none. Its log is
-# docs/proposals/ruling-42/log-machines.md.
-# The names of ruling 42 (the vocabulary audit's N2, N3 and N9 to N11; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node, `location.v1` to
-# `node.v1`, the core template `location` to `node`, "stand for" to "represent", the machines
-# provider to the machine provider and the engine's own machine to the engine's own machine
-# provider, in PLC-001, PLC-002, PLC-005, PLC-007, PLC-008, PLC-011 to PLC-013, PLC-015, PLC-017
-# to PLC-020 and PLC-023 to PLC-028; renamed the key `placement` of a type and of an item to
-# `nodeSelector` in PLC-007 and PLC-025, and the input `location` of `run.v1` to `machine` in
-# PLC-027; and changed PLC-024, under which the engine declares the node lost when its machine
-# is reported gone, where the node counted as declared lost, with PLC-017 and PLC-027, which say
-# so. PLC-023 and PLC-025 write a Kubernetes Node, and its `scheduling.nodeSelector`, so that
-# they are not read as a node. It removed none and added none.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# changed PLC-007, whose diagnostic names which of the type, the item or the engine's own runner
-# gives the label, where it named the source of the label, since source is now the term for a
-# record's context (the vocabulary audit's N14), and PLC-017, whose observable says that the
-# declaration asks for no stop. It removed none and added none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), accepting the proposal on work
-# across machines (docs/proposals/multi-machine/README.md), changed PLC-026, whose observable
-# says that an engine that restarts on another machine, or runs as several parts, keeps its
-# hostname under DL17, so `local` represents one hostname (Q2; X7 of the verification of
-# ruling 42), and PLC-023, whose observable says that after a restart the engine runs the
-# machine provider again for its next report, under PRV-026 (Q3). It removed none and added
-# none. Its log is docs/proposals/ruling-43/log-providers.md.
-# The fix pass of the fifth round of the re-audit
-# (docs/proposals/reaudit/round-5/log-fix-F1.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-5/DECISIONS.md, which no ruling has accepted, changed PLC-002,
-# under which an instance for which no item that is run is selected is placed on `local` (M22),
-# and PLC-023, under which every machine but the one that `local` represents counts as omitted
-# until the machine provider's first report after the engine starts (M12). It wrote the sentence
-# at the head of this file that describes it as it stands in the names in force (M21). It
-# removed none and added none.
-# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
-# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed PLC-023, which
-# does not hold back the stop that a request to unregister an instance asks for, since M41 lets
-# an instance on a node that is not lost be unregistered. It removed none and added none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed PLC-013, which cites CON-006 for an end that runs nothing (V2-01), and
-# PLC-023, which does not hold back a read of a secret that PRV-026 makes to run the machine
-# provider again (V2-04). It added none and removed none.
-# The coordinator's decision on V6 of that verification changed PLC-007, whose selector is
-# empty for an instance for which no item that is run is selected, and PLC-002. It added none
-# and removed none.
+# labels reported for it, as a Kubernetes `nodeSelector` is.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: PLC-003 → PLC-002 and PRV-015 (provider placement) (ruling 41).
+# Removed: PLC-004 → PLC-002 and PRV-015 (provider placement) (ruling 41).
+# Removed: PLC-010 → OBS-003 and LIF-010 (ruling 32).
+# Removed: PLC-014 → CTR-004 (ruling 32).
+# Removed: PLC-016 → PLC-002 and PRV-015 (provider placement) (ruling 41).
+# Removed: PLC-021 → PLC-026 (reported labels) (ruling 41).
+# Removed: PLC-022 → PLC-002 and PRV-015 (provider placement) (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: PLC-001
   layer: language
@@ -278,7 +206,7 @@
     three ways a node differs from other Resources; the others are PLC-008 and PLC-011.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32, decision A2 and reader findings).
+
 
 - id: PLC-017
   layer: convention
@@ -322,7 +250,7 @@
     what a request to set up the instance then reports.
   vectors: []
 
-# --- Added by the follow-up rulings (plan-audit ruling 33; decision F16 of the re-audit).
+
 
 - id: PLC-019
   layer: convention
@@ -337,8 +265,7 @@
     Once the node is ready, a request to set up the instance is decided as any other.
   vectors: []
 
-# --- Added by the conversion of the older text (decision DA3 of the docs audit; row GP12 of
-# --- docs/proposals/docs-audit/GAPS.md).
+
 
 - id: PLC-020
   layer: convention
@@ -356,9 +283,7 @@
     Resource's node. That the engine joins no base to a relative path is INS-018.
   vectors: []
 
-# --- Added by ruling 41 (docs/proposals/ruling-41/README.md), applying decision 8 of the
-# --- principles review: what a machine reported unreachable or gone means, a label that a
-# --- type and an item name with two values, and how a reported machine becomes a location.
+
 
 - id: PLC-023
   layer: convention
@@ -479,10 +404,7 @@
     meaning.
   vectors: []
 
-# --- Added by the coverage check of ruling 41 (docs/proposals/ruling-41/log-integration.md,
-# --- "Coverage check"): what a retirement does for an instance on a location declared lost,
-# --- and that no location is registered by hand (ruling 40, point 3b, revised). PLC-027 is
-# --- of the layer `convention`, and PLC-028, a rule on documents, of the layer `language`.
+
 
 - id: PLC-027
   layer: convention

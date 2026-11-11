@@ -1,118 +1,26 @@
 # Access: the shared convention that every permission is an open Conduit.
-# Owner rulings of 2026-11-05 (plan-audit rulings 14, 17, 19, 28, 29, 32 and 33). There is no
-# separate grant object: the access an open Conduit carries is the operations it lists, opening
-# it is what used to be called issuing, and closing it is what used to be called revoking. The
-# right to open Conduits is itself an open Conduit, to the `access` Resource. Ownership permits
-# nothing. Removed by consolidation pass 1: ACC-004 was folded into ACC-003; ACC-007 into
-# ACC-006; ACC-013 into CON-022; ACC-020 and ACC-021 into REC-001 and OPS-005; ACC-025 into
-# ACC-033. ACC-010 was removed earlier and folded into LIF-008. The ruling on the core package
-# and the schemas (ruling 37) changed ACC-029 and ACC-031 to ACC-034. The conversion of the
-# older text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed
-# ACC-008, ACC-014, ACC-015 and ACC-027, and added ACC-036 to ACC-038. The second round of the
-# re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed ACC-001, ACC-005, ACC-006,
-# ACC-008, ACC-014, ACC-015, ACC-018, ACC-019, ACC-022, ACC-029 to ACC-031, ACC-033, ACC-034
-# and ACC-038, and its closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed
-# ACC-006, ACC-009, ACC-012, ACC-015, ACC-019, ACC-026, ACC-029, ACC-031, ACC-033, ACC-035 and
-# ACC-038. Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed ACC-001, ACC-003,
-# ACC-011, ACC-019, ACC-031, ACC-033 and ACC-034, and added ACC-039, on the Conduits of a
-# retired consumer, and ACC-040, on a start of later work. The follow-up to that pass changed
-# ACC-006, ACC-019, ACC-022, ACC-033, ACC-038 and ACC-040: later work is tied to every Conduit
-# of its chain, and a start needs an arranging invocation that succeeded.
-# The round removed none. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed ACC-006, ACC-012, ACC-015, ACC-017 to ACC-019, ACC-027, ACC-029,
-# ACC-031, ACC-033 to ACC-035, ACC-037, ACC-038 and ACC-040, and added ACC-041, on what a start
-# of later work carries, ACC-042, on a request to apply a policy that reports invalid, and
-# ACC-043, on a policy that names the root Interface. It removed none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed ACC-015, ACC-018, ACC-031, ACC-033 and ACC-038:
-# no graph states `supports`.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# ACC-001, ACC-005, ACC-012, ACC-015, ACC-017 to ACC-019, ACC-024, ACC-026, ACC-031 to
-# ACC-034, ACC-038 and ACC-040 to ACC-042: a start of later work is refused once the consumer
-# of a Conduit of its chain is retired, a policy is judged for a step when the step is decided,
-# and ACC-015 and ACC-026 say what a policy does to a request whose implementation is the
-# engine. It added none and removed none.
-# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
-# of the same file, which are the coordinator's too, changed ACC-005, ACC-015, ACC-017, ACC-019,
-# ACC-031, ACC-034 and ACC-039: an onward request that serves an invocation in whose chain a
-# Conduit has a retired consumer reports refused, that consumer's own retirement apart, and a
-# requirement is matched against `supports` by the package that originally exports it.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md. It removed ACC-040 and ACC-041, on
-# later work, which is not part of this version. Those IDs are not reused.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review (docs/proposals/principles-review/README.md), removed ACC-026, ACC-031,
-# ACC-035, ACC-042 and ACC-043, on policies (decision 3a): to narrow access, a Conduit is closed
-# and a narrower one opened, under ACC-011, and nothing else replaces them. It changed ACC-001,
-# ACC-003, ACC-005, ACC-006, ACC-009, ACC-011, ACC-012, ACC-015, ACC-017 to ACC-019, ACC-027,
-# ACC-029, ACC-030, ACC-033, ACC-034 and ACC-036 to ACC-039: no actor's request reads a secret,
-# a hook replaces a step, a closed Conduit is removed, a result is delivered after its Conduit
-# closes, and a bound is applied by the engine alone. It added none. What changed is in
-# docs/proposals/ruling-41/log-G3.md. The removed IDs are not reused. The integration of the
-# rewrite (docs/proposals/ruling-41/log-integration.md) changed ACC-005, ACC-006 and ACC-030:
-# a declared Conduit that lists `reveal-secret.v1` is opened at setup only as SEC-008 has it.
-# Its coverage check (the same log, "Coverage check") changed ACC-022, which names what the
-# root Interface cannot open; ACC-029, whose `operations` are compared as names, so that a
-# project's own documents may name its operations there; ACC-034, whose result is delivered in
-# the response to the call; and ACC-039, under which a hook is not a request.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
-# and the owner's answers in docs/proposals/ruling-41/open-decisions.md, changed ACC-011,
-# ACC-012, ACC-018, ACC-019, ACC-029 and ACC-039: a request through a closed Conduit reports
-# refused, and one that names the closed Conduit invalid (D6); no hook carries a filter in this
-# version; an item of a bound covers an operation of a package installed later; a retirement
-# may connect to a `remote` item to serve its hook; and the read of a secret made again for a
-# connection whose values were lost is the one request made after its invocation has ended
-# (D12). It added none and removed none. What changed is in
-# docs/proposals/ruling-42/log-conventions.md. The integration of ruling 42
-# (docs/proposals/ruling-42/log-integration.md) changed ACC-019, which says "after the engine
-# restarts, on its machine or on another" for a failover, as SEC-023 does.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in ACC-032, ACC-033 and
-# ACC-037. It removed none and added none.
-# The names of ruling 42 (the vocabulary audit's N1 and N16; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed `reveal-secret.v1` to `get-secret.v1` in
-# ACC-001, ACC-003, ACC-005 and ACC-006, and the key `io.github.shrav-k.conduit/restrictions` to
-# `io.github.shrav-k.conduit/filters` in ACC-017 and ACC-018, which with ACC-009 now say filters
-# where only filters are carried or sent. It removed none and added none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
-# work across machines (docs/proposals/multi-machine/README.md), changed ACC-027, under which a
-# restriction is mediated by an enforcement point, which in this version is the engine alone,
-# and enforced where the consumer reaches targets only through one; and ACC-019, whose second
-# exception is the read for a provider's run that the engine asks for again once it has
-# restarted (Q3, PRV-026). It added none and removed none. What changed is in
-# docs/proposals/ruling-43/log-secrets.md.
-# The fix pass of the fifth round of the re-audit
-# (docs/proposals/reaudit/round-5/log-fix-F3.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-5/DECISIONS.md, changed ACC-019, whose second exception also
-# covers a provider's run that ended with the part of the engine that held it (M09); ACC-033,
-# under which a request to unregister any retired instance is authorized (M41); and ACC-037,
-# which also takes a request whose credential names an instance whose existence cannot be read
-# (M55). It added none and removed none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed ACC-039, under which the Conduit also ends once a request to
-# unregister its consumer removes it (V2-09). It added none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit
-# (docs/proposals/reaudit/round-6/), changed ACC-008: no filter judges a repeat that is not
-# dispatched, and a repeat of an operation with no effect to which one applies is dispatched
-# again (6-1-02); ACC-029 and ACC-030, which say plainly that a bound does not limit the filters
-# of the Conduits its consumer opens, that access to `management` cannot be narrowed to one
-# template, and how a broker narrows it (D03, D04); and ACC-033, whose `then` is one decision
-# list with the same answers (D18). It added none and removed none. What changed is in
-# docs/proposals/reaudit/round-6/log-conventions.md. The verification of round 6
-# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed ACC-008, whose
-# `then` itself says that no filter judges a repeat that is not dispatched (C-06); ACC-030,
-# which says that a Conduit that lists `replace.v1` trusts its consumer with the contracts and
-# implementation items of later instances (R-11); and ACC-033, whose rows 1, 2 and 5 to 8 name
-# their operations, so that the first row that fits a request for `register-replacement.v1` or
-# `retire-with-resources.v1` is the one that gave its answer before (C-02, R-01, R-02). It
-# added none and removed none.
+# There is no separate grant object: the access an open Conduit carries is the operations it lists.
+# The right to open Conduits is itself an open Conduit, to the `access` Resource. Ownership permits
+# nothing.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: ACC-004 → ACC-003 (ruling 32).
+# Removed: ACC-007 → ACC-006 (ruling 32).
+# Removed: ACC-010 → LIF-008 (earlier removal accepted) (ruling 39).
+# Removed: ACC-013 → CON-022 (ruling 32).
+# Removed: ACC-020 → REC-001 and OPS-005 (ruling 32).
+# Removed: ACC-021 → REC-001 and OPS-005 (ruling 32).
+# Removed: ACC-025 → ACC-033 (ruling 32).
+# Removed: ACC-026 → ACC-011 (close and reopen to narrow access); no policy replacement (ruling 41).
+# Removed: ACC-031 → ACC-011 (close and reopen to narrow access); no policy replacement (ruling 41).
+# Removed: ACC-035 → ACC-011 (close and reopen to narrow access); no policy replacement (ruling 41).
+# ACC-040: nothing replaces it (ruling 38).
+# ACC-041: nothing replaces it (ruling 38).
+# Removed: ACC-042 → ACC-011 (close and reopen to narrow access); no policy replacement (ruling 41).
+# Removed: ACC-043 → ACC-011 (close and reopen to narrow access); no policy replacement (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: ACC-001
   layer: convention
@@ -530,7 +438,7 @@
     restriction, whatever the consumer's runtime provider is.
   vectors: []
 
-# --- Added by the consolidation rulings (plan-audit rulings 28 and 29).
+
 
 - id: ACC-028
   layer: convention
@@ -749,7 +657,7 @@
     object exists, the applicable target is the one the rows above name.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32, decisions U6 and U7).
+
 
 - id: ACC-034
   layer: convention
@@ -779,8 +687,7 @@
     to that consumer's own retirement.
   vectors: []
 
-# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP2 and
-# --- GP15 of docs/proposals/docs-audit/GAPS.md).
+
 
 - id: ACC-036
   layer: convention
@@ -840,9 +747,7 @@
     SUB-008 names the project's contracts outside its own documents.
   vectors: []
 
-# --- Added by the last pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/log-tail.md; decisions 2 and 9 of "The closing pass, and
-# --- what it left" in DECISIONS.md).
+
 
 - id: ACC-039
   layer: convention

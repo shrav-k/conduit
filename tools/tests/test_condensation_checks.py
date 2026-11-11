@@ -31,11 +31,13 @@ class CondensationChecks(unittest.TestCase):
 # with facts which PLC-026 replaces.
 # Ruling 41 removed CON-029, on composite templates; CON-026, on renaming;
 # and CON-030, on requirements; changed CON-001; and added CON-031.
+# Removed: OLD-007 → NEW-002 (ruling 32).
+# OLD-008: nothing replaces it (ruling 41).
 """
         self.assertEqual(schemas.retired_ids(head), {
             "CON-005", "CON-009", "CON-010", "CON-015", "TPL-006", "TPL-007",
             "TPL-015", "TPL-016", "OLD-001", "OLD-002", "OLD-003", "OLD-005",
-            "PLC-003", "PLC-021", "CON-026", "CON-029", "CON-030",
+            "PLC-003", "PLC-021", "CON-026", "CON-029", "CON-030", "OLD-007", "OLD-008",
         })
 
     def test_promise_errors_are_all_reported_across_layers_and_registers(self):

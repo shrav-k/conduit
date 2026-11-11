@@ -1,6 +1,8 @@
 # Example. It must be rejected:
 # `multipleOf` is outside the profile: the profile holds JSON Schema 2020-12's validation
 # vocabulary less that one keyword (SCH-002).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

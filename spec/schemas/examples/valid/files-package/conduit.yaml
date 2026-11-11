@@ -11,18 +11,11 @@
 # into the configuration (OBJ-016), which the type's schema requires where a template selects
 # the item (MAN-017).
 #
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) gave `legacy-reader` a label
-# selector, so that examples/invalid-by-rule/ can show two selected items that name one label
-# with different values (PLC-025, row 26 of the coordinator's decisions).
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement`
-# of `files-server` and `legacy-reader` to `nodeSelector`.
-# The names of ruling 42 (the vocabulary audit's N6 and N7; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed the key `arguments` of `listing` to
-# `packageArguments`, and moved the hash of its artifact from the item's `digest`, which is
-# gone, to its Package's `fileSha256`.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
-# re-audit (D14; log docs/proposals/reaudit/round-6/log-core.md), added `directory.find.v1` to
-# `exports` and to what `files-server` implements.
+# `files-server` and `legacy-reader` have label selectors with different values for one label,
+# so examples/invalid-by-rule/ can show the conflict (PLC-025). `directory.find.v1` is exported
+# and implemented by `files-server`.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/files

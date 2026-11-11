@@ -1,7 +1,4 @@
 # The manifest: its file, its keys and the layout of a package's archive.
-# Owner ruling of 2026-11-05 (plan-audit ruling 37), which accepted these promises as one
-# batch with spec/core/ and spec/schemas/. They were written for decision G1 of the re-audit
-# (plan-audit ruling 32), and the record is docs/proposals/core-and-schemas/README.md.
 # Each rule follows an existing practice: one project file with a fixed name, as Go's
 # `go.mod` and Cargo's `Cargo.toml` are, read with the ending `.yml` too, as kubectl and
 # kustomize read it; a format version inside the file, as a Helm chart's `Chart.yaml` carries
@@ -14,88 +11,13 @@
 # NAM-012; a package's own address and version PKG-017; which documents are exports PKG-018;
 # what an implementation states PKG-019 and PKG-020; what a template or an instance holds
 # for a package NAM-009 and PKG-005; and which reason a rejected installation reports
-# PKG-023. The JSON Schema of these shapes is spec/schemas/manifest.yaml. The conversion
-# of the older text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md)
-# changed what MAN-003 and MAN-007 cite. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) changed MAN-001 and MAN-006: a manifest holds
-# one YAML document, a project is the documents and the one manifest handed over together,
-# and what gives `fetch` is called an item of `packages`. Its closing pass
-# (docs/proposals/reaudit/round-2/log-closing.md) changed MAN-006 and MAN-010: a relative
-# `fetch` or program is resolved against the directory the manifest was read from, and is
-# rejected where there is none. Its last pass (docs/proposals/reaudit/round-2/log-tail.md)
-# changed MAN-006: reading a manifest installs nothing. No promise of this file has been
-# removed. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed MAN-007 and MAN-009 to MAN-011: a package holds no instance
-# document, and the keys of an implementation item's `placement` follow OBJ-022. It removed
-# none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed MAN-009.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# MAN-004: `address` and `version` change nothing in the manifest of a submitted project. It
-# added none and removed none.
-# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
-# of the same file, which are the coordinator's too, changed MAN-008.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), removed MAN-008 under the review's decision 9:
-# a package exports only its own documents (MAN-007), and nothing replaces it. It changed
-# MAN-001, MAN-002, MAN-004, MAN-006, MAN-007 and MAN-009 to MAN-012: the manifest may be named
-# `conduit.yml` and documents may end in `.yml` (alignment C14), a submitted project with
-# contracts states its `address` (decision 11), `fetch` follows decision 21, and an
-# implementation item is reached by `command`, `package` or `remote`, with no `url` and no
-# `graph` (decisions 1 and 25). It added MAN-015 to MAN-017. The log is
-# docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
-# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed MAN-004, on the
-# `operations` of a bound (ACC-029), and MAN-010, under which a Package's transport is `stdio`
-# or `streamable-http`, since IFC-017 reaches a run over no other.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md. Applying them, it changed MAN-010:
-# a positional argument is keyed by its `valueHint`, and a relative program is run only by the
-# engine's own runner (rows 17 and 35); MAN-015 and MAN-016: two submissions may state one
-# address, and a package may be installed there once no template or instance holds one (rows
-# 10 and 36); and MAN-017: a pointer to a place that admits an object or an array, or an input
-# marked `isRequired: true` bound to a place that admits null, is rejected (rows 22 and 24). It
-# added none and removed none.
-# The names of ruling 42 (the vocabulary audit's N2 and N9; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of an implementation
-# item, and of an item of the core package's manifest, to `nodeSelector` in MAN-009, MAN-010 and
-# MAN-012, and the engine's own machine to the engine's own machine provider in MAN-012. It
-# removed none and added none.
-# The names of ruling 42 (the vocabulary audit's N1, N6 and N7; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed the key `arguments` of an implementation
-# item to `packageArguments`, which binds only an argument of the Package's own
-# `packageArguments`, in MAN-009, MAN-010 and MAN-017; removed the item's `digest`, so that a
-# Package is pinned by its own `fileSha256`, or an `oci` one by a digest in its `identifier`, in
-# MAN-009 and MAN-010; and renamed `reveal-secret.v1` to `get-secret.v1` in MAN-012. It removed
-# none and added none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
-# work across machines (docs/proposals/multi-machine/README.md), added MAN-018, under which a
-# template whose item binds a variable that `identity` carries is rejected, since Q1 fixes
-# those names. It changed MAN-010, whose observable says that a server meant for another
-# machine is published as a `package` item, since a relative program runs only on the engine's
-# own runner (D20, A), and that another runtime provider runs a `stdio` package only by
-# bridging it behind its gate (PRV-012, PRV-025). It removed none. What changed is in
-# docs/proposals/ruling-43/log-secrets.md. The verification of ruling 43
-# (docs/proposals/ruling-43/log-integration.md, "Verification") changed MAN-018, which compares
-# a variable's name without regard to case, as Windows does.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed MAN-010,
-# under which a Remote's `url` that holds a variable is rejected (M23), and MAN-017, under
-# which the schema of a bound place confines its value to a string, a number, a boolean or
-# null (M17, M30). It added none and removed none.
-# The coordinator's decision on finding 1-06 of increment 1 of the first build, under ruling
-# 46, point 4 (docs/proposals/first-build/log-increment-1.md), changed MAN-011: a name that
-# begins with a dot is not read, as Terraform skips one in a module; names and endings are
-# compared exactly; a link to a file is followed and one to a directory is not entered; and an
-# entry that cannot be read is rejected under SUB-010. It added none and removed none. The
-# owner can strike it.
+# PKG-023. The JSON Schema of these shapes is spec/schemas/manifest.yaml.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# MAN-008: nothing replaces it (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: MAN-001
   layer: language
@@ -394,8 +316,7 @@
     PKG-023.
   vectors: []
 
-# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decisions 11 and 25d of the
-# --- principles review, docs/proposals/principles-review/README.md).
+
 
 - id: MAN-015
   layer: language
@@ -467,9 +388,7 @@
     the type's schema and the item as the template holds them under NAM-009.
   vectors: []
 
-# --- Added by ruling 43 (docs/proposals/ruling-43/README.md): under Q1 the names of what
-# --- `identity` carries are fixed, which settles item 2 of "Needs a decision", and X3 of the
-# --- verification, in docs/proposals/ruling-42/log-integration.md.
+
 
 - id: MAN-018
   layer: language

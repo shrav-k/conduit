@@ -1,28 +1,3 @@
-# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since is logged in the records that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, changed `diagnostic.v1` into SARIF 2.1.0's `result` reduced (decision
-# 24a) and the `nested` of `object.v1`, which names a declared Conduit or an entry and no
-# component (decision 5), and added `handle.v1` (decision 16a), `condition.v1` (decision 24b)
-# and `record.v1` (decision 24c). The log is docs/proposals/ruling-41/log-core.md.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying rows 12 and 18 of the
-# coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, added `serving` to
-# the `data` of `record.v1`, the invocation that a separate invocation serves, and said what
-# a record with no ID of its own holds in `invocation` and what a record of a run names in
-# `subject`. The log is docs/proposals/ruling-42/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N12 to N15; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed the member `instance` of the `data` of
-# `record.v1` to `consumer`, the consumer of the Conduit used, and its `operationIdentity` to
-# `idempotencyKey`; took `observedGeneration` out of `condition.v1`; and renamed its `origin` to
-# `source`, a URI-reference as a record's `source` is.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# changed the description of `record.v1`: the inputs that a type's `records` keeps leave out
-# what the `secrets` and the `identity` of `run.v1` hold (SEC-018, PRV-024).
-#
 # The Schema contracts that the inputs and outputs of the core operations share, and those
 # that a status, a diagnostic and a record take their shape from. Each follows an existing
 # standard where one gives the shape: SARIF for a diagnostic, Kubernetes `metav1.Condition`
@@ -42,6 +17,9 @@
 #   condition.v1   LIF-011, OBS-002, OBS-003, PRV-009
 #   record.v1      REC-002, LIF-013, SEC-015, SEC-018, PRV-024 (no record holds what the
 #                  `secrets` or the `identity` of `run.v1` hold)
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

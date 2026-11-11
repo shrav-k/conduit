@@ -1,169 +1,11 @@
 # The core package
 
-Status: **accepted by the owner as it stands at
-[ruling 39](../../docs/proposals/ruling-39/README.md)** (2026-11-06), which accepted every
-logged decision of the coordinator and choice of an editor, and **changed by
-[ruling 41](../../docs/proposals/ruling-41/README.md)**,
-**[ruling 42](../../docs/proposals/ruling-42/README.md)** and
-**[ruling 43](../../docs/proposals/ruling-43/README.md)** of the same day; see
-[the specification's README](../README.md). Plan-audit ruling 37 first accepted it on
-2026-11-05, as one batch with [the schemas](../schemas/README.md) and
-[the manifest's promises](../promises/manifest.yaml). It was written for decision G1 of the
-[re-audit](../../docs/proposals/reaudit/README.md). The record of the batch, with every choice
-made here and its alternative, is
-[docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
-the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md).
+Status: draft specification. See [the specification's status](../README.md) for coverage and
+pending rulings. The promises are the source of truth: where a document here and a promise differ,
+the document is wrong.
 
-What follows was changed after ruling 37, on the logged decisions of the coordinator of the
-re-audit, and on [ruling 38](../../docs/proposals/ruling-38/README.md) of 2026-11-06.
-The decisions of the [docs audit](../../docs/proposals/docs-audit/GAPS.md) settled the points
-that batch left open and changed some descriptions here; they added no export. The
-[decisions of the second re-audit round](../../docs/proposals/reaudit/round-2/DECISIONS.md),
-of the [third](../../docs/proposals/reaudit/round-3/DECISIONS.md) and of the
-[fourth](../../docs/proposals/reaudit/round-4/DECISIONS.md) changed contracts and
-descriptions; what changed is in the logs that each names. Ruling 38 removed the export
-`start-later-work.v1`, because later work is not part of this version; what it changed is in
-the [log of that pass](../../docs/proposals/ruling-38/log-spec.md).
-
-[Ruling 40](../../docs/proposals/ruling-40/README.md) and ruling 41, which accepted the
-[principles review](../../docs/proposals/principles-review/README.md), made Conduit innovate
-only on connection and access: everything else is a provider behind a contract that the user
-picks. The [work order](../../docs/proposals/ruling-41/PLAN.md) applied them here, and the
-[log of that pass](../../docs/proposals/ruling-41/log-core.md) lists every change. In short:
-16 exports were removed, the rename, retrieval, policy, default-location and location-facts
-operations, two capabilities, the type of `system` and the schemas of graphs, runtimes and
-composite components; 20 were added, the two hooks, the provider capabilities and their
-operations, the operation of a secret store and the schemas of a handle, a condition, a
-record, a secret reference, a label selector and server.json's Package and Remote; and every
-Operation contract is written as the Model Context Protocol writes a tool. The names that the
-review and the work order coined, `secret-reveal.v1` and `reveal-secret.v1` among them, were
-not final: the vocabulary audit that ruling 41 ordered proposed names, which ruling 42
-accepted, as the next paragraph says. The
-[coverage check](../../docs/proposals/ruling-41/log-integration.md#coverage-check) of the
-rewrite then changed the description of `run.v1`, which runs the item only on the machine that
-`location` names, and of `bound.v1`, whose `operations` are compared as names, and no longer
-says that a control requires `revision` alone.
-
-Ruling 42 struck none of the decisions that the coordinator settled in the [open questions after
-the rewrite](../../docs/proposals/ruling-41/open-decisions.md) and answered most of the others,
-and the [log of that pass](../../docs/proposals/ruling-42/log-core.md) lists what
-changed here: no export was added or removed. `run.v1` requires `endpoint`, keys its `secrets`
-by name under `environment` and `arguments`, and has a new input, `identity`, which carries what
-a run needs to reach the engine and prove which instance it is; `inspect.v1`'s status lists the
-invocations of unknown outcome not yet reconciled in `unreconciled`; `record.v1` has `serving`;
-and the descriptions of `unregister.v1`, `stop.v1`, `retire-with-resources.v1`,
-`reveal-secret.v1`, `secret-reveal.v1` and others follow the answers. The name `identity` is a
-working name, as `serving` and `unreconciled` are. The
-[integration of ruling 42](../../docs/proposals/ruling-42/log-integration.md) then changed the
-descriptions of `unregister.v1` and `stop.v1`, and the section on providers, to say, as the
-owner's answer D11 does, that what a runtime provider does with a stop it cannot carry out now
-is what its contract states. The names N2, N3 and N8 to N11 of ruling 42 then renamed three
-exports, as the [log of the renames](../../docs/proposals/ruling-42/log-rename-a.md) lists: the
-template
-`location` became `node`, the type `location.v1` became `node.v1`, and the schema
-`label-selector.v1` became `labels.v1`. The input `location` of `run.v1` became `machine`, that
-of `declare-lost.v1` became `node`, and that of `place.v1`, `selector`, became `nodeSelector`,
-the key under which a Type and an implementation item state their label selector; and the
-machines provider became the machine provider. Its other names, N1, N5 to N7 and N12 to N20,
-then renamed two exports, as the
-[log of the other renames](../../docs/proposals/ruling-42/log-rename-b.md) lists: the
-capability `secret-reveal.v1` became `secret-provider.v1`, and its operation `reveal-secret.v1`
-became `get-secret.v1`. The output `endpoint` of `run.v1` became `url`, and its input
-`arguments`, with that of its `secrets`, became `packageArguments`, as did the key of
-`implementation-item.v1`, which lost `digest`: its Package is pinned by its own `fileSha256`,
-or an `oci` one by a digest in its `identifier`. `record.v1` names the consumer of the Conduit
-used in `consumer` and the idempotency key in `idempotencyKey`, and `condition.v1` lost
-`observedGeneration` and has `source` in place of `origin`. Of Conduit's keys, `restrictions`
-became `filters` and `operationIdentity` became `idempotencyKey`, and Conduit's extension
-became `io.github.shrav-k.conduit/implementation-interface`. The descriptions follow.
-The editorial fixes of ruling 42, as the
-[log of the editorial fixes](../../docs/proposals/ruling-42/log-editorial.md) lists, then added
-a row for hooks to the table of names (E1); said there that FST-005 names the template `node`,
-and dropped NAM-020, which names no template, from its row of the export table (E23); wrote
-"one contract for one verb" (E13); and said secret Resource, or the type of a secret Resource,
-where the descriptions here and in `capabilities.yaml`, `operations.yaml` and `types.yaml` said
-secret store (E17). `types.yaml` calls `node.v1` the type of every node where it said the node
-type (E10).
-
-Ruling 43 accepted the
-[proposal on work across machines](../../docs/proposals/multi-machine/README.md), with D5's
-second part as option b and Q1 tightened, and settled the items that the verification of
-ruling 42 left for it; the [log of that pass](../../docs/proposals/ruling-43/log-core.md) lists
-what changed here. No export was added or removed. `run.v1` requires `identity`, which
-holds what a run needs under names fixed for every engine, as
-[spec/names.yaml](../names.yaml) defines them: `CONDUIT_URL`, the engine's address, and
-`CONDUIT_IDENTITY_DIR`, the directory that holds the files `ca.crt`, the trust bundle,
-`token`, `tls.crt` and `tls.key`; and its server stands behind its runtime provider's gate.
-`stop.v1` and `inspect-run.v1` take `machine`, as `run.v1` does, so that a provider that keeps
-no state of its own finds the run, and `inspect-run.v1` may report the `url` at which the run
-is reached now. The schema `implementation-item.v1` rejects an item reached by `remote` and
-not marked `plain` that names `Authorization` in its `headers` (IFC-043). The descriptions of
-`register.v1`, `get-secret.v1`, `runtime-provider.v1` and `secret-provider.v1` follow the
-ruling. The [log of its integration](../../docs/proposals/ruling-43/log-integration.md) then
-named, in the section on providers, the three kinds of provider that PRV-026 runs again and the
-variables of `identity` that win over the runner's list. Ruling 43 kept the name `identity`;
-`serving` and `unreconciled` are still working names. The
-[verification of ruling 43](../../docs/proposals/ruling-43/log-integration.md#verification) then
-added two files to `identity`, `jwks.json`, which with `ca.crt` is the trust bundle, and
-`engine-id`, the engine's ID, and closed `run.v1`'s `identity.files` to the six names, every one
-required but `tls.crt` and `tls.key`; had `implementation-item.v1` reject an item reached by
-`remote` and not marked `plain` whose Remote's `url` is not an `https` URL (IFC-044); said in
-the descriptions of `run.v1` and `runtime-provider.v1` that what answers at a run's `url` proves
-itself with the run's certificate (PRV-028), and in that of `secret-provider.v1` that a plain
-store reached by `remote` learns its locator from a header that its item binds; and named here
-the secret Resources that PRV-026 also runs again.
-
-The [decisions of round 5 of the re-audit](../../docs/proposals/reaudit/round-5/DECISIONS.md)
-changed descriptions and two schemas here, as the
-[log of that pass](../../docs/proposals/reaudit/round-5/log-fix-F5.md) lists; no export was
-added or removed. `list-machines.v1` and `place.v1` give a `hostname` of at most 63
-characters (M20). `run.v1` and `inspect-run.v1` say that a provider starts no second run for
-an ID, and reports `stopped` only where it knows that none runs (M03); `unregister.v1` removes
-any retired instance (M41); and the descriptions of `register.v1`, `reconcile.v1`,
-`declare-lost.v1`, `get-secret.v1` and `secret-provider.v1` state what the promises state (M09,
-M18, M35, M37, M80 to M82). The section on providers gives PRV-023's other set of variables
-and its exclusion of values that begin with `()` (M83), and the last section leaves open only
-whether a run on the engine's own runner is given `tls.crt` and `tls.key` (M85). Where this
-page restates the promises on reconciling, removing and running providers again, it follows M09,
-M35, M37 and M41. The
-[integration of that round's fixes](../../docs/proposals/reaudit/round-5/log-fixes.md) then had
-the descriptions of the two hooks say that the implementation learns its configuration from its
-call (M98), and those of `set-up.v1`, `retire.v1` and `retire-hook.v1` that the run is asked for
-where it is reported `stopped` (M03), called what `engine-id` holds the engine's credential ID
-(M97), and said in the section on results when a repeat reports conflict (M32, M39). The
-[verification of those fixes](../../docs/proposals/reaudit/round-5/log-fixes.md#verification)
-restated SEC-024 in the description of `register.v1` and in the section on secrets (V3, V2-10),
-dropped "not yet reconciled" from `inspect.v1` and from this page (V2-05), said in the section
-on results that the answer of -32602 to a call to a tool that is not presented is the baseline
-revision's (V2-06), said that ruling 42 struck none of the coordinator's decisions (V10), and
-had `shared-host.v1` say that a Conduit an end of which runs nothing is not instantiated
-(V2-01).
-
-[Ruling 44](../../docs/proposals/ruling-44/README.md) of 2026-11-07 accepted the coordinator's
-decisions on [round 6 of the re-audit](../../docs/proposals/reaudit/round-6/README.md) and
-simplifications that its design critique proposed, and the
-[log of that pass](../../docs/proposals/reaudit/round-6/log-core.md) lists what changed here; no
-export was added or removed. `replace.v1` takes the contract documents of the project submitted
-with the replacing template, in its new input `contracts`, and a whole manifest, and resolves
-the template against that project as a registration does (D11). This page says that the root of
-the schemas of an Operation contract that is not a control may hold any keyword of the profile
-(D14); that the tool presented for an operation holds a copy of each Schema contract it refers
-to (finding 6-1-04), shows a control's input as the target's template narrows it, and is not
-presented for a control that the target does not have (D07); that no two pointers of a
-control's `changes` overlap (finding 6-1-03); when a repeat to which a filter applies is
-dispatched again (finding 6-1-02), as do the notes in `operations.yaml`; and that a
-package-source provider claims its schemes for its whole life, as the description of
-`package-source.v1` does (finding 6-1-05). The descriptions of the two hooks say that a type's
-default for a hook is used only where the type requires the hook, as TPL-004 does. The
-[integration of that round](../../docs/proposals/reaudit/round-6/log-integration.md) made this
-page say that a call naming the tool of a control that the target does not have reports
-invalid, as IFC-012 states. Its
-[verification](../../docs/proposals/reaudit/round-6/log-integration.md#verification) added
-that this holds where the target holds the control's contract (R-07), and that a copy's key
-holds a version where one is stated (R-08).
-
-The promises are the source of truth: where a document here and a promise differ, the document
-is wrong.
+The decision records and their reasons are listed in
+[Where the reasons are](../README.md#where-the-reasons-are).
 
 ## What this is
 
@@ -198,6 +40,8 @@ Every document here validates against those schemas, and `python3 tools/check_sc
 checks it.
 
 ## Names
+
+`serving` and `unreconciled` are working names.
 
 Export names follow NAM-004, and each becomes a tool's name under IFC-012, so they are short.
 The convention, which follows the names the promises already use (`local-directory.v1`,

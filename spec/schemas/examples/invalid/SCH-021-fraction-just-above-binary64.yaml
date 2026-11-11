@@ -2,8 +2,9 @@
 # a number that has a fractional part and whose magnitude is greater than the largest finite
 # IEEE 754 binary64 value is rejected, and it is not rounded into the range (SCH-021). The
 # `maximum` below is that value and a half. Its nearest binary64 value is the largest value
-# itself, so a reader that judges the range on the value it rounds to would accept it. The
-# first build's log of increment 1 (docs/proposals/first-build/log-increment-1.md) added it.
+# itself, so a reader that judges the range on the value it rounds to would accept it.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

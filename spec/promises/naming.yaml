@@ -1,70 +1,17 @@
 # Naming: how packages, their exports and contracts are named, and where versions live.
-# Owner rulings of 2026-11-05 (plan-audit rulings 25, 27, 32 and 33). Each rule follows an
-# existing practice: Go for address-like identity and a breaking version taking a new address,
-# and RFC 1123 for the host part of an address; Go and Cargo for one project file holding
-# versions; a URL fragment, as in JSON Schema's `$ref`, for naming one thing inside an address;
-# Kubernetes for a contract's own version being independent of the release that ships it; Go's
-# standard library for a built-in package that no project file lists. NAM-018 to NAM-021 were
-# added by the consolidation rulings (plan-audit ruling 28).
-# Consolidation pass 1 folded PKG-002 into NAM-006 and PKG-008 into NAM-011, and added NAM-022
-# to NAM-026. The follow-up decisions (ruling 33) made NAM-025 a `should`, and named `fetch`
-# the manifest key that says where a package is fetched from, so that `source` is the key of a
-# value reference only. The ruling on the core package and the schemas (ruling 37) changed
-# NAM-001, NAM-006, NAM-009, NAM-012, NAM-013, NAM-018, NAM-019 and NAM-022, and added
-# NAM-027. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed NAM-018, NAM-022 and NAM-027. The manifest's own
-# format is in manifest.yaml. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) changed NAM-001, NAM-003, NAM-005, NAM-007,
-# NAM-009, NAM-012, NAM-018 to NAM-020, NAM-022 and NAM-023, and its closing pass changed
-# NAM-009. Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed NAM-012, where
-# `fetch` is the place an installation fetches from, and NAM-022, which excepts `#name` written
-# as `from` in a submitted project. No promise of this file has been removed. Draft: no vector
-# exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed NAM-022, whose `then` now states the exception for `#name` written
-# as `from`. It removed none.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# NAM-009, NAM-019, NAM-021 to NAM-023 and NAM-026, and added NAM-028, on a selection that names
-# nothing where the package is at hand. A manifest that is handed over for registration and
-# states the core package's address is rejected. It removed none.
-# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
-# of the same file, which are the coordinator's too, changed NAM-028, which now covers a
-# re-export that names nothing in an installed package.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), changed NAM-008, NAM-009, NAM-012, NAM-018 to
-# NAM-022, NAM-026 and NAM-028: a submitted project's contracts are named `address#name`
-# outside its documents (decision 11), every package a manifest lists is installed before a
-# registration (decision 12), every engine fetches `https:` and `file:` and other schemes are
-# a package-source provider's (decision 21), and graphs, runtimes, re-exports, policies and
-# `url` go (decisions 1, 2, 3a, 9 and 25). It removed none and added none. The log is
-# docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
-# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed NAM-007 and NAM-022,
-# under which the `operations` of a bound are compared as names and may use a project's own
-# address (ACC-029), and NAM-023, which points to OPS-033.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed NAM-009: a
-# template keeps each implementation item of its own submitted project that it selects, with
-# a relative program resolved as its own registration resolved it (M28). It added none and
-# removed none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed NAM-024: an input that a later release adds to a Requirement contract
-# states no `default` (V2-02). It added none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
-# (log docs/proposals/reaudit/round-6/log-promises.md), changed NAM-022, under which
-# `#name` in a replacing template reaches the project handed over with it (D11). It added
-# none and removed none. Its integration (docs/proposals/reaudit/round-6/log-integration.md)
-# changed a word of NAM-026, whose call is answered as one to a tool that is not presented,
-# since IFC-012 now has one such call, to a control the target does not have, report invalid.
-# Ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md) changed NAM-018, whose default implementation
-# is a type's, since an Operation contract states none. It added none and removed none.
+# Each rule follows an existing practice: Go for address-like identity and a breaking version
+# taking a new address, and RFC 1123 for the host part of an address; Go and Cargo for one project
+# file holding versions; a URL fragment, as in JSON Schema's `$ref`, for naming one thing inside
+# an address; Kubernetes for a contract's own version being independent of the release that ships
+# it; Go's standard library for a built-in package that no project file lists. The manifest's own
+# format is in manifest.yaml.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: PKG-002 → NAM-006 (ruling 32).
+# Removed: PKG-008 → NAM-011 (ruling 32).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: NAM-001
   layer: language
@@ -407,7 +354,7 @@
     is read in that form.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
 
 - id: NAM-022
   layer: language
@@ -513,8 +460,7 @@
     answered as a call to a tool that is not presented, and reports refused under IFC-012.
   vectors: []
 
-# --- Added with the core package (plan-audit ruling 37; change X5 of the ruling on the core
-# --- package and the schemas).
+
 
 - id: NAM-027
   layer: language
@@ -537,8 +483,7 @@
     document that gives no name has none to share.
   vectors: []
 
-# --- Added by the fix pass of the fourth round of the re-audit
-# --- (docs/proposals/reaudit/round-4/log-fixes.md; finding 4C-11).
+
 
 - id: NAM-028
   layer: language

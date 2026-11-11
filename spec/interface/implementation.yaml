@@ -1,225 +1,19 @@
 # The implementation interface: the shared wire between an engine and an implementation, and
 # between an engine and a consumer.
-# Owner rulings of 2026-11-05 (plan-audit rulings 31, 32 and 33). The wire is the Model Context
-# Protocol. One baseline revision is required of everyone; either side may support others, and
-# the protocol's own per-request negotiation picks one. Handles follow the protocol's guidance
-# for stateful tools. The protocol's own fields are named as its revision 2026-07-28 names them.
-# Promises here have the layer `interface`, but IFC-014, IFC-043 and IFC-044, rules on
-# documents, have the layer `language`. IFC-026 to IFC-028 were added by the follow-up rulings.
-# The ruling on the core package and the schemas (ruling 37) changed IFC-009, IFC-012, IFC-014,
-# IFC-016, IFC-019 and IFC-024 to IFC-027, which gained three keys of a result's `_meta`:
-# `restriction`, `state` and `withheld`. The conversion of the older text (decision DA3 of the
-# docs audit, docs/proposals/docs-audit/GAPS.md) changed IFC-006, IFC-018, IFC-022, IFC-024 and
-# IFC-025, gave a request the key `package`, and added IFC-030 to IFC-032. The second round of
-# the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) removed the key `package`, so that
-# a contract of an unpublished package is written `<digest>#<name>`; gave a result the key
-# `invocation`; changed IFC-006, IFC-010, IFC-012, IFC-016, IFC-018 to IFC-020, IFC-023 to
-# IFC-025, IFC-029 and IFC-032; and added IFC-033. Its closing pass
-# (docs/proposals/reaudit/round-2/log-closing.md) changed IFC-001, IFC-012, IFC-018, IFC-020,
-# IFC-024, IFC-025, IFC-029 and IFC-033: `retrieve-result.v1` returns the engine's ID. Its last
-# pass (docs/proposals/reaudit/round-2/log-tail.md) changed IFC-001, IFC-004, IFC-006, IFC-007,
-# IFC-009, IFC-010, IFC-012 to IFC-014, IFC-016, IFC-021, IFC-025, IFC-032 and IFC-033, and
-# added IFC-034 and IFC-035. It applied the check of these promises against the protocol
-# (docs/proposals/reaudit/round-2/mcp-citations.md): each side keeps every requirement of the
-# protocol, a call to a tool that is not presented is answered with the protocol's error, whose
-# `data` holds the key `reason`, and `isError` is true on every result that the engine gives a
-# consumer and that carries none of the operation's outputs. It also put the key `restrictions`
-# in the `_meta` of a tool's definition, and added the tool `start-later-work.v1`. The follow-up
-# to that pass changed IFC-006, IFC-009, IFC-016 and IFC-034: a result whose `isError` disagrees
-# with its outcome is unknown, and IFC-016 is about one invocation that outlasts its call. No
-# promise of this file was removed before ruling 38. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed IFC-006, IFC-021, IFC-024, IFC-025 and IFC-028: a retrieval names
-# the invocation that its request served, the stop that the engine dispatches under OBS-007
-# carries no caller, and the result of an operation that declares no outputs is never withheld.
-# It changed nothing that these promises say of the Model Context Protocol itself, and the
-# second check, in the fourth round, read them as this pass and its follow-up left them. It
-# removed none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed IFC-024: a retrieval that names a served
-# invocation may give its target in the resolved form.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# IFC-010, IFC-012, IFC-018, IFC-024 to IFC-027, IFC-029, IFC-032 and IFC-033, made IFC-026 a
-# `must`, and added IFC-036, on a request that the protocol has a server reject with an error of
-# its own. It applied the second check of these promises against the protocol
-# (docs/proposals/reaudit/round-4/mcp-recheck.md), which read IFC-001 to IFC-035 as the third
-# round left them: what the changes of this pass say of the protocol itself is the wording of
-# that report, and nothing else that these promises say of the protocol was changed. It removed
-# none.
-# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
-# of the same file, which are the coordinator's too, changed IFC-018, IFC-032 and IFC-036: a
-# requirement is named on the wire by the package that originally exports it, and a request that
-# cannot be read is answered as the protocol states, whoever sent it.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md. It removed IFC-035, on
-# later work, which is not part of this version. Those IDs are not reused.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review (docs/proposals/principles-review/README.md), removed IFC-024, the tool
-# `retrieve-result.v1`, which goes with retrieval (decision 6c): a caller that lost a result
-# repeats its request under OPS-009, and nothing replaces the tool; and IFC-034, the filters
-# that oblige a consumer in a tool's `_meta`, which go with `obliges` (decision 14): nothing
-# replaces it. It changed IFC-001, IFC-004, IFC-006, IFC-008, IFC-011, IFC-012, IFC-014,
-# IFC-016 to IFC-019, IFC-021, IFC-022, IFC-025, IFC-028, IFC-029, IFC-032 and IFC-033, and
-# cut from IFC-009 a pointer to IFC-008 that no longer held. Conduit's keys now travel as an
-# extension of the protocol, `io.github.shrav-k.conduit/interface`, at the revision `v0`; the
-# keys `interfaceVersion`, `state` and `withheld` go, and `config` and `revision` are added.
-# It added IFC-037 to IFC-041. What changed is in docs/proposals/ruling-41/log-G5.md. The
-# removed IDs are not reused. The coverage check of the rewrite
-# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed IFC-016, on a task's
-# result once its Conduit has closed (ACC-034), IFC-017, on where a run's process runs
-# (PRV-019), and IFC-033, on the tool of an operation that declares no inputs.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md and the owner's answers to D8, D12 and
-# D17. Applying them, it changed IFC-016 and IFC-025: a repeat of an invocation that succeeded
-# and whose outputs are no longer kept reports conflict under OPS-034 (row 31); IFC-017: only
-# the engine's own runner returns no `endpoint` (row 16); IFC-020, IFC-023, IFC-029, IFC-036 and
-# IFC-038: the engine's server lists Conduit's extension, and a request that carries Conduit's
-# keys and does not declare it is answered with -32021 and reports invalid (rows 12 and 29);
-# IFC-037: provider calls declare the extension, and discovery is read for each run and each
-# connection (row 15); IFC-041: a connection for a retire hook, values converted as PRV-007
-# converts them, null leaves the header out, and a read again under SEC-023 after a restart
-# (rows 9, 22 and 24, and D12); and IFC-022 and IFC-030: a run is given what it presents in the
-# input `identity` of `run.v1` (D17). IFC-017 also points to PRV-023 and DL16 for what the
-# engine's own runner gives a process (D8). It added none and removed none. The integration of
-# ruling 42 (docs/proposals/ruling-42/log-integration.md) changed IFC-017, which points to
-# PRV-022 for `identity`; IFC-037, whose rule on plain implementations names the three
-# capabilities of PKG-020; and IFC-041, whose `then` names the read again of SEC-023 and whose
-# observable says "after it restarts" for a failover.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node and "stand for" to
-# "represent" in IFC-017, and IFC-037 writes a Kubernetes Node, so that it is not read as a
-# node. It removed none and added none.
-# The names of ruling 42 (the vocabulary audit's N1, N5 and N15 to N17; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed `reveal-secret.v1` to `get-secret.v1` in
-# IFC-012; the output `endpoint` of `run.v1` to `url` in IFC-017; operation identity to
-# idempotency key, and the key `io.github.shrav-k.conduit/operationIdentity` to
-# `io.github.shrav-k.conduit/idempotencyKey`, in IFC-006, IFC-016, IFC-020 and IFC-023; the key
-# `io.github.shrav-k.conduit/restrictions` to `io.github.shrav-k.conduit/filters` in IFC-006,
-# IFC-018 to IFC-020 and IFC-026, which with IFC-040 now say filters where only filters are
-# sent; and Conduit's extension `io.github.shrav-k.conduit/interface` to
-# `io.github.shrav-k.conduit/implementation-interface` in IFC-029, IFC-037 and IFC-038. It
-# removed none and added none.
-# The editorial fixes of ruling 42 (the vocabulary audit's E4, E5 and E7; log
-# docs/proposals/ruling-42/log-editorial.md) changed IFC-004, IFC-037 and IFC-038, which say
-# `revision` in the settings object of an extension, as the protocol names it, where they said
-# the extension's `revision` setting; IFC-006 and IFC-008, whose `when` and `then` say a call
-# where a hook is meant, since a hook is not a request; IFC-008, whose observable says that the
-# record names the revision of Conduit's extension that the call declared; and IFC-019, whose
-# observable says the call of a hook. It removed none and added none.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# changed IFC-007, IFC-019, IFC-026 and IFC-037, which say a call for a request or a hook where
-# they said a request, as E7 of the vocabulary audit has it, so that a hook's call is sent no
-# Conduit's keys where its implementation is plain, applies its filters, answers in the same
-# form, and is not dispatched where the implementation's discovery result lacks Conduit's
-# extension; IFC-026 also says filter where it said restriction, as N16 has it. It removed none
-# and added none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06) accepted the proposal on work
-# across machines (docs/proposals/multi-machine/README.md), with D5's second part as option b
-# and Q1 tightened. Applying it, it changed IFC-017: the engine reaches a run at the `url` last
-# reported, sends nothing to a run's server, or to a `remote` item that is not plain, until
-# the server's side has proved who it is behind its gate (PRV-025), and presents the proof of
-# an enforcement point; IFC-022: an instance is established not from the address, machine,
-# network, runtime provider or run that a request came from, a credential names an instance by
-# its ID and none once it is removed, and the exception for a program that can read another
-# run's credential is stated (Q5); IFC-030, under which the proof the engine presents is its
-# own; IFC-032, under which a credential of a removed instance establishes none; and IFC-041:
-# a `remote` item that is not plain is reached only over `https` with the engine's proof, the
-# values of its headers are those taken when the connection was made, and a header that
-# carries a secret goes only where SEC-024 lets it go. It added IFC-042, under which the
-# engine's address accepts a token in the form of a JWT-SVID from another machine (Q1), and
-# IFC-043, under which a `remote` item that is not plain names no `Authorization` header. It
-# removed none. What changed is in docs/proposals/ruling-43/log-interface.md. The integration
-# of ruling 43 then had IFC-017 keep the request and its result confidential and unaltered as
-# far as the side that checks the proof (point 4 of the gate in the proposal's section 3), and
-# IFC-022 say, as IFC-042 does, that the engine's address accepts the token form from every
-# consumer on another machine (docs/proposals/ruling-43/log-integration.md).
-# The verification of ruling 43 (docs/proposals/ruling-43/log-integration.md, "Verification")
-# changed IFC-017, under which what answers at a run's `url` proves itself by the certificate
-# of PRV-028; IFC-022 and IFC-042, under which the engine's address at an `https` URL always
-# accepts the token form, whichever machine a request comes from; and IFC-041, under which the
-# engine's proof to a `remote` item may also be a token from the authorization server that the
-# item names, obtained with the engine's own credential, and such an item admits only a
-# credential that names the engine. It added IFC-044, under which an item reached by `remote`
-# that is not plain and is not at an `https` URL is rejected.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F4.md), on the
-# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, named IFC-044 beside
-# IFC-014 and IFC-043 in the layer `language` above (M72), and changed: IFC-001, under which the
-# engine reads an implementation's tool list for `x-mcp-header` and sends a call rejected with
-# -32020 once more, as one invocation (M61); IFC-004, which lists less for a call to a plain
-# implementation (M65); IFC-007 and IFC-037, under which the engine declares no capability but
-# Conduit's extension and the tasks extension (M60), and IFC-037, which reads discovery for each
-# run and connection whatever its caching hints (M68); IFC-012, IFC-013 and IFC-025, under which
-# a call to a tool that is not presented is answered as the protocol prescribes at the revision
-# in use, an error's `content` begins with a text block that states its reason or outcome, and a
-# plain implementation's `content` is passed on (M59, M71, M75); IFC-015, under which an item
-# reached by `remote` makes no onward request (M54); IFC-016, which decides every request of the
-# tasks extension for the task for the instance that began the invocation, answers one that does
-# not proceed with -32602 and relays no input request (M50, M58, M60); IFC-017, under which the
-# engine follows no redirect, checks a `remote` item's certificate against the roots of DL13,
-# and sends nothing where the engine's own runner has no process for the run (M48, M56, M57);
-# IFC-019, under which an implementation cannot apply a filter that holds an argument it does
-# not know (M45); IFC-022 and IFC-042, under which the engine accepts a run's `token` at the
-# `http` loopback address that DL13 gives it (M53), and IFC-022, which says the machine the
-# engine runs on (M90); IFC-026 and IFC-044, which use defined words in their own sense (M17);
-# IFC-032, which leaves to ACC-037 a credential whose instance cannot be read (M55), and IFC-032
-# and IFC-036, on the HTTP status 403 for an `Origin` that the engine does not accept (M77);
-# IFC-033, which gives a tool the contract's description and `readOnlyHint` exactly where no
-# `effect` is stated (M62); IFC-038, on the protocol's rule for a private tool list (M76);
-# IFC-041, which connects to a loopback host only on an engine that can neither restart on
-# another machine nor run as several parts, takes a token only from an authorization server that
-# DL13 states or the user configured for the item's URL, and authenticates to it under RFC 7523
-# alone (M02, M49, M66); and IFC-044, which says where a plain item may stand (M02). It added
-# none and removed none.
-# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
-# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed IFC-017, which
-# cites PRV-007 alone for one run per instance (M03); IFC-037, which reads discovery at each
-# connection that a setup or a retirement makes (M94); and IFC-041, which says the engine's
-# credential ID (M97). It added none and removed none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed IFC-001, which sends nothing where the tool list cannot be read or
-# lacks the tool (V2-14); IFC-003, IFC-007, IFC-010, IFC-016 and IFC-037, which cite the two
-# promises it added (V2, V9, V2-15); IFC-010, which reads -32021 for a capability the call did
-# not declare as failed (V2-15); IFC-015, which says that the engine gives a `remote` item no
-# means to make an onward request (V2-16); IFC-016 and IFC-025, on a repeat to which a filter
-# applies that the latest attempt was not sent (V4); IFC-017, which excepts the runs that
-# PRV-026 and TPL-018 ask for again and names the stop of a part of the engine (V2-08); IFC-019,
-# on an input that a later release adds with no `default` (V2-02); IFC-022, which lets a request
-# establish neither instance where whether it exists cannot be read, and says where the token
-# goes without TLS (V1, V2-11); IFC-032, whose record holds no caller (V2-13); and IFC-036,
-# which says "response" (V8). It added IFC-045, on the client capabilities that a call declares,
-# and IFC-046, on a call that the engine sends once more after the implementation rejected it
-# before acting on it (V2, V9). It removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit
-# (docs/proposals/reaudit/round-6/reader-1.md and design-critique.md; log
-# docs/proposals/reaudit/round-6/log-interface.md), changed IFC-007, IFC-010 and IFC-045: the
-# error -32021 for a client capability that a call did not declare is read as any other error,
-# failed for an operation that declares no effect and otherwise unknown, which reverses V2-15 of
-# round 5 (finding 6-1-01); IFC-033: a tool's schemas hold one copy of each Schema contract they
-# refer to, under the `$defs` of the root, with every `$ref` rewritten to refer to what it did
-# where it was written (6-1-04), beside the root's own `$defs` that an ordinary operation may
-# now state (D14), and a control's input shows the narrowing of the target's template (D07); and
-# IFC-012: no tool is presented for a control that the target does not have, and a call that
-# names one reports invalid under TPL-013 (D07). It added IFC-047, under which an implementation
-# that carries Conduit's keys answers -32021 for a capability that a call did not declare only
-# where it has performed nothing (6-1-01). It removed none. Its integration
-# (docs/proposals/reaudit/round-6/log-integration.md) changed the observables of IFC-016 and
-# IFC-025, which said when a repeat is answered by the old test of the filters that the latest
-# attempt was sent, and now follow OPS-009, OPS-024 and OPS-034 (6-1-02); IFC-012, whose
-# exception for a control that the target does not have holds where the target holds the
-# control's contract, so that a call for an operation of a later release stays refused under
-# NAM-026 (D07); and IFC-033 and IFC-036, a word each, on the reason in IFC-012's error. The
-# verification of round 6 (docs/proposals/reaudit/round-6/log-integration.md, "Verification")
-# changed IFC-010, whose table reads an error of a plain server as failed only for an operation
-# that states no `effect`, is not a control and starts no model work, as IFC-033 tests, and
-# IFC-007 and IFC-045 to match (C-01, R-12); and IFC-047, under which such an implementation
-# does not begin a call whose processing may come to need a capability that it lacks (R-04). It
-# added none and removed none.
+# The wire is the Model Context Protocol. One baseline revision is required of everyone; either
+# side may support others, and the protocol's own per-request negotiation picks one. Handles
+# follow the protocol's guidance for stateful tools. The protocol's own fields are named as its
+# revision 2026-07-28 names them. Promises here have the layer `interface`, but IFC-014, IFC-043
+# and IFC-044, rules on documents, have the layer `language`.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: IFC-024 → OPS-009 (repeat a lost request); no replacement tool (ruling 41).
+# IFC-034: nothing replaces it (ruling 41).
+# IFC-035: nothing replaces it (ruling 38).
+# OBS-007: nothing replaces it (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: IFC-001
   layer: interface
@@ -678,8 +472,7 @@
     whatever runtime provider runs the item.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32; decisions U1, U2, U10 and Q7 of the
-# --- re-audit).
+
 
 - id: IFC-018
   layer: interface
@@ -913,8 +706,7 @@
     meaning: an operation's outputs are in `structuredContent`.
   vectors: []
 
-# --- Added by the follow-up rulings (plan-audit ruling 33; decisions F1 and F7 of the
-# --- re-audit).
+
 
 - id: IFC-026
   layer: interface
@@ -969,7 +761,7 @@
     its onward requests name it.
   vectors: []
 
-# --- The names a version assigns (plan-audit ruling 35).
+# --- The names a version assigns.
 
 - id: IFC-029
   layer: interface
@@ -994,8 +786,7 @@
     extension is that prefix followed by `implementation-interface`.
   vectors: []
 
-# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP13,
-# --- GP14 and GP17 of docs/proposals/docs-audit/GAPS.md).
+
 
 - id: IFC-030
   layer: interface
@@ -1062,8 +853,7 @@
     REC-002.
   vectors: []
 
-# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/reader-3.md,
-# --- finding 12).
+
 
 - id: IFC-033
   layer: interface
@@ -1140,9 +930,7 @@
     since the protocol requires one of every tool, and its call carries no arguments, under IFC-001.
   vectors: []
 
-# --- Added by the fix pass of the fourth round of the re-audit
-# --- (docs/proposals/reaudit/round-4/log-fixes.md; row 26 of the second check against the Model
-# --- Context Protocol, docs/proposals/reaudit/round-4/mcp-recheck.md).
+
 
 - id: IFC-036
   layer: interface
@@ -1184,8 +972,7 @@
     other request holds.
   vectors: []
 
-# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decisions 18 and 25c, and
-# --- alignments C51 and C52, of docs/proposals/principles-review/README.md).
+
 
 - id: IFC-037
   layer: interface
@@ -1334,9 +1121,7 @@
     and never what a consumer presented to identify itself, under IFC-030.
   vectors: []
 
-# --- Added by ruling 43 (docs/proposals/ruling-43/README.md; Q1 and D5 of
-# --- docs/proposals/multi-machine/README.md): the token form at the engine's own address, and
-# --- the header that the engine's proof takes toward a `remote` item that is not plain.
+
 
 - id: IFC-042
   layer: interface
@@ -1389,9 +1174,7 @@
     a header that carries a secret goes only where SEC-024 lets it go.
   vectors: []
 
-# --- Added by the verification of ruling 43 (docs/proposals/ruling-43/log-integration.md,
-# --- "Verification"): an item reached by `remote` that is not plain stands at an `https` URL,
-# --- since the engine connects to no other, and an engine rejects a document it cannot honor.
+
 
 - id: IFC-044
   layer: language
@@ -1416,9 +1199,7 @@
     server alone, on an engine that can do neither.
   vectors: []
 
-# --- Added by the verification of round 5 of the re-audit
-# --- (docs/proposals/reaudit/round-5/log-fixes.md, "Verification"): what a call declares to an
-# --- implementation, and the call that the engine sends once more after a rejection.
+
 
 - id: IFC-045
   layer: interface
@@ -1475,10 +1256,7 @@
     provider call, under PRV-005.
   vectors: []
 
-# --- Added by ruling 44 (docs/proposals/ruling-44/README.md), on finding 6-1-01 of round 6 of
-# --- the re-audit (docs/proposals/reaudit/round-6/reader-1.md): the error -32021 for a client
-# --- capability that a call did not declare, from an implementation that carries Conduit's
-# --- keys.
+
 
 - id: IFC-047
   layer: interface

@@ -2,6 +2,8 @@
 # no `default` stands inside `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else` or
 # `dependentSchemas` (SCH-008). Here a property under `then` states one, which would apply
 # only where the condition held.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

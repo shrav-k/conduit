@@ -2,7 +2,8 @@
 # a `default` satisfies the schema that states it (SCH-019), and a format is checked by the
 # grammar that the profile cites (SCH-004), for `duration` that of RFC 3339, appendix A. The
 # default below has a fraction of a second, which ISO 8601 allows and the grammar does not.
-# The first build's log of increment 1 (docs/proposals/first-build/log-increment-1.md) added it.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

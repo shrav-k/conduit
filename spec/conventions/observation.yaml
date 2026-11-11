@@ -1,38 +1,15 @@
 # Declared against observed state: what is declared and what is seen are kept apart, and a
 # difference between them is reported, never repaired.
-# Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). Reporting follows Kubernetes
-# conditions, which keep the time of the last successful observation beside an unknown status.
-# Acting only on an explicit request follows Compose and Terraform. PLC-010 was folded into
-# OBS-003 and LIF-010. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed OBS-005. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) changed OBS-004 and OBS-005 and added OBS-007.
-# No promise of this file has been removed. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed OBS-003 and OBS-007: the stop that the engine dispatches for a
-# runtime restored without leave carries no caller. It removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, removed OBS-005 (decision 2: restoring a runtime goes, and a runtime
-# provider's own restart of a run is PRV-010) and OBS-007 (decision 2: the stop for no actor
-# goes, and nothing replaces it); changed OBS-002 and OBS-003, which an inspection reports as
-# conditions (decision 24b), and OBS-004 (decision 2b); and added none. What changed is in
-# docs/proposals/ruling-41/log-G1.md. Those IDs are not reused. The integration of the
-# rewrite (docs/proposals/ruling-41/log-integration.md) reworded OBS-004 in PRV-010's terms.
-# The names of ruling 42 (the vocabulary audit's N2 and N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node and the machines provider
-# to the machine provider in OBS-003. It removed none and added none.
-# The names of ruling 42 (the vocabulary audit's N14 and N20; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed origin to source in OBS-002, whose `source`
-# is a URI-reference that the engine names, as it names a record's, and "its own setting for
-# restarts" to its own restart policy in OBS-004. It removed none and added none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
-# work across machines (docs/proposals/multi-machine/README.md), changed OBS-004, whose
-# observable says that the engine runs a provider again after it restarts only for a provider
-# call that it must make, under PRV-026, and not because of a difference (Q3). It added none
-# and removed none. What changed is in docs/proposals/ruling-43/log-secrets.md.
+# Reporting follows Kubernetes conditions, which keep the time of the last successful observation
+# beside an unknown status. Acting only on an explicit request follows Compose and Terraform.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: OBS-005 → PRV-010 (the runtime provider's restart policy) (ruling 41).
+# OBS-007: nothing replaces it (ruling 41).
+# Removed: PLC-010 → OBS-003 and LIF-010 (ruling 32).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: OBS-001
   layer: convention

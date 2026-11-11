@@ -1,20 +1,3 @@
-# Plan-audit ruling 37 (2026-11-05) first accepted this file, with the core package and the
-# manifest's promises; the record is docs/proposals/core-and-schemas/README.md. What the docs
-# audit, rounds 2 to 4 of the re-audit and ruling 38 changed since is logged in the records
-# that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, changed `schema.v1`: the profile is JSON Schema 2020-12's applicator
-# vocabulary and its validation vocabulary less `multipleOf`, with the format `uri-reference`,
-# and a `default` is rejected under `not`, `if`, `then`, `else` and `dependentSchemas` too
-# (decision 20). The log is docs/proposals/ruling-41/log-core.md.
-# The integration of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fixes.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, named under
-# OBJ-019 below the names under `dependentRequired` and `dependentSchemas` and the patterns
-# under `patternProperties` (M24).
-#
 # The schema of a schema: what spec/schema-profile.md permits, written within that profile.
 # Every place in a document that holds a schema refers to this contract. JSON Schema 2020-12.
 #
@@ -46,6 +29,9 @@
 # contract (SCH-015); that a `pattern`, and a key of `patternProperties`, is a regular
 # expression of ECMA-262 (SCH-016); that a number is within the range of SCH-006; and where
 # `secret-reference.v1` may stand (SEC-001), which tools/check_schemas.py applies itself.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

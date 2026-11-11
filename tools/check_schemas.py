@@ -2216,6 +2216,8 @@ def retired_ids(head):
         rf"\b({PROMISE_ID})\s+(?:was|were)\s+(?:removed|folded)\b",
         rf"(?:;\s*(?:and\s+)?|,\s+and\s+)({ID_LIST})\s+into\b",
         rf"\bfolded\s+(?:in\s+)?({ID_LIST})",
+        # The register form of work order 032: "OLD: nothing replaces it (ruling NN)."
+        rf"\b({ID_LIST})\s*:\s*nothing replaces it\b",
     ]
     for pattern in patterns:
         for match in re.finditer(pattern, text, re.I):

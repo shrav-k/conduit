@@ -1,5 +1,7 @@
 # Example. It must be rejected:
 # a document carries `apiVersion`.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 kind: Interface
 metadata:

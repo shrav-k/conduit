@@ -1,20 +1,3 @@
-# Plan-audit ruling 37 (2026-11-05) first accepted this file, with the core package and the
-# manifest's promises; the record is docs/proposals/core-and-schemas/README.md. What the docs
-# audit, rounds 2 to 4 of the re-audit and ruling 38 changed since is logged in the records
-# that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, changed `revision.v1` to an opaque string (alignment C21) and `id.v1`'s
-# description, which no longer names a policy (decision 3a), and added `label-selector.v1`
-# (decision 8a). The log is docs/proposals/ruling-41/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N8 and N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed `label-selector.v1` to `labels.v1`, a map
-# from a label to its value that holds both the labels reported for a machine and a label
-# selector, and moved the rule that an empty selector selects every node out of its description,
-# since CTR-004 and the row label selector state it.
-#
 # The small values that the other schemas share. Each document below is a Schema contract of
 # the core package (CTR-008), so that another schema can refer to it with a `$ref` that is a
 # qualified reference (SCH-015). JSON Schema 2020-12, within spec/schema-profile.md.
@@ -43,6 +26,9 @@
 #
 # Not expressed here, and checked by the engine: everything about what a reference resolves
 # to, and whether the labels reported for a node match a selector (PLC-007, PLC-025).
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

@@ -1,56 +1,3 @@
-# Plan-audit ruling 37 (2026-11-05) first accepted this file, with the core package and the
-# manifest's promises; the record is docs/proposals/core-and-schemas/README.md. What the docs
-# audit, rounds 2 to 4 of the re-audit and ruling 38 changed since is logged in the records
-# that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, changed `manifest.v1` (`exports` lists names alone, with no re-export;
-# `version` only beside `address`; `fetch` is a URI reference; the keys of `packages` and of
-# `implementations` are stated with `propertyNames`) and `implementation-item.v1` (reached by
-# exactly one of `command`, `package` and `remote`, with `digest`, `environment`, `arguments`
-# and `headers`, and a label selector as `placement`; no `url` and no `graph`), and added
-# `server-package.v1` and `server-remote.v1`, under decisions 1, 8a, 9, 11, 20, 21 and 25.
-# The log is docs/proposals/ruling-41/log-core.md. The coverage check of the rewrite
-# (docs/proposals/ruling-41/log-integration.md, "Coverage check") took the transport `sse` out
-# of `server-package.v1` (MAN-010).
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying row 35 of the
-# coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, said in the
-# description of `implementation-item.v1` that `arguments` names a named argument by its
-# `name` and a positional one by its `valueHint`, and never one that states a fixed `value`.
-# The log is docs/proposals/ruling-42/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N8 and N9; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of
-# `implementation-item.v1` and of an item of the core form of `manifest.v1` to `nodeSelector`,
-# of the schema `labels.v1`, which was `label-selector.v1`.
-# The names of ruling 42 (the vocabulary audit's N6 and N7; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed the key `arguments` of
-# `implementation-item.v1` to `packageArguments`, which binds only an argument of the Package's
-# own `packageArguments`, and removed its `digest`: a Package is pinned by its own `fileSha256`,
-# which the item now requires, or, where its `registryType` is `oci`, by a digest at the end of
-# its `identifier`.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on Q1 as tightened, made
-# `implementation-item.v1` reject an item reached by `remote` and not marked `plain` that names
-# `Authorization`, in any case, in its `headers` (IFC-043), and said in its description that a
-# template whose item binds a variable of `identity` (MAN-018), or sends a header that carries
-# a secret to an `http` URL (SEC-024), is rejected. The log is
-# docs/proposals/ruling-43/log-core.md. Its verification
-# (docs/proposals/ruling-43/log-integration.md, "Verification") made `implementation-item.v1`
-# reject an item reached by `remote` and not marked `plain` whose Remote's `url` is not an
-# `https` URL (IFC-044).
-# The integration of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fixes.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, said in the
-# description of `server-remote.v1` that no item binds a variable of a Remote's URL, and that a
-# `url` that holds one is rejected (M23); said in that of `implementation-item.v1` that SEC-024
-# also covers an item selected for `get-secret.v1` and a loopback host (M01, M02); and named
-# PKG-030 among what is not expressed here (M25).
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit: its
-# integration (docs/proposals/reaudit/round-6/log-integration.md) changed the comment "Not
-# expressed here", since the manifest handed to `replace.v1` is now that of the project handed
-# over with the template, held to a submitted project's rules, and no longer `packages` alone
-# (SUB-009, D11). No schema changed.
-#
 # The manifest of a project or a package, one item of its `implementations`, and the two
 # shapes of the Model Context Protocol Registry's server.json that an item may hold. The
 # file's name, its keys and the layout of an archive are promised in
@@ -112,6 +59,9 @@
 # states no fixed `value` (MAN-010); that no two documents of the project or package share a
 # name (NAM-027); everything about digests and installed packages (PKG-003, PKG-021, PKG-022);
 # and that there is one manifest, in the right place (MAN-001, MAN-002).
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

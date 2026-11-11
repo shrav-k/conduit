@@ -5,6 +5,8 @@
 # IFC-037), and a plain server reads none of them. This manifest marks an existing Docker
 # server plain and has it implement the three operations of a runtime provider. The rule
 # matches the operations by their qualified references in the core package.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/plain-docker

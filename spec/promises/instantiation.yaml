@@ -1,42 +1,11 @@
 # Instantiation: how a template and its arguments become an instance.
-# Owner rulings of 2026-11-05 (plan-audit rulings 8, 18, 21, 28, 29, 32 and 33). Draft: no
-# vector exists yet. Consolidation pass 1: INS-015 was folded into OBJ-013. INS-020 to INS-022
-# were added. The follow-up decisions (ruling 33) added INS-023. The ruling on the core package
-# and the schemas (ruling 37) changed INS-006, INS-012 and INS-014. The conversion of the older
-# text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed INS-011,
-# INS-014 and INS-018 and added INS-024. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) changed INS-002, INS-011, INS-012, INS-014
-# and INS-018, and added INS-025, the forms of `from`. Its closing pass reworded one sentence
-# of INS-024, and wrote "composite" for "composed" in INS-012 and INS-016. Its last pass
-# (docs/proposals/reaudit/round-2/log-tail.md) changed INS-025: `#name` written as `from` in a
-# submitted project resolves as the bare name does.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed INS-020, which is now of the layer `convention`, and INS-025, whose
-# `then` now says what `#name` written as `from` reaches in a submitted project. It removed
-# none.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# INS-006, INS-013, INS-019, INS-020 and INS-025: an argument is held with the defaults of its
-# input's schema filled in, and a project that is handed over for registration is called a
-# submitted project. It added none and removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), removed INS-022 under the review's decision
-# 12: a registration is rejected while a package its manifest lists is not installed (PKG-006),
-# so no check is left to instantiation, and nothing replaces it. It changed INS-012, INS-016
-# and INS-025: composite Conduit templates and re-exports go (decisions 5 and 9), and an
-# entry's `runtime` may be an input's destination (decision 31b). It added none. The log is
-# docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
-# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed INS-006, under which
-# a bare name is not accepted where `secret-reference.v1` governs, as SEC-001 has it.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in INS-018. It removed none
-# and added none.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: INS-015 → OBJ-013 (ruling 32).
+# INS-022: nothing replaces it (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: INS-001
   layer: language
@@ -301,7 +270,7 @@
     A control applies no default to a setting whose input is not supplied, as REV-006 states.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
 
 - id: INS-020
   layer: convention
@@ -335,7 +304,7 @@
     naming the input. `to: [/config/model]` assigns the value to the `model` member of `config`.
   vectors: []
 
-# --- Added by the follow-up decisions (plan-audit ruling 33; decision F18 of the re-audit).
+
 
 - id: INS-023
   layer: language
@@ -351,8 +320,7 @@
     the template writes is then made on the resolved list, when the Conduit is instantiated.
   vectors: []
 
-# --- Added by the conversion of the older text (decision DA3 of the docs audit; point GQ5 of
-# --- docs/proposals/docs-audit/GAPS.md).
+
 
 - id: INS-024
   layer: language
@@ -370,8 +338,7 @@
     the same template.
   vectors: []
 
-# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
-# --- finding R2-S1).
+
 
 - id: INS-025
   layer: language

@@ -1,6 +1,8 @@
 # Example. One document, valid against the schemas, that must be rejected:
 # only an Operation contract of the core package is marked `reservedToRoot: true`. This one
 # belongs to a project, which is rejected when it is submitted.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation

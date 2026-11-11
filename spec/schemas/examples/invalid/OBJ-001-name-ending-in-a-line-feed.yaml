@@ -2,8 +2,9 @@
 # a name holds only lowercase letters, digits and hyphens (OBJ-001), and `name.v1` says so with
 # the pattern '^[a-z][a-z0-9-]*$'. A pattern is matched as ECMA-262 matches it (SCH-016), where
 # `$` is the end of the string, so a name that ends in a line feed does not match. A library
-# whose `$` also matches before a final line feed, as Python's `re` does, would accept it. The
-# first build's log of increment 1 (docs/proposals/first-build/log-increment-1.md) added it.
+# whose `$` also matches before a final line feed, as Python's `re` does, would accept it.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Interface

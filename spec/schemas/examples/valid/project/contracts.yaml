@@ -2,12 +2,9 @@
 # (NAM-022), in a `$ref` as anywhere else (SCH-015), and outside the project each is named
 # `example.org/review-desk#name`, by the address its manifest states (SUB-008). The template
 # `reviewer` in templates.yaml checks its input `model` against `model-name.v1`.
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1`
-# to `secret-provider.v1` and `reveal-secret.v1` to `get-secret.v1`. Its editorial fix E17
-# (docs/proposals/ruling-42/log-editorial.md) says the type of a secret Resource, where it said
-# a secret store's type.
-# Ruling 44 (D06, as revised; log docs/proposals/reaudit/round-6/log-d06-d12.md) took the
-# default implementation out of `mirror.sync.v1`, and `git-mirror.v1` states it instead.
+# `git-mirror.v1` states the default implementation; `mirror.sync.v1` states none (CTR-002).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

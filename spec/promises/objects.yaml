@@ -1,56 +1,15 @@
 # Objects: names, IDs, references and the shape of a document.
-# Owner rulings of 2026-11-05 (plan-audit rulings 18, 19, 21, 28, 32 and 33). Draft: no vector
-# exists yet. Consolidation pass 1: OBJ-011 was reduced to the rename operation; the rejection
-# it shared with SUB-007 is OBJ-002, which also took in FST-004. INS-015 was folded into
-# OBJ-013. OBJ-020 to OBJ-022 were added. The follow-up decisions (ruling 33) added OBJ-023,
-# which is of the layer `convention`. The ruling on the core package and the schemas (plan-audit
-# ruling 37) changed OBJ-003, OBJ-006, OBJ-013, OBJ-014, OBJ-018, OBJ-019, OBJ-021 and OBJ-023
-# and added none. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed OBJ-019. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) reduced OBJ-002 and OBJ-011 to their rules on
-# documents, changed OBJ-001, OBJ-003, OBJ-004, OBJ-009, OBJ-010, OBJ-013 to OBJ-016, OBJ-021
-# to OBJ-023, and added OBJ-025 and OBJ-026, which are of the layer `convention`. Its closing
-# pass (docs/proposals/reaudit/round-2/log-closing.md) changed OBJ-003, OBJ-015, OBJ-023 and
-# OBJ-026: a runtime is no longer marked optional. No promise of this file has been removed.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed OBJ-005, which is now of the layer `convention`, OBJ-009, OBJ-010,
-# which is worded as what resolving reads, and OBJ-026, and added OBJ-027 and OBJ-028, of the
-# layer `convention`, which took their rules from the observable of OBJ-026. It removed none.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# OBJ-026: `rename.v1` returns the object's revision. It added none and removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), removed OBJ-005, OBJ-026, OBJ-027 and OBJ-028
-# under the review's decision 10: an object is no longer renamed, its name being fixed once it
-# is made, as OBJ-011 now states, and nothing else replaces them. It changed OBJ-003, OBJ-010,
-# OBJ-011, OBJ-013 to OBJ-016, OBJ-019, OBJ-021 and OBJ-022, and added none. The log is
-# docs/proposals/ruling-41/log-G6.md.
-# The names of ruling 42 (the vocabulary audit's N8 and N9; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of a label selector to
-# `nodeSelector` in OBJ-019, and the schema `label-selector.v1` to `labels.v1` in OBJ-022. It
-# removed none and added none.
-# The names of ruling 42 (the vocabulary audit's N6; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed the key `arguments` of an implementation
-# item to `packageArguments` in OBJ-016 and OBJ-019. It removed none and added none.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# changed OBJ-021, whose observable says the `arguments` of a filter under IFC-018, where it
-# said a restriction, since only filters are sent (the vocabulary audit's N16). It removed none
-# and added none.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed OBJ-019,
-# which leaves to the author the names under `dependentRequired` and `dependentSchemas` and
-# the patterns under `patternProperties` (M24), and OBJ-021, under which a reference schema
-# reached through any number of `$ref`s governs the place (M26). It added none and removed
-# none.
-# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md), on the
-# coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed OBJ-024, whose
-# names include those of what `identity` carries (M91). It added none and removed none.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: FST-004 → OBJ-002 (ruling 32).
+# Removed: INS-015 → OBJ-013 (ruling 32).
+# Removed: OBJ-005 → OBJ-011 (fixed names); no rename replacement (ruling 41).
+# Removed: OBJ-026 → OBJ-011 (fixed names); no rename replacement (ruling 41).
+# Removed: OBJ-027 → OBJ-011 (fixed names); no rename replacement (ruling 41).
+# Removed: OBJ-028 → OBJ-011 (fixed names); no rename replacement (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: OBJ-001
   layer: language
@@ -211,7 +170,7 @@
     resolved form of each reference, under OBJ-009 and OBJ-010.
   vectors: []
 
-# --- The shape of a document (plan-audit ruling 28). The JSON Schemas of these shapes are the
+# --- The shape of a document. The JSON Schemas of these shapes are the
 # --- Schema contracts under spec/schemas/.
 
 - id: OBJ-012
@@ -317,7 +276,7 @@
     item's pointer may name is MAN-017.
   vectors: []
 
-# --- Spelling and the envelope (plan-audit ruling 31), following Kubernetes.
+# --- Spelling and the envelope, following Kubernetes.
 
 - id: OBJ-017
   layer: language
@@ -377,7 +336,7 @@
     as SCH-002 requires.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
 
 - id: OBJ-020
   layer: language
@@ -442,7 +401,7 @@
     `labels.v1` gives their form.
   vectors: []
 
-# --- Added by the follow-up decisions (plan-audit ruling 33; decision W4 of the re-audit).
+
 
 - id: OBJ-023
   layer: convention
@@ -459,7 +418,7 @@
     actor is not permitted, OPS-023 says which reason is reported.
   vectors: []
 
-# --- The names a version assigns (plan-audit rulings 33 to 35). They are defined once, in
+# --- The names a version assigns. They are defined once, in
 # --- spec/names.yaml.
 
 - id: OBJ-024
@@ -478,9 +437,7 @@
     version's `apiVersion` with another version's core address is rejected.
   vectors: []
 
-# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
-# --- findings R1-5.2, R1-5.1 and R1-1.2). OBJ-025 is of the layer `convention`; OBJ-026,
-# --- added with it, was removed by ruling 41.
+
 
 - id: OBJ-025
   layer: convention

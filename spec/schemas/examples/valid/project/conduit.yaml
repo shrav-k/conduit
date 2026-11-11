@@ -6,11 +6,10 @@
 #
 # The core package is not listed, and may not be (NAM-020, NAM-021). Every package listed is
 # installed before the project is registered (PKG-006).
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-b.md) renamed `reveal-secret.v1`
-# to `get-secret.v1`. Its editorial fix E17 (docs/proposals/ruling-42/log-editorial.md) calls
-# `keychain-store` an implementation of `get-secret.v1`, where it said a secret store's server.
-# Round 5 of the re-audit (M79) marked `git-mirror-server` `plain`, with `tools`: an existing
-# server reads none of Conduit's keys, so unmarked it would serve no request (PKG-020, IFC-037).
+# `keychain-store` implements `get-secret.v1`. `git-mirror-server` is `plain`, with `tools`:
+# an existing server reads none of Conduit's keys (PKG-020, IFC-037).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/review-desk

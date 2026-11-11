@@ -58,3 +58,18 @@ The gates pass and are reported. From the repository root: `python3 tools/check_
 `python3 tools/check_roadmap.py` and `git diff --check`; in `reference-model/`,
 `cargo test --release` (report the total passed and failed; tests that bind loopback ports may fail
 in your sandbox: say so, and the admin reruns them). Do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 30 minutes, then a fresh verifier in 7. The worker condensed 153
+YAML head comments and the five Markdown files: `spec/` went from 219,540 words to 183,415, its head
+comments from 47,053 to 19,907. Every YAML file loads to the same data, all 455 promises and 15 DL
+records are unchanged, and the 74 retired IDs named at C0 stay named. It kept two passages of
+`spec/promises/secrets.yaml`'s head that no promise holds, as the order asked: that a file store
+ships in the standard library and a store reading the engine's own variables is not provided
+(finding 032-G1), and what a store package's contract states (032-G2); they describe current
+content and stay until a change to secrets writes them as promises. The verifier found that
+`tools/check_schemas.py` did not read the new register form "OLD: nothing replaces it", so 20
+retired IDs had lost their reuse check (032-G3), and one broken sentence in `spec/definitions.md`.
+The admin fixed both, with a regression test, which brought the recognized retired IDs back to 72,
+and reran the Rust suite outside the sandbox: 163 tests pass, 3 ignored.

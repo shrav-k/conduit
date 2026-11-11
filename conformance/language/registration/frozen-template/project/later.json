@@ -29,6 +29,7 @@
     "from": "agent",
     "arguments": {
       "value": null
-    }
+    },
+    "owner": "s1"
   }
 ]

@@ -212,7 +212,7 @@ impl Translator<'_> {
         if family == "Resource" && value.get("owner").is_none() {
             return Err(format!("{n}: Resource requires owner"));
         }
-        if (family != "Resource" && value.get("owner").is_some())
+        if (!["Resource", "Agent"].contains(&family) && value.get("owner").is_some())
             || (!["Resource", "Agent"].contains(&family)
                 && ["placement", "runtime"]
                     .iter()
@@ -262,14 +262,9 @@ impl Translator<'_> {
                 self.grant(n, local, family, grant)?;
             }
         }
-        let default = json!({
-            "capability": format!("{}#pool-management.v1", self.core),
-            "operations": (["register.v1", "register-replacement.v1", "inspect.v1", "set-up.v1", "retire.v1", "retire-with-resources.v1", "reconcile.v1"].map(|op| format!("{}#{op}", self.core)))
-        });
-        if let Some(operator) = value
-            .get("operator")
-            .or((family == "Pool").then_some(&default))
-        {
+        // FLEET-005 supplies root's Pool/Fleet defaults within registration.
+        // Only an explicit operator still expands to an authored Conduit here.
+        if let Some(operator) = value.get("operator") {
             if operator.is_null() && family == "Pool" {
                 return Ok(());
             }
@@ -293,6 +288,7 @@ pub fn translate(value: &Value, manifest_version: &str, core: &str) -> Result<Ve
         value,
         &[
             "apiVersion",
+            "fleet",
             "templates",
             "interfaces",
             "agents",
@@ -338,10 +334,36 @@ pub fn translate(value: &Value, manifest_version: &str, core: &str) -> Result<Ve
                 if family == "Conduit" {
                     t.conduit(n, body)?;
                 } else {
-                    t.definition(family, n, body)?;
+                    let mut body = body.clone();
+                    if family == "Agent" {
+                        // FLEET-002 / OBJ-013 / SCT-011: a file's Fleet supplies
+                        // ownership without overriding a contradictory authored owner.
+                        if let Some(fleet) = value.get("fleet") {
+                            if let Some(owner) = body.get("owner")
+                                && owner != fleet
+                            {
+                                return Err(format!(
+                                    "{n}: owner {owner} differs from file fleet {fleet}"
+                                ));
+                            }
+                            body["owner"] = fleet.clone();
+                        } else if body.get("owner").is_none() {
+                            return Err(format!("{n}: Agent requires owner or fleet"));
+                        }
+                    }
+                    t.definition(family, n, &body)?;
                 }
             }
         }
+    }
+    if let Some(fleet) = value.get("fleet") {
+        let fleet = fleet.as_str().ok_or("fleet must be a name")?;
+        t.emit(
+            "Fleet",
+            fleet,
+            json!({"from":format!("{core}#fleet")}),
+            &json!({}),
+        )?;
     }
     if t.documents.is_empty() {
         return Err("expected at least one section definition".into());

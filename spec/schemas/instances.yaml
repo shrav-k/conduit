@@ -96,10 +96,13 @@ spec:
           $ref: github.com/shrav-k/conduit/core#resource-reference.v1
         arguments:
           type: object
+        owner:
+          $ref: github.com/shrav-k/conduit/core#fleet-reference.v1
       required:
       - apiVersion
       - kind
       - from
+      - owner
       additionalProperties: false
     resource:
       type: object

@@ -29,7 +29,8 @@
       "name": "a"
     },
     "from": "agent",
-    "runtime": "provider"
+    "runtime": "provider",
+    "owner": "s1"
   },
   {
     "apiVersion": "github.com/shrav-k/conduit/v0",
@@ -71,5 +72,13 @@
     },
     "from": "provider-template",
     "owner": "system"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "metadata": {
+      "name": "s1"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet"
   }
 ]

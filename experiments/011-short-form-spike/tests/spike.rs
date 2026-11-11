@@ -5,6 +5,25 @@ const CORE: &str = "github.com/shrav-k/conduit/core";
 const API: &str = "github.com/shrav-k/conduit/v0";
 
 #[test]
+fn fleet_supplies_owners_without_overriding_authored_ownership() {
+    let source = json!({"fleet":"workers", "agents":{"a":{"type":"example.org/test#agent.v1"}}});
+    let implicit = translate(&source, API, CORE).unwrap();
+    let mut explicit = source.clone();
+    explicit["agents"]["a"]["owner"] = json!("workers");
+    assert_eq!(implicit, translate(&explicit, API, CORE).unwrap());
+    explicit["agents"]["a"]["owner"] = json!("other");
+    assert!(
+        translate(&explicit, API, CORE)
+            .unwrap_err()
+            .contains("owner")
+    );
+    explicit.as_object_mut().unwrap().remove("fleet");
+    let docs = translate(&explicit, API, CORE).unwrap();
+    assert_eq!(by_name(&docs)["a"]["owner"], "other");
+    assert!(!docs.iter().any(|d| d["kind"] == "Fleet"));
+}
+
+#[test]
 fn exact_s1_translations_register_with_as_and_styles_agree() {
     let h = Harness::new().unwrap();
     for task in STAGES {
@@ -23,11 +42,11 @@ fn exact_s1_translations_register_with_as_and_styles_agree() {
         assert_eq!(
             flow.documents.len(),
             if task == "t1" {
-                14
+                13
             } else if task == "t7-revoked" {
-                17
+                16
             } else {
-                18
+                17
             }
         );
     }
@@ -80,7 +99,7 @@ fn every_translation_table_row_and_opaque_values() {
             "conduits": {"read": {"capability": "example.org/test#files.v1", "operations": ["example.org/test#read.v1"]}}
         },
         "interfaces": {"person": {"from": "person-template", "arguments": {"label": "shared"}, "description": "actor", "annotations": {"example.org/note":"shared"}, "operator": {"capability":"example.org/test#conversation.v1", "operations": []}, "consumes": {"files": {"to": {"kind":"Resource", "name":"shared"}, "from":"read", "arguments": {"literal": "shared"}}}}},
-        "agents": {"worker": {"type": "example.org/test#agent.v1", "config": {"to":"shared"}, "consumes": {"files": {"to": {"kind":"Resource","name":"shared"}, "capability":"example.org/test#files.v1", "operations": ["example.org/test#read.v1"], "requirements": {"limit":{"requirement":"example.org/test#limit.v1","arguments":{"to":"shared"}}}}}}},
+        "fleet": "workers", "agents": {"worker": {"type": "example.org/test#agent.v1", "config": {"to":"shared"}, "consumes": {"files": {"to": {"kind":"Resource","name":"shared"}, "capability":"example.org/test#files.v1", "operations": ["example.org/test#read.v1"], "requirements": {"limit":{"requirement":"example.org/test#limit.v1","arguments":{"to":"shared"}}}}}}},
         "resources": {"shared": {"type":"example.org/test#resource.v1", "owner":"workspace", "placement":"local", "runtime":"runner", "config":{"name":"shared"}, "conduits": {"nested":{"from":"read", "target":{"kind":"Resource","name":"shared"}}}}},
         "pools": {
             "workspace": {"type": format!("{CORE}#pool.v1"), "entries":{"nested":{"from":"resource-template"}}},
@@ -125,13 +144,9 @@ fn every_translation_table_row_and_opaque_values() {
         d["workspace--t"]["spec"]["entries"],
         source["pools"]["workspace"]["entries"]
     );
-    assert_eq!(
-        d["workspace--operator--t"]["spec"]["operations"]
-            .as_array()
-            .unwrap()
-            .len(),
-        7
-    );
+    assert!(!d.contains_key("workspace--operator"));
+    assert_eq!(d["worker"]["owner"], "workers");
+    assert_eq!(d["workers"]["from"], format!("{CORE}#fleet"));
     assert!(!d.contains_key("private--operator"));
     assert_eq!(d["worker-read"]["target"]["entry"], "nested");
     assert!(docs.iter().all(|d| d["apiVersion"] == API));
@@ -148,7 +163,7 @@ fn every_translation_table_row_and_opaque_values() {
 #[test]
 fn reject_ambiguous_shorthand_and_unsafe_grants() {
     for source in [
-        json!({"fleet":"s1", "pools":{}}),
+        json!({"fleet":true, "pools":{}}),
         json!({"pools":{"root":{"type":"x"}}}),
         json!({"pools":{"a--b":{"type":"x"}}}),
         json!({"pools":{"same":{"type":"x"}}, "agents":{"same":{"type":"x"}}}),

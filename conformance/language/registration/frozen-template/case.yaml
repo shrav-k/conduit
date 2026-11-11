@@ -36,16 +36,16 @@
             "00000000-0000-4000-8000-000000000101",
             "00000000-0000-4000-8000-000000000102",
             "00000000-0000-4000-8000-000000000103",
-            "a3146c6e-e793-5e9f-85f6-1e56c8019ea0",
-            "86f72063-fe86-5cc0-b33f-54edadc9ca0c",
-            "f9aa9711-9e61-5e08-9371-cf5b28871fc3",
-            "3ab529de-5e5d-572e-8350-9bd8c548be23",
-            "30cb37a7-8f82-50df-87de-13f6de6877fc",
             "00000000-0000-4000-8000-000000000104",
             "00000000-0000-4000-8000-000000000105",
             "00000000-0000-4000-8000-000000000106",
             "00000000-0000-4000-8000-000000000107",
             "00000000-0000-4000-8000-000000000108",
+            "a3146c6e-e793-5e9f-85f6-1e56c8019ea0",
+            "86f72063-fe86-5cc0-b33f-54edadc9ca0c",
+            "f9aa9711-9e61-5e08-9371-cf5b28871fc3",
+            "3ab529de-5e5d-572e-8350-9bd8c548be23",
+            "30cb37a7-8f82-50df-87de-13f6de6877fc",
             "00000000-0000-4000-8000-000000000109",
             "00000000-0000-4000-8000-000000000110",
             "00000000-0000-4000-8000-000000000111",
@@ -146,7 +146,42 @@
               "placement": {
                 "kind": "Resource",
                 "id": "00000000-0000-4000-8000-000000000002"
+              },
+              "owner": {
+                "kind": "Fleet",
+                "id": "00000000-0000-4000-8000-000000000102"
               }
+            },
+            {
+              "kind": "Fleet",
+              "name": "s1",
+              "id": "00000000-0000-4000-8000-000000000102",
+              "from": "@core#fleet",
+              "state": "registered"
+            },
+            {
+              "kind": "Conduit",
+              "name": "root-fleet-a0000",
+              "id": "00000000-0000-4000-8000-000000000106",
+              "from": "@core#root-fleet",
+              "state": "ready",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000102",
+              "local_name": "s1",
+              "open": true,
+              "provenance": {
+                "cause": "default"
+              },
+              "operations": [
+                "@core#register.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
+              ]
             }
           ]
         },
@@ -183,7 +218,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000102",
+            "id": "00000000-0000-4000-8000-000000000103",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -195,7 +230,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000103",
+            "id": "00000000-0000-4000-8000-000000000104",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -203,6 +238,46 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000101",
               "action": "registered",
+              "invocation": "a3146c6e-e793-5e9f-85f6-1e56c8019ea0"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000105",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000102",
+              "action": "registered",
+              "invocation": "a3146c6e-e793-5e9f-85f6-1e56c8019ea0"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000107",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000106",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "a3146c6e-e793-5e9f-85f6-1e56c8019ea0"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000108",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000106",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
               "invocation": "a3146c6e-e793-5e9f-85f6-1e56c8019ea0"
             }
           },
@@ -360,6 +435,37 @@
               }
             },
             "$old",
+            {
+              "kind": "Fleet",
+              "name": "s1",
+              "id": "00000000-0000-4000-8000-000000000102",
+              "from": "@core#fleet",
+              "state": "registered"
+            },
+            {
+              "kind": "Conduit",
+              "name": "root-fleet-a0000",
+              "id": "00000000-0000-4000-8000-000000000106",
+              "from": "@core#root-fleet",
+              "state": "ready",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000102",
+              "local_name": "s1",
+              "open": true,
+              "provenance": {
+                "cause": "default"
+              },
+              "operations": [
+                "@core#register.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
+              ]
+            },
             {
               "name": "b",
               "kind": "Agent",

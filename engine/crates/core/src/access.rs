@@ -490,6 +490,16 @@ fn evaluate_path(
         return Ok(Verdict::reason("refused", "ACC-039"));
     }
     let registration = op == context.qualified("register.v1");
+    // ACC-057: neither delegation nor an onward request serving root may make Agents.
+    if (registration || op == context.qualified("register-replacement.v1"))
+        && (instance["id"] != root["id"] || request.serving.is_some())
+        && (values(&request.arguments, "documents")
+            .any(|d| d["kind"] == "Agent" && d.get("from").is_some())
+            || (request.arguments["template"]["kind"] == "Agent"
+                && request.arguments["template"].get("from").is_some()))
+    {
+        return Ok(Verdict::reason("refused", "ACC-057"));
+    }
     if registration {
         // ACC-054 / SEC-008 / OPS-023: decide authority before validating any document.
         // An onward request, including one whose sender is root, is not root's own act.
@@ -528,7 +538,21 @@ fn evaluate_path(
     let opening = op == context.qualified("open.v1");
     let closing = op == context.qualified("close.v1");
     if let Some(conduit) = named.filter(|_| opening || closing) {
-        if closing && id(&conduit["consumer"]) == &root["id"] {
+        // ACC-024: only root's own act can close its ordinary Conduits;
+        // first-start declarations and FLEET-005 defaults stay protected.
+        if closing
+            && id(&conduit["consumer"]) == &root["id"]
+            && (instance["id"] != root["id"]
+                || request.serving.is_some()
+                || conduit["provenance"]["cause"] == "default"
+                || conduit["provenance"]["cause"] == "first-start"
+                || (["management", "access", "system"]
+                    .iter()
+                    .any(|name| conduit["local_name"] == *name)
+                    && ["root-management", "root-access", "root-pool"]
+                        .iter()
+                        .any(|name| conduit["from"] == context.qualified(name))))
+        {
             return Ok(Verdict::reason("refused", "ACC-024"));
         }
         if opening {
@@ -685,7 +709,7 @@ fn evaluate_path(
         reason: None,
         rules: vec![
             "ACC-001", "ACC-002", "ACC-003", "ACC-008", "ACC-009", "ACC-016", "ACC-017", "ACC-029",
-            "ACC-030", "ACC-033", "ACC-036", "IFC-012", "IFC-020", "IFC-022",
+            "ACC-030", "ACC-033", "ACC-036", "ACC-024", "ACC-057", "IFC-012", "IFC-020", "IFC-022",
         ],
         restriction: None,
         route: json!({"consumer":instance["id"],"caller":caller,"conduit":path["id"],"target":target["id"],"operation":op,"arguments":args,"filters":filters,"restrictionMode":"mediated"}),

@@ -231,11 +231,11 @@ fn registration_allocation_failures_leave_objects_records_and_allocations_untouc
     }
     let evidence = Evidence {
         time: "2026-11-09T12:00:00Z".into(),
-        ids: (100..109)
+        ids: (100..112)
             .map(|i| format!("00000000-0000-4000-8000-{i:012}"))
             .collect(),
-        revisions: vec!["t".into(), "i".into()],
-        suffixes: vec![],
+        revisions: vec!["t".into(), "i".into(), "default".into()],
+        suffixes: vec!["d0000".into()],
     };
     let request = Request {
         sender: initial.objects[4]["id"].as_str().unwrap().into(),
@@ -304,8 +304,8 @@ fn registration_allocation_failures_leave_objects_records_and_allocations_untouc
     )
     .unwrap();
     assert_eq!(accepted.reply["accepted"], true);
-    assert_eq!(accepted.state.objects.len(), initial.objects.len() + 2);
-    assert_eq!(accepted.records.len(), 6);
+    assert_eq!(accepted.state.objects.len(), initial.objects.len() + 3);
+    assert_eq!(accepted.records.len(), 8);
     assert!(accepted.external_intents.is_empty());
 }
 

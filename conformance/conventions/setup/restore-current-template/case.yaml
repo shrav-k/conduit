@@ -78,15 +78,19 @@
             "00000000-0000-4000-8000-000000000135",
             "00000000-0000-4000-8000-000000000136",
             "00000000-0000-4000-8000-000000000137",
+            "00000000-0000-4000-8000-000000000138",
+            "00000000-0000-4000-8000-000000000139",
+            "00000000-0000-4000-8000-000000000140",
+            "00000000-0000-4000-8000-000000000141",
+            "00000000-0000-4000-8000-000000000142",
+            "00000000-0000-4000-8000-000000000143",
+            "00000000-0000-4000-8000-000000000144",
+            "00000000-0000-4000-8000-000000000145",
             "9640ab2c-4e68-5eee-9f58-d334e8538296",
             "f6d60263-4bdb-515a-9b18-606592ac35bc",
             "7141e235-a70a-5940-8330-e6991e6de2f1",
             "f2d6becb-4ec9-571f-97bc-1ec42be73c9d",
-            "186ba489-3474-511f-970d-3341236a0c30",
-            "00000000-0000-4000-8000-000000000138",
-            "00000000-0000-4000-8000-000000000139",
-            "00000000-0000-4000-8000-000000000140",
-            "00000000-0000-4000-8000-000000000141"
+            "186ba489-3474-511f-970d-3341236a0c30"
           ],
           "revisions": [
             "reg-0",
@@ -108,7 +112,9 @@
             "reg-16",
             "reg-17",
             "reg-18",
-            "reg-19"
+            "reg-19",
+            "r21",
+            "r22"
           ],
           "suffixes": [
             "a0000",
@@ -165,7 +171,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000119",
+            "id": "00000000-0000-4000-8000-000000000120",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -177,7 +183,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000120",
+            "id": "00000000-0000-4000-8000-000000000121",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -189,7 +195,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000121",
+            "id": "00000000-0000-4000-8000-000000000122",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -201,7 +207,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000122",
+            "id": "00000000-0000-4000-8000-000000000123",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -213,7 +219,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000123",
+            "id": "00000000-0000-4000-8000-000000000124",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -225,7 +231,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000124",
+            "id": "00000000-0000-4000-8000-000000000125",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -237,7 +243,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000125",
+            "id": "00000000-0000-4000-8000-000000000126",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -249,7 +255,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000126",
+            "id": "00000000-0000-4000-8000-000000000127",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -261,7 +267,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000127",
+            "id": "00000000-0000-4000-8000-000000000128",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -273,7 +279,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000128",
+            "id": "00000000-0000-4000-8000-000000000129",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -285,7 +291,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000129",
+            "id": "00000000-0000-4000-8000-000000000130",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -297,7 +303,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000130",
+            "id": "00000000-0000-4000-8000-000000000131",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -309,7 +315,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000131",
+            "id": "00000000-0000-4000-8000-000000000132",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -321,7 +327,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000132",
+            "id": "00000000-0000-4000-8000-000000000133",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -333,7 +339,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000133",
+            "id": "00000000-0000-4000-8000-000000000134",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -345,7 +351,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000134",
+            "id": "00000000-0000-4000-8000-000000000135",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -357,25 +363,13 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000135",
+            "id": "00000000-0000-4000-8000-000000000136",
+            "type": "object-change",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
-            "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000116",
-              "action": "registered",
-              "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
-            }
-          },
-          {
-            "id": "00000000-0000-4000-8000-000000000136",
-            "specversion": "1.0",
-            "source": "urn:conduit:first-build",
-            "type": "object-change",
-            "time": "2026-11-09T12:00:00Z",
-            "data": {
-              "target": "00000000-0000-4000-8000-000000000117",
               "action": "registered",
               "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
             }
@@ -387,8 +381,88 @@
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
+              "target": "00000000-0000-4000-8000-000000000117",
+              "action": "registered",
+              "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000138",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
               "target": "00000000-0000-4000-8000-000000000118",
               "action": "registered",
+              "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000139",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000119",
+              "action": "registered",
+              "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000141",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000140",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000142",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000140",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
+              "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000144",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000143",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000145",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000143",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
               "invocation": "9640ab2c-4e68-5eee-9f58-d334e8538296"
             }
           },
@@ -428,7 +502,7 @@
         "reply": {
           "accepted": true
         },
-        "object_count": 27,
+        "object_count": 30,
         "required_promises": [
           "INS-016"
         ],
@@ -832,7 +906,7 @@
           {
             "kind": "builtin-runner",
             "operation": "@core#run.v1",
-            "subject": "00000000-0000-4000-8000-000000000118",
+            "subject": "00000000-0000-4000-8000-000000000119",
             "caller": "00000000-0000-4000-8000-000000000005",
             "inputs": {
               "environment": {},
@@ -840,7 +914,7 @@
                 "root": "/tmp/conduit-s1/shared"
               },
               "identity": {
-                "materializeFor": "00000000-0000-4000-8000-000000000118",
+                "materializeFor": "00000000-0000-4000-8000-000000000119",
                 "environmentNames": [
                   "CONDUIT_URL",
                   "CONDUIT_IDENTITY_DIR"
@@ -1147,7 +1221,7 @@
           {
             "kind": "builtin-runner",
             "operation": "@core#run.v1",
-            "subject": "00000000-0000-4000-8000-000000000117",
+            "subject": "00000000-0000-4000-8000-000000000118",
             "caller": "00000000-0000-4000-8000-000000000005",
             "inputs": {
               "environment": {},
@@ -1155,7 +1229,7 @@
                 "root": "/tmp/conduit-s1/history"
               },
               "identity": {
-                "materializeFor": "00000000-0000-4000-8000-000000000117",
+                "materializeFor": "00000000-0000-4000-8000-000000000118",
                 "environmentNames": [
                   "CONDUIT_URL",
                   "CONDUIT_IDENTITY_DIR"

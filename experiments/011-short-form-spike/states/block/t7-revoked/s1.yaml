@@ -1,3 +1,4 @@
+fleet: s1-agents
 templates:
   conduits:
     read:

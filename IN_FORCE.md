@@ -94,7 +94,7 @@ How to read a line:
   - **In spec/**: PKG-031. Packages ship the standard Conduit templates of their capabilities, such as `read` and `read-write` for the filesystem package (63 point 3).
   - **In spec/**: spec/README.md, the author's reading path. `conduit install` writes package pins into the author's file (53 point 5).
   - **In spec/**: NAM-024. A property added to a published Type's schema states no default, so the Agent Types' reach flags ship as `claude-code.v2` and `codex.v2`. NAM-024 covers both Type schema properties at any depth and Requirement inputs (55 A5).
-  - **In spec/** in part: `fleet-management.v1` is in [capabilities.yaml](spec/core/capabilities.yaml), and `retire-with-agents.v1`, `list.v1` and `lift.v1` are in [operations.yaml](spec/core/operations.yaml) (55 A7, 59, 60). The exact `fleet.v1`, `fleet` and Fleet schema edits are in the core package, landed by order 040; required Agent owners are [staged for 041a](docs/work-orders/036b-staged/041a.md).
+  - **In spec/** in part: `fleet-management.v1` is in [capabilities.yaml](spec/core/capabilities.yaml), and `retire-with-agents.v1`, `list.v1` and `lift.v1` are in [operations.yaml](spec/core/operations.yaml) (55 A7, 59, 60). The exact `fleet.v1`, `fleet` and Fleet schema edits are in the core package, landed by order 040; required Agent owners are in the core package, landed by order 041a.
 - *Spec pending, batch 2*: the core package gains `make.v1`, the keep and withhold operations, and acting for a Fleet (61 B3, B8, B10 and B11).
 
 ## 6. Conduits and access
@@ -162,7 +162,7 @@ How to read a line:
 
 ## 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach
 
-- **In spec/**: the Fleet family: FLEET-001 to FLEET-006, OBJ-001, OBJ-013, OBJ-020, CTR-004, TPL-001, TPL-002, PLC-006 (59, 60). Core operation contracts are in [operations.yaml](spec/core/operations.yaml) and `fleet-management.v1` in [capabilities.yaml](spec/core/capabilities.yaml); Fleet documents and schema branches are in the core package, landed by order 040, and required Agent owners for [041a](docs/work-orders/036b-staged/041a.md).
+- **In spec/**: the Fleet family: FLEET-001 to FLEET-006, OBJ-001, OBJ-013, OBJ-020, CTR-004, TPL-001, TPL-002, PLC-006 (59, 60). Core operation contracts are in [operations.yaml](spec/core/operations.yaml) and `fleet-management.v1` in [capabilities.yaml](spec/core/capabilities.yaml); Fleet documents and schema branches are in the core package, landed by order 040, and required Agent owners, landed by order 041a.
   - **In spec/**: family and kind, core template, Type and capability: FLEET-001, OBJ-020 (60). The CLI spelling `conduit fleet ...` remains for order 051a.
   - **In spec/**: fixed Agent ownership: FLEET-002, FLEET-003 (54 point 1, 59 A1).
   - **In spec/**: ownership permits nothing; a Fleet runs nothing, has no placement, contains no Pool and is no machine group: FLEET-004, FLEET-001, spec/definitions.md (60).

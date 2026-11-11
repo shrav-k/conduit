@@ -1,0 +1,52 @@
+    Finished `release` profile [optimized] target(s) in 0.06s
+     Running `target/release/short-form-spike`
+PASS exact flow/t1: 13 documents
+PASS without-as probe flow/t1: 13 documents
+PASS exact flow/t2: 17 documents
+PASS without-as probe flow/t2: 17 documents
+PASS exact flow/t4: 17 documents
+PASS without-as probe flow/t4: 17 documents
+PASS exact flow/t5: 17 documents
+PASS without-as probe flow/t5: 17 documents
+PASS exact flow/t6: 17 documents
+PASS without-as probe flow/t6: 17 documents
+PASS exact flow/t7-revoked: 16 documents
+PASS without-as probe flow/t7-revoked: 16 documents
+PASS exact flow/t7: 17 documents
+PASS without-as probe flow/t7: 17 documents
+flow: task file-edits commands digest-edits total
+T1 32 3 2 35
+T2 7 2 1 9
+T3 0 0 0 0
+T4 2 1 0 3
+T5 1 2 1 3
+T6 1 1 0 2
+T7 2 2 0 4
+PASS flow/t5 stable-name comparison (without-as probe): ["shared", "shared--t"]
+PASS flow/t6 stable-name comparison (without-as probe): ["shared", "shared--t"]
+PASS exact block/t1: 13 documents
+PASS without-as probe block/t1: 13 documents
+PASS exact block/t2: 17 documents
+PASS without-as probe block/t2: 17 documents
+PASS exact block/t4: 17 documents
+PASS without-as probe block/t4: 17 documents
+PASS exact block/t5: 17 documents
+PASS without-as probe block/t5: 17 documents
+PASS exact block/t6: 17 documents
+PASS without-as probe block/t6: 17 documents
+PASS exact block/t7-revoked: 16 documents
+PASS without-as probe block/t7-revoked: 16 documents
+PASS exact block/t7: 17 documents
+PASS without-as probe block/t7: 17 documents
+block: task file-edits commands digest-edits total
+T1 54 3 2 57
+T2 18 2 1 20
+T3 0 0 0 0
+T4 2 1 0 3
+T5 2 2 1 4
+T6 1 1 0 2
+T7 10 2 0 12
+PASS block/t5 stable-name comparison (without-as probe): ["shared", "shared--t"]
+PASS block/t6 stable-name comparison (without-as probe): ["shared", "shared--t"]
+Without-as probes: 14 passed; 0 failed
+Exact translation states: 14 passed; 0 failed

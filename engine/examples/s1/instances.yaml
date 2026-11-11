@@ -28,12 +28,14 @@ kind: Agent
 metadata:
   name: agent-a
 from: reader-agent
+owner: s1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Agent
 metadata:
   name: agent-b
 from: writer-agent
+owner: s1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit
@@ -70,3 +72,9 @@ consumer:
 target:
   kind: Agent
   name: agent-b
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Fleet
+metadata:
+  name: s1
+from: github.com/shrav-k/conduit/core#fleet

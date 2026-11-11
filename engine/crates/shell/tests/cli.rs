@@ -339,7 +339,8 @@ fn serve_management_commands_and_fixed_audience() {
         .arg(&project)
         .output()
         .unwrap();
-    assert!(!partial.status.success());
+    // FLEET-005 supplies root's setup authority even though the authored path only inspects.
+    assert!(partial.status.success());
     let rows: Vec<Value> = String::from_utf8(partial.stdout)
         .unwrap()
         .lines()
@@ -359,17 +360,17 @@ fn serve_management_commands_and_fixed_audience() {
     assert_eq!(steps[2]["step"], "setup Pool/team");
     assert_eq!(steps[2]["outcome"], "succeeded");
     assert_eq!(steps[3]["step"], "setup Resource/empty");
-    assert_eq!(steps[3]["outcome"], "failed");
+    assert_eq!(steps[3]["outcome"], "succeeded");
     let first_step = rows.iter().position(|r| r.get("step").is_some()).unwrap();
     assert!(rows[first_step..].iter().all(|r| r.get("step").is_some()));
-    let unready = Command::new(env!("CARGO_BIN_EXE_conduit"))
+    let no_run_client = Command::new(env!("CARGO_BIN_EXE_conduit"))
         .args(["tools", "--store"])
         .arg(&store)
         .args(["--as", "Resource/empty"])
         .output()
         .unwrap();
-    assert!(!unready.status.success());
-    assert!(String::from_utf8_lossy(&unready.stderr).contains("instance exists"));
+    assert!(!no_run_client.status.success());
+    assert!(String::from_utf8_lossy(&no_run_client.stderr).contains("instance exists"));
     let permission = std::fs::metadata(store.join("client-tokens")).unwrap();
     use std::os::unix::fs::PermissionsExt;
     assert_eq!(permission.permissions().mode() & 0o777, 0o700);
@@ -457,7 +458,7 @@ fn registration_does_not_install_s1_packages() {
 }
 
 #[test]
-fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
+fn root_defaults_allow_startup_setup_and_inspection_while_serving() {
     use serde_json::json;
     use std::{
         fs,
@@ -506,8 +507,8 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
         .arg(&project)
         .output()
         .unwrap();
-    assert!(!registration.status.success());
-    assert!(String::from_utf8_lossy(&registration.stderr).contains("setup"));
+    // FLEET-005: root needs no authored Pool Conduit to set up or inspect its Resource.
+    assert!(registration.status.success());
     struct Server(std::process::Child);
     impl Drop for Server {
         fn drop(&mut self) {
@@ -543,8 +544,20 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
             .as_array()
             .unwrap()
             .iter()
-            .any(|r| r["type"] == "request-ended" && r["data"]["reason"] == "refused")
+            .any(|r| r["type"] == "request-ended"
+                && r["data"]["operation"] == format!("{core}#set-up.v1")
+                && r["data"]["outcome"] == "succeeded")
     );
+    let default_name = before["state"]["objects"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|o| o["kind"] == "Conduit" && o["provenance"]["cause"] == "default")
+        .unwrap()["name"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    assert!(default_name.starts_with("root-pool-"));
     let read_lines = |output: Output| -> Vec<Value> {
         String::from_utf8(output.stdout)
             .unwrap()
@@ -552,37 +565,18 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
             .map(|s| serde_json::from_str(s).unwrap())
             .collect()
     };
-    let unavailable = Command::new(env!("CARGO_BIN_EXE_conduit"))
-        .args(["inspect", "--store"])
-        .arg(&store)
-        .output()
-        .unwrap();
-    assert!(!unavailable.status.success());
-    let unavailable = read_lines(unavailable);
-    let refused = unavailable
+    let inspected = read_lines(command(&store, "inspect", &[]));
+    let resource = inspected
         .iter()
         .find(|r| r["object"]["name"] == "repair-me")
         .unwrap();
-    assert_eq!(refused["result"]["isError"], true);
-    assert!(refused.get("consumedConduits").is_none());
-    let repair = parent.path().join("repair");
-    fs::create_dir(&repair).unwrap();
-    fs::write(repair.join("admin.yaml"), format!("apiVersion: {api}\nkind: Conduit\nmetadata:\n  name: pool-admin\nspec:\n  capability: {core}#pool-management.v1\n  operations: [{core}#inspect.v1, {core}#set-up.v1]\n---\napiVersion: {api}\nkind: Conduit\nmetadata:\n  name: root-workspace\nfrom: pool-admin\nconsumer: {{kind: Interface, name: root}}\ntarget: {{kind: Pool, name: workspace}}\n")).unwrap();
-    command(&store, "submit", &[repair.to_str().unwrap()]);
-    let setup = command(
-        &store,
-        "call",
-        &[
-            "root-workspace.set-up.v1",
-            &json!({"instance":{"kind":"Resource","name":"repair-me"}}).to_string(),
-        ],
-    );
+    assert_eq!(resource["result"]["isError"], false);
     assert_eq!(
-        serde_json::from_slice::<Value>(&setup.stdout).unwrap()["isError"],
-        false
+        resource["result"]["structuredContent"]["status"]["state"],
+        "ready"
     );
     // Registration through call leaves this standalone Conduit registered, not open.
-    let closed = json!({"documents":[{"apiVersion":api,"kind":"Conduit","metadata":{"name":"closed-route"},"from":"pool-admin","consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Pool","name":"workspace"}}]});
+    let closed = json!({"documents":[{"apiVersion":api,"kind":"Conduit","metadata":{"name":"closed-route"},"from":format!("{core}#root-pool"),"consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Pool","name":"workspace"}}]});
     let registered = command(
         &store,
         "call",
@@ -613,7 +607,7 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
                         .is_some_and(|n| n.starts_with(&format!("root-{target}-")))
             }));
         }
-        for (name, open) in [("root-workspace", true), ("closed-route", false)] {
+        for (name, open) in [(default_name.as_str(), true), ("closed-route", false)] {
             assert!(
                 paths.iter().any(|p| p["name"] == name
                     && p["open"] == open
@@ -650,7 +644,7 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
     unsafe {
         libc::kill(server.0.id() as i32, libc::SIGTERM);
     }
-    assert!(!server.0.wait().unwrap().success());
+    assert!(server.0.wait().unwrap().success());
     assert_inspection(&read_lines(command(&store, "inspect", &[])));
 }
 

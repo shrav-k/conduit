@@ -96,7 +96,7 @@
       },
       "implementation_updates": [
         {
-          "target": "00000000-0000-4000-8000-000000000118",
+          "target": "00000000-0000-4000-8000-000000000119",
           "operation": "example.org/test#remote.v1",
           "implementation": {
             "source": "project",
@@ -112,7 +112,7 @@
           }
         },
         {
-          "target": "00000000-0000-4000-8000-000000000118",
+          "target": "00000000-0000-4000-8000-000000000119",
           "operation": "@core#setup-hook.v1",
           "implementation": {
             "source": "project",
@@ -129,7 +129,7 @@
     {
       "patches": [
         {
-          "id": "00000000-0000-4000-8000-000000000118",
+          "id": "00000000-0000-4000-8000-000000000119",
           "set": {
             "state": "retired"
           }

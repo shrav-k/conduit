@@ -81,15 +81,19 @@
             "00000000-0000-4000-8000-000000000135",
             "00000000-0000-4000-8000-000000000136",
             "00000000-0000-4000-8000-000000000137",
+            "00000000-0000-4000-8000-000000000138",
+            "00000000-0000-4000-8000-000000000139",
+            "00000000-0000-4000-8000-000000000140",
+            "00000000-0000-4000-8000-000000000141",
+            "00000000-0000-4000-8000-000000000142",
+            "00000000-0000-4000-8000-000000000143",
+            "00000000-0000-4000-8000-000000000144",
+            "00000000-0000-4000-8000-000000000145",
             "54926dc7-e3ae-5404-9a5e-616a64a84342",
             "da9e9f53-d9c3-5d99-88a5-b389561cdd47",
             "f2f75a18-94c0-512f-9c69-7acea8ecb657",
             "a742ccae-e3fc-514c-a1dc-f61d0c43e45d",
-            "8b244c08-4bdd-5e18-8b66-e52716c21a4e",
-            "00000000-0000-4000-8000-000000000138",
-            "00000000-0000-4000-8000-000000000139",
-            "00000000-0000-4000-8000-000000000140",
-            "00000000-0000-4000-8000-000000000141"
+            "8b244c08-4bdd-5e18-8b66-e52716c21a4e"
           ],
           "revisions": [
             "reg-0",
@@ -111,7 +115,9 @@
             "reg-16",
             "reg-17",
             "reg-18",
-            "reg-19"
+            "reg-19",
+            "r21",
+            "r22"
           ],
           "suffixes": [
             "a0000",
@@ -169,7 +175,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000119",
+            "id": "00000000-0000-4000-8000-000000000120",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -181,7 +187,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000120",
+            "id": "00000000-0000-4000-8000-000000000121",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -193,7 +199,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000121",
+            "id": "00000000-0000-4000-8000-000000000122",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -205,7 +211,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000122",
+            "id": "00000000-0000-4000-8000-000000000123",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -217,7 +223,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000123",
+            "id": "00000000-0000-4000-8000-000000000124",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -229,7 +235,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000124",
+            "id": "00000000-0000-4000-8000-000000000125",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -241,7 +247,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000125",
+            "id": "00000000-0000-4000-8000-000000000126",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -253,7 +259,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000126",
+            "id": "00000000-0000-4000-8000-000000000127",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -265,7 +271,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000127",
+            "id": "00000000-0000-4000-8000-000000000128",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -277,7 +283,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000128",
+            "id": "00000000-0000-4000-8000-000000000129",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -289,7 +295,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000129",
+            "id": "00000000-0000-4000-8000-000000000130",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -301,7 +307,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000130",
+            "id": "00000000-0000-4000-8000-000000000131",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -313,7 +319,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000131",
+            "id": "00000000-0000-4000-8000-000000000132",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -325,7 +331,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000132",
+            "id": "00000000-0000-4000-8000-000000000133",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -337,7 +343,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000133",
+            "id": "00000000-0000-4000-8000-000000000134",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -349,7 +355,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000134",
+            "id": "00000000-0000-4000-8000-000000000135",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -361,25 +367,13 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000135",
+            "id": "00000000-0000-4000-8000-000000000136",
+            "type": "object-change",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
-            "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000116",
-              "action": "registered",
-              "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
-            }
-          },
-          {
-            "id": "00000000-0000-4000-8000-000000000136",
-            "specversion": "1.0",
-            "source": "urn:conduit:first-build",
-            "type": "object-change",
-            "time": "2026-11-09T12:00:00Z",
-            "data": {
-              "target": "00000000-0000-4000-8000-000000000117",
               "action": "registered",
               "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
             }
@@ -391,8 +385,88 @@
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
+              "target": "00000000-0000-4000-8000-000000000117",
+              "action": "registered",
+              "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000138",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
               "target": "00000000-0000-4000-8000-000000000118",
               "action": "registered",
+              "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000139",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000119",
+              "action": "registered",
+              "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000141",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000140",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000142",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000140",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
+              "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000144",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000143",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000145",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000143",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
               "invocation": "54926dc7-e3ae-5404-9a5e-616a64a84342"
             }
           },
@@ -841,7 +915,11 @@
                   "version": "0.1.0",
                   "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
                 }
-              ]
+              ],
+              "owner": {
+                "kind": "Fleet",
+                "id": "00000000-0000-4000-8000-000000000116"
+              }
             },
             {
               "kind": "Conduit",
@@ -860,7 +938,7 @@
               },
               "target": {
                 "kind": "Resource",
-                "id": "00000000-0000-4000-8000-000000000117"
+                "id": "00000000-0000-4000-8000-000000000118"
               },
               "capability": "example.org/s1/filesystem#directory.v1",
               "operations": [
@@ -893,7 +971,7 @@
               },
               "target": {
                 "kind": "Resource",
-                "id": "00000000-0000-4000-8000-000000000118"
+                "id": "00000000-0000-4000-8000-000000000119"
               },
               "capability": "example.org/s1/filesystem#directory.v1",
               "operations": [
@@ -927,7 +1005,11 @@
                   "version": "0.1.0",
                   "digest": "sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a"
                 }
-              ]
+              ],
+              "owner": {
+                "kind": "Fleet",
+                "id": "00000000-0000-4000-8000-000000000116"
+              }
             },
             {
               "kind": "Conduit",
@@ -946,7 +1028,7 @@
               },
               "target": {
                 "kind": "Resource",
-                "id": "00000000-0000-4000-8000-000000000117"
+                "id": "00000000-0000-4000-8000-000000000118"
               },
               "capability": "example.org/s1/filesystem#directory.v1",
               "operations": [
@@ -979,7 +1061,7 @@
               },
               "target": {
                 "kind": "Resource",
-                "id": "00000000-0000-4000-8000-000000000118"
+                "id": "00000000-0000-4000-8000-000000000119"
               },
               "capability": "example.org/s1/filesystem#directory.v1",
               "operations": [
@@ -1007,7 +1089,7 @@
               },
               "target": {
                 "kind": "Pool",
-                "id": "00000000-0000-4000-8000-000000000116"
+                "id": "00000000-0000-4000-8000-000000000117"
               },
               "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
               "operations": [
@@ -1026,9 +1108,16 @@
               ]
             },
             {
+              "kind": "Fleet",
+              "name": "s1",
+              "id": "00000000-0000-4000-8000-000000000116",
+              "from": "@core#fleet",
+              "state": "registered"
+            },
+            {
               "kind": "Pool",
               "name": "workspace",
-              "id": "00000000-0000-4000-8000-000000000116",
+              "id": "00000000-0000-4000-8000-000000000117",
               "state": "registered",
               "config": {},
               "packages": [
@@ -1041,7 +1130,7 @@
             {
               "kind": "Resource",
               "name": "history",
-              "id": "00000000-0000-4000-8000-000000000117",
+              "id": "00000000-0000-4000-8000-000000000118",
               "state": "registered",
               "config": {
                 "root": "/tmp/conduit-s1/history"
@@ -1052,7 +1141,7 @@
               },
               "owner": {
                 "kind": "Pool",
-                "id": "00000000-0000-4000-8000-000000000116"
+                "id": "00000000-0000-4000-8000-000000000117"
               },
               "packages": [
                 {
@@ -1183,7 +1272,7 @@
             {
               "kind": "Resource",
               "name": "shared",
-              "id": "00000000-0000-4000-8000-000000000118",
+              "id": "00000000-0000-4000-8000-000000000119",
               "state": "registered",
               "config": {
                 "root": "/tmp/conduit-s1/shared"
@@ -1194,7 +1283,7 @@
               },
               "owner": {
                 "kind": "Pool",
-                "id": "00000000-0000-4000-8000-000000000116"
+                "id": "00000000-0000-4000-8000-000000000117"
               },
               "packages": [
                 {
@@ -1316,6 +1405,55 @@
                   }
                 }
               }
+            },
+            {
+              "kind": "Conduit",
+              "name": "root-fleet-a0004",
+              "id": "00000000-0000-4000-8000-000000000140",
+              "from": "@core#root-fleet",
+              "state": "ready",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000116",
+              "local_name": "s1",
+              "open": true,
+              "provenance": {
+                "cause": "default"
+              },
+              "operations": [
+                "@core#register.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "root-pool-a0005",
+              "id": "00000000-0000-4000-8000-000000000143",
+              "from": "@core#root-pool",
+              "state": "ready",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000117",
+              "local_name": "workspace",
+              "open": true,
+              "provenance": {
+                "cause": "default"
+              },
+              "operations": [
+                "@core#register.v1",
+                "@core#register-replacement.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
+              ]
             }
           ]
         }
@@ -1336,7 +1474,7 @@
             "kind": "dispatch",
             "invocation": "00000000-0000-4000-8000-000000010001",
             "attempt": 1,
-            "target": "00000000-0000-4000-8000-000000000118",
+            "target": "00000000-0000-4000-8000-000000000119",
             "call": {
               "method": "tools/call",
               "params": {
@@ -1367,7 +1505,7 @@
             "type": "access-decision",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000118"
+              "target": "00000000-0000-4000-8000-000000000119"
             }
           },
           {
@@ -1377,7 +1515,7 @@
             "type": "invocation-dispatched",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000118"
+              "target": "00000000-0000-4000-8000-000000000119"
             }
           }
         ]
@@ -1429,7 +1567,7 @@
             "type": "access-decision",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000116"
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           },
           {
@@ -1439,7 +1577,7 @@
             "type": "request-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000116"
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           }
         ],
@@ -1498,7 +1636,7 @@
             "type": "invocation-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000118"
+              "target": "00000000-0000-4000-8000-000000000119"
             }
           },
           {
@@ -1508,7 +1646,7 @@
             "type": "request-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000118"
+              "target": "00000000-0000-4000-8000-000000000119"
             }
           }
         ],
@@ -1610,7 +1748,7 @@
             "type": "access-decision",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000116"
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           },
           {
@@ -1620,7 +1758,7 @@
             "type": "invocation-dispatched",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000116"
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           },
           {
@@ -1630,7 +1768,7 @@
             "type": "invocation-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000118",
+              "target": "00000000-0000-4000-8000-000000000119",
               "invocation": "$i",
               "outcome": "failed",
               "actor": "00000000-0000-4000-8000-000000000005",
@@ -1644,7 +1782,7 @@
             "type": "invocation-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000116"
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           },
           {
@@ -1654,7 +1792,7 @@
             "type": "request-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000116"
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           }
         ],
@@ -1706,7 +1844,7 @@
             "type": "access-decision",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000116"
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           },
           {
@@ -1716,7 +1854,7 @@
             "type": "request-ended",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000116"
+              "target": "00000000-0000-4000-8000-000000000117"
             }
           }
         ],
@@ -1740,7 +1878,7 @@
             "kind": "dispatch",
             "invocation": "$i",
             "attempt": 2,
-            "target": "00000000-0000-4000-8000-000000000118",
+            "target": "00000000-0000-4000-8000-000000000119",
             "call": {
               "method": "tools/call",
               "params": {
@@ -1771,7 +1909,7 @@
             "type": "access-decision",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000118"
+              "target": "00000000-0000-4000-8000-000000000119"
             }
           },
           {
@@ -1781,7 +1919,7 @@
             "type": "invocation-dispatched",
             "time": "2026-11-09T12:30:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000118"
+              "target": "00000000-0000-4000-8000-000000000119"
             }
           }
         ]

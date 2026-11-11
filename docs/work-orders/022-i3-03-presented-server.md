@@ -18,7 +18,7 @@ It runs no Agent; order 023 does, and the admin's closeout runs real clients aga
 Read: the handoff, its section on the tool contract above all; orders 020 and 021 and their
 records; the shell as they left it; `CONFORMANCE.md`; and these promises: IFC-012, IFC-013,
 IFC-022, IFC-025, IFC-032, IFC-033, IFC-036, IFC-038, IFC-042, IFC-045, ACC-001, ACC-027,
-ACC-036, OPS-027, REC-001. Experiment 008's stub (`experiments/008-real-client/src/stub.rs`)
+ACC-036, OPS-027, REC-001. Experiment 008's stub ([experiments/008-real-client/src/stub.rs](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/src/stub.rs))
 serves Streamable HTTP with `rmcp` 3.9.0 and `axum`, and both real clients connected to it;
 reuse what fits, in the shell's crate.
 

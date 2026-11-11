@@ -27,7 +27,7 @@ an HTTP MCP server with headers from a helper command (Claude Code's `headersHel
 
 ## The decisions to apply
 
-1. **One Cargo project in `experiments/008-real-client/`**, with `Cargo.lock`, a
+1. **One Cargo project in [experiments/008-real-client/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client)**, with `Cargo.lock`, a
    `rust-toolchain.toml` pinning 1.97.1 as `reference-model/` does, and build output ignored.
    Use existing crates: the official Rust SDK of the Model Context Protocol (`rmcp`) if it lets
    the stub set every field these promises need (`_meta`, `isError`, `cacheScope`,
@@ -64,13 +64,13 @@ an HTTP MCP server with headers from a helper command (Claude Code's `headersHel
 
 ## Scope
 
-Create and change only files under `experiments/008-real-client/`, apart from the
+Create and change only files under [experiments/008-real-client/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client), apart from the
 pre-registration `README.md`, which you leave as it is. Report anything else that needs
 changing.
 
 ## Done when
 
-In `experiments/008-real-client/`: `cargo test --release`, `cargo clippy --all-targets -- -D
+In [experiments/008-real-client/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client): `cargo test --release`, `cargo clippy --all-targets -- -D
 warnings` and `cargo fmt --check` pass, and `cargo run --release -- --dry-run` (or the runner's
 own command) prints the whole matrix. From the repository root, `python3 tools/check_docs.py`,
 `python3 tools/check_roadmap.py` and `git diff --check` pass. Your report gives the exact command

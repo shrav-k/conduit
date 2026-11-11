@@ -1,8 +1,0 @@
-{
-  "client": "codex",
-  "note": "Only client-reported authentication fields are copied. The requested login and removed API key variables do not prove which authentication the client used.",
-  "observations": [],
-  "requested": "owner subscription login",
-  "source": "events.jsonl",
-  "status": "not reported in client events"
-}

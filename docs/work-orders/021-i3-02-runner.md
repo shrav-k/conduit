@@ -20,7 +20,7 @@ Read: the handoff, its sections on intents and completions above all; order 020 
 the shell as order 020 left it (`reference-model/crates/shell/`); `CONFORMANCE.md`;
 `conformance/fixtures/s1/` and its README; and these promises: PRV-003, PRV-007, PRV-009,
 PRV-010, PRV-022, PRV-023, PRV-024, MAN-010, IFC-001, IFC-006, IFC-007, IFC-010, IFC-046,
-OPS-013, OPS-027, TPL-012. Experiment 009's runner (`experiments/009-native-launch/src/`)
+OPS-013, OPS-027, TPL-012. Experiment 009's runner ([experiments/009-native-launch/src/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src))
 shows a working stdio client with `rmcp` 3.9.0; reuse what fits, in the shell's crate.
 
 ## The decisions to apply

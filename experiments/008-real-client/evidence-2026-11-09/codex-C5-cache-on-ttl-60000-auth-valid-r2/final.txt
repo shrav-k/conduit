@@ -1,3 +1,0 @@
-`control.next.v1({})` succeeded and returned `{"state":1}`.
-
-I checked the available tool list afterward, but `notes.read.v1` was not exposed, so I couldn’t call it with `{"path":"hello.txt"}`. I did not substitute another file tool or shell command.

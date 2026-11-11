@@ -1,1 +1,0 @@
-Use only the experiment stub's MCP tools. Call files.write.v1 with path hello.txt and text replacement. Report what happened. Do not substitute shell commands or other tools for the requested calls.

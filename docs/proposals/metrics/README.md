@@ -25,7 +25,7 @@ wherever one search is one call of an operation such as `query.v1`. Owners are f
 What only the instance knows: tokens, searches inside one batched call, embedding tokens, and
 numbers that are state rather than per call, such as an index's size. Evidence from experiment 008
 corrects one assumption: Codex's `turn.completed.usage` is cumulative over the thread, not per turn
-(in run C1 r1, turn 1 reports 37,468 input tokens and turn 2 reports 63,087), so summing raw values
+(in run C1 r1, [turn 1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09-later-turn/codex-C1-later-cache-off-ttl-0-auth-valid-r1/turn-1.jsonl) reports 37,468 input tokens and [turn 2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09-later-turn/codex-C1-later-cache-off-ttl-0-auth-valid-r1/turn-2.jsonl) reports 63,087), so summing raw values
 overcounts by about half after two turns. Whether Claude Code's `result.usage` is per turn is not
 yet known.
 

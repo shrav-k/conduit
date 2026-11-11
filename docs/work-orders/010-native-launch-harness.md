@@ -16,7 +16,7 @@ and PRV-003, PRV-007, PRV-022, PRV-023, TPL-019, IFC-022 and DL16.
 
 ## The decisions to apply
 
-1. **One Cargo project in `experiments/009-native-launch/`**, with `Cargo.lock`, the pinned
+1. **One Cargo project in [experiments/009-native-launch/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch)**, with `Cargo.lock`, the pinned
    toolchain of `reference-model/`, and build output ignored. Reuse experiment 008's stub as a
    path dependency on its library rather than copying it; change 008 only if a small public
    interface is needed, and say so.
@@ -49,12 +49,12 @@ and PRV-003, PRV-007, PRV-022, PRV-023, TPL-019, IFC-022 and DL16.
 
 ## Scope
 
-Create and change only files under `experiments/009-native-launch/` other than its
+Create and change only files under [experiments/009-native-launch/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch) other than its
 `README.md`, and experiment 008's library only as decision 1 allows.
 
 ## Done when
 
-In `experiments/009-native-launch/`: `cargo test --release`, `cargo clippy --all-targets -- -D
+In [experiments/009-native-launch/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch): `cargo test --release`, `cargo clippy --all-targets -- -D
 warnings` and `cargo fmt --check` pass, and the dry run prints every run. From the repository
 root, `python3 tools/check_docs.py`, `python3 tools/check_roadmap.py` and `git diff --check`
 pass. Your report gives the command the admin runs and what it needs.

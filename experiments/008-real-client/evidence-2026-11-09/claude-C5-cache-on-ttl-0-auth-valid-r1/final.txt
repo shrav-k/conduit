@@ -1,5 +1,0 @@
-I called `control.next.v1` with `{}` and it returned `{"state":1}`. I couldn't take the next step, because `notes.read.v1` never appeared in my tool list. No new tool definition or schema was surfaced after the call.
-
-I didn't substitute `files_read_v1` or a shell command for the read, since you asked me not to. I also didn't try to call `notes.read.v1` blind, because I have no schema for it and no way to invoke it.
-
-So `hello.txt` has not been read. The client may not support tools being added mid-session, or the tool may only show up on a later turn. If it does show up, I can make the call then.

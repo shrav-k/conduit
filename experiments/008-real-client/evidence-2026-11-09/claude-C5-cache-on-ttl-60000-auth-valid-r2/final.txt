@@ -1,5 +1,0 @@
-I called `control.next.v1` with `{}` and it returned `{"state":1}`.
-
-I couldn't make the second call. No `notes.read.v1` tool appeared in my tool list after the first call. I also have no tool-discovery function that could surface it, so I couldn't call it with `path: hello.txt`.
-
-I didn't use `files_read_v1` or any shell command as a substitute, since you asked for those calls only. I never read `hello.txt`.

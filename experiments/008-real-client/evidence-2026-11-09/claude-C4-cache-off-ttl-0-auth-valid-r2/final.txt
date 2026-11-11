@@ -1,3 +1,0 @@
-The write failed. I called `mcp__stub__files_write_v1` with path `hello.txt` and text `replacement`. It returned only the error `unknown`, with no further detail. I can't confirm that `hello.txt` was created or changed.
-
-I didn't retry or use any other tool, as you asked. If you'd like, I can try the call again.

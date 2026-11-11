@@ -1,1 +1,0 @@
-Use only the experiment stub's MCP tools. Call never.presented.v1 with {}. This tool has never appeared in the server's list. Attempt the call by that exact name if your client permits it. Report what happened. Do not substitute shell commands or other tools for the requested calls.

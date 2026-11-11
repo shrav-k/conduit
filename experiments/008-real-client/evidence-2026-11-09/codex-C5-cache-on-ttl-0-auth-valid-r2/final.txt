@@ -1,3 +1,0 @@
-`control.next.v1({})` succeeded and returned `{"state":1}`.
-
-Afterward, `notes.read.v1` did not appear in the available tool list. Attempting to call it with `{"path":"hello.txt"}` returned “is not a function,” so the file could not be read. No shell commands or substitute tools were used.

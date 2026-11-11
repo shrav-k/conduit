@@ -1,3 +1,0 @@
-`control.next.v1({})` succeeded and returned `{"state":1}`.
-
-I checked the available tools, but `notes.read.v1` did not appear. Attempting to call it with `{"path":"hello.txt"}` failed because the client had no such tool function. No file was read, and no substitute tools were used.

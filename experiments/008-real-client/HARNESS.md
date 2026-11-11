@@ -1,5 +1,10 @@
 # Experiment 008 harness
 
+Historical method as run on 2026-11-09. The [harness code at C0](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client)
+is superseded by [the engine](../../engine/README.md) and the
+Agent packages for [Claude Code](../../packages/agent-claude-code/README.md) and
+[Codex](../../packages/agent-codex/README.md). The commands below describe that archived harness.
+
 A harness for the [pre-registration](README.md), not an engine or conformance evidence.
 The later-turn extension has not been run with a real client. The worker's checks use scripted
 HTTP clients and local process fixtures only. The worker leaves the pre-registration,

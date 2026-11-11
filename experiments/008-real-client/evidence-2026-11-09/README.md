@@ -1,9 +1,12 @@
 # Trimmed evidence for experiment 008
 
+The raw records described below are [kept at C0](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09).
+This index preserves their trimming and sanitization method.
+
 These are sanitized excerpts of the admin's 68 matrix records, prepared for the
 [dated results](../results-2026-11-09.md). The full directory name identifies each run; the
 results abbreviate `claude` as `CC` and `codex` as `CX`. The five records in
-[smoke-checks.jsonl](smoke-checks.jsonl) are separate harness checks, not matrix runs.
+[smoke-checks.jsonl](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09/smoke-checks.jsonl) are separate harness checks, not matrix runs.
 
 ## Reading an excerpt
 

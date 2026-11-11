@@ -46,7 +46,7 @@ and never copy its absolute path into a file.
   summary table per case and client, the answers of decision 3, the classification of every
   run (one row per run), the runs that did not run as planned, the deviations, the limits as
   the pre-registration states them with any found in the run, and the candidate findings.
-- `experiments/008-real-client/evidence-2026-11-09/`: for each run, a trimmed copy of what the
+- [experiments/008-real-client/evidence-2026-11-09/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09): for each run, a trimmed copy of what the
   results cite (the stub's log, the client's events and the final text), with every absolute
   path replaced by `<runs>` or `<lab>`, and no token, key or credential of any kind. Keep the
   copies small: what is cited, not every byte.

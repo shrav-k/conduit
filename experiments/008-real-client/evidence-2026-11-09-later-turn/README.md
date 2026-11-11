@@ -1,5 +1,8 @@
 # Trimmed evidence for the later-turn follow-up
 
+The raw records described below are [kept at C0](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09-later-turn).
+This index preserves their trimming and sanitization method.
+
 These excerpts support the [dated results](../results-2026-11-09-later-turn.md).
 There are 12 run directories, each with `context.json`, `turn-1.jsonl` and `turn-2.jsonl`.
 The results abbreviate `claude` as `CC` and `codex` as `CX`; every run uses cache off,

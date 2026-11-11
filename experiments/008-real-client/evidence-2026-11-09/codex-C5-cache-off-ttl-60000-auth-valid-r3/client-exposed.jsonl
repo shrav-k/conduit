@@ -1,1 +1,0 @@
-{"source_line":2,"item":{"arguments":{},"error":null,"id":"item_1","result":{"_meta":{"io.github.shrav-k.conduit/invocation":"inv-1","io.github.shrav-k.conduit/outcome":"succeeded"},"content":[{"text":"{\"state\":1}","type":"text"}],"structured_content":{"state":1}},"server":"stub","status":"completed","tool":"control.next.v1","type":"mcp_tool_call"},"type":"item.completed"}

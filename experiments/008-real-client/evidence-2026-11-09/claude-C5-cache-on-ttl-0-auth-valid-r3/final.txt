@@ -1,5 +1,0 @@
-I called `control.next.v1` with `{}` and it returned `{"state":1}`. That is the only call I made.
-
-I did not call `notes.read.v1` with `hello.txt`. The tool hasn't appeared in my tool list since the state change, and I have no discovery function that could surface it. The only file tool I have is `files_read_v1`. It's a different tool, and you told me not to substitute other tools, so I didn't use it.
-
-The state advanced, but the new tool isn't reachable from my client. If your client can refresh or expose newly opened tools, tell me and I'll make the call.

@@ -1,1 +1,0 @@
-Attempted `never.presented.v1` with `{}`. The client rejected it with `TypeError: tools.never.presented.v1 is not a function`; no MCP server call was sent.

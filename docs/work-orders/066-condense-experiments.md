@@ -57,3 +57,14 @@ From the repository root: `python3 tools/check_docs.py` (it checks the C0 permal
 history), `python3 tools/check_rulings.py`, `python3 tools/set_names.py --check`,
 `python3 tools/check_schemas.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass. Do
 not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 12 minutes, then a fresh verifier in 2, which found nothing to fix.
+The worker removed 942 files, 148,612 words: the raw run records of experiments 005, 007, 008 and
+009, and the harness crates of 008 and 009, which the engine's shell and the Agent packages
+superseded, so they leave continuous integration's matrix. Each experiment keeps its README, dated
+results, HARNESS.md and evidence READMEs, 38 files and 46,100 words, with links into what left
+pointing at C0; `experiments/README.md` gained "Evidence for v0" and the raw-records rule. Experiment
+011 was not touched. One package test fixture's `source` note now names its C0 path; the admin ran
+that package's tests: 6 pass.

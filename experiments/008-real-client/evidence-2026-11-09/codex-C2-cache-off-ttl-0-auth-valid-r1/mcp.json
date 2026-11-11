@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "stub": {
-      "headersHelper": "'<lab>' '--headers-helper' '--identity-dir' '<runs>/codex-C2-cache-off-ttl-0-auth-valid-r1/identity' '--helper-log' '<runs>/codex-C2-cache-off-ttl-0-auth-valid-r1/helper.jsonl'",
-      "type": "http",
-      "url": "http://127.0.0.1:52041/"
-    }
-  }
-}

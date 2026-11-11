@@ -35,8 +35,10 @@ in today's tree. The plan's order numbers are older than today's ("WO-033" there
    moved verbatim, row by row, into `ruling-39/README.md` as "The assessment point 8 confirmed", and
    replaced in INDEPENDENT_BUILDS by the state now for G8, G9 and G10, marked as the coordinator's
    until G11 (ruling 58, point 7).
-2. **Then remove** the files the list names, and only those. Before deleting each, check it is
-   unchanged since C0 (`git diff --quiet f1cb473 HEAD -- <path>`); if one changed, stop and report.
+2. **Then remove** the files the list names, and only those. Before deleting each, check that
+   since C0 it changed only in link targets or path mentions, which orders 033, 034, 035 and 060
+   repointed (`git diff --word-diff f1cb473 HEAD -- <path>` shows only those); if anything else
+   changed, stop and report that file, and go on with the others.
 3. **Repoint every link and path mention** into a removed file or section, in the plan's three
    classes: to the new home of text this order moved; to a live destination for a sentence that says
    where future work goes (list each for the admin); otherwise to its C0 permalink,

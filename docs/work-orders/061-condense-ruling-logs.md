@@ -31,8 +31,10 @@ in today's tree. The plan's order numbers are older than today's ("WO-033" there
    copied verbatim where it fits, with a count per log; MX-21 of ruling 43 into the ledger's
    appendix. Check that E19's parts from `ruling-41/PLAN.md` are already in `CONTRIBUTING.md`
    (order 035) and add only what is missing.
-2. **Then remove** the files the list names, and only those. Before deleting each, check it is
-   unchanged since C0 (`git diff --quiet f1cb473 HEAD -- <path>`); if one changed, stop and report.
+2. **Then remove** the files the list names, and only those. Before deleting each, check that
+   since C0 it changed only in link targets or path mentions, which orders 033, 034, 035 and 060
+   repointed (`git diff --word-diff f1cb473 HEAD -- <path>` shows only those); if anything else
+   changed, stop and report that file, and go on with the others.
 3. **Repoint every link and path mention** into a removed file or section, in the plan's three
    classes: to the new home of text this order moved; to a live destination for a sentence that says
    where future work goes (list each for the admin); otherwise to its C0 permalink,

@@ -558,7 +558,7 @@ states, for test 5, that an agent may issue grants to others only within a bound
 
 All rulings are the owner's, in this order: rulings 1 to 37 on 2026-11-05, rulings 38 to 43
 on 2026-11-06, ruling 44 on 2026-11-07, rulings 45, 46 and 48 on 2026-11-09, and rulings 47
-and 49 to 62 on 2026-11-10. Ruling 47 is recorded with its public name and namespace open.
+and 49 to 67 on 2026-11-10. Ruling 47 is recorded with its public name and namespace open.
 Each row is the coordinator's summary of the owner's messages, with the owner's own words quoted where they are
 marked as quoted; the owner confirmed that labelling in ruling 39, point 15. The record linked
 from a row holds the owner's words in full where the ruling was given point by point.
@@ -631,6 +631,7 @@ from a row holds the owner's words in full where the ruling was given point by p
 | 64 | Organization and repository ([record](proposals/ruling-64/README.md)). "1. Rebase and merge 2. Let's do that investigation but it has to be a logical variation on conduit 3. Do this, but I can't yet afford to pay if it costs credits 4. Rename to engine 5. Wait for name decision". Accepted: pull request 14 merged; the public name researched among variations on Conduit; CI on free runners; `reference-model/` renamed `engine/`; organization items wait for the name. |
 | 65 | The public name is ConduitLang ([record](proposals/ruling-65/README.md)). After research into variations on Conduit. "Sounds good on conduitlang, but I'm unable to take those actions quite yet, write up a doc on action items to switch to conduitlang and how to set each step up". Accepted: ConduitLang, `conduitlang` everywhere, the language staying Conduit; the steps wait for the owner, in a guide. |
 | 66 | Scoped Interfaces ([record](proposals/ruling-66/README.md)). "I agree with all your recommendations". Accepted: a `manages:` shorthand expanding into ordinary Conduits; what a scope covers and never covers; pending actions raised at the scoped Interfaces whose scope holds their subject, answers limited by what each holds (amending rulings 49 and 50); reconcile only of one's own invocations; scopes do not replace Fleet holdings; no Scope object and no grouping shorthand, an Interface being the named set. |
+| 67 | Decisions in force, a ledger, and records that say why ([record](proposals/ruling-67/README.md)). Delegated: "I trust whatever strategy you will come up with to condense these rulings." Decided by the coordinator, strikeable: [IN_FORCE.md](../IN_FORCE.md) holds every decision in force beyond `spec/`; a ledger of rulings with the owner's words; records open with their status; amends ruling 58, point 2. |
 
 ### Later amendments
 

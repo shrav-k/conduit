@@ -1,0 +1,4 @@
+conduit init
+conduit install conformance/fixtures/install-archives/filesystem-0.1.1.tar.gz#eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614
+conduit install conformance/fixtures/install-archives/agents-0.2.0.tar.gz#479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71
+conduit apply

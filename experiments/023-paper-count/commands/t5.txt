@@ -1,0 +1,2 @@
+conduit install conformance/fixtures/install-archives/filesystem-0.2.1.tar.gz#f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614
+conduit apply --replace shared

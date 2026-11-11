@@ -433,3 +433,15 @@ And these show what is stated:
 
 No Rust changes, so run no cargo command. In your report's summary, give the flow primary, flow
 strict and block counts per task. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11, after order 069 merged and after ruling 71 fixed the bar's rule: the worker in
+11 minutes, then a fresh verifier and a second round; the final verifier found no fault. The
+paper count is experiment 023. It informs only the design of the flow style and the CLI, never the
+bar. In flow style, under ruling 63 and ruling 68's R1, with order 069's defaults, S1's tasks T1 to
+T7 count 23, 6, 0, 3, 2, 2 and 3 lines (39 in all), against the baseline's 33, 16, 0, 8, 3, 2 and 2.
+As a forecast only, that is fewer on four tasks and much more on none; T7 sits exactly at one and a
+half times its baseline. The strict reading forecasts the same; block style forecasts a failure
+(T7 much more). The results give the counts under each of the readings order 069 reserved for the
+owner.

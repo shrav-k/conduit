@@ -68,7 +68,7 @@ selects and allows only those three peer tools beside engine tools and omits the
 refusal, leaving the native client's inbound default. Machine tools remain unselected. Sentinels and a real incoming
 message must still demonstrate the flags/settings' actual behavior in closeout.
 
-For `.v1` and `ownTools: false`, the client's own tools that reach the machine, a shell, code execution, a browser, another
+For `.v1` and `.v2` with no directory, the client's own tools that reach the machine, a shell, code execution, a browser, another
 Agent, hooks and plugins are off by default, alongside account services and messaging.
 With both reach inputs false, no built-in machine or peer tool is selected; engine MCP tools
 remain. Account connectors and the three named peer tools are explicit opt-in routes around
@@ -84,7 +84,6 @@ A null `directory` gives no environment variable (PRV-007).
 
 | Input | Default / bounds | Wrapper variable |
 | --- | --- | --- |
-| `ownTools` | `true` | `AGENT_OWN_TOOLS` |
 | `directory` | `null`; otherwise an absolute path to an existing directory | `AGENT_DIRECTORY` |
 | `turnDeadlineSeconds` | `180`; integer from 1 through 604800 | `AGENT_TURN_DEADLINE_SECONDS` |
 | `effort` | `''`; otherwise lowercase ASCII letters | `AGENT_EFFORT` |
@@ -93,13 +92,15 @@ A null `directory` gives no environment variable (PRV-007).
 | `peerMessaging` | `false` | `AGENT_PEER_MESSAGING` |
 
 Absent or empty effort/model leaves the client's own default. The presence of
-`AGENT_OWN_TOOLS` selects `.v2`; its absence selects `.v1`. `ownTools` is a temporary
-switch (ruling 74, point 3); a later Type version may replace it with a more durable way
-to state and bound this reach. `ownTools: false` selects `.v1`'s tools and sandbox.
+`AGENT_TURN_DEADLINE_SECONDS` selects `.v2`; its absence selects `.v1`.
+A null directory selects `.v1`'s tools and sandbox. Naming a directory grants the
+client's own tools; there is no separate switch. Limits on this reach, such as allowed
+hosts or a read-only directory, will come from a confining runtime provider chosen
+with `runtime:` (ruling 75, B2), rather than Agent inputs.
 
-With `ownTools: true`, nothing confines the client. Its shell, code execution, file edits
-and network run as the engine's operating-system user, with the client's sandbox and
-approval prompts off. It can reach every file, process, network address, credential and
+When the template names a directory, nothing confines the client in v0. Its shell, code
+execution, file edits and network run as the engine's operating-system user, with the
+client's sandbox and approval prompts off. It can reach every file, process, network address, credential and
 signed-in account that user can reach: the engine's store and root's client token;
 `CONDUIT_IDENTITY_DIR`, with this run's token; and the owner's client login, which every
 Agent shares until order 050 gives each its own home. It can push through the keychain,
@@ -108,9 +109,10 @@ not pass through Conduit: no Conduit grants, limits or records it (ruling 70).
 
 The shell can reach services, the user's browser and desktop even with
 `accountServices: false`; that input shapes only the client's tool list. The mediated
-access paragraph above holds only for `.v1` and for `ownTools: false`.
+access paragraph above holds only for `.v1` and for `.v2` with no directory.
 
-The client starts in `directory`, or in the run's private directory when it is null.
+The wrapper checks that `directory` is absolute and exists, then canonicalizes it.
+The client starts there, or in the run's private directory when it is null.
 `Config::cwd` remains the run's directory. Work orders explicitly tell workers to read
 AGENTS.md; automatic project instruction discovery stays off.
 

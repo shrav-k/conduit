@@ -81,7 +81,7 @@ The admin's direct trial still listed `apply_patch` (in the read-only sandbox) a
 for user input. These remain routes the closeout must report and exercise where possible,
 along with any other native tool still exposed; their presence is not engine authorization.
 
-**Mediated access (ACC-027), for `.v1` and `ownTools: false`:** the former read-only shell bypass is disabled by these launch
+**Mediated access (ACC-027), for `.v1` and `.v2` with no directory:** the former read-only shell bypass is disabled by these launch
 arguments. Closeout must ask Codex to read an outside sentinel without engine tools and
 observe the result, not infer confinement from absent engine requests. Shared OS identity,
 access to other run credentials and the shared login still prevent strong isolation. Any
@@ -125,7 +125,6 @@ A null `directory` gives no environment variable (PRV-007).
 
 | Input | Default / bounds | Wrapper variable |
 | --- | --- | --- |
-| `ownTools` | `true` | `AGENT_OWN_TOOLS` |
 | `directory` | `null`; otherwise an absolute path to an existing directory | `AGENT_DIRECTORY` |
 | `turnDeadlineSeconds` | `180`; integer from 1 through 604800 | `AGENT_TURN_DEADLINE_SECONDS` |
 | `effort` | `''`; otherwise lowercase ASCII letters | `AGENT_EFFORT` |
@@ -134,13 +133,15 @@ A null `directory` gives no environment variable (PRV-007).
 
 
 Absent or empty effort/model leaves the client's own default. The presence of
-`AGENT_OWN_TOOLS` selects `.v2`; its absence selects `.v1`. `ownTools` is a temporary
-switch (ruling 74, point 3); a later Type version may replace it with a more durable way
-to state and bound this reach. `ownTools: false` selects `.v1`'s tools and sandbox.
+`AGENT_TURN_DEADLINE_SECONDS` selects `.v2`; its absence selects `.v1`.
+A null directory selects `.v1`'s tools and sandbox. Naming a directory grants the
+client's own tools; there is no separate switch. Limits on this reach, such as allowed
+hosts or a read-only directory, will come from a confining runtime provider chosen
+with `runtime:` (ruling 75, B2), rather than Agent inputs.
 
-With `ownTools: true`, nothing confines the client. Its shell, code execution, file edits
-and network run as the engine's operating-system user, with the client's sandbox and
-approval prompts off. It can reach every file, process, network address, credential and
+When the template names a directory, nothing confines the client in v0. Its shell, code
+execution, file edits and network run as the engine's operating-system user, with the
+client's sandbox and approval prompts off. It can reach every file, process, network address, credential and
 signed-in account that user can reach: the engine's store and root's client token;
 `CONDUIT_IDENTITY_DIR`, with this run's token; and the owner's client login, which every
 Agent shares until order 050 gives each its own home. It can push through the keychain,
@@ -150,9 +151,10 @@ Codex 0.167.0 still offers its collaboration tools (finding 4-06), even with its
 multi-agent features disabled; their subprocesses inherit this permissive reach.
 The shell can reach services, the user's browser and desktop even with
 `accountServices: false`; that input shapes only the client's tool list. The mediated
-access paragraph above holds only for `.v1` and for `ownTools: false`.
+access paragraph above holds only for `.v1` and for `.v2` with no directory.
 
-The client starts in `directory`, or in the run's private directory when it is null.
+The wrapper checks that `directory` is absolute and exists, then canonicalizes it.
+The client starts there, or in the run's private directory when it is null.
 `Config::cwd` remains the run's directory. Work orders explicitly tell workers to read
 AGENTS.md; automatic project instruction discovery stays off.
 
@@ -168,7 +170,7 @@ With own tools off, `.v1`'s fourteen disabled features above remain.
 
 The seven `-c` settings remain the engine URL, header helper, startup readiness,
 required server, default tool approval, web search and project document size. Search is
-`web_search="live"` only when both ownTools and accountServices are true; otherwise
+`web_search="live"` only when accountServices is true and a directory is named; otherwise
 it is `web_search="disabled"`. `project_doc_max_bytes=0` stays.
 Then `-c mcp_servers.engine.tool_timeout_sec=N` equals turnDeadlineSeconds, followed
 by optional `-c model_reasoning_effort=E` with E JSON-quoted, then the resumed thread

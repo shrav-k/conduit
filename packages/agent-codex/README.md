@@ -1,8 +1,9 @@
 # agent-codex
 
 Maintainer: the Conduit project's owner. Native-client launch baseline: Codex 0.167.0, from
-experiment 009. Work orders 023 and 024 tested this package with its scripted client only; the real
-client closeout is still required. No client version command or model was run for this order.
+experiment 009. Work orders 023 and 024 tested this package with its scripted client only;
+the admin's [real-client closeout](../../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+and [increment 4 log](../../docs/proposals/first-build/log-increment-4.md) record subsequent trials on 2026-11-10.
 
 This standalone Rust crate has no dependency on another repository directory. Its lockfile
 and pinned toolchain travel with it. Its manifest exports one Agent Type, a conversation
@@ -72,8 +73,8 @@ The HTTP server is required and its default_tools_approval_mode is approve. Its 
 receives the identity directory on its command line because Codex removes the run environment
 from helpers. No env_vars or inline token is configured for that server.
 
-The client's own tools that reach the machine, a shell, code execution, a browser, another
-Agent, hooks and plugins are off by default, alongside account services and messaging.
+The launch disables the client's shell, browser, hooks and plugins, alongside account services
+and messaging. The collaboration tools remain available, as finding 4-06 below states.
 `accountServices: true` enables `apps` alone; none of the disabled features is turned back on.
 The admin's direct trial still listed `apply_patch` (in the read-only sandbox) and a request
 for user input. These remain routes the closeout must report and exercise where possible,
@@ -83,7 +84,8 @@ along with any other native tool still exposed; their presence is not engine aut
 arguments. Closeout must ask Codex to read an outside sentinel without engine tools and
 observe the result, not infer confinement from absent engine requests. Shared OS identity,
 access to other run credentials and the shared login still prevent strong isolation. Any
-opted-in app or other remaining native tool is a route around the engine and must be reported.
+opted-in app or other remaining native tool must have its reach stated; the collaboration
+tools below stay within the Agent's own access.
 
 Work order 027 keeps version 0.1.1 and disables both multi_agent_v2 and
 multi_agent_v2_dynamic_tools as well as multi_agent on initial turns and resumes, regardless
@@ -91,6 +93,16 @@ of either reach input. The bundled 0.167.0-alpha.3.2 binary's feature list names
 its strings include the collaboration tools. That binary rejected --ignore-user-config,
 so the metadata-only feature listing used an empty temporary CODEX_HOME instead. With the
 three explicit disable flags, the feature listing reports all three false. No client session
-or model work ran for this check. **The admin's real-client check is pending:** confirm that
-spawn_agent, send_message, list_agents, wait_agent, interrupt_agent and followup_task are no
-longer offered under collaboration. Scripted argument tests do not establish that result.
+or model work ran for that metadata check.
+
+**Finding 4-06, settled by the admin on 2026-11-10:** Codex 0.167.0 keeps all six tools,
+`collaboration.spawn_agent`, `collaboration.send_message`, `collaboration.list_agents`,
+`collaboration.wait_agent`, `collaboration.interrupt_agent` and `collaboration.followup_task`,
+under every switch tried: the three `multi_agent` switches above, `collaboration_modes`,
+`in_app_local_automation` and `agents.max_depth=0`. In the admin's trial with the wrapper's
+flags, a spawned sub-agent had no shell, could not read outside its sandbox and had an
+`apply_patch` write refused by the read-only sandbox. Its requests of the engine carry the
+parent Agent's credential, so it reaches only what that Agent may. This is a route to more
+parallel model work within the Agent's own access, not around it. What offers the tools is
+still not found; the [log](../../docs/proposals/first-build/log-increment-4.md) records the
+trial and settlement.

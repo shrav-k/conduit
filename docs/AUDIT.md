@@ -104,7 +104,7 @@ these sets reuses the earlier R, I, C or M ruling sets of the archived reviews.
 | Item | State on 2026-11-10 |
 | --- | --- |
 | Roadmap | The order of the work and every experiment and probe are in the [roadmap](../ROADMAP.md). |
-| Specification | A draft, in [spec/](../spec/README.md): numbered promises in three layers (the language, the shared conventions and the implementation interface), with the definitions, the schema profile, the implementation-defined list, the core package as documents, the JSON Schemas of every document and valid and invalid examples. Its [contents table](../spec/README.md#contents) gives the files and the counts. The owner accepted it as it stood at ruling 39, and it was rewritten around provider contracts under rulings 40 to 43 ([plan and logs](proposals/ruling-41/PLAN.md), [ruling 42](proposals/ruling-42/README.md), [ruling 43](proposals/ruling-43/README.md)). Round 6's decisions and ruling 44 changed it again ([decisions](proposals/reaudit/round-6/DECISIONS.md), [ruling 44](proposals/ruling-44/README.md)), and ruling 45 added six [core terms](../spec/definitions.md#core-terms) to its definitions. The first build has since applied the settlements logged for [increment 1](proposals/first-build/log-increment-1.md), [increment 2](proposals/first-build/log-increment-2.md) and [increment 3](proposals/first-build/log-increment-3.md); 364 portable vectors test slices of promises on S1, with gaps in the [manifest](../conformance/manifest.yaml). Ruling 49's sign-in changes remain pending. |
+| Specification | A draft, in [spec/](../spec/README.md): numbered promises in three layers (the language, the shared conventions and the implementation interface), with the definitions, the schema profile, the implementation-defined list, the core package as documents, the JSON Schemas of every document and valid and invalid examples. Its [contents table](../spec/README.md#contents) gives the files and the counts. The owner accepted it as it stood at ruling 39, and it was rewritten around provider contracts under rulings 40 to 43 ([plan and logs](proposals/ruling-41/PLAN.md), [ruling 42](proposals/ruling-42/README.md), [ruling 43](proposals/ruling-43/README.md)). Round 6's decisions and ruling 44 changed it again ([decisions](proposals/reaudit/round-6/DECISIONS.md), [ruling 44](proposals/ruling-44/README.md)), and ruling 45 added six [core terms](../spec/definitions.md#core-terms) to its definitions. The first build has since applied the settlements logged for [increment 1](proposals/first-build/log-increment-1.md), [increment 2](proposals/first-build/log-increment-2.md) and [increment 3](proposals/first-build/log-increment-3.md); 367 portable vectors test slices of promises on S1, with gaps in the [manifest](../conformance/manifest.yaml). Rulings 49 to 59 are accepted; their specification changes remain pending as listed in the [status](../spec/README.md), while rulings 57 and 58 also govern documentation upkeep. |
 | How it was checked | Four rounds of cold readers read `spec/` before the rewrite under rulings 40 to 43 ([re-audit](proposals/reaudit/README.md)): about 170 problems in round 1, counted by class, then 125, 44 and 38 findings in the three reports on `spec/`. The interface was checked twice against the published Model Context Protocol ([first](proposals/reaudit/round-2/mcp-citations.md), [second](proposals/reaudit/round-4/mcp-recheck.md)). [Round 5](proposals/reaudit/round-5/README.md) read the rewritten specification at commit `d0c425f`: 105 findings in the five reports on `spec/`, 10 of them unsafe, and 14 from the reader of the whole repository. One of the five reports was a third check against the protocol. Every finding of round 5 is resolved and logged: 110 of the 111 items that the findings were merged into are fixed and 1 is rejected. Two verifiers then checked round 5's fixes and reported 29 findings, none unsafe: 28 were fixed, and the coordinator then settled the last, V6, as its option 1, in PLC-007 and PLC-002, so all 29 are resolved. [Round 6](proposals/reaudit/round-6/README.md), the owner's cold read by Codex, read the whole repository at `c4d7d33`, the merge of pull request 7: six findings, two of them wrong and safety-critical, and a critique of the design's simplicity and usefulness in 22 points. An independent check confirmed all six findings. Every finding is fixed, under the coordinator's decisions that ruling 44 accepted. No round was clean. The text that rounds 5 and 6 and rulings 44 and 45 changed has not been read cold since: round 6 read round 5's changes, but selectively, as its report says. |
 | Secrets | In the specification since ruling 41: [secrets.yaml](../spec/promises/secrets.yaml), a core capability that each store's package implements, read only by the engine, for a run or a connection, and again after a restart (SEC-010, SEC-013, SEC-023, PRV-026). Ruling 42 named the capability `secret-provider.v1` and its operation `get-secret.v1`. The [research packet](research/SECRETS.md) and the [proposal](proposals/secrets/README.md) are the reasoning. |
 | Documents outside the specification | Nothing outside `spec/` binds. What the specification superseded was removed from the tree by ruling 39; the [archive's index](archive/README.md#removed-from-the-tree) lists it, with links to its last version. The historical sections of this tracker are in [its history](archive/plan-audit-history.md). |
@@ -123,8 +123,15 @@ specification, separate Agent homes and engine-mediated sign-in are pending.
 Rulings 50 to 54, of the same day, settled enrollment's direction and the Interface as a control
 panel (50), managed and peer machines (51), explicit refusals and enrollment's decisions but its
 fifth (52), five core additions and the first decisions of the simplification (53), and that
-Agents stay in their project and revocation is individual (54). None of 49 to 54 is written into
-`spec/` yet: the shape of the language is being settled first, so each is written once
+Agents stay in their project and revocation is individual (54). [Ruling 55](proposals/ruling-55/README.md)
+settled the short form and approval flags; [ruling 56](proposals/ruling-56/README.md) settled
+enrollment's fifth decision. [Ruling 57](proposals/ruling-57/README.md) permits editing and
+condensing nonbinding documents while preserving relevant Conduit information, and
+[ruling 58](proposals/ruling-58/README.md) settles the form of records, accepts earlier logged
+choices with stated exceptions and requires condensation at close. [Ruling 59](proposals/ruling-59/README.md)
+settles the Agent-owning family's structure; its name and later authority decisions remain open.
+The specification changes of rulings 49 to 59 remain pending: the shape of the language is being
+settled first, so each is written once
 ([the shape of the language](proposals/language-shape/README.md),
 [the owner's direction for Projects](proposals/owner-direction/2026-11-10-projects.md)).
 
@@ -315,12 +322,15 @@ what they read. Round 5's own decisions that the owner may want to read first ar
 [its record](proposals/reaudit/round-5/README.md#known-after-the-round), where V2-15 is now
 reversed by ruling 44.
 
-**Who decided what.** The next section. As of 2026-11-10, rulings 1 to 46, 48 and 49 are
+**Who decided what.** The next section. As of 2026-11-10, rulings 1 to 46 and 48 to 59 are
 the owner's; number 47 is reserved for the owner's open pull request 14. Ruling 39
 accepted every logged decision of the coordinator and choice of an editor made before it, and
 ruling 41 the planner's choices for the rewrite. Ruling 44 accepted the coordinator's
-recommendations on round 6. The others made since ruling 39 have the standing of decisions the
-owner can strike, and the next section lists where they are logged. Among them are the
+recommendations on round 6. [Ruling 58](proposals/ruling-58/README.md) accepted every logged
+coordinator decision, editor choice and work-order decision made before ruling 57, except items
+15 to 19 of the [review list](proposals/first-build/to-review-with-the-owner.md) and increment 4's
+open decisions, which stay open to the owner until reviewed; later choices remain strikeable.
+The next section lists where the choices are logged. Among them are the
 coordinator's decisions on round 5's findings and on the findings of its verification, the
 choice that its integration made on PLC-023 and LIF-036, and, for round 6, the details that
 the coordinator fixed after ruling 44 and the choices of the editors who applied it. A reader
@@ -545,7 +555,7 @@ states, for test 5, that an agent may issue grants to others only within a bound
 ## Ruling log
 
 All rulings are the owner's, in this order: rulings 1 to 37 on 2026-11-05, rulings 38 to 43
-on 2026-11-06, ruling 44 on 2026-11-07, rulings 45, 46 and 48 on 2026-11-09, and ruling 49
+on 2026-11-06, ruling 44 on 2026-11-07, rulings 45, 46 and 48 on 2026-11-09, and rulings 49 to 59
 on 2026-11-10. As of 2026-11-10, number 47 is still reserved for the owner's open pull request
 14. Each row is the coordinator's summary of the owner's messages, with the owner's own words quoted where they are
 marked as quoted; the owner confirmed that labelling in ruling 39, point 15. The record linked

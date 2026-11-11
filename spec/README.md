@@ -4,7 +4,7 @@ Status on 2026-11-10: draft, begun 2026-11-05. Incomplete, and not a release. Ev
 been written as promises, and the core package, the JSON Schemas of documents and the
 manifest's format have been written as documents. The first build has a strict loader, a pure
 reference model on S1 and a runnable engine shell in [reference-model/](../reference-model/README.md).
-There are 364 portable vectors under [conformance/](../conformance/README.md), testing slices
+There are 367 portable vectors under [conformance/](../conformance/README.md), testing slices
 of promises; the [manifest](../conformance/manifest.yaml) records the coverage and its gaps.
 This remains a draft: the model and vectors do not yet cover the whole specification, and the
 next cold read follows the first build. Ruling 38, point 4, asks for agreement between the
@@ -16,10 +16,28 @@ As of 2026-11-10, the logs of [increment 2](../docs/proposals/first-build/log-in
 and [increment 3](../docs/proposals/first-build/log-increment-3.md) record the subsequent
 settlements applied to the promises, including schema defaults, plain errors and successful
 content without declared outputs. The shell's [closeout](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
-ran real Claude Code and Codex as Agents through S1's T1, T2 and T7; increment 4, S1 complete
-with author measurements, is next. The sign-in changes accepted in
-[ruling 49](../docs/proposals/ruling-49/README.md) on 2026-11-10 are pending, not promises
-already supplied by this specification.
+ran real Claude Code and Codex as Agents through S1's T1, T2 and T7. Increment 4 is in progress:
+the coordinator's and fresh author's [runs](../docs/proposals/first-build/README.md#the-logs)
+completed T1 to T7 but both failed the owner's bar for authoring work.
+
+As of 2026-11-10, rulings 49 to 59 are accepted. Their specification changes are not yet
+written here; rulings 57 and 58 also govern documentation upkeep:
+
+- [Ruling 49](../docs/proposals/ruling-49/README.md): sign-in prompts to the root Interface and checks of the expected account.
+- [Ruling 50](../docs/proposals/ruling-50/README.md): enrollment's direction, confirmation before admission and the Interface as a control panel for pending actions.
+- [Ruling 51](../docs/proposals/ruling-51/README.md): managed machines and peer engines, with separate identity and authority.
+- [Ruling 52](../docs/proposals/ruling-52/README.md): explicit refusals and enrollment's decisions, with verification later settled by ruling 56; submissions retain SUB-010's rule.
+- [Ruling 53](../docs/proposals/ruling-53/README.md): five core additions and simplification decisions, followed by rulings 55 and 59 on the short form, approval and defaults.
+- [Ruling 54](../docs/proposals/ruling-54/README.md): Agents stay in one Project for life, with individual revocation of grants made under a closed authority.
+- [Ruling 55](../docs/proposals/ruling-55/README.md): the short form is language, canonical documents remain legal, names stay stable and commands with named flags approve dangerous acts.
+- [Ruling 56](../docs/proposals/ruling-56/README.md): provider-defined enrollment verification, evidence shown by the engine at root and recorded exceptions for weaker checks.
+- [Ruling 57](../docs/proposals/ruling-57/README.md): nonbinding documents may be edited, condensed or removed once their relevant Conduit information is preserved elsewhere.
+- [Ruling 58](../docs/proposals/ruling-58/README.md): earlier logged choices accepted with stated exceptions, fixed ruling records and condensation at close; documentation work is pending.
+- [Ruling 59](../docs/proposals/ruling-59/README.md): the Agent-owning family's structure, root's default Conduits, discovery and replacement bounds; the family's name and later authority decisions remain open.
+
+The [language's shape](../docs/proposals/language-shape/README.md) and the
+[Project model](../docs/proposals/owner-direction/2026-11-10-projects.md) are being settled
+first, so that each change is written once. These records do not supply promises missing here.
 
 The review of increment 1 of the first build on 2026-11-09 applied these changes:
 schema rejections cite SUB-005 and the failing keyword's location, either syntax accepts one

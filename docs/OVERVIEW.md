@@ -40,6 +40,17 @@ states its choices and limits. This tour describes the language, including parts
 does not yet implement. The build-state statements were updated on 2026-11-10; the date above
 records the last full read of the tour against the specification.
 
+As of 2026-11-10, both increment 4 [author runs](proposals/first-build/README.md#the-logs)
+completed T1 to T7 with real clients but failed the owner's bar for authoring work. Rulings
+49 to 54 are accepted, with changes still to be written into the specification, as its
+[status](../spec/README.md) lists: sign-ins and pending actions at the root Interface,
+enrollment and managed or peer machines, explicit refusals, simplification and Projects.
+The [language's shape](proposals/language-shape/README.md) is being settled first, so each
+change is written once. The owner's [Project direction](proposals/owner-direction/2026-11-10-projects.md)
+has Projects own Agents as Pools own Resources, while Pools stay independent and Projects
+hold Conduits; this is the basis of an investigation, not a sixth family already in `spec/`.
+The five families and rules below describe the current specification.
+
 ## The five families
 
 Every object is a template or an instance of one of five families
@@ -677,7 +688,8 @@ As of 2026-11-10, [conformance vectors](../conformance/README.md) test slices of
 on the pure reference model, including a continuous S1 case. The
 [coverage manifest](../conformance/manifest.yaml) lists vectors and reasons for missing
 coverage; a reason is not a passing test. The [roadmap](../ROADMAP.md#the-order-of-the-work)
-records increments 1 to 3 done, with increment 4, S1 complete with author measurements, next.
+records increments 1 to 3 done and increment 4 in progress: both author runs failed the
+bar for authoring work, and simplification is being settled before it is built and S1 rerun.
 
 ## One user journey
 

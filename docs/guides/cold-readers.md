@@ -3,9 +3,10 @@
 For the owner's collaborators reading Conduit as the first build leaves it. Not binding: the
 [specification](../../spec/README.md) alone binds. These instructions were written on
 2026-11-10 for the **Read** row of the [roadmap](../../ROADMAP.md#the-order-of-the-work),
-after step 3. As of that date, increments 1 to 3 are done and increment 4, S1 complete with
-author measurements, is next. A read before step 3 is finished can help, but the build may
-still change the text. Record which text you read.
+after step 3. As of that date, increments 1 to 3 are done and increment 4 is in progress:
+both author runs completed T1 to T7 with real clients but failed the owner's bar for
+authoring work. Simplification is being settled before it is built and S1 rerun. A read before step 3
+is finished can help, but the build may still change the text. Record which text you read.
 
 ## What to read
 
@@ -50,6 +51,15 @@ without a new situation. Its status statements have not all caught up with the b
   instructions still leak, and separate homes and the sign-in flow of
   [ruling 49](../proposals/ruling-49/README.md) are pending work. A ruling is not evidence that
   its specification or implementation changes have been made.
+- Rulings 49 to 54 are accepted, with changes not yet written into the specification; its
+  [status](../../spec/README.md) links each. The [language-shape investigation](../proposals/language-shape/README.md)
+  and the owner's [Project direction](../proposals/owner-direction/2026-11-10-projects.md)
+  precede that writing. Do not read a proposed short form or Project model as an existing rule.
+- The [increment 4 log](../proposals/first-build/log-increment-4.md) distinguishes the fixes
+  from orders 025 to 028 from open findings. In particular, 4-06 is settled as parallel model
+  work within the parent Agent's access, 4-03 retains SUB-010's submission rule, and 4-08's
+  explicit refusals are ruled but await promises. Turn deadlines (4-12) and the form of ended
+  conditions (4-17) remain open; both measured author runs failed the bar for authoring work.
 
 The deliberate limits of v0, including the two delegation limits, remain in the
 [specification's limits](../../spec/README.md#limits-of-this-version). No round so far was

@@ -146,7 +146,7 @@ How to read a line:
 - *Spec pending, with the vectors*: a portable field for the cause of a machine's loss (44, open point 3).
 
 - *Spec pending, the metrics batch after batch 2*: metrics are numbers about objects Conduit already has, with no new family, store or wire (68 point 1). The engine counts what passes through Conduits from its records; an Agent or Resource reports what only it knows with each result, as its declaration states, and the engine checks the report, takes whose it is from its own record and keeps it with that call's record; each package answers for its own numbers, turning its client's raw numbers into what its declaration says, and shows them with fixtures from real runs. One `metrics.v1`, routed like inspection; a holder without `inspect.v1` sees container totals only. Every read is recorded, with a minimum interval per caller. Tokens only and no cost in v0; usage is not relayed to the calling Agent in v0; numbers decide nothing.
-- *Open*: how usage is attributed and aggregated (68 point 6, M4). The owner: a shared token sum is useless, since Agents run different models on potentially different accounts; usage is differentiated by account and by model. Being researched.
+- *Open*: metrics as a general, customizable feature, letting a person choose which metrics to display and how to aggregate them, for every kind of metric, with model usage differentiated by account and by model and never one shared sum (68 point 6, M4); it may amend 68 point 1. Being researched.
 
 ## 8. Lifecycle, Pools and first start
 

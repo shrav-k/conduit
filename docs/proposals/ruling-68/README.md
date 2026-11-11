@@ -71,7 +71,11 @@ standards for that the same we do for agents?"
    type!! Otherwise it's useless, let's research attribution and aggregation. A shared token sum is
    useless since they're all different models on potentially different accounts". Usage is
    therefore never summed across models or accounts by default; how it is attributed and
-   aggregated is being researched, and M4 waits for that.
+   aggregated is being researched, and M4 waits for that. The owner widened it the same morning:
+   "This should be a generalized feature where we can customize metrics to display or aggregate
+   whatever we want, not just for usage, for all kinds of metrics, I don't think you've done enough
+   research in this area". M4 is therefore the design of customizable metrics in general, which
+   may amend point 1; a broader investigation is under way.
 
 ## What it amends
 

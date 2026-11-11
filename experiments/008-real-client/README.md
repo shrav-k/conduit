@@ -5,7 +5,7 @@ reviewed by the admin before merge. Pre-registered on 2026-11-09. This is action
 [roadmap](../../ROADMAP.md#experiments-and-probes), which ruling 45 accepted from X5 of pull
 request 10, from `allocmemory`, as E17 of round 6 run early. Ruling 48 added the cases that the
 review of A70 found, and has a Codex worker build the harness under
-[work order 002](../../docs/work-orders/002-real-client-harness.md). Under ruling 45's rule,
+[work order 002](../../docs/implementation/WORK_ORDERS.md#order-002). Under ruling 45's rule,
 this page states what the experiment must show and how each result is recorded before
 anything runs.
 

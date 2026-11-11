@@ -95,6 +95,15 @@ so the metadata-only feature listing used an empty temporary CODEX_HOME instead.
 three explicit disable flags, the feature listing reports all three false. No client session
 or model work ran for that metadata check.
 
+The real-client follow-up in [order 027's Record](../../docs/implementation/WORK_ORDERS.md#order-027)
+corrected that metadata-only observation (the open status below is historical):
+
+Decision 6 did not hold with the real client: with `multi_agent`, `multi_agent_v2` and
+`multi_agent_v2_dynamic_tools` disabled, and in further trials `collaboration_modes`,
+`in_app_local_automation` and `agents.max_depth=0`, Codex 0.167.0 still listed its six
+`collaboration.*` tools. Finding 4-06 stays open. The trials also showed `sleep_tool` controls
+`clock.sleep`, and that a trial without the wrapper's `web_search="disabled"` lists `web__run`.
+
 **Finding 4-06, settled by the admin on 2026-11-10:** Codex 0.167.0 keeps all six tools,
 `collaboration.spawn_agent`, `collaboration.send_message`, `collaboration.list_agents`,
 `collaboration.wait_agent`, `collaboration.interrupt_agent` and `collaboration.followup_task`,

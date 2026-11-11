@@ -2,7 +2,7 @@
 
 Evidence for A71 and E17 of round 6. This runs a stub, not a Conduit engine, and is not
 conformance evidence. The [follow-up pre-registration](README.md#follow-up-a-later-turn-pre-registered-on-2026-11-09)
-and [work order 008](../../docs/work-orders/008-later-turn-results.md) fix its scope.
+and [work order 008](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/work-orders/008-later-turn-results.md) fix its scope.
 The admin supplied the run interval, 2026-11-09T22:13:41Z to 2026-11-09T22:15:59Z;
 retained W timestamps locate the runs within it.
 

@@ -3,7 +3,7 @@
 Not binding. The [specification](../spec/README.md) alone binds. This document states the
 choices implemented through increment 2 and shell orders 020/021/022, under the admin's
 [decisions](../docs/proposals/first-build/increment-2/decisions.md) and
-[order 020](../docs/work-orders/020-i3-01-store-loop-identity.md), and distinguishes them
+[order 020](../docs/implementation/WORK_ORDERS.md#order-020), and distinguishes them
 from choices the shell must still make. It is not a declaration of whole-language conformance.
 The executable [profile](../conformance/profiles/first-build.yaml) and
 [coverage manifest](../conformance/manifest.yaml) name the evidence. A vector demonstrates

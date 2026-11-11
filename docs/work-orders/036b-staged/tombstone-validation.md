@@ -2,7 +2,7 @@
 
 Round 2, 2026-11-11. LIF-040 retains ownership; FLEET-002 fixes an Agent's owner
 as a Fleet. The live `tombstone.v1` in [results.yaml](../../../spec/core/results.yaml)
-requires a Resource's owner of kind Pool. [040.patch](040.patch) adds the Fleet kind
+requires a Resource's owner of kind Pool. The [landed result schema](../../../spec/core/results.yaml) adds the Fleet kind
 and requires an Agent's owner of kind Fleet. The Resource condition stays in force
 when the owner property's allowed kinds widen to include Fleet.
 

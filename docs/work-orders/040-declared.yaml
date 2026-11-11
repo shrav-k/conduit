@@ -1,0 +1,712 @@
+[
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added first-start-protected-without-pool",
+    "kind": "added",
+    "cases": [
+      "first-start-protected-without-pool"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added first-start-root-system",
+    "kind": "added",
+    "cases": [
+      "first-start-root-system"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added first-start-trust-domain",
+    "kind": "added",
+    "cases": [
+      "first-start-trust-domain"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added fleet-consumer",
+    "kind": "added",
+    "cases": [
+      "fleet-consumer"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added fleet-instance",
+    "kind": "added",
+    "cases": [
+      "fleet-instance"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added fleet-names",
+    "kind": "added",
+    "cases": [
+      "fleet-names"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added list-from-first-start",
+    "kind": "added",
+    "cases": [
+      "list-from-first-start"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added list-kind-filter",
+    "kind": "added",
+    "cases": [
+      "list-kind-filter"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added list-management",
+    "kind": "added",
+    "cases": [
+      "list-management"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-001/FLEET-004/FLEET-006/FST-002/FST-007/OPS-036 C9 new authored case: added list-refused-without-list",
+    "kind": "added",
+    "cases": [
+      "list-refused-without-list"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: expectation first-start",
+    "kind": "expectation",
+    "cases": [
+      "first-start"
+    ],
+    "paths": [
+      "/steps/0/expect/records/*/id",
+      "/steps/0/expect/records/14/data/action",
+      "/steps/0/expect/records/14/data/cause",
+      "/steps/0/expect/records/14/data/previous",
+      "/steps/0/expect/records/14/data/state",
+      "/steps/0/expect/records/14/data/target",
+      "/steps/0/expect/records/14/source",
+      "/steps/0/expect/records/14/specversion",
+      "/steps/0/expect/records/14/time",
+      "/steps/0/expect/records/14/type",
+      "/steps/0/expect/records/15/data/action",
+      "/steps/0/expect/records/15/data/cause",
+      "/steps/0/expect/records/15/data/previous",
+      "/steps/0/expect/records/15/data/state",
+      "/steps/0/expect/records/15/data/target",
+      "/steps/0/expect/records/15/source",
+      "/steps/0/expect/records/15/specversion",
+      "/steps/0/expect/records/15/time",
+      "/steps/0/expect/records/15/type",
+      "/steps/0/expect/required_promises/*",
+      "/steps/0/expect/state/allocated_ids/*",
+      "/steps/0/expect/state/objects/0/status/trustDomain",
+      "/steps/0/expect/state/objects/5/operations/*",
+      "/steps/0/expect/state/objects/5/provenance/cause",
+      "/steps/0/expect/state/objects/6/operations/*",
+      "/steps/0/expect/state/objects/6/provenance/cause",
+      "/steps/0/expect/state/objects/7/capability",
+      "/steps/0/expect/state/objects/7/config",
+      "/steps/0/expect/state/objects/7/consumer",
+      "/steps/0/expect/state/objects/7/first_start",
+      "/steps/0/expect/state/objects/7/from",
+      "/steps/0/expect/state/objects/7/id",
+      "/steps/0/expect/state/objects/7/kind",
+      "/steps/0/expect/state/objects/7/local_name",
+      "/steps/0/expect/state/objects/7/name",
+      "/steps/0/expect/state/objects/7/open",
+      "/steps/0/expect/state/objects/7/operations/*",
+      "/steps/0/expect/state/objects/7/provenance/cause",
+      "/steps/0/expect/state/objects/7/revision",
+      "/steps/0/expect/state/objects/7/state",
+      "/steps/0/expect/state/objects/7/target",
+      "/steps/0/expect/state/records/*/id",
+      "/steps/0/expect/state/records/14/data/action",
+      "/steps/0/expect/state/records/14/data/cause",
+      "/steps/0/expect/state/records/14/data/previous",
+      "/steps/0/expect/state/records/14/data/state",
+      "/steps/0/expect/state/records/14/data/target",
+      "/steps/0/expect/state/records/14/source",
+      "/steps/0/expect/state/records/14/specversion",
+      "/steps/0/expect/state/records/14/time",
+      "/steps/0/expect/state/records/14/type",
+      "/steps/0/expect/state/records/15/data/action",
+      "/steps/0/expect/state/records/15/data/cause",
+      "/steps/0/expect/state/records/15/data/previous",
+      "/steps/0/expect/state/records/15/data/state",
+      "/steps/0/expect/state/records/15/data/target",
+      "/steps/0/expect/state/records/15/source",
+      "/steps/0/expect/state/records/15/specversion",
+      "/steps/0/expect/state/records/15/time",
+      "/steps/0/expect/state/records/15/type"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: expectation first-start-lifecycle-protected",
+    "kind": "expectation",
+    "cases": [
+      "first-start-lifecycle-protected"
+    ],
+    "paths": [
+      "/steps/0/expect/records/*/id",
+      "/steps/0/expect/records/14/data/action",
+      "/steps/0/expect/records/14/data/cause",
+      "/steps/0/expect/records/14/data/previous",
+      "/steps/0/expect/records/14/data/state",
+      "/steps/0/expect/records/14/data/target",
+      "/steps/0/expect/records/14/source",
+      "/steps/0/expect/records/14/specversion",
+      "/steps/0/expect/records/14/time",
+      "/steps/0/expect/records/14/type",
+      "/steps/0/expect/records/15/data/action",
+      "/steps/0/expect/records/15/data/cause",
+      "/steps/0/expect/records/15/data/previous",
+      "/steps/0/expect/records/15/data/state",
+      "/steps/0/expect/records/15/data/target",
+      "/steps/0/expect/records/15/source",
+      "/steps/0/expect/records/15/specversion",
+      "/steps/0/expect/records/15/time",
+      "/steps/0/expect/records/15/type",
+      "/steps/0/expect/required_promises/*",
+      "/steps/0/expect/state/allocated_ids/*",
+      "/steps/0/expect/state/objects/0/status/trustDomain",
+      "/steps/0/expect/state/objects/5/operations/*",
+      "/steps/0/expect/state/objects/5/provenance/cause",
+      "/steps/0/expect/state/objects/6/operations/*",
+      "/steps/0/expect/state/objects/6/provenance/cause",
+      "/steps/0/expect/state/objects/7/capability",
+      "/steps/0/expect/state/objects/7/config",
+      "/steps/0/expect/state/objects/7/consumer",
+      "/steps/0/expect/state/objects/7/first_start",
+      "/steps/0/expect/state/objects/7/from",
+      "/steps/0/expect/state/objects/7/id",
+      "/steps/0/expect/state/objects/7/kind",
+      "/steps/0/expect/state/objects/7/local_name",
+      "/steps/0/expect/state/objects/7/name",
+      "/steps/0/expect/state/objects/7/open",
+      "/steps/0/expect/state/objects/7/operations/*",
+      "/steps/0/expect/state/objects/7/provenance/cause",
+      "/steps/0/expect/state/objects/7/revision",
+      "/steps/0/expect/state/objects/7/state",
+      "/steps/0/expect/state/objects/7/target",
+      "/steps/0/expect/state/records/*/id",
+      "/steps/0/expect/state/records/14/data/action",
+      "/steps/0/expect/state/records/14/data/cause",
+      "/steps/0/expect/state/records/14/data/previous",
+      "/steps/0/expect/state/records/14/data/state",
+      "/steps/0/expect/state/records/14/data/target",
+      "/steps/0/expect/state/records/14/source",
+      "/steps/0/expect/state/records/14/specversion",
+      "/steps/0/expect/state/records/14/time",
+      "/steps/0/expect/state/records/14/type",
+      "/steps/0/expect/state/records/15/data/action",
+      "/steps/0/expect/state/records/15/data/cause",
+      "/steps/0/expect/state/records/15/data/previous",
+      "/steps/0/expect/state/records/15/data/state",
+      "/steps/0/expect/state/records/15/data/target",
+      "/steps/0/expect/state/records/15/source",
+      "/steps/0/expect/state/records/15/specversion",
+      "/steps/0/expect/state/records/15/time",
+      "/steps/0/expect/state/records/15/type"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005; FST-006/ACC-033 C9: expectation first-start-protected",
+    "kind": "expectation",
+    "cases": [
+      "first-start-protected"
+    ],
+    "paths": [
+      "/steps/0/expect/records/*/id",
+      "/steps/0/expect/records/14/data/action",
+      "/steps/0/expect/records/14/data/cause",
+      "/steps/0/expect/records/14/data/previous",
+      "/steps/0/expect/records/14/data/state",
+      "/steps/0/expect/records/14/data/target",
+      "/steps/0/expect/records/14/source",
+      "/steps/0/expect/records/14/specversion",
+      "/steps/0/expect/records/14/time",
+      "/steps/0/expect/records/14/type",
+      "/steps/0/expect/records/15/data/action",
+      "/steps/0/expect/records/15/data/cause",
+      "/steps/0/expect/records/15/data/previous",
+      "/steps/0/expect/records/15/data/state",
+      "/steps/0/expect/records/15/data/target",
+      "/steps/0/expect/records/15/source",
+      "/steps/0/expect/records/15/specversion",
+      "/steps/0/expect/records/15/time",
+      "/steps/0/expect/records/15/type",
+      "/steps/0/expect/required_promises/*",
+      "/steps/0/expect/state/allocated_ids/*",
+      "/steps/0/expect/state/objects/0/status/trustDomain",
+      "/steps/0/expect/state/objects/5/operations/*",
+      "/steps/0/expect/state/objects/5/provenance/cause",
+      "/steps/0/expect/state/objects/6/operations/*",
+      "/steps/0/expect/state/objects/6/provenance/cause",
+      "/steps/0/expect/state/objects/7/capability",
+      "/steps/0/expect/state/objects/7/config",
+      "/steps/0/expect/state/objects/7/consumer",
+      "/steps/0/expect/state/objects/7/first_start",
+      "/steps/0/expect/state/objects/7/from",
+      "/steps/0/expect/state/objects/7/id",
+      "/steps/0/expect/state/objects/7/kind",
+      "/steps/0/expect/state/objects/7/local_name",
+      "/steps/0/expect/state/objects/7/name",
+      "/steps/0/expect/state/objects/7/open",
+      "/steps/0/expect/state/objects/7/operations/*",
+      "/steps/0/expect/state/objects/7/provenance/cause",
+      "/steps/0/expect/state/objects/7/revision",
+      "/steps/0/expect/state/objects/7/state",
+      "/steps/0/expect/state/objects/7/target",
+      "/steps/0/expect/state/records/*/id",
+      "/steps/0/expect/state/records/14/data/action",
+      "/steps/0/expect/state/records/14/data/cause",
+      "/steps/0/expect/state/records/14/data/previous",
+      "/steps/0/expect/state/records/14/data/state",
+      "/steps/0/expect/state/records/14/data/target",
+      "/steps/0/expect/state/records/14/source",
+      "/steps/0/expect/state/records/14/specversion",
+      "/steps/0/expect/state/records/14/time",
+      "/steps/0/expect/state/records/14/type",
+      "/steps/0/expect/state/records/15/data/action",
+      "/steps/0/expect/state/records/15/data/cause",
+      "/steps/0/expect/state/records/15/data/previous",
+      "/steps/0/expect/state/records/15/data/state",
+      "/steps/0/expect/state/records/15/data/target",
+      "/steps/0/expect/state/records/15/source",
+      "/steps/0/expect/state/records/15/specversion",
+      "/steps/0/expect/state/records/15/time",
+      "/steps/0/expect/state/records/15/type",
+      "/steps/2/expect/absent/0",
+      "/steps/2/expect/absent/1",
+      "/steps/2/expect/absent/2",
+      "/steps/2/expect/records/0/data/reason",
+      "/steps/2/expect/records/1/data/reason",
+      "/steps/2/expect/reply/diagnostics/0/ruleId",
+      "/steps/2/expect/required_promises/*",
+      "/steps/3/expect/absent/0",
+      "/steps/3/expect/absent/1",
+      "/steps/3/expect/absent/2",
+      "/steps/3/expect/records/0/data/reason",
+      "/steps/3/expect/records/1/data/reason",
+      "/steps/3/expect/reply/diagnostics/0/ruleId",
+      "/steps/3/expect/required_promises/*",
+      "/steps/4/expect/absent/0",
+      "/steps/4/expect/absent/1",
+      "/steps/4/expect/absent/2",
+      "/steps/4/expect/records/0/data/reason",
+      "/steps/4/expect/records/1/data/reason",
+      "/steps/4/expect/reply/diagnostics/0/ruleId",
+      "/steps/4/expect/required_promises/*"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: expectation first-start-repeat",
+    "kind": "expectation",
+    "cases": [
+      "first-start-repeat"
+    ],
+    "paths": [
+      "/steps/0/expect/records/*/id",
+      "/steps/0/expect/records/14/data/action",
+      "/steps/0/expect/records/14/data/cause",
+      "/steps/0/expect/records/14/data/previous",
+      "/steps/0/expect/records/14/data/state",
+      "/steps/0/expect/records/14/data/target",
+      "/steps/0/expect/records/14/source",
+      "/steps/0/expect/records/14/specversion",
+      "/steps/0/expect/records/14/time",
+      "/steps/0/expect/records/14/type",
+      "/steps/0/expect/records/15/data/action",
+      "/steps/0/expect/records/15/data/cause",
+      "/steps/0/expect/records/15/data/previous",
+      "/steps/0/expect/records/15/data/state",
+      "/steps/0/expect/records/15/data/target",
+      "/steps/0/expect/records/15/source",
+      "/steps/0/expect/records/15/specversion",
+      "/steps/0/expect/records/15/time",
+      "/steps/0/expect/records/15/type",
+      "/steps/0/expect/required_promises/*",
+      "/steps/0/expect/state/allocated_ids/*",
+      "/steps/0/expect/state/objects/0/status/trustDomain",
+      "/steps/0/expect/state/objects/5/operations/*",
+      "/steps/0/expect/state/objects/5/provenance/cause",
+      "/steps/0/expect/state/objects/6/operations/*",
+      "/steps/0/expect/state/objects/6/provenance/cause",
+      "/steps/0/expect/state/objects/7/capability",
+      "/steps/0/expect/state/objects/7/config",
+      "/steps/0/expect/state/objects/7/consumer",
+      "/steps/0/expect/state/objects/7/first_start",
+      "/steps/0/expect/state/objects/7/from",
+      "/steps/0/expect/state/objects/7/id",
+      "/steps/0/expect/state/objects/7/kind",
+      "/steps/0/expect/state/objects/7/local_name",
+      "/steps/0/expect/state/objects/7/name",
+      "/steps/0/expect/state/objects/7/open",
+      "/steps/0/expect/state/objects/7/operations/*",
+      "/steps/0/expect/state/objects/7/provenance/cause",
+      "/steps/0/expect/state/objects/7/revision",
+      "/steps/0/expect/state/objects/7/state",
+      "/steps/0/expect/state/objects/7/target",
+      "/steps/0/expect/state/records/*/id",
+      "/steps/0/expect/state/records/14/data/action",
+      "/steps/0/expect/state/records/14/data/cause",
+      "/steps/0/expect/state/records/14/data/previous",
+      "/steps/0/expect/state/records/14/data/state",
+      "/steps/0/expect/state/records/14/data/target",
+      "/steps/0/expect/state/records/14/source",
+      "/steps/0/expect/state/records/14/specversion",
+      "/steps/0/expect/state/records/14/time",
+      "/steps/0/expect/state/records/14/type",
+      "/steps/0/expect/state/records/15/data/action",
+      "/steps/0/expect/state/records/15/data/cause",
+      "/steps/0/expect/state/records/15/data/previous",
+      "/steps/0/expect/state/records/15/data/state",
+      "/steps/0/expect/state/records/15/data/target",
+      "/steps/0/expect/state/records/15/source",
+      "/steps/0/expect/state/records/15/specversion",
+      "/steps/0/expect/state/records/15/time",
+      "/steps/0/expect/state/records/15/type",
+      "/steps/1/expect/state/allocated_ids/*",
+      "/steps/1/expect/state/objects/0/status/trustDomain",
+      "/steps/1/expect/state/objects/5/operations/*",
+      "/steps/1/expect/state/objects/5/provenance/cause",
+      "/steps/1/expect/state/objects/6/operations/*",
+      "/steps/1/expect/state/objects/6/provenance/cause",
+      "/steps/1/expect/state/objects/7/capability",
+      "/steps/1/expect/state/objects/7/config",
+      "/steps/1/expect/state/objects/7/consumer",
+      "/steps/1/expect/state/objects/7/first_start",
+      "/steps/1/expect/state/objects/7/from",
+      "/steps/1/expect/state/objects/7/id",
+      "/steps/1/expect/state/objects/7/kind",
+      "/steps/1/expect/state/objects/7/local_name",
+      "/steps/1/expect/state/objects/7/name",
+      "/steps/1/expect/state/objects/7/open",
+      "/steps/1/expect/state/objects/7/operations/*",
+      "/steps/1/expect/state/objects/7/provenance/cause",
+      "/steps/1/expect/state/objects/7/revision",
+      "/steps/1/expect/state/objects/7/state",
+      "/steps/1/expect/state/objects/7/target",
+      "/steps/1/expect/state/records/*/id",
+      "/steps/1/expect/state/records/14/data/action",
+      "/steps/1/expect/state/records/14/data/cause",
+      "/steps/1/expect/state/records/14/data/previous",
+      "/steps/1/expect/state/records/14/data/state",
+      "/steps/1/expect/state/records/14/data/target",
+      "/steps/1/expect/state/records/14/source",
+      "/steps/1/expect/state/records/14/specversion",
+      "/steps/1/expect/state/records/14/time",
+      "/steps/1/expect/state/records/14/type",
+      "/steps/1/expect/state/records/15/data/action",
+      "/steps/1/expect/state/records/15/data/cause",
+      "/steps/1/expect/state/records/15/data/previous",
+      "/steps/1/expect/state/records/15/data/state",
+      "/steps/1/expect/state/records/15/data/target",
+      "/steps/1/expect/state/records/15/source",
+      "/steps/1/expect/state/records/15/specversion",
+      "/steps/1/expect/state/records/15/time",
+      "/steps/1/expect/state/records/15/type",
+      "/steps/1/expect/state/started"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: expectation s1-whole",
+    "kind": "expectation",
+    "cases": [
+      "s1-whole"
+    ],
+    "paths": [
+      "/steps/0/expect/records/*/id",
+      "/steps/0/expect/records/14/data/action",
+      "/steps/0/expect/records/14/data/cause",
+      "/steps/0/expect/records/14/data/previous",
+      "/steps/0/expect/records/14/data/state",
+      "/steps/0/expect/records/14/data/target",
+      "/steps/0/expect/records/14/source",
+      "/steps/0/expect/records/14/specversion",
+      "/steps/0/expect/records/14/time",
+      "/steps/0/expect/records/14/type",
+      "/steps/0/expect/records/15/data/action",
+      "/steps/0/expect/records/15/data/cause",
+      "/steps/0/expect/records/15/data/previous",
+      "/steps/0/expect/records/15/data/state",
+      "/steps/0/expect/records/15/data/target",
+      "/steps/0/expect/records/15/source",
+      "/steps/0/expect/records/15/specversion",
+      "/steps/0/expect/records/15/time",
+      "/steps/0/expect/records/15/type",
+      "/steps/0/expect/required_promises/*",
+      "/steps/0/expect/state/allocated_ids/*",
+      "/steps/0/expect/state/objects/0/status/trustDomain",
+      "/steps/0/expect/state/objects/5/operations/*",
+      "/steps/0/expect/state/objects/5/provenance/cause",
+      "/steps/0/expect/state/objects/6/operations/*",
+      "/steps/0/expect/state/objects/6/provenance/cause",
+      "/steps/0/expect/state/objects/7/capability",
+      "/steps/0/expect/state/objects/7/config",
+      "/steps/0/expect/state/objects/7/consumer",
+      "/steps/0/expect/state/objects/7/first_start",
+      "/steps/0/expect/state/objects/7/from",
+      "/steps/0/expect/state/objects/7/id",
+      "/steps/0/expect/state/objects/7/kind",
+      "/steps/0/expect/state/objects/7/local_name",
+      "/steps/0/expect/state/objects/7/name",
+      "/steps/0/expect/state/objects/7/open",
+      "/steps/0/expect/state/objects/7/operations/*",
+      "/steps/0/expect/state/objects/7/provenance/cause",
+      "/steps/0/expect/state/objects/7/revision",
+      "/steps/0/expect/state/objects/7/state",
+      "/steps/0/expect/state/objects/7/target",
+      "/steps/0/expect/state/records/*/id",
+      "/steps/0/expect/state/records/14/data/action",
+      "/steps/0/expect/state/records/14/data/cause",
+      "/steps/0/expect/state/records/14/data/previous",
+      "/steps/0/expect/state/records/14/data/state",
+      "/steps/0/expect/state/records/14/data/target",
+      "/steps/0/expect/state/records/14/source",
+      "/steps/0/expect/state/records/14/specversion",
+      "/steps/0/expect/state/records/14/time",
+      "/steps/0/expect/state/records/14/type",
+      "/steps/0/expect/state/records/15/data/action",
+      "/steps/0/expect/state/records/15/data/cause",
+      "/steps/0/expect/state/records/15/data/previous",
+      "/steps/0/expect/state/records/15/data/state",
+      "/steps/0/expect/state/records/15/data/target",
+      "/steps/0/expect/state/records/15/source",
+      "/steps/0/expect/state/records/15/specversion",
+      "/steps/0/expect/state/records/15/time",
+      "/steps/0/expect/state/records/15/type",
+      "/steps/12/expect/object_count",
+      "/steps/2/expect/object_count",
+      "/steps/38/expect/object_count",
+      "/steps/50/expect/object_count",
+      "/steps/52/expect/object_count",
+      "/steps/57/expect/object_count"
+    ]
+  },
+  {
+    "name": "FST-002 C10 final root operation lists in shared snapshot: fixture *",
+    "kind": "fixture",
+    "cases": [
+      "*"
+    ],
+    "paths": [
+      "conformance/fixtures/root-system-state.json"
+    ]
+  },
+  {
+    "name": "FLEET-001/ACC-033/OPS-023 step 2: fixture access-fixed-kind-references",
+    "kind": "fixture",
+    "cases": [
+      "access-fixed-kind-references"
+    ],
+    "paths": [
+      "conformance/conventions/access/fixed-kind-references/observations.json"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005; FST-006/ACC-033 C9: flip first-start-protected",
+    "kind": "flip",
+    "cases": [
+      "first-start-protected"
+    ],
+    "paths": [
+      "/steps/2/expect/reply/reason",
+      "/steps/3/expect/reply/reason",
+      "/steps/4/expect/reply/reason"
+    ],
+    "before": "refused",
+    "after": "invalid",
+    "operation": "replace"
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: input first-start",
+    "kind": "input",
+    "cases": [
+      "first-start"
+    ],
+    "paths": [
+      "/steps/0/capture/root-system",
+      "/steps/0/input/evidence/ids/21",
+      "/steps/0/input/evidence/ids/22",
+      "/steps/0/input/evidence/ids/23",
+      "/steps/0/input/evidence/revisions/7",
+      "/steps/0/input/evidence/suffixes/2",
+      "/steps/0/input/trustDomain"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: input first-start-lifecycle-protected",
+    "kind": "input",
+    "cases": [
+      "first-start-lifecycle-protected"
+    ],
+    "paths": [
+      "/steps/0/capture/root-system",
+      "/steps/0/input/evidence/ids/21",
+      "/steps/0/input/evidence/ids/22",
+      "/steps/0/input/evidence/ids/23",
+      "/steps/0/input/evidence/revisions/7",
+      "/steps/0/input/evidence/suffixes/2",
+      "/steps/0/input/trustDomain"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: input first-start-protected",
+    "kind": "input",
+    "cases": [
+      "first-start-protected"
+    ],
+    "paths": [
+      "/steps/0/capture/root-system",
+      "/steps/0/input/evidence/ids/21",
+      "/steps/0/input/evidence/ids/22",
+      "/steps/0/input/evidence/ids/23",
+      "/steps/0/input/evidence/revisions/7",
+      "/steps/0/input/evidence/suffixes/2",
+      "/steps/0/input/trustDomain"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: input first-start-repeat",
+    "kind": "input",
+    "cases": [
+      "first-start-repeat"
+    ],
+    "paths": [
+      "/steps/0/capture/root-system",
+      "/steps/0/input/evidence/ids/21",
+      "/steps/0/input/evidence/ids/22",
+      "/steps/0/input/evidence/ids/23",
+      "/steps/0/input/evidence/revisions/7",
+      "/steps/0/input/evidence/suffixes/2",
+      "/steps/0/input/trustDomain",
+      "/steps/1/input/trustDomain"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: input s1-whole",
+    "kind": "input",
+    "cases": [
+      "s1-whole"
+    ],
+    "paths": [
+      "/steps/0/capture/root-system",
+      "/steps/0/input/evidence/ids/21",
+      "/steps/0/input/evidence/ids/22",
+      "/steps/0/input/evidence/ids/23",
+      "/steps/0/input/evidence/revisions/7",
+      "/steps/0/input/evidence/suffixes/2",
+      "/steps/0/input/trustDomain"
+    ]
+  },
+  {
+    "name": "FLEET-001/ACC-033/OPS-023 step 2: metadata access-fixed-kind-references",
+    "kind": "metadata",
+    "cases": [
+      "access-fixed-kind-references"
+    ],
+    "paths": [
+      "/promises/*"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: metadata first-start",
+    "kind": "metadata",
+    "cases": [
+      "first-start"
+    ],
+    "paths": [
+      "/promises/*"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: metadata first-start-lifecycle-protected",
+    "kind": "metadata",
+    "cases": [
+      "first-start-lifecycle-protected"
+    ],
+    "paths": [
+      "/promises/*"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: metadata first-start-protected",
+    "kind": "metadata",
+    "cases": [
+      "first-start-protected"
+    ],
+    "paths": [
+      "/promises/*",
+      "/title"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: metadata first-start-repeat",
+    "kind": "metadata",
+    "cases": [
+      "first-start-repeat"
+    ],
+    "paths": [
+      "/promises/*"
+    ]
+  },
+  {
+    "name": "FST-002/FST-007/ACC-044/FLEET-005: metadata s1-whole",
+    "kind": "metadata",
+    "cases": [
+      "s1-whole"
+    ],
+    "paths": [
+      "/promises/*"
+    ]
+  },
+  {
+    "name": "OPS-036/ACC-033/ACC-016/IFC-020/IFC-021: round 2 regression list-onward-caller",
+    "kind": "added",
+    "cases": [
+      "list-onward-caller"
+    ],
+    "paths": [
+      ""
+    ]
+  },
+  {
+    "name": "FLEET-006/OBJ-025/SUB-003/IFC-025: round 2 regression fleet-register-name-clash",
+    "kind": "added",
+    "cases": [
+      "fleet-register-name-clash"
+    ],
+    "paths": [
+      ""
+    ]
+  }
+]

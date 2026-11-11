@@ -30,7 +30,7 @@ const SCHEMA_PLACES: &[(&str, &[&str])] = &[
     ),
 ];
 
-const FAMILIES: [&str; 5] = ["Interface", "Agent", "Resource", "Pool", "Conduit"];
+const FAMILIES: [&str; 6] = ["Interface", "Agent", "Resource", "Pool", "Fleet", "Conduit"];
 
 /// What SCH-016 finds in the schemas of one document.
 pub(crate) fn check_patterns(document: &Document) -> Vec<Diagnostic> {

@@ -27,6 +27,9 @@ fn run() -> Result<()> {
     let mut as_instance = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--trust-domain" if command == "init" => {
+                config.trust_domain = Some(args.next().ok_or("--trust-domain needs DOMAIN")?);
+            }
             "--package" if command == "register" => {
                 packages.push(args.next().ok_or("--package needs ARCHIVE#SHA256")?)
             }
@@ -337,7 +340,7 @@ fn set_up_instances(
     let mut success = true;
     let state = shell.state()?;
     let root = object_id(&state, "root")?;
-    for kind in ["Pool", "Resource", "Agent", "Interface"] {
+    for kind in ["Pool", "Fleet", "Resource", "Agent", "Interface"] {
         for object in state.objects.iter().filter(|v| {
             v["kind"] == kind
                 && (v["state"] == "registered"

@@ -15,7 +15,10 @@
         "PRV-014",
         "REC-001",
         "REC-002",
-        "REC-003"
+        "REC-003",
+        "FST-007",
+        "FLEET-005",
+        "ACC-044"
       ],
       "safety_rows": [
         "first-start"
@@ -27,7 +30,11 @@
       "promises": [
         "FST-001",
         "FST-005",
-        "REC-003"
+        "REC-003",
+        "FST-007",
+        "FST-002",
+        "FLEET-005",
+        "ACC-044"
       ],
       "safety_rows": [
         "first-start-repeat"
@@ -43,7 +50,11 @@
         "REC-001",
         "REC-002",
         "ACC-033",
-        "OPS-023"
+        "OPS-023",
+        "FST-007",
+        "FST-002",
+        "FLEET-005",
+        "ACC-044"
       ],
       "safety_rows": [
         "first-start-protected"
@@ -58,7 +69,11 @@
         "REC-002",
         "REC-003",
         "ACC-033",
-        "OPS-023"
+        "OPS-023",
+        "FST-007",
+        "FST-002",
+        "FLEET-005",
+        "ACC-044"
       ],
       "safety_rows": [
         "first-start-lifecycle-protected"
@@ -2733,7 +2748,8 @@
         "OBJ-002",
         "OBJ-006",
         "ACC-033",
-        "LIF-034"
+        "LIF-034",
+        "FLEET-001"
       ]
     },
     {
@@ -4139,7 +4155,10 @@
         "PKG-003",
         "PKG-021",
         "NAM-014",
-        "SUB-008"
+        "SUB-008",
+        "FST-007",
+        "FLEET-005",
+        "ACC-044"
       ]
     },
     {
@@ -4478,6 +4497,130 @@
         "SCH-009",
         "SCH-015"
       ]
+    },
+    {
+      "id": "first-start-root-system",
+      "case": "conventions/first-start/root-system/case.yaml",
+      "promises": [
+        "FST-002",
+        "FST-005",
+        "FLEET-005",
+        "ACC-044",
+        "ACC-024"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "first-start-trust-domain",
+      "case": "conventions/first-start/trust-domain/case.yaml",
+      "promises": [
+        "FST-007",
+        "FST-001"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "fleet-instance",
+      "case": "language/fleets/instance/case.yaml",
+      "promises": [
+        "FLEET-001",
+        "OBJ-009",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "fleet-names",
+      "case": "language/fleets/names/case.yaml",
+      "promises": [
+        "FLEET-006",
+        "OBJ-023",
+        "OBJ-025"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "fleet-consumer",
+      "case": "conventions/fleets/consumer/case.yaml",
+      "promises": [
+        "FLEET-004",
+        "IFC-022"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-management",
+      "case": "conventions/list/management/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "LIF-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-kind-filter",
+      "case": "conventions/list/kind-filter/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "LIF-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-refused-without-list",
+      "case": "conventions/list/refused-without-list/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-001",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-from-first-start",
+      "case": "conventions/list/from-first-start/case.yaml",
+      "promises": [
+        "OPS-036",
+        "FST-002",
+        "FST-007",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "first-start-protected-without-pool",
+      "case": "language/first-start/protected-without-pool/case.yaml",
+      "promises": [
+        "FST-006",
+        "ACC-033",
+        "OPS-023"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-onward-caller",
+      "case": "conventions/list/onward-caller/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "ACC-016",
+        "IFC-020",
+        "IFC-021"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "fleet-register-name-clash",
+      "case": "conventions/fleets/register-name-clash/case.yaml",
+      "promises": [
+        "FLEET-006",
+        "OBJ-025",
+        "SUB-003",
+        "IFC-025"
+      ],
+      "safety_rows": []
     }
   ],
   "s1_coverage": [

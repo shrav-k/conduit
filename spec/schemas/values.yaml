@@ -35,7 +35,7 @@ kind: Schema
 metadata:
   name: name.v1
   description: >-
-    The name of a template or an instance of one of the five families, and a name a document
+    The name of a template or an instance of one of the six families, and a name a document
     chooses for a member of a named map.
 spec:
   type: string

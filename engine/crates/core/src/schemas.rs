@@ -719,7 +719,7 @@ pub(crate) fn roots(document: &Value) -> Vec<(String, Value)> {
         _ => {}
     }
     if kind == "Requirement"
-        || (["Agent", "Resource", "Pool", "Interface", "Conduit"].contains(&kind)
+        || (["Agent", "Resource", "Pool", "Fleet", "Interface", "Conduit"].contains(&kind)
             && document.get("from").is_none())
     {
         if let Some(inputs) = document["spec"]["inputs"].as_object() {

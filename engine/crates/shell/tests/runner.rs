@@ -176,8 +176,11 @@ fn lines(path: &Path) -> Vec<Value> {
         .filter_map(|s| serde_json::from_str(s).ok())
         .collect()
 }
-fn until(mut ready: impl FnMut() -> bool) {
-    let deadline = Instant::now() + Duration::from_secs(30);
+fn until(ready: impl FnMut() -> bool) {
+    until_for(Duration::from_secs(30), ready);
+}
+fn until_for(timeout: Duration, mut ready: impl FnMut() -> bool) {
+    let deadline = Instant::now() + timeout;
     while !ready() {
         assert!(Instant::now() < deadline, "wait deadline");
         std::thread::sleep(Duration::from_millis(10));
@@ -850,7 +853,11 @@ fn killed_engine_ends_run_and_descendant_and_does_not_pass_token() {
         .stderr(Stdio::null())
         .spawn()
         .unwrap();
-    until(|| parent.path().join("ready").is_file());
+    // FST-002's expanded first-start publication and setup happen in the child.
+    // Allow startup under parallel suite load; post-kill waits still use 30 seconds.
+    until_for(Duration::from_secs(120), || {
+        parent.path().join("ready").is_file()
+    });
     let environment: Value =
         serde_json::from_slice(&fs::read(parent.path().join("shared/environment.json")).unwrap())
             .unwrap();

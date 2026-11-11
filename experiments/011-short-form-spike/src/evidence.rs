@@ -119,12 +119,14 @@ impl Harness {
             },
         };
         let mut first_evidence = allocation(1);
-        first_evidence.revisions.truncate(7);
-        first_evidence.suffixes.truncate(2);
+        // FST-002 / FST-007: three declared root Conduits and a fixed test domain.
+        first_evidence.revisions.truncate(8);
+        first_evidence.suffixes.truncate(3);
         let initial = conduit_core::step(
             &State::default(),
             Input::FirstStart {
                 evidence: first_evidence,
+                trust_domain: "short-form-spike.example".into(),
                 machine: Machine {
                     hostname: "spike.example".into(),
                     labels: BTreeMap::from([

@@ -13,7 +13,7 @@
 #   entry-reference.v1       POOL-005 (`{entry: name}`)
 #   actor-reference.v1       the definition of actor: an Interface or an Agent
 #   consumer-reference.v1    OBJ-013, CON-027 (an Interface, an Agent or a Resource)
-#   target-reference.v1      OBJ-013, CON-027 (an Interface, an Agent, a Resource or a Pool)
+#   target-reference.v1      OBJ-013, CON-027 (an Interface, an Agent, a Resource, a Pool or a Fleet)
 #   secret-reference.v1      SEC-001 (a reference to a Resource, written with its kind, and
 #                            never a bare name or a literal), SEC-002, OBJ-021
 #   every one of them        OBJ-009, OBJ-021 (the resolved form)
@@ -105,24 +105,44 @@ kind: Schema
 metadata:
   name: reference.v1
   description: >-
-    A reference to an object of any family, written with its kind. The engine stores
-    `{kind, id}` in its place, the resolved form, which only the engine writes.
+    A reference to an object of any family, written with its kind. The engine stores `{kind, id}`
+    in its place, the resolved form, which only the engine writes.
 spec:
   anyOf:
-    - type: object
-      properties:
-        kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
-        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
-      required: [kind, name]
-      additionalProperties: false
-    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
-    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
-    - type: object
-      properties:
-        kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
-        id: {$ref: github.com/shrav-k/conduit/core#id.v1}
-      required: [kind, id]
-      additionalProperties: false
+  - type: object
+    properties:
+      kind:
+        enum:
+        - Interface
+        - Agent
+        - Resource
+        - Pool
+        - Fleet
+        - Conduit
+      name:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+    required:
+    - kind
+    - name
+    additionalProperties: false
+  - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+  - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
+  - type: object
+    properties:
+      kind:
+        enum:
+        - Interface
+        - Agent
+        - Resource
+        - Pool
+        - Fleet
+        - Conduit
+      id:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - kind
+    - id
+    additionalProperties: false
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -295,25 +315,43 @@ kind: Schema
 metadata:
   name: target-reference.v1
   description: >-
-    A reference to an instance that may be the target of a Conduit: an Interface, an Agent, a
-    Resource or a Pool, written with its kind. The engine stores `{kind, id}` in its place,
-    the resolved form, which only the engine writes.
+    A reference to an instance that may be the target of a Conduit: an Interface, an Agent, a Resource,
+    a Pool or a Fleet, written with its kind. The engine stores `{kind, id}` in its place, the resolved
+    form, which only the engine writes.
 spec:
   anyOf:
-    - type: object
-      properties:
-        kind: {enum: [Interface, Agent, Resource, Pool]}
-        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
-      required: [kind, name]
-      additionalProperties: false
-    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
-    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
-    - type: object
-      properties:
-        kind: {enum: [Interface, Agent, Resource, Pool]}
-        id: {$ref: github.com/shrav-k/conduit/core#id.v1}
-      required: [kind, id]
-      additionalProperties: false
+  - type: object
+    properties:
+      kind:
+        enum:
+        - Interface
+        - Agent
+        - Resource
+        - Pool
+        - Fleet
+      name:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+    required:
+    - kind
+    - name
+    additionalProperties: false
+  - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+  - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
+  - type: object
+    properties:
+      kind:
+        enum:
+        - Interface
+        - Agent
+        - Resource
+        - Pool
+        - Fleet
+      id:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - kind
+    - id
+    additionalProperties: false
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -341,3 +379,34 @@ spec:
         id: {$ref: github.com/shrav-k/conduit/core#id.v1}
       required: [kind, id]
       additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: fleet-reference.v1
+  description: >-
+    A reference to an Agent's owning Fleet (FLEET-002, OBJ-006). The name alone, kind and name, or
+    the resolved kind and ID; only the engine writes the resolved form.
+spec:
+  anyOf:
+  - $ref: github.com/shrav-k/conduit/core#name.v1
+  - type: object
+    properties:
+      kind:
+        const: Fleet
+      name:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+    required:
+    - kind
+    - name
+    additionalProperties: false
+  - type: object
+    properties:
+      kind:
+        const: Fleet
+      id:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - kind
+    - id
+    additionalProperties: false

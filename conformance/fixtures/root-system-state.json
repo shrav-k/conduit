@@ -95,7 +95,9 @@
         "@core#register-replacement.v1",
         "@core#install.v1",
         "@core#declare-lost.v1",
-        "@core#purge.v1"
+        "@core#purge.v1",
+        "@core#list.v1",
+        "@core#answer.v1"
       ],
       "open": true
     },
@@ -115,7 +117,8 @@
       "operations": [
         "@core#open.v1",
         "@core#close.v1",
-        "@core#reconcile.v1"
+        "@core#reconcile.v1",
+        "@core#lift.v1"
       ],
       "open": true
     },

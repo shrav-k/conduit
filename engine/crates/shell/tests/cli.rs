@@ -78,7 +78,7 @@ fn init_inspect_and_export() {
     );
     assert_eq!(
         ids,
-        after["state"]["objects"].as_array().unwrap()[..7]
+        after["state"]["objects"].as_array().unwrap()[..8]
             .iter()
             .map(|v| v["id"].clone())
             .collect::<Vec<_>>()
@@ -603,7 +603,7 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
         );
         let root = rows.iter().find(|r| r["object"]["name"] == "root").unwrap();
         let paths = root["consumedConduits"].as_array().unwrap();
-        assert_eq!(paths.len(), 4);
+        assert_eq!(paths.len(), 5);
         for target in ["management", "access"] {
             assert!(paths.iter().any(|p| {
                 p["target"]["name"] == target
@@ -652,4 +652,38 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
     }
     assert!(!server.0.wait().unwrap().success());
     assert_inspection(&read_lines(command(&store, "inspect", &[])));
+}
+
+#[test]
+fn init_accepts_and_preserves_the_trust_domain() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("engine");
+    command(&store, "init", &["--trust-domain", "cli.example"]);
+    assert_eq!(
+        std::fs::read_to_string(store.join("engine-id")).unwrap(),
+        "spiffe://cli.example/conduit/engine"
+    );
+    let state: Value =
+        serde_json::from_slice(&std::fs::read(store.join("state.json")).unwrap()).unwrap();
+    assert_eq!(
+        state["state"]["objects"][0]["status"]["trustDomain"],
+        "cli.example"
+    );
+    command(&store, "init", &[]);
+    let rejected = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["init", "--store"])
+        .arg(&store)
+        .args(["--trust-domain", "changed.example"])
+        .output()
+        .unwrap();
+    assert!(!rejected.status.success());
+    assert!(String::from_utf8_lossy(&rejected.stderr).contains("FST-007"));
+    let invalid = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["init", "--store"])
+        .arg(temp.path().join("invalid"))
+        .args(["--trust-domain", "Invalid"])
+        .output()
+        .unwrap();
+    assert!(!invalid.status.success());
+    assert!(String::from_utf8_lossy(&invalid.stderr).contains("FST-007"));
 }

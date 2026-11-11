@@ -8,7 +8,8 @@
     "OBJ-002",
     "OBJ-006",
     "ACC-033",
-    "LIF-034"
+    "LIF-034",
+    "FLEET-001"
   ],
   "title": "Bare names retain their schema-fixed kind beside a same-name owner or Resource",
   "profile": "first-build",

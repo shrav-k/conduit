@@ -53,7 +53,10 @@ pub struct RunIdentity {
 }
 
 impl Authority {
-    pub fn open(store: &Store) -> Result<Self> {
+    pub fn open(store: &Store, configured_domain: Option<&str>) -> Result<Self> {
+        if configured_domain.is_some_and(|d| !conduit_core::valid_trust_domain(d)) {
+            return Err("malformed trustDomain (FST-007)".into());
+        }
         let path = store.directory.join("authority.json");
         let data: AuthorityFile = if path.try_exists().map_err(|e| e.to_string())? {
             serde_json::from_slice(&private_read(&path)?)
@@ -65,7 +68,10 @@ impl Authority {
             }
             let key = rcgen::KeyPair::generate_for(&rcgen::PKCS_ECDSA_P256_SHA256)
                 .map_err(|_| "key generation failed")?;
-            let engine_id = format!("{}.conduit.local", random_text(26)?);
+            // FST-007: UUID v4 supplies 122 random bits; two supply at least 128.
+            let engine_id = configured_domain.map(str::to_owned).unwrap_or_else(|| {
+                format!("{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple())
+            });
             let mut params = rcgen::CertificateParams::new(vec![engine_id.clone()])
                 .map_err(|_| "invalid root parameters")?;
             params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
@@ -89,8 +95,26 @@ impl Authority {
             )?;
             data
         };
+        if !conduit_core::valid_trust_domain(&data.engine_id)
+            || configured_domain.is_some_and(|d| d != data.engine_id)
+            || store.read()?.state.objects.iter().any(|o| {
+                o["name"] == "system"
+                    && o["kind"] == "Pool"
+                    && o["status"]["trustDomain"] != data.engine_id
+            })
+        {
+            return Err("trustDomain never changes (FST-007)".into());
+        }
+        atomic_write(
+            &store.directory,
+            "engine-id",
+            format!("spiffe://{}/conduit/engine", data.engine_id).as_bytes(),
+        )?;
         let key = SigningKey::from_pkcs8_pem(&data.key).map_err(|_| "invalid signing key")?;
         Ok(Self { data, key })
+    }
+    pub fn trust_domain(&self) -> &str {
+        &self.data.engine_id
     }
     fn jwks(&self) -> Result<Value> {
         let point = self.key.verifying_key().to_encoded_point(false);
@@ -105,7 +129,7 @@ impl Authority {
         let expires = issued
             .checked_add_months(chrono::Months::new(100 * 12))
             .ok_or("identity expiration out of range")?;
-        let claims = json!({"sub":format!("spiffe://{}/instance/{instance}",self.data.engine_id),"aud":[address],"iat":issued.timestamp(),"exp":expires.timestamp(),"jti":Uuid::new_v4().to_string()});
+        let claims = json!({"sub":format!("spiffe://{}/conduit/instance/{instance}",self.data.engine_id),"aud":[address],"iat":issued.timestamp(),"exp":expires.timestamp(),"jti":Uuid::new_v4().to_string()});
         let payload =
             B64.encode(serde_json::to_vec(&claims).map_err(|_| "claims encoding failed")?);
         let signed = format!("{header}.{payload}");
@@ -154,7 +178,7 @@ impl Authority {
         let contents = [
             self.data.certificate.clone(),
             self.jwks()?.to_string(),
-            self.data.engine_id.clone(),
+            format!("spiffe://{}/conduit/engine", self.data.engine_id),
             self.token(instance, address)?,
         ];
         for (name, content) in files.iter().zip(contents) {
@@ -209,7 +233,7 @@ impl Authority {
         {
             return None;
         }
-        let prefix = format!("spiffe://{}/instance/", self.data.engine_id);
+        let prefix = format!("spiffe://{}/conduit/instance/", self.data.engine_id);
         let instance = claims["sub"].as_str()?.strip_prefix(&prefix)?;
         let id = Uuid::parse_str(instance).ok()?;
         if id.to_string() != instance || !exists(state, instance) {

@@ -20,16 +20,16 @@ everything the promises say it exports, and everything first start needs.
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
 | [operations.yaml](operations.yaml) | The 31 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
 | [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
-| [types.yaml](types.yaml) | The 5 Type contracts: the basic Interface and Pool types, and the types of a node, of `management` and of `access` |
+| [types.yaml](types.yaml) | The 6 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
-| [references.yaml](references.yaml) | The 12 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
+| [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
 | [results.yaml](results.yaml) | 12 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
-| [templates.yaml](templates.yaml) | The 14 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
+| [templates.yaml](templates.yaml) | The 17 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
 
 The package also exports the 51 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 135 documents, 75 of them Schema contracts,
+its inputs with them. In all the package exports 140 documents, 76 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -461,10 +461,6 @@ URL capability errors -32021. No completion notification drives a hook.
 
 ## First start
 
-The third declared Conduit, `system`, and the root list additions specified by FST-002
-are in the [040 patch](../../docs/work-orders/036b-staged/040.md). The descriptions below
-list the active templates until that build order lands them.
-
 At first start (FST-001, FST-002) the engine instantiates five documents, which are written out
 as an example in
 [spec/schemas/examples/valid/first-start](../schemas/examples/valid/first-start/first-start.yaml).
@@ -477,10 +473,10 @@ submission that held them would be rejected (FST-006, OBJ-002):
 | `local` | Resource | `github.com/shrav-k/conduit/core#node` | Owned by `system`; its own placement; the node that represents the machine the engine runs on, with an empty configuration and the labels reported for that machine (PLC-008, PLC-026) |
 | `management` | Resource | `github.com/shrav-k/conduit/core#management` | Owned by `system`, placed on `local` |
 | `access` | Resource | `github.com/shrav-k/conduit/core#access` | Owned by `system`, placed on `local` |
-| `root` | Interface | `github.com/shrav-k/conduit/core#root` | Declares two Conduits, which are instantiated with it |
+| `root` | Interface | `github.com/shrav-k/conduit/core#root` | Declares three Conduits, which are instantiated with it |
 
-The two Conduits of FST-002 are the declared Conduits of the template `root`. Their local names
-are `management` and `access`, so the root Interface's tools are `management.register.v1`,
+The three Conduits of FST-002 are the declared Conduits of the template `root`. Their local names
+are `management`, `access` and `system`, so the root Interface's tools are `management.register.v1`,
 `access.open.v1` and so on. `root-access` applies no bound, which is what ACC-022 requires.
 `management` and `access` are not entries of the `system` Pool's template: an entry's Resource
 gets a generated name (OBJ-003), and FST-001 fixes these two names.
@@ -634,6 +630,11 @@ lifecycle state and the labels reported for it (PLC-008).
 | `fleet-manage-own` | Conduit template | LIF-013, ACC-033, ACC-055 |
 | `fleet-view` | Conduit template | LIF-013, ACC-033 |
 | `retire-pool` | Conduit template | LIF-021 |
+| `fleet.v1` | Type | FLEET-001, FLEET-004 |
+| `fleet` | Fleet template | FLEET-001 |
+| `root-fleet` | Conduit template | FLEET-005, ACC-024 |
+| `retire-fleet` | Conduit template | LIF-021 |
+| `fleet-reference.v1` | Schema, a reference schema | FLEET-002, OBJ-006, OBJ-021 |
 | `engine` | Implementation | TPL-004 (the engine implements every operation it lists, with no selection), TPL-003 (no template or type selects one of them), MAN-012 (it states none of `command`, `package` and `remote` and no `supports`) |
 
 ## What this package does not settle

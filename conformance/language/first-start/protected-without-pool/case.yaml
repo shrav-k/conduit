@@ -1,0 +1,238 @@
+{
+  "id": "first-start-protected-without-pool",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "FST-006",
+    "ACC-033",
+    "OPS-023"
+  ],
+  "title": "Management alone refuses protected Resource registration before validation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "state"
+  },
+  "files": {
+    "state": "state.json",
+    "system.yaml": "../protected/project/system.yaml",
+    "node.yaml": "../protected/project/node.yaml",
+    "management.yaml": "../protected/project/management.yaml",
+    "access.yaml": "../protected/project/access.yaml",
+    "root.yaml": "../protected/project/root.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "submit-files",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000102",
+            "00000000-0000-4000-8000-000000000103"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000600",
+          "caller": "00000000-0000-4000-8000-000000000600",
+          "conduit": "00000000-0000-4000-8000-000000000601",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        },
+        "files": [
+          "node.yaml"
+        ]
+      },
+      "expect": {
+        "stateUnchanged": true,
+        "records": [
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000102",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000600",
+              "consumer": "00000000-0000-4000-8000-000000000600",
+              "conduit": "00000000-0000-4000-8000-000000000601",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "reason": "refused",
+              "dispatched": false
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000103",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000600",
+              "consumer": "00000000-0000-4000-8000-000000000600",
+              "conduit": "00000000-0000-4000-8000-000000000601",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "reason": "refused",
+              "dispatched": false
+            }
+          }
+        ],
+        "external_intents": [],
+        "reply": {
+          "reason": "refused"
+        },
+        "required_promises": [
+          "ACC-033",
+          "OPS-023"
+        ],
+        "absent": [
+          "/reply/diagnostics"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "submit-files",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000600",
+          "caller": "00000000-0000-4000-8000-000000000600",
+          "conduit": "00000000-0000-4000-8000-000000000601",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        },
+        "files": [
+          "management.yaml"
+        ]
+      },
+      "expect": {
+        "stateUnchanged": true,
+        "records": [
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000104",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000600",
+              "consumer": "00000000-0000-4000-8000-000000000600",
+              "conduit": "00000000-0000-4000-8000-000000000601",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "reason": "refused",
+              "dispatched": false
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000105",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000600",
+              "consumer": "00000000-0000-4000-8000-000000000600",
+              "conduit": "00000000-0000-4000-8000-000000000601",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "reason": "refused",
+              "dispatched": false
+            }
+          }
+        ],
+        "external_intents": [],
+        "reply": {
+          "reason": "refused"
+        },
+        "required_promises": [
+          "ACC-033",
+          "OPS-023"
+        ],
+        "absent": [
+          "/reply/diagnostics"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "submit-files",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000106",
+            "00000000-0000-4000-8000-000000000107"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000600",
+          "caller": "00000000-0000-4000-8000-000000000600",
+          "conduit": "00000000-0000-4000-8000-000000000601",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        },
+        "files": [
+          "access.yaml"
+        ]
+      },
+      "expect": {
+        "stateUnchanged": true,
+        "records": [
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000106",
+            "source": "urn:conduit:first-build",
+            "type": "access-decision",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000600",
+              "consumer": "00000000-0000-4000-8000-000000000600",
+              "conduit": "00000000-0000-4000-8000-000000000601",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "reason": "refused",
+              "dispatched": false
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000107",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "caller": "00000000-0000-4000-8000-000000000600",
+              "consumer": "00000000-0000-4000-8000-000000000600",
+              "conduit": "00000000-0000-4000-8000-000000000601",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "operation": "@core#register.v1",
+              "reason": "refused",
+              "dispatched": false
+            }
+          }
+        ],
+        "external_intents": [],
+        "reply": {
+          "reason": "refused"
+        },
+        "required_promises": [
+          "ACC-033",
+          "OPS-023"
+        ],
+        "absent": [
+          "/reply/diagnostics"
+        ]
+      }
+    }
+  ]
+}

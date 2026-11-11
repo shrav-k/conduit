@@ -10,7 +10,11 @@
     "REC-002",
     "REC-003",
     "ACC-033",
-    "OPS-023"
+    "OPS-023",
+    "FST-007",
+    "FST-002",
+    "FLEET-005",
+    "ACC-044"
   ],
   "title": "Root cannot retire or unregister any first-start object or declare local lost",
   "profile": "first-build",
@@ -45,7 +49,10 @@
             "00000000-0000-4000-8000-000000000018",
             "00000000-0000-4000-8000-000000000019",
             "00000000-0000-4000-8000-000000000020",
-            "00000000-0000-4000-8000-000000000021"
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
           ],
           "revisions": [
             "r1",
@@ -54,11 +61,13 @@
             "r4",
             "r5",
             "r6",
-            "r7"
+            "r7",
+            "r8"
           ],
           "suffixes": [
             "abc01",
-            "abc02"
+            "abc02",
+            "abc03"
           ]
         },
         "machine": {
@@ -70,7 +79,8 @@
             "example.org/role": "test"
           },
           "state": "reachable"
-        }
+        },
+        "trustDomain": "vectors-040.example"
       },
       "expect": {
         "state": {
@@ -85,7 +95,10 @@
               "state": "ready",
               "config": {},
               "first_start": true,
-              "type": "@core#pool.v1"
+              "type": "@core#pool.v1",
+              "status": {
+                "trustDomain": "vectors-040.example"
+              }
             },
             {
               "id": "00000000-0000-4000-8000-000000000002",
@@ -170,9 +183,14 @@
                 "@core#register-replacement.v1",
                 "@core#install.v1",
                 "@core#declare-lost.v1",
-                "@core#purge.v1"
+                "@core#purge.v1",
+                "@core#list.v1",
+                "@core#answer.v1"
               ],
-              "open": true
+              "open": true,
+              "provenance": {
+                "cause": "first-start"
+              }
             },
             {
               "id": "00000000-0000-4000-8000-000000000007",
@@ -190,26 +208,45 @@
               "operations": [
                 "@core#open.v1",
                 "@core#close.v1",
-                "@core#reconcile.v1"
+                "@core#reconcile.v1",
+                "@core#lift.v1"
               ],
-              "open": true
+              "open": true,
+              "provenance": {
+                "cause": "first-start"
+              }
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "revision": "r8",
+              "kind": "Conduit",
+              "name": "root-pool-abc03",
+              "from": "@core#root-pool",
+              "state": "ready",
+              "config": {},
+              "first_start": false,
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000001",
+              "local_name": "system",
+              "capability": "@core#pool-management.v1",
+              "operations": [
+                "@core#register.v1",
+                "@core#register-replacement.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
+              ],
+              "open": true,
+              "provenance": {
+                "cause": "first-start"
+              }
             }
           ],
           "records": [
-            {
-              "specversion": "1.0",
-              "id": "00000000-0000-4000-8000-000000000008",
-              "source": "urn:conduit:first-build",
-              "type": "object-change",
-              "time": "2026-11-09T12:00:00Z",
-              "data": {
-                "target": "00000000-0000-4000-8000-000000000001",
-                "cause": "first-start",
-                "action": "registered",
-                "previous": null,
-                "state": "registered"
-              }
-            },
             {
               "specversion": "1.0",
               "id": "00000000-0000-4000-8000-000000000009",
@@ -219,9 +256,9 @@
               "data": {
                 "target": "00000000-0000-4000-8000-000000000001",
                 "cause": "first-start",
-                "action": "lifecycle-changed",
-                "previous": "registered",
-                "state": "ready"
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
               }
             },
             {
@@ -231,11 +268,11 @@
               "type": "object-change",
               "time": "2026-11-09T12:00:00Z",
               "data": {
-                "target": "00000000-0000-4000-8000-000000000002",
+                "target": "00000000-0000-4000-8000-000000000001",
                 "cause": "first-start",
-                "action": "registered",
-                "previous": null,
-                "state": "registered"
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
               }
             },
             {
@@ -247,9 +284,9 @@
               "data": {
                 "target": "00000000-0000-4000-8000-000000000002",
                 "cause": "first-start",
-                "action": "lifecycle-changed",
-                "previous": "registered",
-                "state": "ready"
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
               }
             },
             {
@@ -259,11 +296,11 @@
               "type": "object-change",
               "time": "2026-11-09T12:00:00Z",
               "data": {
-                "target": "00000000-0000-4000-8000-000000000003",
+                "target": "00000000-0000-4000-8000-000000000002",
                 "cause": "first-start",
-                "action": "registered",
-                "previous": null,
-                "state": "registered"
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
               }
             },
             {
@@ -275,9 +312,9 @@
               "data": {
                 "target": "00000000-0000-4000-8000-000000000003",
                 "cause": "first-start",
-                "action": "lifecycle-changed",
-                "previous": "registered",
-                "state": "ready"
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
               }
             },
             {
@@ -287,11 +324,11 @@
               "type": "object-change",
               "time": "2026-11-09T12:00:00Z",
               "data": {
-                "target": "00000000-0000-4000-8000-000000000004",
+                "target": "00000000-0000-4000-8000-000000000003",
                 "cause": "first-start",
-                "action": "registered",
-                "previous": null,
-                "state": "registered"
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
               }
             },
             {
@@ -303,9 +340,9 @@
               "data": {
                 "target": "00000000-0000-4000-8000-000000000004",
                 "cause": "first-start",
-                "action": "lifecycle-changed",
-                "previous": "registered",
-                "state": "ready"
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
               }
             },
             {
@@ -315,11 +352,11 @@
               "type": "object-change",
               "time": "2026-11-09T12:00:00Z",
               "data": {
-                "target": "00000000-0000-4000-8000-000000000005",
+                "target": "00000000-0000-4000-8000-000000000004",
                 "cause": "first-start",
-                "action": "registered",
-                "previous": null,
-                "state": "registered"
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
               }
             },
             {
@@ -331,9 +368,9 @@
               "data": {
                 "target": "00000000-0000-4000-8000-000000000005",
                 "cause": "first-start",
-                "action": "lifecycle-changed",
-                "previous": "registered",
-                "state": "ready"
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
               }
             },
             {
@@ -343,11 +380,11 @@
               "type": "object-change",
               "time": "2026-11-09T12:00:00Z",
               "data": {
-                "target": "00000000-0000-4000-8000-000000000006",
+                "target": "00000000-0000-4000-8000-000000000005",
                 "cause": "first-start",
-                "action": "registered",
-                "previous": null,
-                "state": "registered"
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
               }
             },
             {
@@ -359,6 +396,20 @@
               "data": {
                 "target": "00000000-0000-4000-8000-000000000006",
                 "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000020",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000006",
+                "cause": "first-start",
                 "action": "lifecycle-changed",
                 "previous": "registered",
                 "state": "ready"
@@ -366,7 +417,7 @@
             },
             {
               "specversion": "1.0",
-              "id": "00000000-0000-4000-8000-000000000020",
+              "id": "00000000-0000-4000-8000-000000000021",
               "source": "urn:conduit:first-build",
               "type": "object-change",
               "time": "2026-11-09T12:00:00Z",
@@ -380,12 +431,40 @@
             },
             {
               "specversion": "1.0",
-              "id": "00000000-0000-4000-8000-000000000021",
+              "id": "00000000-0000-4000-8000-000000000022",
               "source": "urn:conduit:first-build",
               "type": "object-change",
               "time": "2026-11-09T12:00:00Z",
               "data": {
                 "target": "00000000-0000-4000-8000-000000000007",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000023",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000008",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000024",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000008",
                 "cause": "first-start",
                 "action": "lifecycle-changed",
                 "previous": "registered",
@@ -414,24 +493,13 @@
             "00000000-0000-4000-8000-000000000018",
             "00000000-0000-4000-8000-000000000019",
             "00000000-0000-4000-8000-000000000020",
-            "00000000-0000-4000-8000-000000000021"
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
           ]
         },
         "records": [
-          {
-            "specversion": "1.0",
-            "id": "00000000-0000-4000-8000-000000000008",
-            "source": "urn:conduit:first-build",
-            "type": "object-change",
-            "time": "2026-11-09T12:00:00Z",
-            "data": {
-              "target": "00000000-0000-4000-8000-000000000001",
-              "cause": "first-start",
-              "action": "registered",
-              "previous": null,
-              "state": "registered"
-            }
-          },
           {
             "specversion": "1.0",
             "id": "00000000-0000-4000-8000-000000000009",
@@ -441,9 +509,9 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000001",
               "cause": "first-start",
-              "action": "lifecycle-changed",
-              "previous": "registered",
-              "state": "ready"
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
             }
           },
           {
@@ -453,11 +521,11 @@
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000002",
+              "target": "00000000-0000-4000-8000-000000000001",
               "cause": "first-start",
-              "action": "registered",
-              "previous": null,
-              "state": "registered"
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
             }
           },
           {
@@ -469,9 +537,9 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000002",
               "cause": "first-start",
-              "action": "lifecycle-changed",
-              "previous": "registered",
-              "state": "ready"
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
             }
           },
           {
@@ -481,11 +549,11 @@
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000003",
+              "target": "00000000-0000-4000-8000-000000000002",
               "cause": "first-start",
-              "action": "registered",
-              "previous": null,
-              "state": "registered"
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
             }
           },
           {
@@ -497,9 +565,9 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000003",
               "cause": "first-start",
-              "action": "lifecycle-changed",
-              "previous": "registered",
-              "state": "ready"
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
             }
           },
           {
@@ -509,11 +577,11 @@
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000004",
+              "target": "00000000-0000-4000-8000-000000000003",
               "cause": "first-start",
-              "action": "registered",
-              "previous": null,
-              "state": "registered"
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
             }
           },
           {
@@ -525,9 +593,9 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000004",
               "cause": "first-start",
-              "action": "lifecycle-changed",
-              "previous": "registered",
-              "state": "ready"
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
             }
           },
           {
@@ -537,11 +605,11 @@
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000004",
               "cause": "first-start",
-              "action": "registered",
-              "previous": null,
-              "state": "registered"
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
             }
           },
           {
@@ -553,9 +621,9 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000005",
               "cause": "first-start",
-              "action": "lifecycle-changed",
-              "previous": "registered",
-              "state": "ready"
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
             }
           },
           {
@@ -565,11 +633,11 @@
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000006",
+              "target": "00000000-0000-4000-8000-000000000005",
               "cause": "first-start",
-              "action": "registered",
-              "previous": null,
-              "state": "registered"
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
             }
           },
           {
@@ -581,6 +649,20 @@
             "data": {
               "target": "00000000-0000-4000-8000-000000000006",
               "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000020",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000006",
+              "cause": "first-start",
               "action": "lifecycle-changed",
               "previous": "registered",
               "state": "ready"
@@ -588,7 +670,7 @@
           },
           {
             "specversion": "1.0",
-            "id": "00000000-0000-4000-8000-000000000020",
+            "id": "00000000-0000-4000-8000-000000000021",
             "source": "urn:conduit:first-build",
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
@@ -602,12 +684,40 @@
           },
           {
             "specversion": "1.0",
-            "id": "00000000-0000-4000-8000-000000000021",
+            "id": "00000000-0000-4000-8000-000000000022",
             "source": "urn:conduit:first-build",
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000007",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000023",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000008",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000024",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000008",
               "cause": "first-start",
               "action": "lifecycle-changed",
               "previous": "registered",
@@ -630,7 +740,10 @@
           "PRV-014",
           "REC-001",
           "REC-002",
-          "REC-003"
+          "REC-003",
+          "FST-007",
+          "ACC-044",
+          "FLEET-005"
         ],
         "absent": [
           "/state/objects/6/bound",
@@ -644,7 +757,8 @@
         "access": "/state/objects/3/id",
         "root": "/state/objects/4/id",
         "root-management": "/state/objects/5/id",
-        "root-access": "/state/objects/6/id"
+        "root-access": "/state/objects/6/id",
+        "root-system": "/state/objects/7/id"
       }
     },
     {

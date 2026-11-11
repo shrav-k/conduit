@@ -26,7 +26,7 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "pattern": "^[A-Z]{3,4}-[0-9]{3}$"
+        "pattern": "^[A-Z]{3,5}-[0-9]{3}$"
       }
     },
     "title": {
@@ -153,12 +153,16 @@
                       "labels",
                       "state"
                     ]
+                  },
+                  "trustDomain": {
+                    "type": "string"
                   }
                 },
                 "required": [
                   "kind",
                   "evidence",
-                  "machine"
+                  "machine",
+                  "trustDomain"
                 ]
               },
               {

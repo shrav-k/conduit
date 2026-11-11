@@ -51,3 +51,18 @@ and `git diff --check` pass; in `engine/`, `cargo fmt --check`,
 `experiments/011-short-form-spike/`, `cargo test --release`. Report the totals passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so, and the admin reruns them. Do not
 stage anything.
+
+## Record
+
+Run on 2026-11-11, beside orders 044 and 045 on a shared machine: the worker in 112 minutes, then a
+fresh verifier in 9, then a second round. The Fleet family entered the engine: the sixth family in
+every family list, FLEET-001 and FLEET-006, root's default Conduit to `system` at first start with
+root's final tool lists, the trust domain named and recorded at first start, the `list.v1` handler,
+and stubs for lift, answer and sign-in naming the order that builds each. The staged patch of 036b
+had gone stale after order 038a; the worker landed its hunks that still applied and reconciled the
+rest by hand. Ten vectors were added and three flipped from refused to invalid, as the plan's C9
+declares. The verifier found that listing used the sending instance's inspection rights where
+OPS-036 says the caller's, and that a register.v1 invocation lost the clash diagnostic naming both
+objects; the second round fixed both with two regression vectors. The admin repointed six lines of
+IN_FORCE.md from the consumed staged file to what landed and updated the vector count. Tests on the
+merged tree: the engine's suite, 172, with 405 vectors; experiment 011, 8.

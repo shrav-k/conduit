@@ -1,5 +1,5 @@
 # Any document an author writes: a template, an instance or a contract. The manifest is not a
-# document of one of the ten kinds and has its own schema, `manifest.v1`.
+# document of one of the eleven kinds and has its own schema, `manifest.v1`.
 # JSON Schema 2020-12, within spec/schema-profile.md.
 #
 # Promises encoded:

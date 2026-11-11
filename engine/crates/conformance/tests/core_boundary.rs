@@ -127,6 +127,7 @@ fn registration_requires_both_open_conduits_listing_the_operation() {
         "state":"ready", "open":true, "consumer":root, "target":state.objects[0]["id"],
         "capability":format!("{}#pool-management.v1", context.core_package),
         "operations":[operation]});
+    state.objects.retain(|o| o["local_name"] != "system");
     state.objects.push(grant.clone());
     let request = Request {
         sender: root.clone(),
@@ -376,4 +377,43 @@ fn archive_transition_is_deterministic_and_installed_state_survives_serializatio
     assert_eq!(repeated.state, restored);
     assert!(repeated.records.is_empty());
     assert!(repeated.external_intents.is_empty());
+}
+
+#[test]
+fn trust_domain_is_validated_before_allocation_and_never_changes() {
+    let (context, input) = fixture();
+    for domain in [
+        "".to_owned(),
+        "UPPER.example".into(),
+        "space domain".into(),
+        "a/b".into(),
+        "é".into(),
+        "a".repeat(256),
+    ] {
+        let mut invalid = input.clone();
+        invalid["trustDomain"] = json!(domain);
+        let empty = State::default();
+        assert!(
+            step(&empty, serde_json::from_value(invalid).unwrap(), &context)
+                .unwrap_err()
+                .contains("FST-007")
+        );
+        assert_eq!(empty, State::default());
+    }
+    let state = step(
+        &State::default(),
+        serde_json::from_value(input.clone()).unwrap(),
+        &context,
+    )
+    .unwrap()
+    .state;
+    let mut changed = input;
+    changed["trustDomain"] = json!("another.example");
+    assert!(
+        step(&state, serde_json::from_value(changed).unwrap(), &context)
+            .unwrap_err()
+            .contains("never changes")
+    );
+    assert!(conduit_core::valid_trust_domain(&"a".repeat(255)));
+    assert!(conduit_core::valid_trust_domain("tenant_1.example-domain"));
 }

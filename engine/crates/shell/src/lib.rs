@@ -20,6 +20,7 @@ pub type Result<T> = std::result::Result<T, String>;
 
 #[derive(Clone)]
 pub struct Config {
+    pub trust_domain: Option<String>,
     pub max_output_bytes: usize,
     pub max_output_age: Duration,
     pub engine_url: String,
@@ -30,6 +31,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            trust_domain: None,
             max_output_bytes: 64 * 1024 * 1024,
             max_output_age: Duration::from_secs(7 * 24 * 60 * 60),
             engine_url: "http://127.0.0.1:3000/mcp".into(),
@@ -191,7 +193,7 @@ impl Shell {
                 &serde_json::to_vec(&config.engine_url).map_err(|e| e.to_string())?,
             )?;
         }
-        let authority = identity::Authority::open(&store)?;
+        let authority = identity::Authority::open(&store, config.trust_domain.as_deref())?;
         let shell = Self {
             directory: store.directory.clone(),
             run_groups: Mutex::new(Vec::new()),
@@ -319,6 +321,16 @@ impl Shell {
     }
 
     fn transition(&self, state: &State, mut input: Value) -> Result<Transition> {
+        if input["kind"] == "first-start"
+            && input
+                .get("trustDomain")
+                .is_some_and(|d| d != self.authority.trust_domain())
+        {
+            return Err("first-start trustDomain differs from signing authority (FST-007)".into());
+        }
+        if input["kind"] == "first-start" && input.get("trustDomain").is_none() {
+            input["trustDomain"] = json!(self.authority.trust_domain());
+        }
         let kind = input["kind"]
             .as_str()
             .ok_or("input needs kind")?
@@ -643,8 +655,8 @@ fn missing(intent: &Value, context: &Context) -> Result<Execution> {
 }
 
 fn evidence(kind: &str, time: &str, supply: usize) -> Result<Value> {
-    let revisions = if kind == "first-start" { 7 } else { supply };
-    let suffixes = if kind == "first-start" { 2 } else { supply };
+    let revisions = if kind == "first-start" { 8 } else { supply };
+    let suffixes = if kind == "first-start" { 3 } else { supply };
     Ok(
         json!({"time":time,"ids":(0..supply).map(|_|Uuid::new_v4().to_string()).collect::<Vec<_>>(),
         "revisions":(0..revisions).map(|_|Uuid::new_v4().to_string()).collect::<Vec<_>>(),

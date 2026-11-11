@@ -1337,45 +1337,45 @@ V1 AND LATER
 ## Sources
 
 CONDUIT REPOSITORY (read only, HEAD 5ed438b)
-- /Users/shravankumaran/Projects/Conduit/conduit/docs/proposals/ruling-68/README.md
+- docs/proposals/ruling-68/README.md
   - point 1: M1 to M3 and the defaults. Line 30's default is "usage not relayed to the Agent that made the call", not a ban on Agents reading.
   - point 6: M4, with the owner's words.
-- /Users/shravankumaran/Projects/Conduit/conduit/docs/proposals/metrics/README.md: the accepted design. It says "it sums every member the container has had" and "totals only".
-- /Users/shravankumaran/Projects/Conduit/conduit/docs/proposals/ruling-66/README.md:
+- docs/proposals/metrics/README.md: the accepted design. It says "it sums every member the container has had" and "totals only".
+- docs/proposals/ruling-66/README.md:
   - point 1: "manage or view";
   - point 3: raised at every Interface whose scope contains the subject;
   - point 6: no Scope object that silently widens.
-- /Users/shravankumaran/Projects/Conduit/conduit/IN_FORCE.md:
+- IN_FORCE.md:
   - topic 1: scope guard A18; "We shouldn't overcomplicate this"; preservation test 5;
   - lines 148 to 149: metrics, in force and open.
-- /Users/shravankumaran/Projects/Conduit/conduit/docs/AUDIT.md: the preservation tests (test 5, every management action available to an agent under a grant).
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/promises/sections.yaml: SCT-012 (one Conduit N--manages--T per member; roles manage and view).
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/conventions/operations.yaml: OPS-008, OPS-013, OPS-014 and OPS-030 (unknown stays unknown until reconciled).
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/conventions/records.yaml: REC-001 to REC-006 (REC-004: "A purge removes records and nothing else").
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/core/results.yaml: record.v1 "may add members".
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/conventions/access.yaml: ACC-008, ACC-033 and ACC-056.
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/promises/fleets.yaml: FLEET-005.
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/promises/first-start.yaml: FST-002.
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/promises/contracts.yaml: CTR-005, CTR-008 and CTR-013.
-- /Users/shravankumaran/Projects/Conduit/conduit/spec/promises/objects.yaml: OBJ-020.
-- /Users/shravankumaran/Projects/Conduit/conduit/engine/CONFORMANCE.md:
+- docs/AUDIT.md: the preservation tests (test 5, every management action available to an agent under a grant).
+- spec/promises/sections.yaml: SCT-012 (one Conduit N--manages--T per member; roles manage and view).
+- spec/conventions/operations.yaml: OPS-008, OPS-013, OPS-014 and OPS-030 (unknown stays unknown until reconciled).
+- spec/conventions/records.yaml: REC-001 to REC-006 (REC-004: "A purge removes records and nothing else").
+- spec/core/results.yaml: record.v1 "may add members".
+- spec/conventions/access.yaml: ACC-008, ACC-033 and ACC-056.
+- spec/promises/fleets.yaml: FLEET-005.
+- spec/promises/first-start.yaml: FST-002.
+- spec/promises/contracts.yaml: CTR-005, CTR-008 and CTR-013.
+- spec/promises/objects.yaml: OBJ-020.
+- engine/CONFORMANCE.md:
   - DL10: dispatch 120 s; "No key expires and invocation state is never compacted";
   - I3-04: the wrappers' 180-second per-turn deadline, which poisons the session.
-- /Users/shravankumaran/Projects/Conduit/conduit/AGENTS.md: code is Rust; Python only for the checkers in tools/.
+- AGENTS.md: code is Rust; Python only for the checkers in tools/.
 
-MEASUREMENTS AND SAVED SOURCES (scratchpad, this session)
-- /private/tmp/claude-501/-Users-shravankumaran-Projects-Conduit/c29254d6-89de-4b45-ae6e-51820c38ec5c/scratchpad/bench-out/results-2026-11-11.txt: the skeptic's synthetic bench, rerun. Source: scratchpad/bench/src/main.rs.
-- /private/tmp/claude-501/-Users-shravankumaran-Projects-Conduit/c29254d6-89de-4b45-ae6e-51820c38ec5c/scratchpad/probe-store/state.json: invocation entries of 129.6 KB, of which held_target is 126.3 KB.
-- /private/tmp/claude-501/-Users-shravankumaran-Projects-Conduit/c29254d6-89de-4b45-ae6e-51820c38ec5c/scratchpad/otel-genai/repo/model/gen-ai/token-metrics.yaml:
+MEASUREMENTS AND SAVED SOURCES (the coordinator's session notes, not in the repository)
+- scratchpad/bench-out/results-2026-11-11.txt: the skeptic's synthetic bench, rerun. Source: scratchpad/bench/src/main.rs.
+- scratchpad/probe-store/state.json: invocation entries of 129.6 KB, of which held_target is 126.3 KB.
+- scratchpad/otel-genai/repo/model/gen-ai/token-metrics.yaml:
   - file_format: definition/2;
   - "Each measurement MUST be a known, strictly positive modality contribution";
   - "Instrumentation SHOULD record contributions from successful and failed inference operations";
   - metric_value_type: int.
-- /private/tmp/claude-501/-Users-shravankumaran-Projects-Conduit/c29254d6-89de-4b45-ae6e-51820c38ec5c/scratchpad/skeptic-cost/docs/vm.md:
+- scratchpad/skeptic-cost/docs/vm.md:
   - deduplication would "leave a single raw sample with the biggest timestamp per each discrete interval";
   - "Delete API doesn't support the deletion of specific time ranges".
-- /private/tmp/claude-501/-Users-shravankumaran-Projects-Conduit/c29254d6-89de-4b45-ae6e-51820c38ec5c/scratchpad/skeptic-cost/docs/prom-config.md: translation_strategy defaults to "UnderscoreEscapingWithSuffixes", and "NoTranslation" is "(EXPERIMENTAL)".
-- /private/tmp/claude-501/-Users-shravankumaran-Projects-Conduit/c29254d6-89de-4b45-ae6e-51820c38ec5c/scratchpad/skeptic-cost/pp/promql-parser-0.11.1/README.md: "This crate declares compatible with prometheus v3.8".
+- scratchpad/skeptic-cost/docs/prom-config.md: translation_strategy defaults to "UnderscoreEscapingWithSuffixes", and "NoTranslation" is "(EXPERIMENTAL)".
+- scratchpad/skeptic-cost/pp/promql-parser-0.11.1/README.md: "This crate declares compatible with prometheus v3.8".
 - Not re-read: the Mimir range-deletion issue https://github.com/grafana/mimir/issues/4968, and remote-write backfill limits. Both are the skeptics' claims.
 
 USAGE METERING AND BILLING (new this round)

@@ -4,11 +4,11 @@ Not binding. An area planner's draft for [the batch 1 plan](../README.md); where
 
 ## Scope
 
-Ruling 52, points 1 and 2: the two tiers of a refusal and the rule of explicitness. This changes OPS-023 and what a result, a refusal, a diagnostic and a notice carry. Ruling 49: the expected account, checked after a sign-in, and a home for each Agent, with what goes into spec/ separated from what stays in the Agent packages. The Agent Types .v2 provider work: claude-code.v2 and codex.v2, with reach flags false by default, true descriptions of what each client reaches around the engine (findings 4-06 and 3-07), an API key as a sign-in choice (finding 4-02), and ruling 63.3's standard `turn` Conduit template, all folded into one .v2 so that no .v3 follows. Repository: /Users/shravankumaran/Projects/Conduit/conduit (read only; nothing was modified).
+Ruling 52, points 1 and 2: the two tiers of a refusal and the rule of explicitness. This changes OPS-023 and what a result, a refusal, a diagnostic and a notice carry. Ruling 49: the expected account, checked after a sign-in, and a home for each Agent, with what goes into spec/ separated from what stays in the Agent packages. The Agent Types .v2 provider work: claude-code.v2 and codex.v2, with reach flags false by default, true descriptions of what each client reaches around the engine (findings 4-06 and 3-07), an API key as a sign-in choice (finding 4-02), and ruling 63.3's standard `turn` Conduit template, all folded into one .v2 so that no .v3 follows. Repository: this one (read only; nothing was modified).
 
 ## Promise and core changes
 
-Every promise ID below is tentative. The batch editor assigns IDs once across all areas. Do not use OPS-035, which /Users/shravankumaran/Projects/Conduit/conduit/docs/proposals/projects/brief.md reserves for group B's act-for.
+Every promise ID below is tentative. The batch editor assigns IDs once across all areas. Do not use OPS-035, which docs/proposals/projects/brief.md reserves for group B's act-for.
 
 A. REFUSALS AND EXPLICITNESS (ruling 52, points 1 and 2)
 
@@ -82,8 +82,8 @@ A3. CHANGED promises:
 - LIF-037: the observable's disclosure sentence follows ACC-040. Coordinate with ruling 53's extension of LIF-037 to open.v1 and close.v1.
 - REC-001 (a coordinator choice): the record of a request that ended with a reason states the deciding promise's ID, and for a refusal the tier given.
 - Also update:
-  - the header comment of /Users/shravankumaran/Projects/Conduit/conduit/spec/core/operations.yaml, around line 193;
-  - the matching sentences of /Users/shravankumaran/Projects/Conduit/conduit/spec/core/README.md, around lines 246, 386 and 446-451.
+  - the header comment of spec/core/operations.yaml, around line 193;
+  - the matching sentences of spec/core/README.md, around lines 246, 386 and 446-451.
 
 A4. CORE PACKAGE AND SCHEMAS:
 - NEW Schema refusal.v1, in spec/core/results.yaml:
@@ -202,11 +202,11 @@ D5. Ruling 63.3: each package exports a Conduit template `turn` (capability conv
 
 D6. Documents:
 - Rewrite the READMEs. Remove "the owner's subscription login is shared".
-- /Users/shravankumaran/Projects/Conduit/conduit/reference-model/CONFORMANCE.md:
+- reference-model/CONFORMANCE.md:
   - the DL16 row gains the state directory;
   - the statement of 3-07 is closed once the marker trial passes;
   - 4-06 is kept.
-- /Users/shravankumaran/Projects/Conduit/conduit/docs/guides/accounts.md, updated.
+- docs/guides/accounts.md, updated.
 - conformance/fixtures/s1/packages/agents 0.2.0 exports claude-code.v2 and codex.v2 drafts with the real packages' schema and no `signIn`. These are registration-only, so that the short-form S1 equivalence case and the rerun's dry run register the same author text. Coordinate with WO-B.
 
 E. UNCHANGED:
@@ -296,7 +296,7 @@ EXISTING vectors that change. I verified each by reading its case.yaml. In every
 
 ## Build
 
-All under /Users/shravankumaran/Projects/Conduit/conduit. Sizes are rough estimates.
+All relative to the repository root. Sizes are rough estimates.
 
 SPEC (one section of the single spec-batch order, written once):
 - New: ACC-040, IFC-048, PRV-029, CTR-013, 1-2 account-check promises, two core Operations, and refusal.v1. About 300 lines.

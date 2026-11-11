@@ -4,7 +4,7 @@ Not binding. An area planner's draft for [the batch 1 plan](../README.md); where
 
 ## Scope
 
-Ruling 53's five core additions and ruling 55 A7's lift, plus ruling 62 C1 and C2 and ruling 66 point 4. All paths below are relative to /Users/shravankumaran/Projects/Conduit/conduit (read-only; nothing was modified).
+Ruling 53's five core additions and ruling 55 A7's lift, plus ruling 62 C1 and C2 and ruling 66 point 4. All paths below are relative to the repository root (read-only; nothing was modified).
 
 The five additions are:
 - `as`, a local name for a standalone Conduit;
@@ -200,7 +200,7 @@ F. Not written here, but relied on: ACC-024's amendment, defaults, object.v1's F
 
 ## Vectors
 
-NEW CASES. All are under /Users/shravankumaran/Projects/Conduit/conduit/conformance/, about 34 in all.
+NEW CASES. All are under conformance/, about 34 in all.
 
 `as`
 1. language/registration/conduit-as: a standalone Conduit with `as: project` registers, and agent-a's list-tools shows `project.*` (OBJ-013, IFC-012).

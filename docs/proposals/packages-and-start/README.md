@@ -92,25 +92,6 @@ waited on PD1.
 | PR7 | An implementation's behavior for one instance does not depend on its having served another. Whether an engine runs one process for many instances or one each is its runtime profile. | Stateless request handlers | L47 |
 | PR8 | A name declared in a document may not be one of the reserved first-start names, and may not contain the separator used in qualified names. | — | L29 |
 
-## Where each is written
-
-| Decision or rule | Promises |
-| --- | --- |
-| PD1 | Open when this was written; settled by the [naming rulings](../naming/README.md) |
-| PD2 | PKG-001, PKG-002, PKG-003 |
-| PD3 | PKG-004 |
-| PD4 | FST-001, FST-002, FST-003 |
-| PD5 | The conformance section of the specification's manifest |
-| PR1 | PKG-005 |
-| PR2 | PKG-006, PKG-007 |
-| PR3 | PKG-008 |
-| PR4 | PKG-009, PKG-010, PKG-011 |
-| PR5 | PKG-013, PKG-014 |
-| PR6 | PKG-015 |
-| PR7 | PKG-016 |
-| PR8 | FST-004 for reserved names; the separator waits on PD1 |
-| Accepted earlier: export names are unique within a package | PKG-012 |
-
 ## Not in this batch
 
 - Where a package's files must be present, how they are fetched and when they are removed: the

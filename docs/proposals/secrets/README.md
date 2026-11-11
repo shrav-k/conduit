@@ -50,10 +50,10 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
      quotes the value.
    - 2b. New, after the fourth review: `secret-reference.v1` may be a branch of `anyOf` or `oneOf`
      only beside `{type: null}`. A schema that offers it beside any other branch is rejected,
-     because a literal would satisfy that branch and be kept as data (SEC-1).
+     because a literal would satisfy that branch and be kept as data ([SEC-1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
    - 2c. New, after the fourth review: a record keeps an argument at a place that
      `secret-reference.v1` governs only in its resolved form, and never a value that failed that
-     schema, whatever the type's `records` says (SEC-22).
+     schema, whatever the type's `records` says ([SEC-22](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
 3. **How the value reaches the implementation that uses it**
    ([S3](#s3-how-the-value-reaches-the-implementation-that-needs-it)).
    - 3a. Unchanged: the implementation asks for it, through its instance's own Conduit to the
@@ -63,7 +63,7 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
      is decided by the Conduit it is made through, the filters on that Conduit, and a policy that
      names the secret among its `targets` and names no `actors`. It carries none of the
      restrictions of the invocation it serves, and no policy that names `actors` applies to it
-     (SEC-20). The caller's restrictions still bind the invocation that the Resource serves.
+     ([SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). The caller's restrictions still bind the invocation that the Resource serves.
      Without this line the access promises as they stand make every read of a secret that `engine`
      serves report unavailable whenever that invocation carries a filter or a policy names its
      caller (ACC-015, ACC-017), because `engine` supports `bound.v1` alone. Changed after the
@@ -73,14 +73,14 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
      invocation's restrictions, takes the exception.
    - 3c. New, after the fourth review: a policy that names a secret among its `targets` applies to
      every read of it, a read that serves the root Interface included; ACC-035's exception for the
-     root Interface does not reach a read (SEC-20). Without this line such a policy stops every
+     root Interface does not reach a read ([SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). Without this line such a policy stops every
      read but those that serve the root Interface, so a read's outcome depends on its caller. The
      root Interface can still always remove a policy, which is a request of `access`.
 4. **Who may read a secret** ([S4](#s4-who-may-read-a-secret)).
    - 4a. Accepted (ruling 39, point 2): only a Resource reads a secret, and only the root Interface
      may open a Conduit that reads one, for the first version.
    - 4b. New: an Agent may also be the consumer of such a Conduit, which the engine alone uses when
-     it starts the Agent's process. SEC-6 and SEC-7 say "a Resource or an Agent" for this reason.
+     it starts the Agent's process. [SEC-6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and [SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) say "a Resource or an Agent" for this reason.
      Point 4 applies point 3's mechanism, in which the engine reads "through the instance's own
      Conduit", so the Agent must be the consumer of one. Nothing limits which secret that Conduit
      leads to: the engine cannot tell a provider credential from any other secret, so only the
@@ -92,8 +92,8 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
      this line, point 4 needs another route, and S7 says which.
    - 4c. Follows from 7b wherever 4b is accepted: no tool for an operation with a secret output is
      ever presented to an actor, even one that is the consumer of a Conduit that lists it, and a
-     request that the actor sends for it anyway reports refused (SEC-17). Only an Agent can be such
-     a consumer (SEC-7), so this is point 4's "never presented to it as a tool" written as a rule.
+     request that the actor sends for it anyway reports refused ([SEC-17](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). Only an Agent can be such
+     a consumer ([SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)), so this is point 4's "never presented to it as a tool" written as a rule.
      Changed after the fourth review: it was marked New, and its refusal, which ACC-003 would not
      give, is now stated.
    - 4d. New, after the third review: no list of readers is written on a secret, on its locator or
@@ -101,8 +101,8 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
      is rejected as a second way in; a store's own policy binds only the package's identity at the
      store.
    - 4e. New, after the fourth review: no step of a graph names an operation that has a secret
-     output (SEC-21). A step with no `conduit` would read a secret through no Conduit, and a step
-     of an Agent's graph would be an actor's read; in any other graph SEC-5 leaves the output
+     output ([SEC-21](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). A step with no `conduit` would read a secret through no Conduit, and a step
+     of an Agent's graph would be an actor's read; in any other graph [SEC-5](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) leaves the output
      nowhere to go.
 5. **Where the value is stored** ([S5](#s5-where-the-value-is-stored)).
    - 5a. Unchanged: in an existing store. The engine itself reads a file, and a variable of its own
@@ -111,14 +111,14 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
    - 5b. New: a file encrypted with SOPS, named by its path, is listed among the stores a package
      may implement, decrypted at each read.
    - 5c. New: ciphertext written into a Conduit document, as Sealed Secrets keeps it in Git, is
-     never read as a value: no implementation takes a value from configuration (SEC-12). Nothing
+     never read as a value: no implementation takes a value from configuration ([SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). Nothing
      rejects it, since `secret.v1` states no `schema` (CTR-004), so it is stored, inspected and
      revisioned as data; guidance, not a rule, is not to write it. Changed after the fourth
      review: the line said such ciphertext "is rejected for the reason a literal is", which no
      promise did.
    - 5d. New, after the fourth review: `engine` reads its file and its variable only for a secret
      placed on `local`, the location made at first start, and a `file` that is not an absolute
-     path fails the read (SEC-14). PLC-020, under which the engine never opens a value tied to a
+     path fails the read ([SEC-14](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). PLC-020, under which the engine never opens a value tied to a
      location, takes the exception.
    - 5e. New, after the fourth review: a store's implementation in a package learns its locator as
      every implementation learns its instance's configuration. The store's template's `setup`
@@ -159,7 +159,7 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
    - 8c. New, on failure: where any read fails, or a place that `environment` points at holds no
      reference, the process is not started, and a request that was to be dispatched to it is not
      dispatched and reports unavailable, as OPS-005 has every request that is not dispatched
-     report a reason. Changed after the fourth review: SEC-16 gave such a request the outcome
+     report a reason. Changed after the fourth review: [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) gave such a request the outcome
      failed, which only a dispatched request has.
    - 8d. New, one process per instance: a process started for an item that states `environment`
      serves one instance. This takes away, for such an item, the choice that IFC-017 gives every
@@ -179,14 +179,14 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
      engine over who starts the process: only the one that starts a process sets its environment.
    - 8g. New, after the fourth review: in a setup, every step that would be dispatched to such an
      item runs after each declared Conduit of the template that reads a secret is open, as if
-     `dependsOn` named it (SEC-15, GRA-024). Otherwise whether a setup fails would depend on the
+     `dependsOn` named it ([SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), GRA-024). Otherwise whether a setup fails would depend on the
      order each engine picks among steps (DL1).
    - 8h. New, after the fourth review: a read at the start of a process that the engine starts to
      serve the instance's own retirement belongs to that retirement, so ACC-039 permits it after
-     the instance is retired (SEC-16). Otherwise a plain server whose process is not running when
+     the instance is retired ([SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). Otherwise a plain server whose process is not running when
      it is retired could not be started for its `retire` steps or its runtimes' stops.
 9. **What a value is** ([S9](#s9-what-a-value-is)). One string. A new item of the
-   implementation-defined list, DL16 (proposed), says how the engine's own implementation reads
+   implementation-defined list, [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) (proposed), says how the engine's own implementation reads
    its file and its variable; it also states the largest value the engine reads and what it does
    with a final newline. Stands, with that addition.
 10. **What the guarantee covers** ([S10](#s10-what-the-guarantee-covers)). The same narrow
@@ -255,7 +255,7 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
     starts for the instance.
 20. **Names** ([S20](#s20-names)). The names `secret.v1`, `secret-reveal.v1`, `reveal-secret.v1`
     and `secret-reference.v1`, the output mark `secret`, the key `environment` of an implementation
-    item, and the number DL16 for the new item of the implementation-defined list, become final.
+    item, and the number [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) for the new item of the implementation-defined list, become final.
     Point 1 of ruling 39 put the names; they are unchanged.
 21. **A file beside the variable** ([S21](#s21-a-file-beside-the-variable)). New, after the review.
     In the first version the engine sets a value at process start only as a variable. A file in a
@@ -264,157 +264,6 @@ changed says so. Items 11 to 19 and 21 were not asked by the first draft.
     that takes one token accepts the variable, the pages read for the MCP runners show delivery by
     variable, and a file would not keep the value from the user's other processes: on Linux a
     file only its owner may read is open to all of them, and on macOS the environment already is.
-
-## Contents
-
-- [Decisions for the owner](#decisions-for-the-owner)
-- [What changed since the first draft](#what-changed-since-the-first-draft)
-- [The problem](#the-problem)
-- [What the owner has already ruled](#what-the-owner-has-already-ruled)
-- [What existing systems do](#what-existing-systems-do)
-- [The proposal in one page](#the-proposal-in-one-page)
-- [Decisions](#decisions): [S1](#s1-what-a-secret-is) to [S10](#s10-what-the-guarantee-covers) from
-  the first draft, [S11](#s11-version-or-stage) to [S19](#s19-a-process-environment-on-rotation)
-  added after the research, [S20](#s20-names) on the names, and
-  [S21](#s21-a-file-beside-the-variable) added after the review
-- [Promises that would follow](#promises-that-would-follow)
-- [Existing promises and documents that would
-  change](#existing-promises-and-documents-that-would-change)
-- [Left out of the first version](#left-out-of-the-first-version)
-- [Where the recommendation is least certain](#where-the-recommendation-is-least-certain)
-
-## What changed since the first draft
-
-- **The research.** The survey of the first draft is replaced, for AWS, Kubernetes, the Kubernetes
-  ecosystem, GCP, Azure, Vault and the configuration tools, by the [research
-  packet](../../research/SECRETS.md), in which every fact was checked against its source. The rows
-  for systems the packet does not cover stay in [What existing systems
-  do](#what-existing-systems-do).
-- **Each decision S1 to S10** now says what AWS and Kubernetes do, and whether the recommendation
-  stands or changes. S1, S2, S3, S5, S6, S8 and S9 stand. S4 is the combination that ruling 39
-  accepted. S7 changes, to follow point 4. S10 names more limits.
-- **Points 2 to 4 of ruling 39 are written in.** SEC-7 now lets only the root Interface open a
-  Conduit that reads a secret. That it may open one for an Agent as well as a Resource, which SEC-6
-  and SEC-7 state, and the new SEC-17, which keeps any tool for such an operation from an actor, are
-  not part of what ruling 39 accepted: they are put to the owner as items 4b and 4c. SEC-16
-  serves an Agent's process as well as a plain server's. The first draft's delegation of the right
-  through a bound is now for a later version.
-- **Nine decisions were added**, S11 to S19, on questions the research showed the first draft did
-  not ask: the version or stage a locator names, caching, records of reads, encryption, issued
-  credentials, a store's own credential, one key of a structured secret, what a started process
-  inherits, and what rotation does to a process environment. The names, which point 1 of ruling 39
-  put with the core, are now a line of their own, S20.
-- **Promises.** SEC-13 is narrowed to the engine (S12). SEC-6, SEC-7, SEC-10, SEC-12 and SEC-16
-  change. SEC-17 to SEC-19 are added. DL16 gains the largest value and the final newline; DL12 gains
-  what a started process inherits.
-- **The advice on versions** in S6 moved to S11 and is now neutral. Google recommends pinning a
-  version, so the first draft's "should name the current version" is a default, not a rule.
-- **"For the owner to weigh"** is replaced by the list at the top and by [Where the recommendation
-  is least certain](#where-the-recommendation-is-least-certain).
-- **Links** to the older design point at its last version on `main`, since ruling 39 removed it from
-  the tree.
-
-After a review of that revision, the same day:
-
-- **The list for the owner** now splits items 4 and 8 into what ruling 39 accepted and what is new,
-  and each line says what it binds without the body.
-- **The read at process start** (S8, SEC-16) is made by the engine for no actor, at whatever moment
-  the process starts. The revision tied it to an invocation, which an Agent's process, or one
-  started at setup, does not have, and which bound a restriction on a caller for the first caller
-  only. S3 and S10 now say that a value set at start is not limited per caller.
-- **One process per instance** is now stated against IFC-017, which leaves every engine free to
-  choose how many instances share a process, and IFC-017 is in the table of promises that change.
-- **A store's own credential** (S16): option B, a stored key set by the engine, is left out. As
-  drafted it could not be declared, and the research on a developer's machine shows what option A
-  depends on.
-- **S3** no longer says that ECS recommends the application reading its store: ECS recommends a
-  file written by a sidecar, or an encrypted S3 object, over a variable.
-- **Links**: every fact taken from the packet links the section it is in; S6, S7 and S15 linked the
-  wrong section or none.
-- **The packet's second round** covers who may give a workload a read (AWS's `iam:PassRole`,
-  Kubernetes's escalation prevention), AWS and Kubernetes on a developer's machine, Parameter
-  Store, ciphertext kept beside configuration (Sealed Secrets and SOPS), and how existing MCP
-  servers and their runners take a credential. S4, S5, S7, S8, S10, S11, S16, S17 and S18 draw on
-  it, and S21 is added. Two recommendations gain a rule from it: S5 rejects ciphertext written into
-  a document and lists a SOPS file as a package's store, and S11 has a locator that names a missing
-  version fail, which SEC-12 now says.
-
-After a review of the second revision, the same day:
-
-- **Carried restrictions and a read** (S3, new SEC-20). The second revision said that the
-  restrictions of the invocation being served bind a Resource's read of a secret. Under ACC-015
-  and ACC-017 that stops the main read path: `engine` supports `bound.v1` alone, so every read of a
-  secret it serves reported unavailable whenever that invocation carried a filter or a policy named
-  its caller, and a policy that names the secret stopped every start of a process that needs it.
-  S3 now sets out the interaction, with ACC-015, ACC-026 and CON-022, and recommends that every
-  read of a secret be decided by the reader's own grant. Item 3b, and SEC-16's observable, follow.
-- **What the owner has already ruled** no longer lists the secret type as settled. Ruling 38 chose
-  B, which needs a secret type; ruling 39 left the type's design undecided.
-- **The list for the owner** gives a letter to each line of items 3, 4, 5, 7 and 8, so that each
-  can be ruled apart.
-- **The read at process start has no sending instance.** SEC-10, S13 and item 13 no longer say that
-  it has one, and the table of changes adds the definition of the instance that sent a request,
-  OPS-008, and ACC-001 and ACC-016, which do not decide this read: SEC-16 alone permits it.
-- **Who starts the process** (S8, item 8f): an item that states `environment` has its process
-  started by the engine itself, against IFC-017 and DL12, which leave that choice to each engine.
-- **The sketches** show how one input reaches both the configuration place that `environment`
-  points at and the target of the declared Conduit that the engine reads through.
-- **Claims the packet did not carry** are corrected: that most servers take a credential only from
-  a variable, which was not checked; that the MCP runners deliver by variable only, where the pages
-  read show delivery by variable; and two facts, on the container provider of the AWS SDKs and on
-  CloudFormation's `SecretString`, which the packet now carries with their pages.
-- **The packet's third round** covers a list of readers on the secret (AWS's resource policies,
-  GCP's allow policies, Kubernetes's RBAC and Azure's role assignments), what Kubernetes gives
-  every container by default, an Agent's own model credential at the providers, processes of the
-  same user on Linux and macOS, and delivery to an EC2 instance. S2, S3, S4, S7, S8, S10, S16, S18
-  and S21 draw on it; item 4d and item 7c are added from it; SEC-13's observable no longer has the
-  engine's own variable change while the engine runs, which no process's environment does.
-
-After a review of the third revision, the same day:
-
-- **Which secret reaches an Agent** (item 4b, S4, S10). "Only to its own provider credential" was
-  carried by no promise, and the engine cannot tell a provider credential from another secret. It
-  is now guidance to the root Interface, and S10 names the limit: any secret routed to an Agent is
-  within its model's reach.
-- **An actor's own reads** (items 4c and 4e, SEC-17, new SEC-21). Item 4c follows from 7b, since
-  only an Agent can consume such a Conduit. SEC-17 now states its own refusal of a request the
-  actor sends anyway, which ACC-003, ACC-001 and the definition of permitted did not give, and
-  SEC-21 rejects any step of a graph that names an operation with a secret output, which also
-  closes a read by a step with no `conduit`, made through no Conduit (TPL-004, ACC-018).
-- **SEC-20 and the rest of the access promises** (items 3b and 3c). SEC-20 now replaces only the
-  restrictions that ACC-017 carries and the policies that name `actors`; ACC-034 and ACC-039 still
-  apply. New item 3c keeps ACC-035's exception for the root Interface from reaching a read, so
-  that a policy on a secret stops every read of it. The table of changes adds ACC-035, IFC-020,
-  the sentences of ACC-031 on a policy that gives `targets` or both lists, and the definitions of
-  request and onward request. ACC-003, ACC-035, ACC-039, IFC-020 and PLC-020 leave the list of
-  promises found unchanged.
-- **The read at process start** (items 8b, 8c, 8e, 8g and 8h, SEC-15, SEC-16). It stands without
-  item 3b. It goes through the one open Conduit to the secret that lists `reveal-secret.v1`; a
-  failed read leaves a request to the process not dispatched, reporting unavailable, as OPS-005
-  requires, where SEC-16 had given it the outcome failed; in a setup, a step dispatched to the
-  item waits for the declared Conduits to secrets (GRA-024); a read that serves the instance's
-  own retirement is permitted under ACC-039; a variable's name has POSIX's form; and the place it
-  reads must be required and governed directly.
-- **The mark** (items 2b and 2c). A schema that offers `secret-reference.v1` beside a branch other
-  than `{type: null}` is rejected (SEC-1), and a record never keeps a value that failed that
-  schema (new SEC-22).
-- **What the engine keeps out** (SEC-10, S10). SEC-10 now binds what the engine makes of a read's
-  output. S10 adds that a value an implementation or an Agent returns or sends is data from then
-  on, that any code the engine starts can read the engine's own sources, that opening a reading
-  Conduit also trusts the secret's locator, and that S4's "What this cannot stop" said too little.
-- **Stores** (items 5c, 5d and 5e). Ciphertext in a document is not rejected, as the third revision
-  said, but never read; `engine` reads only for a secret placed on `local`, and only an absolute
-  path, against PLC-020 as it stands; and a package's store learns its locator through its
-  template's `setup`, which the AWS sketch now shows.
-- **What a process inherits** (item 18, SEC-18) says which secret Resources count, and S10 names
-  what any registrant can withhold.
-- **Replacing a secret** (S6, S11, S10): every reader that names the retired secret must be
-  replaced.
-- **Smaller corrections.** SEC-8's observable follows REC-002 for the read at process start; the
-  table adds MAN-010's sentence on who starts a program; item 7c gives Anthropic's lifetimes as the
-  packet does, an hour by default and up to 24 hours under a rule; and S7 limits single use to an
-  identity token that carries a `jti` claim, which the packet's own sentence leaves out. The
-  correction is made here only: the repository's rule is not to edit what `docs/research/` holds.
 
 ## The problem
 
@@ -647,15 +496,15 @@ arguments:
 
 The one input is written to two places. `/config/token` is a place that `secret-reference.v1`
 governs in the type's schema, so it holds the reference and is inspected as one; an implementation
-item's `environment` points at it (SEC-15). `/conduits/token/target` makes the declared Conduit
-lead to the same secret, and that Conduit is what every read goes through (SEC-16, S3). An
+item's `environment` points at it ([SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). `/conduits/token/target` makes the declared Conduit
+lead to the same secret, and that Conduit is what every read goes through ([SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), S3). An
 implementation that asks needs only the second; a plain server, which cannot ask, needs both.
 Nothing checks the pairing when the documents are resolved: where the instance has no open Conduit
 to the secret that its configuration names, or more than one, the read at process start reports
-refused and the process is not started (SEC-16). Within a setup, the order is fixed: a step that
+refused and the process is not started ([SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). Within a setup, the order is fixed: a step that
 would be dispatched to the plain server's item, such as the start of a runtime, depends on the
 declared Conduit `token` as if `dependsOn` named it, so the engine never starts the process
-before that Conduit is open (SEC-15, GRA-024).
+before that Conduit is open ([SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), GRA-024).
 
 An Agent that is the consumer of a Conduit to `issue-tracker` calls its operations. Where the
 Resource's implementation asks (S3), it reveals the token through its own Conduit while it serves
@@ -764,10 +613,6 @@ core package's reference schemas governs it, and S2 needs that schema to name a 
 knows. The research adds one thing, taken up in S15: AWS's own order is "remove, replace, and
 rotate", so a stored secret is the fallback for a credential that an identity cannot replace.
 
-**Fits.** POOL-001 (one owner, a Pool), ACC-028 (ownership permits nothing, so the Pool that owns a
-secret cannot read it), CON-021 (a Conduit's capability must be offered by its target's type),
-TPL-003 (a template selects the implementation of each operation). No family is added.
-
 ### S2. How a document marks a secret
 
 **The question.** How a schema says "this place holds a secret", what the language then rejects,
@@ -819,14 +664,14 @@ type that writes `anyOf: [{$ref: ...secret-reference.v1}, {type: string}]` accep
 data, by the second branch: the literal is stored, inspected and recorded, although the author
 marked the place. OBJ-021 names one pairing that keeps a reference a reference, a reference schema
 beside the type null, under which "a name is a reference and null is not". The recommendation
-allows that one and rejects the schema in any other case (SEC-1): a place that may hold a secret
+allows that one and rejects the schema in any other case ([SEC-1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)): a place that may hold a secret
 holds a reference or nothing.
 
 **In a record (item 2c).** New after the fourth review. In an Operation contract's input, a literal
 fails the schema and the request reports invalid; but REC-002 keeps "the inputs where `inputs` is
-true" in the target type's `records`, and SEC-3 covers only a diagnostic. So a record keeps an
+true" in the target type's `records`, and [SEC-3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) covers only a diagnostic. So a record keeps an
 argument at such a place only in its resolved form, and never a value that failed the schema
-(SEC-22).
+([SEC-22](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
 
 **What AWS and Kubernetes do.** Both keep the value out of the configuration that names it, and
 both show why a marked literal is not enough. CloudFormation "never stores the actual secure string
@@ -856,11 +701,6 @@ which the ruling requires. Because a marked place only ever holds a reference, c
 records, inspection, observations and graphs hold the reference and never the value, with no new
 rule for any of them. The MCP registry's `isSecret` is a flag on the inputs a server's manifest
 declares, not a schema keyword, so it does not bring back option D; S8 says how it relates.
-
-**Fits.** OBJ-021 gains one schema in its list, and the rule of item 2b on its branches. SCH-001
-and SCH-002 are unchanged. INS-006 is unchanged; its rule that a bare name is accepted where the
-schema fixes the kind does not apply, because this schema accepts no bare name. The definition of
-reference schema gains one name. REC-002 gains SEC-22's exception.
 
 **What it cannot do.** It marks only what an author marks. A token written into a place that a
 plain `{type: string}` governs is data, and no rule can tell it from any other string. Parameter
@@ -970,7 +810,7 @@ still cannot evaluate it, and the read reports unavailable under ACC-014.
 | --- | --- | --- |
 | R1 | As the specification stands: a read carries the served invocation's restrictions, and a policy applies to it by its caller. | Whoever narrows an Agent's Conduit to a Resource, or applies a policy to that Agent, makes every Resource it uses that reads a secret through `engine` report unavailable. The first user cannot give an Agent both limits and a credential it never holds, which is the purpose's own example. |
 | R2 | `engine` states, for `reveal-secret.v1`, more requirements that it supports. | It can apply only a requirement whose meaning it knows. The core package's two, `bound.v1` and `shared-host.v1`, do not narrow a read; any other would be invented for the purpose; and a carried filter, written in another package against another operation, still could not be judged against a read. |
-| **R3** | A read of a secret is decided by the reader's own grant: the Conduit it is made through, the filters on that Conduit, and each policy that names the secret among its `targets` and names no `actors`. It carries none of the restrictions of ACC-017, and no policy that names `actors` applies to it (SEC-20). Nothing else in the decision changes: ACC-034 and ACC-039 still refuse an onward read once a Conduit of its chain is closed or the consumer of one is retired. | A policy cannot stop one Resource's read for one Agent. It stops that Agent's requests to the Resource instead, which is where the value is used: the caller's restrictions still decide the invocation that the Resource serves, and the Resource's implementation applies them to what it does with the value (IFC-019). A policy that names the secret still applies, and with `engine` makes every read of it unavailable while it is in force. That stops all reads of one secret at once only where ACC-035's exception for the root Interface does not reach a read, which is the sub-question after this one; otherwise a read that serves the root Interface goes ahead. |
+| **R3** | A read of a secret is decided by the reader's own grant: the Conduit it is made through, the filters on that Conduit, and each policy that names the secret among its `targets` and names no `actors`. It carries none of the restrictions of ACC-017, and no policy that names `actors` applies to it ([SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). Nothing else in the decision changes: ACC-034 and ACC-039 still refuse an onward read once a Conduit of its chain is closed or the consumer of one is retired. | A policy cannot stop one Resource's read for one Agent. It stops that Agent's requests to the Resource instead, which is where the value is used: the caller's restrictions still decide the invocation that the Resource serves, and the Resource's implementation applies them to what it does with the value (IFC-019). A policy that names the secret still applies, and with `engine` makes every read of it unavailable while it is in force. That stops all reads of one secret at once only where ACC-035's exception for the root Interface does not reach a read, which is the sub-question after this one; otherwise a read that serves the root Interface goes ahead. |
 
 **What AWS and Kubernetes do.** In both, the reader's own identity decides a workload's read of its
 credential, and the restrictions of whoever called the workload are not carried onto it. AWS's
@@ -999,7 +839,7 @@ still require the reader's own open Conduit that lists the operation, and the ch
 hold: a read made after the Agent's Conduit to the Resource is closed reports refused (ACC-034),
 and so does one made after the Agent is retired, unless it serves the Agent's own retirement
 (ACC-039). IFC-020, under which an onward request carries the served invocation's restrictions
-"whatever else the onward request states", takes SEC-20's exception for those restrictions; the
+"whatever else the onward request states", takes [SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)'s exception for those restrictions; the
 read still carries the served invocation's caller, and its record names it.
 
 **Sub-question: the root Interface's exception (item 3c).** New after the fourth review. ACC-035
@@ -1014,21 +854,12 @@ no policy on a secret reaches.
 | Option | What it is | What it costs |
 | --- | --- | --- |
 | C1 | ACC-035 reaches a read: a policy on a secret stops every read of it except those that serve the root Interface. | A read's outcome depends on who called the Resource that makes it, and no policy stops all reads of one secret. |
-| **C2** | ACC-035 does not reach a read: a policy that names a secret among its `targets` applies to every read of it, whoever the caller (SEC-20). | ACC-035 gains an exception. The root Interface can still remove the policy. |
+| **C2** | ACC-035 does not reach a read: a policy that names a secret among its `targets` applies to every read of it, whoever the caller ([SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). | ACC-035 gains an exception. The root Interface can still remove the policy. |
 
 **Recommendation: C2.** It keeps R3 one rule, the one the read at process start already follows,
 since that read has no caller for ACC-035 to exempt, and it gives a way to stop every read of one
-secret at once. If the owner prefers C1, SEC-20's "every read" becomes "every read that serves no
+secret at once. If the owner prefers C1, [SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)'s "every read" becomes "every read that serves no
 root Interface invocation".
-
-**Fits.** IFC-021 and ACC-016 unchanged. IFC-020's `then` and observable take SEC-20's exception
-for the restrictions that an onward request for an operation with a secret output carries.
-OBJ-021 unchanged: the implementation receives the resolved form, and the value only as the
-output of the read. ACC-017, ACC-031 and ACC-009 gain the exception of SEC-20, and ACC-035 that of
-item 3c. ACC-034 and ACC-039 are unchanged as rules for an onward read. ACC-015 and ACC-026 are
-unchanged in rule; their lists of the targets that `engine` serves gain a secret Resource that
-`engine` serves, which only a policy that names it among its `targets` reaches. CON-022 is
-unchanged: with CON-028, it keeps every filter off a Conduit to a secret that `engine` serves.
 
 ### S4. Who may read a secret
 
@@ -1106,19 +937,19 @@ first follows from point 4 wherever 4b is accepted, item 4c, and the rule on ste
 new, item 4e.
 
 - No actor is ever presented a tool for an operation that has a secret output, and a request that
-  an actor sends for one anyway reports refused (SEC-17); no step of a graph names such an
-  operation (SEC-21); and the engine gives no actor a result that holds a value (SEC-10).
+  an actor sends for one anyway reports refused ([SEC-17](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)); no step of a graph names such an
+  operation ([SEC-21](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)); and the engine gives no actor a result that holds a value ([SEC-10](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
 - A Resource reads by an onward request, as above.
 - An Agent may be the consumer of a Conduit to a secret, which the engine uses only when it starts
-  the Agent's process, by the mechanism of S8 (new, SEC-16). An Interface is never such a consumer
-  (SEC-6). The secret is meant to be the Agent's own provider credential, but no promise can say
-  so: the engine cannot tell a provider credential from any other secret, and SEC-6, SEC-7 and
-  SEC-16 do not limit which secret the Conduit leads to. So whatever secret the root Interface
+  the Agent's process, by the mechanism of S8 (new, [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). An Interface is never such a consumer
+  ([SEC-6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). The secret is meant to be the Agent's own provider credential, but no promise can say
+  so: the engine cannot tell a provider credential from any other secret, and [SEC-6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and
+  [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) do not limit which secret the Conduit leads to. So whatever secret the root Interface
   routes to an Agent, a GitHub token as readily as a model key, is set in the Agent's process,
   where a model that can run commands can read it (S10). That reaches past point 2 for whatever
   secret is so routed. A checkable limit, such as at most one such Conduit in an Agent's template,
   would bound how many secrets reach an Agent, not which, and is not proposed.
-- Only the root Interface opens either kind (SEC-7).
+- Only the root Interface opens either kind ([SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
 
 The research is plain about what point 4 then gives. The value sits in the Agent's own process.
 Claude Code "keeps the credentials for its own API calls" while the shells, hooks and stdio servers
@@ -1148,7 +979,7 @@ use, since being the consumer of a Conduit to a target does not permit opening o
 a right to open passes on "only as it is or narrower" (ACC-030), which is Kubernetes's rule. So
 the later version would let a Conduit to `access` whose bound names `reveal-secret.v1` and a Pool
 of secrets, or named secret Resources, open reading Conduits within that bound (ACC-029). It would
-keep SEC-7's rule on the consumer whatever the bound says, as PassRole names the service that may
+keep [SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)'s rule on the consumer whatever the bound says, as PassRole names the service that may
 receive a role, so that whoever arranges a read never receives it. It would adopt no equivalent of
 `escalate` or of a `bind` on every role, which Kubernetes calls a way around its protection, and
 not the semantics of AWS's permissions boundaries, under which a delegate can create access it
@@ -1213,8 +1044,8 @@ actor may hold the resolved form `{kind: Resource, id}` of a secret, see it in i
 it as an argument, and that permits nothing. Only a Conduit permits a read.
 
 **Recommendation: B and D, with the generic output mark, and no list of readers on the secret. B
-and D stand, as ruling 39 accepted; the Agent as a consumer, SEC-21 and the rejection of a list on
-the secret are new, and SEC-17 follows from point 4.** The first draft recommended B and left D to
+and D stand, as ruling 39 accepted; the Agent as a consumer, [SEC-21](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and the rejection of a list on
+the secret are new, and [SEC-17](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) follows from point 4.** The first draft recommended B and left D to
 the owner; the owner chose both
 for the first version, and the research, the second round on PassRole and escalation and the third
 on lists of readers included, gives no reason to depart from that. It is the one combination under
@@ -1232,7 +1063,7 @@ things remain. The first is the root Interface's own choice: whoever wrote the i
 the root Interface lets read a secret can recover its value, and the secret's locator, which
 whoever registered the secret wrote, decides what is read (S10). The second is any code the engine
 starts at another actor's request. Every process the engine starts runs as the engine's
-operating-system user, and may be started before any invocation (SEC-16, DL12). The engine's own
+operating-system user, and may be started before any invocation ([SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), DL12). The engine's own
 environment holds the values of its `environment` sources (S5), and the kernels let a process of
 the same user read it, on Linux where the engine is dumpable and on macOS in every case, and open
 the files the `file` sources name
@@ -1244,14 +1075,6 @@ The same will hold of a delegate later:
 AWS says of a delegate who may create users that "Maria effectively trusts Zhang" with the access
 those users get ([packet](../../research/SECRETS.md#who-may-give-a-workload-a-read)), so delegating
 the right to open a reading Conduit is, in effect, delegating the read.
-
-**Fits.** ACC-032 is the model for the refusal: a Conduit that some consumers may not have, refused
-at its opening. ACC-005 and ACC-006 point to SEC-7. CTR-002 gains the mark. REC-002 gains an
-exception. OPS-016 and IFC-024 gain the case of a result that has a secret output. GRA-020 gains a
-rejection, and the graph promises SEC-21's. IFC-012 gains the exception of SEC-17, and so do
-ACC-003, under which an open Conduit permits the operations it lists, ACC-001, which IFC-012 names
-for the refusal of a tool it does not present, and the definition of permitted: SEC-17 refuses an
-actor's request although an open Conduit lists the operation.
 
 ### S5. Where the value is stored
 
@@ -1302,7 +1125,7 @@ on its own host, and nothing said what `engine` does for a secret placed elsewhe
 recommendation: `engine` reads its sources only for a secret placed on `local`, the location made
 at first start, where `management` and `access`, which `engine` also implements, are placed; for
 a secret placed on any other location the read has the outcome failed and nothing is opened
-(SEC-14). A `file` that is not an absolute path fails the read in the same way: INS-018 leaves a
+([SEC-14](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). A `file` that is not an absolute path fails the read in the same way: INS-018 leaves a
 relative path to "the schema of the type that receives it", and `secret.v1` has none. PLC-020's
 observable takes the exception for `engine` serving a secret on `local`. A requirement on placement
 was the other choice, but `engine` is one item for every operation of the core package, so a
@@ -1370,20 +1193,14 @@ forms, which the proposal treats apart.
 
 | Form | Treatment | Why |
 | --- | --- | --- |
-| Ciphertext written inside a Conduit document, such as a sealed value in a secret Resource's `config`, which the engine or a package decrypts | **Never read as a value**, and advised against. Nothing rejects it: `secret.v1` states no `schema`, and such a type "puts no rule on the configuration of its instances" (CTR-004), so it is accepted and kept as data. The third revision said "Rejected", which no promise did. | An encrypted literal is still a literal: SEC-12 has an implementation take the value from its store, "never from that configuration". Configuration is inspected, recorded and revisioned, so the ciphertext would stay in records (REC-003), and Sealed Secrets says a value in version control must be assumed never deleted; a later leak of the key would expose every value sealed with it. The engine would become the Sealed Secrets controller, generating, renewing and keeping keys and having its owner back them up after each renewal, which is S5 option A's and S14 option B's cost. And holding the ciphertext, put under the right name, would be a second way to a value, which is why Sealed Secrets needs scopes and admits that "this scheme *does not authenticate the user*"; in Conduit a copied reference permits nothing, and only an open Conduit does (ACC-001). |
+| Ciphertext written inside a Conduit document, such as a sealed value in a secret Resource's `config`, which the engine or a package decrypts | **Never read as a value**, and advised against. Nothing rejects it: `secret.v1` states no `schema`, and such a type "puts no rule on the configuration of its instances" (CTR-004), so it is accepted and kept as data. The third revision said "Rejected", which no promise did. | An encrypted literal is still a literal: [SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) has an implementation take the value from its store, "never from that configuration". Configuration is inspected, recorded and revisioned, so the ciphertext would stay in records (REC-003), and Sealed Secrets says a value in version control must be assumed never deleted; a later leak of the key would expose every value sealed with it. The engine would become the Sealed Secrets controller, generating, renewing and keeping keys and having its owner back them up after each renewal, which is S5 option A's and S14 option B's cost. And holding the ciphertext, put under the right name, would be a second way to a value, which is why Sealed Secrets needs scopes and admits that "this scheme *does not authenticate the user*"; in Conduit a copied reference permits nothing, and only an open Conduit does (ACC-001). |
 | A file encrypted with SOPS, named by its path | **Listed** among the stores an ordinary package may implement, beside the keychain and the cloud managers; not in `engine`. | Decrypting needs SOPS's key clients (KMS, age, PGP), which is platform-specific code of the kind B1 keeps out of every engine. The package adopts SOPS's format and tool unchanged. It decrypts at each read, as `sops decrypt --extract` does, never at registration, so an edited file is seen at the next read (S6); Flux's decrypt at apply leaves a plaintext copy. Its locator is the file's path and SOPS's own extract path (S17). It finds its own key as S16 says. A SOPS file may hold some values in the clear (`encrypted_regex`, `unencrypted_suffix`), so the package should say whether it reveals one. |
 | A SealedSecret | **Not a store Conduit reads.** | Only its controller in the cluster can decrypt it, and the result is an ordinary Kubernetes Secret; a package that reads Kubernetes Secrets covers a cluster that uses it. Reading a sealed file directly needs the exported private keys that the project says to keep "omg-safe". |
 
 **What is implementation-defined.** A new item of the
-[implementation-defined list](../../../spec/implementation-defined.yaml), DL16 in the drafts below:
+[implementation-defined list](../../../spec/implementation-defined.yaml), [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) in the [drafts below](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow):
 how `engine` reads a file and an environment variable (the encoding, a final newline, the largest
 value), and whether it reads them with its own process's rights or another's.
-
-**Fits.** MAN-012 (the engine implements the core package), TPL-003, CTR-004 (the type may state no
-`schema`, and each store's template narrows `config` to its own locator), GRA-010 and IFC-006
-unchanged. PLC-020's observable gains the exception of item 5d. The
-configuration of `secret.v1` is configuration like any other: it is inspected, recorded and
-revisioned, and holds nothing secret (S14).
 
 [pools]:
   https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/POOLS.md
@@ -1441,7 +1258,7 @@ deletion fails, and the package reports it so.
   because the value stays in the store and a new secret Resource can name it again. The readers
   do not follow, a point added after the fourth review. A reader's configuration keeps the
   resolved form it was made with (OBJ-010), a replacement of its declared Conduit to a retired
-  target reports invalid (LIF-009), and SEC-16 reads the secret that `environment` points at,
+  target reports invalid (LIF-009), and [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) reads the secret that `environment` points at,
   which is still the retired one, so that read reports refused. So every reader that names the
   retired secret, a plain server's instance or an Agent, must be retired and made again with the
   new one before the engine can start its process, unless its type has a control for that place
@@ -1449,12 +1266,9 @@ deletion fails, and the package reports it so.
 - **Retiring the reader** leaves its Conduit to the secret open until its shutdown is confirmed,
   for the requests of its own retirement only (ACC-039), then closes it (CON-008). Among those is
   a read at the start of a process that the engine starts to dispatch a step of that retirement or
-  the stop of one of its runtimes (item 8h, SEC-16).
+  the stop of one of its runtimes (item 8h, [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
 - **A read in progress when the Conduit is closed** runs to its end, and its content is withheld
   (ACC-034, OPS-017): the value is not delivered.
-
-**Fits.** No promise changes here; ACC-039 changes for item 8h, under S8. REV-003 is unchanged: a
-value in a store is not configuration. OBS-001, OBJ-010 and LIF-009 are unchanged.
 
 ### S7. Authentication
 
@@ -1517,7 +1331,7 @@ of agents "a best-effort defense, not a security boundary"
   to it, which only the root Interface opens, and the Agent's implementation item points under
   `environment` at the place in the Agent's configuration that refers to the secret; the engine
   reads it and sets the variable when it starts the Agent's process (S8), and presents no tool for
-  it (SEC-17). The research supports the direction and shows its limit (S4, S10). Nothing makes
+  it ([SEC-17](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). The research supports the direction and shows its limit (S4, S10). Nothing makes
   the secret the Agent's own credential: the root Interface chooses what the Conduit leads to
   (item 4b).
 - **What a value set at start can carry (item 7c).** New after the third review. The providers'
@@ -1559,13 +1373,6 @@ point 4, and neither is recommended. The Agent's credential stays outside Condui
 environment the engine was started with, which is option B and loses the Conduit's record and
 closing. Or the engine reads it with no Conduit at all, which would be a second way to permit a
 read, against "every permission is an open Conduit".
-
-**Fits.** IFC-022, IFC-030, IFC-032 and DL13 unchanged. The new obligation on an implementation
-(S4) is the counterpart of the protocol's rule against token passthrough: the engine does not pass
-a consumer's credential on, and an implementation does not pass a revealed secret on. The purpose's
-"An agent's subscription and context are its own" still holds: the credential is the Agent's own,
-kept in a store its owner chose, and Conduit only delivers it at start. How a native Agent is
-launched is experiment E1 of the tracker, not this proposal.
 
 ### S8. Existing servers that read credentials from the environment
 
@@ -1629,13 +1436,13 @@ with no invocation at hand. An Agent's process serves no invocation at all when 
 | Option | What it is | What it costs |
 | --- | --- | --- |
 | B1 | As the revision drafted: the read is an onward request that serves the invocation the engine is about to dispatch to the new process, with that invocation's caller. | It fails wherever there is no such invocation: a start at setup, a start with the engine, every Agent. Where there is one, a restriction tied to its caller binds only that first read; the value then serves later invocations of other callers with no read, so the restriction appears to bind what it does not. |
-| **B2** | The engine makes the read at the start of the process for no actor, whatever caused the start, as OBS-007 has it stop a runtime for no actor. The read goes through the instance's own open Conduit and is decided by that Conduit, its filters, and a policy that names the secret among its `targets` and names no `actors`. Having no caller and serving no invocation, it carries nothing under ACC-017, and no policy that names `actors` reaches it under ACC-031 as it stands, so this holds whether or not item 3b is accepted. | No restriction tied to a caller binds the read, or the value it sets; S10 says so. IFC-006, REC-002 and the definition of caller gain a second request that has no caller, beside OBS-007's stop. No instance sends the read, so it has no sending instance either: the definition of the instance that sent a request, OPS-008 and SEC-10 say so. It is decided by neither ACC-001, which is about a consumer's own request, nor ACC-016, which is about an onward request; SEC-16 alone permits it. With `engine`, a policy that names the secret makes the read unavailable while it is in force, and the process is not started. |
+| **B2** | The engine makes the read at the start of the process for no actor, whatever caused the start, as OBS-007 has it stop a runtime for no actor. The read goes through the instance's own open Conduit and is decided by that Conduit, its filters, and a policy that names the secret among its `targets` and names no `actors`. Having no caller and serving no invocation, it carries nothing under ACC-017, and no policy that names `actors` reaches it under ACC-031 as it stands, so this holds whether or not item 3b is accepted. | No restriction tied to a caller binds the read, or the value it sets; S10 says so. IFC-006, REC-002 and the definition of caller gain a second request that has no caller, beside OBS-007's stop. No instance sends the read, so it has no sending instance either: the definition of the instance that sent a request, OPS-008 and [SEC-10](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) say so. It is decided by neither ACC-001, which is about a consumer's own request, nor ACC-016, which is about an onward request; [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) alone permits it. With `engine`, a policy that names the secret makes the read unavailable while it is in force, and the process is not started. |
 | B3 | A process for each caller, started with a read made for that caller. | A process for each caller of each instance, and a process started again as callers change, for servers that hold one credential and serve whoever calls. |
 
 **Recommendation: B2.** It is true of every start, and it says what the value serves: every
 invocation of that process, whoever its caller. It reuses the one shape the specification already
 has for a request the engine makes on its own account, and, where item 3b is accepted, it is
-decided exactly as an onward read is (SEC-20). A developer who needs the use of a credential
+decided exactly as an onward read is ([SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). A developer who needs the use of a credential
 limited per caller puts the limit on
 the operation the caller asks for, and uses an implementation that asks for the secret (S3, option
 C): it applies the caller's restrictions to each invocation (IFC-019), and each of its reads is
@@ -1644,18 +1451,18 @@ requirement (PKG-020), so a filter on a Conduit to it is not instantiated (CON-0
 that reaches it makes requests to it unavailable (ACC-015).
 
 **Sub-question: who starts the process.** New after the third review. IFC-017 and DL12 also leave
-to every engine "who starts its process". SEC-16 binds only where the engine starts it: the reads
+to every engine "who starts its process". [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) binds only where the engine starts it: the reads
 are made before the start, and only the one that starts a process sets its environment.
 
 | Option | What it is | What it costs |
 | --- | --- | --- |
 | **F1** | The engine starts the process of an item that states `environment` itself, whatever IFC-017 leaves it to choose for other items. | An engine that would hand the start of its processes to something else, such as a service manager, starts these itself. |
 | F2 | An engine that does not start such a process itself rejects the item. | Whether a package can be used would depend on the engine's runtime profile, which the package cannot see; the same project would be valid under one engine and rejected under another. |
-| F3 | Left to each engine. | Where something else starts the process, SEC-16 binds nothing: the process starts without the value, or with whatever its starter gives it, outside every Conduit. |
+| F3 | Left to each engine. | Where something else starts the process, [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) binds nothing: the process starts without the value, or with whatever its starter gives it, outside every Conduit. |
 
 **Recommendation: F1.** A `command` is "a program, then its arguments" (MAN-010), which the engine
 can run itself; F1 only rules out handing the start of these items to something else. It keeps an
-item valid under every engine, and SEC-16 true of every process that serves such an item.
+item valid under every engine, and [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) true of every process that serves such an item.
 
 **Sub-question: how many instances one process serves.** IFC-017 leaves to every engine, at the
 level may, "how many instances share" a process. A process started under `environment` holds
@@ -1674,13 +1481,13 @@ points.
   the root Interface opened on its own, with different filters where a package serves the secret.
   The read goes through the one open Conduit of the instance to that secret that lists
   `reveal-secret.v1`; where there is none, or more than one, it reports refused and the process is
-  not started (SEC-16). The root Interface, which alone opens such Conduits (SEC-7), can always
+  not started ([SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). The root Interface, which alone opens such Conduits ([SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)), can always
   keep it to one. Usually it is the declared Conduit, which a template fills from the same input
   as the configuration place, but nothing checks that pair when documents are resolved.
 - **The place.** A place that `secret-reference.v1` governs only as a branch of `anyOf` beside
-  `{type: null}` may hold null, and an optional member may be absent. SEC-15 therefore accepts only
+  `{type: null}` may hold null, and an optional member may be absent. [SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) therefore accepts only
   a place that the schema governs directly and requires, every member on the way to it included,
-  and SEC-16 does not start the process where a place still holds no reference.
+  and [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) does not start the process where a place still holds no reference.
 - **The name.** Each key is the name of a variable, with the form POSIX gives the variables of its
   own utilities, which "consist solely of uppercase letters, digits, and the" underscore and "do
   not begin with a digit", and never hold `=`; lowercase letters are allowed as well, since POSIX
@@ -1688,7 +1495,7 @@ points.
   ([POSIX, section 8.1](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap08.html)).
   POSIX is not among the packet's sources; the page was read for this revision. A name the process
   would otherwise inherit, such as `PATH`, is replaced by the value.
-- **The order within a setup (item 8g).** SEC-16 reads only through an open Conduit, and the
+- **The order within a setup (item 8g).** [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) reads only through an open Conduit, and the
   declared Conduit is opened by a step of the same setup (GRA-022). GRA-024 makes only a step that
   carries `conduit` depend on that step, and GRA-002 orders steps by dependency alone. A step with
   no `conduit`, or the start of a runtime, is dispatched to the instance's own implementation, and
@@ -1696,7 +1503,7 @@ points.
   on the order each engine picks (DL1). So, in a template that selects an item that states
   `environment`, the resolved setup graph lists each declared Conduit that lists an operation with
   a secret output among the dependencies of every step that would be dispatched to that item, as
-  GRA-024 does for a step with `conduit` (SEC-15). The other choice, a rule that the author must
+  GRA-024 does for a step with `conduit` ([SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). The other choice, a rule that the author must
   write `dependsOn`, would leave the fault to be found at the start of the process.
 
 **Sub-question: a read during the instance's retirement (item 8h).** New after the fourth review.
@@ -1718,9 +1525,9 @@ place where the proposal adds a mechanism rather than a rule. The research refin
 
 - The process is not started where any read fails, as Kubernetes, Cloud Run and Vault Agent do and
   App Service does not. No implementation is reached, so a request that was to be dispatched to
-  the process is not dispatched and reports unavailable (SEC-16), as OPS-005 has every request
+  the process is not dispatched and reports unavailable ([SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)), as OPS-005 has every request
   that is not dispatched report a reason; "a request that has an outcome was dispatched", in the
-  words of the definitions. Changed after the fourth review: SEC-16 gave such a request the
+  words of the definitions. Changed after the fourth review: [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) gave such a request the
   outcome failed. The difference matters for a repeat: OPS-024 dispatches a new attempt after
   failed, and OPS-025 decides a request after a reason afresh.
 - The process gets no variable that a secret Resource names as its store, apart from those set for
@@ -1733,21 +1540,6 @@ place where the proposal adds a mechanism rather than a rule. The research refin
 
 Remote plain servers, reached by `url`, would need the engine to present an `Authorization` header
 for them; that is left out (see below).
-
-**Fits.** MAN-009 and MAN-010 gain the key. MAN-010's sentence "Who starts the program is DL12 of
-the implementation-defined list", which also governs how a bare program name is found, gains that
-the engine starts the program of an item that states `environment`. PKG-019 gains what it means.
-IFC-017 no longer leaves an engine free to choose how many instances share the process of an item
-that states `environment`, or who starts it. DL12 gains that the engine starts such an item's
-process itself, one for each instance. IFC-006 and REC-002 gain the read at process start as a
-request with no caller, beside OBS-007's stop, and the definition of caller says so. The
-definition of the instance that sent a request, and OPS-008, gain that this read has none, and the
-definition of request, which says "There is no third case", gains it as one. ACC-001's observable
-points to SEC-16, beside the retrieval it already names, as a request that it does not decide.
-GRA-024's observable gains the dependency of item 8g, and ACC-039 the read of item 8h. OPS-005 is
-unchanged: SEC-16 now follows it. IFC-021 and ACC-016 are unchanged: the engine makes the read,
-and the instance, which may not yet be running, sends nothing. IFC-007 is unchanged: the server
-receives none of Conduit's keys, only its environment.
 
 ### S9. What a value is
 
@@ -1767,11 +1559,11 @@ server's memory. Azure accepts and returns strings, up to 25 KB. Vault's KV stor
 [GCP, Azure and Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
 **Recommendation: A. Stands.** A token, a password and a PEM key are all text. The output's schema
-is `{type: string}`. DL16, the proposed item of the implementation-defined list on how the engine
+is `{type: string}`. [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), the proposed item of the implementation-defined list on how the engine
 reads its own file and variable (S5), gains two points from the research: the largest value the
 engine reads, as Kubernetes and Azure each state one, and whether a final newline is kept, which
 Kubernetes's own instructions avoid with `echo -n`. What the engine does with a file that is not
-valid UTF-8 is part of DL16. A package that reads bytes from its store states what it does with a
+valid UTF-8 is part of [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow). A package that reads bytes from its store states what it does with a
 value that is not text. Selecting one key of a structured secret is S17.
 
 ### S10. What the guarantee covers
@@ -1811,7 +1603,7 @@ broader:
 
 - A place that `secret-reference.v1` governs never holds a value, only a reference, so the value is
   never in configuration, in a record, in an inspection result, in an observation, in a graph or in
-  a diagnostic; and a value that fails that schema is kept in no record (SEC-22).
+  a diagnostic; and a value that fails that schema is kept in no record ([SEC-22](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
 - The engine never records, retains or shows a secret output; it delivers it only to the instance
   that sent the request, or, for a read at process start, which no instance sends, into the
   environment of the process the engine starts for the instance whose Conduit it was read
@@ -1827,10 +1619,10 @@ And state what it does not cover:
   that implementation can recover the value.
 - The root Interface's trust in a secret's locator. Opening a reading Conduit trusts the secret's
   configuration as well as the reader, and whoever may register the secret wrote that
-  configuration: `file: /proc/self/environ` on Linux, a path SEC-14 accepts, returns the engine's
-  whole environment, every other `environment` source and every variable SEC-18 withholds among
+  configuration: `file: /proc/self/environ` on Linux, a path [SEC-14](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) accepts, returns the engine's
+  whole environment, every other `environment` source and every variable [SEC-18](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) withholds among
   it. The opening is often implicit, since a declared Conduit opens at setup "only where the root
-  Interface sent it" (SEC-7), and a Pool's entry can be retired and replaced from a template that
+  Interface sent it" ([SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)), and a Pool's entry can be retired and replaced from a template that
   `replace.v1` has changed (LIF-009), so a reader set up later finds another store behind the same
   entry name. The guidance is to inspect a secret, and the template behind a Pool's entry, before
   setting up a reader of it.
@@ -1841,7 +1633,7 @@ And state what it does not cover:
   records where the type's `records` keeps inputs or outputs (REC-002), and the retained result,
   whose content a purge does not touch (REC-004). A plain server that echoes its environment in a
   tool result does so, and an Agent's model can paste its credential into the `arguments` of a
-  request. SEC-10 binds only what the engine makes of a read's output, and SEC-11 binds only an
+  request. [SEC-10](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) binds only what the engine makes of a read's output, and [SEC-11](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) binds only an
   implementation that carries Conduit's keys; masking is left out of the first version, and would
   never be a guarantee.
 - A value set in a process's environment, under S8 or for an Agent under S7. It is readable by that
@@ -1849,7 +1641,7 @@ And state what it does not cover:
   of the same operating-system user that the kernel admits, as above.
   A plain server is bound by no obligation of this specification.
 - A restriction tied to a caller, for any read of a secret. A read is decided by the reader's own
-  grant (SEC-20); the caller's restrictions bind the invocation that the reader serves, and only
+  grant ([SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)); the caller's restrictions bind the invocation that the reader serves, and only
   an implementation that applies them there (IFC-019) carries them as far as the value's use. A
   value set at process start is read once, for no actor (S8), and the process then uses it for
   every invocation it serves, whoever the caller.
@@ -1862,7 +1654,7 @@ And state what it does not cover:
   keeps what a started process writes there should treat it as possibly holding a value.
 - An Agent's own credential, once in its process. An Agent whose model can run commands can read
   it.
-- Which secret reaches an Agent. SEC-6, SEC-7 and SEC-16 do not limit which secret an Agent's
+- Which secret reaches an Agent. [SEC-6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) do not limit which secret an Agent's
   Conduit leads to, since the engine cannot tell a provider credential from any other secret. Only
   the root Interface's opening keeps another secret, such as a GitHub token, out of an Agent's
   process, and any secret so routed is within reach of a model that can run commands (item 4b).
@@ -1877,7 +1669,7 @@ And state what it does not cover:
   the engine is dumpable and on macOS in every case, and open every `file` source, whether or not
   any Conduit to those secrets was opened. So an actor that may register and set up a Resource, or
   install a package, can arrange such a read with no Conduit (S4).
-- Withholding a variable. SEC-18 withholds the variable of every secret that is not retired and
+- Withholding a variable. [SEC-18](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) withholds the variable of every secret that is not retired and
   that `engine` serves, and `secret.v1` states no `schema`, so any actor that may register a
   Resource into a Pool can register a secret with `{environment: PATH}` and so withhold `PATH`,
   or `HOME`, from every process the engine starts, which S16 needs passed on. That breaks
@@ -1890,9 +1682,6 @@ And state what it does not cover:
   Conduit is closed.
 - Later, a delegated right to open reading Conduits. Whoever holds it can arrange a read for an
   implementation they control, so delegating it is, in effect, delegating the read (S4).
-
-**Fits.** This is the same honesty as ACC-027's "mediated" and the purpose's "Enforcement: a
-future, optional part of the language".
 
 ### S11. Version or stage
 
@@ -1936,16 +1725,13 @@ process, unless its type has a control for that place and the root Interface ope
 the new secret for it (S6, S10). A pinned version can also stop
 existing in the store, as Parameter Store's cap shows. One rule is adopted from Parameter Store: a
 locator that names a version or a stage that does not exist fails the read, and the implementation
-never falls back to another version. That is SEC-12's rule against a fallback to another source,
+never falls back to another version. That is [SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)'s rule against a fallback to another source,
 applied to versions. The engine's own sources, a file and a variable, have no versions.
-
-**Fits.** CTR-004 and TPL-003 unchanged. This replaces the first draft's advice in S6 that a
-locator "should name the current version".
 
 ### S12. Freshness and caching
 
 **The question.** New. Whether every implementation of `reveal-secret.v1` must read its store at
-each request (SEC-13 of the first draft), or may serve a read from a copy.
+each request ([SEC-13](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) of the first draft), or may serve a read from a copy.
 
 | Option | What it is | What it costs |
 | --- | --- | --- |
@@ -1967,15 +1753,13 @@ Operator poll (packet: [AWS](../../research/SECRETS.md#aws-secrets-manager-and-p
 guarantee: each read is still a request, decided against the Conduit and recorded, and closing the
 Conduit still stops reads. It weakens only freshness, which is the package's to state. The engine
 itself keeps nothing, so the record never misses a read the engine served, which is the gap AWS
-documents for its own local cache. The observable of SEC-13 becomes one that every store can meet:
+documents for its own local cache. The observable of [SEC-13](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) becomes one that every store can meet:
 with the engine's own file, a change between two reads is seen at the second. The engine's own
 variable keeps the value it had when the engine started, as a value in an environment does in
 every source read ([packet](../../research/SECRETS.md#patterns-across-the-systems), pattern 6); a
 new value there is seen once the engine is started again. A request
 input to force a fresh read, as AWS's `refreshNow`, is left out of the first version; the guidance
 of S6, to read again after a refusal, assumes a package that caches keeps its cache short.
-
-**Fits.** SEC-13 changes as drafted below. REC-001 unchanged.
 
 ### S13. Records of reads
 
@@ -1984,7 +1768,7 @@ the record cannot be kept.
 
 | Option | What it is | What it costs |
 | --- | --- | --- |
-| **A** | Each read is recorded as any request is (REC-001, REC-002), and the record never holds the value (SEC-8). A read whose record cannot be kept is not dispatched. | One new rule, for operations that have a secret output only. |
+| **A** | Each read is recorded as any request is (REC-001, REC-002), and the record never holds the value ([SEC-8](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). A read whose record cannot be kept is not dispatched. | One new rule, for operations that have a secret output only. |
 | B | As A, and the record also holds a keyed hash of the value, so an owner can check whether a leaked value was read. | A hashing key to manage and protect; a low-entropy password's hash can be guessed once the key leaks. |
 | C | As A, without the rule on a record that cannot be kept. | A value could be delivered with no trace of who read it. |
 
@@ -2011,9 +1795,6 @@ be kept is Vault's rule, kept to secret outputs: nothing else in this version ne
 leaves storage exhaustion otherwise to each engine. The keyed hash of B is left out of the first
 version.
 
-**Fits.** REC-001 unchanged, with SEC-19 beside it. REC-002 gains SEC-8's exception, and the read
-at process start as a second record with no caller (S8).
-
 ### S14. Encryption of what the engine keeps
 
 **The question.** New. Whether the specification promises encryption at rest for anything the
@@ -2036,14 +1817,12 @@ data". Azure warns not to put sensitive information in identifiers (packet:
 
 **Recommendation: A.** Because the value stays in its store (S5) and the engine keeps no copy
 (S12), there is nothing secret for the engine to encrypt. Metadata in the clear is the industry's
-design, and the rule that a locator holds nothing secret (SEC-12, S2) is what makes that safe.
+design, and the rule that a locator holds nothing secret ([SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), S2) is what makes that safe.
 Parameter Store shows it again: restricting decryption "doesn't hide the parameter's name,
 description, or other metadata", and a parameter's ARN appears in CloudTrail in plaintext as the
 encryption context ([packet](../../research/SECRETS.md#aws-secrets-manager-and-parameter-store)).
 The ciphertext kept beside configuration, which S5 advises against and no implementation reads,
 would have brought key management back had it been read.
-
-**Fits.** No promise changes.
 
 ### S15. Issued credentials and stored secrets
 
@@ -2077,8 +1856,6 @@ needed, closed) and Vault's leases are the shapes to adopt (packet:
 [tools](../../research/SECRETS.md#configuration-tools-mcp-and-agent-tooling),
 [Vault](../../research/SECRETS.md#gcp-azure-and-hashicorp-vault)).
 
-**Fits.** No promise changes; the README gains one sentence.
-
 ### S16. A store's own credential
 
 **The question.** New. How an implementation in a package, such as one that reads AWS Secrets
@@ -2090,14 +1867,14 @@ Manager, gets the credential it needs to reach its store.
 | B | A key in a secret Resource that the engine's own implementation reads, set in the package's process environment at start under S8. | As drafted in the revision it cannot be declared, and it costs more than it seemed: see below. It keeps a long-term key, which AWS advises against for development. |
 | C | A secret read by another package's implementation. | A chain of stores, each needing the next; no end to it. |
 
-**Why B is not as cheap as the revision said.** The revision said "SEC-15 and SEC-16 already serve
-it". They do not. SEC-15 has `environment` point at a place that `secret-reference.v1` governs "in
+**Why B is not as cheap as the revision said.** The revision said "[SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) already serve
+it". They do not. [SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) has `environment` point at a place that `secret-reference.v1` governs "in
 the instance's type", and the instance a store's package serves is a secret Resource, whose type
 `secret.v1` states no `schema`; such a type "puts no rule on the configuration of its instances"
 (CTR-004). So `environment` has no place in a secret Resource's configuration to point at.
 Making B work would need `secret.v1` to gain a schema with a place for its store's own credential,
-or SEC-15 to accept a place that a template's own input governs; a Conduit from every secret
-Resource the package serves to the key, each opened by the root Interface; and, under SEC-16's one
+or [SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) to accept a place that a template's own input governs; a Conduit from every secret
+Resource the package serves to the key, each opened by the root Interface; and, under [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)'s one
 process for each instance, one process of the package for each secret Resource it serves.
 
 **What AWS and Kubernetes do.** Kubernetes's KMS plugin keeps its own credentials for the remote
@@ -2179,15 +1956,12 @@ Guidance, not promises, follows from the research:
   grant the package's identity a read by itself (S4).
 - **A session that has ended.** Identity Center needs a person to sign in, and a process the engine
   starts has no terminal; once the session ends, "Any code that creates a new client will fail
-  authentication". The read then has the outcome failed, with no fallback (SEC-12), and the
+  authentication". The read then has the outcome failed, with no fallback ([SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)), and the
   package's message should tell the developer to sign in again. Kubernetes's `interactiveMode`
   shows how a client declares that a credential needs a person.
 
 B would be the exception for a store whose client finds no credential by default, and offers no
 identity of its own. When it is needed, its costs above are the ones to rule on.
-
-**Fits.** No promise changes, beyond DL12's note. SEC-18 keeps the engine's secret variables from
-the package's process.
 
 ### S17. One key of a structured secret
 
@@ -2224,8 +1998,6 @@ own: a colon after a name already means a version or a label in Parameter Store 
 pass-through, so a cross-store `:key` would collide with AWS's own form. A Parameter Store package
 states that it has no key selector; related values are separate parameters, each its own secret
 Resource. The engine's own file and variable have no selector in the first version.
-
-**Fits.** No promise changes.
 
 ### S18. What a started process inherits
 
@@ -2304,12 +2076,9 @@ moment a secret names it. The cost is that any actor that may register a Resourc
 register `{environment: PATH}`, or `HOME`, and so withhold that variable from every process the
 engine starts, which S16 needs passed on; S10 names that limit. The other choice was to count only
 secrets to which an open Conduit lists `reveal-secret.v1`, which only the root Interface opens
-(SEC-7), so that no other registrant could withhold anything; but then a variable that a secret
+([SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)), so that no other registrant could withhold anything; but then a variable that a secret
 names reaches every process started before its first reader is set up. This proposal puts the
 value's secrecy before the processes' availability, and lists the choice among the least certain.
-
-**Fits.** SEC-18 below. DL12 gains what else a started process inherits, and that giving less may
-leave a package's store client without what it looks for (S16).
 
 ### S19. A process environment on rotation
 
@@ -2338,8 +2107,6 @@ next starts its process, which DL12 leaves to each engine; retiring the instance
 also does it. Restarting on change, driven by the store's own change events (AWS's rotation events
 in CloudTrail, GCP's Pub/Sub notifications), is left for later.
 
-**Fits.** SEC-16's observable states it. DL12 unchanged beyond S18.
-
 ### S20. Names
 
 **The question.** Whether the proposed names become final. Point 1 of ruling 39 put them with the
@@ -2347,7 +2114,7 @@ core.
 
 **Recommendation.** `secret.v1` (Type), `secret-reveal.v1` (Capability), `reveal-secret.v1`
 (Operation), `secret-reference.v1` (Schema), the output mark `secret`, the key `environment` of an
-implementation item, and the number DL16 for the new item of the implementation-defined list.
+implementation item, and the number [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) for the new item of the implementation-defined list.
 They follow NAM-004 and the core package's naming. The research gives no reason to change them:
 Kubernetes's `Secret`, Compose's `secrets` and AWS's `GetSecretValue` all use the plain word, and
 Compose's `environment` names the same source (packet:
@@ -2370,7 +2137,7 @@ Linux, as opposed to the permission mechanism on files"
 | Option | What it is | What it costs |
 | --- | --- | --- |
 | **A** | Only `environment` in the first version. The file form is left out, and the shape to adopt is recorded. | The value is in an environment that what the server starts inherits. A server that takes only a whole credential file (a kubeconfig, AWS's shared files) is reached only through the developer's own files, outside every Conduit, as S16 describes. |
-| B | A second map beside `environment`, such as `files`, validated as SEC-15 validates `environment`. For each entry the engine writes the value to a new file, readable only by the process's operating-system user, in a directory made for that one process, and sets the variable to the file's absolute path. The file is removed when the process ends, and one left by an engine that stopped first is removed when the engine next starts. | The engine writes a value to a file, which S5 otherwise avoids. Where the system offers an unprivileged process no memory-backed file system, the file is on disk while the process runs. On Linux, `memfd_create` gives a file that "lives in RAM", passed to the child as a descriptor, though like other memory it may be swapped and a process of the same user reaches it through `/proc/<pid>/fd`. On macOS, Apple documents a RAM disk made with `hdiutil`, but whether an ordinary user can mount one was not established, and it would be machinery of the engine's own. DL16 or DL12 then states the file's place, its mode, its cleanup and its final newline. |
+| B | A second map beside `environment`, such as `files`, validated as [SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) validates `environment`. For each entry the engine writes the value to a new file, readable only by the process's operating-system user, in a directory made for that one process, and sets the variable to the file's absolute path. The file is removed when the process ends, and one left by an engine that stopped first is removed when the engine next starts. | The engine writes a value to a file, which S5 otherwise avoids. Where the system offers an unprivileged process no memory-backed file system, the file is on disk while the process runs. On Linux, `memfd_create` gives a file that "lives in RAM", passed to the child as a descriptor, though like other memory it may be swapped and a process of the same user reaches it through `/proc/<pid>/fd`. On macOS, Apple documents a RAM disk made with `hdiutil`, but whether an ordinary user can mount one was not established, and it would be machinery of the engine's own. [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) or DL12 then states the file's place, its mode, its cleanup and its final newline. |
 
 **What AWS, Kubernetes and the MCP tools do.** Kubernetes offers both forms. It mounts secrets on
 tmpfs, which, in AWS's words, "are automatically removed from the node when the pod is deleted".
@@ -2413,538 +2180,6 @@ value without a restart (S19); and it reaches servers that need a whole credenti
 comes, systemd's directory for each process and a variable holding the path is the shape to adopt,
 the `_FILE` convention is what servers read, and `format: filepath` is how a package's
 `server.json` describes the variable.
-
-**Fits.** No promise changes in the first version. The file form is in the list of what is left
-out.
-
-## Promises that would follow
-
-These are drafts, written in the specification's promise form so that the owner can judge the
-shape. IDs are placeholders, `SEC-1` onward, numbered as in the first draft with new ones added at
-the end; on acceptance each would go to the file its topic belongs to and take an ID there. The
-layer and level are proposed. Every draft assumes the recommendation of each decision. Proposed
-names (`secret.v1`, `secret-reveal.v1`, `reveal-secret.v1`, `secret-reference.v1`) follow NAM-004
-and the core package's naming. Changed from the first draft: SEC-6, SEC-7, SEC-10, SEC-12,
-SEC-13 and SEC-16; SEC-12 and SEC-16 changed again after the review, and SEC-10, SEC-13 and SEC-16
-after the third review. New: SEC-17 to SEC-19, and SEC-20 after the third review. After the fourth
-review SEC-1, SEC-6, SEC-8, SEC-10, SEC-12, SEC-14 to SEC-18 and SEC-20 changed, and SEC-21 and
-SEC-22 are new. The parts of SEC-6, SEC-7, SEC-15, SEC-16 and SEC-17 that go beyond what ruling 39
-accepted are items 4b, 4c and 8b to 8h; SEC-20 is items 3b and 3c, SEC-21 item 4e, SEC-22 item 2c,
-SEC-1's rule on branches item 2b, and SEC-14's rule on placement item 5d.
-
-```yaml
-- id: SEC-1
-  layer: language
-  level: must
-  when: >-
-    A value is written in a place that the core package's reference schema
-    `secret-reference.v1` governs, directly, as the `items` of a list, or as a branch of `anyOf`
-    or `oneOf` that the value satisfies.
-  then: >-
-    The value is a reference to a Resource, written `{kind: Resource, name: <name>}`, as a
-    reference to a Pool's entry, or, inside a Pool's template, as an entry reference. A bare name
-    is not accepted there, and any other value makes the document that holds it rejected. A
-    schema that puts `secret-reference.v1` as a branch of `anyOf` or `oneOf` beside any branch
-    other than `{type: null}` is itself rejected.
-  observable: >-
-    A string such as `ghp_0123` or `hunter` in that place fails the schema, and resolving
-    returns a diagnostic naming the place, and produces no objects. `{kind: Resource, name:
-    github-token}` is accepted. The resolved form is stored in its place under OBJ-009, and
-    every reference schema, this one included, accepts it. Under `anyOf` with
-    `secret-reference.v1` and `{type: string}`, `ghp_0123` would satisfy the second branch and be
-    data under OBJ-021, so such a schema is rejected wherever it is read: in a type's `schema`, a
-    template's input, or an Operation or Requirement contract's input. Under `anyOf` with
-    `{type: null}` it is accepted, and null there is not a reference, as OBJ-021 states.
-
-- id: SEC-2
-  layer: language
-  level: must
-  when: >-
-    A reference in a place that `secret-reference.v1` governs resolves to a Resource whose type
-    is not the core package's `secret.v1`.
-  then: >-
-    The document that holds the reference is rejected.
-  observable: >-
-    Resolving returns a diagnostic naming the place, the Resource found and the type that was
-    expected, as OBJ-007 names what was expected. A template whose reference names no object
-    that exists is registered with a diagnostic under OBJ-008, and the check is made when it is
-    instantiated.
-
-- id: SEC-3
-  layer: language
-  level: must not
-  when: >-
-    A diagnostic is returned about a value in a place that `secret-reference.v1` governs.
-  then: >-
-    The diagnostic holds the value, or any part of it.
-  observable: >-
-    The diagnostic names the document, the place and the rule broken. Registering a document
-    that writes a known string in that place returns a result in which that string appears
-    nowhere, and the retained result of the registration holds it nowhere either.
-
-- id: SEC-4
-  layer: language
-  level: must
-  when: >-
-    An Operation contract's output holds `secret: true`.
-  then: >-
-    The output is a secret output. It holds a `schema`, and does not hold `handle: true`. No
-    input carries the mark.
-  observable: >-
-    An output with `secret: true` and `handle: true`, or with no `schema`, and an input with
-    `secret: true`, are each rejected when the contract's package is installed or its project
-    is submitted. `secret` is a boolean, and one that is absent is false.
-
-- id: SEC-5
-  layer: language
-  level: must
-  when: >-
-    A value reference in a graph has the source `step`, and the step it names invokes an
-    operation one of whose outputs is a secret output.
-  then: >-
-    The document that holds the graph is rejected.
-  observable: >-
-    Resolving returns a diagnostic naming the value reference and the output. No step, no
-    graph output and no constituent can be given a secret value through a graph, whatever
-    `pointer` the reference states.
-
-- id: SEC-6
-  layer: language
-  level: must
-  when: >-
-    A template of an Interface declares a Conduit whose `operations` list an operation that has
-    a secret output.
-  then: >-
-    The template is rejected.
-  observable: >-
-    Resolving returns a diagnostic naming the declared Conduit and the operation. A Resource
-    template may declare such a Conduit. So may an Agent template: its Conduit is used only by
-    the engine when it starts the Agent's process, under SEC-16, no tool for it is presented to
-    the Agent, under SEC-17, and no step names its operation, under SEC-21. Nothing here limits
-    which secret an Agent's Conduit leads to: that it be the Agent's own provider credential is
-    the root Interface's choice, not a rule.
-
-- id: SEC-7
-  layer: convention
-  level: must
-  when: >-
-    An actor asks to open a Conduit that lists an operation that has a secret output.
-  then: >-
-    The request is dispatched only if the actor is the root Interface and the Conduit's
-    consumer is a Resource or an Agent. Otherwise it is not dispatched, and reports refused.
-  observable: >-
-    Any other actor reports refused, whatever the bound of its Conduit to `access`, and so does
-    the root Interface where the consumer is an Interface. The Conduit's state is still
-    registered. The step of a setup that opens such a declared Conduit is a request of the
-    instance that sent the request to set up, under ACC-005 and POOL-015, so the Conduit is
-    opened at setup only where the root Interface sent it. ACC-032 refuses the opening of a
-    Conduit that lists an operation reserved to the root Interface in the same way. In this
-    version no bound passes the right on.
-
-- id: SEC-8
-  layer: convention
-  level: must not
-  when: >-
-    A record is kept of an invocation of an operation that has a secret output.
-  then: >-
-    The record holds the value of that output, whatever the `records` of the target's type
-    states.
-  observable: >-
-    The record holds what REC-002 lists for that record: for an onward read, the caller, the
-    instance that acted for it, the Conduit, the target, the operation, the engine's ID for the
-    invocation, the time and how it ended; for a read at the start of a process under SEC-16,
-    which has neither a caller nor an instance that acted for one, the instance whose process is
-    started and the rest, as SEC-16 says. A purge keeps what REC-004 lists, none of which is the
-    output.
-
-- id: SEC-9
-  layer: convention
-  level: must
-  when: >-
-    An instance asks, with `retrieve-result.v1`, for the result of an invocation of an
-    operation that has a secret output.
-  then: >-
-    The result gives the invocation's state and the engine's ID for it, and no outputs. The
-    engine keeps no content of such a result for retrieval.
-  observable: >-
-    The retrieval says what OPS-016 says of the state and the ID, and its `outputs` hold no
-    secret output. The value is delivered once, in the result of the request itself, or not at
-    all.
-
-- id: SEC-10
-  layer: convention
-  level: must not
-  when: >-
-    An invocation of an operation that has a secret output ends.
-  then: >-
-    The engine puts the value of that output, or any part of it, anywhere other than in the
-    result that it returns to the instance that sent the request, or, for a read under SEC-16,
-    which no instance sends, in the environment of the process that it starts for the instance
-    whose Conduit the read went through: in an inspection result, an observation, a diagnostic,
-    a record, the result given to any other instance, or the `_meta` of any request.
-  observable: >-
-    With a known value in the store, the copy that the engine makes of the read's output is
-    found in the one result returned to the sending instance, or in the one process environment
-    set under SEC-16, and in nothing that inspecting, retrieving or reading records returns of
-    the read. A read under SEC-16 returns no result to any instance. This binds what the engine
-    makes of the read's output, and nothing after it: a value that an implementation, a started
-    process or an Agent later puts into a result, into the `arguments` of a request or into
-    anything else it sends is data from then on, which the engine cannot tell from any other.
-    It reaches the caller, the records where the type's `records` keeps content under REC-002,
-    and the retained result, whose content a purge does not touch under REC-004. SEC-11 binds
-    an implementation that carries Conduit's keys not to send it.
-
-- id: SEC-11
-  layer: interface
-  level: must not
-  when: >-
-    An implementation that carries Conduit's keys has received the value of a secret output.
-  then: >-
-    It puts the value, or any part of it, into a result, a diagnostic, the `content` of a
-    result, or the `arguments` or `_meta` of any request it sends to the engine.
-  observable: >-
-    With a known value in the store, no result that the implementation returns, and no request
-    it sends to the engine, holds the value. It may use the value toward the outside service it
-    is for. This binds the implementation at the Implementation level, as IFC-031 does; the
-    engine cannot check what an implementation does outside it.
-
-- id: SEC-12
-  layer: interface
-  level: must
-  when: >-
-    An implementation of `reveal-secret.v1` serves a request.
-  then: >-
-    It takes the value from the store that the secret Resource's configuration locates, and
-    never from that configuration. Where the store cannot be read, it answers with the outcome
-    failed and no value.
-  observable: >-
-    A secret whose configuration holds a string in place of a locator yields no value. A
-    missing file, a locked keychain or a refusal by a secret manager gives failed, with a
-    message that says the store could not be read and holds no value, and no other source is
-    tried. A locator that names a version or a stage that the store does not have gives failed
-    in the same way, and no other version is read. No request carries the configuration under
-    IFC-006, and `reveal-secret.v1` has no inputs: an implementation in a package learns the
-    locator as any implementation learns its instance's configuration, from a step of the
-    secret's `setup` graph that passes it by a value reference with the source `config`, under
-    GRA-010, such as the start of a runtime, and keeps it for that instance. `engine` reads the
-    configuration that it stores, under SEC-14.
-
-- id: SEC-13
-  layer: convention
-  level: must
-  when: >-
-    `reveal-secret.v1` is requested of a secret Resource.
-  then: >-
-    The request is decided under SEC-20 and dispatched like any other. The engine keeps no value
-    of an earlier read to stand in for it, and its own implementation `engine` reads the file or
-    the variable for that request.
-  observable: >-
-    With a secret that `engine` implements, changing the file between two reads gives the new value
-    at the second, with no revision advanced, no control requested and nothing set up again. A
-    variable of the engine's own environment keeps the value it had when the engine started, so a
-    new value there is read only after the engine is started again. Each read is a request with its
-    own access decision and record under REC-001. An implementation in a package may serve a read
-    from a copy it keeps; the value it returns is then one its store gave it earlier.
-
-- id: SEC-14
-  layer: convention
-  level: must
-  when: >-
-    The implementation `engine` of the core package serves `reveal-secret.v1` for a secret
-    Resource.
-  then: >-
-    Where the secret Resource is placed on `local`, the location made at first start, it reads
-    the store that the configuration names: under `file`, the file at that absolute path; under
-    `environment`, the variable of that name in the engine's own environment. The configuration
-    names exactly one of the two. Where the secret is placed on any other location, or `file`
-    is not an absolute path, it opens and reads nothing and answers with the outcome failed.
-  observable: >-
-    Both are values tied to a location under PLC-020. `local` is where `management` and
-    `access`, which `engine` also implements, are placed, so `engine` is the secret's
-    implementation at its placement; PLC-020's observable, under which the engine never opens
-    such a value, takes this exception. A secret placed elsewhere needs a package that runs
-    there. A relative path is joined to nothing, under INS-018, and gives failed, since
-    `secret.v1` has no schema to decide whether it is valid. A configuration that names both,
-    or neither, gives the outcome failed under SEC-12. How a file is read, its encoding, a final
-    newline and the largest value, are DL16.
-
-# SEC-15 and SEC-16 follow S8. Ruling 39 accepted its direction (points 3 and 4); the key, the
-# rule on failure, one process for each instance, the read for no actor, the engine as the
-# one that starts the process, the order within a setup and the read during a retirement are
-# new (items 8b to 8h).
-
-- id: SEC-15
-  layer: language
-  level: must
-  when: >-
-    An implementation item that states `command` states `environment`.
-  then: >-
-    `environment` is a map from the name of an environment variable to a JSON Pointer into the
-    configuration of the instance the implementation serves. Each name is made of ASCII
-    letters, digits and `_`, and does not begin with a digit. The place each pointer leads to is
-    one that `secret-reference.v1` governs directly in the instance's type, and the type's
-    schema requires every member on the way to it. An item that states `url` or `graph` states
-    no `environment`. In a template that selects such an item, the resolved setup graph lists
-    each declared Conduit that lists an operation that has a secret output among the
-    dependencies of every step that would be dispatched to that item.
-  observable: >-
-    A template that selects the implementation, and whose type's schema does not put
-    `secret-reference.v1` directly at a pointer that `environment` states, or does not require
-    each member on the way to it, is rejected with a diagnostic naming the item and the pointer.
-    An item whose `environment` holds a name such as `GITHUB-TOKEN`, `A=B`, `1TOKEN` or the
-    empty string is rejected when its package is installed or its project is submitted. The
-    form is the one POSIX gives the variables of its utilities, with lowercase letters, which
-    it reserves for applications. A name that the process would otherwise inherit, such as
-    `PATH`, is set to the value. A step would be dispatched to the item where it has no
-    `conduit` and the item implements its operation, or the start operation of the runtime it
-    names: such a step depends on those declared Conduits whether or not `dependsOn` names them,
-    as GRA-024 has a step that carries `conduit` depend on its Conduit, so a setup never starts
-    the process before the Conduits it reads through are open.
-
-- id: SEC-16
-  layer: convention
-  level: must
-  when: >-
-    An instance, a Resource or an Agent, is to be served by an implementation whose item states
-    `environment`.
-  then: >-
-    The engine starts the process itself, whatever IFC-017 leaves an engine to choose for other
-    items, and the process serves that one instance. Before starting it, the engine reads each
-    secret that `environment` points at through the one open Conduit of that instance to that
-    secret that lists `reveal-secret.v1`, and sets the variable to the value. The engine
-    dispatches each read for no actor, whatever caused the process to start: the read carries no
-    caller, has no sending instance and serves no invocation. Where a place that `environment`
-    points at holds no reference to a secret Resource, or where any read does not succeed, the
-    process is not started, and a request that was to be dispatched to it is not dispatched and
-    reports unavailable.
-  observable: >-
-    The read is a request of its own kind: no instance sends it, so neither ACC-001 nor ACC-016
-    decides it, and this promise alone permits it. Where the instance has no open Conduit to the
-    secret that lists `reveal-secret.v1`, or more than one, the read reports refused and the
-    process is not started. Having no caller and serving no invocation, the read carries nothing
-    under ACC-017, and no policy that names `actors` reaches it under ACC-031: it is decided by
-    its Conduit, the filters on it and each policy that names the secret among its `targets` and
-    names no `actors`, whether or not SEC-20 is accepted. With `engine`, such a policy makes it
-    report unavailable while the policy is in force. Where the instance is retired, the read
-    belongs to its retirement under ACC-039 where the engine starts the process in order to
-    dispatch a step of an invocation of `retire.v1` for the instance, or the stop of one of its
-    runtimes under TPL-009; any other read through a Conduit whose consumer is retired reports
-    refused under ACC-039. A request that is not dispatched because the process was not started
-    has no outcome, under OPS-005, and its result names the cause in a diagnostic; a step of a
-    setup ends the same way. The request that a package's implementation of `reveal-secret.v1`
-    receives holds no `io.github.shrav-k.conduit/caller`, which IFC-006 would except beside
-    OBS-007's stop. It carries no operation identity, and no retrieval under IFC-024 can name
-    it. The record of each read names the instance whose process is started, the Conduit and
-    the secret, holds no caller under REC-002, and says that the engine made the read for no
-    actor at the start of that process. No later invocation that the process serves reads the
-    value again, whoever its caller. A process started this way is not given the variables of
-    another instance. The value is fixed for the life of the process: a value changed in the
-    store is seen only by a process that the engine starts after the change, and the engine does
-    not stop or restart a process because a value changed. When the engine starts a process is
-    DL12, and may be before any invocation; who starts it is not. Within a setup, SEC-15 orders
-    the start after the template's declared Conduits to secrets are open.
-
-- id: SEC-17
-  layer: interface
-  level: must
-  when: >-
-    An actor is the consumer of an open Conduit that lists an operation that has a secret
-    output.
-  then: >-
-    The engine presents no tool for that operation to the actor, and a request for it that the
-    actor sends, on its own behalf or as an onward request, is not dispatched and reports
-    refused, although the Conduit lists the operation. The Conduit is used only by the engine,
-    under SEC-16, when it starts the actor's process.
-  observable: >-
-    The tool list that IFC-012 gives the actor holds no tool for the operation. A call that
-    names one is answered as IFC-012 answers a call to a tool that the engine does not present,
-    with the reason refused, and is recorded as refused. The refusal is this promise's, not
-    ACC-001's, because an open Conduit lists the operation: it is an exception to ACC-003, under
-    which an open Conduit permits the operations it lists, and to the definition of permitted.
-    No step of the actor's graphs names the operation, under SEC-21. Only an Agent can be such a
-    consumer, under SEC-6 and SEC-7.
-
-- id: SEC-18
-  layer: convention
-  level: must not
-  when: >-
-    The engine starts the process of an implementation.
-  then: >-
-    The process's environment holds a variable that the configuration of a secret Resource
-    names under SEC-14, where that secret is not retired and its implementation of
-    `reveal-secret.v1` is `engine`, other than one that the engine sets for the process under
-    SEC-16; or the process's arguments hold the value of a secret output.
-  observable: >-
-    With a secret whose configuration names the variable `GITHUB_TOKEN`, a process that the
-    engine starts has no variable of that name unless its item's `environment` sets it. That
-    holds from the moment the secret is registered, whether or not any Conduit to it is open,
-    and ends when it is retired. A withheld variable is unset, never set to an empty string. The
-    `command` of an implementation item is a list of literal strings under MAN-010, and the
-    engine puts no value into it. What else a started process's environment holds is DL12.
-    Any actor that may register a Resource can so withhold a variable, `PATH` among them, from
-    every process; inspecting the secrets shows which are withheld.
-
-- id: SEC-19
-  layer: convention
-  level: must
-  when: >-
-    A request for an operation that has a secret output would be dispatched, and the record of
-    its dispatch cannot be kept.
-  then: >-
-    It is not dispatched, and reports unavailable.
-  observable: >-
-    No value is delivered without a record of its read under REC-001. How an engine behaves
-    when its storage is exhausted, for other requests, is DL10.
-
-# SEC-20 follows S3's sub-questions on restrictions (item 3b), added after the third review,
-# and on the root Interface's exception (item 3c), added after the fourth: the words "the root
-# Interface included" and the sentence on ACC-035 are item 3c.
-
-- id: SEC-20
-  layer: convention
-  level: must
-  when: >-
-    A request for an operation that has a secret output is decided, whether it is an onward
-    request under ACC-016 or a read at the start of a process under SEC-16.
-  then: >-
-    Of the restrictions, it is decided by the filters on the Conduit it is made through and by
-    each policy that names its target among `targets` and names no `actors`, whoever its caller
-    is, the root Interface included. It carries none of the restrictions that ACC-017 has an
-    onward request carry, and no policy that names `actors` applies to it. Nothing else in the
-    decision changes: it still needs the reader's own open Conduit that lists the operation,
-    and ACC-034 and ACC-039 still apply to it.
-  observable: >-
-    A filter on the Conduit through which the served invocation was dispatched, and a policy
-    that names that invocation's caller, do not make the read refused or unavailable: they
-    bind the served invocation, whose implementation applies them under IFC-019. A policy that
-    names both the caller and the secret does not apply to the read, although ACC-031 applies
-    one that gives both lists to a request that matches both. The
-    `io.github.shrav-k.conduit/restrictions` that the secret's implementation receives lists
-    only the filters of the reader's own Conduit and the policies that this promise applies:
-    an exception to IFC-020, under which an onward request carries the served invocation's
-    restrictions whatever it states. It still carries the served invocation's caller. Where
-    that implementation does not support one of them, the read reports unavailable under
-    ACC-015. `engine` states `bound.v1` alone under MAN-012, so a Conduit to a secret that it
-    serves carries no filter, under CON-022 and CON-028, and a policy that names such a secret
-    among its `targets` makes every read of it report unavailable while the policy is in force,
-    as ACC-026 has a policy do to a request of `access`. That includes a read that serves the
-    root Interface: ACC-035's exception, under which a policy that gives only `targets` does not
-    apply to an onward request that serves the root Interface, does not reach a read of a
-    secret. The root Interface can still remove the policy, which is a request of `access`. An
-    onward read made after the Agent's Conduit to the Resource is closed reports refused under
-    ACC-034, and one made after that Agent is retired reports refused under ACC-039, unless it
-    serves the Agent's own retirement. The record of an onward read still names its caller,
-    under REC-002.
-
-# SEC-21 follows S4 (item 4e), and SEC-22 follows S2 (item 2c), both added after the fourth
-# review.
-
-- id: SEC-21
-  layer: language
-  level: must
-  when: >-
-    A step of a graph names an operation that has a secret output, with or without `conduit`.
-  then: >-
-    The document that holds the graph is rejected.
-  observable: >-
-    Resolving returns a diagnostic naming the step and the operation, for a graph of a template
-    and for one written in an implementation item. A step with no `conduit` invokes the
-    implementation selected for its own instance and is not a request through any Conduit,
-    under ACC-018 and TPL-004, so it would read a secret through no Conduit; `engine`
-    implements `reveal-secret.v1`, so a secret's own template could otherwise read it. A step
-    that names a Conduit in an Agent's graph would be a request of an actor through its own
-    Conduit to a secret, which SEC-17 refuses. In any other graph, SEC-5 leaves a step's secret
-    output nowhere to go. So a secret is read only by an onward request of an implementation
-    that carries Conduit's keys, and by the engine at the start of a process under SEC-16.
-
-- id: SEC-22
-  layer: convention
-  level: must not
-  when: >-
-    A record is kept of a request whose `arguments` hold a value at a place for which the
-    schema of the operation's input names `secret-reference.v1` under SEC-1.
-  then: >-
-    The record holds that value in any form other than the resolved form that OBJ-009 stores,
-    whatever the `records` of the target's type states.
-  observable: >-
-    A request with `ghp_0123` written at such a place reports invalid, and its record names the
-    place and the rule broken, as SEC-3 has a diagnostic do, and holds no part of the string,
-    although the type's `records` keeps inputs. A reference that resolved is kept in its
-    resolved form. REC-002 gains this exception beside SEC-8's.
-```
-
-Exports the core package would gain, as documents: the Type contract `secret.v1` (family Resource,
-no `schema`, `offers: [secret-reveal.v1]`, no controls, `records` with `inputs` and `outputs`
-false, and `engine` as the default implementation of `reveal-secret.v1`); the Capability contract
-`secret-reveal.v1`, listing `reveal-secret.v1`; the Operation contract `reveal-secret.v1`, with no
-inputs, the output `value` with `schema: {type: string}` and `secret: true`, and no `effect`; and
-the Schema contract `secret-reference.v1`. The package would export 102 documents.
-
-New item of the implementation-defined list, and the change to DL12:
-
-```yaml
-- id: DL16
-  subject: Secrets that the engine reads
-  document: >-
-    How the engine's own implementation of `reveal-secret.v1` reads a file and an environment
-    variable under SEC-14: the encoding it accepts and what it does with a value that is not
-    valid in it, whether a final newline is kept, the largest value it reads, and with whose
-    rights it reads them.
-
-# DL12 would add: the engine itself starts the process of an implementation item that states
-# `environment`, one process for each instance it serves; what the environment of a started
-# process holds beyond SEC-18; and that an engine that gives a started process less than its own
-# environment may leave a package's store client without the files and pointers it looks for
-# (S16).
-```
-
-## Existing promises and documents that would change
-
-If every recommendation were accepted. None of these is changed by this proposal.
-
-| Where | What would change |
-| --- | --- |
-| [OBJ-021](../../../spec/promises/objects.yaml) | The list of reference schemas gains `secret-reference.v1`, and SEC-1's rule that it may be a branch of `anyOf` or `oneOf` only beside `{type: null}` (item 2b). |
-| [CTR-002](../../../spec/promises/contracts.yaml) | An output may hold `secret: true` (SEC-4). The sentence on what an output holds, "either a `schema` or, for a handle, `handle: true`", gains the mark. |
-| [GRA-020](https://github.com/shrav-k/conduit/blob/0a9a32326830452d9761f4963077db4fb618918a/spec/promises/graphs.yaml) | Its observable points to SEC-5: a value reference may not read a secret output. |
-| [GRA-024](https://github.com/shrav-k/conduit/blob/0a9a32326830452d9761f4963077db4fb618918a/spec/promises/graphs.yaml) | Its observable, under which "The resolved setup graph lists the declared Conduit's step among the dependencies of a step that carries `conduit`", gains the dependencies of SEC-15: in a template that selects an item that states `environment`, every step that would be dispatched to that item depends on each declared Conduit that lists an operation with a secret output (item 8g). The graph promises gain SEC-21's rejection of a step that names such an operation (item 4e). |
-| [ACC-005, ACC-006 and ACC-032](../../../spec/conventions/access.yaml) | ACC-006's condition for opening points to SEC-7 beside ACC-032; ACC-005's observable says that a declared Conduit that reads a secret is opened only where the root Interface sent the setup. |
-| [ACC-017, ACC-031 and ACC-009](../../../spec/conventions/access.yaml) | ACC-017's `then` gains the exception of SEC-20: a request for an operation that has a secret output carries none of the restrictions of the invocation it serves. ACC-031's sentence that a policy giving only `actors` applies to every request of those callers, "an onward request that serves that caller included", gains the same exception; so does its sentence "One that gives both applies only to a request that matches both", since no policy that names `actors` applies to a read; and its sentence that a policy giving only `targets` applies "whoever its caller is, the root Interface excepted under ACC-035" loses that exception for a read (item 3c). ACC-009's observable that an onward request is limited by a policy that names the caller it serves gains SEC-20's exception too. |
-| [ACC-035](../../../spec/conventions/access.yaml) | Its observable, under which a policy that gives only `targets` "does not apply to a request that the root Interface makes of one of them, or to an onward request that serves the root Interface", gains the exception of item 3c: such a policy applies to a read of a secret it names, a read that serves the root Interface included (SEC-20). Its `then` and its rule that the root Interface can always remove a policy are unchanged. |
-| [ACC-039](../../../spec/conventions/access.yaml) | Its `then`, under which a request through a Conduit whose consumer is retired is permitted only if it belongs to the retirement, gains that a read at the start of a process that the engine starts to dispatch a step of the consumer's retirement, or the stop of one of its runtimes, belongs to it (item 8h, SEC-16). As a rule for an onward read it is unchanged, and SEC-20 says it still applies. |
-| [ACC-001, ACC-003 and ACC-016](../../../spec/conventions/access.yaml) | ACC-001 and ACC-016 are unchanged in rule. The read at process start under SEC-16 is a request of a third kind: no consumer sends it, as ACC-001's request is sent, and it serves no invocation, as ACC-016's onward request does. SEC-16 alone permits it, and only through the instance's one open Conduit that lists `reveal-secret.v1`. ACC-001's observable points to SEC-16, beside the retrieval it already names as a request it does not decide, and to SEC-17, whose refusal of an actor's request is its own and not ACC-001's. ACC-003's `then`, under which an open Conduit "permits exactly the operations it lists", gains SEC-17's exception: a request that an actor sends for an operation that has a secret output reports refused although its Conduit lists it. |
-| [ACC-015 and ACC-026](../../../spec/conventions/access.yaml) | Unchanged in rule: a policy or a carried restriction that the target's implementation does not support still makes the request unavailable. Their sentences that list the targets `engine` serves (`management`, `access`, a Pool, a location) gain a secret Resource that `engine` serves, which under SEC-20 only a policy that names it among its `targets` reaches. |
-| [REC-001 and REC-002](../../../spec/conventions/records.yaml) | REC-002's sentence on what content is kept gains the exceptions of SEC-8 and SEC-22, and its observable gains a second record with no caller: the read at process start under SEC-16, beside OBS-007's stop. REC-001 gains SEC-19 beside it. |
-| [PLC-020](../../../spec/promises/placement.yaml) | Its observable, under which the engine "never opens" a value tied to a location "against the machine the engine itself runs on or against any other location", gains the exception of SEC-14: `engine`, as the implementation of a secret placed on `local`, opens its file and reads its variable there (item 5d). |
-| [OPS-008](../../../spec/conventions/operations.yaml) | Its observable gains that the read at process start under SEC-16 has no sending instance and carries no operation identity, so it is no invocation that a repeat or a retrieval can name. |
-| [OPS-016](../../../spec/conventions/operations.yaml) and [IFC-024](../../../spec/interface/implementation.yaml) | A retained result of an operation that has a secret output keeps no content (SEC-9). |
-| [IFC-012](../../../spec/interface/implementation.yaml) | No tool for an operation that has a secret output is presented to an actor (SEC-17). Its sentence that a call naming a tool the engine does not present "reports refused under ACC-001" gains SEC-17's case, refused under SEC-17. |
-| [IFC-020](../../../spec/interface/implementation.yaml) | Its `then`, under which "The engine takes the onward request's caller, and the restrictions carried under ACC-017, from the served invocation", and its observable, under which the onward target receives the served invocation's restrictions "whatever else the onward request states", take SEC-20's exception for an onward request for an operation that has a secret output: it carries the caller, and only the restrictions that SEC-20 applies. |
-| [IFC-025](../../../spec/interface/implementation.yaml) | Its observable points to SEC-10: the result that holds a secret output goes to the sending instance only. |
-| [IFC-006](../../../spec/interface/implementation.yaml) | "The one request that holds no `io.github.shrav-k.conduit/caller`" becomes two: OBS-007's stop, and the read at process start under SEC-16. |
-| [IFC-017](../../../spec/interface/implementation.yaml) | Its choices of "who starts its process and how many instances share it" no longer apply to an item that states `environment`: the engine starts such an item's process itself, and the process serves one instance (SEC-16, S8). Its choice of transport is unchanged. |
-| IFC-031 | Unchanged; SEC-11 stands beside it. |
-| [MAN-009, MAN-010](../../../spec/promises/manifest.yaml) and [PKG-019](../../../spec/promises/packages.yaml) | The key `environment` on an implementation item, with the form of its names (SEC-15). |
-| [MAN-010](../../../spec/promises/manifest.yaml), [IFC-017](../../../spec/interface/implementation.yaml) and [DL12](../../../spec/implementation-defined.yaml), on who starts a program | MAN-010's sentence "Who starts the program is DL12 of the implementation-defined list", which also governs how a bare program name is found, gains that the engine itself starts the program of an item that states `environment` (item 8f, SEC-16), as IFC-017 and DL12 do. |
-| [DL12](../../../spec/implementation-defined.yaml) | The engine itself starts the process of an item with `environment`, one per instance; what a started process inherits beyond SEC-18; and that giving a started process less than the engine's own environment may leave a package's store client without what it looks for (S16). |
-| The implementation-defined list | DL16 is added. |
-| [spec/core/](../../../spec/core/README.md) | `types.yaml`, `capabilities.yaml`, `operations.yaml` and `references.yaml` gain one document each; `conduit.yaml` lists them; the README's counts change to 102 exports, 21 Operation contracts, 6 Capability contracts, 7 Type contracts and 12 reference schemas. |
-| [spec/schemas/](../../../spec/schemas/README.md) | The schema of an Operation contract accepts `secret` on an output; the schema of an implementation item accepts `environment`, with the form of its names. New invalid examples for SEC-1, SEC-4 and SEC-15, and invalid-by-rule examples for SEC-1's rule on branches, SEC-2, SEC-5, SEC-6 and SEC-21. |
-| [spec/definitions.md](../../../spec/definitions.md) | New rows for secret, secret output and `secret-reference.v1`; the row for reference schema gains the name; the row for handle may say that a secret's reference, like a handle, permits nothing; the row for tool says that none is presented to an actor for a secret output; the row for caller gains the read at process start as a second request with no caller; the row for the instance that sent a request says that the read at process start has none, since the engine makes it through the instance's own Conduit and the instance sends nothing; the row for policy, which says a policy makes "every request for an operation of the core package" unavailable, says so of every request that `engine` serves, since a package may serve `reveal-secret.v1`, and that no policy that names `actors` applies to a read of a secret (SEC-20); the row for request, which says "There is no third case", gains the read at process start as one (SEC-16); the row for onward request, which "carries the caller and the restrictions of the invocation it serves", says that a read of a secret carries the caller and none of those restrictions (SEC-20); the row for permitted says that an actor's request for an operation that has a secret output is not permitted, although an open Conduit lists it (SEC-17). |
-| [spec/README.md](../../../spec/README.md) | The statement of the guarantee and its limits (S10), and that `secret.v1` is the fallback for a credential no identity can replace (S15). |
-| [spec/schema-profile.md](../../../spec/schema-profile.md) | Unchanged. No keyword or format is added. |
-| [GAPS.md](../docs-audit/GAPS.md), row GP3 | Converted, with the promises that state it. |
-| [docs/AUDIT.md](../../AUDIT.md) | The ruling log, the list for the owner and the note for the next reader. |
-
-Promises read and found unchanged by the recommendations: OBJ-007 to OBJ-010, POOL-001, POOL-014,
-POOL-015, ACC-008, ACC-011, ACC-014, ACC-018, ACC-028 to ACC-030, ACC-034, ACC-036, CON-004,
-CON-008, CON-021, CON-022, CON-028, CTR-004, GRA-002, GRA-010, GRA-022, INS-018, LIF-009,
-LIF-024, MAN-012, REC-003, REC-004, OBS-001, OBS-006, OBS-007, OPS-005, OPS-024, OPS-025,
-IFC-007, IFC-011, IFC-019, IFC-021, IFC-022, IFC-030, IFC-032, LIF-031, OPS-009, TPL-004,
-TPL-007, TPL-009, DL1, DL10 and DL13. The fourth review moved ACC-003, ACC-035, ACC-039, IFC-020
-and PLC-020 from this list into the table above. CON-022 and CON-028 stay as they are, and
-together keep every filter off a Conduit to a secret that `engine` serves; MAN-012 stays, with
-`engine` stating `bound.v1` alone.
 
 ## Left out of the first version
 
@@ -2989,9 +2224,9 @@ Each of these was considered and is proposed for later, not rejected.
   the documentation, not a tested design, and it would need a signing key, rotation within the
   issuer's lifetime limit, and a fresh token for each exchange.
 - **A check of the pairing at resolution**: that an instance whose implementation item states
-  `environment` has a declared Conduit to each secret its configuration names there. SEC-15 orders
+  `environment` has a declared Conduit to each secret its configuration names there. [SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) orders
   a setup so that the declared Conduits to secrets open first (item 8g), but checks no pair;
-  SEC-16 finds a missing Conduit, or a second one, only at the start of the process.
+  [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) finds a missing Conduit, or a second one, only at the start of the process.
 - **A statement on the secret's side**, for teams: an owner of a Pool of secrets bounding who may
   arrange reads of them, on AWS's rule across accounts, as a bound and never as a grant (S4).
 - **Delegating the right to open a reading Conduit** through a bound, for teams (S4), on
@@ -3005,7 +2240,7 @@ Each of these was considered and is proposed for later, not rejected.
   Actions masks logs and `op run` conceals output. Useful, never a guarantee, and an engine may
   still do it. Without it, a value that an implementation or an Agent returns or sends is data
   from then on (S10).
-- **Secret values in graphs** (SEC-5 and SEC-21 reject them), and secret inputs of operations.
+- **Secret values in graphs** ([SEC-5](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and [SEC-21](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) reject them), and secret inputs of operations.
 - **Changing a secret's locator** by a control (S11).
 - **Binary values** (S9).
 - **A credential composed into a configuration file**, as the External Secrets Operator's templates
@@ -3055,21 +2290,21 @@ Each of these was considered and is proposed for later, not rejected.
    a file, for reasons that hold. The recommendation rests on what MCP servers and the pages read
    for their runners show today, and on a file keeping the value from no more of the developer's
    own processes than the variable does.
-10. **Which restrictions bind a read (S3, SEC-20).** R3 gives up a policy aimed at one Agent's use
+10. **Which restrictions bind a read (S3, [SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).** R3 gives up a policy aimed at one Agent's use
     of one credential through one Resource. The owner may prefer R1, the specification as it
     stands; then a Resource that reads a secret through `engine` is unavailable to every Agent
     whose Conduit to it carries a filter or whom a policy names, and the proposal should say so
     in S10 as a limit of filters and policies.
 11. **The engine starts the process (S8, F1).** It takes from every engine a choice that IFC-017
     gives it today. An engine that wants to hand the start of processes to a service manager or a
-    container runtime could still be allowed to, if it passes the environment that SEC-16 and
-    SEC-18 give; that would need SEC-16 to say what "starts" covers.
-12. **Which secrets' variables are withheld (S18, SEC-18).** Counting every secret that is not
+    container runtime could still be allowed to, if it passes the environment that [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and
+    [SEC-18](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) give; that would need [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) to say what "starts" covers.
+12. **Which secrets' variables are withheld (S18, [SEC-18](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).** Counting every secret that is not
     retired and that `engine` serves keeps a variable from every process from the moment a secret
     names it, and lets any actor that may register a Resource withhold `PATH` from every process.
     The owner may prefer to count only secrets that an open reading Conduit leads to, which only
     the root Interface opens; then a secret's variable reaches every process started before its
     first reader is set up.
-13. **`engine` reads only for a secret on `local` (S5, SEC-14).** It rests on `local` being the
+13. **`engine` reads only for a secret on `local` (S5, [SEC-14](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).** It rests on `local` being the
     engine's own host, which the core package implies, by placing `management` and `access` there,
     but does not state. The owner may prefer a fact or a requirement on placement that says so.

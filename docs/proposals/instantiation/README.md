@@ -22,7 +22,7 @@ where they differ. Amended by:
 - ruling 32: an "ordinary schema reference" to a built-in schema is a reference to one of the
   core package's reference schemas, and a value is a reference only where such a schema governs
   its place;
-- ruling 33: the core package's address comes from the repository, so the schema in the example
+- ruling 33: the core package's address comes from the repository, so the schema in the [example](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/instantiation/README.md#worked-example)
   below is now `github.com/shrav-k/conduit/core#resource-reference.v1`;
 - ruling 37: changed INS-006, INS-012 and INS-014.
 
@@ -61,55 +61,6 @@ IN7 settles the open placement decision
 argument, a Pool entry passes it down through this same shape, and a template never names a
 concrete location.
 
-## Worked example
-
-The `apiVersion` line is omitted for brevity.
-
-> Later rulings changed two shapes below. The instance's values are now written under
-> `arguments`, not `inputs` (rulings 28 and 29; OBJ-013). `conduit:reference#/$defs/resource` is
-> now `github.com/shrav-k/conduit/core#resource-reference.v1` (rulings 28 and 33; the names are
-> in [`spec/names.yaml`](../../../spec/names.yaml)). A template also selects a `type` (TPL-002),
-> which this example leaves out. The current worked example is
-> [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
-
-```yaml
-kind: Agent
-metadata: {name: collaborator}
-spec:
-  inputs:
-    account:
-      schema: {type: string, minLength: 1}
-      to: [/config/account]
-    model:
-      schema: {type: string}
-      default: fixture-small
-      to: [/config/model]
-    checkout:
-      schema: {$ref: "conduit:reference#/$defs/resource"}
-      to: [/conduits/checkout/target]
-  config:
-    providerDomain: fixture-models
-    execution: native
-  conduits:
-    checkout: {from: capability-route}
-```
-
-```yaml
-kind: Agent
-metadata: {name: collaborator-0001}
-from: collaborator
-placement: laptop
-inputs:
-  account: agent-account-a
-  checkout: {kind: Resource, name: project-directory-0001}
-```
-
-The first document declares inputs and has no `from`, so it is a template. The second has
-`from`, so it is an instance of that template. The result is a complete Agent instance whose
-configuration holds `account`, the defaulted `model`, the template's fixed `providerDomain` and
-`execution`, and a Conduit whose target is bound. A second instantiation with different
-arguments reuses the same registered template.
-
 ## Known costs
 
 - More lines per template: each exposed value needs a name, a schema and a destination.
@@ -119,17 +70,3 @@ arguments reuses the same registered template.
   type contract's validation catches a value outside what the type allows; it does not catch an
   input that is stricter or looser than the control.
 - A reader follows one indirection from an input to where it lands.
-
-## Still to specify
-
-> Later rulings: the first two are specified. INS-010 to INS-012 and INS-021 say which
-> destinations are legal, and an input reaches an entry by naming the entry's `placement` or its
-> `arguments` as a destination (INS-012, POOL-009). The third will not happen: Experiment 001
-> was removed, and `spec/schemas/examples/valid/` is the worked example
-> ([docs audit](../docs-audit/README.md), decision DA4).
-
-- The exact rule checked when a template is registered: which destinations are legal, and which
-  mismatches between an input's schema and its destination are provable early.
-- How a composition entry's arguments refer to the enclosing template's own inputs.
-- The rewrite of the Experiment 001 fixtures, whose templates name concrete instances and use
-  the dropped `form` field.

@@ -124,22 +124,6 @@ sources give loopback only to redirect URIs and to local development, and loopba
 the engine moves to another machine, so this recommends `https` only. For D20 this agrees with
 the coordinator.
 
-## Contents
-
-- [1. The architecture](#1-the-architecture)
-- [2. Scenarios](#2-scenarios)
-- [3. D5: who may reach a server on another machine](#3-d5-who-may-reach-a-server-on-another-machine)
-- [4. D20: packaged programs elsewhere](#4-d20-packaged-programs-elsewhere)
-- [5. The smaller decisions](#5-the-smaller-decisions)
-- [6. How it fits the rulings and the action items](#6-how-it-fits-the-rulings-and-the-action-items)
-- [7. What a user writes](#7-what-a-user-writes)
-- [8. Provider contracts](#8-provider-contracts)
-- [9. The promises that change](#9-the-promises-that-change)
-- [10. Left to v1, and what v0 must not preclude](#10-left-to-v1-and-what-v0-must-not-preclude)
-- [11. An experiment across two machines](#11-an-experiment-across-two-machines)
-- [12. Costs, and what this gives up](#12-costs-and-what-this-gives-up)
-- [Sources](#sources)
-
 ## 1. The architecture
 
 ### 1.1 The path across machines today
@@ -933,42 +917,6 @@ not prove it serves the instance.
 Nothing in a user's document changes between v0 and v1, and nothing names a gate, a credential,
 an enforcement point, a decision point or Δ.
 
-```yaml
-# A runtime provider: its server runs on the engine's own runner, on `local` (PRV-002).
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Resource
-metadata:
-  name: m2-docker
-from: docker-context
-owner: team
-placement: local
-arguments:
-  context: m2        # a Docker context whose host is ssh://ops@m2.example
----
-# An Agent on the node that the engine registered for m2.example (PLC-026). Leaving out
-# `placement` lets the machine provider place it under the labels of its type (PRV-015).
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Agent
-metadata:
-  name: reviewer-2
-from: reviewer
-placement: m2
-runtime: m2-docker
-arguments:
-  checkout: {kind: Pool, name: team, entry: checkout}
----
-# The Conduit reads as it does for an Agent on the engine's machine.
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Conduit
-metadata:
-  name: reviewer-2-scratch
-from: directory-read
-consumer: {kind: Agent, name: reviewer-2}
-target: {kind: Resource, name: scratch}
-arguments:
-  limit: 10
-```
-
 - `placement` names a node or is left out. Label selectors stay on types and items (PLC-007),
   never on an instance.
 - How the provider gates its runs is the provider type's own configuration, such as its Docker
@@ -990,27 +938,6 @@ arguments:
 | Decision point on each machine (v1 only) | Not in v0 | Conduit's own: decides under Conduit's decision promises from the published copy, for a proxy that speaks Envoy's external authorization API |
 
 ## 9. The promises that change
-
-### In v0
-
-| ID | Change in substance |
-| --- | --- |
-| New, in `providers.yaml` | The gate, as in [section 3](#the-gate-in-substance), for runs and for `remote` items that take Conduit's keys |
-| IFC-017 | The engine sends only once the endpoint has proved it serves the instance, presents proof as an enforcement point, with a JWT's audience the instance's ID, reports unavailable where it cannot verify, and reaches the latest endpoint reported |
-| IFC-041, SEC-013 | To a `remote` item that is not `plain`, the engine presents an enforcement point's proof, by mutual TLS or by MCP's authorization with the server's canonical URI as audience, only over `https`. A header that carries a secret goes only to `https` |
-| `inspect-run.v1`, PRV-009 | An optional output, `endpoint` |
-| PRV-011, PRV-022 | Delivery of `secrets` and `identity` only over an authenticated, confidential channel named in the contract. `identity` also carries the trust bundle and, for a run that returns an endpoint, its serving certificate; the gate may use them and nothing else may |
-| IFC-022, PRV-018 | "Not from the connection" becomes "not from the address, machine, network, runtime provider or run it came from". The credential names the instance by ID, and none once it is removed. A JWT-SVID over TLS with a bound audience counts |
-| DL13 | Both directions, under one root of trust; the profiles of Q1; IDs; credentials that last as long as their instance; signed for checking without the engine; where its keys are held; each root kept while a run that holds it lasts |
-| PRV-012, MAN-010 | PRV-012 also covers a `package` whose transport the provider neither serves nor bridges |
-| PRV-014 | "Gone only where the provider knows the machine no longer exists" moves from the observable into the rule |
-| PRV-021, PRV-020 | Stops a provider owes survive the engine's failover and the provider's retirement, kept where its contract states |
-| OPS-027 | The observable's "A connection over Streamable HTTP that drops while the request is in progress closes its stream, and so cancels the invocation" becomes: a connection that the engine sees drop ends the invocation as cancelled, with its outcome unknown, for the engine; whether and when the implementation learns of it is its transport's and its gate's, and a silent cut may reach it late or never |
-| ACC-027, definitions | "Decision point" and "enforcement point" defined, as NIST splits them; "mediated" means passing through an enforcement point, which in v0 is the engine; the engine may be several parts on several machines, and a promise on what it keeps, records or does binds the whole |
-| New item of the implementation-defined list | Q2: the outcomes an engine that can fail over meets, the mechanism its own |
-| New, in `providers.yaml`; SEC-011 | Q3 b: a provider server whose run ended with the engine is run again when first needed, its secrets read for the caller of its last setup; SEC-011 gains that second exception |
-| `spec/README.md` | The D5 gap goes. The trust domain gains the run's machine and its gate for what that run serves, and states that programs of the engine's own operating-system user, the runs on its own runner among them, can get past every gate (Q5) |
-| A64, A65 in the audit | A64 covers both directions, with the two vectors of section 6. A65 records Q4 and the list below |
 
 ### In v1, for A65
 

@@ -9,7 +9,7 @@ last read against the specification on 2026-11-07, as
 [round 5](proposals/reaudit/round-5/DECISIONS.md): with the names that
 [ruling 42](proposals/ruling-42/README.md) accepted from the vocabulary audit (among them node,
 machine provider, `nodeSelector`, idempotency key, source and conformance document) and its
-editorial fixes, and with ruling 43's answer on work across machines, which
+[editorial fixes](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes), and with ruling 43's answer on work across machines, which
 [its own section](#work-across-machines) tells. The
 [specification](../spec/README.md) alone binds, and it governs where this page differs. Each
 section links the files that state its rules. A code such as `CON-001` is the identifier of

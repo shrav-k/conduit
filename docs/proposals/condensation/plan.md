@@ -188,12 +188,12 @@ E-numbers refer to the extractions list. Each extraction is done and verified fi
   - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G1.md to https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G7.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-core.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-docs.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md.
   - ruling-42/: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-conventions.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-core.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-docs.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-editorial.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-integration.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-language.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-machines.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-rename-a.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-rename-b.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-secrets.md. The old-to-new names are in spec/definitions "Words the promises do not use".
   - ruling-43/: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-core.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-docs.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-integration.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-interface.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-providers.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-secrets.md. MX-21 moves to ruling-log.md.
-  - core-and-schemas/log-documents.md and log-promises.md (also E20's spot-check of the 22 "left undone" items).
-  - docs-audit/log-entry-points.md, log-older-text.md, log-gaps.md.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/core-and-schemas/log-documents.md and [log-promises.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/core-and-schemas/log-promises.md) (also E20's spot-check of the 22 "left undone" items).
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/log-entry-points.md, [log-older-text.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/log-older-text.md), [log-gaps.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/log-gaps.md).
 - **No extraction:**
   - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-38/check.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-38/handoff-check.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-38/log-spec.md. Repoint spec/core/README to ruling-38/README.
-  - core-and-schemas/APPLY.md (X1-X5 are in ruling row 37 and the README's Outcome).
-  - docs-audit/reader-entry-points.md and reader-older-text.md.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/core-and-schemas/APPLY.md (X1-X5 are in ruling row 37 and the README's Outcome).
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-entry-points.md and [reader-older-text.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md).
 - **Extract first:**
   - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md: E16 and E19 (rules 3-5 and 8 go to "Writing promises").
   - ruling-45/log-roadmap.md: E19.
@@ -536,10 +536,10 @@ Each item gives source, then destination. The verifier checks each against its s
 **E18. secrets/README.md, condensed in place (same path)**
 - Drop only:
   - Contents (:266-283).
-  - "What changed since the first draft" (:284-416).
-  - "Existing promises and documents that would change" (:2899-2946).
+  - "[What changed since the first draft](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#what-changed-since-the-first-draft)" (:284-416).
+  - "[Existing promises and documents that would change](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#existing-promises-and-documents-that-would-change)" (:2899-2946).
   - The "Fits." paragraphs inside S1-S21.
-  - "Promises that would follow" (:2418-2898), but only after the verifier maps each drafted SEC-n to spec/promises/secrets.yaml or to principles-review §4's dropped list. Any draft sentence carried by neither (for example "DL12 would add ...") goes to Known to be open.
+  - "[Promises that would follow](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)" (:2418-2898), but only after the verifier maps each drafted SEC-n to spec/promises/secrets.yaml or to principles-review §4's dropped list. Any draft sentence carried by neither (for example "DL12 would add ...") goes to Known to be open.
 - Keep verbatim:
   - The head.
   - "Decisions for the owner".
@@ -571,7 +571,7 @@ Each item gives source, then destination. The verifier checks each against its s
   - Raw run records stay in git once their results are merged.
 
 **E20. Records condensed in place by deleting sections only**
-- core-and-schemas/README: keep (b), (c) and Outcome (C1-C56 and N1-N42 with reasons). Spot-check the "left undone" items of log-documents and log-promises; any unsettled go to E2.
+- core-and-schemas/README: keep (b), (c) and Outcome (C1-C56 and N1-N42 with reasons). Spot-check the "left undone" items of [log-documents](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/core-and-schemas/log-documents.md#left-undone-and-why) and [log-promises](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/core-and-schemas/log-promises.md#left-undone-and-why); any unsettled go to E2.
 - vocabulary-audit: keep N1-N20 and "Considered and kept".
 - **multi-machine:**
   - Drop Contents (:126-141).
@@ -818,7 +818,7 @@ Each item gives source, then destination. The verifier checks each against its s
   - Keep the 463-line model until A40's model runs in reference-model's tests. Then remove the code with an archive row, and A40's record absorbs the README.
   - Listed in "Evidence for v0" under A40.
 - **005 (keychain probe; A22, A63, A73):**
-  - Keep the README, with anchors #safety and #what-it-means-for-a-macos-keychain-provider-package. Its citations of the secrets proposal's S5 and "promises that would follow" stay valid, because that file is condensed in place. If E18 drops "Promises that would follow", that one link becomes a C0 permalink.
+  - Keep the README, with anchors #safety and #what-it-means-for-a-macos-keychain-provider-package. Its citations of the secrets proposal's S5 and "[promises that would follow](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)" stay valid, because that file is condensed in place. If E18 drops "[Promises that would follow](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)", that one link becomes a C0 permalink.
   - Keep the probe code, because A22's daemon case is open.
   - Remove results.json and results-rerun.json (195 KB of raw ACLs and timings, all tabulated in README:129-262). Remove results.txt and results-rerun.txt, which are byte-identical. The README's 8 links become C0 links.
   - The next run writes dated output instead of overwriting.

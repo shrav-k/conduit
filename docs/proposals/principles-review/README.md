@@ -21,7 +21,7 @@ of the core package and its [README](../../../spec/core/README.md). Those are fi
 the final check added from its own reading of `spec/` is marked "added in the final check".
 
 Promise IDs are those of [spec/](../../../spec/README.md) on this date, and terms are those of
-[spec/definitions.md](../../../spec/definitions.md). The IDs SEC-1 to SEC-22 and DL16 are drafted
+[spec/definitions.md](../../../spec/definitions.md). The IDs [SEC-1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) to [SEC-22](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) are drafted
 in the secrets proposal and are not in `spec/`. Each item ends with the numbers of the review's
 candidates it comes from, C1 to C58; these are this review's own, and not the choices of the same
 numbers in the [core-and-schemas record](../core-and-schemas/README.md), which this record calls
@@ -209,7 +209,7 @@ only what it left open.
    key itself can go. (C26.)
 
 4. **One way to read a secret in v1.** Now (secrets proposal, not ruled): an implementation may
-   read a secret when it needs it (item 3a), which brings SEC-20 and exceptions to ACC-009,
+   read a secret when it needs it (item 3a), which brings [SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and exceptions to ACC-009,
    ACC-017, ACC-031, ACC-035, IFC-020 and OPS-016; the engine also reads at process start, as
    ruling 39 points 3 and 4 accepted. Standard: Kubernetes `secretKeyRef`, ECS `valueFrom` and
    Cloud Run read at start; MCP says a stdio server takes its credential from the environment.
@@ -221,7 +221,7 @@ only what it left open.
       Only the engine's read under 4a is dispatched. The root Interface may still open a Conduit
       that lists `reveal-secret.v1` for a Resource or an Agent, and that Conduit is the one the
       read goes through. This is not ACC-032's form, which would refuse to open that Conduit.
-      It replaces the proposal's SEC-17 and its output mark `secret` (section 4).
+      It replaces the proposal's [SEC-17](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and its output mark `secret` (section 4).
     - 4c. Whose read it is (added in the final check). Recommended: the read belongs to the
       request that asked for the run: the setup of the instance, or a retirement that runs it to
       serve its retire hook (1a). Its record names that invocation and its caller. It is decided
@@ -229,7 +229,7 @@ only what it left open.
       caller's restrictions, so who set the reader up does not change what it reads. The engine
       asks for a run only within such a request, and a restart that a provider makes on its own
       makes no read (2c), so every request the engine sends has a caller. Alternative: the
-      proposal's read for no actor (its item 8e, SEC-16), which keeps a request with no caller
+      proposal's read for no actor (its item 8e, [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)), which keeps a request with no caller
       in IFC-006 and REC-002.
 
    Cost: in v1 a process sees a secret only as a variable, which ECS and Kubernetes rank lowest;
@@ -376,7 +376,7 @@ only what it left open.
 
 13. **Secret stores: none built into the engine, and each store's own credential.** Now (secrets
     proposal, not ruled): `engine` reads a secret from a file or from a variable of its own
-    environment (SEC-14), which every engine must then do; the variable source needs SEC-18,
+    environment ([SEC-14](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)), which every engine must then do; the variable source needs [SEC-18](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow),
     under which anyone who may register can withhold `PATH` from every process. A store in a
     package reaches its store with whatever credential its client finds in the environment it
     is given (the proposal's item 16), which item 2 does not say. Standard: Dapr lists its local
@@ -385,9 +385,9 @@ only what it left open.
     (`auth.secretRef`, `auth.secretStore`).
     - 13a. Recommended: `engine` implements no store. A file store `{path}` ships in the
       standard library beside the reference engine (layer decision LD5), as one implementation
-      of the same contract, and no store reads the engine's own environment in v1, so SEC-14,
-      SEC-18, DL16 and the PLC-020 exception go. The reasons: every engine would otherwise have
-      to implement two stores, and the variable source needs SEC-18. Alternative: keep the
+      of the same contract, and no store reads the engine's own environment in v1, so [SEC-14](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow),
+      [SEC-18](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) and the PLC-020 exception go. The reasons: every engine would otherwise have
+      to implement two stores, and the variable source needs [SEC-18](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow). Alternative: keep the
       variable source, counting only secrets that an open reading Conduit leads to (the
       proposal's least-certain item 12). Cost: the first user installs the standard library once
       and moves an exported token into a file or a store; v1 departs from Compose's and Dapr's
@@ -735,17 +735,17 @@ table at the end of this section says what becomes of each of its lines under th
 What stays in the core contract:
 
 1. Marking a secret: a place that holds a secret holds only a reference to a secret Resource; a
-   literal is rejected, and neither a diagnostic nor a record holds it (SEC-1, SEC-2, SEC-3,
-   SEC-22). `secret-reference.v1` stands only at a place directly, as `items`, or beside
+   literal is rejected, and neither a diagnostic nor a record holds it ([SEC-1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow),
+   [SEC-22](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)). `secret-reference.v1` stands only at a place directly, as `items`, or beside
    `{type: null}` (the proposal's 2b).
 2. The capability `secret-reveal.v1` and its one operation, `reveal-secret.v1`, which has no
    inputs. A store learns its locator from the instance's configuration that every request
    carries under decision 1b, as any implementation learns its own. With decision 19, a secret
    Resource is any Resource whose type offers the capability.
-3. What every store must do (SEC-12): read only the store its locator names, never take a value
+3. What every store must do ([SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)): read only the store its locator names, never take a value
    from configuration, fail closed, and never fall back.
 4. Who may read: only a Resource or an Agent, through a Conduit that only the root Interface
-   opens (SEC-6, SEC-7, ruling 39), and only by the engine's read: no actor's request for
+   opens ([SEC-6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), ruling 39), and only by the engine's read: no actor's request for
    `reveal-secret.v1` is dispatched (decision 4b). No list of readers is kept anywhere else.
 5. How a value arrives: before each run it asks a provider for, the engine reads through the
    instance's own Conduit and hands the value to the provider, which sets the variable that the
@@ -755,11 +755,11 @@ What stays in the core contract:
    unavailable. One run serves one instance (2a). The read belongs to the request that asked
    for the run (4c). The value is fixed for the life of the run.
 6. Records: every read is recorded without its value, and a read whose record cannot be kept is
-   refused (SEC-8, SEC-19).
-7. Where the value goes (SEC-10, reduced): the engine keeps no copy to stand in for a later
+   refused ([SEC-8](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-19](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
+7. Where the value goes ([SEC-10](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), reduced): the engine keeps no copy to stand in for a later
    read, and puts the value nowhere but where point 5 delivers it: not in an inspection result,
    an observation, a diagnostic, a record, any result, or the `_meta` of any request.
-8. What an implementation does with it (SEC-11): an implementation that carries Conduit's keys
+8. What an implementation does with it ([SEC-11](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)): an implementation that carries Conduit's keys
    never puts a value it was given into a result, a diagnostic, or the `arguments` or `_meta` of
    a request it sends to the engine. The engine cannot check this, so it binds at the
    Implementation level, as IFC-031 does.
@@ -784,7 +784,7 @@ What moves into each store package's contract:
   for the keychain, which the runtime that runs it must give it; and the limits of unattended
   use, such as a locked keychain.
 - Where it must run, and for the file store its encoding, final newline and largest value (now
-  the proposal's DL16).
+  the proposal's [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)).
 
 The same contract, five stores. Each implements `reveal-secret.v1` and reads its locator from its
 instance's configuration; none needs a setup step, memory kept per instance or a change to the
@@ -809,46 +809,46 @@ What becomes of each line of the secrets proposal:
 | Proposal line | Drafted promise | Under this review |
 | --- | --- | --- |
 | 1, one core type `secret.v1` | — | Replaced: one Type per store, and the core capability `secret-reveal.v1` (decision 19) |
-| 2a, the reference schema | SEC-1, SEC-3 | Kept (point 1) |
-| A reference names a secret Resource | SEC-2 | Kept, reworded: the Resource's type offers `secret-reveal.v1` |
-| 2b, a branch only beside `{type: null}` | SEC-1 | Kept (point 1). If decision 20 admits `if`, `not` and the other applicators, the rule covers them too |
-| 2c, a record keeps only the resolved form | SEC-22 | Kept (point 1) |
-| 3a, 3b and 3c, a read when it is needed | SEC-20 | Dropped (decision 4a) |
-| 4a, 4b and 4d, who may read | SEC-6, SEC-7 | Kept (point 4) |
-| 4c, no tool for an Agent | SEC-17 | Replaced by the reservation (decision 4b) |
-| The output mark `secret` | SEC-4 | Dropped: one operation is read, and the rules name it; a mark can return with issued credentials (item 15) |
-| 4e, no step reads a secret | SEC-5, SEC-21 | Dropped: no graphs (decision 1) and no actor's read (4b) |
+| 2a, the reference schema | [SEC-1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 1) |
+| A reference names a secret Resource | [SEC-2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept, reworded: the Resource's type offers `secret-reveal.v1` |
+| 2b, a branch only beside `{type: null}` | [SEC-1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 1). If decision 20 admits `if`, `not` and the other applicators, the rule covers them too |
+| 2c, a record keeps only the resolved form | [SEC-22](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 1) |
+| 3a, 3b and 3c, a read when it is needed | [SEC-20](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Dropped (decision 4a) |
+| 4a, 4b and 4d, who may read | [SEC-6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 4) |
+| 4c, no tool for an Agent | [SEC-17](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Replaced by the reservation (decision 4b) |
+| The output mark `secret` | [SEC-4](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Dropped: one operation is read, and the rules name it; a mark can return with issued credentials (item 15) |
+| 4e, no step reads a secret | [SEC-5](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-21](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Dropped: no graphs (decision 1) and no actor's read (4b) |
 | 5a, values in existing stores | — | Kept, without a store in `engine` (13a) |
 | 5b, SOPS files | — | Moved to a store package |
-| 5c, no value from configuration | SEC-12 | Kept (point 3) |
-| 5d, `engine`'s file and variable on `local` | SEC-14 | Dropped (13a) |
-| 5e, the locator through a setup step | SEC-12's observable | Dropped: decision 1b carries it (point 2) |
+| 5c, no value from configuration | [SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 3) |
+| 5d, `engine`'s file and variable on `local` | [SEC-14](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Dropped (13a) |
+| 5e, the locator through a setup step | [SEC-12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)'s observable | Dropped: decision 1b carries it (point 2) |
 | 6, rotation and revocation | — | Kept |
 | 7a, identity stays DL13 | — | Kept; see decision 26 |
 | 7b and 7c, an Agent's credential | — | Kept; 7c as guidance |
-| 8a, the read at start | SEC-16 | Kept (point 5) |
-| 8b, the key `environment` | SEC-15 | Kept, in the form decision 25d chooses |
-| 8c, a failed read | SEC-16 | Kept (point 5) |
-| 8d, one process per instance | SEC-16 | Kept, as decision 2a for every item |
-| 8e, a read for no actor | SEC-16 | Replaced by decision 4c |
-| 8f, the engine starts the process | SEC-16 | Replaced by decision 2c |
-| 8g, Conduits open before the start | SEC-15 | Kept without graphs: a run is asked for once the declared Conduits are open (point 5) |
-| 8h, a read during retirement | SEC-16 | Kept only with 1a's retire hook: a run that serves the hook belongs to the retirement under ACC-039. With no hook, nothing is run in order to retire, and the line is dropped |
-| 9, one string | DL16 | Kept; DL16 moves to the file store's package |
+| 8a, the read at start | [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 5) |
+| 8b, the key `environment` | [SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept, in the form decision 25d chooses |
+| 8c, a failed read | [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 5) |
+| 8d, one process per instance | [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept, as decision 2a for every item |
+| 8e, a read for no actor | [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Replaced by decision 4c |
+| 8f, the engine starts the process | [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Replaced by decision 2c |
+| 8g, Conduits open before the start | [SEC-15](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept without graphs: a run is asked for once the declared Conduits are open (point 5) |
+| 8h, a read during retirement | [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept only with 1a's retire hook: a run that serves the hook belongs to the retirement under ACC-039. With no hook, nothing is run in order to retire, and the line is dropped |
+| 9, one string | [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept; [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) moves to the file store's package |
 | 10, what the guarantee covers | — | Kept, reduced (after point 8) |
 | 11, version or stage | — | Moved to each store |
-| 12, freshness and caching | SEC-13 | Split: the engine keeps no copy (point 7); whether a store reads at each request or keeps a copy is the store's |
-| 13, records of reads | SEC-8, SEC-19 | Kept (point 6) |
-| No retrieval of a read | SEC-9 | Dropped: a read before a run returns no result to any instance, whatever 6c decides |
-| Where the engine puts a value | SEC-10 | Kept, reduced (point 7) |
-| An implementation sends no value back | SEC-11 | Kept (point 8) |
+| 12, freshness and caching | [SEC-13](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Split: the engine keeps no copy (point 7); whether a store reads at each request or keeps a copy is the store's |
+| 13, records of reads | [SEC-8](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow), [SEC-19](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 6) |
+| No retrieval of a read | [SEC-9](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Dropped: a read before a run returns no result to any instance, whatever 6c decides |
+| Where the engine puts a value | [SEC-10](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept, reduced (point 7) |
+| An implementation sends no value back | [SEC-11](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept (point 8) |
 | 14, no encryption promised | — | Kept |
 | 15, stored secrets only | — | Kept; issued credentials come later with their own contract |
 | 16, a store's own credential | — | Replaced by decision 13b |
 | 17, one key of a structured secret | — | Moved to each store |
-| 18, what a started process inherits | SEC-18 | Dropped (13a); what else a run receives is the provider's (2c, 13b) |
-| 19, the value on rotation | SEC-16 | Kept: fixed for the life of a run; a provider's own restart reuses it (2c) |
-| 20, names | — | `secret.v1` dropped (decision 19), the mark `secret` dropped (above) and DL16 not used; `secret-reveal.v1`, `reveal-secret.v1`, `secret-reference.v1` and the key `environment` of a `command` item (25d) stay |
+| 18, what a started process inherits | [SEC-18](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Dropped (13a); what else a run receives is the provider's (2c, 13b) |
+| 19, the value on rotation | [SEC-16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) | Kept: fixed for the life of a run; a provider's own restart reuses it (2c) |
+| 20, names | — | `secret.v1` dropped (decision 19), the mark `secret` dropped (above) and [DL16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow) not used; `secret-reveal.v1`, `reveal-secret.v1`, `secret-reference.v1` and the key `environment` of a `command` item (25d) stay |
 | 21, a file beside the variable | — | Kept as a later step; a provider may already carry the value as a file (2c) |
 
 ## 5. Checked and found aligned

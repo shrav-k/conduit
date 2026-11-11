@@ -67,7 +67,7 @@ Accepted as recommended:
   digest in its identifier, as server.json does. With N14, a condition's `source` takes the form
   of a record's, a URI-reference that the engine names.
 
-The owner struck none of the 43 decisions of the coordinator. The 23 editorial fixes of the
+The owner struck none of the 43 decisions of the coordinator. The 23 [editorial fixes](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) of the
 vocabulary audit are the coordinator's to apply.
 
 Not ruled:
@@ -90,13 +90,6 @@ Not ruled:
 | 17, 18 (V4), 33 | Location; origin; the earlier names that N1 to N20 replace. | The names of the vocabulary audit. |
 
 ## After the ruling
-
-The ruling was applied to `spec/` on 2026-11-06. The editors' logs are beside this record:
-[machines](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-machines.md), [secrets](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-secrets.md), [conventions](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-conventions.md),
-[language](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-language.md), [core](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-core.md), [docs](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-docs.md), the renames
-([nodes](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-rename-a.md), [the rest](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-rename-b.md)), the [editorial fixes](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-editorial.md)
-and the [integration](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-integration.md), whose section "Verification" answers 34 findings of
-three verifiers. The specification then held 440 promises.
 
 The coordinator's decisions on what the logs left open, under rulings 37 and 38:
 

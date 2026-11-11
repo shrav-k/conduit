@@ -40,7 +40,7 @@ ID went.
 All decisions are accepted and are written as promises in the specification:
 [placement](../../../spec/promises/placement.yaml), PLC-001 to PLC-014 as first written. That
 file has changed since: the comment at its head says which promises were folded into others and
-which were added. Promises PL-1 to PL-10 below are the earlier wording of the same rules, and the
+which were added. Promises [PL-1 to PL-10 below](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/placement/README.md#promises-this-adds) are the earlier wording of the same rules, and the
 PLC wording governs.
 
 ## The gap
@@ -211,124 +211,9 @@ reference, so an exported path is never ambiguous.
   impossible and lets the affected records be retired with that fact preserved as evidence. This
   is a new semantic; its exact contract is audit action A35.
 
-## Worked example
-
-Two enrolled locations, one Pool spanning both, one Agent on each. The examples use the document
-shape and names ruled later the same day: one kind per family, `from` marking an instance, and
-"location". The `apiVersion` line is omitted.
-
-> Later rulings changed the shapes in the three examples below. An instance writes the values
-> for its template's inputs under `arguments`, not `inputs` (rulings 28 and 29; OBJ-013). The
-> schema of a reference to a location is now the core package's export
-> `github.com/shrav-k/conduit/core#resource-reference.v1`, not
-> `conduit:reference#/$defs/location` (rulings 28 and 33; the names are in
-> [`spec/names.yaml`](../../../spec/names.yaml)). A location is made from the core package's
-> template, and what is stored about it is its facts (PLC-008). The current worked example is
-> [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
-
-```yaml
-kind: Resource
-metadata: {name: laptop}
-from: location
-owner: system
-inputs: {address: local}
----
-kind: Resource
-metadata: {name: buildbox}
-from: location
-owner: system
-inputs: {address: buildbox.example.invalid:7443}
-```
-
-The Pool template names no location. It declares inputs whose values land on its entries, and one
-input can land on several:
-
-```yaml
-kind: Pool
-metadata: {name: project-pool}
-spec:
-  inputs:
-    checkoutPlacement:
-      schema: {$ref: "conduit:reference#/$defs/location"}
-      to: [/entries/checkout/placement]
-    servicePlacement:
-      schema: {$ref: "conduit:reference#/$defs/location"}
-      to: [/entries/auth/placement, /entries/issues/placement]
-  entries:
-    checkout: {from: project-directory}
-    auth: {from: service-authentication}
-    issues: {from: issue-service}
----
-kind: Pool
-metadata: {name: project-pool-0001}
-from: project-pool
-inputs:
-  checkoutPlacement: laptop
-  servicePlacement: buildbox
-```
-
-Each Agent instance carries its own placement.
-
-```yaml
-kind: Agent
-metadata: {name: collaborator-0001}
-from: collaborator
-placement: laptop
-inputs: {account: agent-account-a}
----
-kind: Agent
-metadata: {name: collaborator-0002}
-from: collaborator
-placement: buildbox
-inputs: {account: agent-account-b}
-```
-
-What follows from the rules above:
-
-- `collaborator-0001` can receive `checkout` as a directory: both are on `laptop`.
-- `collaborator-0002` cannot. Its directory-mode connection fails the shared-host requirement at
-  preparation. It can use a location-transparent mode if the directory type offers one.
-- Both Agents reach `issues` through Conduits. The service credential stays with `auth` on
-  `buildbox` and never moves to the laptop.
-- If `buildbox` becomes unreachable, `auth`, `issues` and `collaborator-0002` report unknown
-  state. `checkout` and `collaborator-0001` keep working.
-
-The fixtures show only filters on a Conduit, not other requirements, so no YAML is shown for the
-shared-host requirement. That is a separate gap in the existing examples.
-
-## Promises this adds
-
-Each is written so that a fixture can fail it. They are the test list for the simulated-network
-engine ([audit option (b)](../../archive/plan-audit-history.md#multi-system-options)).
-
-| ID | Promise |
-| --- | --- |
-| PL-1 | Every Agent and Resource instance has exactly one resolved placement, retained by stable ID and shown in inspection and export. |
-| PL-2 | With one registered location, an omitted placement resolves to it. With several, an omitted placement resolves to the owner-designated default location if one is set, and is otherwise rejected before any effect. Discovery order never selects a location. |
-| PL-3 | A template that names a concrete location is rejected at registration. |
-| PL-4 | Creation rejects a location that does not offer a capability the type requires, naming both, before any effect. |
-| PL-5 | A location-bound value is interpreted only at the instance's placement. |
-| PL-6 | A connection whose access mode needs a shared host fails or is reported, per its required or optional marking, when the endpoints' hosts differ. No other mode is substituted. |
-| PL-7 | An instance's placement never changes. |
-| PL-8 | When a location is unreachable, its instances report unknown state and are not reassigned; instances elsewhere continue. |
-| PL-9 | A location with instances placed on it cannot be unregistered, except through the owner-only declare-lost operation, which records that shutdown could not be confirmed. |
-| PL-10 | Sharing a location or a host grants no access. |
-
 ## Out of scope
 
 Automatic scheduling, selectors, migration of live instances, failover, replication, and the
 trust exchange used to enroll a remote system. Enrollment gets a home under PL1; its mechanism
 belongs with caller authentication (audit question Q3) and the wire profile (Q2). No remote
 support is claimed before a test across two machines.
-
-## Still to specify
-
-> Later rulings: the first and the third are now specified. Declare lost is PLC-017 and
-> LIF-017. A requirement that is not a filter, such as the shared-host requirement, is a
-> Requirement contract applied in a Conduit template's `requirements` map (CTR-005, CON-018,
-> PLC-013). The second no longer applies: there are no location capabilities, only a location's
-> stored facts.
-
-The exact contract of the declare-lost operation (audit action A35), the catalog of location
-capabilities used by the first scenarios, and the YAML shape of a non-filter requirement such as
-the shared-host requirement.

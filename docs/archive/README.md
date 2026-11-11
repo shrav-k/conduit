@@ -35,6 +35,8 @@ now points at commit `e271d1c` on `main`, the last that held it, and the table d
 
 | Path | What it was | Last version |
 | --- | --- | --- |
+| `docs/proposals/core-and-schemas/{log-documents.md, log-promises.md, APPLY.md}` | Application instructions and editor logs; choices preserved in the record, with the 22 left-undone items checked against their settlements. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/core-and-schemas) |
+| `docs/proposals/docs-audit/{log-entry-points.md, log-older-text.md, log-gaps.md, reader-entry-points.md, reader-older-text.md}` | Reader reports and editor logs; the DA decisions and GAPS register remain, with editor choices preserved in the record. | [f1cb473](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit) |
 | `docs/protocol/` | The protocol topics: the design as it stood before the specification. Source material for the type contracts still to be written. | [e271d1c](https://github.com/shrav-k/conduit/tree/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol) |
 | `docs/authoring/` | The authoring guide, written for the protocol topics. | [e271d1c](https://github.com/shrav-k/conduit/tree/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/authoring) |
 | `docs/proposals/authoring-syntax/` | A proposed authoring syntax, never ruled, in the shapes the specification replaced. | [e271d1c](https://github.com/shrav-k/conduit/tree/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax) |

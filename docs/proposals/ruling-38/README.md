@@ -46,7 +46,7 @@ owner's words.
    "Understood" as accepting the recommendation, and the tracker's section for the next reader
    states the gate as restated.
 5. The sentence of ruling 31 is withdrawn. The tracker's later amendments say so.
-6. Later work leaves the specification. See the work order below.
+6. Later work leaves the specification. See the [work order below](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-38/README.md#work-order-for-the-editor-of-spec).
 7. `apply-policy.v1` gains the warning.
 8. SUB-010 and DL7 change.
 9, 10, 12. No text changes. What was the coordinator's decision is now accepted by the owner,
@@ -62,36 +62,3 @@ it is the coordinator's, it is logged, and the owner can strike it.
 
 Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
 logged decision of the coordinator and choice of an editor.
-
-## Work order for the editor of `spec/`
-
-- **Later work is dropped from v0 (point 6).** Remove the mechanism that rounds 2 to 4 added
-  and the marks it rests on: the tool `start-later-work.v1` and IFC-035; ACC-040 and ACC-041;
-  IMP-010, IMP-011 and IMP-012; TPL-014; the mark `arrangesLaterWork` in CTR-002, in the schema
-  of an Operation contract and in every example; and IMP-006, with the case that IMP-008
-  gained for a start. ACC-019 is rewritten as the rule of v0 and keeps its ID: no operation
-  arranges, through the engine, work that outlasts its invocation. Once an invocation has
-  ended, no request that names it in `serving` is dispatched, as IFC-028 already states, and
-  the engine dispatches no request on its behalf. Work that is to happen later is asked for
-  later, by an actor, through a Conduit that is open then. IFC-016, on one invocation that
-  outlasts its call, stays. "Chain" stays for onward requests. Every place that names later
-  work follows: the definitions, IFC-012 (one tool needs no Conduit, not two), IFC-018,
-  IFC-021, REC-004, the core package (98 exports, 20 Operation contracts), the example package,
-  the checker and the overview. Removed IDs are named in the head of their file and are not
-  reused. `spec/README.md` says, where it describes the conventions, that later work is not
-  part of v0.
-- **The warning of point 7.** The result of `apply-policy.v1` carries a diagnostic that does
-  not prevent the policy, naming each target the policy reaches whose implementation does not
-  state the policy's requirement in `supports`: for a policy that gives `targets`, those among
-  them; for one that gives none, `management`, `access` and every Pool, which the engine
-  implements. ACC-031 says so, and ACC-015 and ACC-026 keep the consequence they state.
-- **Point 8.** SUB-010: an engine that is handed a directory installs no package. A package
-  that the manifest lists and that is not installed is reported as PKG-006 reports it. DL7
-  loses "whether it installs the packages".
-- **Point 3.** CON-004 no longer calls the opening of a composite one invocation of `open.v1`:
-  the step decides the opening of every component first, and then one request for `open.v1` is
-  made for each, or none. It says that after setup each component is a Conduit like any other,
-  which an actor may open or close by itself.
-- **Standing.** `spec/README.md` and the "Standing" paragraph at the head of each file say that
-  ruling 38 accepted the decisions of points 9, 10, 11 and 12 and made those of points 3, 6, 7
-  and 8, and that every other change since ruling 37 is still the coordinator's.

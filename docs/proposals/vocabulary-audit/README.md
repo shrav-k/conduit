@@ -8,56 +8,6 @@ Was: proposed 2026-11-06, for the owner. [Ruling 41](../ruling-41/README.md) ask
 "I don't necessarily like the name secret reveal for the contract, we should do another vocab
 audit as well". This is a proposal. Nothing in it is ruled.
 
-## Scope and method
-
-The audit read the whole of [`spec/`](../../../spec/README.md) as rulings 40 and 41 left it, in
-the terms of [spec/definitions.md](../../../spec/definitions.md). It covers the names that the
-review and the work order coined ([P1](../ruling-41/README.md#planners-choices) and the
-[terms](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md#1-terms) of the work order), the terms of the new promise files
-[providers.yaml](../../../spec/promises/providers.yaml) and
-[secrets.yaml](../../../spec/promises/secrets.yaml), the exports of the
-[core package](../../../spec/core/README.md), and the terms that the integration left
-[for the next editors](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md#for-the-next-editors).
-
-Five readers each read the specification through a different lens. Their 47 proposals were
-merged by term. Two checks then challenged each one: one on precedent, one on clarity and
-collisions. Every standard term cited below was confirmed in its primary source, which is
-linked where it is cited. A rename comes to the owner when both checks kept it, or when one
-kept it on a verified precedent. A text that strays from a term in force is an editorial fix.
-The rest is listed under [Considered and kept](#considered-and-kept).
-
-The owner's principles decide the choices: existing paradigms first, nothing overcomplicated,
-and Conduit innovates only on connection and access. A term of JSON Schema, YAML or the Model
-Context Protocol keeps its own meaning. A term that the vocabulary rulings (17, 18, 27 to 33,
-in the [vocabulary record](../vocabulary/README.md)) settled is reopened only where rulings 40
-and 41 changed what it names, or where it now collides with a standard that the rewrite
-adopted. Each such case says which.
-
-At a glance:
-
-| # | Now | Proposed | Occurrences under `spec/` |
-| --- | --- | --- | --- |
-| N1 | `secret-reveal.v1`, `reveal-secret.v1` | `secret-provider.v1`, `get-secret.v1` | 91 in 18 files |
-| N2 | machines provider; the engine's own machine | machine provider; the engine's own machine provider | 70 and 12 |
-| N3 | `run.v1`'s input `location` | `machine` | about 12 |
-| N4 | `inspect-run.v1`'s state `stopped` | keep (`exited` was proposed) | 4 |
-| N5 | `run.v1`'s output `endpoint` | `url` | 9 |
-| N6 | `arguments` of an implementation item and of `run.v1` | `packageArguments` | about 38 |
-| N7 | `digest` of a `package` item | the Package's own `fileSha256`, required | about 18 |
-| N8 | `label-selector.v1` | `labels.v1` | 15 |
-| N9 | `placement` in a Type or an item; `place.v1`'s input `selector` | `nodeSelector` | about 28 |
-| N10 | location, `location.v1`; stand for | node, `node.v1`; represent | 318 and 30 |
-| N11 | counts as declared lost | the engine declares the location lost | about 5 |
-| N12 | `record.v1`'s `data.instance` | `data.consumer` | about 6 |
-| N13 | `observedGeneration` | remove | 3 |
-| N14 | origin, and the condition key `origin` | source | 20 |
-| N15 | operation identity, `operationIdentity` | idempotency key, `idempotencyKey` | 52 |
-| N16 | `_meta` key `io.github.shrav-k.conduit/restrictions` | `io.github.shrav-k.conduit/filters` | 12, and prose |
-| N17 | extension `io.github.shrav-k.conduit/interface` | `io.github.shrav-k.conduit/implementation-interface` | 4 |
-| N18 | runtime profile | conformance document | 7 |
-| N19 | trust domain (of a secret) | domain of trust | 4 |
-| N20 | its own setting for restarts | restart policy | 5 |
-
 ## Names for the owner
 
 ### N1. The secret contract: `secret-reveal.v1` and `reveal-secret.v1`
@@ -110,7 +60,7 @@ references.yaml, conduit.yaml, the core README, the schemas and the example proj
 secret Resource adds that each secret Resource locates exactly one secret, so its operation
 takes no key. The row provider call and PRV-005 keep saying that the engine's read of a secret
 is a request and not a provider call. The descriptions that say "secret store" follow
-(editorial fix E17). These stay: secret Resource, store, locator, `secret-reference.v1` and
+(editorial fix [E17](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes)). These stay: secret Resource, store, locator, `secret-reference.v1` and
 the output `value`.
 
 ### N2. The machines provider, and the engine's own machine
@@ -394,13 +344,13 @@ and pull request 7 is unmerged and no engine exists, so it will never be cheaper
 - The row adds that a node is a Resource of the type `node.v1`, and is not a YAML node.
 
 If the owner keeps location, its row adds that a location is never a region or zone and is not
-SARIF's `locations`, "stand for" stays, and only editorial fixes E12 and E13 apply.
+SARIF's `locations`, "stand for" stays, and only editorial fixes [E12](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) and [E13](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) apply.
 
 **What changes with it.** "Value tied to a location" becomes "value tied to a node", "declare a
 location lost" becomes "declare a node lost", and `declare-lost.v1`'s input `location` becomes
 `node`. N3 and N9 read naturally with it. `tools/check_schemas.py` and the example file names
 follow. Three citations of NAM-020 for the template `location` are stale whichever way the owner
-rules (E23).
+rules ([E23](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes)).
 
 ### N11. "Counts as declared lost"
 
@@ -536,7 +486,7 @@ idempotency key". The vocabulary rulings did not settle the term.
 
 **Recommendation.** idempotency key and `idempotencyKey`, with the convention named
 "idempotency keys and outcomes". Both checks agree. It touches 52 occurrences in 21
-promises, all mechanically. `deduplicates` stays, and editorial fix E3 keeps it apart from
+promises, all mechanically. `deduplicates` stays, and editorial fix [E3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) keeps it apart from
 MCP's `idempotentHint`. If MCP later adopts a key of its own, follow it.
 
 ### N16. The `_meta` key `io.github.shrav-k.conduit/restrictions`
@@ -661,37 +611,6 @@ instance's configuration, which a provider's restart behaviour need not be.
 the word survives only in "restart policy", a runtime provider's own term, as the row facts
 does for "host".
 
-## Editorial fixes
-
-These conform text to terms in force, or to a term that both checks kept. They need no ruling
-and are for the coordinator to apply. E17 waits for N1, and E10 and E13 change with N10.
-
-| # | Where | Now | Becomes | Why |
-| --- | --- | --- | --- | --- |
-| E1 | [spec/core/README.md](../../../spec/core/README.md), the Names table | No row for hooks, so `setup-hook.v1` and `retire-hook.v1` break the Operation row (a verb in the imperative) | A row: "Hook \| Named for the invocation it belongs to, then `-hook` \| `setup-hook.v1`, `retire-hook.v1`" | Both checks keep the names (see [Considered and kept](#considered-and-kept)). Cite no Kubernetes precedent: Kubernetes names hooks pre- or post- and the event |
-| E2 | definitions.md, row reconcile | No note | Add: "It is not a Kubernetes controller's reconcile: nothing is driven toward what was declared (OBS-004)." | Kubernetes conditions now sit in the status, and controller-runtime's Reconcile moves current state toward desired state |
-| E3 | definitions.md, row `deduplicates`; CTR-002's observable | Nothing relates it to `idempotentHint`, and the valid example declares both | Add: "It is not the Model Context Protocol's `idempotentHint`, which hints that calling the tool again with the same arguments has no further effect: the engine passes that hint into the tool's `annotations` (IFC-033) and never decides a new attempt by it (OPS-012)." | MCP: the hint is keyed on arguments and untrusted; `deduplicates` is keyed on an operation identity and acted on |
-| E4 | IFC-004, IFC-037; definitions.md rows Conduit's extension and revision | "the extension's `revision` setting", "its setting `revision`" | "`revision` in the settings object of Conduit's extension", adding in the row that MCP prescribes the name | Setting is Conduit's word for a place in a configuration. MCP says "settings object" and names the member `revision` |
-| E5 | IFC-008's observable | "the revision that the request declared" | "the revision of Conduit's extension that the request declared" | Every request carries two revisions |
-| E6 | definitions.md: a new row call; rows request and provider call | "call" is used about 90 times in 58 promises with no row | Row "call: One `tools/call` request of the Model Context Protocol: what a consumer sends the engine, and what the engine sends an implementation for a request, a hook or a provider call." The rows request and provider call add that MCP calls any JSON-RPC request a request | MCP: "To invoke a tool, clients send a `tools/call` request"; MCP speaks of tool calls |
-| E7 | IFC-006 (`when`, `then`), IFC-008 (`when`), IFC-019's observable | A hook called "the request" or "any request" | "call" where a hook is meant | The row request: a hook and a provider call are not requests |
-| E8 | TPL-017's observable | "Its request carries the restrictions" | "It carries the restrictions" (the filters, after N16) | The same |
-| E9 | PRV-011 (`when`) | "a request for `run.v1`" | "a provider call to `run.v1`" | PRV-005: a provider call is not a request |
-| E10 | definitions.md, row location type; spec/core/types.yaml, head comment and the description of `location.v1` | "location type"; "The location type." | Remove the row and write "the type `location.v1`" (`node.v1` after N10) | No promise uses it: PLC-008 and PLC-028 say "the type `location.v1`" |
-| E11 | definitions.md, row setup operation, retire operation, and rows set up and retire; TPL-008's observable | "An invocation of `set-up.v1` ..."; "Carry out the setup operation"; "by its retire operation"; "The setup operation and the retire operation of an instance mean these two invocations" | Remove the row and TPL-008's sentence. Row set up: "Carry out the setup of an instance, which is one invocation of `set-up.v1`"; row retire likewise for retirement | An operation is the action of an Operation contract, so `set-up.v1` itself is the setup operation. The nouns setup and retirement already name the invocation |
-| E12 | SCH-015 (`then`) | "Each of the last two stands for the schema that is that contract's `spec`" | "Each of the last two references the schema that is that contract's `spec`" | JSON Schema: `$ref` is used "to reference a statically identified schema" |
-| E13 | spec/core/README.md, The operations | "One contract stands for one verb" | "One contract for one verb", as operations.yaml says | "Stand for" is defined for a location and its machine |
-| E14 | definitions.md, row ready | No note | Add: "A lifecycle state, a phase in Kubernetes' terms, and neither the Kubernetes condition `Ready` nor CRI's `RuntimeReady`. It does not change when the run stops or the machine becomes unreachable, and "not ready" means registered or retired. Conditions report health." | Ruling 29 settled ready. Conditions now sit beside it in the status, and CRI's `RuntimeReady` means healthy, where PRV-007 says "the runtime provider is not ready" |
-| E15 | definitions.md, row Resource | No note | Add: "Not a resource of the Model Context Protocol, which a result may carry as a resource link or an embedded resource; a Resource template is not an MCP resource template." | MCP has resources and "resource templates", and a Conduit result is an MCP tool result |
-| E16 | definitions.md, rows connection and item that is run | Connection: only "the engine's connection to an implementation item reached by `remote`". Item: "An item reached by `remote` is not run: the engine connects to it." | Connection: MCP's connection of a client to a server; the connection to a `remote` item is the part of a setup. Item: "is not run: the engine reaches it at its Remote's URL (IFC-041)" | MCP: "Each MCP client maintains a dedicated connection with its corresponding MCP server". IFC-017 connects to every item |
-| E17 | spec/core (README, capabilities.yaml, operations.yaml, types.yaml), spec/schemas/README.md, the example project's conduit.yaml and contracts.yaml; definitions.md row secret store | "secret store", 13 times in 8 files | "secret Resource", "the type of a secret Resource", or "an implementation of `get-secret.v1`"; the row becomes "Not used." with the three words | After N1. A store is the system outside the engine (SEC-006); in ESO and Dapr a store serves many secrets |
-| E18 | SEC-010, SEC-017 and SEC-020, observables | "store" for a secret Resource, about 11 times: "the store's own item", "the store's run", "a store's implementation", "a file store" | "secret Resource", "its implementation"; SEC-020: "each is reached by a package's implementation of the same contract, one that reads a file among them" | The row store; the CSI driver keeps the "external Secrets Store" apart from its providers |
-| E19 | definitions.md, row record; REC-001 and CON-007, observables | "a request, a provider call or an event"; "Each such event"; "after the event" | "a request, a provider call or another occurrence"; "Each such occurrence"; "after it" | CloudEvents: "An "event" is a data record expressing an occurrence", so a record is the event |
-| E20 | definitions.md, rows Agent and model work; docs/OVERVIEW.md, the families table | "Its model being run is model work"; "An Agent's model being run: a turn started or continued" | "A turn of its model is model work"; "A turn of an Agent's model, started or continued" | Run now names the running of an item, which starts no model work (IMP-002) |
-| E21 | SEC-001's observable | "This rule is stricter than OBJ-021" | "This rule is narrower than OBJ-021" | OBJ-021 and the row reference schema say narrower, and the row narrow is in force: C20 removed only the key `narrows` |
-| E22 | definitions.md, the history paragraph of its head | About 50 lines on rows that no longer exist | One sentence with a link; the paragraph moves to the [docs log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-editorial.md#the-history-of-the-rows-before-ruling-41) of ruling 41 | A cold reader meets removed features before the first term. This reverses the docs editor's logged choice, so the coordinator strikes it or applies it |
-| E23 | spec/core/README.md, the Names table and the export table; spec/core/templates.yaml, head comment | NAM-020 cited for the template `location` | The Names table: "except `location`, which FST-005 names"; drop NAM-020 from the other two | NAM-020 resolves the core package and names no template |
-
 ## Considered and kept
 
 Proposals that no check kept, or whose checks found the current name sound. By ruling on this
@@ -700,47 +619,26 @@ proposal, the owner also confirms these names.
 - `setup-hook.v1`, `retire-hook.v1`: Kubernetes' PostStart runs concurrently with the
   entrypoint and PreStop fails on a stopped container, while Conduit's hooks are parts of a
   setup or retirement and also serve Pools and `remote` items; Helm's pre- and post- form would
-  be a coinage. E1 adds the Names-table row.
+  be a coinage. [E1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) adds the Names-table row.
 - `package-source.v1` (proposed: `package-downloader.v1`): Helm 4 renamed its downloader plugins
   to getter plugins (https://helm.sh/docs/plugins/migrate), and Cargo's `Source` trait fits as
   well as Helm's word did.
 - `reconcile.v1` (proposed: `settle.v1`): "settle" already has its plain sense in PRV-008 and
-  PRV-009, and a JavaScript Promise is no system Conduit adopts; E2 adds one sentence instead.
+  PRV-009, and a JavaScript Promise is no system Conduit adopts; [E2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) adds one sentence instead.
 - `environment` (proposed: `environmentVariables`): Compose's word, chosen under decision 25d,
   and it also serves `command` items, which have no server.json list.
 - `idempotentHint`, `destructiveHint`, `openWorldHint` at the root of `spec` (proposed: under
   `annotations`): a `spec.annotations` would sit beside `metadata.annotations`, which has no
   meaning (OBJ-018).
-- provider call: follows MCP's "tool call"; E6 relates it to the protocol's request.
+- provider call: follows MCP's "tool call"; [E6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) relates it to the protocol's request.
 - management verb: Kubernetes' API request verb
   (https://kubernetes.io/docs/reference/access-authn-authz/authorization/) in the same
   authorization role; the backticked words of the Secret API reference are HTTP methods.
 - item that is run, connect: no standard word covers `command` and `package`, and MCP's "local"
-  collides with `local`; E16 widens the row connection.
+  collides with `local`; [E16](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) widens the row connection.
 - claim, of a URI scheme: RFC 8252 says that apps "claim" URIs
   (https://www.rfc-editor.org/rfc/rfc8252.html), and the proposed "serves" is a Conduit term.
-- narrower rule (proposed: stricter rule): narrow is in force; E21 makes SEC-001 agree.
+- narrower rule (proposed: stricter rule): narrow is in force; [E21](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/vocabulary-audit/README.md#editorial-fixes) makes SEC-001 agree.
 - obligation, in IFC-026: spec/README.md's own word for what a promise's `then` states.
 - removed, of a package: DL7 and NAM-011 define it.
 - part, of a setup or retirement: the standard word "step" went with graphs under ruling 41.
-
-## How to apply
-
-- `tools/set_names.py` does not cover these names. It changes only the three names in
-  [names.yaml](../../../spec/names.yaml): the core package's address, `apiVersion` and the
-  prefix of the `_meta` keys. Its check reads the `_meta` keys from the interface file, so it
-  can report a key left behind after N16 or N17. Every other name is found by search.
-- Each rename the owner accepts goes through in one change: the promises under `spec/`; the core
-  package (spec/core/ and its README, with the export table); the schemas under spec/schemas/
-  and their examples, the example project among them; the rules of `tools/check_schemas.py`
-  that name the term; [definitions.md](../../../spec/definitions.md), with the old word added to
-  its list of words the promises do not use; spec/README.md; and docs/OVERVIEW.md. Then run the
-  checks of [AGENTS.md](../../../AGENTS.md#checks).
-- The sentences that call the coined names not final (spec/README.md, definitions.md, the core
-  README, and the head comments of secrets.yaml and providers.yaml) then cite the owner's
-  ruling.
-- Older records keep their words: the records under docs/proposals/, among them ruling 41's work
-  order and logs and the principles review, and everything under docs/research/ and
-  docs/archive/.
-- Order. N1 first. N2 before N10. N3, N9, N10 and N11 touch the same sentences, so apply them
-  together.

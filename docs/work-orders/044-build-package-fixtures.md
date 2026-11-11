@@ -45,3 +45,16 @@ and `git diff --check` pass; in `engine/`, `cargo fmt --check`,
 `experiments/011-short-form-spike/`, `cargo test --release`. Report the totals passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so, and the admin reruns them. Do not
 stage anything.
+
+## Record
+
+Run on 2026-11-11, beside orders 040 and 045 on a shared machine: the worker in 76 minutes, then a
+fresh verifier in 6, then a second round. The engine now compares a release with the one it
+replaces at install and rejects a published Type whose schema gains, changes or loses a default
+(NAM-024), comparing defaults at their resolved locations through local and Schema-contract
+references, with a diagnostic naming the contract and pointer. The fixtures gained the filesystem
+package 0.1.1 and 0.2.1 with their `read` and `read-write` templates (PKG-031) and the agents
+fixtures 0.2.0 with the `.v2` Types, every archive made by the Rust generator (41 reproduce). The
+verifier found that defaults reached through a reference, and changed or removed defaults, passed;
+the second round closed both with seven install vectors. changes/t5 is unchanged. Tests: the
+engine's suite, with 392 vectors; experiment 011, 8.

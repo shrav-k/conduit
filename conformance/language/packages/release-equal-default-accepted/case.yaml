@@ -1,0 +1,101 @@
+{
+  "id": "release-equal-default-accepted",
+  "title": "release-equal-default-accepted",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-024",
+    "PKG-023",
+    "SCH-007",
+    "SCH-009",
+    "SCH-015"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "base": "base.json",
+    "base-archive": "../../../fixtures/install-archives/release-defaults-base.tar.gz",
+    "later": "later.json",
+    "later-archive": "../../../fixtures/install-archives/release-defaults-equal.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "base"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": []
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023",
+          "SCH-007",
+          "SCH-009",
+          "SCH-015"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:704978d213912b4e65bd4d8bc891149394fed4a544249fb5cabd26b3f680b513"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "later"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": []
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023",
+          "SCH-007",
+          "SCH-009",
+          "SCH-015"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:704978d213912b4e65bd4d8bc891149394fed4a544249fb5cabd26b3f680b513"
+              }
+            },
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.2",
+                "digest": "sha256:49b43b1420db33abb8a032bc3f324387124d26b13df1f9a307f18bc5b5a1cfc3"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

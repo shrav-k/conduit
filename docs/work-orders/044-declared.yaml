@@ -1,0 +1,17 @@
+- name: NAM-024 release admission pairs and C12 Agent defaults
+  kind: added
+  cases:
+    - release-adds-default-rejected
+    - release-adds-optional-accepted
+    - release-new-version-segment-with-default-accepted
+    - agents-v2-defaults
+- name: NAM-024 resolved defaults and preservation round 2
+  kind: added
+  cases:
+    - release-adds-referenced-default-rejected
+    - release-adds-schema-contract-default-rejected
+    - release-adds-recursive-default-rejected
+    - release-changes-default-rejected
+    - release-removes-default-rejected
+    - release-equal-default-accepted
+    - release-reorders-default-rejected

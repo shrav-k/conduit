@@ -1,0 +1,186 @@
+{
+  "id": "release-adds-default-rejected",
+  "title": "release-adds-default-rejected",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-024",
+    "PKG-023",
+    "PKG-031",
+    "NAM-018",
+    "NAM-022"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "base": "base.json",
+    "base-archive": "../../../fixtures/install-archives/filesystem-0.1.1.tar.gz",
+    "later": "later.json",
+    "later-archive": "../../../fixtures/install-archives/release-adds-default.tar.gz",
+    "templates": "templates.json",
+    "templates-archive": "../../../fixtures/install-archives/filesystem-0.2.1.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "base"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": []
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "later"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "NAM-024",
+              "message": {
+                "text": "contract local-directory.v1: added default at /spec/schema/properties/depth/default"
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "required_promises": [
+          "NAM-024",
+          "PKG-023"
+        ],
+        "records": [],
+        "external_intents": []
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "templates"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "package": {
+            "project": {
+              "documents": [
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "file.read.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "directory.list.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "file.write.v1"
+                  }
+                },
+                {
+                  "kind": "Capability",
+                  "metadata": {
+                    "name": "directory.v1"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "local-directory.v1"
+                  }
+                },
+                {
+                  "kind": "Conduit",
+                  "metadata": {
+                    "name": "read"
+                  },
+                  "spec": {
+                    "capability": "#directory.v1",
+                    "operations": [
+                      "#file.read.v1",
+                      "#directory.list.v1"
+                    ]
+                  }
+                },
+                {
+                  "kind": "Conduit",
+                  "metadata": {
+                    "name": "read-write"
+                  },
+                  "spec": {
+                    "capability": "#directory.v1",
+                    "operations": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required_promises": [
+          "NAM-024",
+          "NAM-018",
+          "NAM-022"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614"
+              }
+            },
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.2.1",
+                "digest": "sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

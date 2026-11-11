@@ -1,0 +1,345 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "description": "Registration-only draft for Claude Code. No implementation is selected and no model work starts. Increment 3 supplies the client wrapper, private working directory, isolated configuration and disabled-by-default own account services and messaging; these booleans alone run or confine nothing.",
+      "name": "claude-code.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "offers": [],
+      "records": {
+        "inputs": false,
+        "outputs": false
+      },
+      "requires": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "accountServices": {
+            "type": "boolean"
+          },
+          "peerMessaging": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accountServices",
+          "peerMessaging"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "description": "Registration-only draft for Codex. No implementation is selected and no model work starts. Increment 3 supplies the client wrapper, private working directory, isolated configuration and disabled-by-default own account services and messaging; these booleans alone run or confine nothing.",
+      "name": "codex.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "offers": [],
+      "records": {
+        "inputs": false,
+        "outputs": false
+      },
+      "requires": [],
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "accountServices": {
+            "type": "boolean"
+          },
+          "peerMessaging": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accountServices",
+          "peerMessaging"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "claude-code.v2"
+    },
+    "spec": {
+      "family": "Agent",
+      "offers": [
+        "#conversation.v1"
+      ],
+      "records": {
+        "inputs": false,
+        "outputs": false
+      },
+      "requires": [],
+      "schema": {
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "properties": {
+              "account": {
+                "type": "string"
+              },
+              "apiKey": {
+                "type": "null"
+              }
+            }
+          },
+          {
+            "properties": {
+              "account": {
+                "type": "null"
+              },
+              "apiKey": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "apiKey"
+            ]
+          }
+        ],
+        "properties": {
+          "account": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "accountServices": {
+            "default": false,
+            "type": "boolean"
+          },
+          "apiKey": {
+            "anyOf": [
+              {
+                "$ref": "github.com/shrav-k/conduit/core#secret-reference.v1"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "model": {
+            "default": "",
+            "type": "string"
+          },
+          "peerMessaging": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "account"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "codex.v2"
+    },
+    "spec": {
+      "family": "Agent",
+      "offers": [
+        "#conversation.v1"
+      ],
+      "records": {
+        "inputs": false,
+        "outputs": false
+      },
+      "requires": [],
+      "schema": {
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "properties": {
+              "account": {
+                "type": "string"
+              },
+              "apiKey": {
+                "type": "null"
+              }
+            }
+          },
+          {
+            "properties": {
+              "account": {
+                "type": "null"
+              },
+              "apiKey": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "apiKey"
+            ]
+          }
+        ],
+        "properties": {
+          "account": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "accountServices": {
+            "default": false,
+            "type": "boolean"
+          },
+          "apiKey": {
+            "anyOf": [
+              {
+                "$ref": "github.com/shrav-k/conduit/core#secret-reference.v1"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "model": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "conversation.v1"
+    },
+    "spec": {
+      "operations": [
+        "#turn.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "turn.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "clientTools": {
+            "additionalProperties": false,
+            "properties": {
+              "observations": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "event": {
+                      "type": "integer"
+                    },
+                    "freshness": {
+                      "enum": [
+                        "current",
+                        "session_init_unverified"
+                      ],
+                      "type": "string"
+                    },
+                    "names": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "pointer": {
+                      "type": "string"
+                    },
+                    "reportedNames": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "pointer",
+                    "names",
+                    "reportedNames",
+                    "freshness"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "status": {
+                "enum": [
+                  "reported",
+                  "not_reported",
+                  "unavailable"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "status",
+              "observations"
+            ],
+            "type": "object"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "clientTools"
+        ],
+        "type": "object"
+      },
+      "startsModelWork": true
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "turn"
+    },
+    "spec": {
+      "capability": "#conversation.v1",
+      "operations": [
+        "#turn.v1"
+      ]
+    }
+  }
+]

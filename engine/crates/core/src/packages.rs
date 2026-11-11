@@ -125,6 +125,210 @@ pub(crate) fn index(project: &Project) -> BTreeMap<String, Value> {
         )
         .collect()
 }
+
+// Each part retains its reference scope and local-pointer root (SCH-015).
+type DefaultParts = Vec<(String, Value, Value)>;
+
+struct DefaultComparison<'a> {
+    env: &'a Environment,
+    core: &'a str,
+    name: &'a str,
+    diagnostics: Vec<Value>,
+}
+impl DefaultComparison<'_> {
+    fn value(&mut self, before: Option<&Value>, after: Option<&Value>, at: &str) -> Result<()> {
+        let change = match (before, after) {
+            (None, Some(_)) => "added",
+            (Some(_), None) => "removed",
+            (Some(a), Some(b)) => {
+                // SCH-007: JSON Schema equality, including nested numeric values.
+                if conduit_loader::compile(&json!({"const":a}))
+                    .map_err(|e| e.to_string())?
+                    .is_valid(b)
+                {
+                    return Ok(());
+                }
+                "changed"
+            }
+            (None, None) => return Ok(()),
+        };
+        self.diagnostics.push(diag(
+            "NAM-024",
+            format!("contract {}: {change} default at {at}/default", self.name),
+        ));
+        Ok(())
+    }
+    fn resolved(&self, mut todo: DefaultParts) -> Result<DefaultParts> {
+        let mut out = vec![];
+        let mut seen = BTreeSet::new();
+        while let Some((scope, root, mut schema)) = todo.pop() {
+            let identity =
+                serde_json::to_string(&(&scope, &root, &schema)).map_err(|e| e.to_string())?;
+            if !seen.insert(identity) {
+                continue;
+            }
+            if let Some(reference) = schema["$ref"].as_str() {
+                let (target, sub) = self
+                    .env
+                    .schema_reference(&scope, &root, reference, self.core)?;
+                let target_root = if reference == "#" || reference.starts_with("#/") {
+                    root.clone()
+                } else {
+                    sub.clone()
+                };
+                todo.push((target, target_root, sub));
+            }
+            // Siblings still apply. Ref edges add no token to the use-site pointer;
+            // erase the edge itself so equivalent reference spellings converge.
+            if let Some(map) = schema.as_object_mut() {
+                map.remove("$ref");
+                if !map.is_empty() {
+                    out.push((scope, root, schema));
+                }
+            }
+        }
+        Ok(out)
+    }
+    fn children(parts: DefaultParts) -> BTreeMap<String, DefaultParts> {
+        let mut children: BTreeMap<String, DefaultParts> = BTreeMap::new();
+        for (scope, root, schema) in parts {
+            let mut add = |path: String, sub: &Value| {
+                children
+                    .entry(path)
+                    .or_default()
+                    .push((scope.clone(), root.clone(), sub.clone()));
+            };
+            // Schema positions only, never instance data in const/enum/default.
+            for key in [
+                "properties",
+                "$defs",
+                "patternProperties",
+                "dependentSchemas",
+                "x-conduit-patterns",
+            ] {
+                for (name, sub) in items(&schema, key) {
+                    add(
+                        format!("/{key}/{}", name.replace('~', "~0").replace('/', "~1")),
+                        sub,
+                    );
+                }
+            }
+            for key in [
+                "additionalProperties",
+                "items",
+                "contains",
+                "propertyNames",
+                "not",
+                "if",
+                "then",
+                "else",
+            ] {
+                if let Some(sub) = schema.get(key) {
+                    add(format!("/{key}"), sub);
+                }
+            }
+            for key in ["allOf", "anyOf", "oneOf", "prefixItems"] {
+                if let Some(subs) = schema[key].as_array() {
+                    for (i, sub) in subs.iter().enumerate() {
+                        add(format!("/{key}/{i}"), sub);
+                    }
+                }
+            }
+        }
+        children
+    }
+    fn schemas(
+        &mut self,
+        before: DefaultParts,
+        after: DefaultParts,
+        at: &str,
+        seen: &BTreeSet<String>,
+    ) -> Result<()> {
+        let before = self.resolved(before)?;
+        let after = self.resolved(after)?;
+        let mut seen = seen.clone();
+        // Compare pairs of resolved frontiers, not a fixed number of ref expansions.
+        // A repeated pair at a deeper position has the same defaults and successors.
+        // Keeping this per path still diagnoses distinct properties using one schema.
+        let identity = serde_json::to_string(&(&before, &after)).map_err(|e| e.to_string())?;
+        if !seen.insert(identity) {
+            return Ok(());
+        }
+        self.value(
+            before.iter().find_map(|(_, _, s)| s.get("default")),
+            after.iter().find_map(|(_, _, s)| s.get("default")),
+            at,
+        )?;
+        let mut before = Self::children(before);
+        let mut after = Self::children(after);
+        let paths: BTreeSet<_> = before.keys().chain(after.keys()).cloned().collect();
+        for path in paths {
+            self.schemas(
+                before.remove(&path).unwrap_or_default(),
+                after.remove(&path).unwrap_or_default(),
+                &format!("{at}{path}"),
+                &seen,
+            )?;
+        }
+        Ok(())
+    }
+}
+
+/// NAM-024/SCH-009: compare published defaults at resolved schema use sites.
+/// The environment has already passed admission, including default conflicts.
+pub(crate) fn release_default_diagnostics(
+    env: &Environment,
+    earlier: &str,
+    later: &str,
+    core: &str,
+) -> Result<Vec<Value>> {
+    let old = &env.scopes[earlier];
+    let new = &env.scopes[later];
+    let mut diagnostics = vec![];
+    for name in old.exports.iter().flatten() {
+        if !new.exports.iter().flatten().any(|n| n == name) {
+            continue;
+        }
+        let (Some(a), Some(b)) = (old.contracts.get(name), new.contracts.get(name)) else {
+            continue;
+        };
+        let mut comparison = DefaultComparison {
+            env,
+            core,
+            name,
+            diagnostics: vec![],
+        };
+        if a["kind"] == "Type" && b["kind"] == "Type" {
+            let a = a["spec"]["schema"].clone();
+            let b = b["spec"]["schema"].clone();
+            comparison.schemas(
+                vec![(earlier.into(), a.clone(), a)],
+                vec![(later.into(), b.clone(), b)],
+                "/spec/schema",
+                &BTreeSet::new(),
+            )?;
+        }
+        // NAM-024 also preserves published Requirement input defaults.
+        if a["kind"] == "Requirement" && b["kind"] == "Requirement" {
+            let inputs: BTreeSet<_> = items(&a["spec"], "inputs")
+                .chain(items(&b["spec"], "inputs"))
+                .map(|(name, _)| name)
+                .collect();
+            for input in inputs {
+                comparison.value(
+                    a["spec"]["inputs"][input].get("default"),
+                    b["spec"]["inputs"][input].get("default"),
+                    &format!(
+                        "/spec/inputs/{}",
+                        input.replace('~', "~0").replace('/', "~1")
+                    ),
+                )?;
+            }
+        }
+        diagnostics.extend(comparison.diagnostics);
+    }
+    Ok(diagnostics)
+}
 impl Catalog {
     pub fn new(builtin: Project, snapshots: Vec<Snapshot>, core: &str) -> Result<Self> {
         if manifest(&builtin)["address"] != core {
@@ -1140,6 +1344,105 @@ fn file_reference(base: &UriRef<&str>, reference: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn compare_defaults(earlier: &Project, later: &Project) -> Vec<Value> {
+        let scopes = [("old", earlier), ("new", later)]
+            .into_iter()
+            .map(|(key, p)| {
+                (
+                    key.into(),
+                    Scope {
+                        address: "example.org/test".into(),
+                        version: None,
+                        manifest: BTreeMap::new(),
+                        contracts: index(p),
+                        exports: Some(
+                            strings(&manifest(p), "exports")
+                                .map(str::to_owned)
+                                .collect(),
+                        ),
+                    },
+                )
+            })
+            .collect();
+        release_default_diagnostics(&Environment { scopes }, "old", "new", "builtin").unwrap()
+    }
+    #[test]
+    fn release_defaults_visit_schema_locations_and_escape_property_pointers() {
+        let project = |schema| Project {
+            manifest: Some(json!({"exports":["test.v1"]})),
+            documents: vec![
+                json!({"kind":"Type","metadata":{"name":"test.v1"},"spec":{"schema":schema}}),
+            ],
+            directory: None,
+        };
+        let old = project(json!({"type":"object","properties":{"kept":{"default":1}}}));
+        let later = project(json!({"type":"object","properties":{
+            "kept":{"default":1}, "optional":{"type":"string"},
+            "array":{"items":{"properties":{"a/b~c":{"default":false}}}},
+            "data":{"const":{"properties":{"fake":{"default":1}}}}
+        },"$defs":{"nested":{"properties":{"depth":{"default":null}}}}}));
+        let diagnostics = compare_defaults(&old, &later);
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics.iter().all(|d| d["ruleId"] == "NAM-024"));
+        let messages = diagnostics
+            .iter()
+            .map(|d| d["message"]["text"].as_str().unwrap())
+            .collect::<Vec<_>>()
+            .join("\n");
+        assert!(
+            messages.contains("/spec/schema/properties/array/items/properties/a~1b~0c/default")
+        );
+        assert!(messages.contains("/spec/schema/$defs/nested/properties/depth/default"));
+        assert!(compare_defaults(&old, &old).is_empty());
+    }
+    #[test]
+    fn release_defaults_follow_pinned_contracts_and_local_roots_with_cycles() {
+        let ty = json!({"kind":"Type","spec":{"schema":{"properties":{
+            "settings":{"$ref":"example.org/settings#settings.v1"}
+        }}}});
+        let schema = |value| {
+            json!({"kind":"Schema","spec":{
+                "$defs":{"node":{"properties":{
+                    "a/b~c":{"default":value},
+                    "next":{"$ref":"#/$defs/node"}
+                }}},
+                "$ref":"#/$defs/node"
+            }})
+        };
+        let mut scopes = BTreeMap::new();
+        for (scope, dependency, value) in [("old", "old-dep", false), ("new", "new-dep", true)] {
+            scopes.insert(
+                scope.into(),
+                Scope {
+                    address: "example.org/types".into(),
+                    version: None,
+                    manifest: BTreeMap::from([("example.org/settings".into(), dependency.into())]),
+                    contracts: BTreeMap::from([("test.v1".into(), ty.clone())]),
+                    exports: Some(vec!["test.v1".into()]),
+                },
+            );
+            scopes.insert(
+                dependency.into(),
+                Scope {
+                    address: "example.org/settings".into(),
+                    version: None,
+                    manifest: BTreeMap::new(),
+                    contracts: BTreeMap::from([("settings.v1".into(), schema(value))]),
+                    exports: Some(vec!["settings.v1".into()]),
+                },
+            );
+        }
+        let env = Environment { scopes };
+        let diagnostics = release_default_diagnostics(&env, "old", "new", "builtin").unwrap();
+        assert!(diagnostics.iter().any(|d| d["message"]["text"] ==
+            "contract test.v1: changed default at /spec/schema/properties/settings/properties/a~1b~0c/default"));
+        assert!(diagnostics.iter().all(|d| d["ruleId"] == "NAM-024"));
+        assert!(
+            release_default_diagnostics(&env, "old", "old", "builtin")
+                .unwrap()
+                .is_empty()
+        );
+    }
     #[test]
     fn submitted_digest_uses_jcs_numbers_and_utf16_member_order() {
         let p = Project {

@@ -1,0 +1,11 @@
+{
+  "name": "release-adds-optional.tar.gz",
+  "address": "example.org/s1/filesystem",
+  "version": "0.1.2",
+  "digest": "sha256:4fe17a270d33719d2ae2031a8afae438f592b7d0ee2d110f2434d81a7de3a9c6",
+  "directory": null,
+  "completion": {
+    "status": "complete",
+    "file": "later-archive"
+  }
+}

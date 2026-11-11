@@ -1,0 +1,102 @@
+{
+  "id": "release-adds-recursive-default-rejected",
+  "title": "release-adds-recursive-default-rejected",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-024",
+    "PKG-023",
+    "SCH-007",
+    "SCH-009",
+    "SCH-015"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "base": "base.json",
+    "base-archive": "../../../fixtures/install-archives/release-defaults-base.tar.gz",
+    "later": "later.json",
+    "later-archive": "../../../fixtures/install-archives/release-defaults-recursive.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "base"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": []
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023",
+          "SCH-007",
+          "SCH-009",
+          "SCH-015"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:704978d213912b4e65bd4d8bc891149394fed4a544249fb5cabd26b3f680b513"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "later"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "NAM-024",
+              "message": {
+                "text": "contract local-directory.v1: added default at /spec/schema/properties/settings/properties/alias/$defs/subsettings/properties/depth/default"
+              }
+            },
+            {
+              "ruleId": "NAM-024",
+              "message": {
+                "text": "contract local-directory.v1: added default at /spec/schema/properties/settings/properties/alias/properties/enabled/default"
+              }
+            },
+            {
+              "ruleId": "NAM-024",
+              "message": {
+                "text": "contract local-directory.v1: added default at /spec/schema/properties/settings/properties/alias/properties/nested/properties/depth/default"
+              }
+            }
+          ]
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023",
+          "SCH-007",
+          "SCH-009",
+          "SCH-015"
+        ],
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

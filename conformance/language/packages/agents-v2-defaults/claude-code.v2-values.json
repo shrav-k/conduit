@@ -1,0 +1,128 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/s1/agents",
+        "contracts": {},
+        "manifest": {}
+      }
+    }
+  },
+  "samples": [
+    {
+      "mode": "supplied",
+      "value": {
+        "account": "agent@example.org"
+      }
+    },
+    {
+      "mode": "supplied",
+      "value": {
+        "account": null,
+        "apiKey": {
+          "kind": "Resource",
+          "name": "api-key"
+        }
+      }
+    },
+    {
+      "mode": "supplied",
+      "value": {}
+    },
+    {
+      "mode": "supplied",
+      "value": {
+        "account": null
+      }
+    },
+    {
+      "mode": "supplied",
+      "value": {
+        "account": "agent@example.org",
+        "apiKey": {
+          "kind": "Resource",
+          "name": "api-key"
+        }
+      }
+    },
+    {
+      "mode": "supplied",
+      "value": {
+        "account": "agent@example.org",
+        "accountServices": true,
+        "model": "chosen"
+      }
+    },
+    {
+      "mode": "supplied",
+      "value": {
+        "account": "agent@example.org",
+        "peerMessaging": true
+      }
+    }
+  ],
+  "schema": {
+    "additionalProperties": false,
+    "oneOf": [
+      {
+        "properties": {
+          "account": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "null"
+          }
+        }
+      },
+      {
+        "properties": {
+          "account": {
+            "type": "null"
+          },
+          "apiKey": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "apiKey"
+        ]
+      }
+    ],
+    "properties": {
+      "account": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "accountServices": {
+        "default": false,
+        "type": "boolean"
+      },
+      "apiKey": {
+        "anyOf": [
+          {
+            "$ref": "github.com/shrav-k/conduit/core#secret-reference.v1"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "model": {
+        "default": "",
+        "type": "string"
+      },
+      "peerMessaging": {
+        "default": false,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "account"
+    ],
+    "type": "object"
+  },
+  "scope": "main"
+}

@@ -1,0 +1,225 @@
+{
+  "id": "release-adds-optional-accepted",
+  "title": "Compatible filesystem releases keep exported read and read-write operation lists",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-024",
+    "PKG-023",
+    "PKG-031",
+    "NAM-018",
+    "NAM-022"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "base": "base.json",
+    "base-archive": "../../../fixtures/install-archives/filesystem-0.1.1.tar.gz",
+    "later": "later.json",
+    "later-archive": "../../../fixtures/install-archives/release-adds-optional.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "base"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": [],
+          "package": {
+            "project": {
+              "documents": [
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "file.read.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "directory.list.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "file.write.v1"
+                  }
+                },
+                {
+                  "kind": "Capability",
+                  "metadata": {
+                    "name": "directory.v1"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "local-directory.v1"
+                  }
+                },
+                {
+                  "kind": "Conduit",
+                  "metadata": {
+                    "name": "read"
+                  },
+                  "spec": {
+                    "capability": "#directory.v1",
+                    "operations": [
+                      "#file.read.v1",
+                      "#directory.list.v1"
+                    ]
+                  }
+                },
+                {
+                  "kind": "Conduit",
+                  "metadata": {
+                    "name": "read-write"
+                  },
+                  "spec": {
+                    "capability": "#directory.v1",
+                    "operations": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023",
+          "NAM-018",
+          "NAM-022"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "later"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": [],
+          "package": {
+            "project": {
+              "documents": [
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "file.read.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "directory.list.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "file.write.v1"
+                  }
+                },
+                {
+                  "kind": "Capability",
+                  "metadata": {
+                    "name": "directory.v1"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "local-directory.v1"
+                  }
+                },
+                {
+                  "kind": "Conduit",
+                  "metadata": {
+                    "name": "read"
+                  },
+                  "spec": {
+                    "capability": "#directory.v1",
+                    "operations": [
+                      "#file.read.v1",
+                      "#directory.list.v1"
+                    ]
+                  }
+                },
+                {
+                  "kind": "Conduit",
+                  "metadata": {
+                    "name": "read-write"
+                  },
+                  "spec": {
+                    "capability": "#directory.v1",
+                    "operations": [
+                      "#file.read.v1",
+                      "#directory.list.v1",
+                      "#file.write.v1"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023",
+          "NAM-018",
+          "NAM-022"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614"
+              }
+            },
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.2",
+                "digest": "sha256:4fe17a270d33719d2ae2031a8afae438f592b7d0ee2d110f2434d81a7de3a9c6"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

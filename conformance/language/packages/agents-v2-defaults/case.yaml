@@ -1,0 +1,321 @@
+{
+  "id": "agents-v2-defaults",
+  "title": "Installed Agent v2 defaults and exclusive account or API key configurations",
+  "layers": [
+    "language",
+    "convention"
+  ],
+  "promises": [
+    "NAM-024",
+    "SCH-009",
+    "PKG-031",
+    "NAM-018",
+    "NAM-022"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "install": "install.json",
+    "archive": "../../../fixtures/install-archives/agents-0.2.0.tar.gz",
+    "claude-code.v2": "claude-code.v2-values.json",
+    "codex.v2": "codex.v2-values.json",
+    "base": "../../archives/s1/agents.json",
+    "agents-a": "../../../fixtures/s1/archives/agents.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "base"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": []
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "NAM-024",
+          "PKG-023"
+        ],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/agents",
+                "version": "0.1.0"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "install"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "diagnostics": [],
+          "package": {
+            "project": {
+              "documents": [
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "claude-code.v1"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "codex.v1"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "claude-code.v2"
+                  }
+                },
+                {
+                  "kind": "Type",
+                  "metadata": {
+                    "name": "codex.v2"
+                  }
+                },
+                {
+                  "kind": "Capability",
+                  "metadata": {
+                    "name": "conversation.v1"
+                  }
+                },
+                {
+                  "kind": "Operation",
+                  "metadata": {
+                    "name": "turn.v1"
+                  }
+                },
+                {
+                  "kind": "Conduit",
+                  "metadata": {
+                    "name": "turn"
+                  },
+                  "spec": {
+                    "capability": "#conversation.v1",
+                    "operations": [
+                      "#turn.v1"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "records": [],
+        "external_intents": [],
+        "required_promises": [
+          "NAM-024",
+          "PKG-023"
+        ],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/agents",
+                "version": "0.1.0"
+              }
+            },
+            {
+              "package": {
+                "address": "example.org/s1/agents",
+                "version": "0.2.0"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "schema-evaluation",
+        "file": "claude-code.v2"
+      },
+      "expect": {
+        "reply": {
+          "samples": [
+            {
+              "valid": true,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": null,
+                "peerMessaging": false,
+                "account": "agent@example.org"
+              }
+            },
+            {
+              "valid": true,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": {
+                  "kind": "Resource",
+                  "name": "api-key"
+                },
+                "peerMessaging": false,
+                "account": null
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": null,
+                "peerMessaging": false
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": null,
+                "peerMessaging": false,
+                "account": null
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": {
+                  "kind": "Resource",
+                  "name": "api-key"
+                },
+                "peerMessaging": false,
+                "account": "agent@example.org"
+              }
+            },
+            {
+              "valid": true,
+              "value": {
+                "accountServices": true,
+                "model": "chosen",
+                "apiKey": null,
+                "peerMessaging": false,
+                "account": "agent@example.org"
+              }
+            },
+            {
+              "valid": true,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": null,
+                "peerMessaging": true,
+                "account": "agent@example.org"
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "required_promises": [
+          "SCH-009"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "schema-evaluation",
+        "file": "codex.v2"
+      },
+      "expect": {
+        "reply": {
+          "samples": [
+            {
+              "valid": true,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": null,
+                "account": "agent@example.org"
+              }
+            },
+            {
+              "valid": true,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": {
+                  "kind": "Resource",
+                  "name": "api-key"
+                },
+                "account": null
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": null
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": null,
+                "account": null
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": {
+                  "kind": "Resource",
+                  "name": "api-key"
+                },
+                "account": "agent@example.org"
+              }
+            },
+            {
+              "valid": true,
+              "value": {
+                "accountServices": true,
+                "model": "chosen",
+                "apiKey": null,
+                "account": "agent@example.org"
+              }
+            },
+            {
+              "valid": false,
+              "value": {
+                "accountServices": false,
+                "model": "",
+                "apiKey": null,
+                "account": "agent@example.org",
+                "peerMessaging": true
+              }
+            }
+          ]
+        },
+        "stateUnchanged": true,
+        "required_promises": [
+          "SCH-009"
+        ]
+      }
+    }
+  ]
+}

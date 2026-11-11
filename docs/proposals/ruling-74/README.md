@@ -1,6 +1,6 @@
 # Ruling 74: `main` protected before Conduit runs its own orders; S1's own-tools switch, counted and temporary
 
-Status: in force (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 14. Publication and organization](../../../IN_FORCE.md#14-publication-and-organization). This record says why.
+Status: in force; amended by 75 (points 2 and 3: no switch) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 14. Publication and organization](../../../IN_FORCE.md#14-publication-and-organization). This record says why.
 
 The coordinator's plan for A78 under [ruling 70](../ruling-70/README.md) found two things for the
 owner.

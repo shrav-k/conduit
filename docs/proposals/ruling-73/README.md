@@ -1,6 +1,6 @@
 # Ruling 73: browser logins piped through to the person's Interface
 
-Status: in force (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (spec pending, with the sign-in orders of batch 1). This record says why.
+Status: in force; amended by 75 (point 3; the routes across machines) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (spec pending, with the sign-in orders of batch 1). This record says why.
 
 [Ruling 49](../ruling-49/README.md) made sign-in part of the language. Every sign-in prompt reaches
 a person's Interface as a URL elicitation, never an Agent, and the account signed in to is checked.

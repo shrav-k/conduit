@@ -114,6 +114,9 @@ Orders 033 (the rename to engine/), 034 and 035 come first. 032 is merged.
 
 ## For the owner
 
+Answered by [ruling 68](../ruling-68/README.md), point 3, on 2026-11-11: R1 (b), R2 yes, R3 (b); the
+readings below stand.
+
 Three questions. None blocks tonight's work. R1 is needed by order 053; R2 and R3 only before S3. I have not applied any of them.
 
 R1. How do a person's sign-ins count in the S1 rerun?

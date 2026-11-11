@@ -1,6 +1,6 @@
 # Placement in the language — accepted direction
 
-Status: in force; amended by 40 (point 3b); amended by 41 (items 8, 8a to 8c); amended by 42 (node); open (PL8: fork-from-checkpoint) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment); [PLC-007, PLC-017, PLC-023 to PLC-026](../../../spec/promises/placement.yaml). This record says why.
+Status: in force; amended by 40 (point 3b); amended by 41 (items 8, 8a to 8c); amended by 42 (node); amended by 68 (point 4: PL8 to type contracts) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment); [PLC-007, PLC-017, PLC-023 to PLC-026](../../../spec/promises/placement.yaml). This record says why.
 
 Field and type spellings were illustrative when this was written, under a
 [vocabulary boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#vocabulary-review-boundary) that ruling 16 has

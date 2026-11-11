@@ -1,6 +1,6 @@
 # Ruling 46: the first build
 
-Status: in force; amended by 58 (point 4: increment logs become settlements register); open (point 2 fallback against ruling 47's gate) (ruled by the owner on 2026-11-09). Holds now: [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+Status: in force; amended by 58 (point 4: increment logs become settlements register); amended by 68 (point 4: point 2's fallback void for v0) (ruled by the owner on 2026-11-09). Holds now: [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
 
 This is the record of a
 ruling. Where it and the specification differ, the specification governs.

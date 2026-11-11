@@ -1,6 +1,6 @@
 # Ruling 47 — Organization and publication after v0
 
-Status: in force; amended by 65 (point 1: public name); directive (A75, A76: namespace after organization) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 14. Publication and organization](../../../IN_FORCE.md#14-publication-and-organization). This record says why.
+Status: in force; amended by 65 (point 1: public name); directive (A75, A76: namespace after organization); amended by 68 (point 2: safety vectors defined) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 14. Publication and organization](../../../IN_FORCE.md#14-publication-and-organization). This record says why.
 
 The
 owner confirmed the direction on 2026-11-10, settled four points of the coordinator's review and

@@ -122,19 +122,10 @@ Only the owner settles these questions; later-stage questions below retain their
 
 | What | Where it is recorded |
 | --- | --- |
-| Metrics: whether to adopt the proposed accounting and Interface presentation | [Metrics proposal](proposals/metrics/README.md) |
-| What counts as a safety vector for ruling 47's “Every safety vector passes” gate | WO030-F1 in [order 030's record](implementation/WORK_ORDERS.md#order-030); [ruling 47](proposals/ruling-47/README.md) |
+| Metrics M4: how model usage is attributed and aggregated, by account and model, never as one shared sum (ruling 68, point 6); being researched | [Ruling 68](proposals/ruling-68/README.md), [metrics proposal](proposals/metrics/README.md) |
 | A20: v0 authorization's cross-path, issuer-independence and provider-scope questions, after the bypass probe A7 | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings), [A7](../ROADMAP.md#experiments-and-probes) |
 | C6 to C12 after the S1 rerun | [Ruling 62](proposals/ruling-62/README.md) |
 | Review-list items 15 to 19 and increment 4's open decisions, excepted by ruling 58 point 1 | [Review list](proposals/first-build/to-review-with-the-owner.md), [increment 4](proposals/first-build/log-increment-4.md) |
-| Ruling 5 option (b): separated components under a simulated network, its status after the later design | [Multi-system options](proposals/ruling-log.md#history-multi-system-options-under-ruling-5) |
-| Ruling 7 PL8: fork-from-checkpoint, whose current status is unclear | [Placement](proposals/placement/README.md#pl8--change-and-failure) |
-| Ruling 46 point 2's fallback of two Claude Code instances against ruling 47's real-client gate | [Ruling 46](proposals/ruling-46/README.md), [ruling 47](proposals/ruling-47/README.md) |
-| Ruling 1's retained reference clones after increments 1 to 3, whose current status is unclear | [Ruling 1 as given](proposals/ruling-log.md#history-rulings-1-to-37-as-given), [reference repositories](archive/plan-audit-history.md#reference-repositories) |
-| Spec batch 1, R1: how a person's sign-ins count in the S1 rerun (needed by order 053) | [Spec batch 1](proposals/spec-batch-1/README.md#for-the-owner) |
-| Spec batch 1, R2: whether admitting a machine requires the fingerprint the person read (needed by order 038b) | [Spec batch 1](proposals/spec-batch-1/README.md#for-the-owner) |
-| Spec batch 1, R3: when peer engines land, and whether the admitted Interface counts as root (ruling 62 C4) | [Spec batch 1](proposals/spec-batch-1/README.md#for-the-owner) |
-| The readings spec batch 1 applies, each the coordinator's and strikeable | [Spec batch 1](proposals/spec-batch-1/README.md#for-the-owner) |
 | Readiness G8: close open questions or put them outside builders' scope; G11: owner's sign-off | [Readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) |
 
 ## Known to be open

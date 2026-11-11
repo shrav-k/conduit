@@ -145,6 +145,9 @@ How to read a line:
   - **In spec/**: full inventory under object inspection and filtered discovery without counts: LIF-013, OPS-036 (53 point 3, 59 A4). The `inventory.v1` result contract is in [results.yaml](spec/core/results.yaml), and `inspect.v1` and `list.v1`, including their outputs, are in [operations.yaml](spec/core/operations.yaml); Fleet kind additions are in the core package, landed by order 040.
 - *Spec pending, with the vectors*: a portable field for the cause of a machine's loss (44, open point 3).
 
+- *Spec pending, the metrics batch after batch 2*: metrics are numbers about objects Conduit already has, with no new family, store or wire (68 point 1). The engine counts what passes through Conduits from its records; an Agent or Resource reports what only it knows with each result, as its declaration states, and the engine checks the report, takes whose it is from its own record and keeps it with that call's record; each package answers for its own numbers, turning its client's raw numbers into what its declaration says, and shows them with fixtures from real runs. One `metrics.v1`, routed like inspection; a holder without `inspect.v1` sees container totals only. Every read is recorded, with a minimum interval per caller. Tokens only and no cost in v0; usage is not relayed to the calling Agent in v0; numbers decide nothing.
+- *Open*: how usage is attributed and aggregated (68 point 6, M4). The owner: a shared token sum is useless, since Agents run different models on potentially different accounts; usage is differentiated by account and by model. Being researched.
+
 ## 8. Lifecycle, Pools and first start
 
 - **In spec/**:
@@ -202,9 +205,9 @@ How to read a line:
   - Identity, gates, and the engine's own user inside the domain of trust: IFC-022, IFC-041, IFC-042, PRV-018, PRV-022, PRV-025, PRV-028, DL13, DL16 (32 U10, 33 F2, 40 point 3e, 41 item 26a, 42 D17, 43 D5, D20, Q1 and Q5, 51 point 1).
 - v0 must not rule out local enforcement. A robust local enforcement is likely a v1 requirement, and A65 records v1's shape (40 point 3f, 43 Q4).
 - No support for remote machines is claimed before a test across two machines. S3 runs on real machines, and model checking under loss, reordering and partition is required for v0 (5, 47; A40, A74).
-- *Open*: ruling 5's order after placement, (b) separated components and serialized messages under a simulated network, then real processes, then two machines, was never retired; whether rulings 10, 46 and 47 and A40 and A74 replaced it waits for the owner.
-- *Open*: moving an Agent to another machine may use fork-from-checkpoint, so its history is not lost (7 PL8, ruled by the owner). No promise holds this and no shipped Agent type offers it; whether it stays a requirement or becomes type-contract material waits for the owner.
-- **In spec/** in part: [network limits](spec/README.md#pending-actions-sign-in-and-the-network) (51 points 1, 4, 6, 7, 9 and 10). Managed enrollment remains for 038b; peer engines (51 caveat, 62 C4) wait on the owner's R3 question.
+- Ruling 5's order after placement, (b) separated components and serialized messages under a simulated network, then real processes, then two machines, is replaced by model checking of the safety promises (A40) and S3 on real machines (47, 68 point 4).
+- Fork-from-checkpoint when an Agent moves to another machine (7 PL8) is type-contract material: an Agent Type may offer it, and the language promises nothing (68 point 4).
+- **In spec/** in part: [network limits](spec/README.md#pending-actions-sign-in-and-the-network) (51 points 1, 4, 6, 7, 9 and 10). Managed enrollment remains for 038b; peer engines (51 caveat, 62 C4) are written in batch 2, with appointment, keep and withhold; the Interface a peer admits counts as root for ACC-054, ACC-024 and 59 A1's "only root registers Agents", and not for the operations reserved to root (68 point 3).
   - A machine is eligible to be a node because its engine's owner controls it, not because of where it is. Another party's machine is only ever a peer.
   - Both modes are supported. A managed machine is enrolled as a node. A peer runs an engine of its own that decides requests into its own objects. Where both engines are the owner's, the peer may admit the owner's root Interface with Conduits to its `management` and `access`. The peer's root template then names that Interface for its defaults, appointment, keep, withhold and pending actions.
   - **In spec/**: [network limits](spec/README.md#pending-actions-sign-in-and-the-network), including two halves: a relationship across parties is two halves, each opened and closed by its own engine, over `https` or an outbound connector behind a provider, never a shared overlay. There are no capability tokens in v0. Across parties, v1 uses OAuth tokens bound to the receiving engine.
@@ -213,7 +216,7 @@ How to read a line:
   - Enrollment is an operation of the machine provider's capability. Conduit opens it, and a person completes it, through the provider's link that carries no secret, where the provider has one.
   - Only root starts and admits enrollments, and machines stay outside Fleets. A joined machine becomes a node only once a person confirms it.
   - The provider declares its verification method. Whatever the method, the engine enforces a minimum. Admission binds the machine's stable `id`, which is required, opaque, scoped to the provider and derived from the machine's key where the provider offers one, and the enrollment, and at least one evidence item comes from the machine's key or from attestation. Customizing only raises the minimum.
-  - The evidence is recorded with the answer. In v0 a person compares a fingerprint of 6 to 8 characters; a QR code is a later option, and for peers in v1, the fingerprint of the trust root, with PAKE codes or short authentication strings to be studied then. A machine with no screen needs attestation, or an explicit flag accepting a weaker check, which is recorded.
+  - The evidence is recorded with the answer. In v0 a person compares a fingerprint of 6 to 8 characters; a QR code is a later option, and for peers in v1, the fingerprint of the trust root, with PAKE codes or short authentication strings to be studied then. The person admits a machine by typing the fingerprint read on it, and the engine compares (68 point 3, R2). A machine with no screen needs attestation, or the explicit flag `--accept-weaker-check`, which is recorded.
   - A node is bound to the provider's machine `id` as well as its hostname. The enrollment names any labels beyond the descriptive ones, and the provider binds them.
   - The join secret appears only in the action shown at root, never in a record or in a model's context. Refusing an enrollment removes the machine at the provider. Declaring a node lost asks the person first.
   - Tailscale is a candidate machine provider, and its evidence is a short fingerprint of the node key, with hostname, os, arch, labels and id; A74 confirms that both ends can show the node key. A Windows computer running WSL2 reports `linux`. Setting up a second machine by hand is for testing only (A74).
@@ -248,8 +251,8 @@ How to read a line:
 - The first build is one Rust codebase. Its pure, deterministic core cites a promise for every decision and is driven by vectors. A thin shell around it grows into the reference engine, and S2 to S9 run on the same codebase. It uses existing crates, and its vectors live in conformance/ (10, 44 D22, 46 point 1, 47).
 - v0 is the reference engine (47). To pass, it must meet all of the following:
   - S1 to S10 run end to end, with their vectors passing.
-  - The engine runs Claude Code and Codex as Agents through S1's and S2's tasks, with a record for each request. Simulated clients alone do not pass v0.
-  - Every safety vector passes.
+  - The engine runs Claude Code and Codex as Agents through S1's and S2's tasks, with a record for each request. Simulated clients alone do not pass v0, and ruling 46's fallback of two Claude Code instances is void for v0 (68 point 4).
+  - Every safety vector passes. A safety vector is one whose failure would be an unsafe finding as the tracker defines it; each carries a field naming the safety promise it tests, and each of S1's proposed safety traces has at least one or is listed as missing; the manifest's group tags are not safety tags (68 point 2). *Spec pending, with the vectors*: the field and the tagging.
   - The author measurements, against the baseline (A70), take less of an author's work than the baseline on most of S1's tasks and much more on none.
   - Model checking shows the safety promises hold under loss, reordering and partition (A40).
   - The subscription terms allow the engine to run the native clients headless on a subscription, or v0 names the alternative it uses (A8).
@@ -259,6 +262,7 @@ How to read a line:
   - It counts files edited, concepts met, grants made by hand, adapters written, and recovery steps that need a person.
   - The success criteria are fixed before the run. Those the owner accepted: a competent reader completes the checked S1 path without reading ruling history or editing a provider; S2's restrictions differ without copying the shared credential; closing one Agent's access leaves the other working; the user resolves uncertainty without guessing that an effect failed. Observed time and mistakes are recorded before any numeric target is set (46 point 3).
   - Every interval without access is listed (52 point 6, 55 A3).
+  - A person's actions at the panel, such as a sign-in, are listed apart from the author's lines, as root's Conduits are, with the strict count beside; `account:` lines count as authored lines (68 point 3, R1).
   - A fresh Codex author gets the specification, the tasks and the CLI's format reference.
   - Pins that `install` writes, shipped packages and standard templates count as tool or provider work. Digests copied by hand count as lines and are listed apart, and root's Conduits are listed apart from grants to Agents.
   - A command counts as a line only if it carries a value the author chose. A line removed and restored within one task counts once. The block-style and strict readings are reported beside the primary one.
@@ -284,14 +288,14 @@ How to read a line:
 
 ## 15. How the work is governed
 
-- *Open*: the two reference clones that ruling 1 kept "through the first implementation slice" (A27 confirms the Pi pins); increments 1 to 3 are done, and whether they are still kept waits for the owner (1).
+- The two reference clones that ruling 1 kept are removed when convenient, by the owner, on the owner's machine (1, 68 point 4).
 - The external audit report is the basis. docs/AUDIT.md holds the action items and their priorities, and ROADMAP.md shows the order of the work and each experiment's state (1, 45).
 - Who decides (37, 38 point 13, 46 point 4, 48):
   - The owner rules where settling a finding would change what Conduit is for, or would add or remove a feature.
   - The coordinator, the admin session, settles the rest. It plans, decides, reviews and merges, and logs each decision for the owner to strike.
   - Codex sessions carry out work orders. Fresh reads by Codex test what a reader without context can do.
 - Every decision the coordinator, an editor or a work order logged before ruling 57 is accepted. The exceptions are items 15 to 19 of the review list and increment 4's open decisions, which stay open to the owner until reviewed (39 point 6, 42, 58 point 1).
-- *Coordinator's*: decisions logged since ruling 57, ruling 67 among them, which was delegated, stay open to the owner to strike.
+- *Coordinator's*: decisions logged since ruling 57 stay open to the owner to strike. Ruling 67, which the owner delegated, the owner confirmed (68 point 5).
 - The work orders run through Conduit (A78) once Fleet authority is built. Root registers and sets up fixed worker and tree slots once, and dispatches orders 1 to 3. A coordinator Agent of the conduit-core Fleet, appointed by root, dispatches orders 4 and 5. Each Fleet has one queue, and nothing retires a slot. The coordinator Agent grants each order's tree through its Fleet's Conduits and drives workers through turns root opened (48, 61 B12).
 - Each piece of work has one branch and one pull request, committed and pushed at each milestone, squash-merged once its checks pass (36, 38 point 14, 46, 48). A proposed shape is checked against the consolidation list before it is offered (25, 39).
 - Accepted decisions may still be challenged by Codex or any later reader (39 point 6). Decisions that changed an earlier ruling become recorded amendments (58 point 1).

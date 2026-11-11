@@ -1,6 +1,6 @@
 # Ruling 67: decisions in force, a ledger, and records that say why
 
-Status: in force (coordinator under delegation, strikeable) (delegated by the owner on 2026-11-10, decided by the coordinator; the owner may strike or change any point). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+Status: in force (delegated; confirmed by the owner in 68) (delegated by the owner on 2026-11-10, decided by the coordinator; the owner may strike or change any point). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
 
 The owner may strike or change any point. This is the record of a ruling. Where it and the
 specification differ, the specification governs.
@@ -82,3 +82,8 @@ stand.
   makes the change reversible. A smoke check with fresh sessions may be run later as evidence.
 - **Typed relations per point with a parser for them**: one status per ruling, with points in free
   text, is checked more simply.
+
+## Later answers
+
+2026-11-11: listed for the owner as strikeable without an answer, it was not struck: "I accept all
+recommendations" ([ruling 68](../ruling-68/README.md), point 5).

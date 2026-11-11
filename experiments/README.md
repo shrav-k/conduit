@@ -28,7 +28,7 @@ expected outcomes and validation record together.
 | [009 — native launch and identity](009-native-launch/README.md) | A4: whether Claude Code and Codex, unchanged, can each be run as an Agent on the engine's own runner, with the owner's configuration out, their logins' reach off, a token of their own, and access changed between turns. | Done 2026-11-09; [results](009-native-launch/results-2026-11-09.md). |
 | [010 — subscription terms](010-subscription-terms/README.md) | A8: whether the engine may run Claude Code and Codex headless as Agents on a subscription. | Done 2026-11-10; [results](010-subscription-terms/results-2026-11-10.md). |
 | [011 — short form translation](011-short-form-spike/README.md) | A79: translate S1 in flow and block YAML into today's canonical documents and count authored edits. | Executed 2026-11-10; [results](011-short-form-spike/results-2026-11-10.md). |
-| [012 — model checking of the safety promises](012-model-checking/README.md) | A40: the harness for model checks of the safety promises under loss, reordering, partition and a lost machine. | Being built by work order 104. |
+| [012 — model checking of the safety promises](012-model-checking/README.md) | A40: the harness for model checks of the safety promises under loss, reordering, partition and a lost machine. | Built 2026-11-11 by work order 104, with a model that tests the harness; [results](012-model-checking/README.md#results). No Conduit promise is checked yet. |
 | [013 — S2: one service login shared by two Agents](013-s2-shared-login/README.md) | S2: one service login shared by two Agents with different restrictions. | Pre-registration being written by work order 101; it awaits the owner's acceptance. |
 | [014 — S3: S1 and S2 across two machines](014-s3-two-machines/README.md) | S3: S1 and S2 across two machines, with a partition and a lost machine. | Pre-registration being written by work order 101; it awaits the owner's acceptance. |
 | [015 — S4: a setup that fails partway](015-s4-partial-setup/README.md) | S4: a setup that fails partway, is retried and loses a response. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
@@ -51,8 +51,8 @@ A75's evidence index keeps the limits of each run with its results:
 
 - [004: Stateright evaluation](004-stateright-evaluation/README.md), for A40; bounded tool
   safety, not a check of a Conduit engine.
-- [012: model checking](012-model-checking/README.md), for A40 and G5; the harness, in
-  progress.
+- [012: model checking](012-model-checking/README.md), for A40 and G5; the harness and its
+  self-test of 2026-11-11. No Conduit promise is checked yet.
 - [005: keychain observations of 2026-11-06](005-macos-keychain/README.md#results), for A22;
   the daemon case remains open.
 - [007: S1 baseline of 2026-11-09](007-s1-baseline/results-2026-11-09.md), for A70 and A68's

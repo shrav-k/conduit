@@ -169,3 +169,35 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 beside orders 100 to 103 and two other build orders: the worker in 12 minutes
+(740 s), then a fresh verifier in 3 minutes (200 s); one round. The verifier found no fault. It
+ran the release binary's 8 tests again and reproduced the recorded counts and traces; it could
+not recompile in its read-only sandbox.
+
+The harness implements Stateright's `Model` itself. It keeps one sequence of messages per
+directed link, with total budgets for reordering, loss, duplication, cut and heal, crash and
+recovery, a lost machine and timers. Its ledger sits outside the nodes. A run cut short by its
+exact unique-state ceiling or its timeout fails. A refutation runs on one thread and keeps the
+first trace.
+
+Its own model held and broke as pre-registered:
+
+- Saved holds (6,090 states, depth 16).
+- VolatileIds breaks only "at most once", and only through a crash (8,910 states). A control
+  with crash and recovery off holds (1,395 states).
+- AnswerFirst breaks only "no false confirmation" (18,360 states).
+
+The worker read decision 5 at its nearest sound reading. Stateright checks `finish_when` only
+after batches of 1,500 states, so a visitor keeps the first counterexample. The worker's one
+finding was that this order named a Record it did not yet have; this is that Record.
+
+D10, the lane coordinator's decision, is logged for the owner to strike. The harness lives under
+`experiments/` as its own crate, since CI runs every experiment's tests, and it may move into
+`engine/` later.
+
+Tests: 8 passed. The lane coordinator ran them again with fmt and clippy before the merge, and
+ran the repository's checks. No time on `ubuntu-latest` is measured, since CI was paused on
+2026-11-11.

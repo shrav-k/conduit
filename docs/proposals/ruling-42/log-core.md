@@ -171,7 +171,7 @@ Run from the repository root at the end of this pass.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `439 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `439 promises ok` |
 | `python3 tools/check_schemas.py` | `Errors: 0`. 101 files holding 239 documents read as strict YAML; 58 Schema contracts checked against the profile; 146 documents validated; 52 invalid documents each rejected; 102 exports and 1 implementation; 414 references checked for their kind; 955 citations of promises in 104 files, every one of a promise that exists; 22 rules from 21 promises applied, and the 26 sets under `examples/invalid-by-rule/` each rejected by the rule they are named for; 10 defaults validated |
 | `python3 tools/set_names.py --check` | `Errors: 0` |
 | `python3 tools/check_docs.py` | `Errors: 0`. 145 Markdown files and 1874 local links |

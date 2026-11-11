@@ -19,7 +19,7 @@ core-and-schemas editor and the docs editor, who work next; what they must fix i
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | 426 promises ok: every promise has exactly the seven fields, a valid layer and level, and no ID is used twice |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | 426 promises ok: every promise has exactly the seven fields, a valid layer and level, and no ID is used twice |
 | Lines over 96 characters, trailing whitespace, a field not folded with `>-` | None, in every file of the scope |
 | `git diff --check` on `spec/` | Clean |
 | An ID cited in promise text (`when`, `then`, `observable`) that does not exist | None. The seven editors had already pointed every citation of a removed ID at its successor or cut it, as the plan's "Cited by" lists asked |
@@ -258,7 +258,7 @@ Run from the repository root at the end of this pass.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `432 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `432 promises ok` |
 | `python3 tools/check_schemas.py` | `Errors: 0`. 96 files holding 229 documents; 58 Schema contracts; 146 documents validated; 52 invalid files rejected; 102 exports; 926 citations of promises in 99 files; 20 rules from 19 promises, and the 21 sets under `examples/invalid-by-rule/` each rejected by the rule they are named for |
 | `python3 tools/set_names.py --check` | `Errors: 0` |
 | `python3 tools/check_docs.py` | `Errors: 0` |

@@ -492,7 +492,7 @@ of its section 3, and a planner's choice is one of P1 to P20 of the
 | 17, 18 (V4), 33, 41 | Location, origin, operation identity and the names that ruling 41's work order coined. | The names of the [vocabulary audit](vocabulary-audit/README.md), by ruling 42. |
 | 42 (D17) | `run.v1` carries a credential as a file that the runtime provider may refresh in place. | In this version a credential lasts as long as its instance and nothing renews it (DL13), as the [multi-machine proposal](multi-machine/README.md) that ruling 43 accepted has it; renewal on the run's machine is v1's (A65). Ruling 43's verification therefore moved the leave to replace a file in place out of PRV-022's `then` into its observable (MX-21), a [choice](ruling-43/log-integration.md#choices-of-the-verification) that the owner can strike. |
 | 41 (item 16a) | An Operation contract's `inputSchema` and `outputSchema` have a root limited to `type: object`, `properties`, `required` and `additionalProperties` (CTR-012). | Ruling 44 (D14 of round 6): the schemas of an Operation contract that is not a control may hold any keyword of the schema profile at their root beside `type: object`, as the published protocol's tool definition allows at the baseline revision; the inputs and outputs are still the members of the root's `properties`. A control keeps the limited root, which its partial updates need (REV-006), and SCH-008's ban on a `default` under a conditional keyword stands (CTR-012). The rest of item 16a stands. |
-| 37 (choice C42 of the core-and-schemas record) | The default implementation of an operation is stated by each Operation contract. | Ruling 44 (D06 of round 6, as revised after the ruling): a package's own Operation contract states no default implementation, and the engine implements the operations of the core package by rule, with no mapping. Applied in CTR-002, TPL-003 and TPL-004 ([log](reaudit/round-6/log-d06-d12.md)). |
+| 37 (choice C42 of the core-and-schemas record) | The default implementation of an operation is stated by each Operation contract. | Ruling 44 (D06 of round 6, as revised after the ruling): a package's own Operation contract states no default implementation, and the engine implements the operations of the core package by rule, with no mapping. Applied in CTR-002, TPL-003 and TPL-004 ([log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-d06-d12.md)). |
 
 Ruling 44 does not change X2, the owner's own change in ruling 37 that an actor's request names
 objects by reference only, nor LIF-031: as revised after the ruling, D12 of round 6 keeps names
@@ -507,9 +507,9 @@ accepted. The owner accepted each of the six below in ruling 38 (points 10 and 1
 | Ruling | What it says | Changed by the coordinator, and accepted by ruling 38 |
 | --- | --- | --- |
 | 24 | Decision PD5: two conformance levels. | Three, with Implementation, since row GP16 of the [documents audit](docs-audit/GAPS.md). |
-| 31 | Decision D4: a runtime may be marked `optional: true`. | A runtime carries no such mark; a step that starts it can be optional. [Round 2](reaudit/round-2/DECISIONS.md). No longer applies after ruling 41: runtimes and steps are removed (items 1 and 2). |
+| 31 | Decision D4: a runtime may be marked `optional: true`. | A runtime carries no such mark; a step that starts it can be optional. [Round 2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/DECISIONS.md). No longer applies after ruling 41: runtimes and steps are removed (items 1 and 2). |
 | 32 | An operation identity is scoped to one caller and one target. | And to the instance that sent the request (OPS-008). Round 2, finding R3-3. Since ruling 41 the idempotency key of a setup or retire hook is scoped to the instance alone (OPS-028, planner's choice P20). |
-| 32 | Decision Q5: the order of reasons is refused, invalid, conflict, unavailable. | Where the decision on access cannot be made, unavailable stands in the place of refused (OPS-023). [Round 3](reaudit/round-3/DECISIONS.md), finding 3A-1. |
+| 32 | Decision Q5: the order of reasons is refused, invalid, conflict, unavailable. | Where the decision on access cannot be made, unavailable stands in the place of refused (OPS-023). [Round 3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3/DECISIONS.md), finding 3A-1. |
 | 37 | The owner's change X1: a control's `changes` is a list of pointers. | A map from an input's name to a pointer. Round 2, finding R2-G2. |
 | 37 | Requests name objects by reference only. | A step and an onward request may hold the resolved form. Round 3, finding 3B-2. After ruling 41 there are no steps (item 1); an onward request still may (LIF-031). |
 
@@ -641,8 +641,8 @@ Additional historical prefix destinations (C0 pins preserve the pre-condensation
 
 | Prefix | Record |
 | --- | --- |
-| R1-, R2-, R3- (round 2) | [Last version](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/) |
-| 3A to 3D | [Last version](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3/) |
-| 4A to 4D | [Last version](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/) |
+| R1-, R2-, R3- (round 2) | [Last version](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2) |
+| 3A to 3D | [Last version](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3) |
+| 4A to 4D | [Last version](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4) |
 | D, R (ruling 41 integration) | [Last version](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md) |
 | P (planner) | [Last version](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md#planners-choices) |

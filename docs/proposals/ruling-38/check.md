@@ -29,7 +29,7 @@ all", which the owner confirmed in point 3 and which GRA-003 and `set-up.v1` sti
 Run from the repository root on the working tree.
 
 ```text
-$ /usr/bin/python3 (the validation script of docs/proposals/reaudit/CONSOLIDATION.md)
+$ /usr/bin/python3 (the validation script of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md)
 434 promises ok   (language 220, convention 179, interface 35)
 
 $ python3 tools/check_schemas.py

@@ -192,7 +192,7 @@ were editing at the same time, so some of these may already be gone; the plan's 
 Also for the integrator:
 
 - `spec/promises/graphs.yaml` is `[]`. The validation script of
-  [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) reads it without error. Any tool that
+  [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) reads it without error. Any tool that
   expects a promise file to hold at least one promise, or that reads GRA IDs from it, needs a look.
 - TPL-012 changed layer, from `language` to `convention`. Counts by layer in `spec/README.md`
   move with it.
@@ -237,7 +237,7 @@ Also for the integrator:
 
 ## Validation
 
-- The validation script of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation), run over
+- The validation script of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation), run over
   the whole of `spec/` while other groups were editing: "424 promises ok".
 - On G1's files alone: every promise has exactly the seven fields, a valid layer and level and
   `vectors: []`; no line is over 96 characters; no line has trailing whitespace; `git diff

@@ -1,7 +1,7 @@
 # Ruling 41 — log of group G3 (access)
 
 Written 2026-11-06 by the editor of group G3, under the [work order](PLAN.md#g3-access) and the
-rules of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#rules-for-every-edit). G3's files are
+rules of [CONSOLIDATION.md](../../../CONTRIBUTING.md#writing-promises). G3's files are
 [spec/conventions/access.yaml](../../../spec/conventions/access.yaml) and
 [spec/promises/conduits.yaml](../../../spec/promises/conduits.yaml). No other file under `spec/`
 was edited. Names are those of the review and the work order (`reveal-secret.v1`,
@@ -21,7 +21,7 @@ These match the work order's counts for G3 (10 removed, 32 rewritten, none added
 ACC-028, ACC-032; CON-006, CON-011 to CON-014, CON-017, CON-021, CON-023, CON-025, CON-027 are
 byte for byte as they were. No layer or level changed.
 
-The validation command of CONSOLIDATION.md passes (424 promises at the last run, the rest in
+The validation command of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md passes (424 promises at the last run, the rest in
 files other editors were changing at the same time). Every line of both files is at most 96
 characters, every promise has exactly the seven fields with folded `>-` text, `git diff --check`
 reports nothing for them, and `python3 tools/set_names.py --check` reports no error in them.

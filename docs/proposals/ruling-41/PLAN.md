@@ -56,7 +56,7 @@ Files and groups. Every file under `spec/` belongs to exactly one editor:
 | Docs | `spec/definitions.md`, `spec/README.md`, `docs/OVERVIEW.md` |
 
 Rules for every promise, from
-[CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#rules-for-every-edit):
+[CONSOLIDATION.md](../../../CONTRIBUTING.md#writing-promises):
 
 1. Exactly the fields `id`, `layer`, `level`, `when`, `then`, `observable`, `vectors: []`;
    folded `>-` text indented four spaces; YAML lines of at most 96 characters.

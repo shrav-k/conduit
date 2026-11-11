@@ -1,7 +1,7 @@
 # The ruling on the core package and the schemas — log of the document side
 
 Written 2026-11-05 by Editor S, under [APPLY.md](APPLY.md), the [record](README.md) and the
-rules of the [consolidation instructions](../reaudit/CONSOLIDATION.md). Editor S's files are
+rules of the [consolidation instructions](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md). Editor S's files are
 everything under `spec/core/` and `spec/schemas/`, `spec/promises/manifest.yaml`,
 `tools/check_schemas.py` and the record. No other file was edited, and nothing was committed.
 The promise side is logged in [log-promises.md](log-promises.md).

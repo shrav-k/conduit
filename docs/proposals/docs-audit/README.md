@@ -61,11 +61,11 @@ All thirteen decisions are applied. Each log lists the edits made, file by file.
 | [Conversion list](GAPS.md) and its [log](log-gaps.md) | DA3 | The nineteen behaviors that the older text accepted and the specification did not state. Eighteen are converted: the specification went from 376 promises to 395, and the implementation-defined list from 13 items to 14. The nineteenth, on secrets (GP3), is left for the owner |
 
 A later reader read the whole repository cold, as the fourth reader of round 2 of the
-re-audit. Its [report](../reaudit/round-2/reader-4.md) found the entry points consistent and
-the tracker two commits behind, and the [log of the fixes](../reaudit/round-2/log-reader-4-fixes.md)
+re-audit. Its [report](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/reader-4.md) found the entry points consistent and
+the tracker two commits behind, and the [log of the fixes](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/log-reader-4-fixes.md)
 says what was done. The fourth readers of rounds 3 and 4 read it again:
-[round 3](../reaudit/round-3/reader-4.md), 23 findings, and
-[round 4](../reaudit/round-4/reader-4.md), 26.
+[round 3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3/reader-4.md), 23 findings, and
+[round 4](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/reader-4.md), 26.
 
 ## Left for the owner
 

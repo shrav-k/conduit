@@ -22,7 +22,7 @@ for the tracker.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `447 promises ok`, with every group's files as they stood when it ran |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `447 promises ok`, with every group's files as they stood when it ran |
 | Every promise in the two files has exactly the seven fields, its text fields folded with `>-` | Yes |
 | A line over 96 characters in the two files | None |
 | An ID or a DL item cited in the two files that does not exist | None. DL17, IFC-042, MAN-018 and SEC-024 were already written by their groups when this check ran |

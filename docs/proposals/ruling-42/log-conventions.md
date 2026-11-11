@@ -137,7 +137,7 @@ rule on a store's Type is SEC-022.
 
 Run from the repository root when this group finished, with other groups still at work:
 
-- The validation script of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation): passes.
+- The validation script of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation): passes.
 - Every line of the files of this group is at most 96 characters.
 - Every promise ID that the files of this group cite in a promise exists, OPS-034, LIF-036 and
   the IDs assigned to other groups (PRV-021, PRV-022, SEC-023) among them.

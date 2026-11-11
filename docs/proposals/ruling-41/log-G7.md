@@ -1,7 +1,7 @@
 # Ruling 41 — log of group G7 (secrets)
 
 Written 2026-11-06 by the editor of group G7, under the [work order](PLAN.md#g7-secrets) and
-the rules of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#rules-for-every-edit). G7's one
+the rules of [CONSOLIDATION.md](../../../CONTRIBUTING.md#writing-promises). G7's one
 file is the new [spec/promises/secrets.yaml](../../../spec/promises/secrets.yaml). No other
 file under `spec/` was edited. The names `secret-reveal.v1`, `reveal-secret.v1` and
 `secret-reference.v1` are the review's, kept as the work order says; the vocabulary audit
@@ -17,7 +17,7 @@ By layer: `language` 5 (SEC-001, SEC-002, SEC-003, SEC-005, SEC-009), `conventio
 (SEC-004, SEC-007, SEC-008, SEC-010 to SEC-018, SEC-020), `interface` 2 (SEC-006, SEC-019).
 By level: `must` 13, `must not` 7.
 
-The validation command of CONSOLIDATION.md passes: 425 promises at the last run, 20 of them in
+The validation command of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md passes: 425 promises at the last run, 20 of them in
 this file; the rest are in files other editors were changing at the same time. Every line of
 the file is at most 96 characters. `python3 tools/set_names.py --check` reports nothing in this
 file (its errors at the time were in files of G3, G4 and G5, which were mid-edit). Every

@@ -28,7 +28,7 @@ still writing, so a later run may differ.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
 | Every text field of the two files folded with `>-`; a line over 96 characters in them | Yes; none |
 | An ID or a DL item cited in the two files that does not exist | None. PRV-025, PRV-026 and SEC-024 were written by their groups before the last run |
 | `python3 tools/check_docs.py` | `Errors: 0` |

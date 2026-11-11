@@ -150,21 +150,21 @@ E-numbers refer to the extractions list. Each extraction is done and verified fi
 
 **A. docs/proposals/reaudit/: 57 files, about 219k words**
 - **Extract first:**
-  - CONSOLIDATION.md: E15 (the form check) and E19 (rules 1-3, 6 and 7 go to CONTRIBUTING "Writing promises").
-  - round-4/ (whole: README, DECISIONS, log-fixes, mcp-recheck, reader-1..4): E2 and E3 (mcp-recheck:241-261), E5 (summary) and E1 (4A-4D).
-  - round-5/reader-6.md: E3 (:568-624).
-  - round-6/log-d06-d12.md, log-conventions.md, log-core.md, log-interface.md and log-promises.md: E4.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md: E15 (the form check) and E19 (rules 1-3, 6 and 7 go to CONTRIBUTING "Writing promises").
+  - https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4 (whole: README, DECISIONS, log-fixes, mcp-recheck, reader-1..4): E2 and E3 (mcp-recheck:241-261), E5 (summary) and E1 (4A-4D).
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-6.md: E3 (:568-624).
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-d06-d12.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-conventions.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-core.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-interface.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-promises.md: E4.
 - **Choices extracted (E35), then removed:**
-  - log-group-a.md, log-group-b.md, log-group-c.md, log-followups-ab.md and log-followups-c.md.
-  - round-5/log-fix-F1.md to log-fix-F7.md.
-  - round-6/log-specdocs.md and log-tracker.md. Their open item, choice 7, is log-integration item 3, which is kept with its status.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-group-a.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-group-b.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-group-c.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-followups-ab.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-followups-c.md.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/log-fix-F1.md to https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/log-fix-F7.md.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-specdocs.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-tracker.md. Their open item, choice 7, is log-integration item 3, which is kept with its status.
 - **Summary or ID-prefix row only:**
-  - round-2/ (whole, 12 files): E5 and E1 (R1-/R2-/R3-).
-  - round-3/ (whole, 7 files): E5 and E1 (3A-3D).
+  - https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2 (whole, 12 files): E5 and E1 (R1-/R2-/R3-).
+  - https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3 (whole, 7 files): E5 and E1 (3A-3D).
 - **No extraction (findings all applied; the decisions are in the kept DECISIONS files):**
-  - reader-1-duplicates-and-contradictions.md, reader-2-terms-and-shapes.md, reader-3-undetermined-behavior.md.
-  - round-5/handoff-check.md.
-  - round-5/reader-1.md to reader-5.md.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/reader-1-duplicates-and-contradictions.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/reader-2-terms-and-shapes.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/reader-3-undetermined-behavior.md.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/handoff-check.md.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-1.md to https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-5.md.
 - **Condensed by deleting sections:** README.md (drop only :1-37, replaced by the index, and :125-157; keep :241-284), round-5/README.md, round-5/log-fixes.md and round-6/log-integration.md (E5).
 
 **B. docs/proposals/first-build/: about 44k words now, 8.8k later**
@@ -519,7 +519,7 @@ Each item gives source, then destination. The verifier checks each against its s
 - Point lib.rs:145-147 and :206-260, manifest.yaml:6883 and README:399 at it.
 
 **E15. tools/check_schemas.py: new steps**
-- From CONSOLIDATION.md:136-151: exactly the seven promise fields, the layer and level values, and unique IDs across spec/promises, spec/conventions and spec/interface.
+- From https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#L136-L151: exactly the seven promise fields, the layer and level values, and unique IDs across spec/promises, spec/conventions and spec/interface.
 - **No live ID matches a retired ID** named in any head comment's removed-ID register or in spec/README "Promise files that rulings removed".
 - Every `safety_rows` value in conformance/manifest.yaml names a row of conformance/s1-safety-cases.md.
 - If current text fails, report it; do not fix it.
@@ -554,7 +554,7 @@ Each item gives source, then destination. The verifier checks each against its s
 **E19. CONTRIBUTING.md**
 - ruling-45/log-roadmap:135-139: four pairs of facts held in two places, kept in step by hand: A68 against step 3; A63 against A22 and A73; the experiments index against the 001-005 rows; P1 against "In parallel".
 - **"Writing promises"**, verbatim where general:
-  - CONSOLIDATION.md:11-33, rules 1, 2, 3, 6 and 7: the seven fields; folded `>-` text indented four spaces; lines under 97 characters; IDs never reused; a new ID takes the next number never used, after checking the head's register; no promise moves between files; exactly one of refused, invalid, conflict and unavailable; cited IDs must exist.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#L11-L33, rules 1, 2, 3, 6 and 7: the seven fields; folded `>-` text indented four spaces; lines under 97 characters; IDs never reused; a new ID takes the next number never used, after checking the head's register; no promise moves between files; exactly one of refused, invalid, conflict and unavailable; cited IDs must exist.
   - ruling-41/PLAN.md:64-83, rules 3, 4, 5 and 8: the tombstone form, with the ruling and "where it went / nothing replaces it"; content moves by a new ID; a rewrite keeps what it does not name.
   - The head-comment format is now the removed-ID register (E34).
 - vocabulary:42-48:

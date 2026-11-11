@@ -2,41 +2,23 @@
 
 Status: ruling 32: in force; amended by 38 (point 12); amended by 41 (items 1, 1c, 3a, 5, 6a, 8, 8b, 18, P20); ruling 33: in force; amended by 41 (items 1, 5, 8, 10, 18); amended by 42 (names) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 2. The specification: form, layers and conformance](../../../IN_FORCE.md#2-the-specification-form-layers-and-conformance), [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names), [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items); [OPS-008, OPS-023](../../../spec/conventions/operations.yaml), [OBJ-024](../../../spec/promises/objects.yaml), [IFC-029](../../../spec/interface/implementation.yaml). This record says why.
 
-The owner accepted every
-decision below as recommended (plan-audit ruling 32). They are applied by
-[consolidation pass 1](CONSOLIDATION.md).
-
-This page is the record of round 1. Round 2, with four readers, is done and has
-[its own record](round-2/README.md), as do [round 3](round-3/README.md) and
-[round 4](round-4/README.md). [Round 5](round-5/README.md) was the first to read the
-specification as rulings 40 to 43 rewrote it. Six readers reported 119 findings, ten of them
-unsafe, which the coordinator merged into 111 items: 110 were fixed and 1 rejected. Two
-verifiers then checked the fixes and reported 29 findings, none unsafe: 28 were fixed, and the
-coordinator then settled the last, V6, as its option 1, in PLC-007 and PLC-002.
-[Round 6](round-6/README.md) was the owner's cold read by Codex, of the whole repository at
-`c4d7d33`: six findings, two of them wrong and safety-critical, and a critique of the design in
-22 points. The coordinator's [decisions](round-6/DECISIONS.md) on them were accepted by
-plan-audit ruling 44, and all six findings are fixed. Counts of promises on this page are as
-they stood when each pass ended; the current counts are in the
-[contents table of the specification](../../../spec/README.md#contents).
-
-This is the record of a ruling. Where it and the specification differ, the specification
-governs. Rounds 2 to 4 changed some of what ruling 32 accepted, by decisions of the coordinator
-that the owner has not ruled on; the tracker lists them under
-[later amendments](../../AUDIT.md#later-amendments).
 
 Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
 logged decision of the coordinator and choice of an editor.
 
-After the last batch of rulings (ruling 31) the owner asked for the promises to be consolidated
-and put back through the audit. Three cold readers each read all of `spec/`, and nothing else,
-as an engine builder would. Their reports are kept verbatim:
+## Rounds
 
-| Reader | Looked for | Findings |
+Counts are those of each round at its close, before its fixes; none was clean. The current
+promise counts are in the [specification](../../../spec/README.md#contents).
+
+| Round | Read and result | Record |
 | --- | --- | --- |
-| [1](reader-1-duplicates-and-contradictions.md) | Duplicate, contradictory, stale and misplaced promises | About 80: 24 groups of duplicates, 25 contradictions, 12 stale wordings, 10 misplaced, 10 to split |
-| [2](reader-2-terms-and-shapes.md) | Undefined or double-meaning terms, and the keys of every document | 35 on terms, 26 on shapes, 8 on standards, and a reconstructed key table |
-| [3](reader-3-undetermined-behavior.md) | Anything two conforming engines could disagree on, by walking ten scenarios | 50: 11 unsafe, 26 divergent, 13 minor |
+| 1 | Three readers of `spec/`, about 170 problems by class after merging duplicates, about 200 items in the reports; 11 unsafe. | The decisions and follow-up below. |
+| 2 | Four readers at `bdacd83`: 125 findings in `spec/`, 8 unsafe; 47 from the repository reader. Three readers started by editors are outside the 125. | [C0 record](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/README.md) |
+| 3 | Four readers at `b1d3fb4`: 44 findings in `spec/`, 4 unsafe; 23 from the repository reader. All findings resolved under ruling 37. | [C0 record](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3/README.md) |
+| 4 | Four readers at `f583469`: 38 findings in `spec/`, 3 unsafe; 26 from the repository reader. Ruling 38 withdrew the two-clean-round gate; readiness is no unsafe finding in the latest round, with the model and vectors agreeing. | [C0 record](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/README.md) |
+| 5 | Six readers: 119 findings merged into 111 items, 110 fixed and 1 rejected, 10 unsafe. Two verifiers reported 29 findings, all resolved, the last (V6) by the coordinator. | [Record](round-5/README.md), [decisions](round-5/DECISIONS.md), [integration and verification](round-5/log-fixes.md) |
+| 6 | The owner’s cold read by Codex at `c4d7d33`: six findings, two wrong and safety-critical; all fixed. A 22-point design critique; recommendations accepted by ruling 44. | [Record](round-6/README.md), [decisions](round-6/DECISIONS.md) |
 
 ## What the readers concluded
 
@@ -124,39 +106,6 @@ as an engine builder would. Their reports are kept verbatim:
 | W3 | "Create", "instantiate" and "register". | One operation, register. Registering an instance document instantiates its template. "Create" is not used for an operation. | R2-T25 |
 | W4 | "Rejected". | A rejected document makes its registration end not dispatched, with the reason invalid; a clash with an existing name reports conflict. | R2-T26 |
 
-## What came next
-
-These four steps were written when the findings were recorded. Each now has its state.
-
-1. The owner rules on the decisions above. Done: plan-audit ruling 32.
-2. One consolidation pass applies those rulings together with the fixes that need none. Done:
-   [consolidation pass 1](#consolidation-pass-1), then the [follow-up pass](#follow-up-pass).
-3. Decision G1's deliverables are written and reviewed. Done: the core package, the schemas
-   and the manifest's format, accepted with five changes by plan-audit ruling 37
-   ([record](../core-and-schemas/README.md)).
-4. A second round of cold readers. Done: [round 2](round-2/README.md), which was not clean.
-   [Round 3](round-3/README.md) is done and was not clean either, and
-   [round 4](round-4/README.md) is done and was not clean, nor was
-   [round 5](round-5/README.md), which read the rewritten text, nor
-   [round 6](round-6/README.md), the owner's cold read by Codex. The done-when of action A59
-   asks for two rounds in a row with no finding. Ruling 38 later withdrew that done-when and
-   restated the readiness condition G7 ([record](../ruling-38/README.md)).
-
-## Consolidation pass 1
-
-Done on 2026-11-05 by three editors working on disjoint groups of files, each from the
-[instructions](CONSOLIDATION.md). Their logs list every promise changed, removed or added:
-[group A](log-group-a.md), [group B](log-group-b.md), [group C](log-group-c.md).
-
-| | Before | Changed | Removed | Added | After |
-| --- | --- | --- | --- | --- | --- |
-| Promises | 312 | 212 | 21 | 48 | 339 |
-| Implementation-defined entries | 12 | 4 | 0 | 1 | 13 |
-
-After the pass every promise file parses, no ID is used twice, and no promise cites an ID that
-no longer exists. `definitions.md` has not yet been brought into line; that waits for the
-follow-up decisions below, so that it is rewritten once.
-
 ## Follow-up decisions — accepted
 
 The editors left these untouched because the 37 accepted decisions do not settle them. The owner
@@ -242,8 +191,8 @@ rewrites every occurrence and checks that none is left behind.
 
 ## Follow-up pass
 
-Done on 2026-11-05 by two editors: [access, lifecycle and the wire](log-followups-ab.md), and
-[documents and packages](log-followups-c.md). They changed 85 promises and added 14. The
+Done on 2026-11-05 by two editors: [access, lifecycle and the wire](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-followups-ab.md), and
+[documents and packages](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-followups-c.md). They changed 85 promises and added 14. The
 coordinator then made three further changes:
 
 | Change | Why | Promise |
@@ -284,3 +233,66 @@ a new one.
 | TPL-004 with GRA-024 | A step that is a request through a Conduit was still required to have an implementation. | TPL-004 excepts a step that carries `conduit`. |
 | LIF-005 with LIF-021 | Retiring a Pool with its Resources left the Pool's state "as it was" although a dispatched retire request takes effect at once. | LIF-021 says the Pool's own retire request is dispatched only once every Resource's shutdown is confirmed. |
 | INS-002 with NAM-013 and FST-005 | "A template that exists" excluded a template that a package exports. | INS-002 names both. |
+
+## Choices that set behavior
+
+Copied from the C0 logs, one line per choice, with the source log and item. Adjacent
+editorial reasons are kept where they explain the reading. These describe the choices then;
+later decisions and promises govern.
+
+- **log-group-a, choice 1.** CON-022 says "filter", which is the word of decision G9 and of the removed ACC-013, where the brief for this pass said "requirement". With "requirement", a Conduit that carries the shared-host requirement would need its target's implementation to list that requirement in `supports`, although the engine checks it under PLC-013.
+- **log-group-a, choice 2.** PLC-013 reports unavailable for the request to open as well as for a request through the Conduit. Decision G13 names the reason only for "a request made while it does not hold".
+- **log-group-a, choice 3.** ACC-006 and ACC-012 treat ACC-030 as the whole condition on the bound for a Conduit to `access` whose consumer is another instance, so the actor's bound need not also cover `access` as a target (R3-7, first question). A Conduit to `access` that an actor opens for itself stays under ACC-006.
+- **log-group-a, choice 4.** An instance that was never set up and is on a location declared lost reports its shutdown as confirmed (LIF-025), not unknown (PLC-017). The two earlier sentences disagreed for this case and no finding raised it.
+- **log-group-a, choice 5.** LIF-012 now says a template has no lifecycle state, where it said "no other state" than registered. Its layer became `convention` because its observable is how a request ends.
+- **log-group-a, choice 6.** Under decision A2 the lost location itself is unregistered like the instances on it, once none is placed on it, because a location is its own placement.
+- **log-group-b, choice 1.** `conduit.dev/restrictions` is always present and is an empty list when no restriction applies. Each item has the keys `requirement` and `arguments`, as an applied requirement has in CON-018.
+- **log-group-b, choice 2.** A new attempt is an attempt of the same invocation, so it carries the same operation identity (OPS-012) and by implication the same `conduit.dev/invocation`. No promise says the second in so many words.
+- **log-group-b, choice 3.** "No step had an effect" (OPS-022) is read as: every step that was dispatched either failed or is of an operation whose contract states no `effect`.
+- **log-group-b, choice 4.** IFC-021 refuses an instance that is not an actor when it names no invocation "it serves". An ID the engine never dispatched to that instance is read as naming none.
+- **log-group-b, choice 5.** A record holds the engine's ID for the invocation (REC-002), since the state of an invocation with no operation identity can be read from its records in no other way.
+- **log-group-b, choice 6.** The retrieval of the caller's own results is by operation identity only (OPS-016, IFC-024), as decision Q7 says.
+- **log-group-c, choice 1.** **OBJ-011 and SUB-007 kept their IDs as the rename and replace promises.** R1-1.10 says to reduce each to its operation, and the rejection each also stated is OBJ-002. No new ID was needed for split 5.1.
+- **log-group-c, choice 2.** **Layers changed in place under rule 3 beyond the two the brief named:** NAM-016 and NAM-017 to `convention` (R1-4.5), and PKG-016 to `interface` (R1-4.9). Group B's log reads R1-4.9 as a move and left it; if that reading is preferred, set PKG-016 back to `convention`.
+- **log-group-c, choice 3.** **Trims not on the brief's list but in reader 1 section 1:** R1-1.2 on INS-016 and SUB-006, and R1-2.16 on INS-016 (settled by CON-003).
+- **log-group-c, choice 4.** **A template's `controls` map is keyed by qualified reference** (decision G11), so it is not among the maps of author-chosen names in OBJ-022, though the brief's list had it there.
+- **log-group-c, choice 5.** **The U5 rule is inside TPL-007**, not a new promise, because the decision table and OPS-021 both point at TPL-007.
+- **log-group-c, choice 6.** **OBJ-014 holds all three shapes in one promise.** It overlaps POOL-012 and CON-020, which group A owns.
+- **log-followups-ab, choice 1.** **F1 is written as a `may` and a `must`.** IFC-026 (`may`) is the permission to give a reason in place of an outcome, with its two cases and two values. IFC-019 (`must`) says an implementation that is sent a restriction which forbids the request, or which it cannot apply, performs nothing and answers so, because ACC-008 and ACC-014 promise the caller refused and unavailable. IFC-027 is the engine's side.
+- **log-followups-ab, choice 2.** **The local name of a Conduit instantiated on its own is its own name** (IFC-012), as the brief says. For a component Conduit of a composite that was instantiated on its own, the own name is the one F25 gives, so the tool name repeats the component: `review-read.read.directory.read`. The other reading, in which the local name is the name of the instance document (`review.read.directory.read`), would need the engine to keep that name after a rename. IFC-012's observable states the first reading in an example.
+- **log-followups-ab, choice 3.** **"Another tool presented to the same consumer"** (IFC-014, CON-026) counts the tools of the consumer's other Conduits that are not closed, whether or not they are open yet, and the tool of IFC-024. A closed Conduit is never presented again, and a replacement for a closed declared Conduit must be able to take its local name.
+- **log-followups-ab, choice 4.** **IFC-014 is narrower than before in one case.** It used to reject a Conduit instantiated on its own under the name of one of its consumer's declared Conduits, whatever they listed. It now rejects it only where the two would have a tool name in common, which is what F5 states.
+- **log-followups-ab, choice 5.** **F25 applied again for a composite inside a composite** (CON-003): the name formed for the inner composite's component takes the place of the given or generated name.
+- **log-followups-ab, choice 6.** **F12 is applied to opening only.** Closing a Conduit to `access` of another consumer needs only that its bound is within the actor's own, as before.
+- **log-followups-ab, choice 7.** **F11's "the schema"** is read as in REV-008: the stored configuration with the stated settings applied must satisfy its schema. The narrowing a template adds to a control's input (TPL-011) is not applied to a reconciliation.
+- **log-followups-ab, choice 8.** **F11's revision applies to every reconciliation of a control,** also one that records that the effect did not occur.
+- **log-followups-ab, choice 9.** **F10's "change"** is a request that REV-002 checks against a revision. REV-012 keeps, for any object, that at most one of several requests naming the same revision is stored.
+- **log-followups-ab, choice 10.** **PLC-011 says "other instances".** A location is its own placement, so without the word no location could ever be retired by an ordinary request.
+- **log-followups-ab, choice 11.** **PLC-019 excepts the location itself,** which is its own placement and would otherwise never become ready.
+- **log-followups-ab, choice 12.** **POOL-016 covers an optional input that was not supplied,** as well as a template with no input for the entry's placement.
+- **log-followups-ab, choice 13.** **IFC-008's result states the outcome failed under IFC-009,** since IFC-009 gives unknown to a result with no outcome key and IFC-008 promises failed.
+- **log-followups-c, choice 1.** **OBJ-023 has the layer `convention`.** It states how a request ends, as TPL-011, LIF-012 and REV-011 do. OBJ-002, which states conflict for the same operation, has the layer `language` and was left as it is.
+- **log-followups-c, choice 2.** **OBJ-013 states a consequence of F20.** Since `consumer` and `target` each accept more than one kind, OBJ-006 already requires each to be written as `{kind, name}`; a bare name such as `consumer: root` is rejected. The observable now says so. OBJ-013 states the kinds that are accepted and leaves the rejection of any other kind to `conduits.yaml`.
+- **log-followups-c, choice 3.** **INS-012 says "is, or is inside"** where it said "inside". `capability` is a single value, so "inside `capability`" would have forbidden nothing, and the same was already true of `type`.
+- **log-followups-c, choice 4.** **F18's check is a new promise, INS-023,** and not part of INS-012. CON-017 makes the check on a list the template writes; INS-023 makes it on the list an argument or a default gives.
+- **log-followups-c, choice 5.** **F19's dependency is in GRA-024,** not a new promise. Its observable speaks of the setup graph only, because GRA-022 gives a declared Conduit a step only there. See item 4 below.
+- **log-followups-c, choice 6.** **SCH-015 also rejects a qualified reference to an export that is not a Schema contract,** in the way it rejects any other form of `$ref`. The ruling says such a reference "resolves to an exported `Schema`"; the rejection is my reading of what follows when it does not.
+- **log-followups-c, choice 7.** **PKG-022 is written in the form of PKG-001:** the package is rejected when it is installed. The ruling states only what the archive is.
+- **log-followups-c, choice 8.** **PKG-005 and OBJ-021 were touched lightly** so that F24 and F21 read the same in every place that lists what an instance holds or names the reference schemas.
+- **log-followups-c, choice 9.** **F22 was applied as a change of subject only.** Every "Registration returns a diagnostic" became "Resolving returns a diagnostic". "Installation returns a diagnostic" was left, since the ruling does not speak of installing. Sentences about what exists afterwards, such as OBJ-008's and PKG-006's "the template exists after registration", already used "registration" for the stored effect and are unchanged.
+- **round-5/log-fix-F3, coordinator item 1.** M41 opens one case that no promise settles. Before it, only an instance whose node was declared lost could be unregistered, and such a node represents no machine, so PLC-023 never held back LIF-036's stop. Now a retired instance on a node that is not lost, whose machine is reported unreachable or omitted, can be unregistered; PLC-023 then does not ask for the stop and reports unavailable. LIF-036 removes the instance "once the stop has ended, or has not been dispatched because the runtime provider is not ready or" lacks Conduit's extension, "whatever came of it", and does not name this case. One engine removes the instance at once, as for a runtime provider that is not ready; another reports unavailable and keeps it until the machine is reachable or reported gone. Not changed here: either answer is a decision.
+- **round-5/log-fix-F3, coordinator item 2.** LIF-018 is left as it is, as M41's reason leaves statements that only describe the lost-node case. Its `then` names a reconciliation and a further retirement as what ends an unknown shutdown, and its observable names a request to unregister only for an instance whose node was declared lost; a request to unregister now removes any retired instance, under LIF-017.
+- **round-5/log-fix-F4, M75.** IFC-012 and IFC-025 observables as decided. IFC-013 observable also: "and is answered as IFC-012 states", dropping ", with the protocol's error for an unknown tool", which at a revision whose answer to an unknown tool is a tool result would contradict IFC-012 as M75 words it.
+- **round-5/log-fix-F4, M77.** IFC-036 `when` and `then` as decided. IFC-032 `when` also excepts a request that the protocol has a server reject "with an error or an HTTP status of its own", so that a request whose `Origin` the engine does not accept, and that presents no credential, is answered 403 under IFC-036 and not 401 under IFC-032. DL12: subject and the decided sentence on `Origin`.
+- **round-5/log-fix-F5, M20.** `list-machines.v1` description: "trimmed and lowercased, of at most 63 characters, and at most once". `outputSchema` of `list-machines.v1` and of `place.v1`: `hostname` has `maxLength: 63` beside `minLength: 1`. `run.v1`, `stop.v1` and `inspect-run.v1` take a hostname that the engine had reported to it, and were not bounded, as the decision names only the two.
+- **round-5/log-fix-F5, M80.** `register.v1` description as decided: "a machine reported unreachable or omitted", and "for want of a machine it is rejected where no node matches, and where the provider names none, unless a node other than `local` that is not retired and matches represents a machine reported unreachable or omitted". `register-replacement.v1` description also gains "or omitted" in its clause on unavailable, which left it out in the same way; that is not in the work order.
+- **round-5/log-fix-F6, M90.** Rows grant, declaration, policy, facts and machines provider as decided, with one change to grant: "a grant by which a client obtains a token from an authorization server, as a consumer does from the one that DL13 states", so that the row still holds if IFC-041 comes to name a grant of its own. Row origin: area F4 has already removed IFC-037's sentence "for its origin on HTTP" (M68), so the row names instead the sense that IFC-036 and DL12 now use, the `Origin` header.
+
+## What became of the logs’ open items
+
+- The first group A’s seven decision requests became F9 and F12 to F16 above; its six readings are carried in “Choices that set behavior”. The excluded moves and splits were the pass’s limits, not new behavior.
+- The first group B’s requests became F1 to F11 above; the core package and schemas settled the error fields, result retrieval and rejected-document form. The later core-and-schemas record settles the follow-up requests on both result keys, repeats answered with a reason, restriction identifiers and setup/retirement serialization. Its remaining naming and split notes were editorial limits.
+- The first group C’s requests became F17 to F26 above or the core package, manifest and schemas. NAM-024/NAM-025 retain the contract author’s compatibility obligation; no automatic proof of compatibility was promised. The kept [core-and-schemas decisions](../core-and-schemas/README.md) hold the detailed shapes, digests, host grammar and destination rules.
+- The follow-up AB log’s self-widening and Pool-consumer defects were corrected in the follow-up pass above. Its remaining requests, and follow-up C’s digest, `$ref`, destination, installation, naming and archive requests, were carried to the [core-and-schemas record](../core-and-schemas/README.md); the five disagreements corrected above close the definition pass. Graphs and composite Conduits were later removed by ruling 41.
+- Round 5’s F1 to F7 logs route unmade changes to other areas; the integration applied them. F3’s PLC-023/LIF-036 case is settled with three options in the [kept integration](round-5/log-fixes.md#the-choice-of-this-pass). The verification and V6 settlement remain there too.
+- Round 6’s logs carry their residuals to the [integration](round-6/log-integration.md#left-for-a-decision), which keeps each item’s current status. The pointer-comparison reading (specdocs choice 7) is item 3. D06 and D12 were applied; IFC-047 and the severity reading are in the [decisions](round-6/DECISIONS.md#for-the-owner), accepted by rulings 44 and 58. The round’s final counts are in the specification’s contents table.

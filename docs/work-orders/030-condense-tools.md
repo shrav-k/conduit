@@ -25,7 +25,7 @@ critic's correction to it applied below.
    its layer and level take the allowed values, IDs are unique across the three, and no live ID is a
    retired ID named in a head comment's register of removed IDs or in `spec/README.md`'s list of
    promise files that rulings removed. The rules come from
-   `docs/proposals/reaudit/CONSOLIDATION.md` lines 136 to 151. If current text fails, report each
+   `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md` lines 136 to 151. If current text fails, report each
    failure and do not fix it.
 2. **`tools/check_docs.py`, permalinks.** A link of the form
    `https://github.com/shrav-k/conduit/(blob|tree)/<sha>/<path>#<anchor>` is checked: the path with

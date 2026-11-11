@@ -3,7 +3,7 @@
 Owner ruling of 2026-11-05 (plan-audit ruling 37): the batch in the [record](README.md) is
 accepted as drafted, with the changes below. This file tells whoever edits `spec/` what that
 means for each item. The rules for editing promises, and the vocabulary, are in
-[the consolidation instructions](../reaudit/CONSOLIDATION.md).
+[the consolidation instructions](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md).
 
 Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
 logged decision of the coordinator and choice of an editor.

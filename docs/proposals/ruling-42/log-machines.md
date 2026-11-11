@@ -24,7 +24,7 @@ of row 17, under which no runtime provider other than the engine's own runner is
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | 439 promises ok, with every group's files as they stood when it ran |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | 439 promises ok, with every group's files as they stood when it ran |
 | Every promise in the four files has exactly the seven fields, its text fields folded with `>-` | Yes |
 | A line over 96 characters in the four files | None |
 | An ID or a DL item cited in the four files that does not exist | None. LIF-036, SEC-022, PKG-020's new sentence and DL16 were already written by their groups when this check ran |

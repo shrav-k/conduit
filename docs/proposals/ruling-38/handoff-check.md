@@ -62,8 +62,8 @@ The counts were checked against the files:
 | Promises by file | `spec/README.md` contents table | Every file agrees |
 | Core exports | 98, 20 Operation contracts | 98 in `spec/core/conduit.yaml`; 20 in the core README table |
 | Examples | 7 valid, 63 invalid, 24 invalid-by-rule | 7, 63, 24 |
-| Rounds | 125, 44, 38 findings; 8, 4, 3 unsafe; 26 for the reader of the repository in round 4 | As in `docs/proposals/reaudit/round-4/README.md` |
-| Fix pass of round 4 | 92 changed, 5 added | `round-4/log-fixes.md`: 90 and 5 in the pass, 92 and 5 after its follow-up (line 301) |
+| Rounds | 125, 44, 38 findings; 8, 4, 3 unsafe; 26 for the reader of the repository in round 4 | As in `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/README.md` |
+| Fix pass of round 4 | 92 changed, 5 added | `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/log-fixes.md`: 90 and 5 in the pass, 92 and 5 after its follow-up (line 301) |
 | Scenario reader | 15 in each of the last two rounds | 15 and 15 |
 
 Searches outside `docs/archive/`, `docs/research/` and the kept `reader-*.md` reports found no
@@ -85,7 +85,7 @@ given as dropped. The only leftover of the gate of two clean rounds is H-3.
   bullet.
 - `docs/AUDIT.md:356` gives the ruling as "a composite Conduit opens whole or not at all at
   setup". The specification now opens it whole or not at all only as a decision.
-- `docs/proposals/reaudit/round-4/README.md:56` still lists "The two points at the end of
+- `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/README.md#L56` still lists "The two points at the end of
   DECISIONS.md, on opening a composite Conduit" as open. Nothing there says
   that ruling 38, point 3, and the choice above settled them.
 - What it does: the reviewer either reports the partial opening as new, against the owner's
@@ -167,7 +167,7 @@ given as dropped. The only leftover of the gate of two clean rounds is H-3.
   record is not true as written.
 - `docs/AUDIT.md:218` says the names remain "in three readers' reports". Only two kept reports
   hold either name: `docs/proposals/docs-audit/reader-entry-points.md` and
-  `docs/proposals/reaudit/round-2/reader-4.md`.
+  `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/reader-4.md`.
 - No absolute local path, user name or address was found outside research, archive and the
   kept reports.
 - Least change: in the record, "removed from the documents, apart from the sibling directory
@@ -197,7 +197,7 @@ given as dropped. The only leftover of the gate of two clean rounds is H-3.
 
 ### H-11 minor: round 3 still says round 4 is next
 
-- `docs/proposals/reaudit/round-3/README.md:3`: "Status: done, 2026-11-06 (plan-audit action
+- `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3/README.md#L3`: "Status: done, 2026-11-06 (plan-audit action
   A59), and round 4 is next." (with a link on "round 4")
 - Least change: "and round 4 followed."
 
@@ -223,7 +223,7 @@ given as dropped. The only leftover of the gate of two clean rounds is H-3.
 - **What the owner asked to have examined.** Point 11: an unknown tool answered with -32602
   and no result, `isError` on a result with no outputs, a client keeping protocol errors from
   its model, and SEP-2145. This agrees with IFC-012 and IFC-032 and with
-  `round-4/mcp-recheck.md`.
+  `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/mcp-recheck.md`.
 - **How readiness is judged.** By ruling 38, point 4: no unsafe finding in the latest round,
   and the reference model and the vectors agree with the promises. G7, A59, the round-4 README
   and `spec/README.md:29-30` agree. A42 is the exception (H-3).

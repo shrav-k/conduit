@@ -23,7 +23,7 @@ are; the vocabulary audit that [ruling 41](README.md) orders renames them.
 | All | 158 | 10 | 51 (49 planned, 2 beyond) | 5 | 153 |
 
 The counts after match those the plan gives `spec/README.md`. The validation of
-[CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) passes over the whole specification
+[CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) passes over the whole specification
 (426 promises). Every promise of the eight files has exactly the seven fields, folded `>-` text
 and no line longer than 96 characters, and every ID that one of them cites exists.
 

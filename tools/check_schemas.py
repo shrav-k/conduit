@@ -212,10 +212,10 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # remote-provider (PKG-030, M25), and made item-place-required reject a place whose schema does
 # not confine its value to a string, a number, a boolean or null (MAN-017, M30).
 # Round 6 of the re-audit, under ruling 44 (2026-11-07; log
-# docs/proposals/reaudit/round-6/log-core.md), added changes-overlap (CTR-006, finding 6-1-03)
+# https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-core.md), added changes-overlap (CTR-006, finding 6-1-03)
 # and fixed-schemes (PRV-016, finding 6-1-05), which compare pointers as reference tokens, and
 # had check_controls read a pointer's tokens with the same function.
-# Ruling 44's D06, as revised after the ruling (docs/proposals/reaudit/round-6/log-d06-d12.md),
+# Ruling 44's D06, as revised after the ruling (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-d06-d12.md),
 # made implementation-selected read no default from an Operation contract, which the schema
 # now rejects (CTR-002), and take the engine for an operation that the core package's `engine`
 # lists; and added engine-selected (TPL-003), for a template or a Type whose `implementation`

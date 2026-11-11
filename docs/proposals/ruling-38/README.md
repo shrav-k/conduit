@@ -5,7 +5,7 @@ Status: in force; done (points 2, 14); amended by 41 (points 1, 3, 7, 8, 11, 12)
 This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
-After round 4 of the [re-audit](../reaudit/round-4/README.md) the coordinator put fourteen
+After round 4 of the [re-audit](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/README.md) the coordinator put fourteen
 points to the owner: five that were still open, six decisions of its own that it was least
 sure of, two groups to confirm, and what to do before the work is merged. The owner ruled on
 each. The table gives what was put, the coordinator's recommendation, and the ruling in the

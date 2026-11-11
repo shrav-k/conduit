@@ -43,7 +43,7 @@ before the ruling (commit `ff91aa5`) and after it.
 Run from the repository root after the last edit:
 
 ```text
-$ /usr/bin/python3 (the validation script of CONSOLIDATION.md)
+$ /usr/bin/python3 (the validation script of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md)
 434 promises ok: language 220, convention 179, interface 35
 
 $ python3 tools/check_schemas.py

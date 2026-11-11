@@ -1,7 +1,7 @@
 # The ruling on the core package and the schemas — log of the promise side
 
 Written 2026-11-05 by Editor P, under [APPLY.md](APPLY.md), the [record](README.md) and the
-rules of the [consolidation instructions](../reaudit/CONSOLIDATION.md). Editor P's files are
+rules of the [consolidation instructions](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md). Editor P's files are
 every promise file under `spec/promises/` except `manifest.yaml`, every file under
 `spec/conventions/` and `spec/interface/`, `spec/implementation-defined.yaml`,
 `spec/schema-profile.md`, `spec/definitions.md` and `spec/README.md`. No other file was edited,

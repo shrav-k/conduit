@@ -194,7 +194,7 @@ then.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
 | Every text field folded with `>-`; a YAML line over 96 characters in these files | Yes; none |
 | `python3 tools/check_docs.py` | `Errors: 2`, neither in these files: `spec/core/README.md` and `spec/schemas/README.md` link `docs/proposals/ruling-43/log-core.md`, which the core group had not yet written. This log's links resolve |
 | `python3 tools/set_names.py --check` | `Errors: 0` |

@@ -29,7 +29,7 @@ Run from the repository root at the end of this pass.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `439 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `439 promises ok` |
 | Every text field folded with `>-`; a YAML line over 96 characters under `spec/` | Yes; none |
 | A promise ID or a DL item cited under `spec/` or in `tools/check_schemas.py` that does not exist | None outside head comments. Head comments name removed IDs, each as removed, and DL14 as not reused |
 | The seven IDs assigned in advance (OPS-034, LIF-036, SEC-022, SEC-023, PRV-021, PRV-022, PRV-023) | Each exists once, in the file it was assigned to, and every sentence that cites it agrees with it after the fixes below |
@@ -251,7 +251,7 @@ committed.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `440 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `440 promises ok` |
 | Every text field folded with `>-`; a YAML line over 96 characters under `spec/` | Yes; none |
 | `python3 tools/check_docs.py` | `Errors: 0` |
 | `python3 tools/set_names.py --check` | `Errors: 0` |

@@ -65,6 +65,9 @@ What it checks, and reports under these numbers:
      Python's `re` after `ecma` translates anchors and character classes (see `pattern_faults`).
      examples/valid/first-start/ writes out the documents that first start makes, which no
      submission may hold (FST-006), so the rule for FST-006 is not applied to it.
+  7. Promises under spec/promises/, spec/conventions/ and spec/interface/ have exactly the
+     seven fields of spec/README.md, allowed layers and levels, unique IDs, and no ID named
+     as retired in a head comment or the README's removed-file register is reused.
 
 What it does not check: anything that needs an engine. It does not resolve references to
 packages that are not in this repository, instantiate a template, or evaluate any of the
@@ -173,7 +176,7 @@ FIRST_START_TEMPLATES = ("system", "node", "management", "access", "root")
 FIRST_START_DIRECTORY = "first-start"
 
 # The prefixes of the promise files that a ruling removed, whose IDs no file this tool covers
-# may cite: GRA, of spec/promises/graphs.yaml, whose promises ruling 41 removed.
+# may cite: GRA, of the former graphs.yaml promise file, which ruling 41 removed.
 REMOVED_PREFIXES = ("GRA",)
 
 # Where a schema may hold the core package's `secret-reference.v1` (SEC-001): as the schema
@@ -2182,6 +2185,113 @@ def check_profile_regressions():
             fail(f"ECMA class/anchor regression: {pattern!r} on {text!r}")
 
 
+PROMISE_ID = r"[A-Z]+-[0-9]{3}"
+ID_RANGE = rf"{PROMISE_ID}(?:\s+(?:to|through|[-–])\s+{PROMISE_ID})?"
+ID_LIST = rf"{ID_RANGE}(?:(?:\s*,\s*(?:and\s+)?|\s+and\s+){ID_RANGE})*"
+
+
+def expanded_ids(text):
+    """IDs and inclusive same-prefix ranges in a removed-ID register."""
+    ids = set(re.findall(PROMISE_ID, text))
+    for match in re.finditer(r"([A-Z]+)-([0-9]{3})\s+(?:to|through|[-–])\s+"
+                             r"([A-Z]+)-([0-9]{3})", text):
+        if match[1] == match[3]:
+            ids.update(f"{match[1]}-{n:03d}" for n in range(int(match[2]), int(match[4]) + 1))
+    return ids
+
+
+def retired_ids(head):
+    """Read explicit registers and the older removal/folding clauses in head comments.
+
+    A destination of a fold or an ID mentioned in its explanation is not retired.
+    """
+    text = " ".join(line.lstrip("# ") for line in head.splitlines())
+    # Parenthetical explanations may themselves cite live promises.
+    while re.search(r"\([^()]*\)", text):
+        text = re.sub(r"\([^()]*\)", "", text)
+    result = set()
+    patterns = [
+        rf"\b(?:removed|retired)(?:[- ](?:promise[- ]?)?IDs)?\s*:\s*({ID_LIST})",
+        rf"\bremoved\s+({ID_LIST})",
+        rf"\b({PROMISE_ID})\s+(?:was|were)\s+(?:removed|folded)\b",
+        rf"(?:;\s*(?:and\s+)?|,\s+and\s+)({ID_LIST})\s+into\b",
+        rf"\bfolded\s+(?:in\s+)?({ID_LIST})",
+    ]
+    for pattern in patterns:
+        for match in re.finditer(pattern, text, re.I):
+            result.update(expanded_ids(match[1]))
+    # Older removal sentences also continue after descriptions of individual IDs.
+    for sentence in re.split(r"\.\s+", text):
+        sentence = re.split(r";\s*(?:and\s+)?(?:changed|added)\b", sentence)[0]
+        if re.search(rf"\bremoved\s+{PROMISE_ID}", sentence):
+            for match in re.finditer(rf"(?:;\s*(?:and\s+)?|,\s+and\s+)({ID_LIST})\s*,", sentence):
+                result.update(expanded_ids(match[1]))
+    return result
+
+
+def check_promises():
+    fields = {"id", "layer", "level", "when", "then", "observable", "vectors"}
+    seen, retired = {}, {}
+    total, before = 0, len(errors)
+    paths = sorted(path for directory in ("promises", "conventions", "interface")
+                   for path in (ROOT / "spec" / directory).rglob("*.yaml"))
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        head = []
+        for line in text.splitlines():
+            if line.strip() and not line.lstrip().startswith("#"):
+                break
+            head.append(line)
+        for id_ in retired_ids("\n".join(head)):
+            retired.setdefault(id_, set()).add(rel(path))
+        try:
+            # Keep duplicate authored fields visible instead of silently losing one.
+            records = load(path)
+        except (OSError, NotStrict) as error:
+            fail(f"{rel(path)}: cannot read promises: {error}")
+            continue
+        if len(records) != 1 or not isinstance(records[0], list):
+            fail(f"{rel(path)}: promises must be one list")
+            continue
+        for index, promise in enumerate(records[0], 1):
+            total += 1
+            label = f"{rel(path)} promise {index}"
+            if not isinstance(promise, dict):
+                fail(f"{label}: must be a record with exactly seven fields")
+                continue
+            id_ = promise.get("id")
+            label += f" ({id_})"
+            if set(promise) != fields:
+                fail(f"{label}: fields differ: missing {sorted(fields - set(promise))}; "
+                     f"extra {sorted(set(promise) - fields)}")
+            if promise.get("layer") not in ("language", "convention", "interface"):
+                fail(f"{label}: invalid layer {promise.get('layer')!r}")
+            if promise.get("level") not in ("must", "must not", "should", "may"):
+                fail(f"{label}: invalid level {promise.get('level')!r}")
+            if not isinstance(id_, str):
+                fail(f"{label}: ID must be a string")
+                continue
+            if id_ in seen:
+                fail(f"{label}: duplicate ID, first in {seen[id_]}")
+            seen.setdefault(id_, label)
+    readme = (ROOT / "spec/README.md").read_text(encoding="utf-8")
+    section = re.search(r"^### Promise files that rulings removed\n(.*?)(?=^## |\Z)",
+                        readme, re.M | re.S)
+    if not section:
+        fail("spec/README.md: removed promise files register missing")
+    else:
+        for line in section[1].splitlines():
+            cells = line.split("|")
+            if len(cells) >= 4 and re.search(PROMISE_ID, cells[2]):
+                # The IDs column starts with the retired set; later prose cites live IDs.
+                for id_ in expanded_ids(cells[2].split(".", 1)[0]):
+                    retired.setdefault(id_, set()).add("spec/README.md removed-file register")
+    for id_ in sorted(seen.keys() & retired.keys()):
+        fail(f"{seen[id_]}: live ID is retired in {', '.join(sorted(retired[id_]))}")
+    print(f"7. Checked {total} promises in {len(paths)} files: seven fields, layers, levels, "
+          f"unique IDs and {len(retired)} retired IDs; {len(errors) - before} errors.")
+
+
 def main():
     from importlib import metadata
     validating = jsonschema is not None
@@ -2570,6 +2680,7 @@ def main():
         print(f"   SCH-019: NOT APPLIED. No `default` was validated against its schema, and "
               f"{not_run} files under examples/invalid-by-rule/ were not tried, because "
               f"jsonschema is not importable.")
+    check_promises()
     return finish(validating)
 
 

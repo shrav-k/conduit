@@ -117,8 +117,10 @@ From A70, increment 1 and the review of both:
 
 ## Running the orders through Conduit
 
-Once increment 3 runs, the orders are to go through Conduit itself (A78): each order's working
-tree is a directory Resource, the queue of orders and their reports is the message history,
+Once Fleet authority is built (the second specification batch, after the S1 rerun; ruling 61,
+B12), the orders are to go through Conduit itself (A78): each worker is an Agent of the
+`conduit-core` Fleet, root sets up fixed worker and tree slots once, and a coordinator Agent that
+root appoints dispatches later orders. Each order's working tree is a directory Resource, the queue of orders and their reports is the message history,
 and each worker is an Agent that the engine runs with a Conduit to its own tree that lists
 reads and writes, and one to `main` that lists reads. The admin opens a worker's Conduits when
 it dispatches the order and closes them when it merges. That is S1 in daily use, so each

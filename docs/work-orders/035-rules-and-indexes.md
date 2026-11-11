@@ -61,3 +61,12 @@ Every extraction is present and faithful to its C0 source (say how you checked).
 repository root: `python3 tools/check_docs.py`, `python3 tools/set_names.py --check`,
 `python3 tools/check_schemas.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass.
 Report the words of each changed file before and after. Do not stage anything.
+
+## Record
+
+Run on 2026-11-10, in parallel with orders 033 and 034: the worker in 10 minutes, then a fresh
+verifier in 5, which passed it with one nit: the protocol watch list copied into the cold readers'
+guide referred to verdicts and rows of its source report, so the admin named that report. The
+worker reported that `docs/implementation/WORK_ORDERS.md` still gave A78's old trigger (finding
+035-01); the admin corrected it to ruling 61's (B12). The ledger is named as a path until order
+034 merges; the rename of order 033 was applied to this order's text at merge.

@@ -14,6 +14,7 @@ the owner accepted, or the behavior of a standard that the rulings adopted, and 
 what Conduit is for. The owner rules on the items marked owner, under
 [For the owner](#for-the-owner). Nothing here is applied until an editor applies it, and the
 owner can strike any coordinator decision.
+Accepted by [ruling 58 (point 1)](../ruling-58/README.md): the coordinator decisions recorded here.
 
 How to read it. The numbers D1 to D20 and R1 to R28 are the integration log's. An item marked
 "part" is settled in one part here, and the rest is an owner item. R1 was settled by the

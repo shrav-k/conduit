@@ -219,6 +219,7 @@ network and agent of Conduit's own, which ruling 40 leaves to existing tools.
    that can avoid it (a URL) does.
 5. **What the person checks before admitting.** Recommended: a short code shown on the machine and
    in the control panel, plus `id`, hostname, `os`, `arch` and labels.
+   Superseded by [ruling 56](../ruling-56/README.md): decision 5 and Option C's short code are replaced by provider-defined verification and a fingerprint of 6 to 8 characters.
 6. **Does refusing, or declaring a node lost, remove the machine at the provider?** Recommended:
    refusing does; declaring lost asks the person, as a second pending action.
 7. **Which `kubernetes.io/os` a Windows computer running WSL2 reports.** Recommended: the

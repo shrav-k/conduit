@@ -5,6 +5,7 @@ coordinator's decisions, as the admin session under
 [ruling 48](../../ruling-48/README.md), on the proposal of work order 003 in
 [plan.md](plan.md), made on 2026-11-09 under ruling 46, point 4. The owner can strike any of
 them. None adds or removes a feature or changes what Conduit is for, so none goes to the owner.
+Accepted by [ruling 58 (point 1)](../../ruling-58/README.md).
 
 ## The decisions
 

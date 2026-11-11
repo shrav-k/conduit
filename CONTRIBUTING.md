@@ -2,7 +2,7 @@
 
 Conduit is a configuration language for the relationships between independent agents and the
 things they share. As of 2026-11-10, this repository holds its draft specification, the records
-behind it, and the first build: a strict loader, a pure core, the reference model, conformance
+behind it, and the first build: a strict loader, a pure core, conformance
 vectors and a runnable engine shell. The shell ran real Claude Code and Codex as Agents on S1
 through T1, T2 and T7 ([dated results](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
 Increment 4 is in progress: on 2026-11-10 both author runs completed T1 to T7 with real clients
@@ -19,7 +19,7 @@ The [documentation map](docs/README.md) lists every other document, and the
 documents, for writing contracts and providers, and for building an engine.
 [AGENTS.md](AGENTS.md) states the same rules in short form.
 For a review of the text, follow the [cold readers' instructions](docs/guides/cold-readers.md).
-To run the build, start with [reference-model/](reference-model/README.md#running-it); the
+To run the build, start with [engine/](engine/README.md#running-it); the
 [guides](docs/guides/README.md) cover the owner's setup for later experiments.
 
 ## What binds
@@ -81,7 +81,7 @@ proposals as marked, rather than as promises already implemented.
   package, one crate per provider, under [packages/](packages/) (ruling 40), which as of
   2026-11-10 holds the Claude Code and Codex Agent packages; and the first build, its core and
   its shell, in the workspace under
-  [reference-model/](reference-model/README.md) (ruling 46). The only exception is the Python
+  [engine/](engine/README.md) (ruling 46). The only exception is the Python
   checkers in `tools/`.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
   dissent.
@@ -125,11 +125,11 @@ Run these from the repository root before each commit:
 
 ```sh
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
-python3 tools/set_names.py --check   # the names under spec/, reference-model/, conformance/ and packages/ agree with spec/names.yaml
+python3 tools/set_names.py --check   # the names under spec/, engine/, conformance/ and packages/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
-(cd reference-model && cargo test --release)   # the first build: loader, core, vectors and shell
+(cd engine && cargo test --release)   # the first build: loader, core, vectors and shell
 ```
 
 What each check needs:
@@ -153,13 +153,13 @@ What each check needs:
   ran", and it exits with status 3 when N is 0. It never reports a check it did not run. Its
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
-- `cargo test --release` in `reference-model/` needs Rust through rustup, which installs on
-  first use the toolchain that `reference-model/rust-toolchain.toml` pins. Run it from inside
+- `cargo test --release` in `engine/` needs Rust through rustup, which installs on
+  first use the toolchain that `engine/rust-toolchain.toml` pins. Run it from inside
   the directory, so that the pin applies. For a change to its code, run
   `cargo clippy --all-targets -- -D warnings` there too.
 
 Run `cargo test --release` in each Rust directory you change, under `experiments/`,
-`packages/` or `reference-model/`, and in `reference-model/` after any change to `spec/`.
+`packages/` or `engine/`, and in `engine/` after any change to `spec/`.
 
 What the checks cover:
 
@@ -180,12 +180,12 @@ What the checks cover:
   directory under `experiments/` is listed in its index and linked from the roadmap; that the
   entry points link the roadmap; and that each state begins with an allowed word. It cannot
   tell whether a state is true. Its own header lists each check.
-- `cargo test --release` in `reference-model/` runs the first build's tests: the strict loader
+- `cargo test --release` in `engine/` runs the first build's tests: the strict loader
   reads every example under `spec/schemas/examples/` and checks its verdict against the one
   `check_schemas.py` gives, which a fixture records, and reads documents and directories case
   by case. As of 2026-11-10 it also tests the pure core, portable vectors, durable shell,
   runner and HTTP adapter, with scripted clients by default.
-  [reference-model/README.md](reference-model/README.md) gives the commands and limits.
+  [engine/README.md](engine/README.md) gives the commands and limits.
 
 The Python and whitespace checks do not establish engine behavior. As of 2026-11-10, the Rust
 tests exercise the implemented slice; real-client evidence is recorded separately in the

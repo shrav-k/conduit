@@ -31,11 +31,11 @@ behind a contract that any existing tool can implement, and the user picks it. S
 [Providers](#providers).
 
 An author writes documents. An engine is a running program that implements the specification.
-As of 2026-11-10, the [first build](../reference-model/README.md) has a strict loader, a pure
-core, the reference model, conformance vectors and a runnable shell. The shell ran real Claude
+As of 2026-11-10, the [first build](../engine/README.md) has a strict loader, a pure
+core, conformance vectors and a runnable shell. The shell ran real Claude
 Code and Codex as Agents on S1 through shared files, message history, and closing and explicitly
 restoring access ([dated results](proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
-It is a partial implementation; its [conformance document](../reference-model/CONFORMANCE.md)
+It is a partial implementation; its [conformance document](../engine/CONFORMANCE.md)
 states its choices and limits. This tour describes the language, including parts the build
 does not yet implement. The build-state statements were updated on 2026-11-10; the date above
 records the last full read of the tour against the specification.
@@ -685,7 +685,7 @@ the providers do, the specification adopts existing standards
 ([schema profile](../spec/schema-profile.md)).
 
 As of 2026-11-10, [conformance vectors](../conformance/README.md) test slices of the promises
-on the pure reference model, including a continuous S1 case. The
+on the pure core, including a continuous S1 case. The
 [coverage manifest](../conformance/manifest.yaml) lists vectors and reasons for missing
 coverage; a reason is not a passing test. The [roadmap](../ROADMAP.md#the-order-of-the-work)
 records increments 1 to 3 done and increment 4 in progress: both author runs failed the

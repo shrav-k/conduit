@@ -4,11 +4,11 @@ Not binding. The [specification](../../../spec/README.md) alone binds. Work orde
 2026-11-09. This is a handoff of the implemented increment 2 boundary, not a new shell
 contract or a claim that a real Agent ran. The [first build](../../implementation/FIRST_BUILD.md#what-increment-3-needs)
 and the [admin's decisions](increment-2/decisions.md) supply the requirements. Implementation
-choices and pending DL items are in [CONFORMANCE.md](../../../reference-model/CONFORMANCE.md).
+choices and pending DL items are in [CONFORMANCE.md](../../../engine/CONFORMANCE.md).
 
 ## Calling the core
 
-The API is [conduit_core::step](../../../reference-model/crates/core/src/lib.rs):
+The API is [conduit_core::step](../../../engine/crates/core/src/lib.rs):
 
 ```rust
 pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition, String>
@@ -19,7 +19,7 @@ installed_packages and preinstalled_snapshots. It includes the invocation index,
 setup progress and retained results; records alone cannot reconstruct these. `Context` holds
 an optional built-in Project, core_package, meta_prefix, templates, record_source and
 core_environment. Construct it from the specification/names and core documents as the
-[runner](../../../reference-model/crates/conformance/src/lib.rs) does, not from copied literals.
+[runner](../../../engine/crates/conformance/src/lib.rs) does, not from copied literals.
 
 `Evidence` is `{time, ids, revisions?, suffixes?}`: supplied RFC 3339 time, unique UUIDs in
 consumption order, revision values and five-character generated suffix candidates. Exhaustion,
@@ -78,8 +78,8 @@ aliases, captures, fixture patches and observation recipes are **not** core or w
 ## Intents and their completions
 
 The complete current intent inventory comes from
-[requests.rs](../../../reference-model/crates/core/src/requests.rs) and
-[lifecycle.rs](../../../reference-model/crates/core/src/lifecycle.rs). Nothing executes inside
+[requests.rs](../../../engine/crates/core/src/requests.rs) and
+[lifecycle.rs](../../../engine/crates/core/src/lifecycle.rs). Nothing executes inside
 the core. The shell must correlate replies by both invocation and attempt, and setup reports
 by outstanding phase/part. No intent here requests an autonomous repeat or model turn.
 

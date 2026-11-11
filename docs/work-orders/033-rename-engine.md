@@ -52,3 +52,15 @@ From the repository root: `python3 tools/check_docs.py`, `python3 tools/set_name
 `experiments/011-short-form-spike/`, `cargo test --release`. Report the total passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so, and the admin reruns them. Do not
 stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 21 minutes, then a fresh verifier in 5. The directory moved with its
+73 files; every path, link, tool and test that named it follows, and the live documents call it the
+engine. The verifier found that the readiness conditions of A42 and A59 had become "the engine and
+the vectors agree with the promises" where ruling 46's pure core is meant; the admin restored
+"core". It also found three Python bytecode files tracked since order 032's merge, holding local
+paths: the admin removed them from the tree and ignored `__pycache__/`. Continuous integration
+merged while the order ran, so the admin renamed its paths too. Records under `docs/proposals/`,
+`docs/archive/` and `docs/work-orders/` keep their words, with links repointed. The admin reran the
+suites outside the sandbox: 163 tests pass in `engine/`, 3 ignored, and 9 in experiment 011.

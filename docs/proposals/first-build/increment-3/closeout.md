@@ -19,7 +19,7 @@ and [increment 3's done-when](../../../implementation/FIRST_BUILD.md#increments)
 Build each package with `cargo run --release --bin package`, and the shell with
 `cargo build --release -p conduit-shell` in reference-model. Record `claude --version` and
 `codex --version` separately; the qualified launch baseline is 2.1.318 and 0.167.0 respectively.
-Follow [live S1 preparation](../../../../reference-model/examples/s1/README.md), replacing
+Follow [live S1 preparation](../../../../engine/examples/s1/README.md), replacing
 metadata-only fixture pins with the **host archive** pins in a working copy. Use a fresh store,
 shared directory and history directory, and place `hello.txt` in shared with a unique harmless
 text marker that the model has not been told. Keep evidence outside shared, the store's identity directories and the clients' private working directories.

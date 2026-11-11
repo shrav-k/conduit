@@ -148,7 +148,7 @@ class CondensationChecks(unittest.TestCase):
     def test_path_mentions_report_literals_but_skip_templates_and_protocol(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for name in ("tools", "conformance", "reference-model", "spec"):
+            for name in ("tools", "conformance", "engine", "spec"):
                 (root / name).mkdir()
             (root / "spec/exists.yaml").touch()
             (root / "tools/check.py").write_text(
@@ -156,7 +156,7 @@ class CondensationChecks(unittest.TestCase):
                 '# https://example.org/docs/external.md #/spec/pointer\n')
             (root / "conformance/manifest.yaml").write_text(
                 '{\n  "case": "missing-case.yaml"\n}')
-            (root / "reference-model/main.rs").write_text(
+            (root / "engine/main.rs").write_text(
                 '// conformance/missing.yaml tools/call tools/list\n')
             with patch.object(docs, "ROOT", root), contextlib.redirect_stdout(io.StringIO()):
                 errors = docs.path_mentions()

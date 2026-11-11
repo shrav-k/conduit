@@ -3,12 +3,12 @@
 Status on 2026-11-10: draft, begun 2026-11-05. Incomplete, and not a release. Every area has
 been written as promises, and the core package, the JSON Schemas of documents and the
 manifest's format have been written as documents. The first build has a strict loader, a pure
-reference model on S1 and a runnable engine shell in [reference-model/](../reference-model/README.md).
+core on S1 and a runnable engine shell in [engine/](../engine/README.md).
 There are 367 portable vectors under [conformance/](../conformance/README.md), testing slices
 of promises; the [manifest](../conformance/manifest.yaml) records the coverage and its gaps.
 This remains a draft: the model and vectors do not yet cover the whole specification, and the
 next cold read follows the first build. Ruling 38, point 4, asks for agreement between the
-reference model, vectors and promises, and no unsafe finding in the latest round of readers.
+core, vectors and promises, and no unsafe finding in the latest round of readers.
 
 This page describes the specification as it stands now. The decision records are listed under
 [Where the reasons are](#where-the-reasons-are).
@@ -251,9 +251,9 @@ lists the cases and the reasons for missing S1 coverage.
 Every area has been written as promises, 455 in all: 203 of the layer `language`, 208 of the
 layer `convention` and 44 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
-`schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the reference model exist on
+`schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the core exist on
 S1, with the scope and remaining work stated above and in the
-[conformance document](../reference-model/CONFORMANCE.md).
+[conformance document](../engine/CONFORMANCE.md).
 [Where the reasons are](#where-the-reasons-are) lists the decision records.
 
 The core package is one package kept in two directories. `core/` holds its manifest and

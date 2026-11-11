@@ -16,7 +16,7 @@ decision citing the promise that requires it.
 Read: [the study](../proposals/first-build/increment-2/plan.md), sections 2 (its "First start"
 table), 4 and 5; [the admin's decisions](../proposals/first-build/increment-2/decisions.md),
 which bind this order, decisions 3, 4 and 7 above all; [the first build](../implementation/FIRST_BUILD.md);
-the loader's [README](../../reference-model/README.md); and the promises FST-001 to FST-006,
+the loader's [README](../../engine/README.md); and the promises FST-001 to FST-006,
 LIF-034, NAM-020, PLC-008, PLC-026, PRV-014 and REC-001 to REC-003, with what they cite in
 `spec/core/` and `spec/conventions/`.
 

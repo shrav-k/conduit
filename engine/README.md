@@ -1,10 +1,10 @@
-# The reference model
+# The engine
 
 Not binding. The specification in [spec/](../spec/README.md) alone binds, and this code follows
 it: where the two differ, the code is wrong, or the difference is a finding of the first build.
 
 This is the codebase of the first build, as [ruling 46](../docs/proposals/ruling-46/README.md)
-shaped it: one Cargo workspace in Rust holding the pure core, the reference model (A38),
+shaped it: one Cargo workspace in Rust holding the pure core (A38),
 in which every decision cites a promise, and the shell that makes it runnable, the first
 slice of the reference engine (A50). [The first build](../docs/implementation/FIRST_BUILD.md)
 pre-registers its increments and what each must show, and the
@@ -613,13 +613,13 @@ uses a read-only state snapshot, as the author commands do; it is not atomic wit
 changes. The operation's result and specification are unchanged.
 
 ```sh
-reference-model/target/release/conduit install --store /tmp/conduit-live-store \
+engine/target/release/conduit install --store /tmp/conduit-live-store \
   conformance/fixtures/s1/archives/filesystem-0.2.0.tar.gz#cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436
-reference-model/target/release/conduit submit --store /tmp/conduit-live-store /absolute/new-project
-reference-model/target/release/conduit replace --store /tmp/conduit-live-store \
+engine/target/release/conduit submit --store /tmp/conduit-live-store /absolute/new-project
+engine/target/release/conduit replace --store /tmp/conduit-live-store \
   /absolute/edited-project Conduit/directory-read
-reference-model/target/release/conduit retire --store /tmp/conduit-live-store Resource/old-directory
-reference-model/target/release/conduit unregister --store /tmp/conduit-live-store Resource/old-template
+engine/target/release/conduit retire --store /tmp/conduit-live-store Resource/old-directory
+engine/target/release/conduit unregister --store /tmp/conduit-live-store Resource/old-template
 ```
 
 `install` reads the archive's manifest for its address/version, verifies the supplied digest,

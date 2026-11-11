@@ -23,7 +23,7 @@ Everything under `spec/`, as far as S1 needs it, starting from `spec/README.md`'
 engine builder. Then [the first build](../implementation/FIRST_BUILD.md) (increments, what
 increment 3 needs, the tasks and measures), the [roadmap](../../ROADMAP.md)'s S1 row and step 3,
 round 6's E05, D08 and D22 under `docs/proposals/reaudit/round-6/`, the
-[loader's README](../../reference-model/README.md), the
+[loader's README](../../engine/README.md), the
 [log of increment 1](../proposals/first-build/log-increment-1.md), rulings 40, 46 and 48 under
 `docs/proposals/`, and the baseline for S1 in `experiments/007-s1-baseline/` (its setup is what
 S1 does with today's tools).

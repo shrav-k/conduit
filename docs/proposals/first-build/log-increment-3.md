@@ -26,7 +26,7 @@ the consumer adapter bounds their exposure as described under I3-03 below.
 ## I3-01: store, loop and identities (work order 020)
 
 [The order](../../work-orders/020-i3-01-store-loop-identity.md) supplies the decisions.
-The new [shell crate](../../../reference-model/crates/shell/src/lib.rs) supplies an Executor
+The new [shell crate](../../../engine/crates/shell/src/lib.rs) supplies an Executor
 method for each current intent, durable transitions, wait handles for pending requests,
 completion correlation, opening recovery, output expiry and identity materialization.
 It starts no implementation and presents no server. Only tests supply scripted executors.
@@ -83,7 +83,7 @@ It starts no implementation and presents no server. Only tests supply scripted e
 
 ### Evidence and limits
 
-[Shell tests](../../../reference-model/crates/shell/src/tests.rs) exercise the S1 vector through
+[Shell tests](../../../engine/crates/shell/src/tests.rs) exercise the S1 vector through
 the store and scripted completions, source-order record export, concurrent requests and
 pending waits, missing executors, output cap/age, store format/permissions/ownership, credential
 verification and containment, and killed child processes on each side of dispatch. The S1
@@ -105,12 +105,12 @@ completion; another command opens the store and first recovers it unknown. Order
 022 supply persistent runner/server ownership. No real Agent, process runner, remote gate,
 HTTP authentication, OAuth server or multi-machine restart is demonstrated here.
 The implemented DL2, DL10 and DL13 choices are in
-[CONFORMANCE.md](../../../reference-model/CONFORMANCE.md).
+[CONFORMANCE.md](../../../engine/CONFORMANCE.md).
 
 ## I3-02: the engine's own runner (work order 021)
 
 [The order](../../work-orders/021-i3-02-runner.md) supplies the decisions. The
-[runner](../../../reference-model/crates/shell/src/runner.rs) serves built-in inspection and
+[runner](../../../engine/crates/shell/src/runner.rs) serves built-in inspection and
 run, dispatch, refresh and both cancellation intents. Deferred tasks hold no shell transition
 lock while preparing packages, initializing MCP or waiting for results. They reenter through
 setup_report or complete, with the original invocation and attempt. No core decision or
@@ -179,7 +179,7 @@ fixture changed, and no new language finding was needed.
 
 ### Evidence and limits
 
-The [runner tests](../../../reference-model/crates/shell/tests/runner.rs) cover exact plain
+The [runner tests](../../../engine/crates/shell/tests/runner.rs) cover exact plain
 pipe params, no Roots capability, environment names and identity precedence, synthetic engine
 GITHUB_TOKEN exclusion, empty private working directories, initialization/call deadlines,
 unasked exit and stopped inspection, one read repair and no write repair, cancellation by
@@ -201,7 +201,7 @@ declared platform range. No other Node was installed. Default tests fetch nothin
 The CLI's opt-in test also passed: registration reached ready with no pending invocation.
 The required complete checks are reported by the worker after running them; the implemented
 DL10 and DL16 choices and remaining interface limits are in
-[CONFORMANCE.md](../../../reference-model/CONFORMANCE.md).
+[CONFORMANCE.md](../../../engine/CONFORMANCE.md).
 
 ### After the verifier's review (work order 021, second round)
 
@@ -233,7 +233,7 @@ Order 022's presented server remains outside this tree and this order's work.
 ## I3-03: the consumer server (work order 022)
 
 [Order 022](../../work-orders/022-i3-03-presented-server.md) supplies the decisions.
-The [server adapter](../../../reference-model/crates/shell/src/server.rs) serves MCP over
+The [server adapter](../../../engine/crates/shell/src/server.rs) serves MCP over
 loopback with rmcp 3.9.0 and axum. This order changes no core decision or specification promise.
 The existing H03 management limits are implementation work, not new language findings.
 
@@ -268,11 +268,11 @@ The existing H03 management limits are implementation work, not new language fin
   nonmanagement exposure stops startup. Management-only unfinished operations stay visible
   and return -32603 naming the operation with no transition committed. The explicit inventory
   and public invocation limits are in
-  [CONFORMANCE.md](../../../reference-model/CONFORMANCE.md#consumer-server-order-022).
+  [CONFORMANCE.md](../../../engine/CONFORMANCE.md#consumer-server-order-022).
 
 ### Evidence and limits
 
-The [HTTP tests](../../../reference-model/crates/shell/src/server_tests.rs) connect rmcp
+The [HTTP tests](../../../engine/crates/shell/src/server_tests.rs) connect rmcp
 clients as A and B using materialized run-directory tokens. They compare standalone tool
 schemas and annotations with core publication, exercise A's refused write and B's write/read,
 read durable request/invocation endings before accepting replies, and exercise pending
@@ -367,7 +367,7 @@ test reads these IDs and checks the OS groups directly before and after stopping
 this avoids the sandbox's refusal to execute ps. No credentials or child arguments are in
 those diagnostic files.
 
-The new [process test](../../../reference-model/crates/shell/tests/serve.rs), gated by
+The new [process test](../../../engine/crates/shell/tests/serve.rs), gated by
 CONDUIT_TEST_NPM, begins with registered S1 and outstanding setup. The real serve process
 initializes both unchanged filesystem servers. rmcp consumers use the run-directory tokens
 for A and B, with exactly five and six tools respectively. Base S1 Agents have no executable;

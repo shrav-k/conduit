@@ -25,10 +25,10 @@ than repeat them.
 | Understand Conduit | [README](../README.md) → [spec/README.md](../spec/README.md) → [spec/definitions.md](../spec/definitions.md). The [overview](OVERVIEW.md) is a plain-language tour, and [spec/schemas/examples/](../spec/schemas/examples/) holds worked documents. |
 | Write documents, as an author | The [overview](OVERVIEW.md) → the specification's [path for an author of documents](../spec/README.md#an-author-of-documents), with [what access does not narrow](../spec/README.md#what-access-does-not-narrow). |
 | Write a contract or a provider | The specification's [path for a writer of contracts and providers](../spec/README.md#a-writer-of-contracts-and-providers). |
-| Run what exists | [The first build's commands](../reference-model/README.md#running-it) → [live S1](../reference-model/examples/s1/README.md) for real Agents. As of 2026-11-10, both increment 4 [author runs](proposals/first-build/README.md#the-logs) completed T1 to T7 but failed the owner's bar for authoring work; simplification and a rerun remain. |
+| Run what exists | [The first build's commands](../engine/README.md#running-it) → [live S1](../engine/examples/s1/README.md) for real Agents. As of 2026-11-10, both increment 4 [author runs](proposals/first-build/README.md#the-logs) completed T1 to T7 but failed the owner's bar for authoring work; simplification and a rerun remain. |
 | Read the text cold | [Cold readers' instructions](guides/cold-readers.md) → [for the next reader](AUDIT.md#for-the-next-reader). |
 | Set up the owner's accounts and machines | [Setup guides](guides/README.md), including ruling 49's sign-in flow, pending as of 2026-11-10. |
-| Implement the specification: the reference model, the vectors or a first provider | [The first build](implementation/FIRST_BUILD.md), then the specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch; see the Build an engine row. |
+| Implement the specification: the engine, the vectors or a first provider | [The first build](implementation/FIRST_BUILD.md), then the specification's [path for an engine builder](../spec/README.md#an-engine-builder). The builders of the two independent engines do not read this branch; see the Build an engine row. |
 | Learn the state of the work | [Roadmap](../ROADMAP.md) → [where things stand](AUDIT.md#where-things-stand) → [action items](AUDIT.md#action-items) in the plan audit. |
 | Propose an experiment or a probe | [Experiments and probes](../ROADMAP.md#experiments-and-probes) in the roadmap → [proposing an experiment](../ROADMAP.md#proposing-an-experiment) → [experiments/](../experiments/README.md). |
 | Understand a ruling | [Ruling log](AUDIT.md#ruling-log) → the [record](#records-of-rulings) of that batch → [research](research/README.md) for the evidence. |
@@ -136,7 +136,7 @@ specification governs.
 | [implementation/ENGINE_BUILD_BRIEF.md](implementation/ENGINE_BUILD_BRIEF.md) | The brief each builder receives. A draft; not issued. |
 | [implementation/WORK_ORDERS.md](implementation/WORK_ORDERS.md) | How the work is divided under ruling 48: the coordinator, the admin session, plans and decides; Codex workers carry out work orders, each written before it runs, kept in [work-orders/](work-orders/README.md). Not binding. |
 | [implementation/FIRST_BUILD.md](implementation/FIRST_BUILD.md) | The pre-registration of the first build (A68), as ruling 46 shaped it: what it is, the theses it tests, its four increments and what each must show, the success criteria, the tasks and measures it shares with the baseline for S1, and how its findings are logged. Not binding. |
-| [../reference-model/](../reference-model/README.md) | As of 2026-11-10, the first build's Rust workspace holds the strict loader, pure core, vector runner and runnable engine shell. Increments 1 to 3 are done; increment 4 is in progress after both author runs failed the bar for authoring work. Its README gives commands, and [CONFORMANCE.md](../reference-model/CONFORMANCE.md) states its choices and remaining implementation work. Not binding. |
+| [../engine/](../engine/README.md) | As of 2026-11-10, the first build's Rust workspace holds the strict loader, pure core, vector runner and runnable engine shell. Increments 1 to 3 are done; increment 4 is in progress after both author runs failed the bar for authoring work. Its README gives commands, and [CONFORMANCE.md](../engine/CONFORMANCE.md) states its choices and remaining implementation work. Not binding. |
 | [../conformance/](../conformance/README.md) | As of 2026-11-10, portable cases for slices of the promises, a first-build profile, fixtures and a coverage manifest. Missing coverage is stated separately from passing vectors. Not binding. |
 | [work-orders/](work-orders/README.md) | Orders for Codex workers under ruling 48, with report schemas and the link to the admin's record. As of 2026-11-10 the index lists orders 001 to 029; admin records exist through 028, and order 029's record is pending. |
 
@@ -154,7 +154,7 @@ One main repository is accepted. It uses Apache-2.0 for original material, and p
 naming remains deferred under the
 [publication policy](../CONTRIBUTING.md#project-ownership-and-publication).
 
-As of 2026-11-10, `reference-model/` holds the first build's core and engine shell,
+As of 2026-11-10, `engine/` holds the first build's core and engine shell,
 `conformance/` holds its vectors, and `packages/` holds the Claude Code and Codex Agent
 packages. Providers belong under `packages/`, one Rust crate per provider (ruling 40).
 The [independent builds](implementation/INDEPENDENT_BUILDS.md#repository-layout-and-isolation)

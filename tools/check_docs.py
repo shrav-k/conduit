@@ -8,7 +8,7 @@ It checks, in every Markdown file, that each local link leads to a path that exi
 anchor is a heading or an `id` of the file it points into, that each reference link is defined
 once, and that each code fence is closed. Repository GitHub permalinks are checked against
 local Git objects; other external links are not followed. Literal repository path mentions
-in tools, the conformance manifest and reference-model sources are checked too.
+in tools, the conformance manifest and engine sources are checked too.
 
 It finds the Markdown files in one of two ways, and its first line of output says which:
 
@@ -195,7 +195,7 @@ class Permalinks:
 # are handled below; concrete missing historical paths are still reported for the admin.
 PATH_EXCEPTIONS = {"tools/call": "JSON-RPC method", "tools/list": "JSON-RPC method"}
 PATH_MENTION = re.compile(
-    r"(?<![\w/.:{\-])(?:(?:docs|spec|conformance|reference-model|packages|experiments|tools)/"
+    r"(?<![\w/.:{\-])(?:(?:docs|spec|conformance|engine|packages|experiments|tools)/"
     r"[A-Za-z0-9_.{}*?\[\]/-]+|(?:AGENTS|CONTRIBUTING|README|ROADMAP)\.md)(?![\w.-])")
 
 
@@ -207,7 +207,7 @@ def path_mentions():
     """
     sources = set((ROOT / "tools").glob("*.py"))
     sources.add(ROOT / "conformance/manifest.yaml")
-    for current, directories, names in os.walk(ROOT / "reference-model"):
+    for current, directories, names in os.walk(ROOT / "engine"):
         directories[:] = [name for name in directories if name not in SKIPPED]
         sources.update(Path(current) / name for name in names
                        if Path(name).suffix in {".rs", ".toml"})

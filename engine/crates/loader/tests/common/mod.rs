@@ -8,7 +8,7 @@ use std::sync::OnceLock;
 
 use conduit_loader::{Diagnostics, Project, Specification, read_submitted_files};
 
-/// The root of the repository: this crate is `reference-model/crates/loader`.
+/// The root of the repository: this crate is `engine/crates/loader`.
 pub fn repository() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../..")

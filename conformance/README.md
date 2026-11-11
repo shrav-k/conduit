@@ -103,7 +103,7 @@ which is the actual Conduit target REC-002 requires.
 
 ## Running
 
-From `reference-model/`:
+From `engine/`:
 
 ```sh
 cargo run --release -p conduit-conformance
@@ -407,7 +407,7 @@ declare the promise fail. The inventory currently has 217 rows with vectors and 
 reasons, including loader tests not yet ported, missing boundary cases and shell work. Those
 reasons remain visible coverage debt, logged in the increment's I2-09 section.
 
-The first build's [conformance choices](../reference-model/CONFORMANCE.md) and the
+The first build's [conformance choices](../engine/CONFORMANCE.md) and the
 [increment 3 handoff](../docs/proposals/first-build/increment-3-handoff.md) state the current
 interface, outstanding core work and shell evidence. The increment log also proposes how a
 later order can reduce repeated fixtures and state/record assertions; this order does not

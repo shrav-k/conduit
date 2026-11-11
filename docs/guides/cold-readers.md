@@ -38,10 +38,10 @@ Use the next-reader section's **Known to be open**, **Left for a reader by the r
 without a new situation. Its status statements have not all caught up with the build. As of
 2026-11-10:
 
-- A reference model, vectors and an engine shell exist. Use the
+- The engine, vectors and a runnable shell exist. Use the
   [roadmap's step 3](../../ROADMAP.md#the-order-of-the-work), the
   [coverage manifest](../../conformance/manifest.yaml) and the build's
-  [conformance document](../../reference-model/CONFORMANCE.md) for current coverage and
+  [conformance document](../../engine/CONFORMANCE.md) for current coverage and
   implementation limits. A missing implementation is distinct from an undecided language rule.
 - The [build logs](../proposals/first-build/README.md) record decisions since round 6. For
   example, increment 2 settled the reserved root `$defs` copy-key question and the two plain

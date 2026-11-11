@@ -6,7 +6,7 @@ here and the specification differ, the specification governs.
 This directory holds what the first build finds in the language: one log per increment, as
 [ruling 46](../ruling-46/README.md), point 4, has it. The increments and what each must show are
 pre-registered in [the first build](../../implementation/FIRST_BUILD.md#increments), and the
-code is in [reference-model/](../../../reference-model/README.md).
+code is in [reference-model/](../../../engine/README.md).
 
 ## What a finding is
 

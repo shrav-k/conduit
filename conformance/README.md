@@ -117,6 +117,54 @@ the same suite. Broken fixtures and unsupported inputs fail as harness errors, n
 Conduit reasons. An undecidable language case is stopped and logged for the admin in
 [the increment's log](../docs/proposals/first-build/log-increment-2.md).
 
+## Reviewing vector changes
+
+From the repository root, `python3 tools/vector_delta.py [BEFORE [AFTER]]` compares
+`origin/main` with `WORKTREE` by default; either side may be a Git revision or `WORKTREE`.
+It reads authored cases and fixture bytes, without running an engine or generating expectations.
+JSON is read first; YAML cases and declarations require an interpreter with PyYAML.
+Cases (`case.yaml`, `case.yml`, `case.json`) are paired by stable `id`, so moves are reported
+as renames; changed IDs are removals and additions. Steps are paired by array index.
+Each change is a JSON output line followed by a count summary. Case paths are JSON Pointers
+with zero-based step indices; the displayed `step` starts at 1. Fixture paths are relative to
+the repository, including fixtures outside this directory. All declared file aliases are checked
+as bytes, with hashes and byte counts for changed contents. Formatting-only case changes are
+ignored; metadata, initial state, inputs and captures are included. Unreadable files, duplicate
+IDs and unsupported case/fixture symlinks are reported as errors.
+
+Flips show before and after for `expect.accepted`, `expect.stateUnchanged` and
+`expect.reply`'s `reason`, `outcome`, `accepted` and whole `tool` value, including additions or
+removals of these assertions in existing cases. An absent `before` or `after` means a missing
+value, distinct from JSON `null`. Added and removed cases get one case-level entry each.
+Other expectation changes are reported by JSON path.
+
+An order may supply `--declared FILE`, a YAML or JSON list of intended shapes:
+
+```yaml
+- name: intended refusal change
+  kind: flip
+  cases: ['s1-*']
+  paths: ['/steps/*/expect/reply/reason']
+  before: refused
+  after: conflict
+- name: registration gains owner
+  kind: expectation
+  cases: ['s1-register-*']
+  paths: ['/steps/*/expect/reply/objects/*/owner']
+  operation: add
+  after: example-fleet
+```
+
+`name`, `kind` and `cases` are required. Kinds are `added`, `removed`, `renamed`, `flip`,
+`expectation`, `input`, `fixture` and `metadata`. Case globs match IDs; optional `paths` globs
+match report paths and default to `['*']`. Both use case-sensitive `fnmatch` syntax, where `*`
+also matches `/`. Optional `before`/`after` constrain exact JSON values; `operation` constrains
+`add`, `remove` or `replace`. Omitted constraints match any value; unknown keys are errors.
+The first matching shape names the declaration on the change. Errors cannot be declared.
+Exit status is 0 with no flips, undeclared changes or errors; 1 otherwise, **even for declared
+flips**, which still need review. Invalid arguments, revisions or declarations exit 2.
+`python3 tools/vector_delta.py --help` includes the declaration format.
+
 ## Authored schemas and E05
 
 I2-02 adds `schema-case`, `schema-admission` and `schema-evaluation` runner inputs. Each names

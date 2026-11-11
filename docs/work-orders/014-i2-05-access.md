@@ -8,7 +8,7 @@ and for tests that bind a loopback port; use it for nothing else.
 
 ## What and why
 
-I2-05 of the [study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders),
+I2-05 of the [study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders),
 the part of the core that is Conduit's own: whether a request may go ahead, and which tools an
 Agent is shown. A request is attributed to one instance (IFC-022) and then decided by that
 instance's open Conduits, nothing else; an Agent is shown exactly the tools of its open

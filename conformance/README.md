@@ -115,7 +115,7 @@ promise IDs, and fails with the case, step and mismatched expectation. Every dis
 runs; there is no layer filter that could silently skip conventions. The workspace test runs
 the same suite. Broken fixtures and unsupported inputs fail as harness errors, never invented
 Conduit reasons. An undecidable language case is stopped and logged for the admin in
-[the increment's log](../docs/proposals/first-build/log-increment-2.md).
+[the open increment's log](../docs/proposals/first-build/log-increment-4.md).
 
 ## Reviewing vector changes
 
@@ -362,7 +362,7 @@ interrupted attempt requires supplied `evidence` for its records; settled state 
 observes an empty record store left by an
 external purge; it is not a `purge.v1` implementation. `expire-outputs` explicitly exercises
 DL10, removing retained outputs and plain content, while preserving the invocation.
-The [finding log](../docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
+The [finding log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
 records the admin’s narrowing of header repair and the return-review regressions.
 
 ## Setup and Conduit lifecycle (I2-07)
@@ -456,7 +456,273 @@ reasons, including loader tests not yet ported, missing boundary cases and shell
 reasons remain visible coverage debt, logged in the increment's I2-09 section.
 
 The first build's [conformance choices](../engine/CONFORMANCE.md) and the
-[increment 3 handoff](../docs/proposals/first-build/increment-3-handoff.md) state the current
+[increment 3 handoff](../engine/README.md#the-cores-boundary) state the current
 interface, outstanding core work and shell evidence. The increment log also proposes how a
 later order can reduce repeated fixtures and state/record assertions; this order does not
 rewrite the legacy vectors.
+
+## Planned work
+
+These are coverage and representation proposals under A39, not new language promises.
+
+### Lean vectors
+
+Before this order, `conformance/` held **8,202,082 bytes in 1,269 files**. Its 361 case files
+held **6,674,308 bytes**. The largest was setup-close, 92,353 bytes; setup-base was 91,376.
+These are case scripts containing repeated traces and expectations, not 361 independent
+90 KB state snapshots: 224 cases used an initial snapshot recipe, mostly referencing the
+same 10,700-byte root/system state. There were 207 repeated register-project inputs and
+129 expectations containing whole object arrays. Repeated supplied UUID pools, expanded
+registration records, package/contract contexts and pretty-printed expected states account
+for much of the size. For scale, compact JSON encoding of the legacy input evidence fields
+alone takes 980,757 bytes, expected record fields 1,083,521, and expected state fields
+1,236,657; these logical field counts are not additive measurements of disk space.
+
+The new continuous case keeps ordinary documents shared by file alias and uses existing fact
+projections for most later steps; it deliberately carries its own full first-start and S1
+registration assertions and supplied evidence. Its length is a reason to improve the runner
+format rather than copy this full trace into every future case. **No legacy vector is
+rewritten here.** A later order can:
+
+1. Add versioned runner-only shared scenario fixtures for common first start, registration,
+   setup traces and allocation evidence. Make prerequisites explicit, acyclic and immutable;
+   include no fixture syntax in Conduit documents. Avoid bootstrapping a test of setup from
+   a silently ready snapshot. Keep one continuous empty-state S1 case.
+2. Reuse ordinary package/project files and small declared variants, and deduplicate repeated
+   fixture documents by content. Preserve original manifest bytes/values and package digests;
+   never hide a changed submission behind a fixture merge.
+3. Replace large repeated expected states with exact identity/cardinality sets plus required
+   field projections and explicit absences. For records, keep exact event counts/order and
+   correlation, optional data only where its rule is under test (decision 7, REC-001/002).
+   Extend the existing record_facts matcher with exact cardinality/set checks before dropping
+   legacy exact record arrays; a subsequence alone must not permit extra effects.
+4. Offer named deterministic allocation blocks/captures at the runner boundary, expanded to
+   explicit Evidence before step. Keep uniqueness/exhaustion checks and report expanded input
+   on failure. Never let shorter fixtures supply time or entropy from ambient sources.
+5. Migrate by family, run both representations and compare transitions/verdicts, and retain
+   omission/extra-object, missing-record and wrong-correlation regression checks. Measure
+   bytes before/after and preserve case IDs, manifest attributions and readable failure paths.
+   Invocation-context compaction is a separate DL2 storage task, not a fixture rewrite.
+
+
+At the condensation plan’s measurement, conformance/ was about 12 MB and 414k words;
+these are historical sizes, not measurements of this edit. Keep case IDs and attributions
+while measuring any later migration; changing storage for invocation contexts is separate.
+
+### Coverage and safety tagging
+
+Port loader-only rows as portable vectors and add semantic boundary pairs: capability/Type
+rejection, frozen placement, consumer crash, standalone opens, missing revisions and expected
+retirement conflicts. Qualify release compatibility: the old “before T5” requirement was
+coverage debt, and T5 having run does not qualify that semantic boundary. Credential secrecy,
+actual process environment, client catalogs and around-engine reach need shell evidence;
+scripted core facts cannot supply it. The manifest records unvectorized reasons, not passes.
+
+Carry D08’s nested Resource variant: put shared in a Pool entry, retire it explicitly, use
+register-replacement.v1 on that entry, then restore access. Measure its extra structure;
+a top-level Resource replacement does not establish nested replacement. T4/T5/T6 preserve
+Agent/history identities only through explicit transitions; old references do not retarget.
+
+Reconcile the historical 74 cases without safety_rows and review the 38 empty lists against
+[s1-safety-cases.md](s1-safety-cases.md). Those traces are proposed safety work; safety_rows
+currently has its own tag vocabulary. Neither the counts nor the tags define a safety-promise
+list or establish coverage. Port the scenarios of the 16 “vector pending” and 29 DL-mapped
+runtime rows in [LANGUAGE_DEFECTS](../docs/LANGUAGE_DEFECTS.md), with their actual evidence limits.
+
+### Evidence of vector strength so far
+
+Historical evidence copied verbatim from increment 2; this is the evidence toward A44 and G6,
+not a fresh run or a claim beyond the assertions and limits below.
+
+**S1 assertion probes.** Two temporary mutations to the resolver were compiled separately:
+retargeting each new Conduit to its consumer, and appending an extra operation after the
+capability check. Each mutation failed all three strengthened S1 variants, respectively at
+`target/id` and the exact `operations` array length. The source was restored after the probes;
+neither mutation is part of the change.
+
+**Regression evidence.** Each of these seventeen cases was run with its corresponding fix
+disabled, with the other fixes present, and failed. The failures respectively exposed the
+wrong first entry, the missing hook part, the lost cancelled entry part, settlement before
+outstanding work ended, rejection of the frozen replacement input, invalid conditions, a
+forbidden provider run intent and inherited `serving` on a provider record. All cases are
+required by the inventory test. No expected failure is presented as a successful check.
+
+**Choices made by the worker.** Independent entries use deterministic name order as a tie
+break; references determine their dependencies. A retirement-prevented required part is
+represented as `retired-before-part` with no effect. Running conditions use `RunRunning`,
+`RunStopped` and `RunUnknown` reasons, and a provider UUID URN or the built-in runner's URN
+as their source. These are core and runner representations of the cited promises.
+
+
+## I2-08: records, inspection and repair (work order 017)
+
+The worker applied decision 7's six event types. Registration now records its access,
+dispatch and ending, with an invocation entry, without changing earlier object allocations. The preparation boundary canonically orders
+documents for its retained index so SUB-001 permutations remain equivalent.
+Provider inspection/run reports now emit completion records with the run instance in the
+CloudEvent subject. Each record is validated against `record.v1`; the runner additionally
+checks applicable invocation, caller, route, key, serving and outcome fields and access before
+dispatch. The existing provider-record vector now asserts the subject at the CloudEvent root
+and both halves of the provider call.
+
+The eleven `records-*` vectors cover inspection, unreadable ranges, purge, its root reservation,
+strict cutoff and permanent certificates, unknown and succeeded repeats after purge, E11,
+E12 and E08, including the broker's carried filter. The authority vector retains a known
+caller when Conduit state is unreadable, omits an unreadable identity, and records no request
+that is both unreadable and unidentified, under REC-001 and IFC-036. E11 resolves the replacement against the
+new manifest and contracts, preserves the template ID, changes its revision only for changed
+contents/context, keeps old instances frozen and resolves new instances against the new
+context. E12 observes removal/name reuse and checks stale inspection/setup IDs with owning-Pool
+authority, refusal without it, invalid ID addressing through management, lost credentials and
+a successful follow-up with the current ID. It claims no retirement recovery. E08's approved
+onward registration is supplied by a simulated trusted adapter, and creates no setup or run.
+The adapter's approval logic remains separate provider evidence.
+
+**Implementation choices.** The built-in project is supplied in Context for resolving
+values-only management submissions. Replacement validation uses a private staging state and
+supplied evidence, commits no staged allocations, and invokes no implementation. Purge
+certificates use `object-change` with `action: records-purged`, cutoff and removed source/ID
+pairs. Gaps retain source/ID metadata and are conservatively shown on every inspection until
+more precise object association exists. Export's unreadable IDs describe a temporary read
+failure; they do not delete data. Typed input references are associated with their object IDs when dispatched, using the
+schema-directed walk also used for record redaction; inspection does not retarget them when
+a name is reused. The input-reference vector checks unknown work naming another Resource,
+including after purge and name reuse. The profile documents these representations. D19 counts
+compact serialized UTF-8 JSON arrays: records, gap metadata and invocations separately,
+including held contexts and retained outputs, with signed per-step growth and per-invocation
+bytes, key status and outcome. No key expires and no index is compacted.
+
+### 2-08. Inspection of a missing Resource through a Pool
+
+**Class:** ambiguity. **Promises:** ACC-033, OPS-023, OPS-029, LIF-037.
+**State:** Settled by the admin, on the return review of work order 017, 2026-11-09.
+The owner can strike it.
+
+**The ambiguity.** The description of `inspect.v1` and OPS-029 said a missing object reports
+invalid through management or a Pool. ACC-033 requires the Resource's owning Pool, which
+cannot be established for an absent object. OPS-023 puts authority before diagnostics, and
+LIF-037 says an expected ID supplies no authority.
+
+**The admin's decision.** Least disclosure: an object that does not exist has no owning Pool.
+Authority to inspect it, or to act on it by a stale reference, is management's alone. A caller
+with only a Pool's authority is refused, before any diagnostic, and learns nothing of whether
+it existed. Where the object exists, ACC-033's owning-Pool rule applies. With management
+authority, naming a missing object reports invalid. The worker amended `inspect.v1`, ACC-033
+and LIF-037 in the extended scope.
+
+**Vector.** [records-expected-id](conventions/records/expected-id/case.yaml)
+now pairs the formerly stopped Pool-only caller naming a missing Resource with the management
+caller naming the same Resource, both with and without a stale expected ID. It asserts refused
+without diagnostic, output or object/ID disclosure for the former, invalid for the latter,
+no dispatch and unchanged objects. The supplied core's routing already implements this
+least-disclosure rule; the new pairs passed before the edits.
+
+**OPS-029, amended by the admin.** OPS-029's observable said: "So a request for `inspect.v1` that
+names nothing reports invalid whether it is made through a Conduit to `management` or to a Pool",
+on the reasoning that refused can be told only for a thing that exists. So the case was not
+undecided, as 2-08 first read it: OPS-029 decided it the other way. The admin keeps its
+settlement, as a choice against disclosure rather than the filling of a gap: names are global
+per kind (OBJ-002), so under the old text a caller with a Pool's authority alone could tell a
+name that exists nowhere (invalid) from one that exists in another Pool (refused). The admin
+amended OPS-029's sentence to match, the same day. The owner can strike it, which would restore
+OPS-029's text and reverse 2-08.
+
+**Measured D19 sample, 2026-11-09.** In `records-purge`, record storage fell from 9,187 to
+4,495 serialized bytes. The keyed unknown write's invocation entry stayed at 373,365 bytes.
+The entire invocation array grew from 499,935 to 622,636 bytes because the purge itself is
+another retained invocation. These counts include the representation's held contexts; they
+are measurements of this vector, not a capacity projection or a proposed compaction policy.
+
+**Verification before the return review.** The runner passed all 356 cases, including the eleven new records cases.
+The workspace's release tests, clippy with warnings denied and formatting check passed, as
+did the documentation, assigned-name, schema, roadmap and whitespace checks. The runner's
+negative checks reject missing applicable record fields, dispatch before its access record,
+and inspection that omits a record or an unknown invocation.
+
+### Return review of work order 017
+
+1. **Retained successful registration and replacement — OPS-009, ACC-033, OPS-023.** The
+   records preflight now runs only for a new invocation or a dispatched new attempt, just as
+   lifecycle preflight does. The current authority and input checks remain before the repeat
+   answer. [records-replay-register](conventions/records/replay-register/case.yaml)
+   and [records-replay-replace](conventions/records/replay-replace/case.yaml)
+   compare the retained outputs and invocation ID, unchanged objects, and exactly an access
+   decision and request ending, with no dispatch. Both failed on the supplied tree: OBJ-002
+   and REV-002 conflicts respectively.
+2. **Template inspection — LIF-012, LIF-013 and inspect.v1's outputSchema.** LIF-012 says,
+   "It exists until it is unregistered, and has no lifecycle state", and "Inspecting a template
+   returns no lifecycle state, and no operation gives it one." LIF-013's `when` is "An instance
+   is inspected". The contract makes `status` optional and requires `state` whenever it is
+   present. These decide the case: omit template status, retain all instance status, and invent
+   no template state. [records-inspection](conventions/records/inspection/case.yaml)
+   now forbids template status and cites LIF-012; it failed before the fix. The runner validates
+   generated and retained successful built-in outputs and successful repeat replies against
+   the actual core contracts. Its negative schema test rejects status without state, and its
+   inspection checks reject a lifecycle state on a template.
+   This validation also exposed `register.v1` emitting `nested: null` for ordinary objects
+   and internal parent/slot fields for nested ones. The `object.v1` contract and INS-016
+   decide the result shape: omit `nested` for ordinary objects and return `instance`/`name`
+   for nested ones. The [Pool-entry registration](language/registration/pool-entries/case.yaml)
+   vector now asserts those exact required fields and the absence of storage fields.
+3. **Keys before invocation allocation — REC-002.** Its `then` requires the supplied key,
+   and its observable says "Each of those is present in every record to which it applies."
+   [records-keyed-refused](conventions/records/keyed-refused/case.yaml),
+   [records-keyed-invalid](conventions/records/keyed-invalid/case.yaml)
+   and [records-keyed-conflict](conventions/records/keyed-conflict/case.yaml)
+   assert the key on both records with no invocation allocated. All three already passed on
+   the supplied tree: an earlier assignment put the key directly into the route. The worker
+   consolidated propagation into the identity/key copy after route normalization, removing
+   that earlier assignment. The runner now compares both outer records directly with the
+   supplied request key, independently of any invocation entry; its negative test removes
+   either key, both keys, and changes one key. No original-tree failure is claimed here.
+
+**Choices made by the worker.** Centralize the supplied key with the request identity rather
+than assign it twice. Validate built-in outputs in the runner against its actual core schema
+environment, including newly retained successes and replies from earlier invocations. These
+are implementation and verification choices, not new language semantics.
+
+**Regression evidence.** With the other fixes present, disabling the repeat-preflight guard
+failed each replay vector with its original conflict; disabling template-status omission
+failed inspection's actual output-schema check; omitting the consolidated key copy failed
+each of the three keyed ending vectors with a missing request key. Reverting registration's
+result shape failed the Pool-entry vector under `object.v1`. Disabling either new runner
+validator failed its corresponding negative unit test. These are nine expected failures,
+not successful conformance results; all temporary mutations were restored. The supplied-tree
+keyed rejection vectors passed before consolidation, as recorded above.
+
+### Increment 2's done-when, item by item
+
+| Item from the first build | Evidence and limit |
+| --- | --- |
+| S1's documents register and resolve | `s1-whole` resolves the actual filesystem/history/Agent snapshots and registers the ordinary S1 project after actual first start. It asserts the 19 new objects, package identities, endpoints, operation lists and lifecycle progress. `registration-s1-orders` additionally checks order independence; `archives-s1` checks real compressed bytes separately. |
+| Every decision cites a promise | The runner rejects every emitted decision with no promise or an unknown ID, on all core steps. DL choices occupy their own field. This is executable citation coverage, not a proof that every citation is sufficient. |
+| The safety vectors pass | The complete suite is required, including E05 standalone schema cases, access/refusal/bounds/filter boundaries, request endings/repeats/restart, partial setup/cancellation, E08's supplied trusted broker, E11 frozen contexts and E12 stale IDs. The run results below report actual checks, not expected passes. |
+| Each case the core cannot decide is a logged finding | Findings 2-01 through 2-08 are settled in this log, including the return reviews. This integrated trace needed no new language answer. Unsupported implementation paths and missing coverage are recorded below for the admin; they are not silently answered or represented as language settlements. |
+
+The [manifest](manifest.yaml) now lists the study's complete inventory:
+308 distinct promises including OBS-001/002/006 in its closing paragraph. 217 have vectors;
+91 have explicit reasons. The runner validates the exact inventory and case references even
+on a development subset; a regression test removes a row, removes a reason and supplies a
+false case attribution, and each must fail. Case tags claim their asserted slice, not an
+entire promise. Loader workspace tests not yet ported to portable cases, missing semantic
+boundary pairs, release-skew/compatibility and shell-only evidence are distinguished in the
+reasons. No promise S1 touches is omitted without explanation. This does not turn the 91
+reasons into conformance results.
+
+The continuous S1 case now asserts exact ordered record arrays for the twelve previously
+unchecked management/setup steps: the initial open, Pool setup, each Resource's setup and
+reports, B's setup, close, replacement registration and replacement setup. A's existing
+three-record dispatch subsequence is also replaced with its complete fifteen-record sequence,
+so both Agents' nested opens and all their request endings are required. These thirteen
+steps assert 75 records, including caller/consumer/Conduit/operation/invocation correlation,
+applicable serving and idempotency keys, lifecycle changes, and invocation/request endings.
+Exact arrays also reject additional or reordered records. No core behavior changed.
+
+**Return-review verification.** A temporary runner harness first ran `s1-whole` successfully,
+then reran the case 75 times, removing one of these records from the observed transition
+immediately before expectation matching on each run. This deliberately bypassed the global
+record invariants, so the vector's own expectations had to catch every omission. All 75 runs
+failed at the affected step's `/records` expectation with one fewer record than required.
+The runner source was restored; no fault injection remains. The release
+workspace tests passed on the restored source, including all 362 portable cases; clippy
+with warnings denied and formatting passed too.

@@ -8,7 +8,7 @@ and for tests that bind a loopback port; use it for nothing else.
 
 ## What and why
 
-I2-06 of the [study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders):
+I2-06 of the [study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders):
 once access allows a request (order 014), the core decides how it ends: its outcome or its
 reason, the answer that a repeat gets, what a result from a `plain` server means, and what
 happens when an outcome is unknown. Nothing here sends a call: the core decides, and the shell
@@ -31,11 +31,11 @@ decision 8; and the core as order 014 left it.
 3. **F1, by decision 5**: the content of a succeeded `plain` invocation is kept and given again
    on a repeat, as declared outputs are, for as long as DL10 keeps outputs; after that a repeat
    reports conflict under OPS-034. Amend OPS-009, IFC-025 and DL10 to say so, add the vector, and
-   log the fix in `docs/proposals/first-build/log-increment-2.md` as "Settled by the admin,
+   log the fix in `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md` as "Settled by the admin,
    decision 5", with "The owner can strike it".
 4. **Plain results**, with the table of IFC-010 and IFC-046 corrected by
    [decision 8a](../proposals/first-build/increment-2/decisions.md), which settles the check of
-   [order 018](../proposals/first-build/check-plain-errors.md): `-32602` from a `plain` server is
+   [order 018](../proposals/first-build/increment-2/decisions.md#evidence-for-decision-8a): `-32602` from a `plain` server is
    treated as any other error of such a server, `failed` for an operation that has no effect,
    is not a control and starts no model work, and `unknown` otherwise; and the engine sends a
    call again after `-32020` only for an operation that has no effect or that its contract

@@ -9,7 +9,7 @@ and for tests that bind a loopback port; use it for nothing else.
 ## What and why
 
 The last order of increment 2, I2-09 of the
-[study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders).
+[study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders).
 Orders 004 to 017 built the core in slices; this one runs S1 through it whole, checks that
 increment 2's done-when in [the first build](../implementation/FIRST_BUILD.md#increments) holds,
 and writes down what the shell of increment 3 receives from it. It claims nothing about real
@@ -17,7 +17,7 @@ Agents: none runs here.
 
 Read: the first build's increments 2 and 3 and "What increment 3 needs"; the study's sections 1
 and 7; [the decisions](../proposals/first-build/increment-2/decisions.md); the
-[log of increment 2](../proposals/first-build/log-increment-2.md); `conformance/` and its
+[log of increment 2](../proposals/first-build/README.md#settlements-register); `conformance/` and its
 manifest; and the core as order 017 left it.
 
 ## The decisions to apply
@@ -34,7 +34,7 @@ manifest; and the core as order 017 left it.
 3. **The first build's conformance document**: `reference-model/CONFORMANCE.md`, stating each
    choice the first build makes on the implementation-defined list (the profile's, and those
    orders 004 to 017 made), each with its DL item and where it is shown.
-4. **What increment 3 receives**: `docs/proposals/first-build/increment-3-handoff.md`, not
+4. **What increment 3 receives**: `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md`, not
    binding: the core's interface as the shell will call it, every intent the core emits and
    every completion it expects, with their shapes; the tool contract the shell presents; and
    what increment 3 must still build or show, from "What increment 3 needs" and experiments 008

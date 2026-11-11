@@ -9,14 +9,14 @@ use it for nothing else.
 ## What and why
 
 The second of increment 2's build orders, I2-02 of the
-[study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders). The
+[study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders). The
 core now has its first transition (order 004). This order gives it the evaluation of the
 schemas that authors write: defaults, validation against a schema in the context of its
 contract, and the publication of a tool's standalone definition, which round 6's E05 is about.
 A tool definition that the engine publishes must mean what the authored schema means, with no
 resolver behind it.
 
-Read: [the study](../proposals/first-build/increment-2/plan.md), section 3's "E05 first" table
+Read: [the study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md), section 3's "E05 first" table
 and the two publication checks after it; [the admin's decisions](../proposals/first-build/increment-2/decisions.md),
 decision 6 above all; IFC-011, IFC-033, NAM-014, NAM-023, SCH-001, SCH-009, SCH-015, SCH-016,
 SCH-019, SUB-005, TPL-011 and TPL-013, and what they cite; round 6's
@@ -40,7 +40,7 @@ as order 004 left them.
 4. **The root `$defs` key** (decision 6, settling the study's F2): an authored schema whose root
    `$defs` holds a key of the form IFC-033 gives a contract's copy is rejected under IFC-033
    when its document is installed or submitted. Amend IFC-033 to say so, with the diagnostic
-   it gives, add a vector, and log the fix in `docs/proposals/first-build/log-increment-2.md` as
+   it gives, add a vector, and log the fix in `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md` as
    "Settled by the admin, decision 6", with "The owner can strike it". If the change belongs in
    `check_schemas.py` too, so that an example shows it, make it there with an example.
 5. **A finding**: as order 004's decision 6 says. Stop a case the text does not decide; log it
@@ -53,7 +53,7 @@ Create and change: `conformance/`, `reference-model/crates/core/`,
 validators, `reference-model/Cargo.toml` and `Cargo.lock`, `reference-model/README.md`, IFC-033
 in `spec/interface/implementation.yaml` for decision 4, `tools/check_schemas.py` and
 `spec/schemas/examples/` if decision 4 needs them, and
-`docs/proposals/first-build/log-increment-2.md`. Report anything else.
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md`. Report anything else.
 
 ## Done when
 

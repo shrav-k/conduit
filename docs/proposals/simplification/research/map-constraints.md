@@ -20,7 +20,7 @@ Scope: the repository <home> was only read; nothing was changed. Only spec/ bind
 
 A note on the "safety" label. The specification has no safety field on its promises, and INDEPENDENT_BUILDS.md (G5) says no list of the safety promises exists yet.
 - conformance/manifest.yaml marks cases with `safety_rows`: 255 cases are tagged with 21 rows covering 149 promises.
-- 74 cases have no `safety_rows` key at all. These are the access, setup and records vectors (access-s1-exact-access, setup-close, setup-close-in-flight, setup-restore, access-s1-pool-authority, records-broker (E08), records-replace (E11), records-expected-id (E12), records-purge). Yet section 3 of docs/proposals/first-build/increment-2/plan.md calls them "remaining safety traces".
+- 74 cases have no `safety_rows` key at all. These are the access, setup and records vectors (access-s1-exact-access, setup-close, setup-close-in-flight, setup-restore, access-s1-pool-authority, records-broker (E08), records-replace (E11), records-expected-id (E12), records-purge). Yet section 3 of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md calls them "remaining safety traces".
 - 38 cases have an empty list.
 - So "safety" below means the tagged rows plus the safety traces in section 3 of that plan. Fixing the manifest's tagging is itself a to-do.
 

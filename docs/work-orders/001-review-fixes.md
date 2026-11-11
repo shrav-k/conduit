@@ -13,7 +13,7 @@ and the owner ruled on the tokens a `pattern` may use (ruling 48, point 3). This
 those decisions to the promises, the loader and `tools/check_schemas.py`, with vectors, and
 logs them.
 
-Read first: `docs/proposals/first-build/log-increment-1.md` (all of it),
+Read first: `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-1.md` (all of it),
 `docs/proposals/first-build/README.md`, `docs/proposals/ruling-46/README.md` (point 4),
 `docs/proposals/ruling-48/README.md`, `spec/README.md`, `spec/schema-profile.md`, and the
 promises named below in `spec/promises/`, `spec/conventions/`, `spec/interface/` and
@@ -108,7 +108,7 @@ version is reported as mediated, under ACC-027. One or two sentences.
 better there, state that the hash of a package file does not pin what its registry resolves
 for the package's dependencies, and that a `command` pins nothing.
 
-**H. The log.** In `docs/proposals/first-build/log-increment-1.md`, add a section "After the
+**H. The log.** In `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-1.md`, add a section "After the
 review of 2026-11-09", with one finding per item A to D and G, numbered from 1-14 on, each with
 its class, its promises, what changed, its vector, and "The owner can strike it" (D: "Settled
 by ruling 48, point 3"). Update the table, the summary and the README's table of logs. Keep

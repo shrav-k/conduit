@@ -10,7 +10,7 @@ clients here: the admin reruns the closeout with them afterwards.
 ## What and why
 
 On 2026-11-10 the admin began increment 3's
-[closeout](../proposals/first-build/increment-3/closeout.md) with the real Claude Code 2.1.318
+[closeout](../proposals/first-build/increment-3/closeout-results-2026-11-10.md#how-to-run-the-open-checks) with the real Claude Code 2.1.318
 and Codex 0.167.0, on a fresh store serving the live S1 project. The engine did its part: each
 Agent's engine list was exact, A's read of the shared file went through the engine with its
 records, no token and no turn's text reached a record, and stopping the server left no
@@ -74,7 +74,7 @@ settled below.
 5. **Pins and versions.** Bump each package's version to 0.1.1, rebuild its pinned copy under
    `conformance/fixtures/agents/`, and update the live project and the vector that registers
    it.
-6. **The closeout plan**: update `docs/proposals/first-build/increment-3/closeout.md` for
+6. **The closeout plan**: update `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3/closeout.md` for
    decisions 1 to 4: a sentinel in an ancestor directory and its baseline; Codex asked to read
    a file outside the engine; the read's text reaching the model.
 
@@ -82,8 +82,8 @@ settled below.
 
 Create and change: `spec/` for decision 1 only, `reference-model/`, `conformance/`,
 `packages/agent-claude-code/`, `packages/agent-codex/`,
-`docs/proposals/first-build/log-increment-3.md` and
-`docs/proposals/first-build/increment-3/closeout.md`. Report anything else that needs changing.
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-3.md` and
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3/closeout.md`. Report anything else that needs changing.
 
 ## Done when
 

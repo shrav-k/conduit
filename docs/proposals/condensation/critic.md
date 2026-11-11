@@ -16,7 +16,7 @@ MAJOR
 
 2. The safety_rows premise is false (conformance/manifest.yaml; E15, E36).
    - The manifest uses 21 distinct values: registration (83), snapshot-context (61), S1-plain-ends (44), archive-installation (40), first-start*, loader-* and s1, among others.
-   - Only S1-plain-ends, S1-key-scope, S1-reconcile and S1-unknown-write are trace names in increment-2/plan.md §3 (:551-584).
+   - Only S1-plain-ends, S1-key-scope, S1-reconcile and S1-unknown-write are trace names in https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md §3 (:551-584).
    - safety_rows is defined in no README, schema or decision. simplification/research/map-constraints.md:22-23 says it is "my reconstruction" and that "the specification has no safety field".
    - Consequences:
      - E15's check ("every safety_rows value names a row of s1-safety-cases.md") fails on about 17 values and about 240 tags in WO-030. check_schemas then fails in every later order, and "report it; do not fix it" conflicts with step (e).
@@ -30,7 +30,7 @@ MAJOR
      - ruling-42: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-conventions.md#L119, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-core.md#L154, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-integration.md#L157 and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-integration.md#L310, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-language.md#L133, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-machines.md#L144, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-secrets.md#L107.
      - ruling-43: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-core.md#L185, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-integration.md#L192 and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-integration.md#L374, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-interface.md#L156, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-providers.md#L138, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-secrets.md#L150.
      - [docs-audit/log-gaps:164](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/log-gaps.md#L164), twelve or more items "each point below needs a decision". Examples: GQ7 (what a request naming a nonexistent object reports), GP9, GP15, GQ10, GP4, GP17.
-     - log-increment-1:695-706 holds more items than the two extracted.
+     - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-1.md#L695-L706 holds more items than the two extracted.
    - AUDIT:226 says only "Most are settled since".
    - Fix: a verifier maps every item under these headings to its settlement (ruling, record or promise), or carries it to "Known to be open". Run this before each deletion.
 
@@ -115,6 +115,6 @@ MINOR
   - squash merges with a message written by hand;
   - order branches named wo/NNN-name.
 - Step 13's "skeptic items (decisions 1-10, rationale 1-12, evidence 1-10, links 1-12)" are not written anywhere the cold reader can see. Commit them with the order.
-- The admin's auto-memory, outside the repository, cites increment-3-handoff.md and other paths that will be removed. Update it after the pass, since it loads into every admin session.
+- The admin's auto-memory, outside the repository, cites https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md and other paths that will be removed. Update it after the pass, since it loads into every admin session.
 
 Verified as correct: AUTHORING :77-119 and :790-798; AUDIT :165-186 and :396-404; the D19 numbers; 027 Record :81-85; packages/agent-codex/README:94; the lib.rs:145 and manifest:6883 dependencies; A79 being the next free number; the AGENTS word count (2,115); 980 experiment files; results.txt and results-rerun.txt being byte-identical; the current promise form check passing (455 promises, no duplicates); and project_digest using canonical JSON, so WO-032's comment-only edits change no digest.

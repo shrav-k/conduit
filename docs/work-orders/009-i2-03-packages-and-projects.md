@@ -9,7 +9,7 @@ use it for nothing else.
 ## What and why
 
 The first part of I2-03 of the
-[study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders): the
+[study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders): the
 contexts in which a document's names resolve. A submitted project and the packages it pins give
 each document the contracts and templates its names reach, and the core resolves them without
 fetching anything. The admin split I2-03 in two, as the study allowed: this part works from
@@ -19,7 +19,7 @@ order.
 
 Read: the study's section 1 and the "Registration and resolving" table of section 2, for the
 PKG, MAN and NAM promises it lists; the drafts under
-[increment-2/s1/](../proposals/first-build/increment-2/s1/); the decisions; SUB-008 for the
+[https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/s1](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/s1); the decisions; SUB-008 for the
 digest of a submitted project; and the core, the runner and the vectors as orders 004 and 006
 left them.
 
@@ -45,7 +45,7 @@ left them.
 
 Create and change: `conformance/`, `reference-model/crates/core/`,
 `reference-model/crates/conformance/`, `reference-model/Cargo.toml` and `Cargo.lock`,
-`reference-model/README.md`, and `docs/proposals/first-build/log-increment-2.md`. Report
+`reference-model/README.md`, and `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md`. Report
 anything else; change nothing under `spec/` unless a finding is settled in this order, which
 none is yet.
 

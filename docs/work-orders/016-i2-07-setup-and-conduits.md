@@ -8,7 +8,7 @@ and for tests that bind a loopback port; use it for nothing else.
 
 ## What and why
 
-I2-07 of the [study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders):
+I2-07 of the [study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders):
 an instance is set up in its parts, in order, and a Conduit is opened, closed, removed and
 replaced as the promises say. S1's T1 and T7 rest on this: two Conduits to one directory,
 opened and closed independently. Nothing here starts a process: the core emits the intents to

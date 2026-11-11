@@ -44,7 +44,7 @@ result of an operation with an effect and outputs, through a filtered Conduit, i
 recovered by repeating).
 
 Status at this condensation: item 1 waits for the S1 edit-cycle measurement; items 3 and 4
-remain open. Item 2 was settled by [2-02](../../first-build/log-increment-2.md#2-02-reserved-root-copy-keys);
+remain open. Item 2 was settled by [2-02](../../first-build/README.md#2-02);
 item 5 is covered by the `e05-escaping` vectors. The current list is in the
 [tracker](../../../AUDIT.md#known-to-be-open). The older list and recommendations keep their words.
 

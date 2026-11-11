@@ -40,7 +40,7 @@ states its choices and limits. This tour describes the language, including parts
 does not yet implement. The build-state statements were updated on 2026-11-10; the date above
 records the last full read of the tour against the specification.
 
-As of 2026-11-10, both increment 4 [author runs](proposals/first-build/README.md#the-logs)
+As of 2026-11-10, both increment 4 [author runs](proposals/first-build/README.md#increments-and-settlements)
 completed T1 to T7 with real clients but failed the owner's bar for authoring work. Rulings
 49 to 54 are accepted, with changes still to be written into the specification, as its
 [status](../spec/README.md) lists: sign-ins and pending actions at the root Interface,

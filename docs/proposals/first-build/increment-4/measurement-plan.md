@@ -94,3 +94,27 @@ Each task ends when the real clients show its intended state, as in increment 3'
 each Agent's engine list, a read or write through the engine by a turn, a refusal where one is
 intended, and for T5 that `append_file` and `copy_file` reach no Agent. Each check's evidence is
 kept, redacted of the lab's path and of any token.
+
+## Options for the rerun's counting rules
+
+Ruling 63 settles the primary chosen-value command reading, tool-written package pins,
+remove/restore counted once, strict and block-style side readings, and package templates as
+provider work. These are settled rules above, not options to put again to the owner.
+
+The earlier papers leave these measurement questions or sensitivities to state before the
+rerun; none is settled by this addendum:
+
+- The short-form critic’s [style sensitivity](../../language-shape/short-form/critic.md):
+  T1 is 32 lines with block maps/flow operation lists, about 38 in idiomatic block YAML.
+  It recommended flow style for init/render; report the style used and the block reading.
+- Its gap 10 asks how the fresh author discovers the short form, Types, operations and config
+  keys, and asks for requests, windows without access, concepts, duplicated values and contract
+  address lines beside the line count. Framed examples alone may lead an author to canonical JSON.
+- The simplification [critic](../../simplification/research/critic.md), gap 3, asks which run
+  judges the bar: it recommends coordinator versus the experienced baseline author, with the
+  fresh run measuring learnability. That comparison choice remains to be stated explicitly.
+- Gap 18’s paper sensitivity: three separate installs instead of one made T1 18 in that paper;
+  actual rerun commands and mistakes must be counted. Ruling 63’s command rule now governs.
+- The earlier synthesis proposed a JSON side reading and counted the history convention as
+  provider work. Ruling 63 explicitly settles templates and block/strict readings, not those
+  two proposals; keep them labelled proposals pending the rerun protocol.

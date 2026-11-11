@@ -99,6 +99,11 @@ ruling 48 settled.
 
 ## Success criteria
 
+The owner’s bar for v0, as recorded in the
+[coordinator’s S1 run](../proposals/first-build/increment-4/coordinator-run-2026-11-10.md), is
+“less of an author's work than the baseline on most of S1's tasks and much more on none”.
+Both first increment-4 runs failed it; the rerun measures it again after simplification.
+
 Accepted by ruling 46, point 3: round 6's suggested criteria for the first author trial, with
 the comparison against A70.
 

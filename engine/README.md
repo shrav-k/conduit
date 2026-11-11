@@ -31,6 +31,119 @@ settled, before simplification is built and S1 rerun. The sections below describ
 implemented slice as of 2026-11-10, distinguishing
 each order's tests from that later closeout; they do not claim whole-language conformance.
 
+## The core's boundary
+
+This describes the current code, including the retirement and install workflows added after
+increment 2. The API is [`conduit_core::step`](crates/core/src/lib.rs):
+`step(&State, Input, &Context) -> Result<Transition, String>`. No filesystem, clock, network,
+process or ambient allocation runs inside it. Unsupported paths and malformed embedding
+facts are errors, not invented Conduit reasons. Consult [CONFORMANCE.md](CONFORMANCE.md) for
+remaining implementation limits before exposing a management operation.
+
+`State` holds started, objects, records, allocated_ids, record_gaps, invocations,
+installed_packages and preinstalled_snapshots. The invocation index includes held contexts,
+setup/retirement progress and retained replies; records alone cannot reconstruct it.
+`Context` supplies builtin, core_package, meta_prefix, templates, record_source and
+core_environment from the names file and core documents. `Evidence` supplies time, ids,
+revisions and suffixes; allocation exhaustion/invalidity fails the embedding input.
+
+### Inputs
+
+The kebab-case tagged variants of `Input` are:
+
+| Input | Values besides kind | Purpose |
+| --- | --- | --- |
+| first-start | evidence, machine | Bootstrap once from supplied hostname/labels/state |
+| resolve-project | snapshots, builtin, project | Resolve documents without registration/effects |
+| register-project | snapshots, builtin, project, evidence, request | Resolve and register atomically |
+| install-archive | archive, snapshots, builtin | Pure byte/hash/archive admission |
+| invoke | evidence, request, key?, archive? | Current-authority invocation, including supported engine workflows |
+| complete | evidence, invocation, attempt, completion | Settle the identified dispatch attempt |
+| cancel | evidence, invocation, confirmation? | Trusted cancellation and optional implementation confirmation |
+| setup-report | evidence, invocation, report | Resume outstanding setup or retirement phase |
+| recover | evidence | End interrupted work unknown without implicit replay |
+| builtin-run-stopped | evidence, object | Record an observed built-in process exit and stopped state |
+| expire-outputs | invocation | Explicit retention boundary, preserving invocation state |
+| access | evidence, request | Access-only verdict, no invocation; a permit cannot outlive a state change |
+| list-tools | identity | Current consumer-private tool list |
+| tool-definition | consumer, conduit, operation | Standalone tool schema publication |
+| export-records | unreadable? | Records and read-availability gaps |
+| check-authored | environment, scope, documents | Authored schema admission |
+| evaluate-schema | environment, scope, schema, value, mode | Schema validation/defaulting |
+| submit | evidence, request, documents | Lower-level protected-template test boundary |
+| request | evidence, request, object | Lower-level resolved lifecycle test boundary |
+
+Invoke/Access use [`AccessRequest`](crates/core/src/access.rs): identity, tool, arguments,
+serving?, readable? and authority_readable?. Identity is instance/id, none or unreadable;
+the availability booleans default true. The shell authenticates and supplies these trusted
+facts; a consumer cannot assert its identity or original caller. The lower-level `Request`
+contains resolved sender, caller, conduit, target and qualified operation. Its target is the
+actual Conduit target, distinct from an object named in arguments.
+
+A [`Project`](crates/core/src/packages.rs) retains manifest, ordinary loaded documents and
+directory; preserve the original manifest for SUB-008. Snapshots carry source, address,
+version, digest and project. An [`ArchiveInput`](crates/core/src/archives.rs) carries name,
+address, version, digest, directory and completion (complete/bytes or unavailable). Installed
+archives retain virtual file bytes/modes and directory/link entries. Case aliases, captures,
+observation recipes and fixture patches belong to the runner, not the core or consumer wire.
+
+### Transitions, intents and completions
+
+A `Transition` returns state, decisions, new records, external_intents, reply and
+request_replies. Decisions carry promises, separate implementation_choices, facts and
+affected IDs. A request reply carries invocation, attempt and its reply even if invocation
+state was removed or restored. A pending reply is internal until completion. The shell must
+persist the transition and records before performing any intent or returning a success.
+
+The current intent producers are [requests.rs](crates/core/src/requests.rs),
+[lifecycle.rs](crates/core/src/lifecycle.rs) and [retirement.rs](crates/core/src/retirement.rs):
+
+| kind | Correlation and action | Returning input |
+| --- | --- | --- |
+| dispatch | invocation, attempt, target, held implementation and tools/call | complete with same invocation/attempt |
+| refresh-tools-and-call | Same fields; one permitted header/tool refresh and safe resend within the attempt | complete |
+| builtin-runner | operation, invocation, caller, subject, inputs; inspect, run or stop | setup-report |
+| provider-call | Same fields plus provider, config and revision; selected runtime provider | setup-report |
+| connect | part, invocation, subject and selected implementation | setup-report connected with the matching part |
+| cancel | invocation and attempt; notify an already-ended invocation | No settling completion |
+| cancel-setup-parts | invocation and subject; cancel outstanding parts, begin none later | No settling completion |
+
+Use held implementation selection, not a new name lookup. A plain dispatch carries only the
+operation arguments; no Conduit metadata/config/revision/identity goes to that server.
+Conduit-aware calls carry the names-file-prefixed metadata; a setup hook omits conduit.
+The consumer’s serving key is interpreted by the engine and is not forwarded.
+
+[`Completion`](crates/core/src/requests.rs) is result/result, protocol-error/code/data?
+or missing. Late/duplicate completions do not change a settled or cancelled outcome.
+Plain content survives successful replay; nonplain envelopes/outputs are validated. A plain
+-32602 is failed only with no effect, control or model work, unknown otherwise. Only the safe
+category gets one -32020 repair; an effectful call is not implicitly sent again.
+[`Report`](crates/core/src/lifecycle.rs) is inspect-run/state, run/outcome/url?, stop/outcome
+or connected/part/outcome. Correlate it with the outstanding phase; ended plans ignore late
+reports. Run success needs a provider URL where required. Cancellation confirmation is
+trusted evidence, not the caller’s assertion that an effect failed.
+
+### Identity and the shell
+
+A run intent’s identity is a descriptor, with materializeFor, environmentNames and fileNames
+read from the current run contract. The core creates no credential or directory. The shell’s
+[`materialize_identity`](crates/shell/src/lib.rs) constructs the actual identity environment
+and files through its authority, for the named instance, using the store and engine URL.
+Keep credentials out of Decisions/records; names come from the contract, not copied literals.
+
+The shell loads bytes, supplies time/IDs and provider/process observations, owns durable
+state/record publication, timers, output expiry, restart recovery, process supervision,
+artifact installation and cancellation. Its Executor implements each intent and submits
+correlated completions/reports; it supplies no second interpretation of access or lifecycle.
+It presents authenticated MCP, current private lists and version-appropriate results/errors,
+checks cancellation ownership, and owns transport/Origin/authentication behavior. After a
+committed change, `access::tool_list_changes` computes consumer-specific list notifications;
+it is a helper, not an intent from step. Client model catalogs and routes around the engine
+need observed shell evidence; the core cannot establish confinement. Future shell evidence
+and unfinished choices belong in [CONFORMANCE.md](CONFORMANCE.md) and the open increment’s
+[log](../docs/proposals/first-build/log-increment-4.md); vector work belongs in
+[Planned work](../conformance/README.md#planned-work).
+
 ## Running it
 
 The toolchain is pinned in [rust-toolchain.toml](rust-toolchain.toml), Rust 1.97.1, which
@@ -137,7 +250,7 @@ Credential directories and authority files are private,
 and actual credentials never enter core inputs or output. The same-key CA file checks
 nothing at the loopback HTTP address. The supported choices and remaining boundaries are in
 [CONFORMANCE.md](CONFORMANCE.md); implementation details and tests are in
-[the increment 3 log](../docs/proposals/first-build/log-increment-3.md).
+[the increment 3 log](../docs/proposals/first-build/README.md#settlements-register).
 
 ## What increment 2 covers
 
@@ -180,12 +293,12 @@ contracts, and compares authored and standalone verdicts for every E05 sample in
 directions. Standalone validation checks all references are local and resolve before compiling
 with no package resolver. As of 2026-11-10, conflicting unconditional defaults are rejected
 under SCH-009 when installed or submitted; equal defaults are one default. Finding
-[2-03](../docs/proposals/first-build/log-increment-2.md#2-03-conflicting-unconditional-defaults)
+[2-03](../docs/proposals/first-build/README.md#2-03)
 records the admin's settlement and its vectors; the owner can strike it.
 
 These I2-02 cases do not exercise registration, access, invocation handling or the shell.
 Unsupported inputs are embedding errors, not invented Conduit reasons. The
-[increment's log](../docs/proposals/first-build/log-increment-2.md) records the settled BOM case
+[increment's log](../docs/proposals/first-build/README.md#settlements-register) records the settled BOM case
 and the verification corrections: registration checks the existing owning Pool's authority
 before exposing protected-template diagnostics, and lifecycle records keep the Conduit's
 target distinct from the named object. Authorized vectors start from an explicit snapshot
@@ -312,7 +425,7 @@ The old patterns and their rewrites are compared with `regress`'s PikeVM backend
 `tests/pattern_rewrites.rs`, avoiding costly backtracking in the historical patterns. The crate cannot be given another engine for `patternProperties`; no
 schema of the specification uses it, and the core matches it itself when it validates the
 schemas that authors write, from increment 2, as the
-[log of increment 1](../docs/proposals/first-build/log-increment-1.md) records.
+[log of increment 1](../docs/proposals/first-build/README.md#settlements-register) records.
 
 ## Snapshot catalogs and project contexts (I2-03, first part)
 
@@ -429,7 +542,7 @@ Dispatch, parameter-header repair and cancellation return intents only; the shel
 persist state and records before carrying them out. General lifecycle/control reconciliation
 remains outside this slice; records purge is described under I2-08 below. The
 [request vectors](../conformance/README.md#request-endings-i2-06) describe their observations,
-and the [finding log](../docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
+and the [finding log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
 records the admin’s narrowing of header repair and the return-review regressions.
 
 I2-07 adds the pure `lifecycle` module. `invoke` now carries out `set-up.v1`,
@@ -513,14 +626,14 @@ records. The [manifest](../conformance/manifest.yaml) inventories every study-se
 promise with vector IDs or an explicit reason for missing coverage, validated by the runner.
 
 [CONFORMANCE.md](CONFORMANCE.md) documents implemented and pending DL choices. The
-[increment 3 handoff](../docs/proposals/first-build/increment-3-handoff.md) lists the inputs,
+[increment 3 handoff](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md) lists the inputs,
 intents, completions, consumer tool contract and shell work items as increment 2 left them.
 At that handoff, archive admission lacked the complete `install.v1` request workflow, and
 public retirement/stop-run paths still needed core work. Orders 025 and 027 supplied those
 paths on 2026-11-10; [Change a serving project](#change-a-serving-project) gives the commands,
 and CONFORMANCE.md states what remains unfinished. The handoff's limits and the increment's
 done-when are recorded in
-[the log](../docs/proposals/first-build/log-increment-2.md#i2-09-s1-whole-and-the-increment-3-handoff-work-order-019).
+[the log](../conformance/README.md#evidence-of-vector-strength-so-far).
 
 ## Consumer HTTP adapter (I3-03)
 

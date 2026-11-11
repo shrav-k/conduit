@@ -192,7 +192,7 @@ How to read a line:
   - Other input requests are not relayed; URL actions within sign-in use IFC-049, and mid-call input_required ends unknown under IFC-016 (41 item 27, 49).
 - What Agents reach (48 point 1, 53 point 7, 55 A5, 61 B13, 70):
   - What an Agent reaches through its own login is off by default, and a template input turns it on for one Agent. An account service that Agents should share becomes a Resource behind a Conduit.
-  - *Spec pending, order 050*: an Agent has its client's own tools, which are shell, code execution, file edits and network. They are on by default in `codex.v2` and `claude-code.v2`, in the directory its template names. In v0 nothing confines them: the client's sandbox and approval prompts are off. The Type's contract says so, and inspection shows them as reach that does not pass through Conduit. One template input turns them off, as when a test exercises only the communication framework. Confinement comes later, through a runtime provider that confines its consumer (70).
+  - *Spec pending, order 050*: an Agent has its client's own tools, which are shell, code execution, file edits and network. They are on by default in `codex.v2` and `claude-code.v2`, in the directory its template names. In v0 nothing confines them: the client's sandbox and approval prompts are off. The Type's contract says so, and inspection shows them as reach that does not pass through Conduit. One template input turns them off, as when a test exercises only the communication framework; this switch is temporary, and a more durable way to state and bound this reach is to be put to the owner (74 point 3). Confinement comes later, through a runtime provider that confines its consumer (70).
   - *Spec pending, batch 2*: an Agent that an actor can take turns on is never given a `get-secret` Conduit, and no actor is given a turn on an Agent that reads a secret. Inspection and plans show, one hop deep, what each turn-holder other than root reaches.
 
 ## 10. Placement, nodes, machines, identity and enrollment
@@ -261,6 +261,7 @@ How to read a line:
   - The observational probes do not block. A7's findings go into v0's public security claim.
 - The experiment program has ten scenarios, as later rulings amended it, with native probes run alongside the language work (9, 40). Every experiment pre-registers what it must show and how each measure is counted (45). A provider contract is shown swappable by two implementations on different tools that pass the same vectors (40; A63).
 - Each run measures what an author must do (44 D22, 46 point 3, 48 point 4, 52 point 6, 53 point 9, 63 point 1).
+  - In the S1 rerun, each Agent template's `ownTools: false` is an authored line (74 point 2).
   - It counts files edited, concepts met, grants made by hand, adapters written, and recovery steps that need a person.
   - The success criteria are fixed before the run. Those the owner accepted: a competent reader completes the checked S1 path without reading ruling history or editing a provider; S2's restrictions differ without copying the shared credential; closing one Agent's access leaves the other working; the user resolves uncertainty without guessing that an effect failed. Observed time and mistakes are recorded before any numeric target is set (46 point 3).
   - Every interval without access is listed (52 point 6, 55 A3).
@@ -286,6 +287,7 @@ How to read a line:
   - An official package names its maintainer and support contact, states which engine versions it supports, and tests installation and use against a released engine.
 - The first public preview needs one released engine and CLI, and one official integration released on its own (47).
 - If an official package's maintenance lapses, the owner appoints a successor or marks it unmaintained. A maintainer ships routine fixes; a change to a shared contract goes through the main repository. The check of package authoring includes an implementation not written in Rust (S7). One website serves engine users and package authors equally (47).
+- `main` is protected before Conduit runs its first work order: changes only through pull requests, for administrators too, and no force-push or deletion (74 point 1).
 - Continuous integration runs only on free runners (64 point 3). The organization's own items wait until the organization exists (64 point 5, 65).
 
 ## 15. How the work is governed

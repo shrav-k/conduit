@@ -79,6 +79,7 @@ The specification alone binds behavior. IN_FORCE.md holds every other decision i
 | 71 | 2026-11-11 | [A faster pace](ruling-71/README.md): two or three coordinators with one merge authority, batch 2 begun on a branch, the bar's rule for each task, small findings delegated. | "I accept your recommendations, if credits run out inform me and I will do my best to remedy the situation" | in force |
 | 72 | 2026-11-11 | [Metrics after batch 2, second accounts, the Windows machine](ruling-72/README.md): metrics outside v0's gate; S3 and S10 replays on second accounts signed in through Conduit; the Windows computer as the second machine. | "1. Agreed 2. Can give you second accounts here but should test conduit authentication with this flow 3. We can use the windows machine whenever needed, I can connect now if absolutely necessary" | in force |
 | 73 | 2026-11-11 | [Browser logins piped through to the person's Interface](ruling-73/README.md): the Interface carries the redirect back, a pasted URL as fallback, in v0 for Agents and Resources. | "I accept your recommendations 1-3" | in force |
+| 74 | 2026-11-11 | [`main` protected; S1's own-tools switch counted and temporary](ruling-74/README.md): protection before Conduit runs its own orders; `ownTools: false` in S1 counted; a durable design to come. | "1 and 2 I agree, though the flag for 2 should be temporary and we should discuss a more durable solution than this flag" | in force |
 
 ## History: ruling-log preamble
 

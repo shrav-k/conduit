@@ -1,0 +1,441 @@
+id: 08-t7-restore
+area: grants
+shows: Reopen names consumer/local name and lifts earlier apply tombstone; stable name, new ID.
+sources:
+- ruling 53 points 3-5
+- ruling 55 A3-A4
+- ruling 59 A3/A7
+- ruling 63 points 1-3
+- spec-batch-1 plan lines 320, 412, 643-652
+- SCT-003
+- SCT-004
+- LIF-013
+- LIF-037
+- LIF-040
+- LIF-041
+- ACC-033
+- OPS-008
+- IFC-023
+- NAM-008
+command: conduit apply . --reopen agent-a/project
+files:
+  conduit.yaml: |
+    apiVersion: github.com/shrav-k/conduit/v0
+    packages: {example.org/s1/filesystem: {version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}, example.org/s1/agents: {version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}, example.org/s1/history: {version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'}}
+  s1.yaml: |
+    fleet: s1
+    pools: {team: {type: github.com/shrav-k/conduit/core#pool.v1}}
+    resources: {shared: {type: example.org/s1/filesystem#local-directory.v1, owner: team, config: {root: /lab/replacement}}, history: {type: example.org/s1/history#file-history.v1, owner: team, config: {root: /lab/history}}}
+    agents: {agent-a: {type: example.org/s1/agents#claude-code.v2, config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}, consumes: {project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read-write}, history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}}}, agent-b: {type: example.org/s1/agents#codex.v2, config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}, consumes: {project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read}, history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}}}}
+applied:
+  format: 1
+  files:
+    conduit.yaml: d4960ea1d5ed92178917ac51a3b323022233a9d396b0fac64dfa8fd5096ea30c
+    s1.yaml: 0fdc9bd676d6e9b375935731663c3ffab13c955452076637d52940fb0ac1fc7d
+  objects:
+  - [Pool, team--t, 00000000-0000-4000-8000-000000000100, r1, template, {type: github.com/shrav-k/conduit/core#pool.v1},
+    [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Pool, team, 00000000-0000-4000-8000-000000000101, r1, ready, {from: team--t, resolved: {type: github.com/shrav-k/conduit/core#pool.v1}},
+    [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Resource, shared--t, 00000000-0000-4000-8000-000000000102, r3, template, {type: example.org/s1/filesystem#local-directory.v1,
+      config: {root: {pathSha256: 009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4}}}, [{address: example.org/s1/filesystem,
+        version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  - [Agent, agent-a--t, 00000000-0000-4000-8000-000000000105, r1, template, {type: example.org/s1/agents#claude-code.v2,
+      config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
+    [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-a, 00000000-0000-4000-8000-000000000106, r1, ready, {from: agent-a--t, resolved: {type: example.org/s1/agents#claude-code.v2,
+        config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
+      owner: s1}, [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-b--t, 00000000-0000-4000-8000-000000000107, r1, template, {type: example.org/s1/agents#codex.v2,
+      config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, [{address: example.org/s1/agents,
+        version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-b, 00000000-0000-4000-8000-000000000108, r1, ready, {from: agent-b--t, resolved: {type: example.org/s1/agents#codex.v2,
+        config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, owner: s1}, [
+      {address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Fleet, s1, 00000000-0000-4000-8000-000000000109, r1, ready, {from: github.com/shrav-k/conduit/core#fleet, resolved: {
+        type: github.com/shrav-k/conduit/core#fleet.v1}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Conduit, root-pool-abc01, 00000000-0000-4000-8000-000000000112, r1, ready, {from: github.com/shrav-k/conduit/core#root-pool,
+      consumer: {kind: Interface, name: root}, target: {kind: Pool, name: team}, as: team, engine-made: true, provenance: {
+        cause: default}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Conduit, root-fleet-abc02, 00000000-0000-4000-8000-000000000113, r1, ready, {from: github.com/shrav-k/conduit/core#root-fleet,
+      consumer: {kind: Interface, name: root}, target: {kind: Fleet, name: s1}, as: s1, engine-made: true, provenance: {
+        cause: default}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Resource, history--t, 00000000-0000-4000-8000-000000000114, r1, template, {type: example.org/s1/history#file-history.v1,
+      config: {root: {pathSha256: 47931f46f0026bfe50c834862a5eb032cafbb0bfec7207165deada8652e0786c}}}, [{address: example.org/s1/history,
+        version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'}, {address: example.org/s1/filesystem,
+        version: 0.1.0, digest: 'sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160'}]]
+  - [Resource, history, 00000000-0000-4000-8000-000000000115, r1, ready, {from: history--t, resolved: {type: example.org/s1/history#file-history.v1,
+        config: {root: {pathSha256: 47931f46f0026bfe50c834862a5eb032cafbb0bfec7207165deada8652e0786c}}}, owner: team},
+    [{address: example.org/s1/history, version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'},
+      {address: example.org/s1/filesystem, version: 0.1.0, digest: 'sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160'}]]
+  - [Conduit, agent-a--history, 00000000-0000-4000-8000-000000000116, r1, ready, {from: example.org/s1/filesystem#read-write,
+      consumer: {kind: Agent, name: agent-a}, target: {kind: Resource, name: history}, as: history, resolved: {
+        capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
+          example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002116,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.1.1,
+        digest: 'sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614'}]]
+  - [Conduit, agent-b--history, 00000000-0000-4000-8000-000000000117, r1, ready, {from: example.org/s1/filesystem#read-write,
+      consumer: {kind: Agent, name: agent-b}, target: {kind: Resource, name: history}, as: history, resolved: {
+        capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
+          example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002117,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.1.1,
+        digest: 'sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614'}]]
+  - [Resource, shared, 00000000-0000-4000-8000-000000000123, r1, ready, {from: shared--t, resolved: {type: example.org/s1/filesystem#local-directory.v1,
+        config: {root: {pathSha256: 009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4}}}, owner: team},
+    [{address: example.org/s1/filesystem, version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  - [Conduit, agent-b--project, 00000000-0000-4000-8000-000000000125, r1, ready, {from: example.org/s1/filesystem#read,
+      consumer: {kind: Agent, name: agent-b}, target: {kind: Resource, name: shared}, as: project, resolved: {capability: example.org/s1/filesystem#directory.v1,
+        operations: [example.org/s1/filesystem#file.read.v1, example.org/s1/filesystem#directory.list.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002125,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.2.1,
+        digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  tombstones:
+  - id: 00000000-0000-4000-8000-000000000330
+    object:
+      kind: Conduit
+      name: agent-a--project
+      id: 00000000-0000-4000-8000-000000000124
+    cause:
+      invocation: 00000000-0000-4000-8000-000000000930
+    time: '2026-11-11T00:00:00Z'
+    by: 00000000-0000-4000-8000-000000000005
+    consumer:
+      kind: Agent
+      name: agent-a
+      id: 00000000-0000-4000-8000-000000000106
+    target:
+      kind: Resource
+      name: shared
+      id: 00000000-0000-4000-8000-000000000123
+    localName: project
+    capability: example.org/s1/filesystem#directory.v1
+    operations:
+    - example.org/s1/filesystem#file.read.v1
+    - example.org/s1/filesystem#directory.list.v1
+    - example.org/s1/filesystem#file.write.v1
+    provenance:
+      actor: 00000000-0000-4000-8000-000000000005
+      sentBy: 00000000-0000-4000-8000-000000000005
+      invocation: 00000000-0000-4000-8000-000000002124
+      openedThrough:
+      - 00000000-0000-4000-8000-000000000007
+  plans:
+  - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
+  - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
+  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
+  - sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade
+  - sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546
+  journals:
+    sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
+    sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
+    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
+    sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade: safe:case:06-t6/requests
+    sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546: safe:case:07-t7-revoke/requests
+engine:
+  base: first-start
+  packages:
+  - address: example.org/s1/filesystem
+    version: 0.1.1
+    digest: sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614
+  - address: example.org/s1/agents
+    version: 0.2.0
+    digest: sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71
+  - address: example.org/s1/filesystem
+    version: 0.1.0
+    digest: sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
+  - address: example.org/s1/history
+    version: 0.1.0
+    digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
+  - address: example.org/s1/filesystem
+    version: 0.2.1
+    digest: sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614
+  objects:
+  - [Pool, team--t, 00000000-0000-4000-8000-000000000100, r1, template, {type: github.com/shrav-k/conduit/core#pool.v1},
+    [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Pool, team, 00000000-0000-4000-8000-000000000101, r1, ready, {from: team--t, resolved: {type: github.com/shrav-k/conduit/core#pool.v1}},
+    [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Resource, shared--t, 00000000-0000-4000-8000-000000000102, r3, template, {type: example.org/s1/filesystem#local-directory.v1,
+      config: {root: /lab/replacement}}, [{address: example.org/s1/filesystem, version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  - [Agent, agent-a--t, 00000000-0000-4000-8000-000000000105, r1, template, {type: example.org/s1/agents#claude-code.v2,
+      config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
+    [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-a, 00000000-0000-4000-8000-000000000106, r1, ready, {from: agent-a--t, resolved: {type: example.org/s1/agents#claude-code.v2,
+        config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
+      owner: s1}, [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-b--t, 00000000-0000-4000-8000-000000000107, r1, template, {type: example.org/s1/agents#codex.v2,
+      config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, [{address: example.org/s1/agents,
+        version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-b, 00000000-0000-4000-8000-000000000108, r1, ready, {from: agent-b--t, resolved: {type: example.org/s1/agents#codex.v2,
+        config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, owner: s1}, [
+      {address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Fleet, s1, 00000000-0000-4000-8000-000000000109, r1, ready, {from: github.com/shrav-k/conduit/core#fleet, resolved: {
+        type: github.com/shrav-k/conduit/core#fleet.v1}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Conduit, root-pool-abc01, 00000000-0000-4000-8000-000000000112, r1, ready, {from: github.com/shrav-k/conduit/core#root-pool,
+      consumer: {kind: Interface, name: root}, target: {kind: Pool, name: team}, as: team, engine-made: true, provenance: {
+        cause: default}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Conduit, root-fleet-abc02, 00000000-0000-4000-8000-000000000113, r1, ready, {from: github.com/shrav-k/conduit/core#root-fleet,
+      consumer: {kind: Interface, name: root}, target: {kind: Fleet, name: s1}, as: s1, engine-made: true, provenance: {
+        cause: default}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Resource, history--t, 00000000-0000-4000-8000-000000000114, r1, template, {type: example.org/s1/history#file-history.v1,
+      config: {root: /lab/history}}, [{address: example.org/s1/history, version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'},
+      {address: example.org/s1/filesystem, version: 0.1.0, digest: 'sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160'}]]
+  - [Resource, history, 00000000-0000-4000-8000-000000000115, r1, ready, {from: history--t, resolved: {type: example.org/s1/history#file-history.v1,
+        config: {root: /lab/history}}, owner: team}, [{address: example.org/s1/history, version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'},
+      {address: example.org/s1/filesystem, version: 0.1.0, digest: 'sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160'}]]
+  - [Conduit, agent-a--history, 00000000-0000-4000-8000-000000000116, r1, ready, {from: example.org/s1/filesystem#read-write,
+      consumer: {kind: Agent, name: agent-a}, target: {kind: Resource, name: history}, as: history, resolved: {
+        capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
+          example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002116,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.1.1,
+        digest: 'sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614'}]]
+  - [Conduit, agent-b--history, 00000000-0000-4000-8000-000000000117, r1, ready, {from: example.org/s1/filesystem#read-write,
+      consumer: {kind: Agent, name: agent-b}, target: {kind: Resource, name: history}, as: history, resolved: {
+        capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
+          example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002117,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.1.1,
+        digest: 'sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614'}]]
+  - [Resource, shared, 00000000-0000-4000-8000-000000000123, r1, ready, {from: shared--t, resolved: {type: example.org/s1/filesystem#local-directory.v1,
+        config: {root: /lab/replacement}}, owner: team}, [{address: example.org/s1/filesystem, version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  - [Conduit, agent-b--project, 00000000-0000-4000-8000-000000000125, r1, ready, {from: example.org/s1/filesystem#read,
+      consumer: {kind: Agent, name: agent-b}, target: {kind: Resource, name: shared}, as: project, resolved: {capability: example.org/s1/filesystem#directory.v1,
+        operations: [example.org/s1/filesystem#file.read.v1, example.org/s1/filesystem#directory.list.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002125,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.2.1,
+        digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  tombstones:
+  - id: 00000000-0000-4000-8000-000000000330
+    object:
+      kind: Conduit
+      name: agent-a--project
+      id: 00000000-0000-4000-8000-000000000124
+    cause:
+      invocation: 00000000-0000-4000-8000-000000000930
+    time: '2026-11-11T00:00:00Z'
+    by: 00000000-0000-4000-8000-000000000005
+    consumer:
+      kind: Agent
+      name: agent-a
+      id: 00000000-0000-4000-8000-000000000106
+    target:
+      kind: Resource
+      name: shared
+      id: 00000000-0000-4000-8000-000000000123
+    localName: project
+    capability: example.org/s1/filesystem#directory.v1
+    operations:
+    - example.org/s1/filesystem#file.read.v1
+    - example.org/s1/filesystem#directory.list.v1
+    - example.org/s1/filesystem#file.write.v1
+    provenance:
+      actor: 00000000-0000-4000-8000-000000000005
+      sentBy: 00000000-0000-4000-8000-000000000005
+      invocation: 00000000-0000-4000-8000-000000002124
+      openedThrough:
+      - 00000000-0000-4000-8000-000000000007
+  unknown: []
+printed: |
+  plan
+  1 access.lift.v1 Tombstone/agent-a--project expected=00000000-0000-4000-8000-000000000330 neither flag=--reopen agent-a/project ACC-053
+  2 management.register.v1 Conduit/agent-a--project expected=(step 2) adds flag=--reopen agent-a/project SCT-007
+  detail document={"apiVersion":"github.com/shrav-k/conduit/v0","as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","kind":"Conduit","metadata":{"name":"agent-a--project"},"target":{"kind":"Resource","name":"shared"}}
+  detail manifest={"apiVersion":"github.com/shrav-k/conduit/v0","packages":{"example.org/s1/agents":{"digest":"sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71","version":"0.2.0"},"example.org/s1/filesystem":{"digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"},"example.org/s1/history":{"digest":"sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69","version":"0.1.0"}}}
+  3 management.inspect.v1 Conduit/agent-a--project expected=(step 2) neither flag=- LIF-013
+  4 access.open.v1 Conduit/agent-a--project expected=(step 2) widens flag=--reopen agent-a/project LIF-037
+  detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1,example.org/s1/filesystem#file.write.v1]
+  affects bounds=[] closed-conduits=[]
+  difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
+  flags [--reopen agent-a/project]
+  ready
+  result 1 succeeded {"outcome":"succeeded","remaining":[]}
+  result 2 succeeded {"diagnostics":[{"level":"note","message":{"text":"Unused package example.org/s1/agents; submission accepted."},"ruleId":"NAM-008"},{"level":"note","message":{"text":"Unused package example.org/s1/history; submission accepted."},"ruleId":"NAM-008"}],"objects":[{"id":"00000000-0000-4000-8000-000000000126","kind":"Conduit","name":"agent-a--project"}],"outcome":"succeeded"}
+  result 3 succeeded {"outcome":"succeeded","view":["Conduit","agent-a--project","00000000-0000-4000-8000-000000000126","r1","registered",{"as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","resolved":{"capability":"example.org/s1/filesystem#directory.v1","operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1","example.org/s1/filesystem#file.write.v1"]},"target":{"kind":"Resource","name":"shared"}},[{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}]]}
+  result 4 succeeded {"invocation":"00000000-0000-4000-8000-000000002126","outcome":"succeeded"}
+recorded:
+  path: .conduit/plans/bb025b1831b586e95f465904a08a0074132dd74a36b8ef80bcbf5cbc961e19d4.txt
+  digest: sha256:bb025b1831b586e95f465904a08a0074132dd74a36b8ef80bcbf5cbc961e19d4
+  text: |
+    plan
+    1 access.lift.v1 Tombstone/agent-a--project expected=00000000-0000-4000-8000-000000000330 neither flag=--reopen agent-a/project ACC-053
+    2 management.register.v1 Conduit/agent-a--project expected=(step 2) adds flag=--reopen agent-a/project SCT-007
+    detail document={"apiVersion":"github.com/shrav-k/conduit/v0","as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","kind":"Conduit","metadata":{"name":"agent-a--project"},"target":{"kind":"Resource","name":"shared"}}
+    detail manifest={"apiVersion":"github.com/shrav-k/conduit/v0","packages":{"example.org/s1/agents":{"digest":"sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71","version":"0.2.0"},"example.org/s1/filesystem":{"digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"},"example.org/s1/history":{"digest":"sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69","version":"0.1.0"}}}
+    3 management.inspect.v1 Conduit/agent-a--project expected=(step 2) neither flag=- LIF-013
+    4 access.open.v1 Conduit/agent-a--project expected=(step 2) widens flag=--reopen agent-a/project LIF-037
+    detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1,example.org/s1/filesystem#file.write.v1]
+    affects bounds=[] closed-conduits=[]
+    difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
+    flags [--reopen agent-a/project]
+    ready
+requests:
+- tool: access.lift.v1
+  arguments:
+    id: 00000000-0000-4000-8000-000000000330
+  idempotencyKey: plan:bb025b1831b586e95f465904a08a0074132dd74a36b8ef80bcbf5cbc961e19d4:1:1
+  flag: --reopen agent-a/project
+  result:
+    outcome: succeeded
+    remaining: []
+- tool: management.register.v1
+  arguments:
+    documents:
+    - apiVersion: github.com/shrav-k/conduit/v0
+      kind: Conduit
+      metadata:
+        name: agent-a--project
+      from: example.org/s1/filesystem#read-write
+      consumer:
+        kind: Agent
+        name: agent-a
+      target:
+        kind: Resource
+        name: shared
+      as: project
+    manifest:
+      apiVersion: github.com/shrav-k/conduit/v0
+      packages:
+        example.org/s1/filesystem:
+          version: 0.2.1
+          digest: sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614
+        example.org/s1/agents:
+          version: 0.2.0
+          digest: sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71
+        example.org/s1/history:
+          version: 0.1.0
+          digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
+  idempotencyKey: plan:bb025b1831b586e95f465904a08a0074132dd74a36b8ef80bcbf5cbc961e19d4:1:2
+  flag: --reopen agent-a/project
+  result:
+    outcome: succeeded
+    objects:
+    - kind: Conduit
+      name: agent-a--project
+      id: 00000000-0000-4000-8000-000000000126
+    diagnostics:
+    - ruleId: NAM-008
+      level: note
+      message:
+        text: Unused package example.org/s1/agents; submission accepted.
+    - ruleId: NAM-008
+      level: note
+      message:
+        text: Unused package example.org/s1/history; submission accepted.
+- tool: management.inspect.v1
+  arguments:
+    object:
+      kind: Conduit
+      name: agent-a--project
+    expectedId: 00000000-0000-4000-8000-000000000126
+  idempotencyKey: plan:bb025b1831b586e95f465904a08a0074132dd74a36b8ef80bcbf5cbc961e19d4:1:3
+  flag: null
+  result:
+    outcome: succeeded
+    view: [Conduit, agent-a--project, 00000000-0000-4000-8000-000000000126, r1, registered, {from: example.org/s1/filesystem#read-write,
+        consumer: {kind: Agent, name: agent-a}, target: {kind: Resource, name: shared}, as: project, resolved: {
+          capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
+            example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]}}, [{address: example.org/s1/filesystem,
+          version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+- tool: access.open.v1
+  arguments:
+    conduit:
+      kind: Conduit
+      name: agent-a--project
+    expectedId: 00000000-0000-4000-8000-000000000126
+  idempotencyKey: plan:bb025b1831b586e95f465904a08a0074132dd74a36b8ef80bcbf5cbc961e19d4:1:4
+  flag: --reopen agent-a/project
+  result:
+    outcome: succeeded
+    invocation: 00000000-0000-4000-8000-000000002126
+kept:
+  format: 1
+  files:
+    conduit.yaml: d4960ea1d5ed92178917ac51a3b323022233a9d396b0fac64dfa8fd5096ea30c
+    s1.yaml: 41c0b0744ab572b992da4a6663701e8ee2c2340a46cf0eb0712c9dc745e5ab12
+  objects:
+  - [Pool, team--t, 00000000-0000-4000-8000-000000000100, r1, template, {type: github.com/shrav-k/conduit/core#pool.v1},
+    [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Pool, team, 00000000-0000-4000-8000-000000000101, r1, ready, {from: team--t, resolved: {type: github.com/shrav-k/conduit/core#pool.v1}},
+    [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Resource, shared--t, 00000000-0000-4000-8000-000000000102, r3, template, {type: example.org/s1/filesystem#local-directory.v1,
+      config: {root: {pathSha256: 009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4}}}, [{address: example.org/s1/filesystem,
+        version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  - [Agent, agent-a--t, 00000000-0000-4000-8000-000000000105, r1, template, {type: example.org/s1/agents#claude-code.v2,
+      config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
+    [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-a, 00000000-0000-4000-8000-000000000106, r1, ready, {from: agent-a--t, resolved: {type: example.org/s1/agents#claude-code.v2,
+        config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}},
+      owner: s1}, [{address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-b--t, 00000000-0000-4000-8000-000000000107, r1, template, {type: example.org/s1/agents#codex.v2,
+      config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, [{address: example.org/s1/agents,
+        version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Agent, agent-b, 00000000-0000-4000-8000-000000000108, r1, ready, {from: agent-b--t, resolved: {type: example.org/s1/agents#codex.v2,
+        config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}}, owner: s1}, [
+      {address: example.org/s1/agents, version: 0.2.0, digest: 'sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71'}]]
+  - [Fleet, s1, 00000000-0000-4000-8000-000000000109, r1, ready, {from: github.com/shrav-k/conduit/core#fleet, resolved: {
+        type: github.com/shrav-k/conduit/core#fleet.v1}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Conduit, root-pool-abc01, 00000000-0000-4000-8000-000000000112, r1, ready, {from: github.com/shrav-k/conduit/core#root-pool,
+      consumer: {kind: Interface, name: root}, target: {kind: Pool, name: team}, as: team, engine-made: true, provenance: {
+        cause: default}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Conduit, root-fleet-abc02, 00000000-0000-4000-8000-000000000113, r1, ready, {from: github.com/shrav-k/conduit/core#root-fleet,
+      consumer: {kind: Interface, name: root}, target: {kind: Fleet, name: s1}, as: s1, engine-made: true, provenance: {
+        cause: default}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
+  - [Resource, history--t, 00000000-0000-4000-8000-000000000114, r1, template, {type: example.org/s1/history#file-history.v1,
+      config: {root: {pathSha256: 47931f46f0026bfe50c834862a5eb032cafbb0bfec7207165deada8652e0786c}}}, [{address: example.org/s1/history,
+        version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'}, {address: example.org/s1/filesystem,
+        version: 0.1.0, digest: 'sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160'}]]
+  - [Resource, history, 00000000-0000-4000-8000-000000000115, r1, ready, {from: history--t, resolved: {type: example.org/s1/history#file-history.v1,
+        config: {root: {pathSha256: 47931f46f0026bfe50c834862a5eb032cafbb0bfec7207165deada8652e0786c}}}, owner: team},
+    [{address: example.org/s1/history, version: 0.1.0, digest: 'sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69'},
+      {address: example.org/s1/filesystem, version: 0.1.0, digest: 'sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160'}]]
+  - [Conduit, agent-a--history, 00000000-0000-4000-8000-000000000116, r1, ready, {from: example.org/s1/filesystem#read-write,
+      consumer: {kind: Agent, name: agent-a}, target: {kind: Resource, name: history}, as: history, resolved: {
+        capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
+          example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002116,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.1.1,
+        digest: 'sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614'}]]
+  - [Conduit, agent-b--history, 00000000-0000-4000-8000-000000000117, r1, ready, {from: example.org/s1/filesystem#read-write,
+      consumer: {kind: Agent, name: agent-b}, target: {kind: Resource, name: history}, as: history, resolved: {
+        capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1,
+          example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002117,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.1.1,
+        digest: 'sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614'}]]
+  - [Resource, shared, 00000000-0000-4000-8000-000000000123, r1, ready, {from: shared--t, resolved: {type: example.org/s1/filesystem#local-directory.v1,
+        config: {root: {pathSha256: 009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4}}}, owner: team},
+    [{address: example.org/s1/filesystem, version: 0.2.1, digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  - [Conduit, agent-b--project, 00000000-0000-4000-8000-000000000125, r1, ready, {from: example.org/s1/filesystem#read,
+      consumer: {kind: Agent, name: agent-b}, target: {kind: Resource, name: shared}, as: project, resolved: {capability: example.org/s1/filesystem#directory.v1,
+        operations: [example.org/s1/filesystem#file.read.v1, example.org/s1/filesystem#directory.list.v1]}, provenance: {
+        actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002125,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.2.1,
+        digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  - [Conduit, agent-a--project, 00000000-0000-4000-8000-000000000126, r1, ready, {from: example.org/s1/filesystem#read-write,
+      consumer: {kind: Agent, name: agent-a}, target: {kind: Resource, name: shared}, as: project, resolved: {capability: example.org/s1/filesystem#directory.v1,
+        operations: [example.org/s1/filesystem#file.read.v1, example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]},
+      provenance: {actor: 00000000-0000-4000-8000-000000000005, sentBy: 00000000-0000-4000-8000-000000000005, invocation: 00000000-0000-4000-8000-000000002126,
+        openedThrough: [00000000-0000-4000-8000-000000000007]}}, [{address: example.org/s1/filesystem, version: 0.2.1,
+        digest: 'sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614'}]]
+  tombstones: []
+  plans:
+  - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
+  - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
+  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
+  - sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade
+  - sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546
+  - sha256:bb025b1831b586e95f465904a08a0074132dd74a36b8ef80bcbf5cbc961e19d4
+  journals:
+    sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
+    sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
+    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
+    sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade: safe:case:06-t6/requests
+    sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546: safe:case:07-t7-revoke/requests
+    sha256:bb025b1831b586e95f465904a08a0074132dd74a36b8ef80bcbf5cbc961e19d4: safe:case:08-t7-restore/requests
+exit: 0

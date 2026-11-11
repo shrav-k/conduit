@@ -436,3 +436,26 @@ Report:
 - every finding.
 
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-11, beside several orders on a loaded machine: the worker in 24 minutes, then a fresh
+verifier and three more rounds. The reference for `conduit plan` and `conduit apply` and nine golden
+cases for S1's tasks T1 to T7 landed in `docs/implementation/plan-and-apply/`; they do not bind.
+
+- Round 2 fixed two must findings: how the reference reads the state it needs (package resolution
+  and the contract comparisons), and the recovery after a retirement that does not succeed.
+- Round 3 fixed a must and a should: cascade recovery now works from the observed state and keeps
+  CON-008 and LIF-021, and the install commands carry their archive digests.
+- Round 4 fixed seven golden requests that expected no diagnostics although their manifests pin
+  unused packages (NAM-008). The final verifier found no fault.
+- The defaults follow experiment 011's ledger. Under them, S1's commands count 12 primary and 12
+  strict across T1 to T7. The worker reported each reading reserved for the owner (ruling 71, point
+  4) with its counts: which flags permit what, how a flag names its object, how commands reach the
+  engine, what apply does when a set-up raises a sign-in, and `conduit plan` itself. Order 073 (PB)
+  counts them with the authored files.
+- Findings for the admin: WO069-O1 (relative fetch and program values cannot be applied as
+  written), O2 (no expected revision on open or set-up), O3 and O4 (the temporary cascade Conduit
+  against ruling 55's narrowing-first order).
+- Checks: the documentation, rulings, names, schemas and roadmap checks and `git diff --check`
+  passed; the Python unit tests could not run in the verifier's read-only sandbox.

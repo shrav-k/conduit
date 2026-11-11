@@ -418,18 +418,25 @@
     A later release of a package exports a contract under the name, version segment included,
     that an earlier release at the same address gave it.
   then: >-
-    The later contract may add optional things, such as an optional input of an operation or a
-    further operation of a capability, and an input that it adds to a Requirement contract
-    states no `default`. It does not remove or change anything the earlier one held.
+    The later contract may add optional things, such as an optional input of an operation, a
+    further operation of a capability or an optional property of a Type's `schema`. A property
+    that it adds to a Type's `schema`, at any depth, and an input that it adds to a
+    Requirement contract, state no `default`. It does not remove or change anything the
+    earlier one held.
   observable: >-
     Comparing the two contracts shows only such additions. Any other change is made as a new
     contract, under a name with another version segment, as NAM-015 states. An input of a
     requirement that states a `default` is filled in and sent with every filter of it, under
     NAM-019 and IFC-018, and an implementation built for the earlier release cannot apply a
-    filter whose `arguments` hold an input that its version does not declare, under IFC-019, so
-    such an input would make every request through a Conduit that applies the filter report
+    filter whose `arguments` hold an input that its version does not declare, under IFC-019,
+    so such an input would make every request through a Conduit that applies the filter report
     unavailable there. An added input that states none is sent only where a document writes
-    it.
+    it. Under SCH-009 an added property's default would change what an unchanged document
+    means when it is next registered after a pin moves. A default requires a new version
+    segment, as in `claude-code.v2` and `codex.v2`. When installing a release while another at
+    the same address is installed, a same-named contract that breaks this rule is rejected:
+    installation reports invalid under PKG-023, with a NAM-024 diagnostic naming the contract
+    and changed pointer.
   vectors: []
 
 - id: NAM-025
@@ -474,13 +481,15 @@
     name with a document.
   observable: >-
     Resolving or installation returns a diagnostic naming the two. A reference written as
-    `#name` carries no kind, and under this rule it reaches at most one thing. A template and a
-    contract that share a name, or two templates of different kinds that do, are rejected in
+    `#name` carries no kind, and under this rule it reaches at most one thing. A template and
+    a contract that share a name, or two templates of different kinds that do, are rejected in
     this way. So is an implementation that a manifest lists under the name of a document,
     whether or not the document is exported. SUB-004 already rejects two documents that would
-    make objects of one kind and name, and PKG-012 two exports of one name. Two implementations
-    of one name are a duplicate key of `implementations`, rejected under SCH-012. An instance
-    document that gives no name has none to share.
+    make objects of one kind and name, and PKG-012 two exports of one name. Two
+    implementations of one name are a duplicate key of `implementations`, rejected under
+    SCH-012. An instance document that gives no name has none to share. It counts every
+    translated document, generated names included, together with framed documents; SCT-014
+    locates a collision at both authored places.
   vectors: []
 
 

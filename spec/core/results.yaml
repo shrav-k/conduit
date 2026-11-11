@@ -58,6 +58,8 @@ metadata:
     `keywordLocation`, and `absoluteKeywordLocation` where known, as JSON Schema 2020-12's
     output format names them (SUB-005). A refusal carries properties.refusal in the form
     refusal.v1 (ACC-056); every reason names its deciding rule (IFC-050).
+    For a translated document, `properties.translation` identifies the SCT rule and generated
+    document name; SCT-014 maps its location into the authored text.
 spec:
   type: object
   properties:

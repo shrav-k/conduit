@@ -1,0 +1,2 @@
+pools:
+  team: {type: github.com/shrav-k/conduit/core#pool.v1, operator: null}

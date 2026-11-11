@@ -57,3 +57,18 @@ interpreter that has PyYAML) and `git diff --check` pass; in `engine/`, `cargo t
 (report the total passed and failed; tests that bind loopback ports may fail in your sandbox: say
 so). Report what you added and amended, by ID, every reading of the plan you applied, and every
 vector whose expectation the new text contradicts, by path and step. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 32 minutes, then a fresh verifier in 10, then a second round. The
+worker added SCT-001 to 009 and 011 to 016 in `spec/promises/sections.yaml` (SCT-010 unused) and
+PKG-031, ten sectioned schemas, two flow-style example projects and twelve invalid examples, amended
+twenty promises, NAM-024 among them, and routed the new examples through the checks. The verifier
+found that the short form forbade duplicate operations the canonical form allows, that its "fully
+qualified" rule left a project's own contracts with no accepted spelling under NAM-022 (the
+worker's finding 037-04), that the example's Agent configurations did not match the `.v2` types, and
+two gaps in `spec/README.md`. The admin decided, strikeable by the owner, that ruling 55 A2's "fully
+qualified" means never an alias or a bare name, so the short form accepts exactly the canonical
+form's spellings, `#name` for a project's own contracts included; the second round applied that and
+fixed the rest. Translation itself, its vectors and export resolution belong to the build orders
+(finding 037-05). The admin reran the engine's suite outside the sandbox: 163 tests pass, 3 ignored.

@@ -301,9 +301,11 @@
     A JSON file that holds an array is read as the documents that are its items, and means the
     same as a YAML file that holds those documents. The order of the items has no meaning, as
     SUB-001 states. Each document is then judged by the schemas, so a value that is not a map,
-    whether it is the file's value or an item of its array, is rejected under SUB-005, as a YAML
-    document that is not a map is, and the JSON form and the YAML form give the same
+    whether it is the file's value or an item of its array, is rejected under SUB-005, as a
+    YAML document that is not a map is, and the JSON form and the YAML form give the same
     diagnostics, under SCH-013. A JSON manifest that holds an array is rejected under MAN-001.
+    A value or array item may be a sectioned document under SCT-001; file boundaries remain
+    available for SCT-011. Manifest routing is by MAN-001, never merely the absence of `kind`.
   vectors: []
 
 

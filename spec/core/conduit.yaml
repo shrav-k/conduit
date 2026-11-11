@@ -138,6 +138,16 @@ exports:
   - server-package.v1
   - server-remote.v1
   - document.v1
+  - sectioned.v1
+  - sectioned-templates.v1
+  - sectioned-interface.v1
+  - sectioned-agent.v1
+  - sectioned-resource.v1
+  - sectioned-pool.v1
+  - sectioned-conduit.v1
+  - consumes-item.v1
+  - sectioned-operator.v1
+  - manages.v1
   - fleet-management.v1
   - provenance.v1
   - tombstone.v1

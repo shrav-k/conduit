@@ -162,7 +162,9 @@
   observable: >-
     A qualified reference from outside to a document that exists in the package but is not
     exported is unresolved, with a diagnostic naming it, and the document that holds the
-    reference is rejected under NAM-028. How the list is written is MAN-007.
+    reference is rejected under NAM-028. How the list is written is MAN-007. An exported
+    template may be made by a sectioned document under SCT-005; the translated template is the
+    export, in the same canonical form.
   vectors: []
 
 - id: PKG-019
@@ -411,4 +413,24 @@
     through a service elsewhere, such as a cloud's API, is a `command` or `package` item whose
     server reaches that service by its own means, as a container runtime that the kubelet
     reaches at a local socket pulls images from registries itself.
+  vectors: []
+
+- id: PKG-031
+  layer: language
+  level: should
+  when: >-
+    A package exports a capability, or a Type offering one.
+  then: >-
+    It also exports standard Conduit templates for the capability's common uses, named for
+    those uses, such as `read`, `read-write` and `turn`. Each lists its operations as
+    selections under NAM-018 and NAM-022: `#name` for its own operations, qualified references
+    for other packages' operations, with NAM-022's exception for the core package's own
+    documents. A later release at the same address keeps each such template's operation list;
+    wider use takes a new template.
+  observable: >-
+    Authors can write `from: <address>#read` without copying an operation list. INS-013
+    resolves the template at the pinned version under NAM-010. Comparing releases shows
+    whether a standard template's operation list changed. This is a recommendation, not a
+    rejection rule; a plan prints and counts any widening of the resolved Conduit operations
+    before apply, including widening through a pin change.
   vectors: []

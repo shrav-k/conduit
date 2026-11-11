@@ -1,0 +1,2 @@
+agents:
+  worker: {from: worker-template, owner: team, consumes: {files: {to: {kind: Resource, name: files}, from: read, capability: example.org/files#read.v1, operations: []}}}

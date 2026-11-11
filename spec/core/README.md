@@ -26,10 +26,10 @@ everything the promises say it exports, and everything first start needs.
 | [results.yaml](results.yaml) | 12 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
 | [templates.yaml](templates.yaml) | The 14 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
 
-The package also exports the 41 Schema contracts under [spec/schemas](../schemas/README.md),
+The package also exports the 51 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 125 documents, 65 of them Schema contracts,
+its inputs with them. In all the package exports 135 documents, 75 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -609,6 +609,16 @@ lifecycle state and the labels reported for it (PLC-008).
 | `server-package.v1` | Schema of the manifest's part | MAN-010, PKG-019 |
 | `server-remote.v1` | Schema of the manifest's part | MAN-010, IFC-041 |
 | `document.v1` | Schema of a document | OBJ-020, SUB-005 |
+| `sectioned.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `sectioned-templates.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `sectioned-interface.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `sectioned-agent.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `sectioned-resource.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `sectioned-pool.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `sectioned-conduit.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `consumes-item.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `sectioned-operator.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
+| `manages.v1` | Schema, sectioned documents | SCT-001, SCT-003 |
 | `fleet-management.v1` | Capability | FLEET-001, FLEET-004, ACC-033, OPS-019 |
 | `provenance.v1` | Schema | ACC-044, REC-004 |
 | `tombstone.v1` | Schema | LIF-040, LIF-041, ACC-053, PLC-024 |

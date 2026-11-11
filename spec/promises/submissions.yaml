@@ -51,15 +51,16 @@
   then: >-
     The submission is rejected.
   observable: >-
-    The diagnostic names both documents, and nothing is registered.
+    The diagnostic names both documents, and nothing is registered. For translated documents
+    it names both authored places under SCT-014.
   vectors: []
 
 - id: SUB-005
   layer: language
   level: must
   when: >-
-    A submission contains something that is not a template, an instance, a contract or the
-    project's one manifest.
+    A submission contains something other than framed templates, instances, contracts,
+    sectioned documents in its files (SCT-001), or the project's one manifest.
   then: >-
     The submission is rejected.
   observable: >-
@@ -83,7 +84,10 @@
     MAN-001, MAN-002 and MAN-011, and their syntax, under SCH-012, SCH-017 and SCH-018. Where
     a registration hands the documents over as values, as the input `documents` of
     `register.v1` does, no file is in front of the engine and those rules have nothing to
-    check; every other rule applies to the values.
+    check; every other rule applies to the values. A submission's files may hold sectioned
+    documents, checked against `sectioned.v1`, then translated under SCT-003. Schema pointers
+    and translation diagnostics point into the authored text under SCT-014. The wire input
+    `documents` of `register.v1` still accepts framed documents only.
   vectors: []
 
 - id: SUB-006
@@ -235,34 +239,39 @@
     An engine is handed a directory to register.
   then: >-
     It takes the directory. It reads the directory as MAN-001 and MAN-011 state, and registers
-    what it reads as one submission, with the same result as a request for `register.v1` that is
-    given the values read, once each relative `fetch` and each program given as a relative path
-    is resolved against the directory, save that a program so resolved is still, under PRV-007,
-    one given as a relative path. It installs no package. The digest that identifies the
-    project's contracts is taken as SUB-008 states, from the manifest as it was read.
+    the framed documents read and the translation of the sectioned documents read as one
+    submission, with the same result as a request for `register.v1` that is given the
+    canonical values after translation, once each relative `fetch` and each program given as a
+    relative path is resolved against the directory, save that a program so resolved is still,
+    under PRV-007, one given as a relative path. It installs no package. The digest that
+    identifies the project's contracts is taken as SUB-008 states, from the manifest as it was
+    read.
   observable: >-
-    The objects that exist afterwards, and the diagnostics, are those that `register.v1` gives
-    for the same documents as its input `documents` and the same manifest as its input
-    `manifest`. The manifest is the file named `conduit.yaml`, `conduit.yml` or `conduit.json`,
-    under MAN-001. An entry of the directory that MAN-011 reads and that cannot be read as a
-    regular file, such as a link that leads nowhere, is rejected under this promise, with a
-    diagnostic naming it. The rules on a file are applied as the files are read, under SUB-005. A
-    relative `fetch` or program is resolved against the directory, under MAN-006 and MAN-010,
-    before the values are compared with what `register.v1` takes: a registration that hands over
-    values has no directory, and rejects a relative one. Two things do not follow the resolved
-    values. One is the digest that identifies the project's contracts: SUB-008 hashes the
-    manifest as the file writes it, so one directory gives one digest wherever it lies, and a
-    conformance vector can state it. The other is PRV-007's guard: a program given as a relative
-    path names a file on the machine the engine runs on, so once resolved it is still run by the
-    engine's own runner alone. Every engine can be handed a directory, and not only values
-    through `register.v1`, because the rules on files are promises of the language and a
-    conformance vector is made of files. How a directory is handed to an engine, such as by a
-    command or a call, is DL7 of the implementation-defined list. Being handed a directory
-    installs nothing, whatever the manifest lists: a registration whose manifest lists a package
-    that is not installed is rejected under PKG-006, and a package is installed only by a
-    request for `install.v1`, which is always a request of its own, under NAM-012. In an engine
-    that keeps the conventions the registration is a request like any other, made for an actor
-    that DL7 has the engine name, and is authorized under ACC-033.
+    The objects that exist afterwards are those that `register.v1` gives for the canonical
+    documents as its input `documents` and the same manifest as its input
+    `manifest`. The manifest is the file named `conduit.yaml`, `conduit.yml` or
+    `conduit.json`, under MAN-001. An entry of the directory that MAN-011 reads and that
+    cannot be read as a regular file, such as a link that leads nowhere, is rejected under
+    this promise, with a diagnostic naming it. The rules on a file are applied as the files
+    are read, under SUB-005. A relative `fetch` or program is resolved against the directory,
+    under MAN-006 and MAN-010, before the values are compared with what `register.v1` takes: a
+    registration that hands over values has no directory, and rejects a relative one. Two
+    things do not follow the resolved values. One is the digest that identifies the project's
+    contracts: SUB-008 hashes the manifest as the file writes it, so one directory gives one
+    digest wherever it lies, and a conformance vector can state it. The other is PRV-007's
+    guard: a program given as a relative path names a file on the machine the engine runs on,
+    so once resolved it is still run by the engine's own runner alone. Every engine can be
+    handed a directory, and not only values through `register.v1`, because the rules on files
+    are promises of the language and a conformance vector is made of files. How a directory is
+    handed to an engine, such as by a command or a call, is DL7 of the implementation-defined
+    list. Being handed a directory installs nothing, whatever the manifest lists: a
+    registration whose manifest lists a package that is not installed is rejected under
+    PKG-006, and a package is installed only by a request for `install.v1`, which is always a
+    request of its own, under NAM-012. In an engine that keeps the conventions the
+    registration is a request like any other, made for an actor that DL7 has the engine name,
+    and is authorized under ACC-033. For sectioned files the objects and records equal those
+    of the rendered translation, and diagnostics are located in the authored text under
+    SCT-014. SCT-011 supplies owners per file before its boundaries are discarded.
   vectors: []
 
 

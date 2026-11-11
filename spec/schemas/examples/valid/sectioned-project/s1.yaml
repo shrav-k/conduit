@@ -1,0 +1,23 @@
+# S1 at T2. Pins are illustrative; this example checks authored syntax.
+fleet: s1
+pools:
+  team: {type: github.com/shrav-k/conduit/core#pool.v1}
+resources:
+  shared: {type: example.org/s1/filesystem#local-directory.v1, owner: team, config: {root: /lab/shared}}
+  history: {type: example.org/s1/history#file-history.v1, owner: team, config: {root: /lab/history}}
+agents:
+  agent-a:
+    type: example.org/s1/agents#claude-code.v2
+    config: {accountServices: false, peerMessaging: false, model: '', account: agent-a@example.org, apiKey: null}
+    consumes:
+      project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read}
+      history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}
+    manages: {fleets: {s1: manage}}
+  agent-b:
+    type: example.org/s1/agents#codex.v2
+    config: {accountServices: false, model: '', account: agent-b@example.org, apiKey: null}
+    consumes:
+      project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read-write}
+      history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}
+interfaces:
+  console: {type: github.com/shrav-k/conduit/core#interface.v1, manages: {fleets: {s1: manage}, pools: {team: view}}}

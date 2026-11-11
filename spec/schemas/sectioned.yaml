@@ -1,0 +1,961 @@
+# Sectioned documents, defined by translation into canonical framed documents.
+# JSON Schema 2020-12, within spec/schema-profile.md.
+# Promises encoded: SCT-001, SCT-002, SCT-005, SCT-006, SCT-007, SCT-009,
+# SCT-012, SCT-013, SCT-016; OBJ-019, OBJ-022.
+# Checked during translation: version inheritance, missing or conflicting Agent owners,
+# at most one fleet per file, shared Fleet generation, SCT-008 targets, generated name
+# lengths, cross-document name collisions and an Agent managing only its own Fleet.
+# Package files accept only templates and apiVersion (MAN-011).
+# The wire's document.v1 remains canonical and does not reference sectioned.v1.
+# Standing: draft specification; see spec/README.md for status and coverage.
+# The reasons are in the records listed in spec/README.md, Where the reasons are.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sectioned.v1
+  description: A sectioned documents-file value. Version inheritance, per-file Fleet ownership,
+    semantic checks and translation follow SCT-001 to SCT-016.
+spec:
+  type: object
+  properties:
+    apiVersion:
+      $ref: github.com/shrav-k/conduit/core#api-version.v1
+    fleet:
+      type: string
+      maxLength: 63
+      pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+      not:
+        enum:
+        - system
+        - local
+        - management
+        - access
+        - root
+    templates:
+      $ref: github.com/shrav-k/conduit/core#sectioned-templates.v1
+    interfaces:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        $ref: github.com/shrav-k/conduit/core#sectioned-interface.v1
+    agents:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        $ref: github.com/shrav-k/conduit/core#sectioned-agent.v1
+    resources:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        $ref: github.com/shrav-k/conduit/core#sectioned-resource.v1
+    pools:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        $ref: github.com/shrav-k/conduit/core#sectioned-pool.v1
+    conduits:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        $ref: github.com/shrav-k/conduit/core#sectioned-conduit.v1
+  additionalProperties: false
+  anyOf:
+  - required:
+    - fleet
+  - required:
+    - templates
+  - required:
+    - interfaces
+  - required:
+    - agents
+  - required:
+    - resources
+  - required:
+    - pools
+  - required:
+    - conduits
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sectioned-templates.v1
+  description: The template sections, with canonical template bodies and optional metadata.
+spec:
+  type: object
+  properties:
+    interfaces:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        type: object
+        properties:
+          type:
+            $ref: github.com/shrav-k/conduit/core#selection.v1
+          inputs:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              allOf:
+              - $ref: github.com/shrav-k/conduit/core#template-input.v1
+              - $ref: '#/$defs/interfaces-reaches'
+          config:
+            type: object
+          implementation:
+            $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+          controls:
+            $ref: github.com/shrav-k/conduit/core#template-controls.v1
+          conduits:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              $ref: github.com/shrav-k/conduit/core#declared-conduit.v1
+          description:
+            type: string
+          annotations:
+            type: object
+            additionalProperties:
+              type: string
+        required:
+        - type
+        additionalProperties: false
+    agents:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        type: object
+        properties:
+          type:
+            $ref: github.com/shrav-k/conduit/core#selection.v1
+          inputs:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              allOf:
+              - $ref: github.com/shrav-k/conduit/core#template-input.v1
+              - $ref: '#/$defs/agents-reaches'
+          config:
+            type: object
+          implementation:
+            $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+          controls:
+            $ref: github.com/shrav-k/conduit/core#template-controls.v1
+          conduits:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              $ref: github.com/shrav-k/conduit/core#declared-conduit.v1
+          description:
+            type: string
+          annotations:
+            type: object
+            additionalProperties:
+              type: string
+        required:
+        - type
+        additionalProperties: false
+    resources:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        type: object
+        properties:
+          type:
+            $ref: github.com/shrav-k/conduit/core#selection.v1
+          inputs:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              allOf:
+              - $ref: github.com/shrav-k/conduit/core#template-input.v1
+              - $ref: '#/$defs/resources-reaches'
+          config:
+            type: object
+          implementation:
+            $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+          controls:
+            $ref: github.com/shrav-k/conduit/core#template-controls.v1
+          conduits:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              $ref: github.com/shrav-k/conduit/core#declared-conduit.v1
+          description:
+            type: string
+          annotations:
+            type: object
+            additionalProperties:
+              type: string
+        required:
+        - type
+        additionalProperties: false
+    pools:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        type: object
+        properties:
+          type:
+            $ref: github.com/shrav-k/conduit/core#selection.v1
+          inputs:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              allOf:
+              - $ref: github.com/shrav-k/conduit/core#template-input.v1
+              - $ref: '#/$defs/pools-reaches'
+          config:
+            type: object
+          implementation:
+            $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+          controls:
+            $ref: github.com/shrav-k/conduit/core#template-controls.v1
+          entries:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              $ref: github.com/shrav-k/conduit/core#pool-entry.v1
+          description:
+            type: string
+          annotations:
+            type: object
+            additionalProperties:
+              type: string
+        required:
+        - type
+        additionalProperties: false
+    conduits:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        type: object
+        properties:
+          inputs:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              allOf:
+              - $ref: github.com/shrav-k/conduit/core#template-input.v1
+              - $ref: '#/$defs/conduits-reaches'
+          capability:
+            $ref: github.com/shrav-k/conduit/core#selection.v1
+          operations:
+            type: array
+            items:
+              $ref: github.com/shrav-k/conduit/core#selection.v1
+          requirements:
+            type: object
+            propertyNames:
+              $ref: github.com/shrav-k/conduit/core#name.v1
+            additionalProperties:
+              $ref: github.com/shrav-k/conduit/core#applied-requirement.v1
+          description:
+            type: string
+          annotations:
+            type: object
+            additionalProperties:
+              type: string
+        required:
+        - capability
+        additionalProperties: false
+        anyOf:
+        - required:
+          - operations
+        - required:
+          - inputs
+  additionalProperties: false
+  $defs:
+    interfaces-reaches:
+      type: object
+      properties:
+        to:
+          type: array
+          items:
+            type: string
+            allOf:
+            - pattern: ^/(conduits/[a-z][a-z0-9-]{0,62}/target|(config|conduits/[a-z][a-z0-9-]{0,62}/arguments)(/([^/~]|~[01])*)*)$
+            - not:
+                pattern: /-(/|$)
+    agents-reaches:
+      type: object
+      properties:
+        to:
+          type: array
+          items:
+            type: string
+            allOf:
+            - pattern: ^/(conduits/[a-z][a-z0-9-]{0,62}/target|(config|conduits/[a-z][a-z0-9-]{0,62}/arguments)(/([^/~]|~[01])*)*)$
+            - not:
+                pattern: /-(/|$)
+    resources-reaches:
+      type: object
+      properties:
+        to:
+          type: array
+          items:
+            type: string
+            allOf:
+            - pattern: ^/(conduits/[a-z][a-z0-9-]{0,62}/target|(config|conduits/[a-z][a-z0-9-]{0,62}/arguments)(/([^/~]|~[01])*)*)$
+            - not:
+                pattern: /-(/|$)
+    pools-reaches:
+      type: object
+      properties:
+        to:
+          type: array
+          items:
+            type: string
+            allOf:
+            - pattern: ^/(entries/[a-z][a-z0-9-]{0,62}/(placement|runtime)|(config|entries/[a-z][a-z0-9-]{0,62}/arguments)(/([^/~]|~[01])*)*)$
+            - not:
+                pattern: /-(/|$)
+    conduits-reaches:
+      type: object
+      properties:
+        to:
+          type: array
+          items:
+            type: string
+            allOf:
+            - pattern: ^/(operations|requirements/[a-z][a-z0-9-]{0,62}/arguments(/([^/~]|~[01])*)*)$
+            - not:
+                pattern: /-(/|$)
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sectioned-interface.v1
+  description: An inline or referenced Interface definition.
+spec:
+  oneOf:
+  - type: object
+    properties:
+      type:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+      config:
+        type: object
+      implementation:
+        $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+      controls:
+        $ref: github.com/shrav-k/conduit/core#template-controls.v1
+      conduits:
+        type: object
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#declared-conduit.v1
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+      consumes:
+        type: object
+        propertyNames:
+          type: string
+          maxLength: 63
+          pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+          not:
+            enum:
+            - t
+            - operator
+            - manages
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#consumes-item.v1
+      operator:
+        $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
+      manages:
+        $ref: github.com/shrav-k/conduit/core#manages.v1
+    required:
+    - type
+    additionalProperties: false
+  - type: object
+    properties:
+      from:
+        $ref: github.com/shrav-k/conduit/core#template-reference.v1
+      arguments:
+        type: object
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+      consumes:
+        type: object
+        propertyNames:
+          type: string
+          maxLength: 63
+          pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+          not:
+            enum:
+            - t
+            - operator
+            - manages
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#consumes-item.v1
+      operator:
+        $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
+      manages:
+        $ref: github.com/shrav-k/conduit/core#manages.v1
+    required:
+    - from
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sectioned-agent.v1
+  description: An inline or referenced Agent definition. Owner is required unless the file supplies
+    fleet; its manages target must equal that owner.
+spec:
+  oneOf:
+  - type: object
+    properties:
+      type:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+      config:
+        type: object
+      implementation:
+        $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+      controls:
+        $ref: github.com/shrav-k/conduit/core#template-controls.v1
+      conduits:
+        type: object
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#declared-conduit.v1
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+      owner:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+      placement:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+      runtime:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+      consumes:
+        type: object
+        propertyNames:
+          type: string
+          maxLength: 63
+          pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+          not:
+            enum:
+            - t
+            - operator
+            - manages
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#consumes-item.v1
+      operator:
+        $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
+      manages:
+        allOf:
+        - $ref: github.com/shrav-k/conduit/core#manages.v1
+        - required:
+          - fleets
+          properties:
+            fleets:
+              minProperties: 1
+              maxProperties: 1
+          not:
+            required:
+            - pools
+    required:
+    - type
+    additionalProperties: false
+  - type: object
+    properties:
+      from:
+        $ref: github.com/shrav-k/conduit/core#template-reference.v1
+      arguments:
+        type: object
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+      owner:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+      placement:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+      runtime:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+      consumes:
+        type: object
+        propertyNames:
+          type: string
+          maxLength: 63
+          pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+          not:
+            enum:
+            - t
+            - operator
+            - manages
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#consumes-item.v1
+      operator:
+        $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
+      manages:
+        allOf:
+        - $ref: github.com/shrav-k/conduit/core#manages.v1
+        - required:
+          - fleets
+          properties:
+            fleets:
+              minProperties: 1
+              maxProperties: 1
+          not:
+            required:
+            - pools
+    required:
+    - from
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sectioned-resource.v1
+  description: An inline or referenced Resource definition, with its required Pool owner.
+spec:
+  oneOf:
+  - type: object
+    properties:
+      type:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+      config:
+        type: object
+      implementation:
+        $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+      controls:
+        $ref: github.com/shrav-k/conduit/core#template-controls.v1
+      conduits:
+        type: object
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#declared-conduit.v1
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+      owner:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+      placement:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+      runtime:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+      consumes:
+        type: object
+        propertyNames:
+          type: string
+          maxLength: 63
+          pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+          not:
+            enum:
+            - t
+            - operator
+            - manages
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#consumes-item.v1
+      operator:
+        $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
+    required:
+    - type
+    - owner
+    additionalProperties: false
+  - type: object
+    properties:
+      from:
+        $ref: github.com/shrav-k/conduit/core#template-reference.v1
+      arguments:
+        type: object
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+      owner:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+      placement:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+      runtime:
+        $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+      consumes:
+        type: object
+        propertyNames:
+          type: string
+          maxLength: 63
+          pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+          not:
+            enum:
+            - t
+            - operator
+            - manages
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#consumes-item.v1
+      operator:
+        $ref: github.com/shrav-k/conduit/core#sectioned-operator.v1
+    required:
+    - from
+    - owner
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sectioned-pool.v1
+  description: An inline or referenced Pool definition. No consumes, operator or manages.
+spec:
+  oneOf:
+  - type: object
+    properties:
+      type:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+      config:
+        type: object
+      implementation:
+        $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+      controls:
+        $ref: github.com/shrav-k/conduit/core#template-controls.v1
+      entries:
+        type: object
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#pool-entry.v1
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+    required:
+    - type
+    additionalProperties: false
+  - type: object
+    properties:
+      from:
+        $ref: github.com/shrav-k/conduit/core#template-reference.v1
+      arguments:
+        type: object
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+    required:
+    - from
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sectioned-conduit.v1
+  description: An inline or referenced standalone Conduit with explicit ends.
+spec:
+  oneOf:
+  - type: object
+    properties:
+      capability:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+      operations:
+        type: array
+        items:
+          $ref: github.com/shrav-k/conduit/core#selection.v1
+      requirements:
+        type: object
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#applied-requirement.v1
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+      consumer:
+        $ref: github.com/shrav-k/conduit/core#consumer-reference.v1
+      target:
+        $ref: github.com/shrav-k/conduit/core#target-reference.v1
+      as:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+    required:
+    - capability
+    - operations
+    - consumer
+    - target
+    additionalProperties: false
+  - type: object
+    properties:
+      from:
+        $ref: github.com/shrav-k/conduit/core#template-reference.v1
+      arguments:
+        type: object
+      description:
+        type: string
+      annotations:
+        type: object
+        additionalProperties:
+          type: string
+      consumer:
+        $ref: github.com/shrav-k/conduit/core#consumer-reference.v1
+      target:
+        $ref: github.com/shrav-k/conduit/core#target-reference.v1
+      as:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+    required:
+    - from
+    - consumer
+    - target
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: consumes-item.v1
+  description: One inline or referenced consumes item, with an explicit target kind. SCT-008 checks
+    management and access targets without looking up a template.
+spec:
+  oneOf:
+  - type: object
+    properties:
+      capability:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+      operations:
+        type: array
+        items:
+          $ref: github.com/shrav-k/conduit/core#selection.v1
+      requirements:
+        type: object
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#applied-requirement.v1
+      to:
+        $ref: github.com/shrav-k/conduit/core#target-reference.v1
+      description:
+        type: string
+    required:
+    - to
+    - capability
+    - operations
+    additionalProperties: false
+  - type: object
+    properties:
+      from:
+        $ref: github.com/shrav-k/conduit/core#template-reference.v1
+      arguments:
+        type: object
+      to:
+        $ref: github.com/shrav-k/conduit/core#target-reference.v1
+      description:
+        type: string
+    required:
+    - to
+    - from
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sectioned-operator.v1
+  description: An inline or referenced Conduit from root to the definition.
+spec:
+  oneOf:
+  - type: object
+    properties:
+      capability:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+      operations:
+        type: array
+        items:
+          $ref: github.com/shrav-k/conduit/core#selection.v1
+      requirements:
+        type: object
+        propertyNames:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+        additionalProperties:
+          $ref: github.com/shrav-k/conduit/core#applied-requirement.v1
+      description:
+        type: string
+    required:
+    - capability
+    - operations
+    additionalProperties: false
+  - type: object
+    properties:
+      from:
+        $ref: github.com/shrav-k/conduit/core#template-reference.v1
+      arguments:
+        type: object
+      description:
+        type: string
+    required:
+    - from
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: manages.v1
+  description: Scope notation. Consumer-specific restrictions, owner equality and generated-name
+    lengths are checked during translation under SCT-012 and SCT-013.
+spec:
+  type: object
+  properties:
+    fleets:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        enum:
+        - manage
+        - view
+    pools:
+      type: object
+      propertyNames:
+        type: string
+        maxLength: 63
+        pattern: ^[a-z]([a-z0-9]|-[a-z0-9])*-?$
+        not:
+          enum:
+          - system
+          - local
+          - management
+          - access
+          - root
+      additionalProperties:
+        enum:
+        - manage
+        - view
+  additionalProperties: false

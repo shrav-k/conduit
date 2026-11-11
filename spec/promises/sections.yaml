@@ -1,0 +1,299 @@
+# Sectioned documents: translation into canonical framed documents.
+# Standing: draft specification; see spec/README.md for status and coverage.
+# Reserved, unused: SCT-010.
+# Canonical documents remain the kernel, wire and stored form.
+# These numbered rules define the short form by translation.
+# Plan and apply remain tooling made of existing requests.
+# The reasons are in the records listed in spec/README.md, Where the reasons are.
+
+- id: SCT-001
+  layer: language
+  level: must
+  when: >-
+    A map with no `kind` is read from a documents file of a project or package.
+  then: >-
+    It is a sectioned document, valid against `sectioned.v1`. Its only keys are `apiVersion`,
+    `fleet`, `templates`, `interfaces`, `agents`, `resources`, `pools` and `conduits`, and at
+    least one key other than `apiVersion` is present.
+  observable: >-
+    An unknown key or `apiVersion` alone is rejected under SUB-005, at the authored place. A
+    map with `metadata` or `spec` but no `kind` is rejected with a diagnostic saying that a
+    framed document needs `kind`. The manifest is identified by MAN-001 and is never read as a
+    sectioned document; it retains MAN-003's form. Contracts are always framed. The syntax
+    rules SCH-005, SCH-006, SCH-011, SCH-012, SCH-017, SCH-020 and SCH-021 apply unchanged. A
+    sectioned value in the wire input `documents` of `register.v1` is rejected under SUB-005:
+    the wire accepts framed documents only.
+  vectors: []
+
+- id: SCT-002
+  layer: language
+  level: must
+  when: >-
+    A sectioned document is read.
+  then: >-
+    Its version is the `apiVersion` it states, or, where it states none, the manifest's
+    `apiVersion`. With neither it is rejected. Every document its translation makes carries
+    that version.
+  observable: >-
+    An unknown version is rejected under OBJ-017. OBJ-024 applies to the effective version,
+    including its prohibition on mixing versions' names. The manifest's version is not changed
+    by translation.
+  vectors: []
+
+- id: SCT-003
+  layer: language
+  level: must
+  when: >-
+    A project or package whose files hold sectioned documents is resolved for registration or
+    installation.
+  then: >-
+    It means exactly the project or package in which each sectioned document is replaced by
+    its translation under SCT-005 to SCT-009, SCT-011, SCT-012 and SCT-016. The translated
+    documents, the framed documents read beside them and the manifest are handed over together
+    as one set.
+  observable: >-
+    SUB-001 to SUB-007, OBJ-002, NAM-027, instantiation, CON-021, IFC-014 and every other
+    check apply unchanged to that set. No translation provenance is stored. Inspection,
+    records and the wire show framed objects only; generated names remain visible.
+    Registration starts no work, and installation registers nothing. SCT-014 locates
+    diagnostics in the authored text.
+  vectors: []
+
+- id: SCT-004
+  layer: language
+  level: must
+  when: >-
+    The translation of a project or package is computed.
+  then: >-
+    It depends only on the authored documents and their SCT-002 versions. It reads no package,
+    contract, stored object, caller, file name, directory or environment. File boundaries
+    determine only the per-file rule SCT-011; renaming a file changes nothing.
+  observable: >-
+    The same text translates to equal documents under SCH-007, regardless of key or file order
+    (SUB-001). An unchanged definition keeps its generated names across a replacement or pin
+    change. The fixed joining of names under SCT-013 is no interpolation of values. Nothing
+    inside `config`, `arguments`, `implementation`, `controls`, canonical declared `conduits`,
+    canonical `entries`, or requirement arguments is rewritten; OBJ-021 and SEC-001 still
+    govern their values.
+  vectors: []
+
+- id: SCT-005
+  layer: language
+  level: must
+  when: >-
+    A sectioned document holds `templates.<family>.N`.
+  then: >-
+    The family key is one of `interfaces`, `agents`, `resources`, `pools` and `conduits`,
+    denoting Interface, Agent, Resource, Pool and Conduit respectively. The member makes one
+    framed template named N. Its body is exactly the canonical template `spec` of that family,
+    including `inputs` where allowed, except that `description` and `annotations` go to the
+    template's `metadata`.
+  observable: >-
+    There is no `templates.fleets`. The same family-specific checks and input destinations
+    apply as for a framed template. Every generated document carries SCT-002's version.
+  vectors: []
+
+- id: SCT-006
+  layer: language
+  level: must
+  when: >-
+    A sectioned document defines member N in `interfaces`, `agents`, `resources` or `pools`.
+  then: >-
+    The section fixes the family. An inline definition states `type` and makes template `N--t`
+    and instance N whose `from` is `N--t`. Its `type`, `config`, `implementation`, `controls`
+    and canonical `conduits` (or, for a Pool, `entries`) go unchanged to the template's
+    `spec`. A referenced definition instead states `from`, in any INS-025 form, and makes
+    instance N with that `from` and any `arguments`. Standard arguments go to the instance.
+    `description` and `annotations` go only to the instance's `metadata`.
+  observable: >-
+    Exactly one of `type` and `from` is required. Inline definitions accept neither `inputs`
+    nor `arguments`. Referenced definitions accept none of the inline template fields. OBJ-013
+    governs standard arguments: a Resource requires its Pool `owner`; an Agent requires its
+    Fleet `owner` unless SCT-011 supplies it; each may state `placement` and `runtime`. An
+    Interface or Pool accepts none of these. `consumes`, `operator` and `manages` make only
+    what their separate SCT rules state. Every instance still comes from a template, including
+    one made in the same submission.
+  vectors: []
+
+- id: SCT-007
+  layer: language
+  level: must
+  when: >-
+    An Interface, Agent or Resource definition N holds `consumes: {L: item}`.
+  then: >-
+    Each item makes standalone Conduit `N--L` with `consumer: {kind: F, name: N}`, where F is
+    the definition's family, `target` equal to `to`, and `as: L`. An inline item states
+    `capability`, `operations` and optional `requirements`, which make Conduit template
+    `N--L--t`; its instance uses that template. A referenced item states `from` and optional
+    `arguments` and uses the named template instead. `description`, where present, goes only
+    to the Conduit instance's `metadata`.
+  observable: >-
+    Every item requires `to`, written with its kind, as `target-reference.v1` permits; a bare
+    target name is rejected. The two forms cannot be mixed. Inline capability and operations
+    are selections under NAM-018 and NAM-022: qualified references, or `#name` for the
+    project's own contracts, never aliases or bare names. Operations are never grouped or
+    inferred; the operations list may be empty. A local template reference such as
+    `from: read` remains legal. Tools use `L.<export>` (IFC-012). A Pool has no `consumes`.
+    SCT-008 applies before the documents are resolved.
+  vectors: []
+
+- id: SCT-008
+  layer: language
+  level: must
+  when: >-
+    A `consumes` item targets the Resource `management`, or targets the Resource `access`
+    without an explicitly written core `bound.v1` requirement.
+  then: >-
+    The sectioned document is rejected. Such a Conduit is written in the `conduits` section,
+    with its consumer and target written out.
+  observable: >-
+    The diagnostic locates the item and explains where to write it. An inline item targeting
+    `access` and explicitly applying the core `bound.v1` is permitted, subject to all
+    canonical checks. A referenced item cannot establish the bound by reading its template
+    during translation (SCT-004), so a Conduit to `access` made from a template is written in
+    `conduits`. There is no lookup of a package or a stored object to decide this syntax rule.
+  vectors: []
+
+- id: SCT-009
+  layer: language
+  level: must
+  when: >-
+    An Interface, Agent or Resource definition N holds `operator`.
+  then: >-
+    It makes standalone Conduit `N--operator`, whose consumer is `{kind: Interface, name:
+    root}`, whose target is `{kind: F, name: N}` and whose `as` is N. Its inline form states
+    `capability` and `operations` as selections under NAM-018 and NAM-022, and optional
+    `requirements`, and makes template `N--operator--t`. Its referenced form states `from`
+    and optional `arguments`.
+    `description`, where present, goes only to the Conduit instance's `metadata`.
+  observable: >-
+    Inline selections are qualified references, or `#name` for the project's own contracts,
+    never aliases or bare names. The forms cannot be mixed. Root's tools are `N.<export>`.
+    An `as` clash is rejected under IFC-014 at the authored `operator`. A Pool accepts no
+    `operator`, including null; its default Conduit is the engine's under FLEET-005. Removing
+    `operator` changes only the translated documents; closing its Conduit takes an explicit
+    request and follows ACC-024.
+  vectors: []
+
+- id: SCT-011
+  layer: language
+  level: must
+  when: >-
+    A documents file states `fleet: X` in a sectioned document.
+  then: >-
+    At most one `fleet` key occurs in the whole file, across all its documents. X is a bare
+    name. The translation makes Fleet X from the core template `fleet`, and supplies X as the
+    owner of every Agent instance defined anywhere in that file, whether sectioned or framed.
+    An explicitly written owner equal to X is accepted; one naming another Fleet is rejected.
+  observable: >-
+    The diagnostic names the file's `fleet` and the Agent's other owner. Agents in another
+    file receive no owner from this key and must state `owner` unless their own file supplies
+    one. Where several files state the same X, the project's translation makes that Fleet
+    once. A separately authored document named X still clashes under NAM-027. No root Conduit
+    is translated: FLEET-005 makes the default. A package accepts no `fleet` (MAN-011).
+  vectors: []
+
+- id: SCT-012
+  layer: language
+  level: must
+  when: >-
+    An Interface or Agent definition N holds `manages: {fleets: {T: role}, pools: {T: role}}`,
+    with either map optional and each role `manage` or `view`.
+  then: >-
+    Each member T makes Conduit `N--manages--T`, with consumer `{kind: F, name: N}`, target
+    `{kind: Fleet, name: T}` or `{kind: Pool, name: T}`, and `as: T`. For an Interface, role
+    `manage` uses the core template `fleet-manage` or `pool-manage`; role `view` uses
+    `fleet-view` or `pool-view`. For an Agent, only `fleets` is accepted, with exactly one
+    member, its own Fleet as supplied by `owner` or SCT-011; `manage` uses `fleet-manage-own`
+    and `view` uses `fleet-view`.
+  observable: >-
+    The maps never name `system`, `management` or `access`, and accept no wildcard. A
+    Resource, Pool or Fleet cannot hold `manages` in this version. Manage for an Interface
+    lists `list.v1`, `inspect.v1`, `set-up.v1`, `reconcile.v1` and `answer.v1`, and for a
+    Fleet also `sign-in.v1`; an Agent's own-Fleet manage lists only `list.v1`, `inspect.v1`,
+    `set-up.v1` and `reconcile.v1`. View lists only `list.v1` and `inspect.v1`. Every
+    operation is selected at the core address. No scope template lists register, retire,
+    cascade or access operations. Translation stores no scope: inspection computes it from
+    open Conduits, whatever templates made them (LIF-013). Root opens these Conduits through
+    explicit requests at apply; translation and registration open none.
+  vectors: []
+
+- id: SCT-013
+  layer: language
+  level: must
+  when: >-
+    A sectioned document gives names or would generate names.
+  then: >-
+    Definition names, template names, `conduits` members and `fleet` values follow OBJ-001,
+    contain no `--`, and are none of `system`, `local`, `management`, `access` and `root`. The
+    keys of `consumes` follow OBJ-022, contain no `--`, and are none of `t`, `operator` and
+    `manages`. The names under `manages` follow the same authored-name rule. Every generated
+    name is at most 63 characters.
+  observable: >-
+    The no-`--` pattern is `^[a-z]([a-z0-9]|-[a-z0-9])*-?$`. Violations are rejected at the
+    authored key or value. The generated names are exactly `N--t`, `N--L`, `N--L--t`,
+    `N--operator`, `N--operator--t` and `N--manages--T`, as the relevant translation rule
+    requires, not DL15 choices. NAM-027 counts all translated documents and framed documents
+    together; a collision names both authored places. Ordinary canonical nested member names
+    retain OBJ-022's rule.
+  vectors: []
+
+- id: SCT-014
+  layer: language
+  level: must
+  when: >-
+    A diagnostic rejects a sectioned document or a document its translation makes.
+  then: >-
+    It points into the authored text, to the definition, item or member that made the document
+    and to the field within it where the rejecting check names one. Its `ruleId` is the
+    promise that rejected it. For a translated document its SARIF `properties.translation`
+    holds `{rule: <SCT ID>, document: <generated name>}`, identifying the translation rule and
+    emitted document.
+  observable: >-
+    A generated template's `spec.X` maps to the inline definition's X; a template-section body
+    maps to `templates.<family>.N`; an instance's standard arguments and `arguments` map to
+    those authored keys. `N--L--t` maps under `/F/N/consumes/L` (F is the authored section key), and `N--L`'s target maps
+    there to `to`. Operator, manages and the standalone Conduit section map analogously. A
+    supplied Fleet owner maps to `/fleet`; an explicitly written owner maps to its authored
+    owner. A Fleet shared by several files names their supplying places. A syntax rejection
+    with no emitted document has no translation property. Schema rejections cite SUB-005 and
+    carry `keywordLocation`. OBJ-023 and OBJ-025 still decide invalid or conflict. No value at
+    a place governed by a secret reference is echoed (SEC-003).
+  vectors: []
+
+- id: SCT-015
+  layer: language
+  level: must
+  when: >-
+    An engine implements sectioned documents, by any method of translation.
+  then: >-
+    The objects, records and reason equal those of registering the translated documents in an
+    equal initial state. The diagnostics have the same `ruleId` and `level`, with authored
+    locations under SCT-014.
+  observable: >-
+    Comparing registration of the rendered translation with registration of the sectioned
+    project gives equal resulting states and records, apart from generated IDs and the
+    authored locations in diagnostics. This is an equivalence of registration, not a procedure
+    for changing an existing project. It supplies no implicit setup, opening, retirement,
+    repeat or change of a pin. Names remain stable under SCT-004.
+  vectors: []
+
+- id: SCT-016
+  layer: language
+  level: must
+  when: >-
+    A sectioned document holds member N in `conduits`.
+  then: >-
+    It makes standalone Conduit N with the written `consumer` and `target`, both with kinds,
+    and optional `as`. An inline member states `capability` and `operations` as selections
+    under NAM-018 and NAM-022, and optional `requirements`, makes template `N--t`, and uses
+    it as the instance's `from`. A referenced member states `from` and optional `arguments`
+    instead. `description` and `annotations` go only to the instance's `metadata`.
+  observable: >-
+    Inline selections are qualified references, or `#name` for the project's own contracts,
+    never aliases or bare names. The two forms cannot be mixed, and inline operations may be
+    an empty list. Without `as` its local name is N (IFC-012). Every Conduit that the canonical
+    form accepts may be written here, including one to `management` or one to `access` without
+    a bound. Canonical authorization and root-consumer restrictions still apply. SCT-008
+    restricts only `consumes`, never this section.
+  vectors: []

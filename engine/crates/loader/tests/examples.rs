@@ -14,6 +14,14 @@ use std::collections::BTreeMap;
 use common::*;
 use conduit_loader::{Document, Role, Syntax, read_file, read_project, read_text, rules};
 
+fn is_manifest_file(file: &std::path::Path) -> bool {
+    file.file_name().is_some_and(|name| {
+        ["conduit.yaml", "conduit.yml", "conduit.json"]
+            .iter()
+            .any(|want| name == *want)
+    })
+}
+
 #[test]
 fn the_documents_of_the_core_package_are_valid() {
     let spec = specification();
@@ -70,6 +78,41 @@ fn every_valid_example_is_accepted() {
     let directories = directories_in(&examples().join("valid"));
     assert!(!directories.is_empty());
     for directory in directories {
+        // Short-form translation is built in 043a/043b. Check its authored schemas here,
+        // without passing a sectioned value through the canonical wire document validator.
+        let files = files_in(&directory);
+        let sectioned = files
+            .iter()
+            .filter(|file| !is_manifest_file(file))
+            .any(|file| {
+                read_file(file)
+                    .expect("strict example syntax")
+                    .iter()
+                    .any(|document| document.root.get("kind").is_none())
+            });
+        if sectioned {
+            for file in files {
+                for document in read_file(&file).expect("strict example syntax") {
+                    if is_manifest_file(&file) {
+                        specification()
+                            .validate(&document, Role::Manifest)
+                            .unwrap_or_else(|fault| panic!("{}: {fault}", file.display()));
+                    } else if document.root.get("kind").is_none() {
+                        let schema = specification()
+                            .contract_validator("sectioned.v1")
+                            .expect("sectioned schema");
+                        schema
+                            .validate(&document.root.to_json())
+                            .unwrap_or_else(|fault| panic!("{}: {fault}", file.display()));
+                    } else {
+                        specification()
+                            .validate(&document, Role::Document)
+                            .unwrap_or_else(|fault| panic!("{}: {fault}", file.display()));
+                    }
+                }
+            }
+            continue;
+        }
         let project = read_project(&directory, specification())
             .unwrap_or_else(|faults| panic!("{}: {faults}", directory.display()));
         // Every file of the directory is read: the manifest, and each document of the others.
@@ -117,7 +160,29 @@ fn promise_of(name: &str) -> String {
 #[test]
 fn every_invalid_example_is_rejected_by_the_step_its_name_gives() {
     let expected = expected_verdicts();
-    let files = files_in(&examples().join("invalid"));
+    let all_files = files_in(&examples().join("invalid"));
+    let files: Vec<_> = all_files
+        .iter()
+        .filter(|file| !name_of(file).contains("-sectioned-"))
+        .cloned()
+        .collect();
+    for file in all_files
+        .iter()
+        .filter(|file| name_of(file).contains("-sectioned-"))
+    {
+        let schema = specification()
+            .contract_validator("sectioned.v1")
+            .expect("sectioned schema");
+        let documents = read_file(file).expect("strict sectioned syntax");
+        assert!(!documents.is_empty());
+        for document in documents {
+            assert!(
+                !schema.is_valid(&document.root.to_json()),
+                "{} was accepted",
+                file.display()
+            );
+        }
+    }
     let names: Vec<String> = files
         .iter()
         .map(|f| f.file_name().unwrap().to_string_lossy().into_owned())
@@ -159,7 +224,21 @@ fn every_invalid_example_is_rejected_by_the_step_its_name_gives() {
 /// has it: a file named `-manifest-` holds a manifest, and in any other a document with no
 /// `kind` is the manifest of its set's project.
 fn by_rule_role(name: &str, document: &Document) -> Role {
-    if name.contains("-manifest-") || document.root.get("kind").is_none() {
+    let embedded_manifest = document.root.get("kind").is_none()
+        && document.root.to_json().as_object().is_some_and(|map| {
+            map.keys().all(|key| {
+                [
+                    "apiVersion",
+                    "address",
+                    "version",
+                    "packages",
+                    "exports",
+                    "implementations",
+                ]
+                .contains(&key.as_str())
+            })
+        });
+    if name.contains("-manifest-") || embedded_manifest {
         Role::Manifest
     } else {
         Role::Document
@@ -218,8 +297,6 @@ fn check_rejects_the_invalid_by_rule_examples_of_sch_016_alone() {
 fn a_file_whose_name_begins_with_a_dot_is_not_read_in_a_valid_example() {
     let mut found = 0;
     for directory in directories_in(&examples().join("valid")) {
-        let project = read_project(&directory, specification())
-            .unwrap_or_else(|faults| panic!("{}: {faults}", directory.display()));
         for entry in std::fs::read_dir(&directory).expect("a directory") {
             let path = entry.expect("an entry").path();
             let name = name_of(&path);
@@ -227,6 +304,9 @@ fn a_file_whose_name_begins_with_a_dot_is_not_read_in_a_valid_example() {
                 continue;
             }
             found += 1;
+            // Only read a canonical project when it actually holds a hidden-file fixture.
+            let project = read_project(&directory, specification())
+                .unwrap_or_else(|faults| panic!("{}: {faults}", directory.display()));
             let rejected = match read_file(&path) {
                 Err(_) => true,
                 Ok(documents) => documents
@@ -287,11 +367,25 @@ fn every_example_means_the_same_in_json() {
                 index: from_yaml.index,
                 root: from_json,
             };
-            let role = if name == "conduit.yaml" || name.contains("-manifest-") {
+            let role = if is_manifest_file(&file) || name.contains("-manifest-") {
                 Role::Manifest
             } else {
                 Role::Document
             };
+            if role == Role::Document && from_yaml.root.get("kind").is_none() {
+                let schema = specification()
+                    .contract_validator("sectioned.v1")
+                    .expect("sectioned schema");
+                let verdict = |d: &Document| {
+                    schema
+                        .iter_errors(&d.root.to_json())
+                        .map(|fault| (fault.instance_path().to_string(), fault.to_string()))
+                        .collect::<Vec<_>>()
+                };
+                assert_eq!(verdict(from_yaml), verdict(&as_document), "{name}");
+                compared += 1;
+                continue;
+            }
             let verdict = |d: &Document| {
                 specification()
                     .validate(d, role)

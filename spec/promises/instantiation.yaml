@@ -11,14 +11,16 @@
   layer: language
   level: must
   when: >-
-    A document whose kind is one of the five families is read.
+    A framed document whose kind is one of the six families is read.
   then: >-
     It is a template if it has no `from`, and an instance if it has `from`. There is no other
     marker.
   observable: >-
-    A document with `from` that also carries a `spec` is rejected, with a diagnostic naming the
-    `spec`. A document of the kind `Type`, `Capability`, `Operation`, `Requirement` or `Schema`
-    is a contract, and this test is not applied to it.
+    A document with `from` that also carries a `spec` is rejected, with a diagnostic naming
+    the `spec`. A document of the kind `Type`, `Capability`, `Operation`, `Requirement` or
+    `Schema` is a contract, and this test is not applied to it. In a sectioned document the
+    section fixes the family. SCT-005 makes a template; SCT-006 makes an instance and, for an
+    inline definition, its template together. Every translated instance has `from`.
   vectors: []
 
 - id: INS-002
@@ -29,9 +31,11 @@
   then: >-
     The document is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the `from` value and what it resolved to, if anything.
-    Every instance is made from a template: one that exists when the instance is made, or one
-    that an installed package exports. The forms `from` may take are INS-025.
+    Resolving returns a diagnostic naming the `from` value and what it resolved to, if
+    anything. Every instance is made from a template: one that exists when the instance is
+    made, or one that an installed package exports. The forms `from` may take are INS-025. An
+    inline sectioned definition makes its template and instance together under SCT-006, within
+    the same submission.
   vectors: []
 
 - id: INS-003

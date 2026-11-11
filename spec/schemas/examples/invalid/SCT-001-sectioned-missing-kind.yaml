@@ -1,0 +1,3 @@
+apiVersion: github.com/shrav-k/conduit/v0
+metadata: {name: lost}
+spec: {type: github.com/shrav-k/conduit/core#interface.v1}

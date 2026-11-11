@@ -185,6 +185,9 @@
     trust and can get past every gate, under IFC-022. The engine's own runner is the runtime
     provider here, so this item is the contract that PRV-011 and SEC-020 leave to a runtime
     provider.
+    Where each instance's private state directory lives in the store, under PRV-029, and how
+    the platform supplies its private permissions. Its stable identity and removal are fixed
+    by PRV-029; processes sharing the engine's user can still read it.
 - id: DL17
   subject: An engine that restarts on another machine or runs as several parts
   document: >-
@@ -234,3 +237,17 @@
     unavailable, under SEC-013 and IFC-041, until the template is replaced and each instance
     made from it before then has been replaced by one made from it since, because an instance
     keeps the item it resolved, under INS-020; no document but such a template needs to change.
+
+- id: DL18
+  subject: A URL action's wait
+  document: >-
+    How long sign-in.v1 and other URL actions wait for a person's completion within their
+    invocation, including polling across retries or task updates (IFC-049). Accept does not
+    complete a sign-in. The wait is finite; on its end the invocation ends unknown and no
+    later hook runs. The wait is distinct from the pending action's expiry (DL19).
+- id: DL19
+  subject: Pending-action expiry
+  document: >-
+    The duration of each pending-action kind, and how its expiry is computed and shown. Every
+    action has an expiry (PND-003); on expiry it reads expired with no actor and dispatches
+    nothing. Vectors supply clock input rather than relying on elapsed wall time.

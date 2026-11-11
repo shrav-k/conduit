@@ -36,6 +36,7 @@
     makes as an onward request, reports refused in the same way even where an open Conduit lists
     the operation, under SEC-007: the only request for it that is dispatched is the engine's
     read of a secret, under SEC-010.
+    The refusal carries ACC-056's diagnostic and follows its disclosure tiers.
   vectors: []
 
 - id: ACC-002
@@ -620,6 +621,10 @@
     `management` where that Fleet is retired. ACC-055 adds a condition for a holder other than
     root.
     (15) Listing with `list.v1`: the container, `management`, a Pool or a Fleet (OPS-036).
+    (16) Signing in with sign-in.v1: the subject Agent's owning Fleet or the subject
+    Resource's owning Pool, with the Interface-only and scoped limits of PND-010.
+    (17) Answering with answer.v1: the target authorizing inspection of the subject,
+    under rows 6, 6A and 7, including their retired-owner fallback (PND-009).
     No request is authorized against a retired Pool or Fleet.
   observable: >-
     An actor with the listed Conduits is permitted, subject to further conditions such as
@@ -650,7 +655,7 @@
     inputs. An object that does not exist has no owning Pool or Fleet. Authority to inspect it
     or act on it by a stale reference is `management`'s alone. With that authority the request
     reports invalid under OPS-029. A caller with only an owner's authority reports refused
-    before any diagnostic under OPS-023 and learns nothing of whether the object existed. An
+    under OPS-023, with ACC-056's diagnostic and only the disclosure its tier permits. An
     object's inventory is part of its inspection: no separate Conduit authorizes inspecting each
     Conduit shown there (LIF-013). Tombstone inspection follows LIF-040; listing never supplies
     additional inspection authority (OPS-036).
@@ -714,14 +719,14 @@
     The request is not dispatched, and reports unavailable. Nothing else about the request is
     examined or reported.
   observable: >-
-    The target's implementation receives no call, and no earlier decision is used in place of
-    the one that cannot be made, even for a request between two instances on one node.
-    OPS-023 puts this case where refused stands in its order: the request reports unavailable
-    whatever else is wrong with it, and its result carries no diagnostic and says nothing of the
-    objects it names, since the actor has not been found to be permitted. Only a request that
-    cannot be read reports another reason, invalid. The same request made once the state can be
-    established is decided as any other. Whether the engine reports at once or first waits, and
-    for how long, is DL4 of the implementation-defined list.
+    The target's implementation receives no call, and no earlier decision is used in place
+    of the one that cannot be made, even for a request between two instances on one node.
+    OPS-023 puts this case where refused stands in its order: the request reports
+    unavailable whatever else is wrong with it, and its result carries one diagnostic naming
+    ACC-037 and no object, since the actor has not been found to be permitted. Only a
+    request that cannot be read reports another reason, invalid. The same request made once
+    the state can be established is decided as any other. Whether the engine reports at once
+    or first waits, and for how long, is DL4 of the implementation-defined list.
   vectors: []
 
 - id: ACC-038
@@ -883,11 +888,109 @@
   when: >-
     A registration or `register-replacement.v1` would make an Agent.
   then: >-
-    It is dispatched only where root sends it on its own behalf, in SEC-008's form; otherwise it
-    is not dispatched and reports refused.
+    It is dispatched only where root sends it on its own behalf, in SEC-008's form;
+    otherwise it is not dispatched and reports refused.
   observable: >-
     This applies to every Agent in a submission, including one whose Fleet is in that
-    submission. Having both Conduits in ACC-033 row 1A is insufficient for another actor or an
-    onward request serving root. A refused submission registers nothing. Root still needs the
-    authorizing Conduits in ACC-033.
+    submission. Having both Conduits in ACC-033 row 1A is insufficient for another actor or
+    an onward request serving root. A refused submission registers nothing. Root still needs
+    the authorizing Conduits in ACC-033.
+  vectors: []
+
+- id: ACC-056
+  layer: convention
+  level: must
+  when: >-
+    A request reports refused, whether the engine decides it or an implementation gives the
+    reason under IFC-026.
+  then: >-
+    Its result carries one error diagnostic, whose ruleId is the refusing promise and whose
+    properties.refusal has the form refusal.v1. Tier 1 is given to every caller, an Agent's
+    model among them: the qualified operation, the tool and local Conduit name and object
+    references as the request named them, and the cause in the refusing rule's row below. It states the specific cause of that
+    rule; the no-open-Conduit statement belongs to ACC-001. Nothing in tier 1 depends on
+    whether an object exists,
+    who owns it or its state. Tier 2 is always given to root. Another caller gets it only
+    where it may inspect the authorizing target under ACC-033 and every object the request
+    names, through open Conduits with no filter. It adds the resolved target and the
+    caller's Conduits to it, each with its name, local name, state and operations, or states
+    that the named object does not exist.
+  observable: |-
+    The Conduits in tier 2 include open ones, registered ones not yet open and closed ones
+    whose tombstones remain (LIF-040). An inventory supplies its own disclosure under
+    LIF-013. Without that inspection authority the diagnostic is identical whether a name
+    exists or not, apart from the references the caller wrote. A target inferred from an
+    owner is described by its ACC-033 row in tier 1, never by a newly resolved name. The
+    first text block of IFC-025 and the message of IFC-012's error repeat the diagnostic's
+    explanation. The record states the refusing rule and tier, never the tier-2 list.
+    The rows below give the causes. They describe requirements, not hidden facts about
+    a named object's state at tier 1. Promises that restate a refusal reuse the deciding
+    access rule's cause; the ruleId remains the deciding rule. A cause never discloses an
+    inferred owner, retirement state or chain beyond what the caller may learn.
+
+    | Rule | Cause |
+    | --- | --- |
+    | ACC-001 | No open Conduit from the caller to the target as named lists the operation. |
+    | ACC-003 | Managed access needs an open Conduit; a secret is read only by the engine. |
+    | ACC-005 | Each setup part needs the sending instance's own authority. |
+    | ACC-006 | Opening needs the sending instance's own Conduit to access listing open within its bound. |
+    | ACC-008 | The named restriction forbids the request; restriction is carried in the result. |
+    | ACC-011 | A request needs an open Conduit, regardless of earlier permission. |
+    | ACC-012 | Closing needs access listing close within its bound; protected Conduits cannot close. |
+    | ACC-016 | An onward request needs the sending instance's own Conduit. |
+    | ACC-018 | A hook's onward request needs its instance's authority and all carried restrictions. |
+    | ACC-019 | Nothing is dispatched for an invocation that has ended. |
+    | ACC-023 | Root authority is ordinary Conduits, never an implicit bypass (ACC-001). |
+    | ACC-024 | Root may close its own Conduits except first-start and default Conduits. |
+    | ACC-028 | Ownership gives no permission; an open Conduit listing the operation is required (ACC-001). |
+    | ACC-029 | The bound does not cover the request; restriction names it. |
+    | ACC-030 | Passing on access may not exceed the sender's bound; restriction names it. |
+    | ACC-032 | Reserved to root acting on its own behalf. |
+    | ACC-033 | The request needs the target described by its first fitting row. Tier 1 names it only if the request itself did, otherwise it describes that row without resolving an owner name. |
+    | ACC-034 | An onward request cannot proceed after a Conduit in its served chain closes. |
+    | ACC-036 | Every request needs authority now, regardless of a previous decision. |
+    | ACC-038 | The named restriction must be applied by its stated enforcement point. |
+    | ACC-039 | A retired consumer can send only requests of its own retirement; this cause does not reveal whether a named object is retired at tier 1. |
+    | ACC-053 | Lifting needs access listing lift and a bound covering the kept IDs and operations. |
+    | ACC-054 | Only root on its own behalf opens or registers a Conduit whose consumer is root. |
+    | ACC-055 | Reconciliation is limited by the bound or to invocations the holder sent. |
+    | ACC-057 | Only root on its own behalf registers a submission containing an Agent. |
+    | CON-008 | Requests need an open Conduit; retirement closes target Conduits (ACC-001, ACC-011). |
+    | CON-031 | Explicit open still needs ordinary authority (ACC-006); it is not implied by registration. |
+    | FLEET-004 | Fleet ownership gives no permission (ACC-001, ACC-033). |
+    | IFC-012 | No tool of that spelling is presented; no open Conduit permits this call. |
+    | IFC-013 | No open Conduit permits this call, as IFC-012 states. |
+    | IFC-016 | Task access needs the originating instance and its currently open Conduit. |
+    | IFC-019 | The implementation's named restriction forbids the call. |
+    | IFC-021 | A Resource makes requests only for an invocation it serves. |
+    | IFC-022 | No instance was established by the presented proof. |
+    | IFC-025 | Use the refusing access rule and its cause; this promise gives the wire form only. |
+    | IFC-026 | The implementation refused under the named restriction. |
+    | IFC-027 | Only the named restriction can justify an implementation refusal (IFC-026). |
+    | IFC-028 | The sender must serve the named invocation while it is in progress. |
+    | IFC-032 | No instance was established. |
+    | IFC-033 | Presentation gives no extra permission (ACC-001, IFC-012). |
+    | IFC-049 | A URL action needs its originating Interface's current authority (IFC-016). |
+    | IMP-008 | An onward request may start model work only when the operation of the invocation it serves permits model work. |
+    | LIF-034 | First-start objects are protected against retirement and unregistration. |
+    | LIF-037 | expectedId gives no authority; use ACC-033 or ACC-001 before comparing it. |
+    | OPS-005 | Use the deciding access rule; this promise gives the form of a reason. |
+    | OPS-023 | Use the deciding access rule; no other applicable reason is disclosed. |
+    | OPS-024 | A repeat still needs current permission (ACC-001). |
+    | OPS-029 | The request needs ACC-033 authority before existence is examined. |
+    | OPS-036 | Listing supplies no inspection authority (ACC-033). |
+    | PND-003 | An answer needs the answering operation's current authority (PND-009, PND-010). |
+    | PND-007 | Notice delivery grants no answering authority (PND-009). |
+    | PND-009 | Only an Interface acting on its own behalf may answer an action raised there, with the required Conduit; other consumers may not open a Conduit listing answer. |
+    | PND-010 | Only an Interface acting on its own behalf may sign in with the required Conduit; a scoped Interface signs in only Agents of its scoped Fleets, and Resources remain root's; other consumers may not open a Conduit listing sign-in. |
+    | PND-011 | An account check grants no request authority (ACC-001). |
+    | PRV-025 | Only an authenticated enforcement point may reach a provider run gate (IFC-022). |
+    | REC-004 | Purging records is reserved to root acting on its own behalf (ACC-032). |
+    | SEC-007 | get-secret is never dispatched for an instance request; the engine alone reads it. |
+    | SEC-008 | Only root on its own behalf opens a secret Conduit, for a Resource or Agent consumer. |
+    | SEC-010 | Only the engine dispatches a secret read, through the instance's own Conduit (SEC-007). |
+
+    Where an unknown tool spelling cannot identify an operation or local Conduit name,
+    named.tool and operation echo that spelling; the explanation states that no presented
+    tool has it; no past tool list or hidden object is disclosed to reconstruct the name.
   vectors: []

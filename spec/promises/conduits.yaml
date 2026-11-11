@@ -135,6 +135,9 @@
     confirmed, the consumer is declared lost or unregistered, or an actor closes the Conduit
     under ACC-012. Each closing leaves a tombstone under LIF-040 except where the engine made
     the Conduit. That tombstone survives removal and purging; only a permitted lift removes it.
+    A Resource retirement sent by another instance may also raise a notice for each other
+    Fleet whose Agents lose Conduits, under PND-007; no review or automatic closing beyond
+    this rule is added.
   vectors: []
 
 - id: CON-011

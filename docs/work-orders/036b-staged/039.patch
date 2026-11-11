@@ -1,6 +1,6 @@
 --- a/spec/core/README.md
 +++ b/spec/core/README.md
-@@ -215,7 +215,7 @@
+@@ -221,7 +221,7 @@
    the engine gave it. A request made through a Conduit that lists the operation, and that
    names an object or an invocation that does not exist, reports invalid (OPS-029). So does a
    request for `set-up.v1` or `retire.v1` that names a template or a Conduit (LIF-032).
@@ -21,7 +21,7 @@
  #     that the actor expects the object it names to have, as Kubernetes's `preconditions.uid`
  #     is: it names nothing and grants nothing, and where the reference resolves to an object
  #     with another ID, as when a name was given to another object after the first was removed,
-@@ -702,12 +703,17 @@
+@@ -708,12 +709,17 @@
      Only root acting on its own behalf opens a root-consumed Conduit (ACC-054). A matching tombstone
      prevents dispatch with conflict (LIF-041); engine-made defaults are exempt. An already open Conduit
      preserves its original provenance (ACC-044).
@@ -39,7 +39,7 @@
      required:
      - conduit
    effect: Sets the Conduit's state to ready, so that its consumer may request the operations it lists
-@@ -734,12 +740,17 @@
+@@ -740,12 +746,17 @@
  
      Closing leaves a tombstone unless the object was engine-made (LIF-040), retaining the opening
      provenance (ACC-044).

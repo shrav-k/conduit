@@ -163,12 +163,14 @@
     The call carries Conduit's keys.
   observable: >-
     The call's `_meta` holds only keys that the protocol itself defines, such as
-    `io.modelcontextprotocol/protocolVersion`. Its `io.modelcontextprotocol/clientCapabilities`
-    declares no extension of Conduit's, and what it declares is IFC-045's, so a server that
-    needs a capability that the call does not declare, such as elicitation, answers with the
-    protocol's error -32021, which IFC-010 reads as it reads any other error: failed for an
-    operation whose contract states no `effect`, that is not a control and whose contract is not
-    marked `startsModelWork: true`, and unknown for any other.
+    `io.modelcontextprotocol/protocolVersion`. Its
+    `io.modelcontextprotocol/clientCapabilities` declares no extension of Conduit's, and
+    what it declares is IFC-045's, so a server that needs a capability that the call does
+    not declare, such as form-mode elicitation, answers with the protocol's error -32021,
+    which IFC-010 reads as it reads any other error: failed for an operation whose contract
+    states no `effect`, that is not a control and whose contract is not marked
+    `startsModelWork: true`, and unknown for any other. URL-mode elicitation follows IFC-016
+    and IFC-049.
   vectors: []
 
 - id: IFC-008
@@ -249,6 +251,9 @@
     the error of one that failed, such as -32021 where the task came to need a capability that the
     call did not declare. A task that was cancelled, and one that the server no longer holds, is no
     result at all.
+    A URL-mode input request outside sign-in.v1 follows IFC-016: the call ends unknown and,
+    only for a signIn Type with a string expected account, raises PND-005. This does not
+    change the table above for other input_required results.
   vectors: []
 
 - id: IFC-011
@@ -320,6 +325,9 @@
     refused but for that exception. At a revision that has a tool result answer such a call,
     that result holds the reason as IFC-025 states. The request is recorded with that reason,
     under REC-001.
+    The error's message also repeats ACC-056's explanation, and data carries the refusal
+    diagnostic beside the reason. Tier 1 discloses no difference between a name never
+    presented and a tool whose Conduit closed, apart from what the request itself named.
   vectors: []
 
 - id: IFC-013
@@ -390,33 +398,39 @@
   observable: >-
     A caller that has no task, or that lost its result, learns the result by repeating its
     request with the same idempotency key through an open Conduit: the repeat reports
-    conflict under OPS-032 while the invocation has not ended. Once it has succeeded, a repeat
-    to which no filter applies is answered with the invocation's outputs under OPS-009 while
-    the engine keeps them, and reports conflict under OPS-034 once it does not. Where a filter
-    applies to the repeat, it is dispatched as a new attempt under OPS-024 where the operation
-    states no `effect`, is not a control and does not start model work, and otherwise reports
-    conflict under OPS-034, or, for an operation that declares no outputs, is answered with
-    the outcome alone under OPS-009. A `tasks/get` through a Conduit that
-    is no longer open reports refused, as any request through it does: a result that the
-    response to the call did not carry is then not delivered, and the caller learns the outcome
-    from the records, under ACC-034. This is one invocation, whose result is its own. Until it
-    ends it is in progress: the instance that serves it may make onward requests that name it,
-    under IFC-020, and they are decided like any other. Once it has ended no request is
-    dispatched on its behalf, under ACC-019: no operation arranges, through the engine, work
-    that outlasts its invocation. A task's ID establishes nothing: the protocol lets a server
-    treat one as a bearer token, and the engine decides each such request for the instance that
-    sent it, under IFC-022. A request of the extension for the task, or a `subscriptions/listen`
-    that names it, that does not proceed, as a `tasks/get` through a Conduit that is no longer
-    open, is answered with the JSON-RPC error for invalid parameters, code -32602, which the
-    extension gives for a task that a server does not hold, and with no result, and the error's
-    `data` holds `io.github.shrav-k.conduit/reason`, as IFC-012 answers a call to a tool that is
-    not presented. The engine sends no `notifications/tasks` for the task to an instance whose
+    conflict under OPS-032 while the invocation has not ended. Once it has succeeded, a
+    repeat to which no filter applies is answered with the invocation's outputs under
+    OPS-009 while the engine keeps them, and reports conflict under OPS-034 once it does
+    not. Where a filter applies to the repeat, it is dispatched as a new attempt under
+    OPS-024 where the operation states no `effect`, is not a control and does not start
+    model work, and otherwise reports conflict under OPS-034, or, for an operation that
+    declares no outputs, is answered with the outcome alone under OPS-009. A `tasks/get`
+    through a Conduit that is no longer open reports refused, as any request through it
+    does: a result that the response to the call did not carry is then not delivered, and
+    the caller learns the outcome from the records, under ACC-034. This is one invocation,
+    whose result is its own. Until it ends it is in progress: the instance that serves it
+    may make onward requests that name it, under IFC-020, and they are decided like any
+    other. Once it has ended no request is dispatched on its behalf, under ACC-019: no
+    operation arranges, through the engine, work that outlasts its invocation. A task's ID
+    establishes nothing: the protocol lets a server treat one as a bearer token, and the
+    engine decides each such request for the instance that sent it, under IFC-022. A request
+    of the extension for the task, or a `subscriptions/listen` that names it, that does not
+    proceed, as a `tasks/get` through a Conduit that is no longer open, is answered with the
+    JSON-RPC error for invalid parameters, code -32602, which the extension gives for a task
+    that a server does not hold, and with no result, and the error's `data` holds
+    `io.github.shrav-k.conduit/reason`, as IFC-012 answers a call to a tool that is not
+    presented. The engine sends no `notifications/tasks` for the task to an instance whose
     `tasks/get` for it would be refused, as once that Conduit is no longer open, so a result
-    that the response to the call did not carry reaches the caller in no notification either,
-    under ACC-034. The engine answers none of the protocol's input requests of an
-    implementation, such as an elicitation in a result whose `resultType` is `input_required` or
-    in a task's `inputRequests`, and passes none on to a consumer: it declares no capability
-    that one needs, under IFC-045, and such a result is read as IFC-009 and IFC-010 read it.
+    that the response to the call did not carry reaches the caller in no notification
+    either, under ACC-034. Only URL-mode elicitation arising as a part of sign-in.v1 is
+    relayed, under IFC-049, to the requesting person's Interface. A URL elicitation at any
+    other point ends the call unknown, raises PND-005 only for a Type stating signIn with a
+    string account, and reaches no consumer inline, even root. Without that declaration it
+    ends unknown with a diagnostic naming the absent signIn or expected account, and raises
+    nothing. Other input requests are not answered or passed on; IFC-009 and IFC-010 read
+    their results. Task input requests use tasks/get and tasks/update as IFC-049 states. A
+    task request that does not proceed carries the same explanation and deciding diagnostic
+    in the error as IFC-012.
   vectors: []
 
 - id: IFC-017
@@ -635,79 +649,88 @@
     The engine answers a consumer's request.
   then: >-
     When the request has an outcome, the result's `_meta` holds
-    `io.github.shrav-k.conduit/outcome`, with the value succeeded, failed or unknown. When it
-    ended with a reason, whether the engine did not dispatch it or the implementation gave the
-    reason under IFC-026, the result's `_meta` holds `io.github.shrav-k.conduit/reason`, with
-    the value refused, invalid, conflict or unavailable. Where a restriction is why the request
-    ended with a reason, the result's `_meta` also holds
-    `io.github.shrav-k.conduit/restriction`, which names that restriction by its `requirement`
-    and its `arguments`: the engine's own result carries it under the same key that an
-    implementation uses under IFC-026. When the request has an outcome, or is a repeat that
-    reports conflict under OPS-032 or OPS-034, the result's `_meta` also holds
-    `io.github.shrav-k.conduit/invocation`, the engine's ID for the invocation that the request
-    began or repeats. The result's `isError` is true where the request ended with a reason or
-    its outcome is failed or unknown, and in no other case, and such a result carries none of
-    the operation's outputs, `diagnostics` apart. A result whose `isError` is not true holds the
-    operation's outputs in its `structuredContent` where the operation declares outputs.
-    Where it declares no outputs, the result carries no `structuredContent`, except for
-    error diagnostics as stated below. Where its `isError` is true, its
-    `content` holds first one text block that states its reason or its outcome and says nothing
-    that the rest of the result does not say. Where its outcome came from a result of an
-    implementation marked `plain`, its `content` holds that result's `content`, unchanged, after
-    that block where there is one.
+    `io.github.shrav-k.conduit/outcome`, with the value succeeded, failed or unknown. When
+    it ended with a reason, whether the engine did not dispatch it or the implementation
+    gave the reason under IFC-026, the result's `_meta` holds
+    `io.github.shrav-k.conduit/reason`, with the value refused, invalid, conflict or
+    unavailable. Where a restriction is why the request ended with a reason, the result's
+    `_meta` also holds `io.github.shrav-k.conduit/restriction`, which names that restriction
+    by its `requirement` and its `arguments`: the engine's own result carries it under the
+    same key that an implementation uses under IFC-026. When the request has an outcome, or
+    is a repeat that reports conflict under OPS-032 or OPS-034, the result's `_meta` also
+    holds `io.github.shrav-k.conduit/invocation`, the engine's ID for the invocation that
+    the request began or repeats. The result's `isError` is true where the request ended
+    with a reason or its outcome is failed or unknown, and in no other case, and such a
+    result carries none of the operation's outputs, `diagnostics` apart. A result whose
+    `isError` is not true holds the operation's outputs in its `structuredContent` where the
+    operation declares outputs. Where it declares no outputs, the result carries no
+    `structuredContent`, except for error diagnostics as stated below. Where its `isError`
+    is true, its `content` holds first one text block that states its reason or outcome and
+    each error diagnostic's message, under IFC-050, disclosing only what the rest of the
+    result says. Where its outcome came from a result of an implementation marked `plain`,
+    its `content` holds that result's `content`, unchanged, after that block where there is
+    one.
   observable: >-
-    A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`,
-    and a result for one that ended with a reason never carries
-    `io.github.shrav-k.conduit/outcome`. The values are those of OPS-001 and OPS-005. `isError`
-    keeps the protocol's meaning, the mark of a call that ended in an error, and the keys beside
-    it say why: `io.github.shrav-k.conduit/reason`, or an outcome that is failed or unknown. A
-    result whose `isError` is not true has the outcome succeeded. Where the operation declares
-    outputs, its `structuredContent` conforms to the `outputSchema` of IFC-033, as the protocol
-    requires of a tool that declares one. The protocol makes `outputSchema` optional. A client
-    that sees one may prefer `structuredContent`; an empty map for an operation that declares no
-    outputs would hide its `content`. Such a tool has no `outputSchema` and its successful
-    result no `structuredContent`, preserving a plain result's content unchanged. The protocol's
-    revision 2026-07-28 does not say whether a result whose `isError` is true must conform to
-    `outputSchema`. This specification takes it that it need not: such a result carries no
-    outputs, and may carry `diagnostics`. A result whose outcome is succeeded holds its outputs
-    even where the Conduit through which its invocation was dispatched was closed before it
-    ended, under ACC-034: the result of `retire-with-resources.v1`, whose Conduit CON-008 closes
-    before it ends, is one. A repeat of an invocation that has not ended reports conflict under
-    OPS-032, and one of an invocation that succeeded, of an operation that declares outputs,
-    where no filter applies and the engine no longer keeps its outputs, or where a filter
-    applies to the repeat and OPS-024 does not dispatch it, reports conflict under OPS-034; the
-    `ruleId` of its error diagnostic tells the two apart, and its `isError` is true. What a
-    request that is not dispatched says beyond its reason, and beyond the restriction it names,
-    it says there: `diagnostics` in the `structuredContent` of its result is a list of
-    diagnostics in the form of `diagnostic.v1`, whether or not the operation's contract declares
-    an output of that name, as that of `register.v1` does. A result that reports invalid or
-    conflict carries there an error diagnostic: one whose `level` is `error` and whose `ruleId`
-    is the ID of the promise that decided the reason. A result that reports refused carries
-    none, and says nothing there of the objects its request names, under OPS-023. The result of
+    A result for a request that has an outcome never carries
+    `io.github.shrav-k.conduit/reason`, and a result for one that ended with a reason never
+    carries `io.github.shrav-k.conduit/outcome`. The values are those of OPS-001 and
+    OPS-005. `isError` keeps the protocol's meaning, the mark of a call that ended in an
+    error, and the keys beside it say why: `io.github.shrav-k.conduit/reason`, or an outcome
+    that is failed or unknown. A result whose `isError` is not true has the outcome
+    succeeded. Where the operation declares outputs, its `structuredContent` conforms to the
+    `outputSchema` of IFC-033, as the protocol requires of a tool that declares one. The
+    protocol makes `outputSchema` optional. A client that sees one may prefer
+    `structuredContent`; an empty map for an operation that declares no outputs would hide
+    its `content`. Such a tool has no `outputSchema` and its successful result no
+    `structuredContent`, preserving a plain result's content unchanged. The protocol's
+    revision 2026-07-28 does not say whether a result whose `isError` is true must conform
+    to `outputSchema`. This specification takes it that it need not: such a result carries
+    no outputs, and may carry `diagnostics`. A result whose outcome is succeeded holds its
+    outputs even where the Conduit through which its invocation was dispatched was closed
+    before it ended, under ACC-034: the result of `retire-with-resources.v1`, whose Conduit
+    CON-008 closes before it ends, is one. A repeat of an invocation that has not ended
+    reports conflict under OPS-032, and one of an invocation that succeeded, of an operation
+    that declares outputs, where no filter applies and the engine no longer keeps its
+    outputs, or where a filter applies to the repeat and OPS-024 does not dispatch it,
+    reports conflict under OPS-034; the `ruleId` of its error diagnostic tells the two
+    apart, and its `isError` is true. What a request that is not dispatched says beyond its
+    reason, and beyond the restriction it names, it says there: `diagnostics` in the
+    `structuredContent` of its result is a list of diagnostics in the form of
+    `diagnostic.v1`, whether or not the operation's contract declares an output of that
+    name, as that of `register.v1` does. A result that ends with a reason carries there an
+    error diagnostic: one whose `level` is `error` and whose `ruleId` is the ID of the
+    promise that decided the reason. A refused result carries ACC-056's diagnostic; an
+    unavailable result carries its deciding rule's diagnostic, under IFC-050. The result of
     a rejected registration carries its diagnostics under OBJ-023, and that of a request to
-    retire a Pool or Fleet whose members are in the way names those Resources or Agents there,
-    under LIF-020. A request that the engine does not dispatch because a restriction forbids it,
-    or cannot be evaluated or applied, names that restriction in
-    `io.github.shrav-k.conduit/restriction`, as ACC-008, ACC-014 and ACC-015 require. The ID in
-    `io.github.shrav-k.conduit/invocation` is the one by which `reconcile.v1` names the
-    invocation, under OPS-014, so a consumer learns it from the result, and a caller that lost a
-    result repeats its request under OPS-009. A call that names a tool the engine does not
-    present is answered as IFC-012 states: at the baseline revision with no tool result, its
-    reason being in the `data` of the protocol's error. IFC-032 names another, and IFC-036 the
-    requests that the protocol has a server reject with an error of its own. The `content`
-    member is always present in a tool result, as the protocol requires, and may be an empty
-    list where the result is not an error and its outcome did not come from a plain
-    implementation. The text block of an error is there because the protocol has a client give
-    its model a tool result that is an error, and lets it keep `_meta`, and a protocol error,
-    from the model. The protocol recommends that a result with `structuredContent` also carry it
-    serialized in `content`; whether the engine does so, and what else it puts there, is DL12 of
-    the implementation-defined list. A plain implementation's `content` is passed on because an
-    existing server answers in text, which no contract can describe, under CTR-012. The content
-    of a succeeded plain invocation is kept and returned unchanged on a repeat under OPS-009 for
-    as long as DL10 keeps outputs, whether or not the operation declares outputs; after its
-    expiry a repeat reports conflict under OPS-034. It is never dispatched again to recover that
-    content. This specification gives `content` no other meaning: an operation's outputs are in
-    `structuredContent`.
+    retire a Pool or Fleet whose members are in the way names those Resources or Agents
+    there, under LIF-020. A request that the engine does not dispatch because a restriction
+    forbids it, or cannot be evaluated or applied, names that restriction in
+    `io.github.shrav-k.conduit/restriction`, as ACC-008, ACC-014 and ACC-015 require. The ID
+    in `io.github.shrav-k.conduit/invocation` is the one by which `reconcile.v1` names the
+    invocation, under OPS-014, so a consumer learns it from the result, and a caller that
+    lost a result repeats its request under OPS-009. A call that names a tool the engine
+    does not present is answered as IFC-012 states: at the baseline revision with no tool
+    result, its reason being in the `data` of the protocol's error. IFC-032 names another,
+    and IFC-036 the requests that the protocol has a server reject with an error of its own.
+    The `content` member is always present in a tool result, as the protocol requires, and
+    may be an empty list where the result is not an error and its outcome did not come from
+    a plain implementation. The text block of an error is there because the protocol has a
+    client give its model a tool result that is an error, and lets it keep `_meta`, and a
+    protocol error, from the model. The protocol recommends that a result with
+    `structuredContent` also carry it serialized in `content`; whether the engine does so,
+    and what else it puts there, is DL12 of the implementation-defined list. A plain
+    implementation's `content` is passed on because an existing server answers in text,
+    which no contract can describe, under CTR-012. The content of a succeeded plain
+    invocation is kept and returned unchanged on a repeat under OPS-009 for as long as DL10
+    keeps outputs, whether or not the operation declares outputs; after its expiry a repeat
+    reports conflict under OPS-034. It is never dispatched again to recover that content.
+    This specification gives `content` no other meaning: an operation's outputs are in
+    `structuredContent`. io.github.shrav-k.conduit/pendingAction names the action IDs raised
+    or holding the request (PND-005, PND-007). For an Interface's own result
+    io.github.shrav-k.conduit/unanswered is the nonzero count under PND-002; it is absent
+    for Agents. Neither key holds evidence values or prompts (PND-004).
+    pendingAction is a list of action IDs, including when it names one action, and carries
+    no evidence value.
   vectors: []
 
 
@@ -855,6 +878,8 @@
     the request is decided under ACC-037, reports unavailable, and is answered with no 401, so
     that a client does not discard a credential that is good. Its record holds no caller, under
     REC-002.
+    The refusal explains that no instance was established (ACC-056). An HTTP 401 may carry
+    error_description as RFC 6750 allows, without disclosing objects.
   vectors: []
 
 
@@ -1220,21 +1245,24 @@
     call carries Conduit's keys, or makes a provider call under PRV-005.
   then: >-
     In the call's `io.modelcontextprotocol/clientCapabilities` it declares no capability but
-    Conduit's extension, where IFC-037 has it declare it, and the tasks extension, where IFC-016
-    lets it.
+    Conduit's extension, where IFC-037 has it declare it, the tasks extension where IFC-016
+    lets it, and elicitation URL mode {"url": {}} only for requests and hooks to instances
+    whose Type states signIn. It declares no form-mode elicitation and no elicitation for
+    provider calls.
   observable: >-
-    A call to an implementation marked `plain` declares no extension of Conduit's, under IFC-007
-    and IFC-037, so it declares at most the tasks extension. The engine answers none of the
-    protocol's input requests, under IFC-016, so it declares no capability that one needs, such
-    as elicitation. The protocol has a server rely on no capability that a request does not
-    declare, and answer with the error -32021, whose `data.requiredCapabilities` names what it
-    needs, where processing the request needs one. It does not say that a server answers so
-    before it acts, so the error shows nothing of an effect by itself: from a plain
-    implementation it is read as IFC-010 reads any other error, failed for an operation whose
-    contract states no `effect`, that is not a control and whose contract is not marked
-    `startsModelWork: true`, and unknown for any other. An implementation that carries Conduit's
-    keys answers so only where it has performed nothing, under IFC-047, so the outcome is then
-    failed under OPS-007, as for the error of IFC-008 that names Conduit's extension.
+    A call to an implementation marked `plain` declares no extension of Conduit's, under
+    IFC-007 and IFC-037, so it declares only tasks where allowed and URL elicitation where
+    that Type states signIn. A plain OAuth server whose Type states no signIn therefore sees
+    the same capability declaration as before. IFC-016 and IFC-049 limit the relay. The
+    protocol has a server rely on no capability that a request does not declare, and answer
+    with the error -32021, whose `data.requiredCapabilities` names what it needs, where
+    processing the request needs one. It does not say that a server answers so before it
+    acts, so the error shows nothing of an effect by itself: from a plain implementation it
+    is read as IFC-010 reads any other error, failed for an operation whose contract states
+    no `effect`, that is not a control and whose contract is not marked `startsModelWork:
+    true`, and unknown for any other. An implementation that carries Conduit's keys answers
+    so only where it has performed nothing, under IFC-047, so the outcome is then failed
+    under OPS-007, as for the error of IFC-008 that names Conduit's extension.
   vectors: []
 
 - id: IFC-046
@@ -1273,25 +1301,80 @@
   layer: interface
   level: must
   when: >-
-    An implementation that carries Conduit's keys answers a call that the engine sent it with
-    the protocol's error -32021, because processing the call needs a client capability that the
-    call does not declare.
+    An implementation that carries Conduit's keys answers a call that the engine sent it
+    with the protocol's error -32021, because processing the call needs a client capability
+    that the call does not declare.
   then: >-
-    It answers so only where it has performed nothing for the call: it does not begin to perform
-    a call whose processing may come to need a client capability that the call does not declare.
+    It answers so only where it has performed nothing for the call: it does not begin to
+    perform a call whose processing may come to need a client capability that the call does
+    not declare.
   observable: >-
-    The protocol has a server answer -32021 where processing a request needs a capability that
-    the request does not declare, and does not say that the server answers so before it acts, so
-    this is Conduit's own obligation on an implementation written for it, as IFC-008's is for
-    the error that names Conduit's extension. The protocol also has a server rely on no
-    capability that a request does not declare, so an implementation keeps both rules, and this
-    promise, only by finding before it acts whether processing the call needs one. It can: the
-    call states what it declares in `io.modelcontextprotocol/clientCapabilities`, which is
-    little under IFC-045, so an implementation written for Conduit relies on nothing beyond it
-    and never comes to need an undeclared capability once it has begun, inside a task or not.
-    One that came to need one after it had begun would break this promise, since the protocol
-    then has it answer -32021. Where it answers so, the outcome of a call for a request or a
-    hook is failed under OPS-007, and a repeat of the request is dispatched as a new attempt
-    under OPS-024. A plain implementation, which carries none of Conduit's keys, is bound by no
-    such promise: IFC-010 reads its -32021 as any other error.
+    The protocol has a server answer -32021 where processing a request needs a capability
+    that the request does not declare, and does not say that the server answers so before it
+    acts, so this is Conduit's own obligation on an implementation written for it, as
+    IFC-008's is for the error that names Conduit's extension. The protocol also has a
+    server rely on no capability that a request does not declare, so an implementation keeps
+    both rules, and this promise, only by finding before it acts whether processing the call
+    needs one. It can: the call states what it declares in
+    `io.modelcontextprotocol/clientCapabilities`, which is little under IFC-045, so an
+    implementation written for Conduit relies on nothing beyond it and never comes to need
+    an undeclared capability once it has begun, inside a task or not. One that came to need
+    one after it had begun would break this promise, since the protocol then has it answer
+    -32021. Where it answers so, the outcome of a call for a request or a hook is failed
+    under OPS-007, and a repeat of the request is dispatched as a new attempt under OPS-024.
+    A plain implementation, which carries none of Conduit's keys, is bound by no such
+    promise: IFC-010 reads its -32021 as any other error.
+  vectors: []
+
+- id: IFC-050
+  layer: interface
+  level: must
+  when: >-
+    The engine gives a consumer or an Interface a result, diagnostic, condition or notice.
+  then: >-
+    It says what happened and why in full: the operation, what the request named, the reason
+    or outcome, the deciding promise's ID and the cause in words. It leaves out only what
+    ACC-056, LIF-013 and PND-004 withhold from that caller.
+  observable: >-
+    Every reason carries an error diagnostic with the deciding ruleId, including refused
+    under ACC-056 and unavailable under its deciding rule. An engine-decided failed or
+    unknown outcome carries a diagnostic naming its cause. An implementation's own content
+    is passed under IFC-025. The first text block states the reason or outcome and each
+    error diagnostic's message; a condition's message states its cause. A pending notice
+    states its kind, visible subjects, permitted evidence and answer asked. Wording is the
+    engine's choice; the ruleId, reason and refusal.v1 fields are observable.
+  vectors: []
+
+- id: IFC-049
+  layer: interface
+  level: must
+  when: >-
+    A person's Interface requests sign-in.v1 or another URL action defined by the
+    specification.
+  then: >-
+    The request must declare elicitation URL mode as {"url": {}} in
+    _meta.io.modelcontextprotocol/clientCapabilities. If it does not, the engine answers
+    -32021 with data.requiredCapabilities naming URL elicitation, without sending an
+    elicitation. Otherwise tools/call may return InputRequiredResult with resultType
+    input_required and exactly one inputRequests entry: elicitation/create with mode url,
+    message and url. The message names the instance, expected account where applicable and
+    what follows, but holds no code or fingerprint. The URL is HTTPS only, contains no
+    credential or personal data and is not pre-authenticated. No tool content,
+    structuredContent or record holds it.
+  observable: >-
+    There is no elicitationId or completion notification. The engine correlates retries
+    through its own integrity-protected requestState, an opaque handle bound to the
+    authenticated Interface, session and originating invocation, expiring with DL18. The
+    client echoes it exactly; the engine treats it as attacker-controlled and rejects
+    tampering, replay of a consumed state or another principal. Each retry consumes its
+    state; another input-required response issues a fresh state for that same invocation.
+    Accept means consent, not completion: retries poll under PND-010, blocking or returning
+    another InputRequiredResult until the account appears or the wait ends. A client need
+    never retry; no later hook runs on its behalf. Task input requests are surfaced by
+    tasks/get and fulfilled by tasks/update, with no requestState, subject to IFC-016's
+    access checks and the same expiry and account polling. Only tools/call, resources/read
+    and prompts/get support the protocol's InputRequiredResult; this specification exposes
+    the URL action by tools/call. The engine binds the flow to the requesting Interface and
+    checks the expected account under PND-011. Codes and fingerprints go only to its panel
+    and recorded answer (PND-004).
   vectors: []

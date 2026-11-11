@@ -394,9 +394,10 @@
   layer: language
   level: must
   when: >-
-    A template selects an implementation item, by its `implementation` map or by default, whose
-    `environment` binds a variable that has the name of one that `identity` carries under
-    PRV-022, `CONDUIT_URL` or `CONDUIT_IDENTITY_DIR`, compared without regard to case.
+    A template selects an implementation item, by its `implementation` map or by default,
+    whose `environment` binds a variable that has the name of one that `identity` carries
+    under PRV-022, `CONDUIT_URL` or `CONDUIT_IDENTITY_DIR`, or the state directory variable
+    `CONDUIT_STATE_DIR` under PRV-029, compared without regard to case.
   then: >-
     The template is rejected.
   observable: >-
@@ -415,4 +416,7 @@
     carry; a default that the item's Package declares for such a name is not given, since the
     runtime provider gives the value of `identity` in its place, under PRV-022. The engine's own
     runner passes no variable of the engine's environment by such a name either, under PRV-023.
+    The state directory variable is reserved for the same reason: an item cannot redirect a
+    run into another instance's login directory. It is compared without regard to case,
+    including bindings under secrets.
   vectors: []

@@ -2,7 +2,7 @@
 """Check or change the names the specification assigns.
 
 The names (the core package's address, a document's `apiVersion`, the prefix of Conduit's
-`_meta` keys, and, since ruling 43, the names of what the input `identity` of `run.v1` carries)
+`_meta` keys, the names of what the input `identity` of `run.v1` carries, and the instance state directory variable)
 are defined once, in spec/names.yaml, and written out in full wherever the specification uses
 them. This tool keeps the two in step.
 
@@ -18,7 +18,7 @@ them. This tool keeps the two in step.
             define;
           - a name that appears nowhere;
           - a variable whose name begins as those of `identity` do, with `CONDUIT_`, and that
-            is neither of them nor an explicitly allowed build test switch.
+            is none of them nor an explicitly allowed build test switch.
         The check reads text and knows nothing of YAML. It takes a token of the form
         `<dotted name>/<key>` to be a `_meta` key, and an address whose last part is the
         core package's last part to be meant as the core package.
@@ -48,9 +48,9 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 NAMES = ROOT / "spec" / "names.yaml"
 KEYS = ("repository", "corePackage", "apiVersion", "metaPrefix")
-# The names of what the input `identity` of `run.v1` carries (ruling 43, Q1): two variables and
-# the files that the run finds in the directory that the second names.
-VARIABLE_KEYS = ("engineUrlVariable", "identityDirVariable")
+# The run variables: identity's two (ruling 43, Q1) and the instance state directory
+# (PRV-029). FILE_KEYS below are the files in identity's directory.
+VARIABLE_KEYS = ("engineUrlVariable", "identityDirVariable", "stateDirVariable")
 # Round 5 of the re-audit (M86) renamed trustBundleFile to x509BundleFile: the trust bundle is
 # that file and jwtBundleFile's.
 FILE_KEYS = ("x509BundleFile", "jwtBundleFile", "engineIdFile", "tokenFile",
@@ -270,7 +270,7 @@ def check(roots: list[str]) -> int:
     for e in errors:
         print(e)
     print(f"Names: corePackage x{seen['corePackage']}, apiVersion x{seen['apiVersion']}, "
-          f"metaPrefix x{seen['metaPrefix']}; of `identity`, "
+          f"metaPrefix x{seen['metaPrefix']}; run variables and identity files, "
           + ", ".join(f"{names[k]} x{identity[k]}" for k in IDENTITY_KEYS)
           + f". Errors: {len(errors)}")
     return 1 if errors else 0
@@ -342,7 +342,7 @@ def main() -> int:
     ap.add_argument("--api-version")
     ap.add_argument("--meta-prefix")
     ap.add_argument("--identity", action="append", default=[], metavar="KEY=VALUE",
-                    help="a name of `identity`: " + ", ".join(IDENTITY_KEYS))
+                    help="a run variable or name of `identity`: " + ", ".join(IDENTITY_KEYS))
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--roots", nargs="*", default=list(DEFAULT_ROOTS))
     args = ap.parse_args()

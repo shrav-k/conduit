@@ -68,3 +68,17 @@ interpreter that has PyYAML) and `git diff --check` pass; in `engine/`, `cargo t
 (report the total passed and failed; tests that bind loopback ports may fail in your sandbox: say
 so). Report what you added and amended, by ID, every reading of the plan you applied, and every
 vector whose expectation the new text contradicts, by path and step. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 32 minutes, then a fresh verifier in 11, then a second round. The
+worker added 16 promises and amended 23: refusals in two tiers (ACC-056, IFC-050) and the
+explicitness rule; the one pending-action mechanism (PND-001 to 004, 009, 012, IFC-049) with its
+kinds sign-in, setup and notice and its expiry (DL19); sign-in through a person's Interface
+(PND-005, 010, 011, CTR-013, PRV-029), with the K1 check of the protocol applied; the core's answer,
+sign-in and hook contracts, and `stateDirVariable` in the names. It listed the vector steps the new
+text contradicts for the build orders. The verifier found that setup's exhaustive list of parts left
+no place for the account check, that sign-in.v1 gave two paths for an account found before the
+person signs in, that ACC-056's table missed IMP-008's refusal, and that "hook" was defined for two
+hooks only; the second round fixed all of them, with the counts. The admin reran the engine's
+suite outside the sandbox: 163 tests pass, 3 ignored.

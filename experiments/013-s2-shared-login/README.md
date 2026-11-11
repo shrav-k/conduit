@@ -1,6 +1,8 @@
 # 013 — S2: one service login shared by two Agents
 
 > **For the owner**
+> - **Accepted under ruling 75 D on 2026-11-11.** Every item labelled proposed below is accepted,
+>   with the answers under "Open for the owner" applied.
 > - **Proposed, for the owner's acceptance — P4:** the E02/E07 filter and bound observations.
 > - **Proposed, for the owner's acceptance — P5:** the E13 rotation, close and repair observations.
 > - **Proposed, for the owner's acceptance — P6:** E17 visibility and D20 credential observations.
@@ -25,10 +27,10 @@
 
 ## Status
 
-Pre-registered on 2026-11-11 by work order 101. Awaits the owner's acceptance of
-what it proposes; nothing here runs before that. Ruling 45 fixes what an experiment must
-show before it runs, and IN_FORCE.md topic 13 lists the criteria the owner has accepted.
-No result is recorded here.
+Pre-registered on 2026-11-11 by work order 101. Accepted by the owner on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
+45 fixes what an experiment must show before it runs. No result is recorded here.
 
 ## Question
 
@@ -180,7 +182,8 @@ Agent packages; local runner versus a Docker runtime configured by the
 [Docker guide](../../docs/guides/docker.md), with no service credential mounted in an Agent.
 Pin engine, contracts, packages, client/model versions, OS, runtime and all settings before timing.
 Sign-in exercises account declaration, missing-login pending action, root panel URL consent,
-Codex device flow/Claude browser callback on the Mac, account check and explicit new turn after
+Codex's browser login, with the device code an option (ruling 75 C5), and Claude's browser
+callback on the Mac, account check and explicit new turn after
 completion (PND-005/010/011, IFC-049). Owner supplies labels through the
 [accounts guide](../../docs/guides/accounts.md), signs in and rotates the key; reserve a proposed
 45 minutes of active owner time per run, plus availability for repair, recording actual time.
@@ -236,6 +239,17 @@ homes/login choices and own-tool controls are package/engine prerequisites, incl
 - **O5:** Which keychain execution session should S2 claim to support?
   Options: logged-in session only, or daemon as well after A22 evidence. **Recommendation:**
   logged-in only initially; do not claim a daemon result until A22 tests it.
+
+**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+
+- O1: accepted.
+- O2: S2 uses the primary Claude Code and Codex accounts, as ruled. Every account has its own
+  label, and every Agent home signs in on its own (D2).
+- O3: explicit issue IDs with a deadline, refused outside that scope.
+- O4: the keychain alone.
+- O5: the owner's logged-in session only, with no claim about a daemon.
+- Sign-in: Codex uses its browser login, with the device code an option where the account has it
+  on (C5).
 
 ## Limits
 

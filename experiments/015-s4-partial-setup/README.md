@@ -1,6 +1,8 @@
 # 015 — S4: partial setup, repeats and lost replies
 
 > **For the owner**
+> - **Accepted under ruling 75 D on 2026-11-11.** Every item labelled proposed below is accepted,
+>   with the answers under "Open for the owner" applied.
 >
 > - Proposed P2: resolve uncertainty from evidence without guessing that an effect failed.
 > - Proposed P3: retain completed setup parts and retry only eligible unfinished work.
@@ -25,10 +27,10 @@
 
 ## Status
 
-Pre-registered on 2026-11-11 by work order 102. Awaits the owner's acceptance of
-what it proposes; nothing here runs before that. Ruling 45 fixes what an experiment must
-show before it runs, and IN_FORCE.md topic 13 lists the criteria the owner has accepted.
-No result is recorded here.
+Pre-registered on 2026-11-11 by work order 102. Accepted by the owner on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
+45 fixes what an experiment must show before it runs. No result is recorded here.
 
 ## Question
 
@@ -234,6 +236,16 @@ OPS-028's latest-caller attribution is decided, not a new gap; E20 preserves it 
 - **Q5:** How should a genuinely partial effect be handled while its reconciliation remains
   open? Options: keep it unknown and inspect, or first specify a contract's explicit repair.
   **Recommendation:** leave it unknown, without whole-effect assertions from partial evidence.
+
+**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+
+- Q1: accepted.
+- Q2: written twice, by the coordinator and by a fresh Codex author, with scripted clients (D3).
+- Q3: one real-client run: E09's lost-response replay, on a second subscription account signed
+  in through Conduit. It also gives A6 its real client's trace (D4). Where the runs speak of a
+  trial per matrix cell, this one replay governs.
+- Q4: a boundary fixture and the reachable path, labelled apart.
+- Q5: a genuinely partial effect stays unknown, with no assertion about the whole effect.
 
 ## Limits
 

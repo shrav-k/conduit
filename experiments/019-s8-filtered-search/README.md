@@ -1,6 +1,8 @@
 # 019 — S8: search that returns only what the caller may see
 
 > **For the owner**
+> - **Accepted under ruling 75 D on 2026-11-11.** Every item labelled proposed below is accepted,
+>   with the answers under "Open for the owner" applied.
 > - **Proposed:** P3 — compare returned content with an independent visibility oracle.
 > - **Proposed:** P4 — apply visibility to derived content, metadata and cached answers.
 > - **Proposed:** P5 — refuse unsupported filters and stop when authorization cannot be judged.
@@ -21,10 +23,10 @@
 
 ## Status
 
-Pre-registered on 2026-11-11 by work order 103. Awaits the owner's acceptance of
-what it proposes; nothing here runs before that. Ruling 45 fixes what an experiment must
-show before it runs, and IN_FORCE.md topic 13 lists the criteria the owner has accepted.
-No result is recorded here.
+Pre-registered on 2026-11-11 by work order 103. Accepted by the owner on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
+45 fixes what an experiment must show before it runs. No result is recorded here.
 
 ## Question
 
@@ -203,6 +205,14 @@ the coordinator supplies the independent corpus/oracle and permission/failure co
   with visible-only counts/ranking and caches qualified per caller/authorization version.
 - **Q4:** accept the proposed criteria, measures, vectors and run plan, or revise them?
   **Recommendation:** accept only after the concrete filter contracts and oracle are reviewed.
+
+**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+
+- Q1: the second subscription accounts. Every account has its own label, and every Agent home
+  signs in on its own (D2).
+- Q2: the local filesystem and SQLite FTS, behind small adapters that are counted (D1).
+- Q3: a derived answer draws only on sources the caller may see in full.
+- Q4: accepted.
 
 ## Limits
 

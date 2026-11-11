@@ -6880,5 +6880,5 @@
       "reason": "Inspection is covered by records-inspection, but no isolated authority/effect-neutrality pair is tagged for this complete promise. Add it in the coverage follow-up."
     }
   ],
-  "s1_coverage_source": "docs/proposals/first-build/increment-2/plan.md section 2; case tags show slices, reasons record remaining coverage"
+  "s1_coverage_source": "conformance/s1-promises.yaml; case tags show slices, reasons record remaining coverage"
 }

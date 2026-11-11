@@ -141,10 +141,8 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
     let inventory = manifest["cases"]
         .as_array()
         .ok_or("coverage index has no cases")?;
-    let study =
-        std::fs::read_to_string(repository.join("docs/proposals/first-build/increment-2/plan.md"))
-            .map_err(|e| e.to_string())?;
-    validate_s1_coverage(&manifest, &study, &known_promises)?;
+    let s1_promises = read_value(&repository.join("conformance/s1-promises.yaml"))?;
+    validate_s1_coverage(&manifest, &s1_promises, &known_promises)?;
     let mut inventory_ids = BTreeSet::new();
     for entry in inventory {
         let id = entry["id"]
@@ -201,21 +199,25 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
     Ok(reports)
 }
 
-/// Keep the study's complete S1 inventory visible, including unvectorized boundaries.
+/// Keep the frozen S1 inventory visible, including unvectorized boundaries.
 /// A case tag is evidence for the stated slice, not proof of the whole promise.
-fn validate_s1_coverage(manifest: &Value, study: &str, known: &BTreeSet<String>) -> Result<()> {
-    let section = study
-        .split_once("## 2. The promises S1 touches")
-        .and_then(|(_, tail)| tail.split_once("## 3."))
-        .map(|(section, _)| section)
-        .ok_or("S1 study inventory section missing")?;
-    let expected: BTreeSet<_> = section
-        .split(|c: char| !c.is_ascii_alphanumeric() && c != '-')
-        .filter(|word| known.contains(*word))
-        .map(str::to_string)
-        .collect();
+fn validate_s1_coverage(
+    manifest: &Value,
+    inventory: &Value,
+    known: &BTreeSet<String>,
+) -> Result<()> {
+    let mut expected = BTreeSet::new();
+    for value in inventory.as_array().ok_or("S1 inventory must be a list")? {
+        let id = value.as_str().ok_or("S1 inventory ID must be a string")?;
+        if !known.contains(id) {
+            return Err(format!("S1 inventory has unknown promise {id}"));
+        }
+        if !expected.insert(id.to_string()) {
+            return Err(format!("duplicate S1 inventory promise {id}"));
+        }
+    }
     if expected.is_empty() {
-        return Err("S1 study inventory is empty".into());
+        return Err("S1 inventory is empty".into());
     }
     let rows = manifest["s1_coverage"]
         .as_array()
@@ -255,7 +257,7 @@ fn validate_s1_coverage(manifest: &Value, study: &str, known: &BTreeSet<String>)
     }
     if found != expected {
         return Err(format!(
-            "S1 coverage differs from study: missing {:?}; extra {:?}",
+            "S1 coverage differs from frozen inventory: missing {:?}; extra {:?}",
             expected.difference(&found).collect::<Vec<_>>(),
             found.difference(&expected).collect::<Vec<_>>()
         ));
@@ -999,19 +1001,28 @@ mod coverage_tests {
     #[test]
     fn unexplained_missing_and_false_coverage_fail() {
         let known = BTreeSet::from(["ACC-001".into(), "IFC-045".into()]);
-        let study = "## 2. The promises S1 touches\nACC-001 IFC-045\n## 3.";
+        let inventory = json!(["ACC-001", "IFC-045"]);
         let valid = json!({"cases":[{"id":"access","promises":["ACC-001"]}],
             "s1_coverage":[{"promise":"ACC-001","vectors":["access"]},
             {"promise":"IFC-045","vectors":[],"reason":"Protocol negotiation is shell work."}]});
-        assert!(validate_s1_coverage(&valid, study, &known).is_ok());
+        assert!(validate_s1_coverage(&valid, &inventory, &known).is_ok());
+        for invalid in [
+            json!([]),
+            json!(["ACC-001", "ACC-001"]),
+            json!(["BAD-001"]),
+            json!([1]),
+            json!({}),
+        ] {
+            assert!(validate_s1_coverage(&valid, &invalid, &known).is_err());
+        }
         let mut missing = valid.clone();
         missing["s1_coverage"].as_array_mut().unwrap().pop();
-        assert!(validate_s1_coverage(&missing, study, &known).is_err());
+        assert!(validate_s1_coverage(&missing, &inventory, &known).is_err());
         let mut unexplained = valid.clone();
         unexplained["s1_coverage"][1]["reason"] = json!(" ");
-        assert!(validate_s1_coverage(&unexplained, study, &known).is_err());
+        assert!(validate_s1_coverage(&unexplained, &inventory, &known).is_err());
         let mut false_claim = valid;
         false_claim["s1_coverage"][1] = json!({"promise":"IFC-045","vectors":["access"]});
-        assert!(validate_s1_coverage(&false_claim, study, &known).is_err());
+        assert!(validate_s1_coverage(&false_claim, &inventory, &known).is_err());
     }
 }

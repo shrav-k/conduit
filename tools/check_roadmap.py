@@ -21,7 +21,7 @@ first cell is `A` followed by digits, such as `A70`, or a link whose text is one
      work.
   4. Each directory experiments/NNN-name/ is listed in experiments/README.md and linked from
      ROADMAP.md, and no two directories share a number. A number that ROADMAP.md holds for a
-     directory not yet made, as `experiments/006-across-machines/`, is not used by a
+     directory not yet made, as 006 for the across-machines experiment, is not used by a
      directory of another name.
   5. README.md, AGENTS.md, CONTRIBUTING.md, docs/README.md and experiments/README.md each link
      ROADMAP.md.

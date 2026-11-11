@@ -4,9 +4,8 @@ Not binding. These are preinstalled package snapshots and a submitted project's 
 for [the context vector](../../language/packages/s1/case.yaml). That context vector does not install, register,
 start or qualify an implementation. The [archive vector](../../language/archives/s1/case.yaml)
 also uses these repository-authored archives as installation inputs, then resolves the same
-project against the resulting installed catalog. The [study's drafts](../../../docs/proposals/first-build/increment-2/s1/)
-remain their historical source; this order's scope permits promoting copies here, not deleting
-those drafts.
+project against the resulting installed catalog. The [maintained S1 example](../../../reference-model/examples/s1/)
+is the live project for shell runs.
 
 The filesystem package exports its three Operations, Capability and Resource Type. The history
 Type reuses that package's implementation for a separate directory, with one file per post;

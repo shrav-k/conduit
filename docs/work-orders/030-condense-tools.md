@@ -62,3 +62,14 @@ failures in today's text: report them, and the step's own exit status is decided
 `python3 tools/check_roadmap.py` and `git diff --check`; in `reference-model/`,
 `cargo test --release`, `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check`. Report
 the total passed and failed across all test binaries. Do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 22 minutes, then a fresh verifier in 7, which found two faults:
+Markdown autolinks bypassed the permalink check, and the copied safety traces ended with an extra
+blank line. The new checks also found eight existing problems: six GitHub line-range anchors in the
+archive, which the second round accepts when the lines exist, and two stale paths in tool comments.
+The worker reported finding WO030-F1: the manifest's `safety_rows` tags take 21 values, of which
+only four are trace names of S1's proposed safety traces, so what counts as a safety vector is not
+yet decided. The admin reran the Rust suite outside the sandbox: 163 tests pass; the five
+repository checks and the tools' unit tests pass.

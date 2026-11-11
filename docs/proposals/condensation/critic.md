@@ -115,6 +115,6 @@ MINOR
   - squash merges with a message written by hand;
   - order branches named wo/NNN-name.
 - Step 13's "skeptic items (decisions 1-10, rationale 1-12, evidence 1-10, links 1-12)" are not written anywhere the cold reader can see. Commit them with the order.
-- The admin's auto-memory (~/.claude/projects/-Users-shravankumaran-Projects-Conduit/memory/) cites increment-3-handoff.md and other paths that will be removed. Update it after the pass, since it loads into every admin session.
+- The admin's auto-memory, outside the repository, cites increment-3-handoff.md and other paths that will be removed. Update it after the pass, since it loads into every admin session.
 
 Verified as correct: AUTHORING :77-119 and :790-798; AUDIT :165-186 and :396-404; the D19 numbers; 027 Record :81-85; packages/agent-codex/README:94; the lib.rs:145 and manifest:6883 dependencies; A79 being the next free number; the AGENTS word count (2,115); 980 experiment files; results.txt and results-rerun.txt being byte-identical; the current promise form check passing (455 promises, no duplicates); and project_digest using canonical JSON, so WO-032's comment-only edits change no digest.

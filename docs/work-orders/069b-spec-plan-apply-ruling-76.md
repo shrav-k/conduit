@@ -78,3 +78,14 @@ From the repository root, these pass:
 Also, the case checks that order 069's "Done when" lists, run again on the updated cases.
 
 Report each check's last line. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11, the first work order run on the Windows computer over SSH (ruling 76, point 6):
+the worker in 8 minutes, then a fresh verifier in 3, which found nothing to fix. The runner's
+checkpoint commit failed there for want of a git identity; the verifier reviewed the staged changes
+against the base all the same, and the identity is now set in the work-order clone. The reference
+and its nine cases follow ruling 76: no flag to close a dropped Conduit, generated names, the current
+engine context, apply going on past a sign-in, and `conduit plan` optional. S1's tasks count 21, 5,
+0, 3, 2, 2 and 2 lines, primary, matching experiment 023; strict 25, 6, 0, 3, 2, 2 and 3. Finding
+WO069B-O8 is for order 052a: how the current context is kept, found and reported when missing.

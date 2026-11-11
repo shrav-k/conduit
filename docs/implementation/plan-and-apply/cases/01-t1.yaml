@@ -6,6 +6,7 @@ sources:
 - ruling 55 A3-A4
 - ruling 59 A3/A7
 - ruling 63 points 1-3
+- ruling 76 points 1-5
 - spec-batch-1 plan lines 320, 412, 643-652
 - SCT-003
 - SCT-004
@@ -16,7 +17,7 @@ sources:
 - ACC-033
 - OPS-008
 - IFC-023
-command: conduit apply .
+command: conduit apply
 files:
   conduit.yaml: |
     apiVersion: github.com/shrav-k/conduit/v0

@@ -3,8 +3,8 @@
 Not binding. The specification in spec/ alone binds.
 
 This is the proposed CLI reference for spec batch 1, K3, with hand-written golden cases.
-It describes tooling, not additional language promises or engine behavior. The owner points
-below remain for the owner through the admin, under [ruling 71, point 4](../../proposals/ruling-71/README.md).
+It describes tooling, not additional language promises or engine behavior. Its five approval
+and command readings follow [ruling 76, points 1–5](../../proposals/ruling-76/README.md).
 A builder follows the specification where this reference and it differ. No program has produced
 these expected plans. A later order supplies the remaining safety cases and a cascade case.
 What ships to the rerun's fresh author is the rerun preparation's decision, not this reference
@@ -13,17 +13,23 @@ What ships to the rerun's fresh author is the rerun preparation's decision, not 
 ## Commands
 
 The three columns follow the shell's [help table](../../../engine/crates/shell/src/help.rs).
-Flags in this table are repeatable, each with one object operand. There are no additional options.
+Approval flags in this table are repeatable, each with one generated object name as operand.
+`--store DIR` overrides the current engine context. There are no additional options.
 
 | Usage | Example | Description |
 | --- | --- | --- |
-| `conduit plan [PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]` | `conduit plan . --replace shared` | Read the project and engine as root, and print the requests apply would send. |
-| `conduit apply [PROJECT_DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]` | `conduit apply . --replace shared` | Compute, print and record the plan, then send its requests as root without a prompt. |
+| `conduit plan [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]` | `conduit plan --replace shared` | Read the project and engine as root, and print the requests apply would send. |
+| `conduit apply [PROJECT_DIR] [--store DIR] [--reopen OBJECT] [--recreate OBJECT] [--prune OBJECT] [--replace OBJECT] [--adopt OBJECT] [--with-resources OBJECT] [--with-agents OBJECT]` | `conduit apply --replace shared` | Compute, print and record the plan, then send its requests as root without a prompt. |
 
 PROJECT_DIR defaults to the current directory. A bare `conduit apply` carries no author-chosen
-value ([ruling 63, point 1](../../proposals/ruling-63/README.md)). Engine selection with no
-command-line value is **for the owner**, point C below. This is proposed help, not today's parser.
-The existing `--store` and `--url` are discussed there, not silently added to this usage.
+value ([ruling 63, point 1](../../proposals/ruling-63/README.md)). `conduit serve` records the
+engine it serves as the person's current engine context; commands use that context unless
+`--store DIR` overrides it ([ruling 76, point 3](../../proposals/ruling-76/README.md)).
+This is proposed help, not today's parser. No separate context-selection command is defined.
+If no context or override is available, stop with status 2; context persistence and discovery
+are implementation work for order 052a (O8 below).
+`conduit plan` is available and never required: apply computes its own plan, with no prior plan
+invocation or saved-plan prerequisite ([ruling 76, point 5](../../proposals/ruling-76/README.md)).
 `--withhold` belongs to batch 2 ([ruling 61, B11](../../proposals/ruling-61/README.md)).
 This reference does not define install, render, init, sign-in, answer, pending, list or fleet
 commands. Installation happens beforehand; plan reads installed release identities. Obtaining
@@ -65,6 +71,9 @@ only [core operations](../../../spec/core/operations.yaml), adding no operation 
 6. Send the numbered steps in order, waiting for each result. Print `result N OUTCOME JSON` after each, with JSON the safe projection of its returned
    result in sorted-key compact JSON; these lines never enter the plan digest. An unsuccessful
    result stops execution. Print `not sent N..M` for the remaining steps, if any. No rollback.
+   When a successful set-up raises sign-ins, continue apply and print each returned pending
+   action ID as `panel action ID: sign-in required`, apart from authored lines. Answer none
+   ([ruling 76, point 4](../../proposals/ruling-76/README.md); TPL-012, PND-005, PND-011).
 
 The command is the approval; there is no prompt and nothing runs automatically or later
 ([ruling 55, A4](../../proposals/ruling-55/README.md),
@@ -81,23 +90,22 @@ Inspection and dispatch are separate requests, not an atomic snapshot. IDs defea
 revision inputs defeat template changes. Open and setup accept no expected revision or definition
 digest. The residual same-ID race is open point O2 below, not an invented engine precondition.
 
-## Approval defaults: for the owner
+## Approval and command readings under ruling 76
 
-These defaults preserve experiment 011's command ledger, not new owner decisions. Each actual
-flag use is printed once under `flags`, recorded with the plan and counted when used
+Each actual approval flag use is printed once under `flags`, recorded with the plan and counted when used
 ([ruling 55, A4](../../proposals/ruling-55/README.md),
 [ruling 59, A3](../../proposals/ruling-59/README.md)). Unused, ambiguous and contradictory
 operands stop planning; one permission never means all objects.
 
-| Point | Default reading, for the owner | Alternative and reason |
+| Point | Ruled reading | Source |
 | --- | --- | --- |
-| A: acts | `--prune N` permits removing an object absent from the translation, including closing a dropped Conduit. `--replace N` permits a changed existing instance, including a narrowing Conduit change. | Omit prune for a dropped Conduit because closure only narrows; omit replace for a changed Conduit whose resolved access is a subset. Ruling 53.4 says never prune without a flag; the later ruling 55 A4 says narrowing never waits. Default distinguishes removing a declaration from narrowing a retained one, but still flags T4's retained narrowing as the ledger did. This tension needs the owner. |
-| B: operands | Bare generated name for replace/prune/adopt/recreate; consumer/local-name for reopen, e.g. `agent-a/project`. Resolve unambiguously by kind and ID before printing. Every flag names one object. | Use `KIND/NAME`, as today's help does, including `Conduit/agent-a--project` for reopen. Or permit a flag without an operand to cover every matching act; this changes author choices and is not settled here. |
-| C: engine | No engine value on these command lines, as the ledger assumes. Recommend an already selected user-local engine context, containing no value in the project's kept state. How it is initially selected remains open. | Require today's `--store DIR`, optionally today's `--url URL`; this adds an author-chosen value to bare commands. Or a fixed conventional local engine, with no user selection. Neither context discovery nor a fixed endpoint is promised by the language. |
-| D: sign-in | A setup raises and returns action IDs; apply continues to the next independent step and prints `panel action ID: sign-in required`. It answers none. An unsuccessful setup result still stops under the ordinary rule. | Stop apply after that setup, then run apply again after each sign-in. PND-005, PND-011 and TPL-012 do not make setup wait for the person. This choice changes strict command counts. |
-| E: plan | Plan is available explicitly; no S1 task requires running it. | Require an explicit plan before each apply; this adds commands, particularly to the strict count. Ruling 53.4 accepted explicit plan and apply, without requiring both invocations for every change. |
+| A: acts | Narrowing never needs a flag. Apply closes a Conduit the file dropped, and closes/recreates a retained Conduit whose resolved operations narrow, printing and recording each closing. Widening, replacing, reopening, recreating, adopting and cascades keep their named flags. `--prune` still permits removal of another object absent from the translation; it is not needed for a dropped Conduit. `--replace` is not needed for a Conduit operation change whose resolved access is a subset. | Ruling 76 point 1 amends ruling 53 point 4 for removal only. |
+| B: operands | Every approval flag names one object by its generated name, including `--reopen agent-a--project`. Resolve unambiguously by kind and ID before printing. No operand-free permission is defined. | Ruling 76 point 2. |
+| C: engine | Commands use the person's current engine context recorded by `conduit serve`; `--store DIR` overrides it. No engine value is required on each command. | Ruling 76 point 3. |
+| D: sign-in | A successful set-up returns pending action IDs; apply goes on, prints each `panel action ID: sign-in required`, and answers none. An unsuccessful result still stops under the ordinary rule. Panel actions are listed apart from authored lines. | Ruling 76 point 4; ruling 68 R1; TPL-012, PND-005, PND-011. |
+| E: plan | Plan is available and never required. Apply computes, prints and records its own plan. | Ruling 76 point 5. |
 
-The other named permissions have these proposed precise meanings, also part of owner point A:
+The other named permissions retain these precise meanings:
 `--reopen` lifts an outside-apply Conduit tombstone before registering/opening its desired grant;
 `--recreate` does that for another instance; `--adopt` takes over a foreign existing object into
 this working copy's ledger only after its ID, resolved definition and held packages are printed
@@ -107,7 +115,8 @@ own permission. Nothing besides adopt takes over a foreign object (synthesis F6)
 endpoint, and the necessary inline-template update. It does not authorize unrelated replacements,
 outside tombstones, or retargeting outside-file Conduits. An outside-file Conduit needs its own
 named replacement permission and explicit desired definition; otherwise the plan stops.
-`--prune` does not lift its resulting tombstone. `--with-resources Pool` and `--with-agents Fleet`
+Neither flag-free closure nor `--prune` lifts its resulting tombstone.
+`--with-resources N` and `--with-agents N`
 permit only the named container's printed cascade. None of the flags bypasses engine access.
 
 ## Ordering and access
@@ -128,8 +137,8 @@ That proposal's make-before-retire replacement was reversed by ruling 55 A3.
 
 Our choice on an incomplete approval: print the whole stopped plan and send no part, including
 narrowings, when any required flag is missing. This does not defer an independently requested
-narrowing behind a prompt: no execution starts for an invalid command. The owner tension about
-whether that command needs a flag at all remains point A. Do not run a narrowing subset whose
+narrowing behind a prompt: no execution starts for an invalid command. A plan containing only
+flag-free narrowings is valid without flags, under ruling 76 point 1. Do not run a narrowing subset whose
 removal could invalidate the wider plan that the command purported to approve.
 Order ties by phase, then dependency, then kind/name in byte order. In the golden cases a batched
 registration preserves the written documents' order; independent setup orders Pool, Resource,
@@ -343,11 +352,14 @@ Setup is `widens` if any declared Conduit can open, including nested Pool setups
 otherwise `neither` (TPL-012). A lifecycle operation's closed Conduits still print under affects.
 The S1 fixture Agents have only standalone consumes, so their setups are neither; the standalone
 opens are explicit widening steps. Count and print all widening steps even under one flag.
+A recreated Conduit's open is `widens` relative to its just-closed state. Permission follows
+the resolved access change across the apply: restoring B with fewer operations in T4 is
+flag-free narrowing under ruling 76 point 1, even though its open step has that class.
 No-op text is exactly `plan\nno changes\n`; a no-op leaves kept state unchanged.
 
 | Status | Both commands |
 | --- | --- |
-| 0 | Valid plan (even with proposed steps), successful apply, or no changes. Pending sign-in alone is 0 under default D. |
+| 0 | Valid plan (even with proposed steps), successful apply, or no changes. Pending sign-in alone is 0 under ruling 76 point 4. |
 | 1 | A sent request did not succeed, verification failed, or transport failed, including unknown delivery; remaining steps not sent. |
 | 2 | Usage, local input/state/persistence error, missing permission, foreign object, drift conflict, blocked tombstone, unresolved unknown or unsupported input; no mutations if detected before sending. |
 
@@ -361,7 +373,7 @@ including apply result lines after `ready`; `recorded.text` is only the precedin
 is the text hashed. A null record path means no write, not an absent expected digest. Sources use promise IDs,
 rulings and the batch plan's line numbers (052a 643–647; 052b 649–652; K3 412). Their areas are
 plan (T1–T3), grants (T4, T7 revoke/restore), replacement (T5–T6), stops (unflagged restoration).
-A later order adds cascade and the other flags after the owner's answers.
+A later order adds cascade and the other flags' cases.
 
 `files` contains literal flow-style documents. Requests carry the complete framed documents,
 with no short form on the wire. `arguments` contains expectedId exactly where the operation
@@ -399,8 +411,11 @@ and `as`; their operations are exactly FLEET-005. This is one compact read-state
 new engine format. Initial reads expand it as OPS-036/LIF-013 require. Returned generated names
 and IDs are fixed fixture choices, in the conformance UUID form; a real engine need not pick them.
 
-`applied` equals the preceding case's kept state. The stopped restoration instead shares the
-successful restoration's input. Between cases only explicit install commands add packages:
+The sequence is cases 01–07, then 09 (unflagged restoration), then 08 (successful restoration).
+Each case's `applied` equals the preceding case's `kept`. Case 09 keeps its input unchanged,
+so case 08 can then restore with the named flag. The original filenames stay unchanged so
+experiment 023's case mapping still names the same inputs.
+Between cases only explicit install commands add packages:
 T1 installs dependencies before apply; T2 adds history and its filesystem dependency; T5 adds
 filesystem 0.2.1. Thus "only first-start objects" does not mean an empty installed catalog.
 History 0.1.0 holds filesystem 0.1.0 while the project initially pins 0.1.1. This is legal:
@@ -423,7 +438,7 @@ or catch-all approval or control-takeover flag is part of batch 1.
 
 | # | Trigger | Rule and outcome |
 | --- | --- | --- |
-| 1 | Outside closure, then an edit | LIF-041 and owner A: stop without reopen; editing cannot lift. |
+| 1 | Outside closure, then an edit | LIF-041 and ruling 76 point 1: stop without reopen; editing cannot lift. |
 | 2 | Grant removed/re-added under another key | LIF-041 matches consumer/local name or target/capability; stop without reopen, even when renamed. |
 | 3 | Agent retired by another actor | Three-way comparison, LIF-040: stop without recreate; no unrelated apply resurrects it. |
 | 4 | Records purged | LIF-040 keeps tombstones apart from records; still stop. |
@@ -439,10 +454,10 @@ or catch-all approval or control-takeover flag is part of batch 1.
 | 14 | Generated-name collision | Translator's SCT-013, not a planner golden case here. |
 | 15 | Value at a secret-reference place | Translator's SCT-014/SEC-003; planner/local-state privacy also omits it. |
 | 16 | Caller has only Pool authority | Engine inspection LIF-013/ACC-033, not this root CLI: no Agent inspection, no hidden counts; full inventory of inspectable objects. |
-| 17 | Setup raises sign-in | Setup returns pendingAction; default D continues apply, prints action IDs for the panel and answers nothing (TPL-012, PND-005, PND-011). |
+| 17 | Setup raises sign-in | Setup returns pendingAction; ruling 76 point 4 continues apply, prints action IDs for the panel and answers nothing (TPL-012, PND-005, PND-011). |
 | 18 | Pin downgrade | Same resolved diff and replace permission as upgrade; no special downgrade bypass. |
 
-## Open points and owner command accounting
+## Open points
 
 O1: A document-carrying request rejects relative fetch and relative program values (SUB-010;
 `replace.v1`; today's shell reference). No submitted directory is on this wire. Such a project
@@ -477,61 +492,94 @@ prints the missing input and stops with status 2. The nine paper cases assume fi
 are supplied as described above. The admin must settle the input/disclosure before a builder can
 implement these rules for arbitrary installed releases.
 
-The following is the default schedule D0, copied in shape from experiment 011. Archive filenames
-are updated to the real fixture releases; install commands are outside this reference's behavior.
-T3 needs no command; its golden case uses plan solely to demonstrate a no-op.
+O8: Ruling 76 point 3 fixes how commands choose the engine: `conduit serve` records the engine
+it serves as the person's current context, and `--store` overrides it. Order 052a still needs
+to specify the local context's persistence/discovery and unavailable-context diagnostics. No
+additional context command is proposed here. Context data stays outside the project's kept state.
+
+## S1 commands and counts under ruling 76
+
+This schedule uses the current engine context and the current project directory throughout.
+`conduit serve` is harness work and records that context before the tasks; it is excluded, as in
+[experiment 023](../../../experiments/023-paper-count/results-2026-11-11.md#the-counts).
+Init and install are listed only for accounting; their behavior is outside this reference.
+Plan is optional and absent from the task schedule. T3 reads declarations without a command;
+its golden plan demonstrates a no-op, rather than a required inspection step.
 
 ```text
+T1: conduit init
 T1: conduit install conformance/fixtures/install-archives/filesystem-0.1.1.tar.gz#eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614
 T1: conduit install conformance/fixtures/install-archives/agents-0.2.0.tar.gz#479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71
-T1: conduit apply .
+T1: conduit apply
 T2: conduit install conformance/fixtures/s1/archives/filesystem.tar.gz#200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
 T2: conduit install conformance/fixtures/s1/archives/history.tar.gz#e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
-T2: conduit apply .
-T3: (none; inspection excluded)
-T4: conduit apply . --replace agent-a--project --replace agent-b--project
+T2: conduit apply
+T3: (none)
+T4: conduit apply --replace agent-a--project
 T5: conduit install conformance/fixtures/install-archives/filesystem-0.2.1.tar.gz#f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614
-T5: conduit apply . --replace shared
-T6: conduit apply . --replace shared
-T7: conduit apply . --prune agent-a--project
-T7: conduit apply . --reopen agent-a/project
+T5: conduit apply --replace shared
+T6: conduit apply --replace shared
+T7: conduit apply
+T7: conduit apply --reopen agent-a--project
 ```
 
-O6 (for the owner): history's dependency installation is explicit here: today's install requires dependencies first.
-The original ledger omitted this line. It is a necessary difference, for the owner, not a hidden
-improvement to counts. If filesystem 0.1.0 is preinstalled before T1, omit that T2 install and
-report that setup action separately. Primary/strict command-only counts D0 by T1–T7 are
-`3/3, 3/3, 0/0, 1/1, 2/2, 1/1, 2/2` (12/12 total), before panel actions.
-The ledger's 11/11 presumes the dependency already available or implicit installation.
+History's filesystem 0.1.0 dependency is installed explicitly at T2, before history; nothing
+moves that command into setup. This resolves the old O6 accounting question for this schedule
+using experiment 023's retained dependency install. Generated-name operands change the restoration
+text, but not its line count. Narrowing B at T4 removes one named flag use, while A's widening
+still makes that command count. Bare T7 revocation carries no author-chosen value.
 
-Alternatives below are complete schedules by substitution into D0; all unmentioned T lines are
-exactly D0. Counts are command lines only, primary then strict, not file-edit totals. Every named
-flag still counts separately as a use; multiple flags on one command remain one command line.
+Primary counts only commands carrying an author-chosen value; strict command counts include
+every scheduled command ([ruling 63, point 1](../../proposals/ruling-63/README.md)).
+The file hunk costs below come from experiment 023's flow states, not the compact serialization
+inside these cases. Install-written pins and copied digests are listed apart in that experiment.
+The task's strict total also includes panel actions, following its counting method.
 
-| Point | Alternative command lines | T1–T7 primary/strict counts |
-| --- | --- | --- |
-| A prune narrows freely | T7 revoke `conduit apply .`; restore unchanged | `3/3, 3/3, 0/0, 1/1, 2/2, 1/1, 2/2` |
-| A narrowing replace free | T4 `conduit apply . --replace agent-a--project` | Same as D0; one fewer named flag use. |
-| A both free | Both preceding substitutions | Same as D0; two fewer named flag uses. |
-| A free narrowing, bare | T1/T2 `conduit apply`; T4 `conduit apply --replace agent-a--project`; T5/T6 keep named replace but omit the dot; T7 `conduit apply`, then `conduit apply --reopen agent-a/project`; installs unchanged | `2/3, 2/3, 0/0, 1/1, 2/2, 1/1, 1/2` (9/12). |
-| B kind/name | T4 `conduit apply . --replace Conduit/agent-a--project --replace Conduit/agent-b--project`; T5/T6 `conduit apply . --replace Resource/shared`; T7 `conduit apply . --prune Conduit/agent-a--project`, `conduit apply . --reopen Conduit/agent-a--project` | Same as D0. |
-| B operand-free | T4/T5/T6 `conduit apply . --replace`; T7 `conduit apply . --prune`, `conduit apply . --reopen` | Same as D0 with the dot; broad approval, not recommended. |
-| B operand-free, bare | T1/T2 `conduit apply`; T4/T5/T6 `conduit apply --replace`; T7 `conduit apply --prune`, `conduit apply --reopen`; installs unchanged | `2/3, 2/3, 0/0, 0/1, 1/2, 0/1, 0/2` (5/12). |
-| C selected context, bare defaults | T1/T2 `conduit apply`; every other command unchanged | `2/3, 2/3, 0/0, 1/1, 2/2, 1/1, 2/2` (10/12). |
-| C required store | Add `--store LAB_STORE` to every conduit command, including bare apply; no other lines change | D0 stays 12/12; bare-context alternative rises from 10/12 to 12/12. |
-| C explicit endpoint | Add `--store LAB_STORE --url ENGINE_URL` to every conduit command | Same command-line counts as required store; two values chosen. |
-| C fixed conventional engine | Same lines as selected context, including bare T1/T2 | `2/3, 2/3, 0/0, 1/1, 2/2, 1/1, 2/2`; selecting engine beforehand is absent. |
-| D continue real-package sign-ins | T1's two installs then `conduit apply .`; panel actions A and B apart | D0; panel two sign-ins, not authored lines. |
-| D stop real-package sign-ins | T1 installs, `conduit apply .`, panel A, `conduit apply`, panel B, `conduit apply` | T1 `3/5`; other tasks D0. With bare initial apply T1 `2/5`. |
-| E require explicit plan | Insert `conduit plan` before each apply (no chosen value) | D0 primary; strict `4,4,0,2,3,2,4` (19). |
-| E plan with path | Insert `conduit plan .` before each apply | `4/4, 4/4, 0/0, 2/2, 3/3, 2/2, 4/4` (19/19). |
+| Task | Command lines, primary | Command lines, strict | Authored file lines | Panel actions apart | Total primary | Total strict |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| T1 | 2 | 4 | 19 | 2 | 21 | 25 |
+| T2 | 2 | 3 | 3 | 0 | 5 | 6 |
+| T3 | 0 | 0 | 0 | 0 | 0 | 0 |
+| T4 | 1 | 1 | 2 | 0 | 3 | 3 |
+| T5 | 2 | 2 | 0 | 0 | 2 | 2 |
+| T6 | 1 | 1 | 1 | 0 | 2 | 2 |
+| T7 | 1 | 2 | 1 | 0 | 2 | 3 |
+| Total | 9 | 13 | 26 | 2 | 35 | 41 |
 
-For point D the setup order is Agent A then B; a completed sign-in lets the next apply finish the
-pending setup before moving on. With `conduit apply .` for both follow-ups, T1 instead becomes
-`5/5`. A returned pendingAction is a list of IDs, never evidence or a prompt, under
-`io.github.shrav-k.conduit/pendingAction` (IFC-025); only those IDs and the panel hint print.
-These lines are prospective for real Agent packages; fixture agents 0.2.0 raise none.
-Panel actions are always listed apart under [ruling 68 R1](../../proposals/ruling-68/README.md),
-including strict command counts beside them. `account:` lines remain authored lines.
-The required initial context/store selection and dependency installation also need accounting
-before the rerun; no fresh-author count is claimed here.
+The total primary sequence `21, 5, 0, 3, 2, 2, 2` agrees with experiment 023's row
+"No store + K3 A's omitted narrowing flags" and ruling 76's forecast. Strict remains
+`25, 6, 0, 3, 2, 2, 3`: omitting values or flags removes no scheduled command or panel action.
+The two T1 panel actions are sign-in for A and B, listed apart from authored lines
+([ruling 68 R1](../../proposals/ruling-68/README.md)). Apply continues through both pending
+sign-ins, without a follow-up apply or an answer. A returned pendingAction is a list of IDs,
+never evidence or a prompt, under `io.github.shrav-k.conduit/pendingAction` (IFC-025).
+These actions are prospective for real Agent packages; fixture agents 0.2.0 raise none.
+All counts remain a paper forecast, not a fresh-author result or a live sign-in run.
+
+### Case command and output counts
+
+These counts describe the literal cases, separately from the full task schedule above.
+Every command uses the current engine context. The optional no-op plan and the stopped
+restoration are demonstrations, excluded from the task schedule. Flag uses count each named
+permission once, even when several request steps carry it. Plan lines are the recorded text's
+lines, including the first and last; stdout also includes result lines. A null record path in
+cases 03 and 09 means no file is written, although the expected plan text and digest are stated.
+
+| Case | Command primary/strict | Named flag uses | Requests after printing | Plan lines | Stdout lines |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| [01-t1](cases/01-t1.yaml) | 0/1 | 0 | 15 | 35 | 50 |
+| [02-t2](cases/02-t2.yaml) | 0/1 | 0 | 7 | 20 | 27 |
+| [03-t3-noop](cases/03-t3-noop.yaml) | 0/1 | 0 | 0 | 2 | 2 |
+| [04-t4](cases/04-t4.yaml) | 1/1 | 1 | 10 | 20 | 30 |
+| [05-t5](cases/05-t5.yaml) | 1/1 | 1 | 11 | 26 | 37 |
+| [06-t6](cases/06-t6.yaml) | 1/1 | 1 | 11 | 26 | 37 |
+| [07-t7-revoke](cases/07-t7-revoke.yaml) | 0/1 | 0 | 2 | 8 | 10 |
+| [09-t7-restore-unflagged](cases/09-t7-restore-unflagged.yaml) | 0/1 | 0 | 0 | 5 | 5 |
+| [08-t7-restore](cases/08-t7-restore.yaml) | 1/1 | 1 | 4 | 12 | 16 |
+
+Ruling 76 changes the hashed plan text only in cases 04, 07, 08 (successful restoration) and 09
+(stopped restoration). Python `hashlib.sha256` re-derived those four digests from the exact
+UTF-8 plan bytes; their paths, request keys and later ledger/journal references changed with them.
+Cases 01, 02, 03, 05 and 06 keep their plan digests: command spelling, source citations and case
+order are outside the hash. No package, file or path fingerprint digest changed. Case 09 now
+precedes case 08 in the documented sequence so all nine cases form one applied/kept chain.

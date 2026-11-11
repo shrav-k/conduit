@@ -6,6 +6,7 @@ sources:
 - ruling 55 A3-A4
 - ruling 59 A3/A7
 - ruling 63 points 1-3
+- ruling 76 points 1-5
 - spec-batch-1 plan lines 320, 412, 643-652
 - SCT-003
 - SCT-004
@@ -17,7 +18,7 @@ sources:
 - OPS-008
 - IFC-023
 - NAM-008
-command: conduit apply . --replace shared
+command: conduit apply --replace shared
 files:
   conduit.yaml: |
     apiVersion: github.com/shrav-k/conduit/v0
@@ -101,11 +102,11 @@ applied:
   plans:
   - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
   journals:
     sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
 engine:
   base: first-start
   packages:
@@ -623,11 +624,11 @@ kept:
   plans:
   - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
   - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
   journals:
     sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
     sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
 exit: 0

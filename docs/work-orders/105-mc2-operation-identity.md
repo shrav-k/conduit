@@ -244,3 +244,44 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 from a fixed base: the worker in 17 minutes (1,013 s), then a fresh verifier in
+8 minutes (483 s). That verifier found one must: a lost reply to a deduplicated retry could leave
+an invocation in progress for ever. It also found one should: the keyless witness could count one
+effect for both requests. A second round of 5 minutes (319 s) fixed both, with regressions. A
+fresh verifier in 5 minutes (307 s) then found no fault, and reproduced all 40 state counts and
+11 traces. Neither verifier could rebuild in its read-only sandbox.
+
+The order added `operations.rs`, `revisions.rs` and `mc2.rs`, and the `fault_allowed` hook in the
+harness; `retry.rs` is unchanged. Forty bounded runs finished within their limits, the largest
+13,145 states, and every enabled witness was reached.
+
+The candidate is confirmed. With a plain implementation, "at most once" is refuted in all seven
+fault configurations, timers alone included, while the other four operation properties hold.
+With a deduplicating implementation, and in the fenced control, all five hold. The shortest
+trace, seven actions:
+
+1. A's request is delivered and dispatched.
+2. A's timer sends its repeat.
+3. The engine's timer marks the outcome unknown while the dispatch is still on its link.
+4. An authorized actor reads no effect and reconciles to failed (OPS-014).
+5. A's repeat arrives, and OPS-024 dispatches it as a new attempt.
+6. The first dispatch lands.
+7. The second dispatch lands: one keyed effect applied twice, against OPS-018.
+
+This is experiment 004's inspect-then-reissue reached through the current promises. It needs no
+wire copy of a dispatch, no fabricated evidence and no lost saved state. The worker reported it
+as MC2-001, of class contradiction. It goes to the admin as a spec question for the owner.
+
+The broken variants each broke their named property. Two broke one more than the table
+predicted: BlindReplay and VolatileIndex also broke "unknown stays unknown". The pre-registered
+table is kept, with the observed one beside it (MC2-002, MC2-003). The revision model holds
+REV-002, REV-011 and REV-012, and each mutation is caught.
+
+The lane coordinator reran the crate's 15 tests, fmt and clippy before the merge. It checked
+that the sixteen promises the order names are safety promises in the catalogue, which merged
+after the worker read it. In the same pull request it moved IFC-007 in the catalogue, by the
+admin's decision. It also ran the repository's checks. No time on `ubuntu-latest` is measured,
+since CI is paused.

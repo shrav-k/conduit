@@ -224,3 +224,10 @@ revisions.yaml, which it corrected before going on. Its findings are for the adm
 The coordinator checked every total and the comparison of IDs before the merge, and ran
 check_docs, check_rulings, set_names, check_schemas and check_roadmap, and the private-path grep,
 all clean.
+
+2026-11-11, later: the admin decided the one question for the coordinator. IFC-007 is wire
+shape, not an access-safety promise: the selected implementation is granted the Resource's
+configuration and the call, IFC-030 withholds the consumer's proof, and the secrets promises
+withhold secret material. The decision is open to the owner to strike. The lane coordinator
+moved IFC-007 to the others, in work order 105's pull request. The counts are now 394 safety, 0
+for the coordinator and 108 others.

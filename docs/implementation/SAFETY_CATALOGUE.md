@@ -6,7 +6,7 @@ The classification is the coordinator’s, open to the owner to strike under
 [IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed).
 Written from `spec/` as of commit `e94c057`. The proof lane updates this catalogue when a promise changes.
 
-Promises read: 502; safety: 394; for the coordinator: 1; others: 107. Safety by kind: access 193,
+Promises read: 502; safety: 394; for the coordinator: 0; others: 108. Safety by kind: access 193,
 secret 39, effect 119, result 43. Safety by layer: language 133, convention 217, interface 44.
 Safety in the seven convention files: 128 (G5’s list as ruling 39 worded it); safety of the
 convention layer anywhere: 217 (the wider reading, for the owner).
@@ -608,9 +608,8 @@ Read: 46 promises. Source: [spec/interface/implementation.yaml](../../spec/inter
 
 ## For the coordinator
 
-| ID | question and two readings |
-| --- | --- |
-| IFC-007 | Does sending extra Conduit metadata to the already selected plain server disclose information it is not entitled to? Reading A: access safety, since full config, caller and filter metadata exceeds the item’s selected bindings; reading B: wire form only, since the specification does not expressly deny that selected implementation the metadata and the consumer’s proof is separately withheld by IFC-030. |
+None open. IFC-007 was decided by the admin on 2026-11-11, open to the owner to strike: it is
+wire shape, not an access-safety promise, and is listed with the others.
 
 ## The others
 
@@ -723,6 +722,7 @@ Read: 46 promises. Source: [spec/interface/implementation.yaml](../../spec/inter
 | REV-004 | progress or timing |
 | IFC-002 | progress or timing |
 | IFC-005 | naming |
+| IFC-007 | other: wire shape, by the admin's decision of 2026-11-11, open to the owner to strike. The selected implementation is granted the Resource's configuration and the call; IFC-030 withholds the consumer's proof, and the secrets promises withhold secret material. |
 
 ## S1 traces
 

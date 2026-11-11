@@ -125,6 +125,9 @@ pub trait Protocol: Clone + Send + Sync + 'static {
     type Message: Clone + Debug + Eq + Hash + Send + Sync;
     type Ledger: Clone + Debug + Eq + Hash + Send + Sync;
     type Local: Clone + Debug + Eq + Hash + Send + Sync;
+    fn fault_allowed(&self, _fault: Fault, _src: usize, _dst: usize) -> bool {
+        true
+    }
     fn initial(&self, config: &Config) -> System<Self>;
     fn receive(
         &self,
@@ -287,7 +290,9 @@ impl<P: Protocol> Model for Harness<P> {
                     if self.available(s, Fault::Loss) {
                         out.push(Action::Drop { src, dst, index });
                     }
-                    if self.available(s, Fault::Duplication) {
+                    if self.available(s, Fault::Duplication)
+                        && self.protocol.fault_allowed(Fault::Duplication, src, dst)
+                    {
                         out.push(Action::Duplicate { src, dst, index });
                     }
                 }
@@ -296,14 +301,18 @@ impl<P: Protocol> Model for Harness<P> {
                         if self.available(s, Fault::Heal) {
                             out.push(Action::Heal(src, dst));
                         }
-                    } else if self.available(s, Fault::Cut) {
+                    } else if self.available(s, Fault::Cut)
+                        && self.protocol.fault_allowed(Fault::Cut, src, dst)
+                    {
                         out.push(Action::Cut(src, dst));
                     }
                 }
             }
             match s.nodes[src].status {
                 Status::Running => {
-                    if self.available(s, Fault::Crash) {
+                    if self.available(s, Fault::Crash)
+                        && self.protocol.fault_allowed(Fault::Crash, src, src)
+                    {
                         out.push(Action::Crash(src));
                     }
                     if self.available(s, Fault::Timer) && self.protocol.timer_enabled(s, src) {
@@ -318,7 +327,10 @@ impl<P: Protocol> Model for Harness<P> {
                 }
                 _ => {}
             }
-            if s.nodes[src].status != Status::Lost && self.available(s, Fault::LostMachine) {
+            if s.nodes[src].status != Status::Lost
+                && self.available(s, Fault::LostMachine)
+                && self.protocol.fault_allowed(Fault::LostMachine, src, src)
+            {
                 out.push(Action::Lose(src));
             }
         }
@@ -601,5 +613,54 @@ pub fn assert_refuted<P: Protocol>(
 pub fn print_trace<P: Protocol>(model: &Harness<P>, trace: &[Action<P::Local>]) {
     for (i, action) in trace.iter().enumerate() {
         println!("{}. {}", i + 1, model.describe(action));
+    }
+}
+
+#[cfg(test)]
+mod hook_tests {
+    use super::*;
+    use crate::mc2::Part;
+    use crate::operations::{Message, Request, Variant, model};
+    #[test]
+    fn fault_hook_restricts_links_and_nodes() {
+        let mut m = model(Variant::Deduplicating, Part::Timers, true);
+        m.config.budgets = [1, 1, 1, 1, 1, 1, 1, 1, 2];
+        let mut s = m.init_states().remove(0);
+        // Seed all directed queues so every duplication permission is exercised.
+        for src in 0..4 {
+            for dst in 0..4 {
+                if src != dst {
+                    s.links[src * 4 + dst] = vec![Message::Request(Request {
+                        sender: src as u8,
+                        contents: 1,
+                        keyless: false,
+                        script_request: 0,
+                    })];
+                }
+            }
+        }
+        let mut actions = vec![];
+        m.actions(&s, &mut actions);
+        for src in 0..4 {
+            for dst in 0..4 {
+                if src == dst {
+                    continue;
+                }
+                assert_eq!(
+                    actions.contains(&Action::Duplicate { src, dst, index: 0 }),
+                    (src == 0 || src == 3) && dst == 1
+                );
+                if src < dst {
+                    assert_eq!(
+                        actions.contains(&Action::Cut(src, dst)),
+                        src == 1 && dst == 2
+                    );
+                }
+            }
+        }
+        for src in 0..4 {
+            assert_eq!(actions.contains(&Action::Crash(src)), src == 1 || src == 2);
+            assert_eq!(actions.contains(&Action::Lose(src)), src == 2);
+        }
     }
 }

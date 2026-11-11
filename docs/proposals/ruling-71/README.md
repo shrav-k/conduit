@@ -54,3 +54,10 @@ to remedy the situation".
 - Ruling 47: the bar's "much more" is defined, and both runs must pass.
 - IN_FORCE.md topic 15, "who decides": the owner keeps every finding that adds a feature except
   the delegated small ones.
+
+## Later answers
+
+2026-11-11, evening: before being away until the next morning, the owner was asked whether, if the
+ChatGPT Codex allowance ran out overnight, the workers should pause or switch to the owner's OpenAI
+API key with a cap. The owner chose the API key, capped at about $50 for that night: "b". Codex
+reads the key from the environment through a provider entry, and it is never written to a file.

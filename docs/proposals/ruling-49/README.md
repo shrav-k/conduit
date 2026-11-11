@@ -1,6 +1,6 @@
 # Ruling 49: signing in through the engine
 
-Status: in force; amended by 66 (point 3, on point 2) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (spec pending except where a promise is cited). This record says why.
+Status: in force; amended by 66 (point 3, on point 2); amended by 73 (the way back for browser logins) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (spec pending except where a promise is cited). This record says why.
 
 This is the record of a
 ruling. Where it and the specification differ, the specification governs.

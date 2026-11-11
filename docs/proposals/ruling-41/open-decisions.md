@@ -2,8 +2,8 @@
 
 Date: 2026-11-06. This is the record of the questions that the rewrite under
 [ruling 40](../ruling-40/README.md) and [ruling 41](README.md) left open: the tables
-[Still needs a decision](log-integration.md#still-needs-a-decision) (D1 to D20) and
-[Needs a decision](log-integration.md#needs-a-decision) (R1 to R28) of the integration log, the
+[Still needs a decision](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md#still-needs-a-decision) (D1 to D20) and
+[Needs a decision](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md#needs-a-decision) (R1 to R28) of the integration log, the
 rows of its coverage check that list a decision, and the editors' choices beyond the plan that it
 keeps for the coordinator. Six analysts answered the questions, a skeptic challenged each answer,
 and the coordinator reconciled the two, read the promises where they disagreed, and checked the
@@ -21,26 +21,6 @@ How to read it. The numbers D1 to D20 and R1 to R28 are the integration log's. A
 coverage check (row 10). Rows 23 and 44 of the coverage check are entries for the tracker, not
 decisions. New names, such as the member `serving`, the status member `unreconciled` and the
 promise OPS-034, are working names for the vocabulary audit that ruling 41 orders.
-
-The promise files: [placement](../../../spec/promises/placement.yaml),
-[providers](../../../spec/promises/providers.yaml), [pools](../../../spec/promises/pools.yaml),
-[secrets](../../../spec/promises/secrets.yaml),
-[templates](../../../spec/promises/templates.yaml),
-[conduits](../../../spec/promises/conduits.yaml),
-[manifest](../../../spec/promises/manifest.yaml),
-[packages](../../../spec/promises/packages.yaml),
-[submissions](../../../spec/promises/submissions.yaml),
-[contracts](../../../spec/promises/contracts.yaml),
-[first start](../../../spec/promises/first-start.yaml),
-[access](../../../spec/conventions/access.yaml),
-[lifecycle](../../../spec/conventions/lifecycle.yaml),
-[operations](../../../spec/conventions/operations.yaml),
-[records](../../../spec/conventions/records.yaml),
-[revisions](../../../spec/conventions/revisions.yaml),
-[implicit](../../../spec/conventions/implicit.yaml),
-[implementation](../../../spec/interface/implementation.yaml), the
-[implementation-defined list](../../../spec/implementation-defined.yaml) and the core package's
-[operations](../../../spec/core/operations.yaml) and [results](../../../spec/core/results.yaml).
 
 ## Settled by the coordinator
 
@@ -435,29 +415,22 @@ Resource of the Pool running, and access to it open, until that machine returns.
 If you pick stop. LIF-021 and the operation's description add the conflict to what stops the
 request, and round 3's decision 5 stands.
 
-## Left for round 5
+## Settled reader items
 
-To check against the protocol (R28): the extension negotiation, `listChanged` and `cacheScope`,
-and the reserved trace keys (IFC-004, IFC-008, IFC-037 to IFC-039); with them, rows 15 and 29,
-which declare the extension on provider calls and at the engine's server; and that the 2026-07-28
-schema allows keywords such as `$ref` and `oneOf` at the root of `inputSchema`, which decision 16a
-leaves out by Conduit's own choice (CTR-012).
+The protocol check R28 was carried out by [round 5's reader 6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-6.md); its findings are in [round 5's decisions](../reaudit/round-5/DECISIONS.md). M35 settled a control ending after retirement: its outcome is recorded and nothing is stored. The vocabulary audit settled the record member `consumer` (N12); `serving`, `unreconciled` and OPS-034’s subject remain working names, recorded in the definitions and the promises. The later protocol-check limits remain in the [tracker](../../AUDIT.md#known-to-be-open).
+
+A default for an unrequired hook is also settled: [round 6’s four open points](../reaudit/round-6/DECISIONS.md#the-four-open-points) records the accepted change in TPL-004 and CTR-004. The default is unused, and installation or resolving reports a diagnostic that does not reject.
+
+## Left for round 5
 
 For a reader:
 
-- A control in progress when the engine retires its instance under PLC-017 or PLC-024: whether
-  its result is stored in the retired instance (REV-010, LIF-015, row 11).
-- A type that states a default for a hook it does not require: whether TPL-004 ignores it or
-  CTR-004 should reject it (row 20).
 - A named argument that a Package repeats, such as `-e`, cannot be bound under row 35; whether
   that matters, with row 22.
 - PLC-024 and row 18 say that a record states a cause where no invocation holds it, in no fixed
   form.
 - The late onward request of an earlier hook attempt, decided for the latest caller (row 21),
   before local enforcement in v1.
-- For the vocabulary audit: `serving` as a member of a record, `unreconciled`, OPS-034's subject,
-  and the member `instance` of a record (the instance that acted for the caller) beside the wire
-  key `instance` (the instance whose configuration a request carries).
 
 [csi-providers]: https://secrets-store-csi-driver.sigs.k8s.io/providers
 [cp-node]: https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/

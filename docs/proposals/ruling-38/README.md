@@ -40,7 +40,7 @@ owner's words.
    says so.
 3. CON-004 is reworded. Applying it showed that only the decision to open is whole; each
    component is then opened by a request of its own, with its own outcome. The
-   [log](log-spec.md) says why, and the tracker lists it for the owner.
+   [log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-38/log-spec.md) says why, and the tracker lists it for the owner.
 4. The done-when of action A59 and the readiness condition G7 are restated in the tracker and
    in the [build document](../../implementation/INDEPENDENT_BUILDS.md). The coordinator reads
    "Understood" as accepting the recommendation, and the tracker's section for the next reader

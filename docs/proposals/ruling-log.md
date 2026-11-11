@@ -433,7 +433,7 @@ The rows above are kept as the rulings were given. Later rulings amended some of
 row that cites ruling 41, an item is a decision of the
 [principles review](principles-review/README.md), C14, C20 and C21 are the changes
 of its section 3, and a planner's choice is one of P1 to P20 of the
-[work order](ruling-41/PLAN.md#planners-choices), which ruling 41 also accepted:
+[work order](ruling-41/README.md#planners-choices), which ruling 41 also accepted:
 
 | Ruling | What it says | Amended by |
 | --- | --- | --- |
@@ -490,7 +490,7 @@ of its section 3, and a planner's choice is one of P1 to P20 of the
 | 41 (section 4 of the review, line 18) | What else a run receives is the provider's. | For the engine's own runner, six variables and a list set on the runner, by ruling 42 (D8). |
 | 39 (decision 5 of round 3) | `retire-with-resources.v1` stops at the first Resource whose retirement does not complete. | It goes on: only the Resources that the order puts after the one it could not retire wait, by ruling 42 (R5). |
 | 17, 18 (V4), 33, 41 | Location, origin, operation identity and the names that ruling 41's work order coined. | The names of the [vocabulary audit](vocabulary-audit/README.md), by ruling 42. |
-| 42 (D17) | `run.v1` carries a credential as a file that the runtime provider may refresh in place. | In this version a credential lasts as long as its instance and nothing renews it (DL13), as the [multi-machine proposal](multi-machine/README.md) that ruling 43 accepted has it; renewal on the run's machine is v1's (A65). Ruling 43's verification therefore moved the leave to replace a file in place out of PRV-022's `then` into its observable (MX-21), a [choice](ruling-43/log-integration.md#choices-of-the-verification) that the owner can strike. |
+| 42 (D17) | `run.v1` carries a credential as a file that the runtime provider may refresh in place. | In this version a credential lasts as long as its instance and nothing renews it (DL13), as the [multi-machine proposal](multi-machine/README.md) that ruling 43 accepted has it; renewal on the run's machine is v1's (A65). Ruling 43's verification therefore moved the leave to replace a file in place out of PRV-022's `then` into its observable (MX-21), a [choice](ruling-43/README.md#choices-of-the-verification) that the owner can strike. |
 | 41 (item 16a) | An Operation contract's `inputSchema` and `outputSchema` have a root limited to `type: object`, `properties`, `required` and `additionalProperties` (CTR-012). | Ruling 44 (D14 of round 6): the schemas of an Operation contract that is not a control may hold any keyword of the schema profile at their root beside `type: object`, as the published protocol's tool definition allows at the baseline revision; the inputs and outputs are still the members of the root's `properties`. A control keeps the limited root, which its partial updates need (REV-006), and SCH-008's ban on a `default` under a conditional keyword stands (CTR-012). The rest of item 16a stands. |
 | 37 (choice C42 of the core-and-schemas record) | The default implementation of an operation is stated by each Operation contract. | Ruling 44 (D06 of round 6, as revised after the ruling): a package's own Operation contract states no default implementation, and the engine implements the operations of the core package by rule, with no mapping. Applied in CTR-002, TPL-003 and TPL-004 ([log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-d06-d12.md)). |
 
@@ -625,8 +625,8 @@ design critiques or evidence cases, in the last row.
 | **C**, **N**, **P**, **D**, **X** | Choices, names, open points, disagreements and accepted changes of the core package and schema batch | [core-and-schemas](core-and-schemas/README.md) |
 | **DA** | Decisions of the audit of the documents outside `spec/` | [docs-audit](docs-audit/README.md) |
 | Items 1 to 31, **C** | The decisions of the principles review, which ruling 41 accepted: items 1 to 31, with lettered lines such as 3a, and its candidates C1 to C58. C14, C20 and C21 are its changes to choices that rulings had accepted | [principles-review](principles-review/README.md) |
-| **P** | The planner's choices P1 to P20 for the rewrite under ruling 41, which the owner accepted with P2 changed | [ruling-41 work order](ruling-41/PLAN.md#planners-choices) |
-| **D**, **R** | The questions that the rewrite under ruling 41 left open, D1 to D20 and R1 to R28, numbered as in [its integration log](ruling-41/log-integration.md#what-remains) | [open questions after the rewrite](ruling-41/open-decisions.md) |
+| **P** | The planner's choices P1 to P20 for the rewrite under ruling 41, which the owner accepted with P2 changed | [ruling-41 work order](ruling-41/README.md#planners-choices) |
+| **D**, **R** | The questions that the rewrite under ruling 41 left open, D1 to D20 and R1 to R28, numbered as in [its integration log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md#what-remains) | [open questions after the rewrite](ruling-41/open-decisions.md) |
 | **Q** | The five smaller questions on work across machines, Q1 to Q5 | [multi-machine](multi-machine/README.md) |
 | **M**; **V**, **V2-** | Round 5 of the re-audit: its items M01 to M111, into which the coordinator merged the readers' findings, and the findings of the verification of its fixes, V1 to V13 and V2-01 to V2-16. A V here is never a vocabulary decision, and M is not the M ruling set of the archived reviews | [round 5's decisions](reaudit/round-5/DECISIONS.md), [its fix log](reaudit/round-5/log-fixes.md#verification) |
 | **6-1-**; **D**, **E** | Round 6 of the re-audit, the owner's cold read by Codex: its findings 6-1-01 to 6-1-06, its design critiques D01 to D22 and its evidence cases E01 to E20, always written with two digits and with round 6. A D here is never a disagreement of the plan audit, and an E never one of its probes | [round 6's decisions](reaudit/round-6/DECISIONS.md), [its report](reaudit/round-6/design-critique.md) |
@@ -645,4 +645,14 @@ Additional historical prefix destinations (C0 pins preserve the pre-condensation
 | 3A to 3D | [Last version](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3) |
 | 4A to 4D | [Last version](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4) |
 | D, R (ruling 41 integration) | [Last version](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md) |
-| P (planner) | [Last version](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md#planners-choices) |
+| P (planner) | [Last version](ruling-41/README.md#planners-choices) |
+
+## Appendix: MX-21 of ruling 43
+
+Source: [ruling 43, verification](ruling-43/README.md#choices-of-the-verification).
+
+Added in round 5 (M109), which found it missing here: **PRV-022 no longer gives leave to replace a file of `identity` in place** (MX-21). In this version a credential lasts as long as its instance (DL13), as the proposal has it, so the leave that ruling 42's D17 gave is left, in PRV-022's observable, for renewal on the run's machine in v1 (A65).
+
+| Finding | Held | Change |
+| --- | --- | --- |
+| MX-21: as C10; PRV-022 still lets a file be replaced in place | Yes | As C10. PRV-022's leave to replace a file's content in place moved from its `then` to its observable, as what this version does not do; the row `identity` no longer grants it |

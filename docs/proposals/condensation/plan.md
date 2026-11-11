@@ -185,17 +185,17 @@ E-numbers refer to the extractions list. Each extraction is done and verified fi
 
 **C. Ruling and batch records: about 173k words**
 - **Choices extracted (E35), then removed:**
-  - ruling-41/log-G1.md to log-G7.md, log-core.md, log-docs.md, log-integration.md.
-  - ruling-42/: log-conventions, log-core, log-docs, log-editorial, log-integration, log-language, log-machines, log-rename-a, log-rename-b, log-secrets. The old-to-new names are in spec/definitions "Words the promises do not use".
-  - ruling-43/: log-core, log-docs, log-integration, log-interface, log-providers, log-secrets. MX-21 moves to ruling-log.md.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G1.md to https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G7.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-core.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-docs.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md.
+  - ruling-42/: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-conventions.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-core.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-docs.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-editorial.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-integration.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-language.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-machines.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-rename-a.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-rename-b.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-secrets.md. The old-to-new names are in spec/definitions "Words the promises do not use".
+  - ruling-43/: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-core.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-docs.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-integration.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-interface.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-providers.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-secrets.md. MX-21 moves to ruling-log.md.
   - core-and-schemas/log-documents.md and log-promises.md (also E20's spot-check of the 22 "left undone" items).
   - docs-audit/log-entry-points.md, log-older-text.md, log-gaps.md.
 - **No extraction:**
-  - ruling-38/check.md, handoff-check.md, log-spec.md. Repoint spec/core/README to ruling-38/README.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-38/check.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-38/handoff-check.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-38/log-spec.md. Repoint spec/core/README to ruling-38/README.
   - core-and-schemas/APPLY.md (X1-X5 are in ruling row 37 and the README's Outcome).
   - docs-audit/reader-entry-points.md and reader-older-text.md.
 - **Extract first:**
-  - ruling-41/PLAN.md: E16 and E19 (rules 3-5 and 8 go to "Writing promises").
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md: E16 and E19 (rules 3-5 and 8 go to "Writing promises").
   - ruling-45/log-roadmap.md: E19.
 - **Condensed in place, not removed:**
   - **secrets/README.md (E18).** Only sections that are applied or superseded go; the reasoning stays at the same path, so spec/README:550 and secrets.yaml:8-9 stay valid.
@@ -525,7 +525,7 @@ Each item gives source, then destination. The verifier checks each against its s
 - If current text fails, report it; do not fix it.
 
 **E16. ruling-41/README.md: "Planner's choices" (anchor #planners-choices)**
-- PLAN.md:84-111: P1-P20, each with its reason and alternative.
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md#planners-choices: P1-P20, each with its reason and alternative.
 - Notes: P2 was changed by the owner, so that no removed ID can be reused. P1's names were replaced by N1-N20 (ruling 42).
 
 **E17. ruling-41/open-decisions.md, condensed in place**
@@ -555,7 +555,7 @@ Each item gives source, then destination. The verifier checks each against its s
 - ruling-45/log-roadmap:135-139: four pairs of facts held in two places, kept in step by hand: A68 against step 3; A63 against A22 and A73; the experiments index against the 001-005 rows; P1 against "In parallel".
 - **"Writing promises"**, verbatim where general:
   - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#L11-L33, rules 1, 2, 3, 6 and 7: the seven fields; folded `>-` text indented four spaces; lines under 97 characters; IDs never reused; a new ID takes the next number never used, after checking the head's register; no promise moves between files; exactly one of refused, invalid, conflict and unavailable; cited IDs must exist.
-  - ruling-41/PLAN.md:64-83, rules 3, 4, 5 and 8: the tombstone form, with the ruling and "where it went / nothing replaces it"; content moves by a new ID; a rewrite keeps what it does not name.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md#L64-L83, rules 3, 4, 5 and 8: the tombstone form, with the ruling and "where it went / nothing replaces it"; content moves by a new ID; a rewrite keeps what it does not name.
   - The head-comment format is now the removed-ID register (E34).
 - vocabulary:42-48:
   - One word for one idea, and one idea for one word.
@@ -780,12 +780,12 @@ Each item gives source, then destination. The verifier checks each against its s
 **E35. "Choices that set behavior" (new section in the README of each batch whose editor logs leave)**
 - Sources:
   - reaudit log-group-a/b/c and log-followups-ab/c, round-5 log-fix-F1..F7, and round-6 log-specdocs and log-tracker go to reaudit/README.md (round 6 to round-6/README).
-  - ruling-41 log-G1..G7, log-core, log-docs and log-integration go to ruling-41/README.
+  - ruling-41 https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G1.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G2.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G3.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G4.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G5.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G6.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-G7.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-core.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-docs.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md go to ruling-41/README.
   - The ruling-42 logs (about 107 choices) go to ruling-42/README.
   - The ruling-43 logs (about 63) go to ruling-43/README.
   - core-and-schemas and docs-audit logs go to their READMEs.
 - What qualifies: every choice that names a rejected alternative, a candidate for later, or a reading of a promise the promise does not state. Each is one line: choice, alternative, why, log ID, copied verbatim where it fits.
-- Example (ruling-42/log-integration.md:139-150):
+- Example (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-integration.md#L139-L150):
   - A stronger PRV-021, in which every provider stops a run that comes back (as kubelet and Nomad do), is left as a candidate for later research.
   - A PRV-015 reading was rejected because it would let a provider place an instance on the engine's machine.
 - The worker reports a count per log; the verifier samples 20%.

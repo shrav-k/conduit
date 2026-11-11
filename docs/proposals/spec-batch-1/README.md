@@ -319,6 +319,8 @@ C12. One `.v2` schema:
 
 The fixture agents 0.2.0 (044) has no `signIn` and no hooks. The real packages come in 050.
 
+Under ruling 70 the `.v2` Types also take `ownTools` (default true; temporary under ruling 74, point 3), `directory`, `turnDeadlineSeconds` and `effort`. Order 050a adds them, with the clients' own tools, on a branch that merges with order 050.
+
 C13. The cascade is one command, printed and counted under one flag: register, open, call, close, then root lifts its own tombstone. Only engine-made objects are exempt from tombstones (C27).
 
 C14. 036a writes ACC-033 whole. 038a adds the sign-in.v1 and answer.v1 rows and replaces only the disclosure sentence with ACC-056's. It rewrites no other sentence of 036a's.
@@ -618,6 +620,7 @@ OTHER LANES
 - About 0.3k lines.
 
 050 P2: the Agent packages 0.2.0. After 044, 045 and 048b.
+- Built on order 050a's branch, which adds ruling 70's inputs and the clients' own tools; 050 adds the rest and both merge as one 0.2.0.
 - The `.v2` Types (exactly one of account and apiKey set); each Agent's home; the login flows; the three hooks plus the sign-out at retire; `turn`.
 - Scripted client tests; READMEs; archives pinned by digest; CONFORMANCE.md; docs/guides/accounts.md.
 - Then the coordinator's real-client trials, including the Codex account read (O3).

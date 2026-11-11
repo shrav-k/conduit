@@ -1,6 +1,8 @@
 # Ruling 59: the structure of the agent-owning family
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 59). Its open items were answered by [ruling 60](../ruling-60/README.md): the family is a Fleet, and "project" keeps its meaning. This is the record of a
+Status: in force; done (A5 and family name: ruling 60) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 8. Lifecycle, Pools and first start](../../../IN_FORCE.md#8-lifecycle-pools-and-first-start), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (spec pending except where a promise is cited). This record says why.
+
+Its open items were answered by [ruling 60](../ruling-60/README.md): the family is a Fleet, and "project" keeps its meaning. This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 The investigation of [the owner's direction for Projects](../owner-direction/2026-11-10-projects.md)

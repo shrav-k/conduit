@@ -1,6 +1,8 @@
 # Ruling 64: organization and repository
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 64). This is the record of a
+Status: in force (point 3: free CI); done (points 1, 2 and 4); amended by 65 (point 5: organization steps) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 14. Publication and organization](../../../IN_FORCE.md#14-publication-and-organization). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 The owner asked for organizational and repository items to resolve. The coordinator put five:

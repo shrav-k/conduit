@@ -1,6 +1,8 @@
 # Ruling 42: the questions after the rewrite, and the names
 
-Status: **ruled by the owner on 2026-11-06** (plan-audit ruling 42). This is the record of a
+Status: in force; amended by 43 (D17); done (D5 and D20: ruling 43) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items), [IN_FORCE.md: 12. Secrets](../../../IN_FORCE.md#12-secrets); [PLC-026](../../../spec/promises/placement.yaml), [SEC-023](../../../spec/promises/secrets.yaml). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 After the rewrite under rulings 40 and 41, the coordinator put two things to the owner:

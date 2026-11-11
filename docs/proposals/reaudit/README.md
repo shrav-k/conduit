@@ -1,6 +1,8 @@
 # Re-audit of the whole specification — round 1, decisions accepted
 
-Status: findings recorded on 2026-11-05 (plan-audit action A59). The owner accepted every
+Status: ruling 32: in force; amended by 38 (point 12); amended by 41 (items 1, 1c, 3a, 5, 6a, 8, 8b, 18, P20); ruling 33: in force; amended by 41 (items 1, 5, 8, 10, 18); amended by 42 (names) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 2. The specification: form, layers and conformance](../../../IN_FORCE.md#2-the-specification-form-layers-and-conformance), [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names), [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items); [OPS-008, OPS-023](../../../spec/conventions/operations.yaml), [OBJ-024](../../../spec/promises/objects.yaml), [IFC-029](../../../spec/interface/implementation.yaml). This record says why.
+
+The owner accepted every
 decision below as recommended (plan-audit ruling 32). They are applied by
 [consolidation pass 1](CONSOLIDATION.md).
 

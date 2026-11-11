@@ -1,6 +1,8 @@
 # Ruling 65: the public name is ConduitLang
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 65). This is the record of a
+Status: in force; directive (A76: owner's account steps) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names), [IN_FORCE.md: 14. Publication and organization](../../../IN_FORCE.md#14-publication-and-organization). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs. It answers ruling 47's
 open point on the public name; the namespace follows when the organization exists.
 

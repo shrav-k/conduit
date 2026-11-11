@@ -1,6 +1,8 @@
 # Ruling 45: a collaborator's two proposals, and the roadmap
 
-Status: **ruled by the owner on 2026-11-09** (plan-audit ruling 45). This is the record of a
+Status: in force (ruled by the owner on 2026-11-09). Holds now: [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 On 2026-11-08 the collaborator `allocmemory` opened two draft pull requests against `main` at

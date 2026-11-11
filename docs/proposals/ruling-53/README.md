@@ -1,6 +1,8 @@
 # Ruling 53: the simplification's first decisions
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 53). This is the record of a
+Status: in force; done (points 1, 2: ruling 55 A1, A4; point 6: ruling 59 A3) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (spec pending except where a promise is cited). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 The coordinator put nine decisions from the [simplification investigation](../simplification/README.md)

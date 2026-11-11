@@ -1,6 +1,8 @@
 # Ruling 52: explicit refusals, submissions, enrollment's decisions and the measurement plan
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 52). This is the record of a
+Status: in force; done (point 5: ruling 56); open (point 3: whether relative values go) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement); [SUB-010](../../../spec/promises/submissions.yaml) (spec pending except where a promise is cited). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 After the coordinator's run of S1's tasks, the coordinator put to the owner what was open:

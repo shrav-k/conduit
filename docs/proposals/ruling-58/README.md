@@ -1,6 +1,8 @@
 # Ruling 58: how the repository is condensed, and the form of ruling records
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 58). This is the record of a
+Status: in force; amended by 67 (point 2); directive (A80: the condensation plan's remaining steps) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 Ruling 57 revoked the rule against editing historical documents and left open the form of ruling

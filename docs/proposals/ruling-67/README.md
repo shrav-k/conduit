@@ -1,6 +1,7 @@
 # Ruling 67: decisions in force, a ledger, and records that say why
 
-Status: **delegated by the owner on 2026-11-10; decided by the coordinator** (plan-audit ruling 67).
+Status: in force (coordinator under delegation, strikeable) (delegated by the owner on 2026-11-10, decided by the coordinator; the owner may strike or change any point). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+
 The owner may strike or change any point. This is the record of a ruling. Where it and the
 specification differ, the specification governs.
 

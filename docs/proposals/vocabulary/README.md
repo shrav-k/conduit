@@ -1,6 +1,8 @@
 # Final vocabulary — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit rulings 17 and 18, action A28). The owner
+Status: ruling 17: in force; amended by 27 (grants); amended by 28 (grants); amended by 29 (grants); amended by 42 (names); ruling 18: in force; amended by 42 (names); amended by 55 (A6) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 1. Purpose, scope and principles](../../../IN_FORCE.md#1-purpose-scope-and-principles), [IN_FORCE.md: 2. The specification: form, layers and conformance](../../../IN_FORCE.md#2-the-specification-form-layers-and-conformance), [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names), [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission); [IMP-001 to IMP-003, IMP-007, IMP-008](../../../spec/conventions/implicit.yaml), [OBJ-012 to OBJ-014](../../../spec/promises/objects.yaml). This record says why.
+
+The owner
 ruled that the vocabulary is decided now and applied as each area is reworked, so that names and
 behavior are fixed together and the text is rewritten once. The names are applied in the
 specification. The older documents keep the earlier words. Where this record says "this

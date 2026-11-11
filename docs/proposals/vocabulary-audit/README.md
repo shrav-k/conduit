@@ -1,6 +1,8 @@
 # Vocabulary audit before the Codex read
 
-> **Ruled.** [Ruling 42](../ruling-42/README.md) accepted the twenty names, N1 to N20, and left the editorial fixes, E1 to E23, to the coordinator, who applied them. The text below is the audit as it was put to the owner.
+Status: ruling 42: in force; amended by 43 (D17); done (D5 and D20: ruling 43) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items), [IN_FORCE.md: 12. Secrets](../../../IN_FORCE.md#12-secrets); [PLC-026](../../../spec/promises/placement.yaml), [SEC-023](../../../spec/promises/secrets.yaml). This record says why.
+
+The text below is the audit as it was put to the owner.
 
 Was: proposed 2026-11-06, for the owner. [Ruling 41](../ruling-41/README.md) asked for it:
 "I don't necessarily like the name secret reveal for the contract, we should do another vocab

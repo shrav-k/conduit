@@ -1,7 +1,7 @@
 # Packages, first start and conformance — accepted
 
-Status: the owner accepted everything here on 2026-11-05 (plan-audit ruling 24, action A54) except
-decision PD1, on how a template in a package is referred to, which was held for more research.
+Status: in force; amended by 25 (PD1); amended by 27 (PD1); amended by 38 (point 12, PD5); amended by 41 (items 9, 12) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas), [IN_FORCE.md: 8. Lifecycle, Pools and first start](../../../IN_FORCE.md#8-lifecycle-pools-and-first-start); [PKG-001 to PKG-030](../../../spec/promises/packages.yaml), [FST-001 to FST-003, FST-005, FST-006](../../../spec/promises/first-start.yaml). This record says why.
+
 PD1 has since been settled by the naming rulings (plan-audit rulings 25 and 27;
 [naming record](../naming/README.md)), so nothing in this record is open. It is written as
 promises in the specification: [packages](../../../spec/promises/packages.yaml),

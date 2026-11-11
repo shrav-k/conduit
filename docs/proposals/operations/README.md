@@ -1,6 +1,8 @@
 # Operations, outcomes and revisions — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit ruling 20, action A13). The decisions and
+Status: in force; amended by 38 (point 6); amended by 41 (items 6a, 6c, 15) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation); [OPS-001 to OPS-014](../../../spec/conventions/operations.yaml), [REV-001 to REV-015](../../../spec/conventions/revisions.yaml). This record says why.
+
+The decisions and
 rules are written as promises in the specification:
 [operations](../../../spec/conventions/operations.yaml) and
 [revisions](../../../spec/conventions/revisions.yaml). Spellings follow the

@@ -1,6 +1,8 @@
 # Ruling 62: five smaller points of the Fleet brief
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 62). This is the record of a
+Status: in force; open (C6 to C12) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment) (spec pending except where a promise is cited). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 Group C of the [brief](../projects/brief.md) holds points that are later work or independent of

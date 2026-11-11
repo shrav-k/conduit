@@ -1,7 +1,8 @@
 # Naming — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit rulings 25 and 27, action A55), including
-the section on versions across connections. Written as promises in the specification:
+Status: ruling 25: in force; ruling 27: in force; amended by 41 (item 21, NE) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas), [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access); [NAM-001 to NAM-028](../../../spec/promises/naming.yaml). This record says why.
+
+Written as promises in the specification:
 [naming](../../../spec/promises/naming.yaml), NAM-001 to NAM-017 as first written; later
 rulings added more, and the comment at the head of that file lists them. This replaces decision
 PD1 of the [packages batch](../packages-and-start/README.md). The evidence is the

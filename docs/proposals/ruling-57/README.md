@@ -1,6 +1,8 @@
 # Ruling 57: historical documents may be edited and condensed
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 57). This is the record of a
+Status: in force; done (open points: ruling 58) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 The owner asked to condense the repository's historical documents: "we should now figure out

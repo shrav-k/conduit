@@ -1,6 +1,8 @@
 # Declarations: references, instantiation, submissions and Pool entries — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit ruling 21, action A52). Written as promises
+Status: ruling 21: in force; amended by 41 (item 10); ruling 22: in force (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission); [OBJ-006, OBJ-008 to OBJ-011](../../../spec/promises/objects.yaml), [INS-001 to INS-021](../../../spec/promises/instantiation.yaml), [SUB-001 to SUB-011](../../../spec/promises/submissions.yaml). This record says why.
+
+Written as promises
 in the specification: [objects](../../../spec/promises/objects.yaml),
 [instantiation](../../../spec/promises/instantiation.yaml) and
 [Pools](../../../spec/promises/pools.yaml). The owner asked what a "document" is concretely before the submission promises were

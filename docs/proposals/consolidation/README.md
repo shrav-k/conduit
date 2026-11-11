@@ -1,6 +1,8 @@
 # Consolidation audit
 
-Status: 2026-11-05, for plan-audit action A56. The owner asked for this audit after the language
+Status: ruling 27: in force; amended by 41 (item 21, NE); ruling 28: in force; done (open points: ruling 29); amended by 40 (graphs); amended by 41 (CC9, CC11, CC12, CS6); ruling 29: in force; amended by 41 (items 3a, 17); amended by 58 (M41) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas), [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 8. Lifecycle, Pools and first start](../../../IN_FORCE.md#8-lifecycle-pools-and-first-start); [NAM-001 to NAM-028](../../../spec/promises/naming.yaml), [OBJ-012 to OBJ-014](../../../spec/promises/objects.yaml), [CON-001 to CON-004](../../../spec/promises/conduits.yaml), [LIF-001 to LIF-007](../../../spec/conventions/lifecycle.yaml). This record says why.
+
+The owner asked for this audit after the language
 was found to name things in three unrelated ways (plan-audit ruling 25). It looks for one idea
 expressed by several unrelated mechanisms, notations or keys, and for one key or word carrying
 several meanings. Findings are recorded here, with the owner's rulings in the [next section](#rulings).

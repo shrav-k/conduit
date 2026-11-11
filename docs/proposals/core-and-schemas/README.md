@@ -1,6 +1,8 @@
 # The core package, the schemas of documents and the manifest's format
 
-Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37). Every choice C1 to C56,
+Status: in force; amended by 38 (points 10, 12); amended by 41 (items 6c, 8, 9, 24, C14, C21); amended by 44 (D06); amended by 55 (A6) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 2. The specification: form, layers and conformance](../../../IN_FORCE.md#2-the-specification-form-layers-and-conformance), [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas); [CTR-001 to CTR-012](../../../spec/promises/contracts.yaml), [LIF-031, LIF-037](../../../spec/conventions/lifecycle.yaml). This record says why.
+
+Every choice C1 to C56,
 every name N1 to N42 and every recommendation P1 to P14 below was accepted as written, with
 the five changes X1 to X5 and the settlements of the open points and disagreements that
 [APPLY.md](APPLY.md) lists. The section [Outcome](#outcome) says, for each item, how it was

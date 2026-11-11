@@ -1,8 +1,9 @@
 # Ruling 48: what the first build's review put to the owner, and who does the work
 
 Status: **ruled by the owner on 2026-11-09** (plan-audit ruling 48). This is the record of a
-ruling. Where it and the specification differ, the specification governs. The number 47 is
-held by the owner's open pull request 14.
+ruling. Where it and the specification differ, the specification governs.
+[Ruling 47](../ruling-47/README.md), the owner's pull request 14, is recorded with its public
+name and namespace open.
 
 After increment 1 of the first build and the baseline for S1 (A70), the owner asked: "Why are
 we using a token rather than our subscription for the codex and Claude tests? Are there any

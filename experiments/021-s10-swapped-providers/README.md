@@ -1,6 +1,8 @@
 # 021 — S10: every provider swapped
 
 > **For the owner**
+> - **Accepted under ruling 75 D on 2026-11-11.** Every item labelled proposed below is accepted,
+>   with the answers under "Open for the owner" applied.
 > - **Proposed:** P4 — D16 preserves tasks, intended access, results and attribution.
 > - **Proposed:** P5 — E06 checks immutable scheme claims and refuses a second claimant.
 > - **Proposed:** M0 — carry the common author measures and selected counting rules.
@@ -13,17 +15,18 @@
 > - **Proposed:** V4 — `s10-scheme-claim-admission`.
 > - **Proposed:** V5 — `s10-swapped-rotation-recovery`.
 > - **Proposed:** V6 — `s10-all-providers-swapped`.
-> - **Proposed:** five configurations per author, each replaying S1 and S2, two authors apart.
+> - **Accepted, changed (ruling 75 D1):** twelve replays. The coordinator runs all five configurations;
+>   the fresh author runs only the one with every provider swapped.
 > - **Open:** Q1 — Which subscription accounts should sign in for the runs?
 > - **Open:** Q2 — 1Password or the file store as the second secret store?
 > - **Open:** Q3 — Accept P4–P5, M0–M3, V1–V6 and the comparison/run plan, or revise them?
 
 ## Status
 
-Pre-registered on 2026-11-11 by work order 103. Awaits the owner's acceptance of
-what it proposes; nothing here runs before that. Ruling 45 fixes what an experiment must
-show before it runs, and IN_FORCE.md topic 13 lists the criteria the owner has accepted.
-No result is recorded here.
+Pre-registered on 2026-11-11 by work order 103. Accepted by the owner on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
+45 fixes what an experiment must show before it runs. No result is recorded here.
 
 ## Question
 
@@ -174,10 +177,10 @@ They do not establish two real tools passing the same provider suite.
 
 ## Runs
 
-**Proposed, for the owner's acceptance:** coordinator and fresh Codex author, separately, each
-running five configurations: first providers; second secrets only; Docker only; Git only; all
-second providers. Each configuration replays S1 and S2: ten replays per author, twenty total,
-plus E06 once per author. S1's no-secret replay is retained even in the secrets-only comparison.
+**Accepted under ruling 75 D1, as changed:** the coordinator runs all five configurations: first
+providers; second secrets only; Docker only; Git only; all second providers. Each configuration
+replays S1 and S2, ten replays. The fresh Codex author runs only the configuration with every
+provider swapped, replaying S1 and S2: two replays, twelve in all, plus E06 once per author. S1's no-secret replay is retained even in the secrets-only comparison.
 The fresh author receives only `spec/`, accepted tasks/contracts and CLI format reference. Keep failed attempts and authors' counts apart.
 
 | Contract | First implementation / existing tool | Second implementation / existing tool |
@@ -194,7 +197,9 @@ Use one Mac with Node/npm, Git, Docker and both clients. Record versions, pins, 
 subscription account and second Codex subscription account**, each client as its corresponding
 Agent, each signed in through Conduit's flow ([ruling 49](../../docs/proposals/ruling-49/README.md),
 [ruling 72 point 2](../../docs/proposals/ruling-72/README.md)); no API key substitutes for either.
-Each new Agent home signs in through that flow. S2 additionally uses its isolated service account/
+Each new Agent home signs in through that flow, on its own (ruling 75 D2). A Claude Agent signs
+in with a browser on its own machine (C3). Codex uses its browser login, with the device code an
+option where the account has it on (C5). S2 additionally uses its isolated service account/
 workspace and shared service credential, held only by its provider/service, as S2 defines.
 Owner presence is needed at initial/replacement-home sign-ins, lapses and pending actions; record actual panel actions/time apart.
 
@@ -242,6 +247,15 @@ No promise requires live migration. Log any new missing behavior as a gap before
   accept the file-store configuration before freezing the run. It still differs from keychain.
 - **Q3:** accept the proposed criteria, measures, vectors and comparison/run plan, or amend them?
   **Recommendation:** accept the five-configuration matrix after providers and S2's D09 are ready.
+
+**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+
+- Q1: the second subscription accounts. Every account has its own label, and every Agent home
+  signs in on its own (D2). A Claude Agent signs in with a browser on its own machine (C3); Codex
+  uses its browser login, with the device code an option where the account has it on (C5).
+- Q2: 1Password after A73, or else the file store.
+- Q3: accepted, with twelve replays in place of twenty (D1). The coordinator runs all five
+  configurations; the fresh Codex author runs only the one with every provider swapped.
 
 ## Limits
 

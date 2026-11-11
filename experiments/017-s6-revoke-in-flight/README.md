@@ -1,6 +1,8 @@
 # 017 — S6: revocation and retirement in flight
 
 > **For the owner**
+> - **Accepted under ruling 75 D on 2026-11-11.** Every item labelled proposed below is accepted,
+>   with the answers under "Open for the owner" applied.
 >
 > - Proposed P2: closing access stops new dispatch while the original response retains its outcome.
 > - Proposed P3: retirement closes incoming access immediately and reports shutdown truthfully.
@@ -22,10 +24,10 @@
 
 ## Status
 
-Pre-registered on 2026-11-11 by work order 102. Awaits the owner's acceptance of
-what it proposes; nothing here runs before that. Ruling 45 fixes what an experiment must
-show before it runs, and IN_FORCE.md topic 13 lists the criteria the owner has accepted.
-No result is recorded here.
+Pre-registered on 2026-11-11 by work order 102. Accepted by the owner on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
+45 fixes what an experiment must show before it runs. No result is recorded here.
 
 ## Question
 
@@ -227,6 +229,13 @@ sign-in only for an optional replay. No account or network is used by this paper
   Options: include both after implementation, or start with dependency-only evidence and list
   the missing branches. **Recommendation:** include both, awaiting the engine's documented
   choice; partial runs must not be reported as the completed S6 gate.
+
+**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+
+- Q1: accepted.
+- Q2: written twice, by the coordinator and by a fresh Codex author, with scripted clients (D3).
+- Q3: none; scripted clients only (D4).
+- Q4: unordered and cyclic retirements are included once the engine documents DL1.
 
 ## Limits
 

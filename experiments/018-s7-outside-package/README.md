@@ -1,6 +1,8 @@
 # 018 — S7: an outside author's package
 
 > **For the owner**
+> - **Accepted under ruling 75 D on 2026-11-11.** Every item labelled proposed below is accepted,
+>   with the answers under "Open for the owner" applied.
 > - **Proposed:** P3 — install and use the outside author's two packages without history.
 > - **Proposed:** P4 — retain repeated literal arguments and reject an ambiguous binding.
 > - **Proposed:** P5 — check label selectors and the plain-server/filter boundary.
@@ -21,10 +23,10 @@
 
 ## Status
 
-Pre-registered on 2026-11-11 by work order 103. Awaits the owner's acceptance of
-what it proposes; nothing here runs before that. Ruling 45 fixes what an experiment must
-show before it runs, and IN_FORCE.md topic 13 lists the criteria the owner has accepted.
-No result is recorded here.
+Pre-registered on 2026-11-11 by work order 103. Accepted by the owner on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
+45 fixes what an experiment must show before it runs. No result is recorded here.
 
 ## Question
 
@@ -53,7 +55,7 @@ Label selectors replaced “location needs” in [ruling 41, item 8a](../../docs
 6. **P6 — accepted by the owner:** the package-authoring check includes a non-Rust implementation
    ([IN_FORCE.md topic 14](../../IN_FORCE.md#14-publication-and-organization), ruling 47).
    Retain an installation/use record and its implementation language. This is a publication
-   check building on S7, **not a condition of v0**; its location awaits Q4.
+   check building on S7, **not a condition of v0**; its location is Q4's answer below.
 
 ## What it covers
 
@@ -201,6 +203,15 @@ an isolated brief and capture of synthetic argv. Q4 must precede any non-Rust co
   here later; the existing code rule is not waived by this proposal.
 - **Q5:** accept the proposed criteria, measures, vectors and run plan, or amend them before use?
   **Recommendation:** accept subject to candidate qualification and the final D01 definition.
+
+**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+
+- Q1: the second subscription accounts. Every account has its own label, and every Agent home
+  signs in on its own (D2).
+- Q2: a fresh Codex session is the outside author.
+- Q3: qualify `mcp-remote` first.
+- Q4: TypeScript on npm, in a repository the author owns; this repository's Rust rule stands.
+- Q5: accepted.
 
 ## Limits
 

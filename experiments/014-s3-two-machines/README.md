@@ -1,6 +1,8 @@
 # 014 — S3: S1 and S2 across two machines
 
 > **For the owner**
+> - **Accepted under ruling 75 D on 2026-11-11.** Every item labelled proposed below is accepted,
+>   with the answers under "Open for the owner" applied.
 > - **Proposed, for the owner's acceptance — P3:** the E15 partition and current-access observations.
 > - **Proposed, for the owner's acceptance — P4:** loss, return and old-identity observations.
 > - **Proposed, for the owner's acceptance — P5:** second-account sign-in and undo observations.
@@ -24,9 +26,10 @@
 
 ## Status
 
-Pre-registered on 2026-11-11 by work order 101. Awaits the owner's acceptance of what it proposes; nothing here runs
-before that. Ruling 45 fixes what an experiment must show before it runs, and IN_FORCE.md topic 13 lists the criteria the
-owner has accepted. No result is recorded here.
+Pre-registered on 2026-11-11 by work order 101. Accepted by the owner on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D: its pass conditions, measures,
+counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
+45 fixes what an experiment must show before it runs. No result is recorded here.
 
 ## Question
 
@@ -191,9 +194,12 @@ Each run uses one second Claude subscription account for A and one second ChatGP
 the owner; no API-key Agent ([ruling 72.2](../../docs/proposals/ruling-72/README.md#the-decisions)). Independently sign in
 each new home through Conduit; never copy a Codex login between Agents or machines
 ([A8](../010-subscription-terms/results-2026-11-10.md#what-this-establishes)). T1 exercises declared expected account,
-missing login, root's URL consent/panel evidence, Claude's browser callback on M1 and Codex's device flow on M2,
+missing login, root's URL consent/panel evidence, Claude's browser sign-in on its own machine, M1, never carried between machines (ruling 75 C3); Codex's browser
+login on M2, its redirect carried back through the person's Interface or an SSH forward, with the device code an option
+where the account has it on, after the probe C5 names confirms that a carried redirect completes the login;
 wrong-account undo, correct-account check and new explicit work request, as
-[ruling 49](../../docs/proposals/ruling-49/README.md) and PND-011 state. The owner enables device sign-in, supplies labels
+[ruling 49](../../docs/proposals/ruling-49/README.md) and PND-011 state. `conduit` runs on the Mac, and at the Windows computer the person uses SSH and pastes, or a device code (C4). The owner
+turns on device sign-in only where a device code is used, supplies labels
 and completes vendor pages through the [accounts guide](../../docs/guides/accounts.md). Reserve a proposed hour of active
 owner time per run for enrollment, sign-ins and recovery, plus availability to restore WSL; count actual time.
 
@@ -245,6 +251,21 @@ rented substitute.
   plus the fixture's knowledge-based gone report, or a real provider with independently demonstrated knowledge of
   destruction. **Recommendation:** the first; WSL shutdown is a reversible fault and silence must never be promoted to
   gone.
+
+**Answers, under [ruling 75](../../docs/proposals/ruling-75/README.md), D (2026-11-11):**
+
+- O1: accepted.
+- O2: the second subscription accounts, as ruled. Every account has its own label, and every
+  Agent home signs in on its own (D2).
+- O3: the engine fixed on the Mac, with the Windows computer a managed node (D1).
+- O4: root declares the node lost after `wsl --shutdown`; the provider reporting it gone is a
+  separate case.
+- Sign-in: a Claude Agent signs in with a browser on its own machine, and Conduit never carries
+  Claude's code between machines (C3). Codex uses its browser login on M2, its redirect carried
+  back through the person's Interface or an SSH forward. The device code stays an option where the
+  account has it on, and a probe confirms first that a carried redirect completes the login (C5).
+  `conduit` runs on the Mac; at the Windows computer the person uses SSH and pastes, or a device
+  code (C4).
 
 ## Limits
 

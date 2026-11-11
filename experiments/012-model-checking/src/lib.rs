@@ -7,3 +7,4 @@ pub mod operations;
 pub mod placement;
 pub mod retry;
 pub mod revisions;
+pub mod secrets;

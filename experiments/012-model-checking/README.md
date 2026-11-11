@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4) and 109 (MC5a), ruling 71's proof lane.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a) and 110 (MC5b), ruling 71's proof lane.
 The expected verdicts below were registered before execution; later orders extend this harness.
 
 ## Question and scope
@@ -2733,3 +2733,547 @@ could later read another process's environment or directory. A process given a v
 can use it for all its callers, and its model or children can read it. Confinement,
 plain remote servers and their reach, and data deliberately returned by implementations
 are outside this model. Real-machine evidence remains the separate S3/A74 work.
+
+## MC5b — reading and confining secrets (work order 110)
+
+### Model registered before execution
+
+This model reads the promises, independently of engine code. Its five nodes are the engine
+(including runtime provider P's server, run by its own runner), secret Resource K, I's node
+(including P's part that holds I's run's value), R's server at `h`, and O. Each of I, P, R
+and O has its own initially open Conduit listing `get-secret.v1` to K; I also has open
+Conduits to R and O. P and R's reading Conduits can each close once in their respective
+configurations. Distinct setup callers are 10 (P), 11 (I), 12 (R), with invocation IDs
+100, 101 and 102. O serves I in invocation 103. No caller or invocation is inferred from
+an implementation's current state by a property.
+
+The saved script asks for P's setup run (read/run 0), I's run (read/run 1), R's connection
+(read 2), two HTTP requests (IDs 0 and 1, with re-reads 3 and 4 when needed), then I's own
+and O's onward `get-secret.v1` requests. P's local restart of I is an independent action on
+I's node after I's run starts, using its held value and keeping run ID 1. It can interleave
+with the rest of the script. The engine can crash at every state in recovery configurations.
+Its own runner's P server ends; I's run and R's connection metadata survive. Recovery ends
+pending reads unknown and discards late answers. Before the next provider call (I's `run.v1`
+if still needed, otherwise a local `inspect-run.v1` of the existing I run), P is asked for
+again only if its run was asked for before the crash. That run/read has ID 5, belongs to P's
+original setup and has its caller. Failed P re-reads suppress the dependent provider call.
+A failed setup read skips its work; independent setups and subsequent HTTP requests may
+still proceed. Read 6 exists only in the mutant that refreshes I's lasting run.
+
+R's connection holds its setup value until the engine crashes; every HTTP request uses it.
+With values lost, the request gets its own re-read through R's current Conduit, belonging
+to R's original setup, before sending. A successful re-read becomes the held connection
+value for subsequent requests. The server answers the first HTTP request it receives with
+a redirect to `h2`. Correct ignores it; the redirect mutant sends the header to `h2`.
+P's handing I's value to its part on I's node and holding it there are represented as run
+`secrets`, leaving the provider's transport/storage obligations to PRV-011 and MC5a.
+
+Every event is in an external append-only ledger, stamped with the engine epoch when sent:
+read dispatch decisions (instance, caller, invocation, work ID, Conduit, current openness,
+dispatch and record availability), read endings and responders, instance requests, work
+starts and source read IDs, value destinations, HTTP sends and URL, provider calls and P's
+current run, Conduit closes, local restarts, recovery, redirects, failed records and discarded
+answers. HTTP work is logged only at dispatch: consuming a successful header re-read
+prepares the held value without logging work. A ledger-only bookkeeping invariant,
+`MC5b: HTTP dispatches match work entries`, pairs the ordered HTTP work and dispatch
+entries by epoch, HTTP ID and source read, including the redirect mutant. It is expected
+to hold in every configuration and variant; it adds no promise to the five safety predicates.
+The epoch advances at recovery, so remote events sent while the engine is down
+keep the preceding epoch. Read IDs double as symbolic secret values: these are invented provenance tokens,
+not credentials or real stores. A delivery with no source read is the environment mutant's
+engine-environment value, delivered into I's run `secrets`. Properties use only this ledger. A test erases all node
+data after each mutant's first refutation and verifies that the refutation remains.
+
+### Promise accounting
+
+Each assigned promise occurs exactly once in this accounting table. Supporting promises below
+are outside its counts. P, S, V, F and H name the safety predicates in the next paragraph.
+
+| Promise | Disposition | Property or reason |
+| --- | --- | --- |
+| SEC-004 | Not modelled | Static resolved-reference record form; to be shown by vectors |
+| SEC-007 | Modelled | P: I's own and O's onward requests never dispatch |
+| SEC-008 | Not modelled | Static authority to open a reading Conduit; to be shown by vectors |
+| SEC-010 | Modelled | P: own open Conduit and secret delivered for its run |
+| SEC-011 | Modelled | P: original setup invocation and caller, also for re-reads |
+| SEC-012 | Modelled | S: failed reads prevent their identified work |
+| SEC-013 | Modelled | H: setup read, connection-held header and original URL |
+| SEC-014 | Modelled | F: no further read for I's lasting run |
+| SEC-015 | Modelled | V: no value in a record |
+| SEC-016 | Modelled | S: failed dispatch recording means unavailable without dispatch |
+| SEC-017 | Modelled | V: no cache substituting for a later read |
+| SEC-018 | Modelled | V: only the identified run's secrets/runner or connection's header |
+| SEC-020 | Modelled | P: engine never answers a successful read or supplies its environment as secrets |
+| SEC-023 | Modelled | H: current-authority re-read after value loss before HTTP |
+| SEC-024 | Not modelled | Static template rejection; to be shown by vectors |
+| PRV-026 | Modelled | F: provider run and fresh read precede post-restart calls |
+
+Counts: **13 modelled; 3 not modelled, all static decisions to be shown by vectors**.
+Supporting assumptions, outside those counts: PRV-002 (P dies with engine), PRV-007
+(run inputs), PRV-010 (provider's local restart), PRV-011 (provider hand-off), REC-001
+(dispatch records), IFC-017 (no redirect for non-plain R), IFC-041 (headers per HTTP),
+ACC-011 (closure), ACC-034 (in-flight work may complete), IMP-007 (ended work is not replayed).
+
+Safety properties, checked at every reachable state:
+
+- **P**, `one read path`: own open Conduit, setup invocation/caller, no instance request
+  dispatched, no engine-sourced successful answer or environment-sourced secrets.
+- **S**, `failed read stops its work`: every work start has a succeeded source read;
+  dispatch requires an open Conduit and kept dispatch record; an unkept record is unavailable.
+- **V**, `values stay where sent`: each delivery names its read and permitted work/destination;
+  no record/cache destination; engine-held values have the current epoch. I's provider-held
+  value may survive because its run does. This covers the actual provider re-read/HTTP uses.
+- **F**, `fixed run and provider re-read`: after I's run starts no further read for it;
+  P's new run has a post-restart open-Conduit read, and post-restart calls follow P's run
+  in that epoch.
+- **H**, `remote header`: connection creation has its setup read; every HTTP send uses a
+  successful current-epoch read through R's open Conduit, held for this connection, only to `h`.
+
+### Configurations, bounds and fault restrictions
+
+Each run has a **150,000 unique-state ceiling** (well below 200,000), **10-second timeout**,
+five nodes, at most seven reads, one I run and local restart, one P rerun, one R connection,
+two HTTP requests and one redirect. Seven messages per directed link safely bound all reads
+and their answers, including old answers held across restart. No queue overflow is pruned.
+The harness rejects truncation and asserts elapsed time after each full/refutation run.
+
+Configurations split fault dimensions to keep total model time near 15 seconds. Enabled
+harness faults have budget one each; all omitted dimensions have budget zero with reasons.
+`fault_allowed` restricts crash to the engine, and loss/reordering to the named pair in both
+directions. Recovery needs no additional restriction because only the engine can crash.
+Read-result and recording failures are model-local actions, each guarded by its own one-use
+flag: the hook cannot restrict state-dependent local actions. Closures are local one-use
+saved changes. No harness change is needed.
+
+| Configuration | Enabled harness faults | Additional local fault |
+| --- | --- | --- |
+| Base | None | None |
+| ReadFault | None | One read ends with a reason, failed or unknown |
+| RecordFault | None | One dispatch record cannot be kept |
+| Recovery | Engine crash and recovery | None |
+| CloseP | Engine crash and recovery | P's Conduit closes once |
+| CloseR | Engine crash and recovery | R's Conduit closes once |
+| LossK | One loss between engine and K | None |
+| ReorderK | One reorder between engine and K; engine crash and recovery | None |
+| LossH | One loss between engine and h | None |
+| ReorderH | One reorder between engine and h | None |
+
+ReorderK includes crash/recovery to overlap an ended read's undelivered messages and a later
+read; without that overlap the serial reads cannot reorder. ReorderH can reorder the two
+HTTP sends. No retries are implicit. A loss may leave a read pending forever; safety and
+existential reachability require no progress or fairness. Duplication, partition, permanent
+machine loss, timers, provider crashes independent of the engine and combined fault dimensions
+are outside this model's bounded question.
+
+Witness columns below: **u** unknown read; **k** failed record; **i/o** I/O request;
+**l** I's local restart; **e** engine restart; **p** P run again; **c** P closed refusal;
+**r** R closed re-read refusal; **n** HTTP after restart on old connection with a new read;
+**d** redirect; **a** late answer discarded. R = reached, dash = unreachable.
+Harness witnesses for every enabled fault are additional and expected reached.
+
+### Expected verdicts registered before the first run
+
+H = holds, X = refuted. Every cell is registered, including collateral mutant failures.
+The Rust test's `expected` table checks every full run. Each mutant also has a separate
+single-thread first refutation targeting its named property, printed with its action trace.
+
+| Configuration / variant | P S V F H | u k i o l e p c r n d a |
+| --- | --- | --- |
+| Base / Correct | H H H H H | - - R R R - - - - - R - |
+| ReadFault / Correct | H H H H H | R - R R R - - - - - R R |
+| RecordFault / Correct | H H H H H | - R R R R - - - - - R - |
+| Recovery / Correct | H H H H H | R - R R R R R - - R R R |
+| CloseP / Correct | H H H H H | R - R R R R R R - R R R |
+| CloseR / Correct | H H H H H | R - R R R R R - R R R R |
+| LossK / Correct | H H H H H | - - R R R - - - - - R - |
+| ReorderK / Correct | H H H H H | R - R R R R R - - R R R |
+| LossH / Correct | H H H H H | - - R R R - - - - - R - |
+| ReorderH / Correct | H H H H H | - - R R R - - - - - R - |
+| Base / Onward | X H H H H | - - R R R - - - - - R - |
+| Base / Borrow | X H H H H | - - R R R - - - - - R - |
+| Recovery / Caller | X H H H H | R - R R R R R - - R R R |
+| Base / Environment | X H H H H | - - R R R - - - - - R - |
+| Recovery / EngineAnswer | X H H H H | R - R R R R R - - R R R |
+| ReadFault / FailedRun | H X H H H | R - R R R - - - - - R R |
+| RecordFault / Unrecorded | H X H H H | - R R R R - - - - - R - |
+| Recovery / CachedP | H H X X H | R - R R R R R - - R R R |
+| Base / RecordValue | H H X H H | - - R R R - - - - - R - |
+| Base / RefreshI | H H H X H | - - R R R - - - - - R - |
+| CloseP / ClosedP | X X H X H | R - R R R R R - - R R R |
+| Recovery / CachedHeader | H H X H X | R - R R R R R - - R R R |
+| Base / Redirect | H H H H X | - - R R R - - - - - R - |
+
+### Limits registered with the model
+
+Static document validation, real value contents/partial leaks, multiple secrets per work,
+filters with predicates beyond current Conduit openness, retirement, connection replacement,
+node retirement, several engine parts and arbitrary script lengths are omitted. The original
+URL is an authenticated non-plain `https` URL by assumption; gate and identity enforcement
+belong to MC5a. Provider transport confidentiality and storage are PRV-011's question,
+not established by treating a hand-off as run secrets. No implementation or engine is tested.
+The engine's machine and operating-system user, programs running as that user, the provider's
+storage, I's machine/gate and signing-key storage/operators are within the domain of trust.
+The model establishes no isolation from those parties, no protection from a malicious
+provider or implementation, and no claim that plaintext becomes distinguishable from data
+after an implementation sends it. These are limits, not additional safety promises.
+
+### Bound split registered before its first run
+
+The first CloseP full run hit the 150,000-state guard; it produced no interpreted verdict.
+Split CloseP and CloseR into Early (`stage < 3`, before R's setup) and the original name
+(`stage >= 3`, R's setup onward). Both enable the same single engine crash/recovery and
+one closure, and their union preserves all closure positions. No loss/reordering is enabled.
+The original expected rows above apply to the union and to each late part. ClosePEarly has
+the same expected row as CloseP; CloseREarly has the same as CloseR except **r is unreachable**
+(its closure prevents connection creation rather than a re-read). All safety cells remain H.
+This addendum is registered before the split configurations' first execution.
+
+P's local restart is placed at script step 2 on I's node; the engine waits for that action
+before advancing to R's setup. It remains executable while the engine is crashed. The initial
+implementation allowed that scripted action to commute with all later steps; this unnecessary
+freedom enlarged the ledger permutations. A bookkeeping correction also records the actual
+P run ID on provider calls: when the engine crashes before P's first setup starts, that first
+run can occur in epoch 1 with ID 0, rather than the rerun ID 5. Neither correction changes
+a promise or an expected verdict.
+
+### First observed difference (table retained)
+
+**MC5b-001 — expectation gap in Unrecorded/RecordFault (S and H).** The table expected
+only S refuted; the full run also refutes H. The mutant dispatches a read whose record
+cannot be kept and logs unavailable, yet leaves it pending. When K answers, the mutant
+accepts that answer and can send a header based on a read that already ended unavailable.
+The H predicate requires a successful source read, as the promises do. This is collateral
+mutant behavior missed by the registered table, not a contradiction in the specification.
+The table is unchanged; the test checks this separately recorded observation. A separate
+BFS refutation prints the shortest first H trace alongside the named S refutation.
+
+**MC5b-002 — expectation gap in CachedHeader/Recovery (fresh-read witness n).** The table
+expected n reached; exhaustive exploration finds it unreachable. If an existing connection
+crosses the restart, this mutant retains its header, so it never takes the missing-value
+branch that makes a fresh read. A connection first made after restart does not satisfy n's
+old-connection condition. The expected V/H refutations still occur. The table stays unchanged,
+and the test checks n missing beside it. This is a reachability expectation defect, not a
+specification defect; the named H trace shows the stale header send.
+
+### Recovery/local-fault combinations registered before their first run
+
+Two additional configurations exercise failure on the re-reads themselves, rather than only
+on initial setup reads. **RecoveryReadFault** enables one engine crash/recovery and one local
+read-result failure; **RecoveryRecordFault** enables one engine crash/recovery and one failed
+dispatch record. The same bounds apply. Their full rows, registered before execution, are:
+
+| Configuration / variant | P S V F H | u k i o l e p c r n d a |
+| --- | --- | --- |
+| RecoveryReadFault / Correct | H H H H H | R - R R R R R - - R R R |
+| RecoveryRecordFault / Correct | H H H H H | R R R R R R R - - R R R |
+
+All enabled harness witnesses are expected reached. Local faults remain globally bounded by
+one, so an HTTP re-read that fails can be followed by a successful read for the second HTTP
+request's different ID. Instance-request ledger entries explicitly hold the refused answer.
+
+### Dated results — 2026-11-11
+
+Verifier refresh: successful HTTP re-reads now prepare the connection's held value without
+logging HTTP work before dispatch. The new bookkeeping invariant first refuted the unfixed
+Correct/Recovery model, then held in all 27 full runs after the correction. The redirect
+mutant also logs work for its additional dispatch. Registered safety and reachability cells
+remain unchanged; the table below refreshes the observed counts and times. All 14 printed
+first-refutation traces, including the collateral H trace, are unchanged.
+
+Measured on Linux x86_64 with the pinned Rust **1.97.1** (`8bab26f4f`, 2026-07-14),
+Stateright 0.31.0, inherited `CARGO_BUILD_JOBS=6`, two checker threads for full runs and
+one for first refutations. This refresh uses the locally installed pinned toolchain;
+the earlier round used installed stable Rust 1.99.1 because the pin was then unavailable.
+No toolchain was downloaded in this round.
+
+The ordinary release command passed **23 unit tests, 0 failures, 0 doc tests**, in
+**14.67 seconds wall time**, including compilation (test execution 10.29 s). The counts
+command passed the same totals in **9.74 seconds wall time** (test execution 9.57 s).
+MC5b contributes four tests: full runs, named refutations, the collateral refutation and
+saved-state/metadata checks. Formatting and clippy with warnings denied passed.
+
+Counts below come from `cargo test --release -- --nocapture --test-threads=1`.
+All full runs completed without truncation; enabled harness witnesses were reached.
+The safety and reach columns use the complete legends of the registered table. The HTTP
+bookkeeping invariant held in every row and is outside the promise accounting.
+
+| Configuration / variant | Unique states | Depth | Seconds | Observed P S V F H | Observed u k i o l e p c r n d a |
+| --- | --- | --- | --- | --- | --- |
+| Base / Correct | 57 | 22 | 0.001 | H H H H H | - - R R R - - - - - R - |
+| ReadFault / Correct | 765 | 22 | 0.005 | H H H H H | R - R R R - - - - - R R |
+| RecordFault / Correct | 165 | 22 | 0.001 | H H H H H | - R R R R - - - - - R - |
+| Recovery / Correct | 2,111 | 34 | 0.020 | H H H H H | R - R R R R R - - R R R |
+| RecoveryReadFault / Correct | 24,800 | 37 | 0.283 | H H H H H | R - R R R R R - - R R R |
+| RecoveryRecordFault / Correct | 4,849 | 34 | 0.043 | H H H H H | R R R R R R R - - R R R |
+| CloseP / Correct | 18,711 | 35 | 0.251 | H H H H H | R - R R R R R R - R R R |
+| ClosePEarly / Correct | 15,214 | 34 | 0.206 | H H H H H | R - R R R R R R - R R R |
+| CloseR / Correct | 17,981 | 35 | 0.250 | H H H H H | R - R R R R R - R R R R |
+| CloseREarly / Correct | 4,867 | 34 | 0.039 | H H H H H | R - R R R R R - - R R R |
+| LossK / Correct | 60 | 22 | 0.001 | H H H H H | - - R R R - - - - - R - |
+| ReorderK / Correct | 2,601 | 34 | 0.024 | H H H H H | R - R R R R R - - R R R |
+| LossH / Correct | 104 | 22 | 0.001 | H H H H H | - - R R R - - - - - R - |
+| ReorderH / Correct | 81 | 22 | 0.001 | H H H H H | - - R R R - - - - - R - |
+| Base / Onward | 74 | 23 | 0.001 | X H H H H | - - R R R - - - - - R - |
+| Base / Borrow | 57 | 22 | 0.001 | X H H H H | - - R R R - - - - - R - |
+| Recovery / Caller | 2,111 | 34 | 0.020 | X H H H H | R - R R R R R - - R R R |
+| Base / Environment | 57 | 22 | 0.001 | X H H H H | - - R R R - - - - - R - |
+| Recovery / EngineAnswer | 5,811 | 34 | 0.073 | X H H H H | R - R R R R R - - R R R |
+| ReadFault / FailedRun | 1,065 | 23 | 0.008 | H X H H H | R - R R R - - - - - R R |
+| RecordFault / Unrecorded | 211 | 22 | 0.002 | H X H H X | - R R R R - - - - - R - |
+| Recovery / CachedP | 1,612 | 31 | 0.013 | H H X X H | R - R R R R R - - R R R |
+| Base / RecordValue | 57 | 22 | 0.001 | H H X H H | - - R R R - - - - - R - |
+| Base / RefreshI | 110 | 24 | 0.001 | H H H X H | - - R R R - - - - - R - |
+| CloseP / ClosedP | 21,351 | 35 | 0.272 | X X H X H | R - R R R R R - - R R R |
+| Recovery / CachedHeader | 2,015 | 30 | 0.021 | H H X H X | R - R R R R R - - - R R |
+| Base / Redirect | 77 | 22 | 0.001 | H H H H X | - - R R R - - - - - R - |
+
+MC5b full runs total **1.541 s**; maximum **24,800 states**,
+**depth 37**, and **0.283 s** per full run.
+Every correct row holds all five properties. Every mutant refutes its named property.
+The only differences from registered verdicts/reachability are MC5b-001 (Unrecorded also
+refutes H) and MC5b-002 (CachedHeader does not reach n), described above. No correct-model
+property asks for a control or yields a counterexample against the promises.
+
+### First refutation traces
+
+These are the first single-thread BFS traces printed by the harness, including the extra
+collateral H trace. `E` is the engine with P's server; `I-node` is I's node with P's part.
+`deliver A -> B` delivers position zero on that link. `Advance` executes the next scripted
+read, consumes its result, asks for its work, or sends the next instance/HTTP request.
+The final action is the first failing state of the named property. No trace is inferred
+from an expected outcome.
+
+**Unrecorded (collateral H): 15 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+6. deliver E -> K
+7. deliver K -> E
+8. E Advance
+9. I-node RestartI
+10. E Advance
+11. E RecordFault
+12. deliver E -> K
+13. deliver K -> E
+14. E Advance
+15. E Advance
+```
+
+**Onward: 18 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+6. deliver E -> K
+7. deliver K -> E
+8. E Advance
+9. I-node RestartI
+10. E Advance
+11. E Advance
+12. deliver E -> K
+13. deliver K -> E
+14. E Advance
+15. E Advance
+16. E Advance
+17. E Advance
+18. E Advance
+```
+
+**Borrow: 5 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+```
+
+**Caller: 11 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. crashed E
+6. recovered E
+7. E RecoverLedger
+8. E Advance
+9. deliver E -> K
+10. deliver K -> E
+11. E Advance
+```
+
+**Environment: 8 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+6. deliver E -> K
+7. deliver K -> E
+8. E Advance
+```
+
+**EngineAnswer: 11 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. crashed E
+6. recovered E
+7. E RecoverLedger
+8. E Advance
+9. deliver E -> K
+10. deliver K -> E
+11. E Advance
+```
+
+**FailedRun: 7 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+6. E ReadFault(Reason)
+7. E Advance
+```
+
+**Unrecorded: 1 actions.**
+
+```text
+1. E RecordFault
+```
+
+**CachedP: 7 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. crashed E
+6. recovered E
+7. E RecoverLedger
+```
+
+**RecordValue: 3 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+```
+
+**RefreshI: 9 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+6. deliver E -> K
+7. deliver K -> E
+8. E Advance
+9. I-node RestartI
+```
+
+**ClosedP: 15 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+6. deliver E -> K
+7. deliver K -> E
+8. E Advance
+9. I-node RestartI
+10. E Advance
+11. crashed E
+12. recovered E
+13. E RecoverLedger
+14. E Close(0)
+15. E Advance
+```
+
+**CachedHeader: 23 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+6. deliver E -> K
+7. deliver K -> E
+8. E Advance
+9. I-node RestartI
+10. E Advance
+11. E Advance
+12. deliver E -> K
+13. deliver K -> E
+14. E Advance
+15. crashed E
+16. recovered E
+17. E RecoverLedger
+18. E Advance
+19. deliver E -> K
+20. deliver K -> E
+21. E Advance
+22. E Advance
+23. E Advance
+```
+
+**Redirect: 17 actions.**
+
+```text
+1. E Advance
+2. deliver E -> K
+3. deliver K -> E
+4. E Advance
+5. E Advance
+6. deliver E -> K
+7. deliver K -> E
+8. E Advance
+9. I-node RestartI
+10. E Advance
+11. E Advance
+12. deliver E -> K
+13. deliver K -> E
+14. E Advance
+15. E Advance
+16. deliver E -> h
+17. deliver h -> E
+```
+
+### What MC5b shows and leaves open
+
+Within these scripts, saved/volatile boundaries and fault budgets, the five ledger predicates
+hold in all 14 correct configurations, and all 13 seeded defects are detected. The twelve
+model witnesses and enabled harness-fault witnesses rule out the listed vacuous branches;
+the observed missing witnesses are printed and checked per row. The unrecorded-read mutant's
+additional failure and the stale-header mutant's missing fresh-read witness remain visible
+beside the unchanged registration.
+
+This is bounded reference-model evidence for 13 of the 16 assigned promises, with the three
+static decisions left to vectors. It proves no unbounded result, fairness, implementation
+conformance, confidentiality of a real transport/store, or isolation from the stated domain
+of trust. The omitted cases and supporting assumptions above remain limits. Pinned-toolchain
+validation passed in this refresh.

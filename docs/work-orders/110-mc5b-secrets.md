@@ -259,3 +259,33 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer, from a fixed base: a worker, then a fresh verifier in
+4 minutes (258 s). The verifier found one should: a successful HTTP re-read logged its work
+twice, once before dispatch and once when sent. A second round of 5 minutes (273 s) logs work
+only at dispatch, and adds an invariant of one matching entry per HTTP dispatch. A fresh verifier
+in 3 minutes (196 s) then found no fault.
+
+The order added `secrets.rs`. Of the 16 promises, 13 are modelled and 3 are static decisions
+left to vectors (SEC-004, SEC-008, SEC-024). Twenty-seven bounded runs finished within their
+limits, the largest 24,800 states.
+
+**No property of the current promises was found broken.** The five properties hold in all 14
+correct configurations:
+
+- one read path;
+- a failed read stops what it was for;
+- values stay where they were sent;
+- fixed for the run, read again after a restart;
+- a remote header's secret.
+
+Each of the thirteen broken variants broke its named property. Two cells differ from the table,
+both in the expectations, not the promises:
+
+- MC5b-001: the unrecorded-read variant also breaks the header property;
+- MC5b-002: the cached-header variant cannot reach the fresh-read witness.
+
+The lane coordinator reran the crate under the pinned Rust 1.97.1 after joining it with MC4's
+and MC5a's work on main, and ran the repository's checks, before the merge.

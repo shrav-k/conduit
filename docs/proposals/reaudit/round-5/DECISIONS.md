@@ -2,6 +2,7 @@
 
 Status: decided 2026-11-07 by the coordinator under rulings 37 and 38. No ruling has accepted
 these decisions, and the owner can strike any of them.
+Accepted by [ruling 58 (point 1)](../../ruling-58/README.md).
 
 Six cold readers read `spec/` at commit `d0c425f` on `docs/pre-codex`, as rulings 40 to 43
 left it. Reader 5 read the whole repository, and reader 6 checked the interface against the

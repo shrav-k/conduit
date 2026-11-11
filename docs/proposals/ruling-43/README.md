@@ -103,6 +103,7 @@ log recommends:
   SEC-024's rejection of `http` to any host that is not a loopback address; MAN-018 rejecting
   the template; the IDs PRV-027, PRV-028, IFC-043 and IFC-044 that the editors added.
 
+Accepted by [ruling 58 (point 1)](../ruling-58/README.md): these coined names and the logged editor choices.
 Coined names, for the owner to strike: the variables `CONDUIT_URL` and `CONDUIT_IDENTITY_DIR`;
 the files `ca.crt`, `jwks.json`, `engine-id`, `token`, `tls.crt` and `tls.key`; the terms gate,
 enforcement point, decision point and the engine's ID. `spec/names.yaml` holds the names of

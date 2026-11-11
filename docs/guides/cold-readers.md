@@ -11,7 +11,8 @@ is finished can help, but the build may still change the text. Record which text
 ## What to read
 
 Begin with [for the next reader](../AUDIT.md#for-the-next-reader). It sets the scope, the
-reading order, the safety test, the known open points and where findings go. Follow its order:
+reading order and known open points. Its [convergence rule and definition of unsafe](../AUDIT.md)
+remain in the audit; use them when judging safety and readiness. Follow this order:
 
 1. The top [README](../../README.md), for what Conduit is and what exists.
 2. [spec/README.md](../../spec/README.md), then
@@ -33,8 +34,7 @@ A passing vector tests its stated slice; it does not prove that the whole promis
 
 ## What is known to be open
 
-Use the next-reader section's **Known to be open**, **Left for a reader by the records** and
-**To look at after round 6** as the index, rather than reporting an acknowledged limit again
+Use the [audit's known open points](../AUDIT.md) as the index, rather than reporting an acknowledged limit again
 without a new situation. Its status statements have not all caught up with the build. As of
 2026-11-10:
 
@@ -51,8 +51,8 @@ without a new situation. Its status statements have not all caught up with the b
   instructions still leak, and separate homes and the sign-in flow of
   [ruling 49](../proposals/ruling-49/README.md) are pending work. A ruling is not evidence that
   its specification or implementation changes have been made.
-- Rulings 49 to 54 are accepted, with changes not yet written into the specification; its
-  [status](../../spec/README.md) links each. The [language-shape investigation](../proposals/language-shape/README.md)
+- [IN_FORCE.md](../../IN_FORCE.md) lists accepted language decisions as *spec pending* until
+  they are written into the specification. The [language-shape investigation](../proposals/language-shape/README.md)
   and the owner's [Project direction](../proposals/owner-direction/2026-11-10-projects.md)
   precede that writing. Do not read a proposed short form or Project model as an existing rule.
 - The [increment 4 log](../proposals/first-build/log-increment-4.md) distinguishes the fixes
@@ -65,6 +65,98 @@ The deliberate limits of v0, including the two delegation limits, remain in the
 [specification's limits](../../spec/README.md#limits-of-this-version). No round so far was
 clean; the next-reader section explains how the readiness gate is judged. This guide does
 not reassess that gate.
+
+## The protocol
+
+These are dated checks against MCP **2026-07-28**, not fresh claims about the protocol. Use the
+claims and their sources when IFC-005's baseline moves. The watch list comes from the
+[round 4 recheck](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/mcp-recheck.md#what-to-watch-in-the-protocol);
+the claims and sources come from
+[round 5's protocol reader](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-6.md#checked-without-a-finding).
+Below, `S` stands for `https://modelcontextprotocol.io/specification/2026-07-28`; references
+to `5-6-01`, `5-6-02` and `5-6-10` name sections of the linked round 5 report.
+
+### What to watch
+
+Copied from the [round 4 protocol recheck](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/mcp-recheck.md),
+whose verdicts and numbered rows ("row 21", "row 19 of the earlier check") it refers to. These
+are not claims of the specification; each could change one of that report's verdicts without any
+change to `spec/`.
+
+- **Pull request 2145 (SEP-2145), "Standardize `tools/call` failure reporting".** Open, labelled
+  `in-review`, last updated 2026-11-02. It would report an unknown tool, and a missing or
+  non-conforming `structuredContent`, as a tool result with `isError` true. If it is accepted
+  into a later revision, the answer IFC-012 gives is the old rule: correct at the baseline
+  2026-07-28, and to be looked at again when the baseline moves under IFC-005. Its description
+  says the Python and TypeScript SDKs already behave as it proposes, which bears on IFC-010: a
+  plain server built on one may answer an unknown tool with `isError` true. The table of IFC-010
+  gives a safe outcome for that.
+- **Issue 3003.** Open, last updated 2026-10-31. It asks what `structuredContent` and
+  `outputSchema` mean for an error result, which is row 21.
+- **The tasks extension.** Its stage is "Beta, to Core", in which breaking changes are allowed
+  and are recorded in a changelog. Its specification was last changed on 2026-10-09.
+- **A protocol error may not reach a model.** "Clients **MAY** provide protocol errors to language
+  models, though these are less likely to result in successful recovery." An Agent whose client
+  does not pass the error on does not learn that its call was refused. This follows from the
+  decision on row 19 of the earlier check and is not a conflict with the protocol.
+
+### Checked without a finding
+
+- `_meta` names: the prefix `io.github.shrav-k.conduit/` (labels begin with a letter and end with
+  a letter or digit; the second label is not `modelcontextprotocol` or `mcp`), every key name, and
+  the extension identifier `io.github.shrav-k.conduit/implementation-interface` (S/basic, and the
+  identifier rule in S/basic/versioning). Trace context in `traceparent`, `tracestate` and
+  `baggage` only (IFC-039).
+- Error codes: -32602 for an unknown tool and for a missing required `_meta` key with HTTP 400;
+  -32020 with 400; -32021 with 400 and `data.requiredCapabilities`, whose schema does not close
+  `data`, so Conduit's `reason` beside it is allowed; -32022 and the resend (IFC-003). Conduit
+  emits no code of the reserved range that the revision does not define.
+- Extension negotiation per request, the settings object, the `revision` string as the
+  extensions overview advises, "disabled by default" (IFC-020), a server acting only on what the
+  request declares (IFC-036), and the fallback rule "revert to core protocol behavior or reject
+  the request" (S/basic/versioning), which IFC-036 and IFC-037 follow.
+- Tools: names of 1 to 128 recommended characters, `inputSchema` `{type: object}` for no inputs,
+  `outputSchema` of an empty map, `structuredContent` conforming, the stated reading on
+  `isError` and `outputSchema` (issue 3003 still open), annotation defaults and the
+  `idempotentHint` wording (CTR-002), `$ref` replaced before presenting (IFC-033).
+- Lists: `tools` with `listChanged`, notifications on `subscriptions/listen`, `cacheScope:
+  private`, and IFC-012's reading of "side effect of other requests on the connection".
+- Cancellation by transport and by `tasks/cancel`, and no response after it (OPS-027); the
+  tasks extension's stage ("Beta, to Core") and per-request declaration (IFC-016, IFC-036).
+- Authorization: optional and for HTTP only, stdio credentials from the environment (secrets
+  header), 401 for a missing or invalid token (IFC-032, IFC-042), audience binding, no token
+  passed on (IFC-030), no session over Streamable HTTP (SEC-013).
+- PRV-023's six variables and the `()` rule, against the stdio clients of the TypeScript SDK
+  (`packages/client/src/client/stdio.ts`) and the Python SDK (`src/mcp/client/stdio.py`) on
+  `main` of 2026-11-07.
+- server.json 2025-12-11: Package fields, `fileSha256`, `transport` limited to `stdio` and
+  `streamable-http`, `isSecret`, `valueHint`, `packageArguments`, and the Remote apart from
+  5-6-02.
+
+### What was opened
+
+Fetched on 2026-11-07. Pages of the site were read as Markdown; the released specification was
+also read from the repository at the tag `2026-07-28`, and every quotation above was matched
+against that copy.
+
+- Versioning and revisions: <https://modelcontextprotocol.io/specification/versioning>; S/changelog;
+  <https://modelcontextprotocol.io/specification/draft/changelog>; releases,
+  <https://github.com/modelcontextprotocol/modelcontextprotocol/releases>.
+- S/basic, S/basic/versioning, S/basic/transports, S/basic/transports/stdio,
+  S/basic/transports/streamable-http, S/basic/patterns/cancellation,
+  S/basic/patterns/subscriptions, S/basic/authorization,
+  S/basic/authorization/security-considerations,
+  S/basic/authorization/authorization-server-discovery, S/server/tools,
+  S/server/utilities/caching, S/deprecated.
+- Schema: <https://github.com/modelcontextprotocol/modelcontextprotocol/blob/2026-07-28/schema/2026-07-28/schema.ts>,
+  the generated `schema.json` on `main`, and the examples under `InvalidParamsError`; the
+  2025-11-25 schema for what a legacy revision provides.
+- Extensions overview: <https://modelcontextprotocol.io/extensions/overview>; OAuth Client
+  Credentials page and its specification (URL in 5-6-10); tasks extension (URL in 5-6-01), with
+  its draft, which differs only in two links.
+- server.json: the schema 2025-12-11 and the registry's changelog (URLs in 5-6-02).
+- RFC 9728 (<https://www.rfc-editor.org/rfc/rfc9728>), sections 2, 3.1, 3.3 and 5.
+- Pull request 2145 and the SEP document on its branch; issue 3003.
 
 ## How to report a finding
 

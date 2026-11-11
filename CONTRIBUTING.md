@@ -13,7 +13,7 @@ This is not a release or a claim of whole-language conformance.
 
 Read in this order: the [README](README.md), [spec/README.md](spec/README.md),
 [spec/definitions.md](spec/definitions.md), then the [plan audit](docs/AUDIT.md) for the state
-of the work and the owner's rulings, and the [roadmap](ROADMAP.md) for the order of the work.
+of the work, and the [roadmap](ROADMAP.md) for the order of the work.
 The [documentation map](docs/README.md) lists every other document, and the
 [reading paths](spec/README.md#reading-paths) of the specification say what to read for writing
 documents, for writing contracts and providers, and for building an engine.
@@ -31,26 +31,18 @@ specification was removed from the tree by ruling 39; the
 source material for the type contracts still to be written. A behavior that is missing from
 `spec/` is a gap in `spec/`.
 
-As of 2026-11-10, rulings 49 to 59 are accepted; their specification changes remain pending,
-while rulings 57 and 58 also govern documentation upkeep. Its [status](spec/README.md) links each:
-
-- [Ruling 55](docs/proposals/ruling-55/README.md): the short form is language, names stay stable and commands with named flags approve dangerous acts.
-- [Ruling 56](docs/proposals/ruling-56/README.md): provider-defined enrollment verification, evidence shown by the engine at root and recorded exceptions for weaker checks.
-- [Ruling 57](docs/proposals/ruling-57/README.md): historical documents may be edited, condensed or removed once their relevant Conduit information is preserved elsewhere.
-- [Ruling 58](docs/proposals/ruling-58/README.md): earlier logged choices accepted with stated exceptions, fixed ruling records and condensation at close.
-- [Ruling 59](docs/proposals/ruling-59/README.md): the Agent-owning family's structure, root's default Conduits, discovery and replacement bounds; its name and later authority decisions remain open.
-
-The [language's shape](docs/proposals/language-shape/README.md) and the owner's
-[Project direction](docs/proposals/owner-direction/2026-11-10-projects.md) are being investigated
-and settled first, so each change is written once. Read those records as decisions or
-proposals as marked, rather than as promises already implemented.
+[IN_FORCE.md](IN_FORCE.md) holds decisions in force outside the specification, including
+accepted language decisions marked *spec pending*. Builds and vectors follow `spec/` until those
+changes are written. The [ledger](docs/proposals/ruling-log.md) records what was ruled and each
+ruling's status; the [records](docs/README.md#records-of-rulings) say why. The owner's words govern
+if a line of IN_FORCE.md differs from them ([ruling 67](docs/proposals/ruling-67/README.md)).
 
 ## Where work belongs
 
 - **Accepted behavior** is a promise in [spec/](spec/README.md), in the terms of
   [spec/definitions.md](spec/definitions.md). A change needs an owner ruling, recorded in the
-  [ruling log](docs/AUDIT.md#ruling-log) of the plan audit with its record under
-  `docs/proposals/`. The one other way is a decision on a finding of the re-audit, under
+  [ledger](docs/proposals/ruling-log.md), with its record under `docs/proposals/`. The one other
+  way is a decision on a finding of the re-audit, under
   ruling 37, or a finding of the first build under ruling 46, point 4, logged as the coordinator's
   ([who decides what](docs/AUDIT.md#who-decides-what)).
 - **A proposal for a ruling** is a record under `docs/proposals/`, with the options and a
@@ -88,6 +80,67 @@ proposals as marked, rather than as promises already implemented.
 
 Under [ruling 57](docs/proposals/ruling-57/README.md), a document that does not bind may be edited, condensed or removed once every piece of relevant Conduit information in it is preserved in `spec/` or a live document, git keeping every version.
 
+## Keeping decisions and documents current
+
+Under [ruling 67](docs/proposals/ruling-67/README.md), one change writes a new ruling's record,
+its ledger row in `docs/proposals/ruling-log.md`, the status lines and ledger rows of every ruling
+it amends or replaces, IN_FORCE.md's affected lines, and any action item. A specification batch
+turns its *spec pending* lines into pointers. An answer that confirms or clarifies a ruling
+without changing a decision is added to the existing record, dated, and to its ledger row; it
+gets no new ruling number.
+
+A proposal record says under its status that it records a ruling, that the specification governs
+where they differ, and which later rulings amended it. Put a note beside examples or rules a
+later ruling reversed (DA8 of the [documents audit](docs/proposals/docs-audit/README.md)). Keep
+one reading order across entry points (DA10), one description of Conduit, the specification's
+own (DA11), and the same check list in AGENTS.md and this guide (DA12).
+
+For removal or condensation, first preserve every relevant piece in `spec/` or a live document:
+a ruling and its reasons; what was put to the owner, with the options; an open item; the reason
+an alternative was rejected; v0 evidence and the method as run; or instructions. Verify the
+extraction against the pinned source before removing it. Keep a file that the specification or a
+ruling cites as its reasoning, condensing it in place. Preserve the owner's verbatim words,
+decision tables and cited option essays; keep dissent in the archive index. Each removal gets an
+[archive row](docs/archive/README.md) with what it was, what it is source material for and its
+last version at a pinned commit; repoint incoming links and retarget live instructions. In this
+condensation, leave surviving text as written except link targets, one-line superseded or
+accepted notes, and live instructions retargeted to where the work now goes.
+
+Dated results, the method as run, prompts and counted artifacts remain as v0 evidence. Raw run
+records leave the tree once their results are merged, with links to their last version in git;
+increment 4's runs stay until the S1 rerun (ruling 58, point 5). At the close of a batch,
+increment or investigation, condense working papers into registers and records (point 10).
+
+Some facts still stand in two places, and no check covers them; the coordinator keeps each pair
+in step. A68's action and step 3 both name the pieces of the first build. A63's candidates and
+the rows of A22 and A73 both name the stores the probes serve. The index of experiments and
+the roadmap's rows of Experiments 001 to 005 both say what each did. The priority P1 says that
+the native probes run beside it, as the row "In parallel" does.
+
+## Writing promises
+
+1. A promise keeps the exact form `id`, `layer`, `level`, `when`, `then`, `observable`,
+   `vectors: []`, with folded `>-` text indented four spaces and lines under 97 characters.
+   `layer` is `language`, `convention` or `interface`. `level` is `must`, `must not`, `should`
+   or `may`.
+2. IDs are never reused or renumbered. A new promise takes the next number never used in that
+   file's prefix; check the head comment's removed-ID register first.
+3. A removed promise is deleted and named in its file's head comment with the ruling that
+   removed it and where its content went, or "nothing replaces it". The register form is
+   `Removed: OLD → NEW (ruling NN).` or `OLD: nothing replaces it (ruling NN).`
+4. No promise moves between files. Where content moves, remove the old ID and give the content
+   a new ID in its destination. Change a promise's layer in place when that is the ruled change.
+5. Every promise about a request that is not dispatched names exactly one of refused, invalid,
+   conflict and unavailable, in the order of OPS-023.
+6. A reference to another promise by ID must still exist after the pass.
+7. A rewrite keeps everything in the promise that the accepted change does not name, apart from
+   sentences that cite a removed ID or a term that goes, which are cut or pointed at the ID
+   named in its place.
+
+A specification head comment holds what the file holds, its standing, reading notes, the
+standards it follows, open issues and its register of removed IDs. It carries no change narrative
+(ruling 58, point 6); see [the form of a promise](spec/README.md#the-form-of-a-promise).
+
 ## Review discipline
 
 The specification is the authority. Code, examples and schemas do not redefine it: where an
@@ -103,6 +156,12 @@ What the language promises about versions is in
 draft and not a release.
 
 ## Vocabulary changes
+
+One word for one idea, and one idea for one word. Use plain technical words for authoring and
+operation; flow imagery only around Conduits. Words belonging to a type or profile are settled
+with that type or profile ([vocabulary principles](docs/proposals/vocabulary/README.md#principles)).
+Before offering a proposed shape, check it against the CS/CC list of the
+[consolidation audit](docs/proposals/consolidation/README.md).
 
 The vocabulary is ruled (rulings 17, 18 and 27 to 29 of the plan audit). The terms in force are
 in [spec/definitions.md](spec/definitions.md). Write new text in them. Changing a term changes
@@ -210,11 +269,13 @@ Original Conduit documentation, contracts and code use the [Apache License, Vers
 The repository includes the unmodified official license text. Preserve applicable copyright,
 license and attribution notices when adding or adapting material.
 
-This adoption does not relicense reproduced third-party material. In particular, the historical
-collaborator submissions in `docs/archive/collaborator-proposals/PR-001-roadmap.md` and
-`docs/archive/collaborator-proposals/PR-002-protocol.md` retain their authorship and source attribution;
-this change does not assert an additional license grant from their authors. Quoted source material
-in research likewise retains its applicable terms. The archive index records the original sources.
+This adoption does not relicense reproduced third-party material. The collaborator's
+[PR #1](https://github.com/shrav-k/conduit/pull/1) at `2111b0d` and
+[PR #2](https://github.com/shrav-k/conduit/pull/2) at `c480e96`, merged as `71d6348` and
+`4b3db58`, retain their authorship and source attribution, as does the vocabulary research of
+[PR #5](https://github.com/shrav-k/conduit/pull/5) at `2890ef7`. Their history remains in git;
+the [archive index](docs/archive/README.md) preserves the source pointers. This does not assert an
+additional license grant from their authors. Quoted source material retains its applicable terms.
 
 No separate contributor agreement or DCO/sign-off requirement is introduced by this ruling.
 Any future contribution procedure remains an explicit project decision.

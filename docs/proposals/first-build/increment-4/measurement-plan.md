@@ -66,6 +66,21 @@ The counting rules after the baseline apply as written. In particular:
 - **T3 covers reach around Conduit.** The answer gives what each Agent reaches by its own means,
   from what the build ships and states, and counts what it took to find.
 
+## The S1 rerun
+
+The rules above describe the original runs. For the rerun,
+[ruling 63](../../ruling-63/README.md), point 1, fixes these counting rules:
+
+- lines that `conduit install` writes (package pins) are written by a tool, not by the author,
+  consistent with ruling 53's decision 5;
+- a command counts as a line only when it carries a value the author chose, such as a path or a
+  name; a bare `conduit apply` does not;
+- a line removed and later restored within one task counts once, the baseline's own rule;
+- the block-style reading and the strict reading (every command a line) are reported beside the
+  primary one.
+
+Packages' standard Conduit templates are counted as provider work (ruling 63, point 3).
+
 ## The routes for T4 to T6
 
 The owner chose to run these by the routes the specification allows today

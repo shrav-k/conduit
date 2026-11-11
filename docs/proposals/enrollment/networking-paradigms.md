@@ -219,6 +219,7 @@ is connection and access, as ruling 40 allows.
    and closed by its own engine; no engine opens a Conduit on another's objects.
 5. **Make ruling 50's pending action generic** (kind, subject, evidence, expiry, outcome).
    Recommended: yes, now, since it is being written anyway.
+   Superseded by [ruling 56, point 8](../ruling-56/README.md): decision 5's "outcome" is now the pending action's "answer".
 6. **Capability tokens.** Recommended: not in v0; for v1 cross-party, OAuth 2.1 audience-bound
    tokens as MCP has them; revisit macaroons or UCAN only for offline delegation.
 7. **Network between parties.** Recommended: `https` with Web PKI, or an outbound connector

@@ -156,6 +156,7 @@ evidence for sign-ins on other people's Interfaces (ruling 49, v1).
    relayed through a model's output.
 5. **Customization.** Recommended: reserve an input on `enroll.v1` naming the evidence kind
    required among those the provider declares; accept none in v0. Do not call it a policy.
+   Superseded by [ruling 56, point 5](../ruling-56/README.md): stronger checks may be required in v0; the minimum may never be weakened.
 6. **Tailscale's evidence.** Recommended: a short fingerprint of the node key plus hostname, `os`,
    `arch`, labels and `id`; confirm in A74 that both ends can show the node key.
 7. **Peer introduction and sign-ins.** Recommended: the same field; for peers, the root fingerprint

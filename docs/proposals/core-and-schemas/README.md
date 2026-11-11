@@ -17,6 +17,7 @@ and a step or an onward request may now hold the resolved form (round 3); the co
 gained `start-later-work.v1`, and `reconcile.v1`, `apply-policy.v1` and `retrieve-result.v1`
 gained inputs or outputs (rounds 2 and 3). The choices made while the ruling was applied, in
 the section Outcome, are for the owner to strike or keep.
+Accepted by [ruling 58 (point 1)](../ruling-58/README.md): the choices in Outcome, including "Choices made while applying the ruling".
 
 Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
 logged decision of the coordinator and choice of an editor.

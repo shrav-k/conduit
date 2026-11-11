@@ -4,5 +4,6 @@ pub mod gates;
 pub mod harness;
 pub mod mc2;
 pub mod operations;
+pub mod placement;
 pub mod retry;
 pub mod revisions;

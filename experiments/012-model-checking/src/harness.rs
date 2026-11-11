@@ -128,6 +128,15 @@ pub trait Protocol: Clone + Send + Sync + 'static {
     fn fault_allowed(&self, _fault: Fault, _src: usize, _dst: usize) -> bool {
         true
     }
+    /// Older models only defined permissions for the original gated faults.
+    /// Opt in to apply their hook to heal, recovery and timer as well.
+    fn gate_remaining_faults(&self) -> bool {
+        false
+    }
+    /// Optional explicit scenario window; defaults preserve existing transition graphs.
+    fn fault_enabled(&self, _s: &System<Self>, _fault: Fault) -> bool {
+        true
+    }
     fn initial(&self, config: &Config) -> System<Self>;
     fn receive(
         &self,
@@ -225,8 +234,13 @@ impl<P: Protocol> Harness<P> {
         );
         model
     }
+    fn remaining_fault_allowed(&self, fault: Fault, src: usize, dst: usize) -> bool {
+        let allowed = self.protocol.fault_allowed(fault, src, dst);
+        allowed || !self.protocol.gate_remaining_faults()
+    }
     fn available(&self, s: &System<P>, fault: Fault) -> bool {
         s.used[fault as usize] < self.config.budgets[fault as usize]
+            && self.protocol.fault_enabled(s, fault)
     }
     pub fn describe(&self, action: &Action<P::Local>) -> String {
         let name = |i: usize| self.config.nodes[i];
@@ -302,7 +316,9 @@ impl<P: Protocol> Model for Harness<P> {
                 }
                 if src < dst {
                     if s.cut.contains(&(src, dst)) {
-                        if self.available(s, Fault::Heal) {
+                        if self.available(s, Fault::Heal)
+                            && self.remaining_fault_allowed(Fault::Heal, src, dst)
+                        {
                             out.push(Action::Heal(src, dst));
                         }
                     } else if self.available(s, Fault::Cut)
@@ -319,14 +335,20 @@ impl<P: Protocol> Model for Harness<P> {
                     {
                         out.push(Action::Crash(src));
                     }
-                    if self.available(s, Fault::Timer) && self.protocol.timer_enabled(s, src) {
+                    if self.available(s, Fault::Timer)
+                        && self.remaining_fault_allowed(Fault::Timer, src, src)
+                        && self.protocol.timer_enabled(s, src)
+                    {
                         out.push(Action::Timer(src));
                     }
                     let mut local = Vec::new();
                     self.protocol.local_actions(s, src, &mut local);
                     out.extend(local.into_iter().map(|a| Action::Local(src, a)));
                 }
-                Status::Crashed if self.available(s, Fault::Recovery) => {
+                Status::Crashed
+                    if self.available(s, Fault::Recovery)
+                        && self.remaining_fault_allowed(Fault::Recovery, src, src) =>
+                {
                     out.push(Action::Recover(src))
                 }
                 _ => {}
@@ -711,5 +733,96 @@ mod hook_tests {
             assert_eq!(actions.contains(&Action::Crash(src)), src == 1 || src == 2);
             assert_eq!(actions.contains(&Action::Lose(src)), src == 2);
         }
+    }
+}
+
+#[cfg(test)]
+mod remaining_fault_hook_tests {
+    use super::*;
+    use crate::retry::{Data, Ledger, Local, Message, Retry, Variant, configuration};
+
+    #[derive(Clone)]
+    struct Restricted(bool);
+    impl Protocol for Restricted {
+        type Node = Data;
+        type Message = Message;
+        type Ledger = Ledger;
+        type Local = Local;
+        fn gate_remaining_faults(&self) -> bool {
+            self.0
+        }
+        fn fault_allowed(&self, f: Fault, src: usize, dst: usize) -> bool {
+            match f {
+                Fault::Heal => src == 0 && dst == 1,
+                Fault::Recovery | Fault::Timer => src == 0 && dst == 0,
+                _ => true,
+            }
+        }
+        fn initial(&self, c: &Config) -> System<Self> {
+            Retry {
+                variant: Variant::Saved,
+            }
+            .initial(c)
+        }
+        fn receive(&self, c: &Config, s: &mut System<Self>, src: usize, dst: usize, m: Message) {
+            Retry {
+                variant: Variant::Saved,
+            }
+            .receive(c, s, src, dst, m);
+        }
+        fn timer_enabled(&self, _: &System<Self>, _: usize) -> bool {
+            true
+        }
+        fn timer(&self, _: &Config, _: &mut System<Self>, _: usize) {}
+        fn crash(&self, _: &mut Data) {}
+        fn recover(&self, _: &mut Data) {}
+        fn local_actions(&self, _: &System<Self>, _: usize, _: &mut Vec<Local>) {}
+        fn local_step(&self, _: &Config, _: &mut System<Self>, _: usize, _: Local) {}
+        fn properties(&self) -> Vec<NamedProperty<Self>> {
+            vec![
+                NamedProperty {
+                    property: Property::always("harness: gate safety", |_, _| true),
+                    promises: &["harness"],
+                },
+                NamedProperty {
+                    property: Property::sometimes("harness: gate reach", |_, _| true),
+                    promises: &["harness"],
+                },
+            ]
+        }
+    }
+    #[test]
+    fn heal_recovery_and_timer_consult_fault_hook() {
+        let mut c = configuration();
+        c.nodes.push("third");
+        let m = Harness::new(c, Restricted(true));
+        let mut s = m.protocol.initial(&m.config);
+        // Extend the retry fixture to cover both an allowed and a forbidden cut.
+        s.nodes.push(s.nodes[0].clone());
+        s.links = vec![vec![]; 9];
+        s.cut.extend([(0, 1), (1, 2)]);
+        let mut actions = vec![];
+        m.actions(&s, &mut actions);
+        assert!(actions.contains(&Action::Heal(0, 1)));
+        assert!(!actions.contains(&Action::Heal(1, 2)));
+        assert!(actions.contains(&Action::Timer(0)));
+        assert!(!actions.contains(&Action::Timer(1)));
+        for n in &mut s.nodes {
+            n.status = Status::Crashed;
+        }
+        actions.clear();
+        m.actions(&s, &mut actions);
+        assert!(actions.contains(&Action::Recover(0)));
+        assert!(!actions.contains(&Action::Recover(1)));
+        assert!(!actions.contains(&Action::Recover(2)));
+        let legacy = Harness::new(m.config.clone(), Restricted(false));
+        actions.clear();
+        legacy.actions(&s, &mut actions);
+        assert!(actions.contains(&Action::Recover(1)));
+        s.nodes[1].status = Status::Running;
+        actions.clear();
+        legacy.actions(&s, &mut actions);
+        assert!(actions.contains(&Action::Timer(1)));
+        assert!(actions.contains(&Action::Heal(1, 2)));
     }
 }

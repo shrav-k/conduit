@@ -236,3 +236,48 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, from a fixed base: the worker in 32 minutes (1,897 s), then a fresh
+verifier in 8 minutes (450 s), which found four musts. A second round of 18 minutes (1,087 s)
+fixed them:
+- a request recorded as unknown later given an outcome;
+- the provider's restart racing the retirement;
+- shutdown checked only at the declaration;
+- a blocked setup's answer.
+
+A fresh verifier in 7 minutes (419 s) then found two more musts, both defects of the correct
+model. A further retirement after M2 was reported gone asked for no stop, and a report that
+omitted M2 registered a new node. Two rounds were spent, so the lane coordinator fixed both:
+- a retirement of an instance whose node was declared lost asks for its stop whatever M2's
+  health, since PLC-023 covers only instances on a node that represents the machine, and
+  PLC-027 asks for the stop all the same;
+- only an explicit report of reachable or unreachable registers a node (PLC-026).
+
+Three regression tests, each run without its fix and failing, cover them. A fresh reader checked
+the fixes. Its one remaining finding, the unreachable and omitted cases of the first fix, is
+fixed too. Five rows' counts were measured again; no verdict changed.
+
+The order added `placement.rs`, and to the harness `fault_allowed` for every fault kind, with an
+opt-in so earlier models are unchanged. Of the 22 promises, 17 are modelled, 4 are static
+decisions and 1 needs a Pool. Twenty-six bounded runs finished within their limits, the largest
+154,232 states.
+
+**What it found in the promises, for the admin's lane:**
+
+- **MC4-009, a gap.** On the correct model, with no fault at all, the provider's own restart of
+  a run (PRV-010) races the engine's `run.v1` for the retire hook (PRV-007, TPL-018). Two runs of
+  one instance become live. No promise says what a provider does with `run.v1` for an instance
+  whose run it has itself just restarted.
+- **MC4-002, a gap.** A stop left pending after an unknown unregistration (LIF-036, PRV-021) does
+  not fence a replacement instance. After the heal the replacement can start before the old run
+  is stopped.
+- **MC4-001, an ambiguity.** Does LIF-025's "no setup ever dispatched" apply to a node, whose
+  setup dispatches nothing, when root declares it lost?
+
+"At most one live run" is therefore refuted on the correct model in most configurations, as
+these findings explain. The other eight properties hold.
+
+The lane coordinator reran the crate's 33 tests, fmt, clippy and the repository's checks before
+the merge.

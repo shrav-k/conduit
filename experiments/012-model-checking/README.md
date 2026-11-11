@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3) and 109 (MC5a), ruling 71's proof lane.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4) and 109 (MC5a), ruling 71's proof lane.
 The expected verdicts below were registered before execution; later orders extend this harness.
 
 ## Question and scope
@@ -1067,6 +1067,1364 @@ answer. Onward replies and their relay remain explicitly lossy.
 
 All changed Rust and documentation files are confined to this experiment. The pinned
 lockfile and toolchain remain in force, and `target/` remains ignored.
+
+## MC4 placement and a lost machine: model and pre-registration
+
+Registered 2026-11-11 under work order 108, **before any MC4 run**. The model is
+[`src/placement.rs`](src/placement.rs); it follows the promises, independently of engine code.
+M1 holds the engine, its local provider servers and consumer A. M2 holds I, J and later I′,
+and the runtime provider's independent keeper. These are three harness nodes, not three
+machines. The engine saves its script and object state; its provider servers end with its
+crash and return on recovery. The keeper's durable stop mailbox belongs to the provider,
+not the engine's saved instance records. The mailbox abstracts the provider contract's
+custody of an accepted stop; it is not a claim about a replication or networking protocol.
+A deliberately volatile variant keeps it only in the local server's volatile state instead.
+
+The machine provider reports M2 and registers its node. Placement calls name M2 for I and J,
+with matching selectors; their node's setup is a separate later step. An early setup probes
+the registered/not-ready interval. The engine then sets I and J up, A sends two independent
+requests to I, and an explicit further setup inspects I again. I may exit and be restarted by
+its provider, without a new caller request, dispatch or secret read. The script retires I
+with its selected retire hook under TPL-018, then unregisters it under LIF-036. I′ may then
+be registered and placed. J and I′ are finally removed and the provider is retired; its
+independent keeper can still carry out its accepted stops. The root Interface declares
+M2's node lost once in Declared. Gone allows physical disappearance and a new machine under
+the same hostname. Permanent loss is never harness recovery of the old M2.
+
+Provider reports and inspect-run answers are untimed local actions. A machine report is
+enabled when physical state or the engine's epoch changes. The engine's latest received
+report, rather than the cut itself, determines unreachable: explicit unreachable, omission,
+or no report since start all count. A cut before the next report can therefore leave the
+engine acting on an earlier reachable report. Inspect-run answers record both value and
+truth at their observation time. Each status names the report and retains its heartbeat
+time; unavailable observations report Unknown. The external ledger keeps per-instance
+histories (independent instances commute), machine reports, node registrations, declarations
+and observations of server lifecycle. Each run, exit, stop, provider call and answer,
+late stop, request dispatch and answer, retirement, hook and secret read is recorded.
+Properties read only that ledger; refutation tests erase all node data and recheck failure.
+
+### MC4 promise accounting
+
+Each of the 22 catalogue promises appears once in this accounting. “Modelled” means the
+bounded slice described here, not every clause or input representation of a promise.
+
+| Promise | Account | Property or reason |
+| --- | --- | --- |
+| PLC-002 | Modelled | P5, provider names placement |
+| PLC-012 | Not modelled | Co-location authorization is a static decision, to be shown by vectors; MC3 covers access races |
+| PLC-017 | Modelled | P3, declaration retires placed instances with shutdown unknown |
+| PLC-019 | Modelled | P7, registered node blocks setup |
+| PLC-020 | Not modelled | Node-local path interpretation is a static decision, to be shown by vectors |
+| PLC-023 | Modelled | P2, reports determine unavailability without retirement |
+| PLC-024 | Modelled | P3, provider gone declares loss |
+| PLC-026 | Modelled | P8, registration and fresh node IDs |
+| PLC-027 | Modelled | P3, no lost-node hook, run or secret read |
+| PRV-002 | Modelled | P9, engine and local provider server lifecycle |
+| PRV-005 | Not modelled | Provider metadata/caller fields are a static decision, to be shown by vectors |
+| PRV-007 | Modelled | P1, no run asked on an unknown inspect answer |
+| PRV-008 | Modelled | P4, addressed stops and unknown answers |
+| PRV-009 | Modelled | P6, status provenance and time |
+| PRV-010 | Modelled | P1, provider restart makes no dispatch or secret read |
+| PRV-012 | Not modelled | Unsupported artifact/transport rejection is a static decision, to be shown by vectors |
+| PRV-014 | Modelled | P1/P2, cut is not evidence of gone |
+| PRV-015 | Modelled | P5, M2 selected by provider |
+| PRV-019 | Modelled | P5, runtime executes only on selected machine |
+| PRV-021 | Modelled | P4, accepted stop survives restart and retirement |
+| PRV-027 | Modelled | P4, stop instance and placement machine |
+| POOL-016 | Not modelled | Needs a Pool and repeats placement already checked in P5 |
+
+Counts: **17 modelled; 4 static decisions for vectors; 1 needs a Pool**. Supporting promises,
+outside those counts: PLC-009 (placement fixed for life), LIF-025 (never set up), LIF-036
+(unregister asks stop despite unreachability), TPL-018 (retire hook), OBS-003 (unknown status).
+Enrollment is **spec pending, needed before S3**; its promises are not yet written and are
+not supplied by this model or counted among the 22.
+
+### MC4 properties, configurations and bounds
+
+P1 = at most one live run of I and I′ together, no run asked after unknown and no
+restart-triggered dispatch; root's explicit lost-node risk is excepted. P2 = unreachable is
+not gone (no retirement for silence, request dispatch, run or secret read). P3 = lost-node
+retirement has unknown shutdown and no hook/run/read (never-set-up and no-hook cases are
+excepted). P4 = stops are addressed and only the named run is stopped; at quiescence every
+stop answered unknown is carried. Quiescence requires reachable M2, no wire message and no
+enabled action, including an unused enabled fault. The observation of quiescence itself is
+excluded. P5 = runs only where placed. P6 = Running True/False uses a report true when
+made, with its time; unreachable or unobserved means Unknown. P7 = setup waits for a ready
+node. P8 = returned machine gets a new node. P9 = provider servers end with engine.
+
+All runs use three harness nodes, three instance IDs, two independent consumer requests,
+one exit/restart, a finite 17-step script, at most six messages per directed link, a
+**190,000 unique-state ceiling and 10-second timeout**, checked both during and after each
+full run. No configuration truncates an exhaustive search into a pass. Each nonzero fault
+budget is one. Provider calls on M1 stdio are sent once: duplication budget zero. There
+are no timers: report/inspect/stop actions are enabled by changed observations or obligations.
+The existing models remain unchanged. The harness now consults `fault_allowed` for heal,
+recovery and timers too, in addition to its existing fault checks.
+
+| Configuration | Enabled faults | Why restricted |
+| --- | --- | --- |
+| Base | None | Ordinary script and message interleavings |
+| Partition | Cut and heal, engine↔M2 only | M1-local stdio and A's M1 link do not partition |
+| Combined | Cut/heal engine↔M2 and crash/recovery engine only | All four together exercise volatile-stop loss |
+| LossA | One loss, A↔engine | Isolates consumer request/response loss |
+| LossM2 | One loss, engine↔M2 | Isolates runtime transport loss |
+| ReorderA | One reorder, A↔engine | Isolates the two independent requests |
+| ReorderM2 | One reorder, engine↔M2 | Isolates runtime message ordering |
+| Gone | M2 lost once | M1 and A are not the lost machine |
+| Declared | Root declaration; cut/heal engine↔M2 | Allows return after explicit declaration |
+
+A never crashes; only the engine has crash/recovery. M2 loss is distinct from engine crash,
+which leaves remote runs and saved obligations intact. Loss and reordering affect both
+directions of the named link, and no unrelated link. No new infrastructure, access policy,
+secrets transport, provider metadata schemas, enrollment, real clocks, unbounded retries or
+restart policies are proved. Stop custody is an abstract durable mailbox; S3 must establish
+that a real provider implements it, including acceptance during a partition and after removal.
+The node itself dispatches nothing on setup: whether LIF-025 therefore confirms its shutdown
+on declaration of loss is ambiguous against the default unknown in PLC-017. This model
+records node retirement separately and checks the setup/hook exceptions on placed instances;
+it does not settle that ambiguity.
+
+### MC4 expected table, registered before execution
+
+H = holds; F = refuted. The nine-character vector orders P1 through P9. Reach columns
+order R = unreachable then reachable, G = provider gone, D = root declaration, L = late
+stop, U = unavailable request during cut, X = exit/restart, I = I′ placed, N = new node on
+return, Q = unknown run blocks a call, B = not-ready setup unavailable, K = stop carried
+after provider retirement. `+` means reached, `-` means absent. Enabled harness faults
+must all be reached too. Correct runs in every part; each mutant runs only in its listed
+part. Tests compare all properties and all reaches with this table; any observed difference
+is recorded beside it, without changing these registered expectations.
+
+| Variant/configuration | P1…P9 | R G D L U X I N Q B K |
+| --- | --- | --- |
+| Correct/Base | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/Partition | HHHHHHHHH | + - - + + + + - + + + |
+| Correct/Combined | HHHHHHHHH | + - - + + + + - + + + |
+| Correct/LossA | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/LossM2 | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/ReorderA | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/ReorderM2 | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/Gone | HHHHHHHHH | - + - + - + + + - + + |
+| Correct/Declared | HHHHHHHHH | + - + + + + + + + + + |
+| UnreachableGone/Partition | FFHHHHHHH | + - - + + + + - + + + |
+| UnknownRun/Partition | FHHHHHHHH | + - - + + + + - + + + |
+| VolatileStop/Combined | HHHFHHHHH | + - - + + + + - + + + |
+| WrongStop/Base | HHHFHHHHH | - - - + - + + - - + + |
+| ConfirmLost/Declared | HHFHHHHHH | + - + + + + + + + + + |
+| LostHook/Declared | HHFHHHHHH | + - + + + + + + + + + |
+| WrongMachine/Base | HHHHFHHHH | - - - + - + + - - + + |
+| StaleRunning/Partition | HHHHHFHHH | + - - + + + + - + + + |
+| EarlySetup/Base | HHHHHHFHH | - - - + - + + - - - + |
+| ReuseNode/Declared | HHHHHHHFH | + - + + + + + - + + + |
+
+The first attempted Base exploration hit the 190,000-state ceiling (no verdict was
+interpreted). Before the next run, the script window was made explicit: A sends at step 6;
+the script waits for ordinary exchanges, or for an unavailable report, before proceeding.
+It also waits for ordinary run replies while the machine is reported reachable and for the
+retirement's kept stop before unregistering while reachable. An unregister stop remains
+allowed during a cut, and replacement does not wait for it. These are script bounds, not
+extra language rules. The registered expected table above stays unchanged.
+
+For compatibility, `gate_remaining_faults` opts a protocol into the new heal/recovery/timer
+permissions. The hook is consulted in both modes; earlier models keep their original
+ungated behavior for these three classes. MC4 opts in, so every fault kind is restricted
+through `fault_allowed`. A regression tests both modes. This avoids changing MC3, whose
+existing hook deliberately returned false for classes the old harness never consulted.
+
+Partition also exceeded the ceiling after the explicit script window. It is now split by
+script phase, with the added `PartitionRetire` configuration. A default-true
+`fault_enabled` harness hook bounds the scenario window without changing any earlier model.
+Partition cuts at step 6 and heals at step 7; PartitionRetire cuts at step 11 and heals at
+step 13. Declared cuts at step 14, after I is unregistered and I′ is placed; root declares
+loss there, and the cut heals at step 15. I′ inherits I's selected retire hook. Combined cuts at step 11, unregisters at step 12, crashes and recovers at step 13,
+then heals there. Script advancement waits at those heal barriers. Gone permits M2 loss at
+step 10. Faults remain optional, but any executed fault is confined to its stated window;
+there is no claim about other crash/cut timings. Every enabled fault must have a witness.
+Combined still includes all four required faults in one execution. Loss/reorder parts keep
+the whole script. These windows and the extra row below were registered before their runs.
+
+| Added configuration | P1…P9 expected | R G D L U X I N Q B K expected |
+| --- | --- | --- |
+| Correct/PartitionRetire | HHHHHHHHH | + - - + - + + - + + + |
+
+The healed suffix also waits for the provider's changed machine report before the next
+script step; a cut can still race before its report. Independent consumer histories commute
+in the ledger, retaining each dispatch/answer and its observation facts. These state-space
+reductions retain the observed Base non-overlap failure; no safety behavior is changed to
+make it pass. Earlier ceiling-rejected runs yielded no Partition verdict.
+
+A provisional Base refutation exposed a modelling defect, not a promise counterexample:
+the transition asked for a run to serve a hook and stopped it before waiting for the run
+and hook. TPL-018 orders them. The corrected model has a separate `FinishRetire` action,
+waits for the run answer (or an unavailable observation), then dispatches the hook and asks
+for the stop. Returned nodes also have a separate setup action before the script proceeds.
+The provisional Base failure is withdrawn; its counts are not final results. The expected
+table is unchanged. Any aggregate I/I′ overlap that remains is checked on the corrected
+ordering, especially an unknown unregister stop during the retirement partition.
+
+The final loss handling also separates hook suppression from stop suppression: a further
+retirement on a lost node still asks for its stop when the latest machine report permits it;
+unregister always asks. The UnreachableGone mutant explicitly recreates I′ on the returned
+node before stopping old I, as its registered broken behavior requires. It does not inherit
+the correct retirement's stop barrier. The correct model never takes that action.
+
+The final Declared script preserves the order's root-declaration ordering: I is retired and
+unregistered first, I′ is placed and set up, then root may declare the node lost at step 14.
+I′ has the same selected retire hook as I. Its cut is at step 14 and heal at step 15; this
+replaces the earlier Declared window, while leaving the expected table untouched. This
+checks lost-hook suppression on I′ and no-hook handling on J. The loss windows begin after
+the initial setups; the encoded never-set-up exception is not a separate coverage claim.
+
+## MC4 earlier-round results, 2026-11-11
+
+Historical measurements and traces below predate the admin review. The revised model and
+current results are recorded in the final section; these earlier counts are retained as evidence.
+
+Final source passed `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
+and both complete release test commands: **25 passed, 0 failed**, plus 0 doc tests.
+The ordinary release command took **38.31 s wall time**, including compilation,
+with 27.78 s in tests. The output-capture command took **29.14 s wall time**, with
+28.32 s in tests. These are local measurements, not an ubuntu-latest result.
+`CARGO_BUILD_JOBS=3` was used throughout; `RUSTC_WRAPPER=` bypassed the shared
+sccache daemon after its first dependency write was denied by the sandbox. No owner
+configuration was changed. All earlier models and tests pass unchanged.
+
+Every full run below exhausted its bounded graph, including broken variants. All
+enabled harness fault witnesses were reached. The largest graph has **128,265 states**;
+every run is below the 190,000-state ceiling and the 10-second timeout. Full runs used
+2 checker threads; named refutations used single-thread BFS. The columns use the
+registered P1…P9 and R G D L U X I N Q B K orders. Missing reach witnesses are
+explicit `-` entries, not safety passes. Report times are logical observation sequence
+numbers, with truth snapshots; no clock or timeout policy is inferred.
+
+| Variant/configuration | Unique states | Depth | Seconds | P1…P9 observed | R G D L U X I N Q B K observed |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Base | 151 | 42 | 0.005 | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/Partition | 127,793 | 46 | 4.560 | HHHHHHHHH | + - - + + + + - + + + |
+| Correct/PartitionRetire | 1,435 | 43 | 0.018 | FHHHHHHHH | + - - + - + + - + + + |
+| Correct/Combined | 11,659 | 49 | 0.292 | FHHHHHHHH | + - - + - + + - + + + |
+| Correct/LossA | 638 | 42 | 0.008 | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/LossM2 | 1,009 | 42 | 0.028 | HHHHHHHHH | - - - + - + + - + + + |
+| Correct/ReorderA | 287 | 42 | 0.016 | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/ReorderM2 | 309 | 42 | 0.008 | HHHHHHHHH | - - - + - + + - - + + |
+| Correct/Gone | 1,956 | 43 | 0.043 | HHHHHHHHH | - + - + - + + + + + + |
+| Correct/Declared | 1,747 | 47 | 0.047 | HHHHHHHHH | + - + + - + + + - + + |
+| UnreachableGone/Partition | 83,667 | 45 | 2.764 | FFHHHHHHH | + - - + + + + + + + + |
+| UnknownRun/Partition | 128,265 | 48 | 4.422 | FHHHHHHHH | + - - + + + + - - + + |
+| VolatileStop/Combined | 3,955 | 48 | 0.081 | FHHFHHHHH | + - - + - + + - + + + |
+| WrongStop/Base | 100 | 41 | 0.009 | FHHFHHHHH | - - - + - + + - - + + |
+| ConfirmLost/Declared | 1,747 | 47 | 0.042 | HHFHHHHHH | + - + + - + + + - + + |
+| LostHook/Declared | 1,747 | 47 | 0.038 | HHFHHHHHH | + - + + - + + + - + + |
+| WrongMachine/Base | 151 | 42 | 0.011 | HHHHFHHHH | - - - + - + + - - + + |
+| StaleRunning/Partition | 127,793 | 46 | 4.267 | HHHHHFHHH | + - - + + + + - + + + |
+| EarlySetup/Base | 151 | 42 | 0.004 | HHHHHHFHH | - - - + - + + - - - + |
+| ReuseNode/Declared | 1,597 | 46 | 0.083 | HHHHHHHFH | + - + + - + + - - + + |
+
+### MC4 findings and differences from registration
+
+The registered expected table remains unchanged. The test compares each full run with
+that table and the separately recorded observed differences; it rejects any further
+unrecorded difference. Differences in reach concern the table or scenario bounds, not
+new behavior imposed on the promises.
+
+| ID | Class | Finding and affected rows |
+| --- | --- | --- |
+| MC4-001 | Ambiguity | PLC-017 defaults a lost node's shutdown to unknown, but LIF-025 confirms an instance for which no setup was ever dispatched, and PLC-026 says a node's setup dispatches nothing. Does completing node setup count for that exception? Projection: report/register node → set node up without an implementation call → root declares loss. The model records node retirement but leaves that shutdown classification undecided. No specification change was made. |
+| MC4-002 | Gap | P1 was expected H but is F in Correct/PartitionRetire and Correct/Combined, and additionally in VolatileStop/Combined. PRV-007 and PRV-010 concern one instance ID, while LIF-036 can remove I after a stop answered unknown and PRV-021 owes its later stop. Nothing among PRV-007/PRV-010/PRV-014 fences I′ until that stop is carried. The shortest correct-model trace below has 33 actions: cut → report unreachable → retire I (hook unavailable) → unregister I (stop unknown, retained) → heal → report reachable → place/run I′ before Carry(I). Root never declares loss. Both IDs are live. This is a gap between the requested aggregate invariant and the promises, not a claim that PRV-007 explicitly forbids another ID. The model and refuted property were retained. |
+| MC4-003 | Gap | U was expected reached but is absent in Combined and VolatileStop/Combined, and in every Declared row (Correct, ConfirmLost, LostHook, ReuseNode). Those final bounded cuts start after A's exchange. Partition reaches U; PartitionRetire registered U absent and agrees. |
+| MC4-004 | Gap | N was expected absent but is reached in UnreachableGone/Partition: falsely retiring the node causes a fresh node on the reachable report, as the remaining correct registration rule requires. |
+| MC4-005 | Gap | Q was expected reached but is absent in UnknownRun/Partition: in this bounded window the mutant takes the new-run branch on unknown, rather than the blocking branch that Q witnesses. The named P1 refutation remains reached. |
+| MC4-006 | Gap | Q was expected absent but is reached in Correct/LossM2 and Correct/Gone. A lost run transport answer, or physical disappearance before its machine report, gives an unknown inspect answer even without a partition. |
+| MC4-007 | Gap | P1 was expected H but is also F in WrongStop/Base: stopping J for I leaves I live while I′ starts. The registered named P4 failure is also present. |
+| MC4-008 | Gap | Q was expected reached but is absent in all four Declared rows. The final ordered root cut occurs after the explicit inspection window. The table did not account for that restriction; the runtime reports no unknown inspect answer in that scenario. |
+
+MC4-003 through MC4-008 are pre-registration/accounting gaps, not defects that bind a
+language implementation. MC4-001 needs clarification and MC4-002 needs coordinator/owner
+review of the aggregate claim. Files for decisions, specification fixes, vectors and the
+tracker are outside this order's scope. The withdrawn provisional Base trace described
+above is not counted as a language finding.
+
+### MC4 first single-thread BFS traces
+
+`Script(n)` has these meanings: 0 place I; 1 place J; 2 probe setup before node readiness;
+3 set node up; 4 set I up; 5 set J up; 6 explicit further setup after A sends;
+7 inspect I; 8 skip optional exit; 9 skip optional restart; 10 no-op script boundary;
+11 retire I; 12 unregister I; 13 place/setup I′; 14 declare loss in Declared, then
+retire/unregister J; 15 retire/unregister I′; 16 retire provider. `Exit` and `Restart`
+replace their optional script steps. `FinishRetire` completes the hook after its run
+answer, then asks the stop. `SetupReturnedNode` is the later setup of a new registration.
+`RecreateAfterSilence` belongs only to the deliberately broken UnreachableGone policy.
+`Carry` is the independent provider keeper. Deliveries are FIFO unless labelled out of
+order. The printed first paths are the unedited single-thread harness descriptions.
+
+```text
+MC4 refutation UnreachableGone: PLC-023: unreachable is not gone
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. cut engine+providers (M1) <-> runs+keeper (M2)
+11. engine+providers (M1) Report(Unreachable)
+(11 actions)
+
+MC4 refutation UnknownRun: PRV-007 PRV-010 PRV-014: at most one live run
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+11. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+12. A (M1) Send
+13. delivered A (M1) -> engine+providers (M1) [position 0]
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. delivered engine+providers (M1) -> A (M1) [position 0]
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. cut engine+providers (M1) <-> runs+keeper (M2)
+21. delivered engine+providers (M1) -> A (M1) [position 0]
+22. engine+providers (M1) Script(6)
+(22 actions)
+
+MC4 refutation VolatileStop: PRV-008 PRV-021 PRV-027: stops kept and addressed
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+11. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+12. A (M1) Send
+13. delivered A (M1) -> engine+providers (M1) [position 0]
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. delivered engine+providers (M1) -> A (M1) [position 0]
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. engine+providers (M1) Script(6)
+22. engine+providers (M1) Script(7)
+23. engine+providers (M1) Script(8)
+24. engine+providers (M1) Script(9)
+25. engine+providers (M1) Script(10)
+26. cut engine+providers (M1) <-> runs+keeper (M2)
+27. engine+providers (M1) Report(Unreachable)
+28. engine+providers (M1) Script(11)
+29. engine+providers (M1) Script(12)
+30. crashed engine+providers (M1)
+31. recovered engine+providers (M1)
+32. healed engine+providers (M1) <-> runs+keeper (M2)
+33. engine+providers (M1) Recover
+34. engine+providers (M1) Report(Reachable)
+35. engine+providers (M1) Script(13)
+36. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+37. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+38. engine+providers (M1) Script(14)
+39. engine+providers (M1) Script(15)
+40. engine+providers (M1) Script(16)
+41. runs+keeper (M2) Carry(1)
+42. runs+keeper (M2) Carry(2)
+43. A (M1) ObserveServers
+44. engine+providers (M1) Quiescent
+(44 actions)
+
+MC4 refutation WrongStop: PRV-008 PRV-021 PRV-027: stops kept and addressed
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+11. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+12. A (M1) Send
+13. delivered A (M1) -> engine+providers (M1) [position 0]
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. delivered engine+providers (M1) -> A (M1) [position 0]
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. engine+providers (M1) Script(6)
+22. engine+providers (M1) Script(7)
+23. engine+providers (M1) Script(8)
+24. engine+providers (M1) Script(9)
+25. engine+providers (M1) Script(10)
+26. engine+providers (M1) Script(11)
+(26 actions)
+
+MC4 refutation ConfirmLost: PLC-017 PLC-024 PLC-027: lost shutdown unknown
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+11. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+12. A (M1) Send
+13. delivered A (M1) -> engine+providers (M1) [position 0]
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. delivered engine+providers (M1) -> A (M1) [position 0]
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. engine+providers (M1) Script(6)
+22. engine+providers (M1) Script(7)
+23. engine+providers (M1) Script(8)
+24. engine+providers (M1) Script(9)
+25. engine+providers (M1) Script(10)
+26. engine+providers (M1) Script(11)
+27. runs+keeper (M2) Carry(0)
+28. engine+providers (M1) Script(12)
+29. engine+providers (M1) Script(13)
+30. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+31. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+32. engine+providers (M1) Script(14)
+(32 actions)
+
+MC4 refutation LostHook: PLC-017 PLC-024 PLC-027: lost shutdown unknown
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+11. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+12. A (M1) Send
+13. delivered A (M1) -> engine+providers (M1) [position 0]
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. delivered engine+providers (M1) -> A (M1) [position 0]
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. engine+providers (M1) Script(6)
+22. engine+providers (M1) Script(7)
+23. engine+providers (M1) Script(8)
+24. engine+providers (M1) Script(9)
+25. engine+providers (M1) Script(10)
+26. engine+providers (M1) Script(11)
+27. runs+keeper (M2) Carry(0)
+28. engine+providers (M1) Script(12)
+29. engine+providers (M1) Script(13)
+30. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+31. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+32. engine+providers (M1) Script(14)
+(32 actions)
+
+MC4 refutation WrongMachine: PLC-002 PRV-015 PRV-019: runs only where placed
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+(7 actions)
+
+MC4 refutation StaleRunning: PRV-009: status rests on a true report
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. cut engine+providers (M1) <-> runs+keeper (M2)
+11. engine+providers (M1) Report(Unreachable)
+(11 actions)
+
+MC4 refutation EarlySetup: PLC-019: setup waits for a ready node
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+(4 actions)
+
+MC4 refutation ReuseNode: PLC-026: returned machine gets a new node
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+11. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+12. A (M1) Send
+13. delivered A (M1) -> engine+providers (M1) [position 0]
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. delivered engine+providers (M1) -> A (M1) [position 0]
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. engine+providers (M1) Script(6)
+22. engine+providers (M1) Script(7)
+23. engine+providers (M1) Script(8)
+24. engine+providers (M1) Script(9)
+25. engine+providers (M1) Script(10)
+26. engine+providers (M1) Script(11)
+27. runs+keeper (M2) Carry(0)
+28. engine+providers (M1) Script(12)
+29. engine+providers (M1) Script(13)
+30. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+31. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+32. cut engine+providers (M1) <-> runs+keeper (M2)
+33. engine+providers (M1) Script(14)
+34. engine+providers (M1) Report(Unreachable)
+(34 actions)
+
+MC4 literal refutation Correct/PartitionRetire: PRV-007 PRV-010 PRV-014: at most one live run
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+8. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+9. engine+providers (M1) Script(5)
+10. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+11. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+12. A (M1) Send
+13. delivered A (M1) -> engine+providers (M1) [position 0]
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. delivered engine+providers (M1) -> A (M1) [position 0]
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. engine+providers (M1) Script(6)
+22. engine+providers (M1) Script(7)
+23. engine+providers (M1) Script(8)
+24. engine+providers (M1) Script(9)
+25. engine+providers (M1) Script(10)
+26. cut engine+providers (M1) <-> runs+keeper (M2)
+27. engine+providers (M1) Report(Unreachable)
+28. engine+providers (M1) Script(11)
+29. engine+providers (M1) Script(12)
+30. healed engine+providers (M1) <-> runs+keeper (M2)
+31. engine+providers (M1) Report(Reachable)
+32. engine+providers (M1) Script(13)
+33. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+(33 actions)
+
+```
+
+### What MC4 establishes and what S3 must add
+
+In these finite scripts, all named properties other than the aggregate replacement P1
+hold in the correct model, including unknown status on unreachable reports, suppression of
+lost-node hooks, addressed durable stops at reachable quiescence, placement and fresh node
+registration. P1 holds in the other eight correct configurations and fails in the two
+retirement-cut configurations above. All ten deliberately broken policies refute their
+registered named properties. Quiescent discharge is a bounded safety assertion, not a
+fairness or eventual-connectivity proof: held or lost messages can leave a non-quiescent
+state forever. Root's explicit loss risk is excepted only for run overlap.
+
+This neither proves every clause of the 17 modelled promises nor covers arbitrary scripts,
+all fault timings, unbounded machines, real authorization/gates, enrollment or a concrete
+provider's durable-storage implementation. The fixed selectors and machine names are
+abstractions. The independent provider mailbox abstracts accepted-stop custody; this model
+cannot show that a real provider can deliver, persist or execute that custody correctly
+across a physical network cut. The node shutdown ambiguity remains open. No conformance
+vector, engine behavior, accepted promise or ruling was changed.
+
+[S3's pre-registration](../014-s3-two-machines/README.md) stands beside this bounded evidence:
+its real machines must distinguish the E15 cut-before/after-effect and revocation cells,
+unavailable from unknown from retired from confirmed stopped, and prove actual placement.
+In particular S3-T6 must witness a nonempty provider-held stop before removal, engine/provider
+restart and retirement where applicable, then match the stop carried after return to the
+old instance/run. It must establish the real provider's custody and network behavior that
+this abstract model assumes. Enrollment remains blocked on written promises. S3 should also
+observe the old and replacement run together in MC4-002's ordering, or demonstrate and
+specify the extra fence its implementation relies on; this model supplies no such fence.
+
+
+## MC4 admin-review revision: model and pre-registration
+
+Registered 2026-11-11 **before running the revised model**. The original expected table
+above remains unchanged. All ten configurations still run Correct; the original ten mutants
+retain their configurations. Two additional mutants run as follows (same P1…P9 and reach order):
+
+| Added variant/configuration | P1…P9 expected | R G D L U X I N Q B K expected |
+| --- | --- | --- |
+| ConfirmLaterLost/Declared | HHFHHHHHH | + - + + + + + + + + + |
+| BadSetupAnswer/Base | HHHHHHFHH | - - - + - + + - - + + |
+
+The machines, nodes, instances, script, fault budgets, bounds, promise accounting (17 modelled,
+four static decisions for vectors, one requiring a Pool), supporting promises and enrollment
+limits above continue to apply. Inspect answers now occupy a separate local action; a second
+local action uses the saved answer. Script advancement waits for that inspection. The provider's
+one optional restart can occur after Exit at any later script step until a stop is asked for,
+including between the retirement inspection and its run request or delivery. It consumes its
+own one-use allowance and does not advance the engine's script. Reports remain untimed.
+These changes remove the review's accidental serialization; no new promise is assumed.
+
+Request ends are saved engine state. The ledger distinguishes that end, caller delivery,
+and a late implementation reply. An unreachable report ends an outstanding dispatched request
+unknown and sends that answer to A. A late reply cannot change it without reconciliation
+(OPS-013, supporting outside the 22). Reconciliation is outside this bounded script.
+
+Every retirement now records whether its placement is lost, independently of the retirement's
+reason. P3 checks that fact on all subsequent retirements. ConfirmLaterLost confirms shutdown
+only on a later request retirement, leaving the declaration's unknown intact. P7 now requires
+both no dispatch and an unavailable answer for every not-ready setup. BadSetupAnswer instead
+answers unknown without dispatching. These mutants must refute P3 and P7 respectively.
+
+Concrete regressions replay cut → unknown end → unknown delivered to A → heal → late reply,
+and stopped inspection → provider restart → run request → second live I. Ledger-only checks
+also reject later lost-node confirmation and either incorrect answer to a blocked setup.
+The full-run test will preserve every newly observed difference from the registered table.
+
+
+The first revised Partition run exceeded the 190,000-state ceiling; it yielded no verdict.
+Before rerunning, its consumer bound is reduced to one request (the other configurations
+retain two). PartitionRetire separately exercises the retirement cut; Base still explores
+the restart race with two requests, and ReorderA/ReorderM2 still explore both requests.
+All Partition variants use that same one-request bound. The cut/heal regression also uses
+one request. This is a stated script bound, not a restriction on permitted provider restart:
+that restart remains freely interleaved through retirement in every configuration. Original
+expectations and their reach entries remain unchanged.
+
+
+The reduced Partition graph also exceeded the ceiling without a verdict. It is split before
+its next run: Partition cuts only before the one consumer request has been dispatched;
+PartitionReply cuts only after dispatch. Both enable exactly one cut and heal on engine↔M2,
+keep the one-request bound, and retain the full retirement/restart suffix. Together they cover
+the one-request cut window. PartitionReply supplies the concrete late-reply regression.
+The original Partition variants remain in the before-dispatch part. The added Correct run
+is registered below; U is absent because its sole request was dispatched before the cut.
+
+| Added configuration | P1…P9 expected | R G D L U X I N Q B K expected |
+| --- | --- | --- |
+| Correct/PartitionReply | HHHHHHHHH | + - - + - + + - + + + |
+
+
+The before-dispatch part still exceeded the ceiling. Before another run, the consumer
+partition is also split by the optional restart's script window: Partition and PartitionReply
+allow it only at step 9; PartitionRestartRace and PartitionReplyRestartRace allow it from
+step 10 through the first stop. The remaining configurations keep the unrestricted window.
+All four consumer parts use one request, exactly one cut/heal budget on engine↔M2 and the
+same 190,000-state/10-second bounds. The two dimensions cover before/after dispatch and
+all restart timings of the reduced script. No verdict from a ceiling-rejected search is used.
+The restart race stays reachable in both added parts, Base and the retirement-fault parts.
+The previous statement of a free restart in every configuration is superseded by this split.
+
+| Added configuration | P1…P9 expected | R G D L U X I N Q B K expected |
+| --- | --- | --- |
+| Correct/PartitionRestartRace | HHHHHHHHH | + - - + + + + - + + + |
+| Correct/PartitionReplyRestartRace | HHHHHHHHH | + - - + - + + - + + + |
+
+
+Partition and PartitionReply exhausted their split graphs, but PartitionRestartRace still
+exceeded the ceiling. Before the next run, all four consumer partition parts additionally
+wait at step 8 for healed consumer messages to drain, before the optional Exit. This keeps
+the cut/heal/late-reply exchange within its own script phase, while permitting the full
+late-reply sequence and both retirement restart windows. Other parts retain their windows.
+All registered verdicts remain unchanged. This excludes consumer messages delayed beyond
+that phase; it does not serialize inspection with restart or add a safety fence.
+
+
+That run again hit the ceiling in PartitionRestartRace. Its next pre-registered bound
+(and PartitionReplyRestartRace's) narrows the delayed restart to the race itself: after
+retirement's inspection answer, before that retirement asks a stop, including while its
+run call is in flight. Other parts still allow restart before the inspection. The two
+race parts therefore sample this later window rather than claiming all delayed restart
+timings. This preserves the permitted counterexample, while excluding non-racing delayed
+restarts from these two fault configurations. Expected verdicts remain untouched.
+
+
+The four consumer parts then exhausted below the bound. Combined exceeded the ceiling.
+Before its next run, Combined is split into the same early-restart window (step 9) and
+CombinedRestartRace (after retirement's inspection answer through its stop). Both still
+include cut → crash → recovery → heal in a single execution; none of the four faults is
+removed. VolatileStop stays in Combined, where its kept-stop-loss trace needs all four.
+The original table remains unchanged. The added row is registered before execution:
+
+| Added configuration | P1…P9 expected | R G D L U X I N Q B K expected |
+| --- | --- | --- |
+| Correct/CombinedRestartRace | HHHHHHHHH | + - - + + + + - + + + |
+
+
+### Revision findings recorded before accepting the full-run table
+
+**MC4-009 — gap (PRV-007, PRV-010, PRV-014, with TPL-018 supporting).** Correct/Base
+refutes P1 without any fault or replacement. I exits; retirement's separate inspection
+answers stopped; the engine asks for a run to serve the hook; before that call arrives,
+the provider restarts I; delivery of the call starts a second I. There is no outstanding
+stop, unknown inspection or root declaration. The first BFS trace has 38 actions, reproduced
+below in the revised results. A concrete regression additionally places the restart between
+the inspection answer and the run request. PRV-007 requires the run call after a stopped
+answer, and PRV-010 permits the restart. Neither supplies atomic exclusion or deduplication.
+The order explicitly models a provider that starts a run on every call. This is a gap in
+guaranteeing the requested at-most-one invariant, rather than a claim that PRV-007 explicitly
+states that aggregate invariant. The model and P1 refutation remain. The same race adds P1
+failures in the unrestricted and race configurations and several mutants. The early
+consumer parts alone still pass P1; early Combined still has MC4-002's replacement gap.
+
+**MC4-010 — pre-registration gap (supporting PRV-007, PLC-023).** Q was registered reached
+but is absent in Correct/Partition, Correct/PartitionRestartRace, UnreachableGone/Partition
+and StaleRunning/Partition (UnknownRun's absence was already MC4-005). The before-dispatch
+cut cannot overlap I's inspection window: the unavailable machine report suppresses its
+setup inspection, and its next inspection follows heal. Q observes I, not J. The after-dispatch
+parts do reach Q. These are bounded witness differences, not new language defects.
+
+**MC4-011 — pre-registration gap (PLC-019).** BadSetupAnswer/Base was registered with B
+reached, but its only blocked setup answers unknown, so B is absent. P7 correctly refutes
+that answer. This is an expected-table accounting error, not a language defect. Its P1
+failure is MC4-009. All original and added expected tables remain unchanged; tests compare
+observations against those tables plus these explicitly recorded differences.
+
+
+## MC4 revised results, 2026-11-11
+
+All four admin-review findings are fixed within MC4. `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` pass. Both full release commands pass:
+**30 tests passed, 0 failed, 0 ignored**, plus 0 doc tests. Ordinary release wall time
+is **60.10 s**, including compilation (48.79 s in tests); the single-test-thread
+output run takes **49.63 s** (48.82 s in tests). These are local timings,
+not ubuntu-latest measurements. All commands use `CARGO_BUILD_JOBS=3`; model checking
+uses two checker threads for full graphs and one for first BFS refutations. No existing
+model or harness source changed in this review round. No timing-sensitive shell test failed.
+The lane coordinator's fixes described below changed `placement.rs` after this round; with them,
+33 tests pass.
+
+Every graph below exhausted; every enabled harness fault has a witness. The largest graph
+has **154,232 unique states**, and the slowest takes
+**4.865 s**, below the unchanged 190,000-state
+and 10-second bounds. Ceiling-rejected development attempts above have no verdict.
+P1…P9 and R G D L U X I N Q B K use the registered orders above. H holds, F refutes,
++ reached and - absent. Report times remain logical observation sequence numbers.
+
+| Variant/configuration | Unique states | Depth | Seconds | P1…P9 observed | R G D L U X I N Q B K observed |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Base | 1,094 | 64 | 0.028 | FHHHHHHHH | - - - + - + + - - + + |
+| Correct/Partition | 120,571 | 61 | 4.079 | HHHHHHHHH | + - - + + + + - - + + |
+| Correct/PartitionReply | 61,980 | 63 | 1.910 | HHHHHHHHH | + - - + - + + - + + + |
+| Correct/PartitionRestartRace | 135,818 | 62 | 4.567 | FHHHHHHHH | + - - + + + + - - + + |
+| Correct/PartitionReplyRestartRace | 69,027 | 64 | 2.135 | FHHHHHHHH | + - - + - + + - + + + |
+| Correct/PartitionRetire | 25,500 | 64 | 0.724 | FHHHHHHHH | + - - + - + + - + + + |
+| Correct/Combined | 114,348 | 69 | 3.627 | FHHHHHHHH | + - - + - + + - + + + |
+| Correct/CombinedRestartRace | 93,351 | 69 | 2.976 | FHHHHHHHH | + - - + - + + - + + + |
+| Correct/LossA | 5,149 | 64 | 0.117 | FHHHHHHHH | - - - + - + + - - + + |
+| Correct/LossM2 | 8,146 | 64 | 0.218 | FHHHHHHHH | - - - + - + + - + + + |
+| Correct/ReorderA | 2,167 | 64 | 0.043 | FHHHHHHHH | - - - + - + + - - + + |
+| Correct/ReorderM2 | 2,181 | 64 | 0.049 | FHHHHHHHH | - - - + - + + - - + + |
+| Correct/Gone | 12,272 | 64 | 0.241 | FHHHHHHHH | - + - + - + + + + + + |
+| Correct/Declared | 11,654 | 62 | 0.250 | FHHHHHHHH | + - + + - + + + - + + |
+| UnreachableGone/Partition | 90,769 | 59 | 2.851 | FFHHHHHHH | + - - + + + + + - + + |
+| UnknownRun/Partition | 154,232 | 61 | 4.865 | FHHHHHHHH | + - - + + + + - - + + |
+| VolatileStop/Combined | 38,604 | 69 | 1.174 | FHHFHHHHH | + - - + - + + - + + + |
+| WrongStop/Base | 626 | 63 | 0.012 | FHHFHHHHH | - - - + - + + - - + + |
+| ConfirmLost/Declared | 11,654 | 62 | 0.243 | FHFHHHHHH | + - + + - + + + - + + |
+| LostHook/Declared | 11,654 | 62 | 0.245 | FHFHHHHHH | + - + + - + + + - + + |
+| WrongMachine/Base | 1,094 | 64 | 0.019 | FHHHFHHHH | - - - + - + + - - + + |
+| StaleRunning/Partition | 120,571 | 61 | 4.141 | HHHHHFHHH | + - - + + + + - - + + |
+| EarlySetup/Base | 1,096 | 66 | 0.030 | FHHHHHFHH | - - - + - + + - - - + |
+| ReuseNode/Declared | 10,574 | 61 | 0.281 | FHHHHHHFH | + - + + - + + - - + + |
+| ConfirmLaterLost/Declared | 11,654 | 62 | 0.243 | FHFHHHHHH | + - + + - + + + - + + |
+| BadSetupAnswer/Base | 1,094 | 64 | 0.029 | FHHHHHFHH | - - - + - + + - - - + |
+
+Five rows above were measured again on 2026-11-11, on the same machine, after the lane
+coordinator fixed two defects that the second round's verifier found in the correct model.
+No verdict or reach changed; only these rows' counts and times did.
+
+- A further retirement of an instance whose node was declared lost now asks for the stop,
+  whatever M2's reported health: gone, unreachable or omitted. PLC-023 covers only an instance
+  on a node that represents the machine, and a lost instance's node represents none (PLC-026).
+  PLC-027 keeps its hook and that hook's run from being asked for, and its stop is asked for
+  all the same. Tests: `further_retirement_after_gone_asks_stop` and
+  `retirement_on_declared_lost_node_asks_stop_when_unreachable`.
+- A report that omits M2 no longer registers a node; only an explicit report of reachable or
+  unreachable does (PLC-026; test `omitted_report_registers_no_node`).
+
+Each of the three tests was run against the code without its fix and failed. A fresh reader
+checked the fixes; its one remaining finding, the unreachable and omitted cases, is fixed here.
+
+### Every difference from the registered tables
+
+This table lists all differing entries, including earlier-round findings. Omitted rows
+agree in every safety and reach entry. The expected tables remain unchanged. MC4-009
+accounts for the added P1 failures; MC4-002 and MC4-007 already account for replacement
+and wrong-stop overlap. U differences are MC4-003, N is MC4-004, Q differences are
+MC4-005/006/008/010, and B is MC4-011. The original node ambiguity MC4-001 remains open.
+
+| Variant/configuration | Expected → observed |
+| --- | --- |
+| Correct/Base | P1: H→F |
+| Correct/Partition | Q: +→- |
+| Correct/PartitionRestartRace | P1: H→F; Q: +→- |
+| Correct/PartitionReplyRestartRace | P1: H→F |
+| Correct/PartitionRetire | P1: H→F |
+| Correct/Combined | P1: H→F; U: +→- |
+| Correct/CombinedRestartRace | P1: H→F; U: +→- |
+| Correct/LossA | P1: H→F |
+| Correct/LossM2 | P1: H→F; Q: -→+ |
+| Correct/ReorderA | P1: H→F |
+| Correct/ReorderM2 | P1: H→F |
+| Correct/Gone | P1: H→F; Q: -→+ |
+| Correct/Declared | P1: H→F; U: +→-; Q: +→- |
+| UnreachableGone/Partition | N: -→+; Q: +→- |
+| UnknownRun/Partition | Q: +→- |
+| VolatileStop/Combined | P1: H→F; U: +→- |
+| WrongStop/Base | P1: H→F |
+| ConfirmLost/Declared | P1: H→F; U: +→-; Q: +→- |
+| LostHook/Declared | P1: H→F; U: +→-; Q: +→- |
+| WrongMachine/Base | P1: H→F |
+| StaleRunning/Partition | Q: +→- |
+| EarlySetup/Base | P1: H→F |
+| ReuseNode/Declared | P1: H→F; U: +→-; Q: +→- |
+| ConfirmLaterLost/Declared | P1: H→F; U: +→-; Q: +→- |
+| BadSetupAnswer/Base | P1: H→F; B: +→- |
+
+### First revised single-thread BFS traces
+
+Each mutant's first trace refutes its named safety property, independently of other failures.
+ConfirmLaterLost's replay also asserts that the root retirement reported unknown before the
+later request confirmed it. BadSetupAnswer's replay asserts no setup dispatch and an unknown
+answer. After those checks, every mutant replay erases all node data and still refutes its
+property using only the ledger. Correct traces retain both model findings. The current first
+PartitionRetire trace reaches the restart race; the original replacement gap also remains
+refuted in the early-restart Combined graph.
+
+**UnreachableGone — 13 actions; PLC-023: unreachable is not gone.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. cut engine+providers (M1) <-> runs+keeper (M2)
+13. engine+providers (M1) Report(Unreachable)
+```
+
+**UnknownRun — 14 actions; PRV-007 PRV-010 PRV-014: at most one live run.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. cut engine+providers (M1) <-> runs+keeper (M2)
+13. engine+providers (M1) InspectAnswer
+14. engine+providers (M1) UseInspect
+```
+
+**VolatileStop — 56 actions; PRV-008 PRV-021 PRV-027: stops kept and addressed.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. engine+providers (M1) InspectAnswer
+13. engine+providers (M1) UseInspect
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. A (M1) Send
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. delivered A (M1) -> engine+providers (M1) [position 0]
+22. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+23. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+24. delivered engine+providers (M1) -> A (M1) [position 0]
+25. engine+providers (M1) Script(6)
+26. engine+providers (M1) InspectAnswer
+27. engine+providers (M1) UseInspect
+28. engine+providers (M1) Script(7)
+29. engine+providers (M1) InspectAnswer
+30. engine+providers (M1) UseInspect
+31. engine+providers (M1) Script(8)
+32. engine+providers (M1) Script(9)
+33. engine+providers (M1) Script(10)
+34. cut engine+providers (M1) <-> runs+keeper (M2)
+35. engine+providers (M1) Report(Unreachable)
+36. engine+providers (M1) Script(11)
+37. engine+providers (M1) Script(12)
+38. crashed engine+providers (M1)
+39. recovered engine+providers (M1)
+40. healed engine+providers (M1) <-> runs+keeper (M2)
+41. engine+providers (M1) Recover
+42. engine+providers (M1) Report(Reachable)
+43. engine+providers (M1) Script(13)
+44. engine+providers (M1) InspectAnswer
+45. engine+providers (M1) UseInspect
+46. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+47. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+48. engine+providers (M1) Script(14)
+49. engine+providers (M1) Script(15)
+50. engine+providers (M1) InspectAnswer
+51. engine+providers (M1) UseInspect
+52. engine+providers (M1) Script(16)
+53. runs+keeper (M2) Carry(1)
+54. runs+keeper (M2) Carry(2)
+55. A (M1) ObserveServers
+56. engine+providers (M1) Quiescent
+```
+
+**WrongStop — 36 actions; PRV-008 PRV-021 PRV-027: stops kept and addressed.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. engine+providers (M1) InspectAnswer
+13. engine+providers (M1) UseInspect
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. A (M1) Send
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. delivered A (M1) -> engine+providers (M1) [position 0]
+22. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+23. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+24. delivered engine+providers (M1) -> A (M1) [position 0]
+25. engine+providers (M1) Script(6)
+26. engine+providers (M1) InspectAnswer
+27. engine+providers (M1) UseInspect
+28. engine+providers (M1) Script(7)
+29. engine+providers (M1) InspectAnswer
+30. engine+providers (M1) UseInspect
+31. engine+providers (M1) Script(8)
+32. engine+providers (M1) Script(9)
+33. engine+providers (M1) Script(10)
+34. engine+providers (M1) Script(11)
+35. engine+providers (M1) InspectAnswer
+36. engine+providers (M1) UseInspect
+```
+
+**ConfirmLost — 43 actions; PLC-017 PLC-024 PLC-027: lost shutdown unknown.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. engine+providers (M1) InspectAnswer
+13. engine+providers (M1) UseInspect
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. A (M1) Send
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. delivered A (M1) -> engine+providers (M1) [position 0]
+22. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+23. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+24. delivered engine+providers (M1) -> A (M1) [position 0]
+25. engine+providers (M1) Script(6)
+26. engine+providers (M1) InspectAnswer
+27. engine+providers (M1) UseInspect
+28. engine+providers (M1) Script(7)
+29. engine+providers (M1) InspectAnswer
+30. engine+providers (M1) UseInspect
+31. engine+providers (M1) Script(8)
+32. engine+providers (M1) Script(9)
+33. engine+providers (M1) Script(10)
+34. engine+providers (M1) Script(11)
+35. engine+providers (M1) InspectAnswer
+36. engine+providers (M1) UseInspect
+37. runs+keeper (M2) Carry(0)
+38. engine+providers (M1) Script(12)
+39. engine+providers (M1) Script(13)
+40. cut engine+providers (M1) <-> runs+keeper (M2)
+41. engine+providers (M1) InspectAnswer
+42. engine+providers (M1) UseInspect
+43. engine+providers (M1) Script(14)
+```
+
+**LostHook — 43 actions; PLC-017 PLC-024 PLC-027: lost shutdown unknown.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. engine+providers (M1) InspectAnswer
+13. engine+providers (M1) UseInspect
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. A (M1) Send
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. delivered A (M1) -> engine+providers (M1) [position 0]
+22. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+23. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+24. delivered engine+providers (M1) -> A (M1) [position 0]
+25. engine+providers (M1) Script(6)
+26. engine+providers (M1) InspectAnswer
+27. engine+providers (M1) UseInspect
+28. engine+providers (M1) Script(7)
+29. engine+providers (M1) InspectAnswer
+30. engine+providers (M1) UseInspect
+31. engine+providers (M1) Script(8)
+32. engine+providers (M1) Script(9)
+33. engine+providers (M1) Script(10)
+34. engine+providers (M1) Script(11)
+35. engine+providers (M1) InspectAnswer
+36. engine+providers (M1) UseInspect
+37. runs+keeper (M2) Carry(0)
+38. engine+providers (M1) Script(12)
+39. engine+providers (M1) Script(13)
+40. cut engine+providers (M1) <-> runs+keeper (M2)
+41. engine+providers (M1) InspectAnswer
+42. engine+providers (M1) UseInspect
+43. engine+providers (M1) Script(14)
+```
+
+**WrongMachine — 9 actions; PLC-002 PRV-015 PRV-019: runs only where placed.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+```
+
+**StaleRunning — 13 actions; PRV-009: status rests on a true report.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. cut engine+providers (M1) <-> runs+keeper (M2)
+13. engine+providers (M1) Report(Unreachable)
+```
+
+**EarlySetup — 4 actions; PLC-019: setup waits for a ready node.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+```
+
+**ReuseNode — 44 actions; PLC-026: returned machine gets a new node.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. engine+providers (M1) InspectAnswer
+13. engine+providers (M1) UseInspect
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. A (M1) Send
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. delivered A (M1) -> engine+providers (M1) [position 0]
+22. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+23. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+24. delivered engine+providers (M1) -> A (M1) [position 0]
+25. engine+providers (M1) Script(6)
+26. engine+providers (M1) InspectAnswer
+27. engine+providers (M1) UseInspect
+28. engine+providers (M1) Script(7)
+29. engine+providers (M1) InspectAnswer
+30. engine+providers (M1) UseInspect
+31. engine+providers (M1) Script(8)
+32. engine+providers (M1) Script(9)
+33. engine+providers (M1) Script(10)
+34. engine+providers (M1) Script(11)
+35. engine+providers (M1) InspectAnswer
+36. engine+providers (M1) UseInspect
+37. runs+keeper (M2) Carry(0)
+38. engine+providers (M1) Script(12)
+39. engine+providers (M1) Script(13)
+40. cut engine+providers (M1) <-> runs+keeper (M2)
+41. engine+providers (M1) InspectAnswer
+42. engine+providers (M1) UseInspect
+43. engine+providers (M1) Script(14)
+44. engine+providers (M1) Report(Unreachable)
+```
+
+**ConfirmLaterLost — 45 actions; PLC-017 PLC-024 PLC-027: lost shutdown unknown.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. engine+providers (M1) InspectAnswer
+13. engine+providers (M1) UseInspect
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. A (M1) Send
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. delivered A (M1) -> engine+providers (M1) [position 0]
+22. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+23. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+24. delivered engine+providers (M1) -> A (M1) [position 0]
+25. engine+providers (M1) Script(6)
+26. engine+providers (M1) InspectAnswer
+27. engine+providers (M1) UseInspect
+28. engine+providers (M1) Script(7)
+29. engine+providers (M1) InspectAnswer
+30. engine+providers (M1) UseInspect
+31. engine+providers (M1) Script(8)
+32. engine+providers (M1) Script(9)
+33. engine+providers (M1) Script(10)
+34. engine+providers (M1) Script(11)
+35. engine+providers (M1) InspectAnswer
+36. engine+providers (M1) UseInspect
+37. runs+keeper (M2) Carry(0)
+38. engine+providers (M1) Script(12)
+39. engine+providers (M1) Script(13)
+40. cut engine+providers (M1) <-> runs+keeper (M2)
+41. engine+providers (M1) InspectAnswer
+42. engine+providers (M1) UseInspect
+43. engine+providers (M1) Script(14)
+44. healed engine+providers (M1) <-> runs+keeper (M2)
+45. engine+providers (M1) Script(15)
+```
+
+**BadSetupAnswer — 4 actions; PLC-019: setup waits for a ready node.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+```
+
+**Correct/PartitionRetire — 38 actions; PRV-007 PRV-010 PRV-014: at most one live run.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. engine+providers (M1) InspectAnswer
+13. engine+providers (M1) UseInspect
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. A (M1) Send
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. delivered A (M1) -> engine+providers (M1) [position 0]
+22. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+23. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+24. delivered engine+providers (M1) -> A (M1) [position 0]
+25. engine+providers (M1) Script(6)
+26. engine+providers (M1) InspectAnswer
+27. engine+providers (M1) UseInspect
+28. engine+providers (M1) Script(7)
+29. engine+providers (M1) InspectAnswer
+30. engine+providers (M1) UseInspect
+31. runs+keeper (M2) Exit
+32. engine+providers (M1) Script(9)
+33. engine+providers (M1) Script(10)
+34. engine+providers (M1) Script(11)
+35. engine+providers (M1) InspectAnswer
+36. engine+providers (M1) UseInspect
+37. runs+keeper (M2) Restart
+38. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+```
+
+**Correct/Base — 38 actions; PRV-007 PRV-010 PRV-014: at most one live run.**
+
+```text
+1. engine+providers (M1) Report(Reachable)
+2. engine+providers (M1) Script(0)
+3. engine+providers (M1) Script(1)
+4. engine+providers (M1) Script(2)
+5. engine+providers (M1) Script(3)
+6. engine+providers (M1) Script(4)
+7. engine+providers (M1) InspectAnswer
+8. engine+providers (M1) UseInspect
+9. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+10. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+11. engine+providers (M1) Script(5)
+12. engine+providers (M1) InspectAnswer
+13. engine+providers (M1) UseInspect
+14. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+15. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+16. A (M1) Send
+17. delivered A (M1) -> engine+providers (M1) [position 0]
+18. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+19. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+20. delivered engine+providers (M1) -> A (M1) [position 0]
+21. delivered A (M1) -> engine+providers (M1) [position 0]
+22. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+23. delivered runs+keeper (M2) -> engine+providers (M1) [position 0]
+24. delivered engine+providers (M1) -> A (M1) [position 0]
+25. engine+providers (M1) Script(6)
+26. engine+providers (M1) InspectAnswer
+27. engine+providers (M1) UseInspect
+28. engine+providers (M1) Script(7)
+29. engine+providers (M1) InspectAnswer
+30. engine+providers (M1) UseInspect
+31. runs+keeper (M2) Exit
+32. engine+providers (M1) Script(9)
+33. engine+providers (M1) Script(10)
+34. engine+providers (M1) Script(11)
+35. engine+providers (M1) InspectAnswer
+36. engine+providers (M1) UseInspect
+37. runs+keeper (M2) Restart
+38. delivered engine+providers (M1) -> runs+keeper (M2) [position 0]
+```
+
+### What the revision shows and what S3 must add
+
+The revised bounded model keeps unknown request ends through late implementation replies,
+checks lost-placement shutdown on later retirements, and requires unavailable for every
+blocked setup. The added mutants demonstrate the latter two checks. P2 through P9 hold in
+all 14 correct configurations. P1's restart race is a gap even without a fault or a new ID;
+the earlier unknown-stop/replacement gap remains separate. Neither counterexample is
+repaired by an unstated fence. The lost node's own LIF-025 shutdown classification still
+needs the owner's clarification. The accounting remains **17 modelled, four static decisions
+for vectors, one requiring a Pool**; OPS-013 is an additional supporting promise outside the
+22. Enrollment remains spec pending and needed before S3.
+
+The model checks finite scripts, selected cut and restart windows, and abstract durable-stop
+custody. It does not prove every fault timing, arbitrary provider policies, unbounded safety,
+fairness, actual persistence, authorization or enrollment. In particular, the consumer cut
+parts use one request and drain its healed exchange before the exit/restart phase; their
+race parts restrict restart to after retirement's inspection answer. Base, PartitionRetire,
+LossA/LossM2, ReorderA/ReorderM2, Gone and Declared retain the unrestricted pre-stop restart
+window. Combined's two parts each keep all four faults together. Physical machine return
+clears the vanished run's restart allowance; it represents a new machine, not resurrection
+of the lost process.
+
+[S3](../014-s3-two-machines/README.md) must supply E15's real-machine observations: actual
+placement, an unknown request that stays unknown after a late reply until reconciled, durable
+stop completion after removal/restart/retirement, distinct unavailable/retired/unknown/stopped
+states, and fresh node identity on return. It must also exercise the inspected-stopped versus
+provider-restart race and the old-ID/replacement overlap, or identify the provider contract
+that prevents them. This experiment adds no such contract, and changes no specification,
+engine code, conformance vector, ruling or record.
 
 ## MC5a — gates and identity: model registered before execution
 

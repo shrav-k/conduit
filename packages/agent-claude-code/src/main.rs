@@ -44,8 +44,7 @@ impl ServerHandler for Wrapper {
         let turn = tokio::select! {
             biased;
             _ = context.ct.cancelled() => {
-                session.cancel().await;
-                return Err(cancelled());
+                Err(session.cancel().await)
             }
             result = session.turn(message) => result,
         };
@@ -53,8 +52,8 @@ impl ServerHandler for Wrapper {
             Ok(value) => {
                 json!({"content":[{"type":"text","text":value["text"]}],"structuredContent":value,"isError":false})
             }
-            Err(_) => {
-                json!({"content":[{"type":"text","text":"client turn failed; session cannot restart implicitly"}],"isError":true})
+            Err(error) => {
+                json!({"content":[{"type":"text","text":error.to_string()}],"isError":true})
             }
         };
         Ok(serde_json::from_value::<CallToolResult>(result)
@@ -81,7 +80,9 @@ async fn run() -> Result<()> {
     } else {
         anyhow::ensure!(args.is_empty(), "unknown wrapper arguments");
     }
-    prepare(&config)?;
+    if config.configuration_error.is_none() && prepare(&config).is_err() {
+        config.configuration_error = Some("invalid configuration: cannot prepare run files".into());
+    }
     let session = Arc::new(Mutex::new(Session::new(config)));
     let service = Wrapper(session.clone())
         .serve(rmcp::transport::stdio())

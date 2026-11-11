@@ -38,6 +38,10 @@ fn config(parent: &std::path::Path, account_services: bool, peer_messaging: bool
         peer_messaging,
         model: Some("test-model".into()),
         timeout: Duration::from_secs(10),
+        own_tools: None,
+        directory: None,
+        effort: None,
+        configuration_error: None,
     }
 }
 fn expected_args(c: &Config, thread: Option<&str>) -> Vec<String> {
@@ -216,6 +220,10 @@ async fn four_reach_combinations_exact_launch_and_same_conversation() {
                         expected_settings["crossSessionInbound"] = json!("refuse");
                     }
                     assert_eq!(evidence["settings"], expected_settings);
+                    assert_eq!(
+                        evidence["mcp"],
+                        json!({"mcpServers":{"engine":{"type":"http","url":c.url,"headersHelper":helper_command(&c)}}})
+                    );
                 }
                 assert_eq!(
                     value["clientTools"]["status"],
@@ -463,15 +471,514 @@ async fn cancellation_skips_queued_work_and_stops_active_work() {
         .unwrap();
     let next: CallToolRequestParams =
         serde_json::from_value(json!({"name":"turn","arguments":{"message":"QUEUED"}})).unwrap();
-    assert_eq!(
-        tokio::time::timeout(Duration::from_secs(5), service.call_tool(next))
-            .await
+    let failed = tokio::time::timeout(Duration::from_secs(5), service.call_tool(next))
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(failed.is_error, Some(true));
+    assert!(
+        serde_json::to_string(&failed)
             .unwrap()
-            .unwrap()
-            .is_error,
-        Some(true)
+            .contains("session failed at turn 3: cancelled; implicit restart refused")
     );
     assert!(!c.cwd.join("queued-launched").exists());
     service.cancel().await.unwrap();
     child.wait().await.unwrap();
+}
+
+fn expected_v2_args(c: &Config, thread: Option<&str>) -> Vec<String> {
+    if CLAUDE {
+        let mut a: Vec<String> = ["--print", "--setting-sources", "", "--settings"]
+            .map(str::to_owned)
+            .into();
+        a.push(c.cwd.join("settings.json").display().to_string());
+        a.extend([
+            "--strict-mcp-config".into(),
+            "--mcp-config".into(),
+            c.cwd.join("mcp.json").display().to_string(),
+        ]);
+        a.extend(
+            [
+                "--model",
+                "test-model",
+                "--tools",
+                match (c.own_tools == Some(true), c.account_services, c.peer_messaging) {
+                    (true, false, false) => "Bash,Read,Edit,Write,Glob,Grep,WebFetch",
+                    (true, true, false) => "Bash,Read,Edit,Write,Glob,Grep,WebFetch,WebSearch",
+                    (true, false, true) => "Bash,Read,Edit,Write,Glob,Grep,WebFetch,SendMessage,ListAgents,RemoteTrigger",
+                    (true, true, true) => "Bash,Read,Edit,Write,Glob,Grep,WebFetch,WebSearch,SendMessage,ListAgents,RemoteTrigger",
+                    (false, _, true) => "SendMessage,ListAgents,RemoteTrigger",
+                    _ => "",
+                },
+                "--allowedTools",
+                if c.peer_messaging {
+                    "mcp__engine__*,SendMessage,ListAgents,RemoteTrigger"
+                } else {
+                    "mcp__engine__*"
+                },
+                "--no-session-persistence",
+                "--output-format",
+                "stream-json",
+                "--input-format",
+                "stream-json",
+                "--verbose",
+                "--include-partial-messages",
+                "--disable-slash-commands",
+            ]
+            .map(str::to_owned),
+        );
+        if !c.peer_messaging {
+            a.extend(
+                ["--disallowedTools", "SendMessage,ListAgents,RemoteTrigger"].map(str::to_owned),
+            );
+        }
+        if c.own_tools == Some(true) {
+            a.extend(
+                [
+                    "--permission-mode",
+                    "bypassPermissions",
+                    "--permission-prompts",
+                    "none",
+                ]
+                .map(str::to_owned),
+            );
+        }
+        if let Some(effort) = &c.effort {
+            a.extend(["--effort".into(), effort.clone()]);
+        }
+        a
+    } else {
+        let mut a: Vec<String> = [
+            "exec",
+            "--sandbox",
+            if c.own_tools == Some(true) {
+                "danger-full-access"
+            } else {
+                "read-only"
+            },
+            "--color",
+            "never",
+            "--model",
+            "test-model",
+        ]
+        .map(str::to_owned)
+        .into();
+        a.extend([
+            "--cd".into(),
+            c.directory.as_ref().unwrap_or(&c.cwd).display().to_string(),
+        ]);
+        if thread.is_some() {
+            a.push("resume".into());
+        }
+        a.extend(
+            [
+                "--ignore-user-config",
+                "--strict-config",
+                "--ignore-rules",
+                "--skip-git-repo-check",
+                "--json",
+            ]
+            .map(str::to_owned),
+        );
+        a.extend([
+            if c.account_services {
+                "--enable"
+            } else {
+                "--disable"
+            }
+            .into(),
+            "apps".into(),
+        ]);
+        let features: &[&str] = if c.own_tools == Some(true) {
+            &[
+                "browser_use",
+                "browser_use_external",
+                "in_app_browser",
+                "computer_use",
+                "multi_agent",
+                "multi_agent_v2",
+                "multi_agent_v2_dynamic_tools",
+                "hooks",
+                "plugins",
+                "goals",
+                "image_generation",
+            ]
+        } else {
+            &[
+                "shell_tool",
+                "unified_exec",
+                "browser_use",
+                "browser_use_external",
+                "in_app_browser",
+                "computer_use",
+                "multi_agent",
+                "multi_agent_v2",
+                "multi_agent_v2_dynamic_tools",
+                "hooks",
+                "plugins",
+                "view_image",
+                "goals",
+                "image_generation",
+            ]
+        };
+        for feature in features {
+            a.extend(["--disable".into(), (*feature).into()]);
+        }
+        let expected_helper = format!(
+            "'{}' --headers-helper --identity-dir '{}'",
+            binary(),
+            c.identity.display()
+        );
+        for s in [
+            format!("mcp_servers.engine.url={}", json!(c.url)),
+            format!(
+                "mcp_servers.engine.http_headers_helper={}",
+                json!(expected_helper)
+            ),
+            "mcp_servers.engine.startup_readiness=\"connection\"".into(),
+            "mcp_servers.engine.required=true".into(),
+            "mcp_servers.engine.default_tools_approval_mode=\"approve\"".into(),
+            if c.own_tools == Some(true) && c.account_services {
+                "web_search=\"live\""
+            } else {
+                "web_search=\"disabled\""
+            }
+            .into(),
+            "project_doc_max_bytes=0".into(),
+        ] {
+            a.extend(["-c".into(), s]);
+        }
+        a.extend(["-c".into(), "mcp_servers.engine.tool_timeout_sec=10".into()]);
+        if let Some(effort) = &c.effort {
+            a.extend([
+                "-c".into(),
+                format!("model_reasoning_effort={}", json!(effort)),
+            ]);
+        }
+        if let Some(t) = thread {
+            a.push(t.into());
+        }
+        a.push("-".into());
+        a
+    }
+}
+
+#[tokio::test]
+async fn v2_exact_launch_directories_and_private_files() {
+    for own in [false, true] {
+        for account in [false, true] {
+            for peer in [false, true] {
+                for directory in [false, true] {
+                    for effort in [false, true] {
+                        let parent = tempfile::tempdir().unwrap();
+                        let mut c = config(parent.path(), account, peer);
+                        c.own_tools = Some(own);
+                        c.effort = effort.then(|| "high".into());
+                        let work = parent.path().join("project");
+                        fs::create_dir(&work).unwrap();
+                        if directory {
+                            c.directory = Some(work.canonicalize().unwrap());
+                        }
+                        if CLAUDE {
+                            c.env.insert("MCP_TOOL_TIMEOUT".into(), "10000".into());
+                        }
+                        prepare(&c).unwrap();
+                        let mut session = Session::new(c.clone());
+                        for turn in 1..=2 {
+                            let thread = (turn == 2 && !CLAUDE).then_some("fixture-exact-thread");
+                            let expected = expected_v2_args(&c, thread);
+                            assert_eq!(arguments(&c, thread), expected);
+                            if let Some(i) = expected.iter().position(|s| s == "resume") {
+                                for flag in ["--sandbox", "--model", "--cd"] {
+                                    assert!(expected.iter().position(|s| s == flag).unwrap() < i);
+                                }
+                            }
+                            let reply = session.turn("TEST").await.unwrap();
+                            let evidence: Value =
+                                serde_json::from_str(reply["text"].as_str().unwrap()).unwrap();
+                            assert_eq!(evidence["args"], json!(expected));
+                            assert_eq!(
+                                evidence["cwd"],
+                                json!(c.directory.as_ref().unwrap_or(&c.cwd))
+                            );
+                            if CLAUDE {
+                                assert_eq!(
+                                    evidence["settings"]["permissions"]["defaultMode"],
+                                    if own { "bypassPermissions" } else { "dontAsk" }
+                                );
+                                assert_eq!(
+                                    evidence["mcp"]["mcpServers"]["engine"]["timeout"],
+                                    10000
+                                );
+                                assert_eq!(evidence["environment"]["MCP_TOOL_TIMEOUT"], "10000");
+                                assert!(c.cwd.join("settings.json").exists());
+                                assert!(c.cwd.join("mcp.json").exists());
+                            } else {
+                                assert!(evidence["environment"].get("MCP_TOOL_TIMEOUT").is_none());
+                            }
+                        }
+                        session.shutdown().await;
+                        let names: Vec<_> = fs::read_dir(&work)
+                            .unwrap()
+                            .map(|e| e.unwrap().file_name())
+                            .collect();
+                        assert_eq!(
+                            names,
+                            if directory {
+                                vec![std::ffi::OsString::from("client-started")]
+                            } else {
+                                vec![]
+                            }
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+async fn assert_failure(c: Config, message: &str, cause: &str, warmup: bool) {
+    prepare(&c).unwrap();
+    let mut session = Session::new(c.clone());
+    if warmup {
+        session.turn("TEST").await.unwrap();
+    }
+    let k = if warmup { 2 } else { 1 };
+    let first = session.turn(message).await.unwrap_err().to_string();
+    assert_eq!(
+        first,
+        format!("client turn {k} failed: {cause}; session cannot restart implicitly")
+    );
+    let marker = c.cwd.join("client-started");
+    if marker.exists() {
+        fs::remove_file(&marker).unwrap();
+    }
+    let next = session.turn("TEST").await.unwrap_err().to_string();
+    assert_eq!(
+        next,
+        format!("session failed at turn {k}: {cause}; implicit restart refused")
+    );
+    assert!(!marker.exists());
+    assert!(!first.contains("sentinel-secret"));
+    assert!(!next.contains("sentinel-secret"));
+}
+
+#[tokio::test]
+async fn fixed_failure_causes_in_both_versions() {
+    for v2 in [false, true] {
+        let mut cases = vec![
+            ("EOF", "EOF before turn boundary", false),
+            ("ERROR", "client failure: other", false),
+            ("EXIT:7", "client exit: status 7", false),
+            ("SIGNAL", "client exit: signal 9", false),
+            ("INVALID_JSON", "invalid client output", false),
+            ("FAIL:QuOtA", "client failure: usage-limit", false),
+            ("FAIL:429", "client failure: rate-limit", false),
+            ("FAIL:API KEY", "client failure: authentication", false),
+            (
+                "FAIL:Prompt is too long",
+                "client failure: context-window",
+                false,
+            ),
+            ("FAIL:unrecognized", "client failure: other", false),
+            ("FAIL_NO_TEXT", "client failure: other", false),
+            (
+                "FAIL:quota 429 unauthorized context window",
+                "client failure: usage-limit",
+                false,
+            ),
+            (
+                "FAIL:rate_limit credential",
+                "client failure: rate-limit",
+                false,
+            ),
+            (
+                "FAIL:log in context_length",
+                "client failure: authentication",
+                false,
+            ),
+        ];
+        if !CLAUDE {
+            cases.extend([
+                ("NO_THREAD", "no thread", false),
+                ("MISSING_THREAD", "invalid client output", false),
+                ("CHANGED_THREAD", "resume changed thread", true),
+                ("ERROR_FAILED", "client failure: authentication", false),
+                ("ERROR_EXIT", "client failure: usage-limit", false),
+                ("COMPLETED_EXIT", "client exit: status 4", false),
+            ]);
+        }
+        for (message, cause, warmup) in cases {
+            let parent = tempfile::tempdir().unwrap();
+            let mut c = config(parent.path(), false, false);
+            if v2 {
+                c.own_tools = Some(true);
+            }
+            assert_failure(c, message, cause, warmup).await;
+        }
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        if v2 {
+            c.own_tools = Some(true);
+        }
+        c.model = Some("exit-at-start".into());
+        assert_failure(c, &"X".repeat(1024 * 1024), "client exit: status 2", false).await;
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        if v2 {
+            c.own_tools = Some(true);
+        }
+        c.program = parent.path().join("absent-client");
+        assert_failure(c, "TEST", "client did not start", false).await;
+    }
+}
+
+#[tokio::test]
+async fn deadline_and_retry_events() {
+    for v2 in [false, true] {
+        let parent = tempfile::tempdir().unwrap();
+        let mut c = config(parent.path(), false, false);
+        c.timeout = Duration::from_secs(1);
+        if v2 {
+            c.own_tools = Some(true);
+        }
+        let cause = if v2 {
+            "deadline: no turn boundary within 1 seconds (input turnDeadlineSeconds)"
+        } else {
+            "deadline: no turn boundary within 1 seconds"
+        };
+        assert_failure(c, "BLOCK", cause, false).await;
+        {
+            let parent = tempfile::tempdir().unwrap();
+            let mut c = config(parent.path(), false, false);
+            if v2 {
+                c.own_tools = Some(true);
+            }
+            prepare(&c).unwrap();
+            let mut session = Session::new(c);
+            assert!(session.turn("ERROR_COMPLETED").await.is_ok());
+            assert!(session.turn("TEST").await.is_ok());
+            session.shutdown().await;
+        }
+    }
+}
+
+#[tokio::test]
+async fn stdio_v2_defaults_and_invalid_configuration_remain_callable() {
+    use rmcp::ServiceExt;
+    for case in [
+        "valid",
+        "relative",
+        "missing",
+        "zero",
+        "too-large",
+        "fraction",
+        "effort",
+        "own",
+        "account",
+        "v1",
+    ] {
+        let parent = tempfile::tempdir().unwrap();
+        let c = config(parent.path(), false, false);
+        let mut command = tokio::process::Command::new(binary());
+        command
+            .args(["--client-program", env!("CARGO_BIN_EXE_scripted-client")])
+            .env_clear()
+            .envs(&c.env)
+            .env("AGENT_ACCOUNT_SERVICES", "false")
+            .env("AGENT_OWN_TOOLS", "true")
+            .env("AGENT_TURN_DEADLINE_SECONDS", "604800")
+            .current_dir(&c.cwd)
+            .kill_on_drop(true)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+        let expected = match case {
+            "relative" => {
+                command.env("AGENT_DIRECTORY", "relative");
+                "directory: not an absolute path: relative".into()
+            }
+            "missing" => {
+                let path = parent.path().join("missing");
+                command.env("AGENT_DIRECTORY", &path);
+                format!("directory: not an existing directory: {}", path.display())
+            }
+            "zero" | "too-large" | "fraction" => {
+                command.env(
+                    "AGENT_TURN_DEADLINE_SECONDS",
+                    match case {
+                        "zero" => "0",
+                        "fraction" => "1.5",
+                        _ => "604801",
+                    },
+                );
+                "turnDeadlineSeconds (AGENT_TURN_DEADLINE_SECONDS): expected whole number from 1 to 604800".into()
+            }
+            "effort" => {
+                command.env("AGENT_EFFORT", "HIGH");
+                "effort (AGENT_EFFORT): expected lowercase ASCII letters".into()
+            }
+            "own" => {
+                command.env("AGENT_OWN_TOOLS", "yes");
+                "AGENT_OWN_TOOLS: expected true or false".into()
+            }
+            "account" => {
+                command.env("AGENT_ACCOUNT_SERVICES", "yes");
+                "AGENT_ACCOUNT_SERVICES: expected true or false".into()
+            }
+            "v1" => {
+                command
+                    .env_remove("AGENT_OWN_TOOLS")
+                    .env("AGENT_PEER_MESSAGING", "yes");
+                "AGENT_PEER_MESSAGING: expected true or false".into()
+            }
+            _ => String::new(),
+        };
+        let mut child = command.spawn().unwrap();
+        let service =
+            ().serve((child.stdout.take().unwrap(), child.stdin.take().unwrap()))
+                .await
+                .unwrap();
+        let tools = service.list_all_tools().await.unwrap();
+        assert_eq!(tools.len(), 1);
+        assert_eq!(tools[0].name, "turn");
+        for _ in 0..2 {
+            let call =
+                serde_json::from_value(json!({"name":"turn","arguments":{"message":"TEST"}}))
+                    .unwrap();
+            let reply = service.call_tool(call).await.unwrap();
+            assert_eq!(reply.is_error, Some(case != "valid"));
+            let reply = serde_json::to_value(reply).unwrap();
+            if case != "valid" {
+                assert_eq!(
+                    reply["content"][0]["text"],
+                    format!("invalid configuration: {expected}")
+                );
+                assert!(!c.cwd.join("client-started").exists());
+            } else {
+                let evidence: Value =
+                    serde_json::from_str(reply["structuredContent"]["text"].as_str().unwrap())
+                        .unwrap();
+                assert_eq!(evidence["cwd"], json!(c.cwd));
+                assert!(
+                    !evidence["args"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|s| s == "--model" || s == "--effort")
+                );
+                if CLAUDE {
+                    assert_eq!(evidence["environment"]["MCP_TOOL_TIMEOUT"], "604800000");
+                    assert_eq!(
+                        evidence["mcp"]["mcpServers"]["engine"]["timeout"],
+                        604800000
+                    );
+                }
+            }
+        }
+        service.cancel().await.unwrap();
+        let output = child.wait_with_output().await.unwrap();
+        assert!(output.status.success());
+        assert!(output.stderr.is_empty());
+    }
 }

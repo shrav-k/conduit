@@ -539,7 +539,7 @@ These records hold the decisions and their reasons. The specification governs wh
 - [Round 5 decisions](../docs/proposals/reaudit/round-5/DECISIONS.md): the fifth re-audit's settlements.
 - [Round 6 decisions](../docs/proposals/reaudit/round-6/DECISIONS.md): the sixth re-audit's settlements.
 - [Open decisions after the rewrite](../docs/proposals/ruling-41/open-decisions.md): the coordinator's decisions and questions for the owner.
-- [The planner's choices](../docs/proposals/ruling-41/PLAN.md#planners-choices) and [the owner's changes](../docs/proposals/ruling-41/README.md#after-the-ruling): applying ruling 41.
+- [The planner's choices](../docs/proposals/ruling-41/README.md#planners-choices) and [the owner's changes](../docs/proposals/ruling-41/README.md#after-the-ruling): applying ruling 41.
 - [The principles review](../docs/proposals/principles-review/README.md): connection and access, with providers behind contracts.
 - [The secrets proposal](../docs/proposals/secrets/README.md): the secret type's reasoning and options.
 - [The vocabulary audit](../docs/proposals/vocabulary-audit/README.md): the terms and names in force.

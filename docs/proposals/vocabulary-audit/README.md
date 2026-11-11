@@ -12,12 +12,12 @@ audit as well". This is a proposal. Nothing in it is ruled.
 
 The audit read the whole of [`spec/`](../../../spec/README.md) as rulings 40 and 41 left it, in
 the terms of [spec/definitions.md](../../../spec/definitions.md). It covers the names that the
-review and the work order coined ([P1](../ruling-41/PLAN.md#planners-choices) and the
-[terms](../ruling-41/PLAN.md#1-terms) of the work order), the terms of the new promise files
+review and the work order coined ([P1](../ruling-41/README.md#planners-choices) and the
+[terms](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md#1-terms) of the work order), the terms of the new promise files
 [providers.yaml](../../../spec/promises/providers.yaml) and
 [secrets.yaml](../../../spec/promises/secrets.yaml), the exports of the
 [core package](../../../spec/core/README.md), and the terms that the integration left
-[for the next editors](../ruling-41/log-integration.md#for-the-next-editors).
+[for the next editors](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md#for-the-next-editors).
 
 Five readers each read the specification through a different lens. Their 47 proposals were
 merged by term. Two checks then challenged each one: one on precedent, one on clarity and
@@ -128,7 +128,7 @@ its capability's name: runtime provider for `runtime-provider.v1`. A search for 
 misses the other. And "machine" is defined as a computer, so PRV-014's "The engine's own
 machine reports the machine the engine runs on" reads as a computer reporting itself. The
 authors already read the phrase as the computer: `docs/OVERVIEW.md` and D15 of the
-[coverage check](../ruling-41/log-integration.md#coverage-check) do. The work order coined
+[coverage check](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/log-integration.md#coverage-check) do. The work order coined
 both forms, and neither is a standard term.
 
 **Options.**
@@ -136,7 +136,7 @@ both forms, and neither is a standard term.
 | Name | Precedent | Source |
 | --- | --- | --- |
 | machine provider (prose), keeping `machine-provider.v1` | A noun used as a modifier is singular, as in Kubernetes' "cloud provider". Conduit's pair runtime provider and `runtime-provider.v1` | https://kubernetes.io/docs/concepts/architecture/cloud-controller/ |
-| machines provider, with the export renamed `machines-provider.v1` | The work order's term | [PLAN.md](../ruling-41/PLAN.md#1-terms) |
+| machines provider, with the export renamed `machines-provider.v1` | The work order's term | [PLAN.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md#1-terms) |
 | the engine's own machine provider | A built-in keeps its role's name. Nomad: "The Nomad binary contains several bundled task drivers". Kubernetes: "If no runtimeClassName is specified, the default RuntimeHandler will be used" | https://developer.hashicorp.com/nomad/docs/job-declare/task-driver, https://kubernetes.io/docs/concepts/containers/runtime-class/ |
 
 **Recommendation.** Write "machine provider" and keep `machine-provider.v1`. Write "the
@@ -689,7 +689,7 @@ and are for the coordinator to apply. E17 waits for N1, and E10 and E13 change w
 | E19 | definitions.md, row record; REC-001 and CON-007, observables | "a request, a provider call or an event"; "Each such event"; "after the event" | "a request, a provider call or another occurrence"; "Each such occurrence"; "after it" | CloudEvents: "An "event" is a data record expressing an occurrence", so a record is the event |
 | E20 | definitions.md, rows Agent and model work; docs/OVERVIEW.md, the families table | "Its model being run is model work"; "An Agent's model being run: a turn started or continued" | "A turn of its model is model work"; "A turn of an Agent's model, started or continued" | Run now names the running of an item, which starts no model work (IMP-002) |
 | E21 | SEC-001's observable | "This rule is stricter than OBJ-021" | "This rule is narrower than OBJ-021" | OBJ-021 and the row reference schema say narrower, and the row narrow is in force: C20 removed only the key `narrows` |
-| E22 | definitions.md, the history paragraph of its head | About 50 lines on rows that no longer exist | One sentence with a link; the paragraph moves to the [docs log](../ruling-41/log-docs.md) of ruling 41 | A cold reader meets removed features before the first term. This reverses the docs editor's logged choice, so the coordinator strikes it or applies it |
+| E22 | definitions.md, the history paragraph of its head | About 50 lines on rows that no longer exist | One sentence with a link; the paragraph moves to the [docs log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-editorial.md#the-history-of-the-rows-before-ruling-41) of ruling 41 | A cold reader meets removed features before the first term. This reverses the docs editor's logged choice, so the coordinator strikes it or applies it |
 | E23 | spec/core/README.md, the Names table and the export table; spec/core/templates.yaml, head comment | NAM-020 cited for the template `location` | The Names table: "except `location`, which FST-005 names"; drop NAM-020 from the other two | NAM-020 resolves the core package and names no template |
 
 ## Considered and kept

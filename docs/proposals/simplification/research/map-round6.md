@@ -15,7 +15,7 @@ Not binding. The [specification](../../../../spec/README.md) alone binds. A work
   - D18 changed ACC-033's form, not its answers. Its `then` is 418 words now, against 406 before (spec/conventions/access.yaml:652).
   - The promise count went from 452 at round 6, to 454 after D06 and D12, to 455 now.
 - **FIRST_BUILD.md:32 and A68 (AUDIT.md:818) expect this to be recorded.** They ask that the measurements be reported "beside what they show for the simplifications that round 6 proposed". The answer is that they show approximately nothing for S1's authoring cost.
-- **The earlier big cut was ruling 41**, which applied the principles review of 2026-11-06. It removed 67 promises and added 59, taking the count from 434 to 426 (ruling-41/PLAN.md, "Counts").
+- **The earlier big cut was ruling 41**, which applied the principles review of 2026-11-06. It removed 67 promises and added 59, taking the count from 434 to 426 (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md, "Counts").
   - It removed graphs, runtimes in templates, policies, composite Conduits, requirement composition, `obliges`, re-exports, rename, the retrieval tool, the default location and location facts, and `narrows`.
   - Several of these cuts kept S1's documents shorter than they would have been: no graphs, no runtimes, no placement lines.
   - Three of them moved cost into exactly S1's change tasks:
@@ -102,7 +102,7 @@ Sources:
 
 ## 4. Ruling 41: what was cut before, and why
 
-Sources: principles-review/README.md §2, ruling-41/README.md, ruling-41/PLAN.md "Decisions checklist" and "Counts". The owner's ruling on 2026-11-06 was "Accept all". The principles were P1 (swappable behind a contract), P2 (no architectural invention) and P3 (not overcomplicated).
+Sources: principles-review/README.md §2, ruling-41/README.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md "Decisions checklist" and "Counts". The owner's ruling on 2026-11-06 was "Accept all". The principles were P1 (swappable behind a contract), P2 (no architectural invention) and P3 (not overcomplicated).
 
 | Item | What was cut | Why (precedent) | Cost the review admitted | Effect on S1 |
 | --- | --- | --- | --- | --- |
@@ -216,7 +216,7 @@ Figures are from coordinator-run-2026-11-10.md:82-96 unless marked "my recount" 
 | Experiment programme | D01, D02, D05, D08, D09, D10, D15, D16, D19, D20 | DECISIONS.md |
 | S1 author lines saved by the applied round-6 simplifications | 0 (no S1 author file uses `implementation`, `controls`, `expectedId`, `inputSchema` or local `#` references) | grep over both runs' files |
 | Promises: before ruling 41 / after it / round 6 / after D06 and D12 / now | 434 / 426 / 452 / 454 / 455 | PLAN.md Counts; https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-d06-d12.md; my count of `- id:` lines |
-| Ruling 41: promises removed / added | 67 / 59 | ruling-41/PLAN.md |
+| Ruling 41: promises removed / added | 67 / 59 | https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-41/PLAN.md |
 | ACC-033 `then`, words, before D18 / now | 406 / 418 | critique :512; my count |
 | Lines written: baseline / coordinator / fresh author | 64 / 332 / 646 JSON + 130 script | results files |
 | Coordinator lines T1..T7 | 154, 73, 0, 2, 62, 29, 12 | coordinator-run:42 |

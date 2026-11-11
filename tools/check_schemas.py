@@ -187,22 +187,22 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 
 # The rules of step 6, each with the promise it comes from. A file under
 # examples/invalid-by-rule/ is named for one of these promises. Ruling 42 (2026-11-06,
-# docs/proposals/ruling-42/log-core.md) added plain-provider and secret-only, made
+# https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-core.md) added plain-provider and secret-only, made
 # label-conflict compare the selected items with each other, and made item-place-required
 # reject a place at which the schema admits an object or an array, or null for a required
-# input. Ruling 42's names (docs/proposals/ruling-42/log-rename-a.md) renamed location-type
+# input. Ruling 42's names (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-rename-a.md) renamed location-type
 # to node-type, for the type `node.v1`, and made label-conflict read `nodeSelector`. Its
-# other names (docs/proposals/ruling-42/log-rename-b.md) made secret-only read
+# other names (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-rename-b.md) made secret-only read
 # `secret-provider.v1`, and item-place-required read an item's `packageArguments`, matched
 # to the Package's own `packageArguments` alone. Its editorial fix E17
-# (docs/proposals/ruling-42/log-editorial.md) made secret-only's message say the type of a
+# (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-42/log-editorial.md) made secret-only's message say the type of a
 # secret Resource, where it said a secret store's Type, and renamed its example to
 # SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml; E12 made the docstring
 # of bundle say that a reference references the `spec` of a contract, as SCH-015 now says.
-# Ruling 43 (2026-11-06, docs/proposals/ruling-43/log-core.md) added identity-name (MAN-018)
+# Ruling 43 (2026-11-06, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-core.md) added identity-name (MAN-018)
 # and secret-header-https (SEC-024), let a set under examples/invalid-by-rule/ hold its
 # project's manifest, and checks that `run.v1` holds the names of `identity` that
-# spec/names.yaml fixes. Its verification (docs/proposals/ruling-43/log-integration.md,
+# spec/names.yaml fixes. Its verification (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-integration.md,
 # "Verification") made identity-name compare names without regard to case, made
 # secret-header-https reject an `http` URL whose host is a variable of the Remote, and checks
 # that `run.v1` holds exactly the files of `identity`, and requires every one but the

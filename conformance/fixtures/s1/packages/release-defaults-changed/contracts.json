@@ -1,0 +1,218 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "description": "Read a UTF-8 file through read_text_file; its text is MCP content.",
+      "name": "file.read.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "description": "List a directory through list_directory; its listing is MCP content.",
+      "name": "directory.list.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "description": "Write the supplied UTF-8 content at path through write_file, creating or replacing the file.",
+      "name": "file.write.v1"
+    },
+    "spec": {
+      "effect": "Creates or replaces the file at path with content.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "path": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "directory.v1"
+    },
+    "spec": {
+      "operations": [
+        "#file.read.v1",
+        "#directory.list.v1",
+        "#file.write.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "local-directory.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "implementation": {
+        "#directory.list.v1": "#filesystem-server",
+        "#file.read.v1": "#filesystem-server",
+        "#file.write.v1": "#filesystem-server"
+      },
+      "offers": [
+        "#directory.v1"
+      ],
+      "records": {
+        "inputs": true,
+        "outputs": false
+      },
+      "schema": {
+        "$defs": {
+          "settings": {
+            "properties": {
+              "enabled": {
+                "default": false,
+                "type": "boolean"
+              },
+              "next": {
+                "$ref": "#/$defs/settings"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "root": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#settings.v1"
+          },
+          "values": {
+            "default": {
+              "count": 1,
+              "steps": [
+                1,
+                2
+              ]
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "root"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "read"
+    },
+    "spec": {
+      "capability": "#directory.v1",
+      "operations": [
+        "#file.read.v1",
+        "#directory.list.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "read-write"
+    },
+    "spec": {
+      "capability": "#directory.v1",
+      "operations": [
+        "#file.read.v1",
+        "#directory.list.v1",
+        "#file.write.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Schema",
+    "metadata": {
+      "name": "settings.v1"
+    },
+    "spec": {
+      "$defs": {
+        "subsettings": {
+          "properties": {
+            "depth": {
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "nested": {
+          "$ref": "#/$defs/subsettings"
+        },
+        "next": {
+          "$ref": "#"
+        }
+      },
+      "type": "object"
+    }
+  }
+]

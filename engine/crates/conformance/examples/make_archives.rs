@@ -1,6 +1,235 @@
 //! Reproduce repository-authored installation fixtures. Never fetches or runs a provider.
 use flate2::{Compression, GzBuilder};
+use serde_json::{Value, json};
 use std::{collections::BTreeMap, fs, io::Write, path::Path};
+
+fn write_fixture(path: &Path, bytes: &[u8], check: bool) {
+    if check {
+        assert_eq!(fs::read(path).unwrap(), bytes, "{}", path.display());
+    } else {
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, bytes).unwrap();
+    }
+}
+fn documents(path: &Path) -> Vec<Value> {
+    conduit_loader::read_file(path)
+        .unwrap()
+        .into_iter()
+        .map(|d| d.root.to_json())
+        .collect()
+}
+fn json_bytes(value: &Value) -> Vec<u8> {
+    let mut bytes = serde_json::to_vec_pretty(value).unwrap();
+    bytes.push(b'\n');
+    bytes
+}
+fn release_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, Vec<u8>>) {
+    let packages = root.join("conformance/fixtures/s1/packages");
+    let mut releases = vec![];
+    for version in ["0.1.1", "0.2.1"] {
+        let source = if version == "0.1.1" {
+            "filesystem"
+        } else {
+            "filesystem-0.2.0"
+        };
+        let mut manifest = documents(&packages.join(source).join("conduit.yaml")).remove(0);
+        manifest["version"] = json!(version);
+        let mut docs = documents(&packages.join(source).join("contracts.yaml"));
+        for (name, operations) in [
+            ("read", vec!["#file.read.v1", "#directory.list.v1"]),
+            (
+                "read-write",
+                vec!["#file.read.v1", "#directory.list.v1", "#file.write.v1"],
+            ),
+        ] {
+            docs.push(json!({"apiVersion":manifest["apiVersion"],"kind":"Conduit","metadata":{"name":name},"spec":{"capability":"#directory.v1","operations":operations}}));
+            manifest["exports"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!(name));
+        }
+        releases.push((format!("filesystem-{version}"), manifest, docs));
+    }
+    let mut manifest = documents(&packages.join("agents/conduit.yaml")).remove(0);
+    manifest["version"] = json!("0.2.0");
+    let mut docs = documents(&packages.join("agents/contracts.yaml"));
+    let names = conduit_loader::read_file(&root.join("spec/names.yaml")).unwrap();
+    let core = conduit_loader::Names::from_node(&names[0].root)
+        .unwrap()
+        .core_package;
+    // C12: registration-only fixtures, no signIn or hooks. PKG-031: turn template.
+    for name in ["claude-code.v2", "codex.v2"] {
+        let mut properties = json!({
+            "accountServices":{"type":"boolean","default":false},
+            "model":{"type":"string","default":""},
+            "account":{"type":["string","null"]},
+            "apiKey":{"anyOf":[{"$ref":format!("{}#secret-reference.v1", core)},{"type":"null"}],"default":null}
+        });
+        if name == "claude-code.v2" {
+            properties["peerMessaging"] = json!({"type":"boolean","default":false});
+        }
+        docs.push(json!({"apiVersion":manifest["apiVersion"],"kind":"Type","metadata":{"name":name},"spec":{
+            "family":"Agent","schema":{"type":"object","properties":properties,"required":["account"],"additionalProperties":false,
+                "oneOf":[{"properties":{"account":{"type":"string"},"apiKey":{"type":"null"}}},{"properties":{"account":{"type":"null"},"apiKey":{"type":"object"}},"required":["apiKey"]}]},
+            "offers":["#conversation.v1"],"requires":[],"records":{"inputs":false,"outputs":false}
+        }}));
+        manifest["exports"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!(name));
+    }
+    // Reuse the native fixture's conversation contracts; no implementation is run.
+    docs.extend(
+        documents(&root.join("conformance/fixtures/agents/agent-claude-code/contracts.yaml"))
+            .into_iter()
+            .filter(|d| d["kind"] != "Type"),
+    );
+    docs.push(json!({"apiVersion":manifest["apiVersion"],"kind":"Conduit","metadata":{"name":"turn"},"spec":{"capability":"#conversation.v1","operations":["#turn.v1"]}}));
+    manifest["exports"].as_array_mut().unwrap().extend([
+        json!("conversation.v1"),
+        json!("turn.v1"),
+        json!("turn"),
+    ]);
+    releases.push(("agents-0.2.0".into(), manifest, docs));
+    for ty in
+        releases.last().unwrap().2.iter().filter(|d| {
+            d["kind"] == "Type" && d["metadata"]["name"].as_str().unwrap().ends_with(".v2")
+        })
+    {
+        let name = ty["metadata"]["name"].as_str().unwrap();
+        let mut values = vec![
+            json!({"account":"agent@example.org"}),
+            json!({"account":null,"apiKey":{"kind":"Resource","name":"api-key"}}),
+            json!({}),
+            json!({"account":null}),
+            json!({"account":"agent@example.org","apiKey":{"kind":"Resource","name":"api-key"}}),
+            json!({"account":"agent@example.org","accountServices":true,"model":"chosen"}),
+        ];
+        values.push(json!({"account":"agent@example.org","peerMessaging":true}));
+        let fixture = json!({"environment":{"scopes":{"main":{"address":"example.org/s1/agents","manifest":{},"contracts":{}}}},"scope":"main","schema":ty["spec"]["schema"],"samples":values.into_iter().map(|value|json!({"mode":"supplied","value":value})).collect::<Vec<_>>()});
+        write_fixture(
+            &root
+                .join("conformance/language/packages/agents-v2-defaults")
+                .join(format!("{name}-values.json")),
+            &json_bytes(&fixture),
+            check,
+        );
+    }
+
+    // NAM-024 admission pairs, isolated from the published S1 fixtures and T5.
+    let (_, manifest, docs) = releases[0].clone();
+    for (label, default, segment) in [
+        ("default", true, false),
+        ("optional", false, false),
+        ("segment", true, true),
+    ] {
+        let mut manifest = manifest.clone();
+        manifest["version"] = json!("0.1.2");
+        let mut docs = docs.clone();
+        let ty = docs.iter_mut().find(|d| d["kind"] == "Type").unwrap();
+        ty["spec"]["schema"]["properties"]["depth"] = if default {
+            json!({"type":"integer","default":1})
+        } else {
+            json!({"type":"integer"})
+        };
+        if segment {
+            ty["metadata"]["name"] = json!("local-directory.v2");
+            // A new name supplements rather than overwrites the published Type.
+            docs.push(
+                releases[0]
+                    .2
+                    .iter()
+                    .find(|d| d["kind"] == "Type")
+                    .unwrap()
+                    .clone(),
+            );
+            manifest["exports"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!("local-directory.v2"));
+        }
+        releases.push((format!("release-adds-{label}"), manifest, docs));
+    }
+    // Round 2: defaults are compared at reference use sites, with recursive
+    // local and Schema-contract refs, and retained values use SCH-007 equality.
+    let (_, mut base_manifest, mut base_docs) = releases[0].clone();
+    base_manifest["exports"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!("settings.v1"));
+    let schema = &mut base_docs.iter_mut().find(|d| d["kind"] == "Type").unwrap()["spec"]["schema"];
+    schema["properties"]["enabled"] = json!({"type":"boolean","default":false});
+    schema["properties"]["values"] = json!({"type":"object","default":{"count":1,"steps":[1,2]}});
+    schema["properties"]["settings"] = json!({"$ref":"#settings.v1"});
+    schema["$defs"] = json!({"settings":{"type":"object","properties":{
+        "enabled":{"type":"boolean","default":false},
+        "next":{"$ref":"#/$defs/settings"}
+    }}});
+    base_docs.push(json!({"apiVersion":base_manifest["apiVersion"],"kind":"Schema","metadata":{"name":"settings.v1"},"spec":{
+        "type":"object","properties":{
+            "enabled":{"type":"boolean","default":false},
+            "nested":{"$ref":"#/$defs/subsettings"},
+            "next":{"$ref":"#"}
+        },
+        "$defs":{"subsettings":{"type":"object","properties":{"depth":{"type":"integer","default":1}}}}
+    }}));
+    releases.push((
+        "release-defaults-base".into(),
+        base_manifest.clone(),
+        base_docs.clone(),
+    ));
+    for label in [
+        "referenced",
+        "schema-contract",
+        "recursive",
+        "changed",
+        "removed",
+        "equal",
+        "reordered",
+    ] {
+        let mut manifest = base_manifest.clone();
+        manifest["version"] = json!("0.1.2");
+        let mut docs = base_docs.clone();
+        let schema = &mut docs.iter_mut().find(|d| d["kind"] == "Type").unwrap()["spec"]["schema"];
+        match label {
+            "referenced" => schema["properties"]["options"] = json!({"$ref":"#/$defs/settings"}),
+            "schema-contract" => schema["properties"]["options"] = json!({"$ref":"#settings.v1"}),
+            "recursive" => {
+                let settings = docs
+                    .iter_mut()
+                    .find(|d| d["metadata"]["name"] == "settings.v1")
+                    .unwrap();
+                settings["spec"]["properties"]["alias"] = json!({"$ref":"#"});
+            }
+            "changed" => schema["properties"]["enabled"]["default"] = json!(true),
+            "removed" => {
+                schema["properties"]["enabled"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("default");
+            }
+            "equal" => {
+                schema["properties"]["values"]["default"] = json!({"steps":[1.0,2.0],"count":1.0})
+            }
+            "reordered" => {
+                schema["properties"]["values"]["default"] = json!({"count":1,"steps":[2,1]})
+            }
+            _ => unreachable!(),
+        }
+        releases.push((format!("release-defaults-{label}"), manifest, docs));
+    }
+    for (name, manifest, docs) in releases {
+        let entries: BTreeMap<_, _> = [("conduit.json", manifest), ("contracts.json", json!(docs))]
+            .into_iter()
+            .map(|(file, value)| {
+                let bytes = json_bytes(&value);
+                write_fixture(&packages.join(&name).join(file), &bytes, check);
+                (file.to_string(), (bytes, b'0', String::new()))
+            })
+            .collect();
+        generated.insert(name, archive(entries));
+    }
+}
 
 fn member(name: &str, data: &[u8], kind: u8, target: &str) -> Vec<u8> {
     let mut h = tar::Header::new_ustar();
@@ -191,6 +420,7 @@ fn main() {
     generated.insert("hardlink".into(), archive(hard));
     generated.insert("not-gzip".into(), b"not a gzip archive".to_vec());
     generated.insert("not-tar".into(), gzip(b"not a tar archive"));
+    release_fixtures(&root, check, &mut generated);
     for (name, bytes) in &generated {
         let path = out.join(format!("{name}.tar.gz"));
         if check {

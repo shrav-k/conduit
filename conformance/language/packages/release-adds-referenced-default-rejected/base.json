@@ -1,0 +1,11 @@
+{
+  "name": "filesystem",
+  "address": "example.org/s1/filesystem",
+  "version": "0.1.1",
+  "digest": "sha256:704978d213912b4e65bd4d8bc891149394fed4a544249fb5cabd26b3f680b513",
+  "directory": "file:///packages/release-defaults-base/",
+  "completion": {
+    "status": "complete",
+    "file": "base-archive"
+  }
+}

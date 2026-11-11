@@ -1,0 +1,11 @@
+{
+  "name": "filesystem",
+  "address": "example.org/s1/filesystem",
+  "version": "0.1.2",
+  "digest": "sha256:26d1cdb7739e8b1d23bfa48da33999268b03e91e06b643d1217c8eb068eaf455",
+  "directory": "file:///packages/release-defaults-referenced/",
+  "completion": {
+    "status": "complete",
+    "file": "later-archive"
+  }
+}

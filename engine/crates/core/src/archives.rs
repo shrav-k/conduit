@@ -294,11 +294,12 @@ pub(crate) fn install(
     entries.push(package.clone());
     // Resolve as a package scope, not as a submitted project: exports, dependencies and
     // every document are checked with the same semantics as the existing catalog.
-    let resolution = Catalog::new(builtin, entries, &context.core_package)?.resolve(&Project {
-        manifest: None,
-        documents: vec![],
-        directory: None,
-    })?;
+    let resolution =
+        Catalog::new(builtin, entries.clone(), &context.core_package)?.resolve(&Project {
+            manifest: None,
+            documents: vec![],
+            directory: None,
+        })?;
     t.decisions.extend(resolution.decisions);
     if resolution.reply["accepted"] != true {
         let mut diagnostics = resolution.reply["diagnostics"]
@@ -310,6 +311,43 @@ pub(crate) fn install(
                 d["ruleId"] = json!("PKG-028");
             }
         }
+        reject(t, diagnostics);
+        return Ok(());
+    }
+    // Resolve first so local and Schema-contract refs use the admitted catalog,
+    // including each release's own dependency pins (NAM-014, SCH-015).
+    let env = serde_json::from_value(resolution.reply["environment"].clone())
+        .map_err(|e| e.to_string())?;
+    let candidate = format!("snapshot-{}", entries.len() - 1);
+    // NAM-024 applies in either installation order, only within one contract name.
+    for (i, installed) in entries[..entries.len() - 1]
+        .iter()
+        .enumerate()
+        .filter(|(_, s)| s.address == package.address)
+    {
+        let old_version = semver::Version::parse(&installed.version).map_err(|e| e.to_string())?;
+        let new_version = semver::Version::parse(&package.version).map_err(|e| e.to_string())?;
+        let installed_scope = format!("snapshot-{i}");
+        let (earlier, later) = if old_version.cmp_precedence(&new_version).is_lt() {
+            (&installed_scope, &candidate)
+        } else {
+            (&candidate, &installed_scope)
+        };
+        diagnostics.extend(release_default_diagnostics(
+            &env,
+            earlier,
+            later,
+            &context.core_package,
+        )?);
+    }
+    t.decisions.push(decision(
+        "compare-release-defaults",
+        &["NAM-024", "SCH-007", "SCH-009", "SCH-015"],
+        &[],
+        json!({"address":package.address,"version":package.version}),
+        vec![],
+    ));
+    if !diagnostics.is_empty() {
         reject(t, diagnostics);
         return Ok(());
     }

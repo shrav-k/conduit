@@ -1,0 +1,11 @@
+{
+  "name": "filesystem",
+  "address": "example.org/s1/filesystem",
+  "version": "0.1.2",
+  "digest": "sha256:d0a7a5af5c961c1fba9c919af1ba8b92f6ace0d711bfb931717122b343a7ae96",
+  "directory": "file:///packages/release-defaults-schema-contract/",
+  "completion": {
+    "status": "complete",
+    "file": "later-archive"
+  }
+}

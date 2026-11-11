@@ -1,0 +1,92 @@
+{
+  "id": "release-new-version-segment-with-default-accepted",
+  "title": "release-new-version-segment-with-default-accepted",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "NAM-024",
+    "PKG-023"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "base": "base.json",
+    "base-archive": "../../../fixtures/install-archives/filesystem-0.1.1.tar.gz",
+    "later": "later.json",
+    "later-archive": "../../../fixtures/install-archives/release-adds-segment.tar.gz"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "base"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": []
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "install-archive",
+        "file": "later"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true,
+          "outcome": "succeeded",
+          "changed": true,
+          "diagnostics": []
+        },
+        "required_promises": [
+          "NAM-024",
+          "PKG-023"
+        ],
+        "records": [],
+        "external_intents": [],
+        "state": {
+          "installed_packages": [
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.1",
+                "digest": "sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614"
+              }
+            },
+            {
+              "package": {
+                "address": "example.org/s1/filesystem",
+                "version": "0.1.2",
+                "digest": "sha256:7d8113d9a3bafd6de0055a0d17a9f7ccf7ffab4977189c6e2552669eb53fa7e7"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

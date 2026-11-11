@@ -1,0 +1,48 @@
+{
+  "address": "example.org/s1/filesystem",
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "exports": [
+    "local-directory.v1",
+    "directory.v1",
+    "file.read.v1",
+    "directory.list.v1",
+    "file.write.v1",
+    "read",
+    "read-write"
+  ],
+  "implementations": {
+    "filesystem-server": {
+      "implements": [
+        "#file.read.v1",
+        "#directory.list.v1",
+        "#file.write.v1"
+      ],
+      "package": {
+        "fileSha256": "65aba6b962efa7fdfdd51d70b48c06e7786c8bbc57292520dec21924836031df",
+        "identifier": "@modelcontextprotocol/server-filesystem",
+        "packageArguments": [
+          {
+            "isRequired": true,
+            "type": "positional",
+            "valueHint": "root"
+          }
+        ],
+        "registryType": "npm",
+        "transport": {
+          "type": "stdio"
+        },
+        "version": "2.1.0"
+      },
+      "packageArguments": {
+        "root": "/root"
+      },
+      "plain": true,
+      "tools": {
+        "#directory.list.v1": "list_directory",
+        "#file.read.v1": "read_text_file",
+        "#file.write.v1": "write_file"
+      }
+    }
+  },
+  "version": "0.1.1"
+}

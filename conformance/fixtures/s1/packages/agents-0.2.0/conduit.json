@@ -1,0 +1,14 @@
+{
+  "address": "example.org/s1/agents",
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "exports": [
+    "claude-code.v1",
+    "codex.v1",
+    "claude-code.v2",
+    "codex.v2",
+    "conversation.v1",
+    "turn.v1",
+    "turn"
+  ],
+  "version": "0.2.0"
+}

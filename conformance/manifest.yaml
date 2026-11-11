@@ -4360,6 +4360,124 @@
       "safety_rows": [
         "state-dir-binding"
       ]
+    },
+    {
+      "id": "release-adds-default-rejected",
+      "case": "language/packages/release-adds-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "PKG-031",
+        "NAM-018",
+        "NAM-022"
+      ]
+    },
+    {
+      "id": "release-adds-optional-accepted",
+      "case": "language/packages/release-adds-optional-accepted/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "PKG-031",
+        "NAM-018",
+        "NAM-022"
+      ]
+    },
+    {
+      "id": "release-new-version-segment-with-default-accepted",
+      "case": "language/packages/release-new-version-segment-with-default-accepted/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023"
+      ]
+    },
+    {
+      "id": "agents-v2-defaults",
+      "case": "language/packages/agents-v2-defaults/case.yaml",
+      "promises": [
+        "NAM-024",
+        "SCH-009",
+        "PKG-031",
+        "NAM-018",
+        "NAM-022"
+      ]
+    },
+    {
+      "id": "release-adds-referenced-default-rejected",
+      "case": "language/packages/release-adds-referenced-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-adds-schema-contract-default-rejected",
+      "case": "language/packages/release-adds-schema-contract-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-adds-recursive-default-rejected",
+      "case": "language/packages/release-adds-recursive-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-changes-default-rejected",
+      "case": "language/packages/release-changes-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-removes-default-rejected",
+      "case": "language/packages/release-removes-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-equal-default-accepted",
+      "case": "language/packages/release-equal-default-accepted/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-reorders-default-rejected",
+      "case": "language/packages/release-reorders-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
     }
   ],
   "s1_coverage": [
@@ -4937,8 +5055,15 @@
     },
     {
       "promise": "SCH-007",
-      "vectors": [],
-      "reason": "Related input/default/reference cases exist, but no case declares an isolated assertion of this complete rule. Port its positive and negative boundary checks in the coverage follow-up (I2-09)."
+      "vectors": [
+        "release-adds-referenced-default-rejected",
+        "release-adds-schema-contract-default-rejected",
+        "release-adds-recursive-default-rejected",
+        "release-changes-default-rejected",
+        "release-removes-default-rejected",
+        "release-equal-default-accepted",
+        "release-reorders-default-rejected"
+      ]
     },
     {
       "promise": "SCH-008",
@@ -4955,7 +5080,14 @@
         "schema-applicator-defaults",
         "schema-conflicting-defaults",
         "schema-equal-defaults",
-        "registration-requirement-schema-default"
+        "registration-requirement-schema-default",
+        "release-adds-referenced-default-rejected",
+        "release-adds-schema-contract-default-rejected",
+        "release-adds-recursive-default-rejected",
+        "release-changes-default-rejected",
+        "release-removes-default-rejected",
+        "release-equal-default-accepted",
+        "release-reorders-default-rejected"
       ]
     },
     {
@@ -5009,7 +5141,14 @@
         "schema-equal-defaults",
         "packages-exact",
         "packages-schema-kind",
-        "registration-reference-chains"
+        "registration-reference-chains",
+        "release-adds-referenced-default-rejected",
+        "release-adds-schema-contract-default-rejected",
+        "release-adds-recursive-default-rejected",
+        "release-changes-default-rejected",
+        "release-removes-default-rejected",
+        "release-equal-default-accepted",
+        "release-reorders-default-rejected"
       ]
     },
     {
@@ -5311,13 +5450,23 @@
     },
     {
       "promise": "NAM-024",
-      "vectors": [],
-      "reason": "Release compatibility across installed package versions has no portable admission pair. Required before T5; one-release S1 does not demonstrate this rule."
+      "vectors": [
+        "release-adds-default-rejected",
+        "release-adds-optional-accepted",
+        "release-new-version-segment-with-default-accepted",
+        "release-adds-referenced-default-rejected",
+        "release-adds-schema-contract-default-rejected",
+        "release-adds-recursive-default-rejected",
+        "release-changes-default-rejected",
+        "release-removes-default-rejected",
+        "release-equal-default-accepted",
+        "release-reorders-default-rejected"
+      ]
     },
     {
       "promise": "NAM-025",
       "vectors": [],
-      "reason": "This is a should recommendation for package authors, not a core acceptance verdict. The mandatory compatibility check is NAM-024, separately marked as uncovered."
+      "reason": "This is a should recommendation for package authors, not a core acceptance verdict. NAM-024 has separate install vectors."
     },
     {
       "promise": "NAM-026",
@@ -5514,7 +5663,14 @@
         "archives-link-expansions-41",
         "archives-project-unheld",
         "archives-no-project-holder",
-        "archives-package-holder"
+        "archives-package-holder",
+        "release-adds-referenced-default-rejected",
+        "release-adds-schema-contract-default-rejected",
+        "release-adds-recursive-default-rejected",
+        "release-changes-default-rejected",
+        "release-removes-default-rejected",
+        "release-equal-default-accepted",
+        "release-reorders-default-rejected"
       ]
     },
     {

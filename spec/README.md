@@ -4,7 +4,7 @@ Status on 2026-11-11: draft, begun 2026-11-05. Incomplete, and not a release. Ev
 been written as promises, and the core package, the JSON Schemas of documents and the
 manifest's format have been written as documents. The first build has a strict loader, a pure
 core on S1 and a runnable engine shell in [engine/](../engine/README.md).
-There are 382 portable vectors under [conformance/](../conformance/README.md), testing slices
+There are 393 portable vectors under [conformance/](../conformance/README.md), testing slices
 of promises; the [manifest](../conformance/manifest.yaml) records the coverage and its gaps.
 This remains a draft: the model and vectors do not yet cover the whole specification, and the
 next cold read follows the first build. Ruling 38, point 4, asks for agreement between the

@@ -131,6 +131,10 @@ Only the owner settles these questions; later-stage questions below retain their
 | Ruling 7 PL8: fork-from-checkpoint, whose current status is unclear | [Placement](proposals/placement/README.md#pl8--change-and-failure) |
 | Ruling 46 point 2's fallback of two Claude Code instances against ruling 47's real-client gate | [Ruling 46](proposals/ruling-46/README.md), [ruling 47](proposals/ruling-47/README.md) |
 | Ruling 1's retained reference clones after increments 1 to 3, whose current status is unclear | [Ruling 1 as given](proposals/ruling-log.md#history-rulings-1-to-37-as-given), [reference repositories](archive/plan-audit-history.md#reference-repositories) |
+| Spec batch 1, R1: how a person's sign-ins count in the S1 rerun (needed by order 053) | [Spec batch 1](proposals/spec-batch-1/README.md#for-the-owner) |
+| Spec batch 1, R2: whether admitting a machine requires the fingerprint the person read (needed by order 038b) | [Spec batch 1](proposals/spec-batch-1/README.md#for-the-owner) |
+| Spec batch 1, R3: when peer engines land, and whether the admitted Interface counts as root (ruling 62 C4) | [Spec batch 1](proposals/spec-batch-1/README.md#for-the-owner) |
+| The readings spec batch 1 applies, each the coordinator's and strikeable | [Spec batch 1](proposals/spec-batch-1/README.md#for-the-owner) |
 | Readiness G8: close open questions or put them outside builders' scope; G11: owner's sign-off | [Readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) |
 
 ## Known to be open

@@ -1,0 +1,2 @@
+conduit install conformance/fixtures/s1/archives/history.tar.gz
+conduit apply .

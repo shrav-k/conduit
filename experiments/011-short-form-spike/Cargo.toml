@@ -1,0 +1,11 @@
+[package]
+name = "short-form-spike"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+
+[dependencies]
+conduit-loader = { path = "../../reference-model/crates/loader" }
+conduit-core = { path = "../../reference-model/crates/core" }
+serde_json = "1"

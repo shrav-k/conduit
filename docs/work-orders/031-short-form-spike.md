@@ -66,3 +66,12 @@ repository root: `python3 tools/check_docs.py`, `python3 tools/set_names.py --ch
 `python3 tools/check_schemas.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass; in
 the experiment, `cargo test --release`, `cargo clippy --all-targets -- -D warnings` and
 `cargo fmt --check` pass. Report the total passed and failed. Do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 14 minutes, then a fresh verifier in 4, which found nothing to fix
+and reproduced the results. The exact translation is refused by today's kernel because it emits
+`as`, one of ruling 53's additions not yet in the specification (finding 031-01); with `as` dropped,
+all fourteen states register. In flow style S1 costs 55 lines on paper against the baseline's 64,
+better on two tasks and worse on T1 and T7; in block style 97. The admin reran the spike's tests:
+9 pass.

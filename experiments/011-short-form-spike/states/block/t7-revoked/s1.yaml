@@ -1,0 +1,55 @@
+templates:
+  conduits:
+    read:
+      capability: example.org/s1/filesystem#directory.v1
+      operations:
+        - example.org/s1/filesystem#file.read.v1
+        - example.org/s1/filesystem#directory.list.v1
+    write:
+      capability: example.org/s1/filesystem#directory.v1
+      operations:
+        - example.org/s1/filesystem#file.read.v1
+        - example.org/s1/filesystem#directory.list.v1
+        - example.org/s1/filesystem#file.write.v1
+pools:
+  s1:
+    type: github.com/shrav-k/conduit/core#pool.v1
+resources:
+  shared:
+    type: example.org/s1/filesystem#local-directory.v1
+    owner: s1
+    config:
+      root: /lab/replacement
+  history:
+    type: example.org/s1/history#file-history.v1
+    owner: s1
+    config:
+      root: /lab/history
+agents:
+  agent-a:
+    type: example.org/s1/agents#claude-code.v1
+    config:
+      accountServices: false
+      peerMessaging: false
+    consumes:
+      history:
+        to:
+          kind: Resource
+          name: history
+        from: write
+  agent-b:
+    type: example.org/s1/agents#codex.v1
+    config:
+      accountServices: false
+      peerMessaging: false
+    consumes:
+      project:
+        to:
+          kind: Resource
+          name: shared
+        from: read
+      history:
+        to:
+          kind: Resource
+          name: history
+        from: write

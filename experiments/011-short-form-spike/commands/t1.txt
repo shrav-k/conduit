@@ -1,0 +1,3 @@
+conduit install conformance/fixtures/s1/archives/filesystem.tar.gz
+conduit install conformance/fixtures/s1/archives/agents.tar.gz
+conduit apply .

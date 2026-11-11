@@ -1,0 +1,1 @@
+conduit apply . --replace agent-a--project --replace agent-b--project

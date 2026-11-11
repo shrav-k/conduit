@@ -16,7 +16,7 @@ per consumer (the plan's F3), `expectedId` on open.v1 and close.v1, tool descrip
 target and its Type, and ruling 62's C1 (only root opens, or registers, a Conduit whose consumer is
 root, ACC-054). Read the plan's order 039 and its conflicts that touch it, the promises 036a wrote
 (OBJ-001, OBJ-013, IFC-014, IFC-033, LIF-037, ACC-054 and their neighbours), the staged edits in
-`docs/work-orders/036b-staged/039.md`, and the engine's `engine/crates/core/src/registration.rs`,
+`docs/work-orders/036b-staged/039.md` and `039.patch`, and the engine's `engine/crates/core/src/registration.rs`,
 `requests.rs` and `schemas.rs`.
 
 ## What to do
@@ -25,7 +25,8 @@ root, ACC-054). Read the plan's order 039 and its conflicts that touch it, the p
    `expectedId` on open and close through LIF-037's path in `requests.rs`; ACC-054's sender check on
    open and on register; IFC-033's descriptions in `schemas.rs`. Every decision the core makes cites
    its promise, as the core does today.
-2. **Land the staged edits** of `036b-staged/039.md` verbatim, and delete them from the staged file.
+2. **Land the staged edits**: apply `036b-staged/039.patch` exactly (`git apply`), then delete
+   `039.patch` and `039.md`.
 3. **Vectors.** The twelve the plan names: conduit-as, conduit-as-invalid, as-unique, as-declared,
    expected-id-open, expected-id-close, expected-id-access-order, e05-description-target,
    e05-description-bare, root-consumer-open, root-consumer-onward, root-consumer-register, each

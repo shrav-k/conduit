@@ -104,57 +104,69 @@ kind: Operation
 metadata:
   name: register.v1
   description: >-
-    Register the documents of one submission. The `documents` and the `manifest` of one request
-    are one project: the documents and the one manifest handed over together. Templates and
-    instances are added to the objects that exist, registering an instance document instantiates
-    its template, and contracts and implementations are made available to the project. Nothing
-    is set up or opened. Authorized against `management`; registering a Resource into a Pool
-    that already exists also needs an open Conduit to that Pool that lists this operation.
-    `objects` lists every template and instance the request added, nested instances among
-    them, and says of each nested instance which nested instantiation made it. A registration
-    that is rejected is not dispatched, reports invalid, and its result still carries
-    `diagnostics`. A registration fetches and installs no package: one whose manifest lists a
-    package that is not installed at the version and digest the manifest gives is rejected,
-    and a diagnostic names each such package. A project that holds a contract or lists an
-    implementation, and whose manifest states no `address`, is rejected, and so is one whose
-    `address` is that of an installed package. The request hands the manifest over as a
-    value, with no directory, so an item of `packages` whose `fetch` is a relative reference,
-    and an implementation item whose program is a relative path, are rejected. A Resource
-    document whose owner is a retired Pool is rejected, and so is an instance document whose
-    `runtime` names a retired runtime provider. Where the machine provider is to place an
-    instance that the request would make and cannot place it now, as when it is not ready or a
-    node that matches represents a machine reported unreachable or omitted, the registration is
-    not dispatched and reports unavailable; for want of a machine it is rejected where no node
-    matches, and where the provider names none, unless a node other than `local` that is not
-    retired and matches represents a machine reported unreachable or omitted. A template is
-    rejected where an item selected for it binds, in its `environment`, a variable that
-    `identity` carries in `run.v1`; and where an item reached by `remote` that is selected for
-    it carries a secret, in a header or as the value of `get-secret.v1`, to an `http` URL whose
-    host is not `localhost`, an IPv4 address in `127.0.0.0/8` or the IPv6 address `::1`, or
-    stands at one of those hosts, whatever its scheme and headers, on an engine that, as
+    Register the documents of one submission. The `documents` and the `manifest` of one request are
+    one project: the documents and the one manifest handed over together. Templates and instances
+    are added to the objects that exist, registering an instance document instantiates its template,
+    and contracts and implementations are made available to the project. No submitted instance is
+    set up and no submitted Conduit is opened; the engine opens only the root defaults required by
+    FLEET-005. Authorized against `management`; registering a Resource into a Pool that already exists
+    also needs an open Conduit to that Pool that lists this operation. `objects` lists every template
+    and instance the request added, nested instances among them, and says of each nested instance
+    which nested instantiation made it. A registration that is rejected is not dispatched, reports
+    invalid, and its result still carries `diagnostics`. A registration fetches and installs no package:
+    one whose manifest lists a package that is not installed at the version and digest the manifest
+    gives is rejected, and a diagnostic names each such package. A project that holds a contract or
+    lists an implementation, and whose manifest states no `address`, is rejected, and so is one whose
+    `address` is that of an installed package. The request hands the manifest over as a value, with
+    no directory, so an item of `packages` whose `fetch` is a relative reference, and an implementation
+    item whose program is a relative path, are rejected. A Resource whose owner is a retired Pool,
+    or an Agent whose owner is a retired Fleet, is rejected, and so is an instance document whose
+    `runtime` names a retired runtime provider. Where the machine provider is to place an instance
+    that the request would make and cannot place it now, as when it is not ready or a node that matches
+    represents a machine reported unreachable or omitted, the registration is not dispatched and reports
+    unavailable; for want of a machine it is rejected where no node matches, and where the provider
+    names none, unless a node other than `local` that is not retired and matches represents a machine
+    reported unreachable or omitted. A template is rejected where an item selected for it binds, in
+    its `environment`, a variable that `identity` carries in `run.v1`; and where an item reached by
+    `remote` that is selected for it carries a secret, in a header or as the value of `get-secret.v1`,
+    to an `http` URL whose host is not `localhost`, an IPv4 address in `127.0.0.0/8` or the IPv6 address
+    `::1`, or stands at one of those hosts, whatever its scheme and headers, on an engine that, as
     configured, can restart on another machine or run as several parts (SEC-024).
+
+    ACC-033 authorizes registration through management and each live owning Pool or Fleet not registered
+    in this submission. An Agent requires its Fleet owner and only root may submit an Agent on its
+    own behalf (ACC-057). Only root registers root-consumed Conduits (ACC-054). Registering a Pool
+    or Fleet also makes and opens root's default Conduit (FLEET-005), reported among objects. A matching
+    tombstone reports conflict after access and invalid checks (LIF-041).
 spec:
   inputSchema:
     type: object
     properties:
       documents:
         type: array
-        items: {$ref: github.com/shrav-k/conduit/core#document.v1}
-      manifest: {$ref: github.com/shrav-k/conduit/core#manifest.v1}
-    required: [documents]
+        items:
+          $ref: github.com/shrav-k/conduit/core#document.v1
+      manifest:
+        $ref: github.com/shrav-k/conduit/core#manifest.v1
+    required:
+    - documents
   outputSchema:
     type: object
     properties:
       objects:
         type: array
-        items: {$ref: github.com/shrav-k/conduit/core#object.v1}
+        items:
+          $ref: github.com/shrav-k/conduit/core#object.v1
       diagnostics:
         type: array
-        items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
-    required: [objects, diagnostics]
+        items:
+          $ref: github.com/shrav-k/conduit/core#diagnostic.v1
+    required:
+    - objects
+    - diagnostics
   effect: >-
-    Adds the templates and instances that the documents make, and the nested instances of
-    those instances, to the objects that exist.
+    Adds the templates and instances that the documents make, and the nested instances of those instances,
+    to the objects that exist.
   deduplicates: true
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -244,185 +256,257 @@ kind: Operation
 metadata:
   name: inspect.v1
   description: >-
-    Read a template or an instance: what was declared, its status and the records about it.
-    Inspecting a Resource is authorized against the Pool that owns it, or against `management`
-    where that Pool is retired; inspecting anything else is authorized against `management`. A
-    request that names an object that does not exist is authorized against `management` alone:
-    it has no owning Pool. With that authority it reports invalid; a caller with only a Pool's
-    authority reports refused, before any diagnostic, and learns nothing of whether it existed,
-    under OPS-023. `packages` lists the packages the object holds: a package's item has `address`,
-    `version` and `digest`; the core package's item has no `digest`; and the item of the
-    submitted project whose contracts the object holds has `address`, the digest that
-    identifies that submission's contracts, and `version` where its manifest states one.
-    `declared` shows each reference in its resolved form, `{kind, id}`. Inspecting an open
-    Conduit shows, under each requirement it applies, the implementation that applies it,
-    named by its qualified reference. The status holds the lifecycle state, the shutdown of a
-    retired instance and, in `conditions`, the further conditions of the instance and what
-    was observed of it, the state of its run among them, and, in `unreconciled`, the engine's
-    ID for each invocation whose outcome is unknown and that was dispatched to the instance or
-    names it in an input or as its target, which no purge shortens; the
-    status of a node also holds the labels last reported for its machine. `records` holds
-    the records that name the object, each as a CloudEvent. Where `expectedId` is given and the
-    object named has another ID, the request reports conflict.
+    Read a template or an instance: what was declared, its status and the records about it. Inspecting
+    a Resource is authorized against the Pool that owns it, or against `management` where that Pool
+    is retired; inspecting an Agent uses its owning Fleet, or `management` where that Fleet is retired;
+    inspecting anything else uses `management`. A request that names an object that does not exist
+    is authorized against `management` alone: it has no owning Pool. With that authority it reports
+    invalid; a caller with only a Pool's authority reports refused, before any diagnostic, and learns
+    nothing of whether it existed, under OPS-023. `packages` lists the packages the object holds:
+    a package's item has `address`, `version` and `digest`; the core package's item has no `digest`;
+    and the item of the submitted project whose contracts the object holds has `address`, the digest
+    that identifies that submission's contracts, and `version` where its manifest states one. `declared`
+    shows each reference in its resolved form, `{kind, id}`. Inspecting an open Conduit shows, under
+    each requirement it applies, the implementation that applies it, named by its qualified reference.
+    The status holds the lifecycle state, the shutdown of a retired instance and, in `conditions`,
+    the further conditions of the instance and what was observed of it, the state of its run among
+    them, and, in `unreconciled`, the engine's ID for each invocation whose outcome is unknown and
+    that was dispatched to the instance or names it in an input or as its target, which no purge shortens;
+    the status of a node also holds the labels last reported for its machine. `records` holds the
+    records that name the object, each as a CloudEvent. Where `expectedId` is given and the object
+    named has another ID, the request reports conflict.
+
+    An Agent is inspected through its owning Fleet, or management where that Fleet is retired. An
+    object that does not exist has no owning Pool or Fleet. Every other object follows ACC-033. inventory
+    is present for instances other than Conduits and shows their consumed and targeting Conduits and
+    their tombstones in full (LIF-013). provenance is present for a Conduit that was opened (ACC-044).
+    inventory.scope is present for Interfaces and Agents: the targets of open Conduits listing inspect.v1
+    to Pools and Fleets other than system, with those Conduits; an Agent includes only its own Fleet.
+    inventory.administrators is present for a Pool: every consumer of an open Conduit listing an operation
+    that administers its Resources, with those Conduits. system status holds trustDomain (FST-007).
+    These lists carry no counts of hidden items.
 spec:
   inputSchema:
     type: object
     properties:
-      object: {$ref: github.com/shrav-k/conduit/core#reference.v1}
-      expectedId: {$ref: github.com/shrav-k/conduit/core#id.v1}
-    required: [object]
+      object:
+        $ref: github.com/shrav-k/conduit/core#reference.v1
+      expectedId:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - object
   outputSchema:
     type: object
     properties:
-      id: {$ref: github.com/shrav-k/conduit/core#id.v1}
-      revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+      id:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+      revision:
+        $ref: github.com/shrav-k/conduit/core#revision.v1
       packages:
         type: array
         items:
           anyOf:
-            - type: object
-              properties:
-                address: {$ref: github.com/shrav-k/conduit/core#address.v1}
-                version: {$ref: github.com/shrav-k/conduit/core#version.v1}
-                digest: {$ref: github.com/shrav-k/conduit/core#digest.v1}
-              required: [address, digest]
-              additionalProperties: false
-            - type: object
-              properties:
-                address: {const: github.com/shrav-k/conduit/core}
-                version: {$ref: github.com/shrav-k/conduit/core#version.v1}
-              required: [address, version]
-              additionalProperties: false
-      declared: {type: object}
+          - type: object
+            properties:
+              address:
+                $ref: github.com/shrav-k/conduit/core#address.v1
+              version:
+                $ref: github.com/shrav-k/conduit/core#version.v1
+              digest:
+                $ref: github.com/shrav-k/conduit/core#digest.v1
+            required:
+            - address
+            - digest
+            additionalProperties: false
+          - type: object
+            properties:
+              address:
+                const: github.com/shrav-k/conduit/core
+              version:
+                $ref: github.com/shrav-k/conduit/core#version.v1
+            required:
+            - address
+            - version
+            additionalProperties: false
+      declared:
+        type: object
       status:
         type: object
         properties:
-          state: {enum: [registered, ready, retired]}
-          shutdown: {enum: [confirmed, pending, unknown]}
+          state:
+            enum:
+            - registered
+            - ready
+            - retired
+          shutdown:
+            enum:
+            - confirmed
+            - pending
+            - unknown
           conditions:
             type: array
-            items: {$ref: github.com/shrav-k/conduit/core#condition.v1}
+            items:
+              $ref: github.com/shrav-k/conduit/core#condition.v1
           unreconciled:
             type: array
-            items: {$ref: github.com/shrav-k/conduit/core#id.v1}
-        required: [state]
+            items:
+              $ref: github.com/shrav-k/conduit/core#id.v1
+          trustDomain:
+            $ref: github.com/shrav-k/conduit/core#trust-domain.v1
+        required:
+        - state
       records:
         type: array
-        items: {$ref: github.com/shrav-k/conduit/core#record.v1}
-    required: [id, revision, packages, declared, records]
+        items:
+          $ref: github.com/shrav-k/conduit/core#record.v1
+      inventory:
+        $ref: github.com/shrav-k/conduit/core#inventory.v1
+      provenance:
+        $ref: github.com/shrav-k/conduit/core#provenance.v1
+    required:
+    - id
+    - revision
+    - packages
+    - declared
+    - records
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: set-up.v1
   description: >-
-    Set up an instance. One invocation of this operation is the setup of the instance it names.
-    The engine implements it, in parts, each begun only once every part before it that is not
-    marked optional has succeeded: it opens the instance's declared Conduits, or for a Pool sets
-    up the Resources of its entries; then it asks the instance's runtime provider for its run,
-    where an item that is run is selected for it and its runtime provider reports the run
-    `stopped`, reading first each secret that the item binds, and connects to each `remote`
-    item; then it dispatches the instance's setup hook, where its template selects one. A part
-    that opens a declared Conduit or sets up the Resource of an entry is authorized exactly as
-    this request was, by the Conduits of the instance that sent it, which for an onward request
-    is the sending instance and not the caller it serves. A further setup leaves an open
-    Conduit, a ready Resource and a running run as they are, and dispatches the hook again only
-    as its idempotency key allows. No part begins once the instance is retired, or once the
-    setup is cancelled, a cancellation that the engine passes on to each part in progress.
-    Setting up a Resource is authorized against the Pool that owns it, and setting up an Agent,
-    an Interface or a Pool against `management`. A Conduit is set up with `open.v1`: a request
-    that names a Conduit or a template reports invalid, and so does one that names an object
-    that does not exist. Where `expectedId` is given and the instance named has another ID, the
-    request reports conflict and nothing is set up.
+    Set up an instance. One invocation of this operation is the setup of the instance it names. The
+    engine implements it, in parts, each begun only once every part before it that is not marked optional
+    has succeeded: it opens the instance's declared Conduits, or for a Pool sets up the Resources
+    of its entries; then it asks the instance's runtime provider for its run, where an item that is
+    run is selected for it and its runtime provider reports the run `stopped`, reading first each
+    secret that the item binds, and connects to each `remote` item; then it dispatches the instance's
+    setup hook, where its template selects one. A part that opens a declared Conduit or sets up the
+    Resource of an entry is authorized exactly as this request was, by the Conduits of the instance
+    that sent it, which for an onward request is the sending instance and not the caller it serves.
+    A further setup leaves an open Conduit, a ready Resource and a running run as they are, and dispatches
+    the hook again only as its idempotency key allows. No part begins once the instance is retired,
+    or once the setup is cancelled, a cancellation that the engine passes on to each part in progress.
+    Setting up a Resource is authorized against its owning Pool, an Agent against its owning Fleet,
+    and an Interface, Pool or Fleet against `management` (ACC-033). A Conduit is set up with `open.v1`:
+    a request that names a Conduit or a template reports invalid, and so does one that names an object
+    that does not exist. Where `expectedId` is given and the instance named has another ID, the request
+    reports conflict and nothing is set up.
+
+    A Fleet setup has no parts (FLEET-001). A tombstone matching a setup part prevents dispatch of
+    that part with conflict (LIF-041).
 spec:
   inputSchema:
     type: object
     properties:
-      instance: {$ref: github.com/shrav-k/conduit/core#reference.v1}
-      expectedId: {$ref: github.com/shrav-k/conduit/core#id.v1}
-    required: [instance]
+      instance:
+        $ref: github.com/shrav-k/conduit/core#reference.v1
+      expectedId:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - instance
   effect: >-
-    Runs the setup of the instance: opens its declared Conduits or sets up its entries'
-    Resources, asks for its run or connects to its remote server, and dispatches its setup
-    hook. When it succeeds the instance's state is ready.
+    Runs the setup of the instance: opens its declared Conduits or sets up its entries' Resources,
+    asks for its run or connects to its remote server, and dispatches its setup hook. When it succeeds
+    the instance's state is ready.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: retire.v1
   description: >-
-    Retire an instance. One invocation of this operation is the retirement of the instance it
-    names. The instance's state is retired from the moment the request is dispatched. Where a
-    setup of the instance was ever dispatched, the engine dispatches its retire hook, where its
-    template selects one, asking first for its run where its runtime provider reports it
-    `stopped`, or connecting first to the `remote` item that serves the hook where no connection
-    to it lasts whose values the engine holds, and then, whatever came of the hook, asks its
-    runtime provider to stop the run, where an item that is run is selected for it; stopping a
-    run that is not running succeeds. A cancelled retirement still asks for the stop. An
-    instance for which no setup was ever dispatched gets neither, and its shutdown is confirmed
-    at once. Once the shutdown is confirmed the instance is removed, without a further request.
-    Retiring a Resource is authorized against the Pool that owns it, and retiring an Agent, an
-    Interface or a Pool against `management`. A retired Pool whose shutdown is not confirmed is
-    retired again with this operation, through `management`. A request to retire an instance
-    whose shutdown is not confirmed is a further retirement. A Conduit is retired with
-    `close.v1`: a request that names a Conduit or a template reports invalid, and so does one
-    that names an object that does not exist, a removed instance among them. A request to retire
-    a Pool that owns a Resource whose shutdown is not confirmed reports conflict, and a
-    diagnostic names each Resource in the way. Where `expectedId` is given and the instance
-    named has another ID, the request reports conflict and nothing is retired.
+    Retire an instance. One invocation of this operation is the retirement of the instance it names.
+    The instance's state is retired from the moment the request is dispatched. Where a setup of the
+    instance was ever dispatched, the engine dispatches its retire hook, where its template selects
+    one, asking first for its run where its runtime provider reports it `stopped`, or connecting first
+    to the `remote` item that serves the hook where no connection to it lasts whose values the engine
+    holds, and then, whatever came of the hook, asks its runtime provider to stop the run, where an
+    item that is run is selected for it; stopping a run that is not running succeeds. A cancelled
+    retirement still asks for the stop. An instance for which no setup was ever dispatched gets neither,
+    and its shutdown is confirmed at once. Once the shutdown is confirmed the instance is removed,
+    without a further request. Retiring a Resource is authorized against the Pool that owns it, and
+    retiring an Agent against its owning Fleet, and an Interface, Pool or Fleet against `management`.
+    A retired Pool or Fleet whose shutdown is not confirmed is retired again with this operation,
+    through `management`. A request to retire an instance whose shutdown is not confirmed is a further
+    retirement. A Conduit is retired with `close.v1`: a request that names a Conduit or a template
+    reports invalid, and so does one that names an object that does not exist, a removed instance
+    among them. A request to retire a Pool that owns a Resource whose shutdown is not confirmed reports
+    conflict, and a diagnostic names each Resource in the way. Where `expectedId` is given and the
+    instance named has another ID, the request reports conflict and nothing is retired.
+
+    An Agent is retired through its owning Fleet; an Interface, Pool or Fleet through management (ACC-033).
+    A Pool or Fleet with members whose shutdown is unconfirmed reports conflict (LIF-020). Retirement
+    leaves a tombstone unless the object was engine-made (LIF-040).
 spec:
   inputSchema:
     type: object
     properties:
-      instance: {$ref: github.com/shrav-k/conduit/core#reference.v1}
-      expectedId: {$ref: github.com/shrav-k/conduit/core#id.v1}
-    required: [instance]
+      instance:
+        $ref: github.com/shrav-k/conduit/core#reference.v1
+      expectedId:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - instance
   effect: >-
-    Ends the instance for good: dispatches its retire hook and stops its run. The Conduits of
-    which it is the target are closed at once, and those of which it is the consumer once its
-    shutdown is confirmed, when the instance is removed.
+    Ends the instance for good: dispatches its retire hook and stops its run. The Conduits of which
+    it is the target are closed at once, and those of which it is the consumer once its shutdown is
+    confirmed, when the instance is removed.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: reconcile.v1
   description: >-
-    Record, with what was checked, whether the effect of an invocation whose outcome is unknown
-    occurred. The invocation is named by the ID the engine gave it, which a consumer learns from
-    the result of its request, or of a repeat of it. An invocation of a management verb is
-    reconciled through the target that authorized the request being reconciled, by an open
-    Conduit to that target that lists this operation: `management` or a Pool for a setup or a
-    retirement, and `access` for an open or a close. Any other invocation, of a control, of a
-    hook or of any other operation, is reconciled through the target that manages the instance
-    it was dispatched to: the Pool that owns a Resource, and `management` for an Agent, an
-    Interface or a Pool. Where the Pool that owns a Resource is retired, `management` authorizes
-    in its place, and so it does where the instance of the invocation no longer exists: the
-    reconciliation then records the outcome and stores nothing, and names no `revision`. A
-    request that names an invocation whose outcome is not unknown reports conflict, and one
-    whose ID names no invocation reports invalid. Recording that a setup or an open occurred
-    gives it the outcome succeeded and makes the instance ready or the Conduit open, unless the
-    instance or the Conduit's consumer has been retired. Recording that a retirement or a close
-    occurred confirms the shutdown, and the instance is removed. An actor tells whether a run is
-    running from the instance's condition `Running`. Recording that the effect did not occur
-    gives the outcome failed and changes nothing else. Where a control of an instance that
-    exists and is not retired took effect, `revision` is required, and the values that the
-    control was sent are stored at the pointers of its `changes`. A reconciliation that stores
-    nothing names no `revision`: one that does reports invalid.
+    Record, with what was checked, whether the effect of an invocation whose outcome is unknown occurred.
+    The invocation is named by the ID the engine gave it, which a consumer learns from the result
+    of its request, or of a repeat of it. An invocation of a management verb is reconciled through
+    the target that authorized the request being reconciled, by an open Conduit to that target that
+    lists this operation: `management` or a Pool for a setup or a retirement, and `access` for an
+    open or a close. Any other invocation, of a control, of a hook or of any other operation, is reconciled
+    through the target that manages the instance it was dispatched to: the Pool that owns a Resource,
+    and the owning Fleet for an Agent, and `management` for an Interface, a Pool or a Fleet. Where the Pool that owns a Resource is
+    retired, `management` authorizes in its place, and so it does where the instance of the invocation
+    no longer exists: the reconciliation then records the outcome and stores nothing, and names no
+    `revision`. A request that names an invocation whose outcome is not unknown reports conflict,
+    and one whose ID names no invocation reports invalid. Recording that a setup or an open occurred
+    gives it the outcome succeeded and makes the instance ready or the Conduit open, unless the instance
+    or the Conduit's consumer has been retired. Recording that a retirement or a close occurred confirms
+    the shutdown, and the instance is removed. An actor tells whether a run is running from the instance's
+    condition `Running`. Recording that the effect did not occur gives the outcome failed and changes
+    nothing else. Where a control of an instance that exists and is not retired took effect, `revision`
+    is required, and the values that the control was sent are stored at the pointers of its `changes`.
+    A reconciliation that stores nothing names no `revision`: one that does reports invalid.
+
+    ACC-033 and OPS-014 determine authority: an Agent uses its owning Fleet, or management where that
+    owner is retired or the instance removed. ACC-055 limits bounded access reconciliation by the
+    authority the original request required. Through a Pool, a holder other than root may reconcile
+    only invocations it sent. Through a Fleet, it may reconcile invocations it sent or that the
+    Fleet or an Agent the Fleet owns sent; a Fleet is never a sender in this version (FLEET-004).
+    Root is exempt only as the consumer of the authorizing Conduit. A reconciled opening keeps that invocation's
+    provenance (ACC-044); confirmed closings and retirements preserve their tombstones (LIF-040).
 spec:
   inputSchema:
     type: object
     properties:
-      invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
-      occurred: {type: boolean}
-      checked: {type: string, minLength: 1}
-      revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
-    required: [invocation, occurred, checked]
+      invocation:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+      occurred:
+        type: boolean
+      checked:
+        type: string
+        minLength: 1
+      revision:
+        $ref: github.com/shrav-k/conduit/core#revision.v1
+    required:
+    - invocation
+    - occurred
+    - checked
   effect: >-
-    Changes the invocation's outcome from unknown to succeeded or failed. Where a setup or an
-    open is recorded as having occurred, sets the state of the instance or the Conduit to ready,
-    unless the instance or the Conduit's consumer is retired. Where a retirement or a close is,
-    confirms the shutdown, which removes the instance. For a control that took effect on an
-    instance that exists and is not retired, stores the values it was sent.
+    Changes the invocation's outcome from unknown to succeeded or failed. Where a setup or an open
+    is recorded as having occurred, sets the state of the instance or the Conduit to ready, unless
+    the instance or the Conduit's consumer is retired. Where a retirement or a close is, confirms
+    the shutdown, which removes the instance. For a control that took effect on an instance that exists
+    and is not retired, stores the values it was sent.
   deduplicates: true
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -430,42 +514,51 @@ kind: Operation
 metadata:
   name: register-replacement.v1
   description: >-
-    Ask for a new instance for a nested instantiation whose instance is retired or has been
-    removed: a declared Conduit, or the Resource of a Pool's entry. The request names, in
-    `instance`, the instance that holds the nested instantiation, the consumer of the declared
-    Conduit or the Pool, and, in `nested`, the name of the declared Conduit or of the entry.
-    The new instance has a new ID, a newly generated name and the state registered, and a
-    retired instance keeps its own name until it is removed; nothing is set up or opened. It
-    is made from the template that the `from` of the nested instantiation names, as that
-    template stands when the request is made: where that template no longer exists, the
-    request reports invalid. A request for a nested instantiation whose instance is not
-    retired is not dispatched and reports conflict. A request whose `nested` names no nested
-    instantiation that the instance holds, or whose `instance` is a first-start object, is not
-    dispatched and reports invalid. Authorized as registering the new instance would be, with
-    this operation in the place of `register.v1`: against `management`, and for the Resource
-    of a Pool's entry also by an open Conduit to that Pool that lists this operation. The
-    request is a registration, so one that is rejected still carries `diagnostics`. A request
-    for a new instance that a rule on instantiation does not make reports invalid, as the
-    registration of a document that the rule rejects does: one for a declared Conduit whose
-    target is retired, for example, for a new Resource whose `runtime` names a retired runtime
-    provider, or for one for which no node matches. Where the machine provider cannot
-    place the new Resource now, as when it is not ready or a node that matches represents a
+    Ask for a new instance for a nested instantiation whose instance is retired or has been removed:
+    a declared Conduit, or the Resource of a Pool's entry. The request names, in `instance`, the instance
+    that holds the nested instantiation, the consumer of the declared Conduit or the Pool, and, in
+    `nested`, the name of the declared Conduit or of the entry. The new instance has a new ID, a newly
+    generated name and the state registered, and a retired instance keeps its own name until it is
+    removed; nothing is set up or opened. It is made from the template that the `from` of the nested
+    instantiation names, as that template stands when the request is made: where that template no
+    longer exists, the request reports invalid. A request for a nested instantiation whose instance
+    is not retired is not dispatched and reports conflict. A request whose `nested` names no nested
+    instantiation that the instance holds, or whose `instance` is a first-start object, is not dispatched
+    and reports invalid. Authorized as registering the new instance would be, with this operation
+    in the place of `register.v1`: against `management`, and for the Resource of a Pool's entry also
+    by an open Conduit to that Pool that lists this operation. The request is a registration, so one
+    that is rejected still carries `diagnostics`. A request for a new instance that a rule on instantiation
+    does not make reports invalid, as the registration of a document that the rule rejects does: one
+    for a declared Conduit whose target is retired, for example, for a new Resource whose `runtime`
+    names a retired runtime provider, or for one for which no node matches. Where the machine provider
+    cannot place the new Resource now, as when it is not ready or a node that matches represents a
     machine reported unreachable or omitted, the request reports unavailable.
+
+    Only root on its own behalf may submit an Agent or register a root-consumed Conduit (ACC-057,
+    ACC-054). Replacement lifts no tombstone: a matching tombstone reports conflict under LIF-041.
 spec:
   inputSchema:
     type: object
     properties:
-      instance: {$ref: github.com/shrav-k/conduit/core#reference.v1}
-      nested: {$ref: github.com/shrav-k/conduit/core#name.v1}
-    required: [instance, nested]
+      instance:
+        $ref: github.com/shrav-k/conduit/core#reference.v1
+      nested:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+    required:
+    - instance
+    - nested
   outputSchema:
     type: object
     properties:
-      object: {$ref: github.com/shrav-k/conduit/core#object.v1}
+      object:
+        $ref: github.com/shrav-k/conduit/core#object.v1
       diagnostics:
         type: array
-        items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
-    required: [object, diagnostics]
+        items:
+          $ref: github.com/shrav-k/conduit/core#diagnostic.v1
+    required:
+    - object
+    - diagnostics
   effect: Adds one instance to the objects that exist.
   deduplicates: true
 ---
@@ -537,22 +630,24 @@ kind: Operation
 metadata:
   name: purge.v1
   description: >-
-    Remove the records made before a given time. Records are removed and nothing else: what
-    repeats and reconciliations need is the engine's own state, which no purge touches, so a
-    repeat after a purge is answered as before and an invocation of unknown outcome can still
-    be reconciled. A record of the purge is kept. Reserved to the root Interface, and
-    authorized against `management`.
+    Remove the records made before a given time. Records are removed and nothing else: what repeats
+    and reconciliations need is the engine's own state, which no purge touches, so a repeat after
+    a purge is answered as before and an invocation of unknown outcome can still be reconciled. A
+    record of the purge is kept. Reserved to the root Interface, and authorized against `management`.
+
+    A purge touches no opening provenance or tombstone (ACC-044, LIF-040).
 spec:
   inputSchema:
     type: object
     properties:
-      before: {type: string, format: date-time}
-    required: [before]
+      before:
+        type: string
+        format: date-time
+    required:
+    - before
   effect: Removes records.
   deduplicates: true
   reservedToRoot: true
-
-# --- Operations of a Pool alone.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -592,29 +687,33 @@ kind: Operation
 metadata:
   name: open.v1
   description: >-
-    Open a Conduit whose state is registered. Dispatched only if the bound of the actor's own
-    Conduit to `access` covers the Conduit's target and names every operation it lists. A
-    Conduit to `access` that applies no bound is unlimited, and is opened only by an actor whose
-    own Conduit to `access` applies no bound. Where the Conduit to be opened is itself one to
-    `access`, the condition is that its bound is within the actor's own, and the actor's bound
-    need not cover `access` as a target. A Conduit that lists an operation reserved to the root
-    Interface is opened only for the root Interface, and one that lists `get-secret.v1` only
-    where the root Interface asks on its own behalf and the consumer is a Resource or an
-    Agent; any other such request reports refused. A request to open a Conduit that is already
-    open changes nothing and succeeds. A closed Conduit has been removed, so a request that
-    names one, like one that names a Conduit that does not exist, reports invalid, whatever the
-    bound. One to open a Conduit that is not open and whose consumer is retired reports
-    conflict; a Conduit that was open when its consumer was retired is still open, and a
-    request to open it succeeds like any other.
+    Open a Conduit whose state is registered. Dispatched only if the bound of the actor's own Conduit
+    to `access` covers the Conduit's target and names every operation it lists. A Conduit to `access`
+    that applies no bound is unlimited, and is opened only by an actor whose own Conduit to `access`
+    applies no bound. Where the Conduit to be opened is itself one to `access`, the condition is that
+    its bound is within the actor's own, and the actor's bound need not cover `access` as a target.
+    A Conduit that lists an operation reserved to the root Interface is opened only for the root Interface,
+    and one that lists `get-secret.v1` only where the root Interface asks on its own behalf and the
+    consumer is a Resource or an Agent; any other such request reports refused. A request to open
+    a Conduit that is already open changes nothing and succeeds. A closed Conduit has been removed,
+    so a request that names one, like one that names a Conduit that does not exist, reports invalid,
+    whatever the bound. One to open a Conduit that is not open and whose consumer is retired reports
+    conflict; a Conduit that was open when its consumer was retired is still open, and a request to
+    open it succeeds like any other.
+
+    Only root acting on its own behalf opens a root-consumed Conduit (ACC-054). A matching tombstone
+    prevents dispatch with conflict (LIF-041); engine-made defaults are exempt. An already open Conduit
+    preserves its original provenance (ACC-044).
 spec:
   inputSchema:
     type: object
     properties:
-      conduit: {$ref: github.com/shrav-k/conduit/core#conduit-reference.v1}
-    required: [conduit]
-  effect: >-
-    Sets the Conduit's state to ready, so that its consumer may request the operations it
-    lists on its target.
+      conduit:
+        $ref: github.com/shrav-k/conduit/core#conduit-reference.v1
+    required:
+    - conduit
+  effect: Sets the Conduit's state to ready, so that its consumer may request the operations it lists
+    on its target.
   deduplicates: true
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -622,28 +721,31 @@ kind: Operation
 metadata:
   name: close.v1
   description: >-
-    Close a Conduit. All the access it carried ends, so a request through it from then on
-    reports refused, and it is removed when it is closed, however it was closed: its shutdown is
-    confirmed then, because a Conduit holds nothing to shut down. Dispatched only if the bound
-    of the actor's own Conduit to `access` covers the Conduit's target and names every operation
-    it lists. A Conduit to `access` that applies no bound is closed only by an actor whose own
-    Conduit to `access` applies no bound. Where the Conduit to be closed is itself one to
-    `access`, its bound must be within the actor's own. A Conduit whose consumer is the root
-    Interface is never closed at an actor's request, which reports refused. A closed Conduit no
-    longer exists, so a request that names one, like one that names a Conduit that does not
-    exist, reports invalid, whatever the bound. A Conduit whose consumer is retired is closed
-    without a request once the consumer's shutdown is confirmed, and until then permits only the
-    requests of the consumer's retirement.
+    Close a Conduit. All the access it carried ends, so a request through it from then on reports
+    refused, and it is removed when it is closed, however it was closed: its shutdown is confirmed
+    then, because a Conduit holds nothing to shut down. Dispatched only if the bound of the actor's
+    own Conduit to `access` covers the Conduit's target and names every operation it lists. A Conduit
+    to `access` that applies no bound is closed only by an actor whose own Conduit to `access` applies
+    no bound. Where the Conduit to be closed is itself one to `access`, its bound must be within the
+    actor's own. A root-consumed Conduit is closed only where root asks on its own behalf and it is
+    neither a first-start nor a default Conduit (ACC-024); otherwise the request reports refused.
+    A closed Conduit no longer exists, so a request that names one, like one that names a Conduit
+    that does not exist, reports invalid, whatever the bound. A Conduit whose consumer is retired
+    is closed without a request once the consumer's shutdown is confirmed, and until then permits
+    only the requests of the consumer's retirement.
+
+    Closing leaves a tombstone unless the object was engine-made (LIF-040), retaining the opening
+    provenance (ACC-044).
 spec:
   inputSchema:
     type: object
     properties:
-      conduit: {$ref: github.com/shrav-k/conduit/core#conduit-reference.v1}
-    required: [conduit]
+      conduit:
+        $ref: github.com/shrav-k/conduit/core#conduit-reference.v1
+    required:
+    - conduit
   effect: Closes the Conduit, which ends the access it carried and removes it.
   deduplicates: true
-
-# --- The two hooks, which a template selects and which are in no capability.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -975,3 +1077,165 @@ spec:
     properties:
       value: {type: string}
     required: [value]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: list.v1
+  description: >-
+    List through management, a Pool or a Fleet (OPS-036, ACC-033 row 15). management lists objects
+    of every kind, templates included, installed packages and tombstones; a Pool lists its Resources
+    and a Fleet its Agents. Only items the actor may inspect through any open Conduit it holds are
+    shown. Installed packages require inspection authority on management; tombstones follow LIF-040
+    and are shown in full. kind optionally narrows object kinds. Templates have no lifecycle state.
+    No count, total, cursor or position discloses omitted items. This operation grants no inspection
+    authority.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      kind:
+        enum:
+        - Interface
+        - Agent
+        - Resource
+        - Pool
+        - Conduit
+        - Type
+        - Capability
+        - Operation
+        - Requirement
+        - Schema
+  outputSchema:
+    type: object
+    properties:
+      objects:
+        type: array
+        items:
+          type: object
+          properties:
+            kind:
+              enum:
+              - Interface
+              - Agent
+              - Resource
+              - Pool
+              - Conduit
+              - Type
+              - Capability
+              - Operation
+              - Requirement
+              - Schema
+            name:
+              type: string
+              minLength: 1
+            id:
+              $ref: github.com/shrav-k/conduit/core#id.v1
+            template:
+              type: boolean
+            state:
+              enum:
+              - registered
+              - ready
+              - retired
+          required:
+          - kind
+          - name
+          - id
+          - template
+          if:
+            properties:
+              template:
+                const: false
+              kind:
+                enum:
+                - Interface
+                - Agent
+                - Resource
+                - Pool
+                - Conduit
+          then:
+            required:
+            - state
+          else:
+            not:
+              required:
+              - state
+      packages:
+        type: array
+        items:
+          type: object
+          properties:
+            address:
+              $ref: github.com/shrav-k/conduit/core#address.v1
+            version:
+              $ref: github.com/shrav-k/conduit/core#version.v1
+            digest:
+              $ref: github.com/shrav-k/conduit/core#digest.v1
+          required:
+          - address
+          - version
+          - digest
+      tombstones:
+        type: array
+        items:
+          $ref: github.com/shrav-k/conduit/core#tombstone.v1
+    required:
+    - objects
+    - packages
+    - tombstones
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: lift.v1
+  description: >-
+    Lift the tombstone named by id through access (ACC-053). The caller must hold an open Conduit
+    listing lift.v1 whose bound covers the kept IDs and operations as ACC-053 requires. Remove a tombstone
+    caused by the named tombstone only where this same authority would lift it independently; the
+    remainder stay and are listed in remaining, disclosed under the same visibility as LIF-040. Lifting
+    registers nothing, opens nothing, names no revision and grants nothing. A nonexistent id reports
+    invalid for an unbounded holder and refused for a bounded one. No root-only reservation applies
+    to lifting.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      id:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - id
+  outputSchema:
+    type: object
+    properties:
+      remaining:
+        type: array
+        items:
+          $ref: github.com/shrav-k/conduit/core#tombstone.v1
+    required:
+    - remaining
+  effect: >-
+    Removes the named tombstone and each tombstone it caused that the caller is independently authorized
+    to lift. Other caused tombstones remain.
+  deduplicates: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: retire-with-agents.v1
+  description: >-
+    Retire the Fleet that is the target of the request together with its Agents (LIF-021). Retire
+    each Agent whose shutdown is unconfirmed before any Agent of that Fleet that it refers to or is
+    the consumer of a Conduit to. The engine orders cycles and unrelated members. Retire an already
+    retired Agent again where its shutdown is unconfirmed. A setup, retirement or change in progress
+    reports conflict. If a retirement ends without shutdown confirmed or is not dispatched, dispatch
+    none ordered after it and retire the other Agents. Retire the Fleet only once every Agent shutdown
+    is confirmed. Each Agent retirement and the Fleet retirement is its own invocation of retire.v1.
+    Cancellation dispatches no further retirement, and retirements in progress still ask for stop.
+    Authority is against that Fleet and need list only this cascade. If any Agent shutdown is unconfirmed,
+    the cascade outcome is failed and its diagnostics name each Agent in the way, including those
+    not dispatched. A failed result holds no outputs, so none are declared.
+spec:
+  effect: >-
+    Retires the Fleet once the shutdown of every Agent it owns is confirmed. Each Agent retirement
+    has its own invocation and effects.

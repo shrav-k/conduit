@@ -59,3 +59,18 @@ interpreter that has PyYAML) and `git diff --check` pass; in `engine/`, `cargo t
 (report the total passed and failed; tests that bind loopback ports may fail in your sandbox: say
 so). Report what you added and amended, by ID, every reading of the plan you applied, and every
 vector whose expectation the new text contradicts, by path and step. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 29 minutes, then a fresh verifier in 7, then a second round. The
+worker landed 15 new exports of the core package (among them `fleet.v1`, `fleet-management.v1`,
+`list.v1`, `retire-with-agents.v1`, `lift.v1`, the templates of the plan's C8 without `answer` and
+`sign-in`, and the schemas inventory, tombstone, provenance, fleet-reference and trust-domain) and
+staged, as exact patches, what the engine would reject today, for orders 039, 040 and 041a, with
+handoffs for the enrollment orders to 038b; applied together in a scratch tree, the staged text
+passes the schema and document checks. It listed the vector steps the staged contracts will change
+(166 owner-input steps in 161 cases) for the build orders. The verifier found that the reconcile
+contract dropped ruling 66's allowance for a Fleet's Agents, that a tombstone did not require its
+owner, one stale marker in IN_FORCE.md, and trailing white space in the staged patches; the second
+round fixed all four, keeping the patches exact as `.patch` files exempt from the white-space check.
+The admin reran the engine's suite outside the sandbox: 163 tests pass, 3 ignored.

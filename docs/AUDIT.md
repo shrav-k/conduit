@@ -120,6 +120,13 @@ orders to Codex workers and planning, decisions and review to the admin session.
 [Ruling 49](proposals/ruling-49/README.md), of 2026-11-10, accepts URL sign-in prompts to the
 root Interface alone in v0 and checking the account expected. Those changes to the
 specification, separate Agent homes and engine-mediated sign-in are pending.
+Rulings 50 to 54, of the same day, settled enrollment's direction and the Interface as a control
+panel (50), managed and peer machines (51), explicit refusals and enrollment's decisions but its
+fifth (52), five core additions and the first decisions of the simplification (53), and that
+Agents stay in their project and revocation is individual (54). None of 49 to 54 is written into
+`spec/` yet: the shape of the language is being settled first, so each is written once
+([the shape of the language](proposals/language-shape/README.md),
+[the owner's direction for Projects](proposals/owner-direction/2026-11-10-projects.md)).
 
 ### What happens next
 
@@ -408,7 +415,12 @@ A18, A65, A66 and A67 ask for come to the owner once they are written.
 
 | What | Where it is recorded |
 | --- | --- |
-| A20: rule on the scope of authorization in v0, the plan audit's disagreement D5, with its cross-path, issuer-independence and provider-scope questions. The plan audit has it informed by the bypass probe (A7), whose row is in the [roadmap](../ROADMAP.md#experiments-and-probes). | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings) |
+| A20 (to be closed with the Projects rulings, which answer it): rule on the scope of authorization in v0, the plan audit's disagreement D5, with its cross-path, issuer-independence and provider-scope questions. The plan audit has it informed by the bypass probe (A7), whose row is in the [roadmap](../ROADMAP.md#experiments-and-probes). | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings) |
+| The shape of the language: the short form's decisions 1 to 5 and 7 to 9 (whether it becomes part of the language, Conduit templates for reuse, stable names, approvals in v0, no default added to a published Type, the rulings it amends, who lifts a tombstone) | [The shape of the language](proposals/language-shape/README.md#decisions-for-the-owner); put to the owner on 2026-11-10 |
+| Projects: the rulings that the investigation of the owner's direction will put, one by one | [The owner's direction for Projects](proposals/owner-direction/2026-11-10-projects.md), [ruling 54](proposals/ruling-54/README.md) |
+| Enrollment's decision 5, how a person checks a joining machine | [Verification methods](proposals/enrollment/verification-methods.md); needed before S3 |
+| The counting rules of the S1 rerun (block or flow style, flags, separate installs), fixed before it runs (ruling 45) | [The simplification](proposals/simplification/README.md), after the shape of the language is settled |
+| The public name and namespace, the last step of pull request 14 | Pull request 14 |
 | A21: five of the eleven known inconsistencies stand as written in files that are marked as not binding or are not edited; whether to drop them is the owner's call. | [Action items](#p0--make-the-language-concrete-and-complete), [known inconsistencies](archive/plan-audit-history.md#known-inconsistencies) |
 
 Settled, and no longer waiting: ruling 46 settled the nature of the first build (A68) and the

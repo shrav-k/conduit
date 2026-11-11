@@ -32,7 +32,7 @@ limit is 128 and the portable floor is 64.
 Each step has one `input` and an `expect`. Supported input kinds are:
 
 - `first-start`: supplied `evidence` (time, UUID allocations, revisions and generated suffixes)
-  and a local `machine` report. The seven object IDs precede the fourteen record IDs. A repeat
+  and a local `machine` report. The eight instance IDs precede the sixteen record IDs. `trustDomain` supplies the FST-007 namespace. A repeat
   consumes no allocations. No ambient time, hostname or entropy enters the core.
 - `submit-files`: loader-checked files and a supplied established management request. This
   increment supports only submissions instantiating protected core templates. It tests their
@@ -60,14 +60,13 @@ fail. `@core#export` expands the address read from [names.yaml](../spec/names.ya
 inputs and assertions only. Neither is a Conduit reference syntax. Requests carry established
 sender/caller UUIDs and their authorizing Conduit's UUID; no credential bytes enter the model.
 
-The protected cases retain unauthorized Resource submissions into the existing system Pool:
-ACC-033 row 1 requires registration authority to both management and that Pool, and OPS-023
-requires refused before any FST-006 diagnostic. Their replies assert diagnostics are absent.
-The authorized counterpart uses [an established state](fixtures/root-system-state.json) with
-an additional open root-to-system Conduit listing `register.v1` and `retire.v1`. Registration
-there reaches FST-006. Resource retirements through that Pool Conduit still report refused
-under LIF-034, ahead of lifecycle conflicts under OPS-023. The snapshot does not claim first
-start made the extra Conduit. The empty-state first-start case retains its exact seven objects.
+The protected case reaches FST-006 for root, whose declared `system` default supplies Pool
+registration authority. A separate [Interface with management alone](language/first-start/protected-without-pool/case.yaml)
+retains ACC-033's refused-before-diagnostics coverage. The [root-system snapshot](fixtures/root-system-state.json)
+is a supplied fixture state, not a state the engine can reach: its extra root-to-system Conduit
+is independent of first start. Its final management and access operation lists follow FST-002.
+The [real first-start list case](conventions/list/from-first-start/case.yaml) starts empty and lists
+all eight instances through root's three declared Conduits (OPS-036).
 
 ## Assertions
 

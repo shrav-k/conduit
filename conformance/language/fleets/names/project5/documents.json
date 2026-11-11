@@ -1,0 +1,25 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "from": "github.com/shrav-k/conduit/core#fleet"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "pool-template"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "fleet-00000"
+    },
+    "from": "pool-template"
+  }
+]

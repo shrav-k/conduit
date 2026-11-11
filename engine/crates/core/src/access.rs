@@ -118,10 +118,16 @@ pub(crate) fn established<'a>(
     match identity {
         Identity::Unreadable => Err(("unavailable", "ACC-037")),
         Identity::None => Err(("refused", "IFC-032")),
+        // FLEET-004: no credential or presented server names a Fleet.
         Identity::Instance { id: instance } => state
             .objects
             .iter()
-            .find(|o| o["id"] == *instance && o.get("spec").is_none() && o["kind"] != "Conduit")
+            .find(|o| {
+                o["id"] == *instance
+                    && o.get("spec").is_none()
+                    && o["kind"] != "Conduit"
+                    && o["kind"] != "Fleet"
+            })
             .ok_or(("refused", "IFC-022")),
     }
 }
@@ -231,6 +237,43 @@ fn current_path(state: &State, consumer: &Value, target: &Value, op: &str) -> bo
                 && values(p, "operations").any(|v| v == op)
         })
 }
+/// OPS-036: package visibility requires inspect.v1 on management itself, independently
+/// of the Pool authority needed to inspect the management Resource as an object.
+pub(crate) fn may_inspect_packages(
+    state: &State,
+    actor: &Value,
+    context: &Context,
+) -> Result<bool> {
+    Ok(current_path(
+        state,
+        actor,
+        management(state, "management", context)?,
+        &context.qualified("inspect.v1"),
+    ))
+}
+/// OPS-036 / ACC-033: listing never supplies inspection authority of its own.
+pub(crate) fn may_inspect(
+    state: &State,
+    actor: &Value,
+    item: &Value,
+    context: &Context,
+) -> Result<bool> {
+    let management = management(state, "management", context)?;
+    let route =
+        if item.get("spec").is_none() && ["Resource", "Agent"].iter().any(|k| item["kind"] == *k) {
+            owner(state, item)
+                .filter(|o| o["state"] != "retired")
+                .unwrap_or(management)
+        } else {
+            management
+        };
+    Ok(current_path(
+        state,
+        actor,
+        route,
+        &context.qualified("inspect.v1"),
+    ))
+}
 /// First matching row of ACC-033. Unknown named objects are diagnosed only after access.
 fn routing<'a>(
     state: &'a State,
@@ -256,6 +299,11 @@ fn routing<'a>(
         _ => None,
     };
     let route = match core_op {
+        Some("list.v1") => object(state, &path["target"]).filter(|o| {
+            o["from"] == context.qualified("management")
+                || o["kind"] == "Pool"
+                || o["kind"] == "Fleet"
+        }),
         Some(
             "register.v1"
             | "replace.v1"

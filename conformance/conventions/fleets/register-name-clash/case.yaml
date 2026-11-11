@@ -1,0 +1,378 @@
+{
+  "id": "fleet-register-name-clash",
+  "title": "register.v1 preserves diagnostics naming both objects in either Pool/Fleet clash direction",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "FLEET-006",
+    "OBJ-025",
+    "SUB-003",
+    "IFC-025"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "state"
+  },
+  "files": {
+    "state": "../../../language/fleets/names/state.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000008300",
+            "00000000-0000-4000-8000-000000008301",
+            "00000000-0000-4000-8000-000000008302",
+            "00000000-0000-4000-8000-000000008303",
+            "00000000-0000-4000-8000-000000008304",
+            "00000000-0000-4000-8000-000000008305",
+            "00000000-0000-4000-8000-000000008306",
+            "00000000-0000-4000-8000-000000008307",
+            "00000000-0000-4000-8000-000000008308",
+            "00000000-0000-4000-8000-000000008309",
+            "00000000-0000-4000-8000-000000008310",
+            "00000000-0000-4000-8000-000000008311",
+            "00000000-0000-4000-8000-000000008312",
+            "00000000-0000-4000-8000-000000008313",
+            "00000000-0000-4000-8000-000000008314",
+            "00000000-0000-4000-8000-000000008315",
+            "00000000-0000-4000-8000-000000008316",
+            "00000000-0000-4000-8000-000000008317",
+            "00000000-0000-4000-8000-000000008318",
+            "00000000-0000-4000-8000-000000008319"
+          ],
+          "revisions": [
+            "round2-0",
+            "round2-1",
+            "round2-2",
+            "round2-3",
+            "round2-4",
+            "round2-5",
+            "round2-6",
+            "round2-7",
+            "round2-8",
+            "round2-9",
+            "round2-10",
+            "round2-11",
+            "round2-12",
+            "round2-13",
+            "round2-14",
+            "round2-15",
+            "round2-16",
+            "round2-17",
+            "round2-18",
+            "round2-19",
+            "round2-20",
+            "round2-21",
+            "round2-22",
+            "round2-23",
+            "round2-24",
+            "round2-25",
+            "round2-26",
+            "round2-27",
+            "round2-28",
+            "round2-29"
+          ],
+          "suffixes": [
+            "00000",
+            "00001",
+            "00002",
+            "00003",
+            "00004",
+            "00005",
+            "00006",
+            "00007",
+            "00008",
+            "00009",
+            "00010",
+            "00011",
+            "00012",
+            "00013",
+            "00014",
+            "00015",
+            "00016",
+            "00017",
+            "00018",
+            "00019",
+            "00020",
+            "00021",
+            "00022",
+            "00023",
+            "00024",
+            "00025",
+            "00026",
+            "00027",
+            "00028",
+            "00029"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/e2"
+            },
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Fleet",
+                "metadata": {
+                  "name": "occupied"
+                },
+                "from": "github.com/shrav-k/conduit/core#fleet"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": true,
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "OBJ-025",
+                "level": "error",
+                "message": {
+                  "text": "occupied: Fleet/occupied clashes with \"Pool\"/\"occupied\""
+                },
+                "locations": [
+                  {
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "/objects/occupied"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "conflict"
+          }
+        },
+        "stateUnchanged": true,
+        "external_intents": [],
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "permitted": true
+            },
+            "id": "00000000-0000-4000-8000-000000008300",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-11T12:00:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "reason": "conflict"
+            },
+            "id": "00000000-0000-4000-8000-000000008301",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-11T12:00:00Z"
+          }
+        ],
+        "required_promises": [
+          "OBJ-025"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000008400",
+            "00000000-0000-4000-8000-000000008401",
+            "00000000-0000-4000-8000-000000008402",
+            "00000000-0000-4000-8000-000000008403",
+            "00000000-0000-4000-8000-000000008404",
+            "00000000-0000-4000-8000-000000008405",
+            "00000000-0000-4000-8000-000000008406",
+            "00000000-0000-4000-8000-000000008407",
+            "00000000-0000-4000-8000-000000008408",
+            "00000000-0000-4000-8000-000000008409",
+            "00000000-0000-4000-8000-000000008410",
+            "00000000-0000-4000-8000-000000008411",
+            "00000000-0000-4000-8000-000000008412",
+            "00000000-0000-4000-8000-000000008413",
+            "00000000-0000-4000-8000-000000008414",
+            "00000000-0000-4000-8000-000000008415",
+            "00000000-0000-4000-8000-000000008416",
+            "00000000-0000-4000-8000-000000008417",
+            "00000000-0000-4000-8000-000000008418",
+            "00000000-0000-4000-8000-000000008419"
+          ],
+          "revisions": [
+            "round2-0",
+            "round2-1",
+            "round2-2",
+            "round2-3",
+            "round2-4",
+            "round2-5",
+            "round2-6",
+            "round2-7",
+            "round2-8",
+            "round2-9",
+            "round2-10",
+            "round2-11",
+            "round2-12",
+            "round2-13",
+            "round2-14",
+            "round2-15",
+            "round2-16",
+            "round2-17",
+            "round2-18",
+            "round2-19",
+            "round2-20",
+            "round2-21",
+            "round2-22",
+            "round2-23",
+            "round2-24",
+            "round2-25",
+            "round2-26",
+            "round2-27",
+            "round2-28",
+            "round2-29"
+          ],
+          "suffixes": [
+            "00000",
+            "00001",
+            "00002",
+            "00003",
+            "00004",
+            "00005",
+            "00006",
+            "00007",
+            "00008",
+            "00009",
+            "00010",
+            "00011",
+            "00012",
+            "00013",
+            "00014",
+            "00015",
+            "00016",
+            "00017",
+            "00018",
+            "00019",
+            "00020",
+            "00021",
+            "00022",
+            "00023",
+            "00024",
+            "00025",
+            "00026",
+            "00027",
+            "00028",
+            "00029"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/e2"
+            },
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "pool-template"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#pool.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Pool",
+                "metadata": {
+                  "name": "taken"
+                },
+                "from": "pool-template"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": true,
+          "structuredContent": {
+            "diagnostics": [
+              {
+                "ruleId": "OBJ-025",
+                "level": "error",
+                "message": {
+                  "text": "taken: Pool/taken clashes with \"Fleet\"/\"taken\""
+                },
+                "locations": [
+                  {
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "/objects/taken"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "conflict"
+          }
+        },
+        "stateUnchanged": true,
+        "external_intents": [],
+        "records": [
+          {
+            "type": "access-decision",
+            "data": {
+              "permitted": true
+            },
+            "id": "00000000-0000-4000-8000-000000008400",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-11T12:00:00Z"
+          },
+          {
+            "type": "request-ended",
+            "data": {
+              "reason": "conflict"
+            },
+            "id": "00000000-0000-4000-8000-000000008401",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-11T12:00:00Z"
+          }
+        ],
+        "required_promises": [
+          "OBJ-025"
+        ]
+      }
+    }
+  ]
+}

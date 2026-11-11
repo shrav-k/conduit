@@ -120,3 +120,27 @@ spec:
   - github.com/shrav-k/conduit/core#close.v1
   - github.com/shrav-k/conduit/core#reconcile.v1
   - github.com/shrav-k/conduit/core#lift.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: fleet.v1
+  description: >-
+    The sole Fleet Type (FLEET-001). It owns Agents and offers fleet-management.v1, implemented by
+    the engine. It has no configuration, placement, run, hooks, entries or declared Conduits; ownership
+    permits no use of its Agents.
+spec:
+  family: Fleet
+  schema:
+    type: object
+    additionalProperties: false
+  offers:
+  - github.com/shrav-k/conduit/core#fleet-management.v1
+  requires:
+  - github.com/shrav-k/conduit/core#register.v1
+  - github.com/shrav-k/conduit/core#inspect.v1
+  - github.com/shrav-k/conduit/core#list.v1
+  - github.com/shrav-k/conduit/core#set-up.v1
+  - github.com/shrav-k/conduit/core#retire.v1
+  - github.com/shrav-k/conduit/core#retire-with-agents.v1
+  - github.com/shrav-k/conduit/core#reconcile.v1

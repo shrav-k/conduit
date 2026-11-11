@@ -399,14 +399,30 @@ impl Builder<'_> {
                 return Err("invalid DL15 suffix".into());
             }
             let name = format!("{}-{suffix}", &template[..template.len().min(57)]);
-            if !self.reserved_names.contains(&(kind.into(), name.clone()))
+            // FLEET-006: reserve the shared Pool/Fleet namespace even for a named
+            // instance that canonical traversal has not expanded yet.
+            if !self
+                .reserved_names
+                .iter()
+                .any(|(reserved_kind, reserved_name)| {
+                    reserved_name == &name
+                        && (reserved_kind == kind
+                            || (["Pool", "Fleet"].contains(&kind)
+                                && ["Pool", "Fleet"].contains(&reserved_kind.as_str())))
+                })
                 && !self
                     .state
                     .objects
                     .iter()
                     .chain(&self.objects)
                     .chain(&self.templates)
-                    .any(|o| o["kind"] == kind && o["name"] == name)
+                    .any(|o| {
+                        o["name"] == name
+                            && (o["kind"] == kind
+                                || (["Pool", "Fleet"].contains(&kind)
+                                    && o.get("spec").is_none()
+                                    && ["Pool", "Fleet"].iter().any(|k| o["kind"] == *k)))
+                    })
             {
                 return Ok(name);
             }
@@ -430,6 +446,23 @@ impl Builder<'_> {
         }
         let kind = document["kind"].as_str().ok_or("instance has no family")?;
         let label = document["metadata"]["name"].as_str().unwrap_or("unnamed");
+        // FLEET-001: no alternative template or standard/custom arguments exist.
+        if kind == "Fleet"
+            && (document["from"] != self.context.qualified("fleet")
+                || document.as_object().is_none_or(|m| {
+                    m.keys()
+                        .any(|k| !["apiVersion", "kind", "metadata", "from"].contains(&k.as_str()))
+                }))
+        {
+            self.diagnostics.push(diagnostic(
+                "FLEET-001",
+                label,
+                "Fleet must instantiate core#fleet with no arguments",
+                "error",
+            ));
+            return Ok(());
+        }
+
         let (template, h, from) = match self.template(&document["from"], kind, held, true) {
             Ok(t) => t,
             Err(f) => {
@@ -589,6 +622,7 @@ impl Builder<'_> {
 fn fixed_kind(name: &str) -> Option<&'static str> {
     match name {
         "pool-reference.v1" => Some("Pool"),
+        "fleet-reference.v1" => Some("Fleet"),
         "resource-reference.v1" | "secret-reference.v1" => Some("Resource"),
         "agent-reference.v1" => Some("Agent"),
         "interface-reference.v1" => Some("Interface"),
@@ -997,6 +1031,9 @@ fn resolve_instance(
             .iter()
             .find(|v| v["id"] == o[key]["id"])
             .ok_or_else(|| fault("OBJ-009", "missing referenced instance"))?;
+        if key == "consumer" && target["kind"] == "Fleet" {
+            return Err(fault("FLEET-004", "a Fleet is never a consumer or caller"));
+        }
         if target["state"] == "retired" {
             return Err(fault(
                 if key == "owner" {
@@ -1242,6 +1279,10 @@ fn resolve_instance(
     o.as_object_mut().unwrap().remove("entry_pool");
     o.as_object_mut().unwrap().remove("_inputs");
     o.as_object_mut().unwrap().remove("_argument_values");
+    if kind == "Fleet" {
+        // FLEET-001: no configuration is exposed on the instance.
+        o.as_object_mut().unwrap().remove("config");
+    }
     Ok(o)
 }
 fn offered(object: &Value, core: &str) -> Checked<BTreeSet<String>> {
@@ -1530,6 +1571,33 @@ pub(crate) fn prepare(
             continue;
         }
         if let (Some(kind), Some(name)) = (doc["kind"].as_str(), doc["metadata"]["name"].as_str()) {
+            // FLEET-006: Pools and Fleets reserve these names and share one namespace.
+            if ["Pool", "Fleet"].contains(&kind) && doc.get("from").is_some() {
+                if ["management", "access", "system"].contains(&name) {
+                    diagnostics.push(diagnostic(
+                        "FLEET-006",
+                        name,
+                        "reserved Pool or Fleet instance name",
+                        "error",
+                    ));
+                } else if let Some(existing) = t.state.objects.iter().find(|o| {
+                    o.get("spec").is_none()
+                        && o["name"] == name
+                        && o["kind"] != kind
+                        && ["Pool", "Fleet"].iter().any(|k| o["kind"] == *k)
+                }) {
+                    diagnostics.push(diagnostic(
+                        "OBJ-025",
+                        name,
+                        &format!(
+                            "{kind}/{name} clashes with {}/{}",
+                            existing["kind"], existing["name"]
+                        ),
+                        "error",
+                    ));
+                }
+            }
+
             let key = (kind.to_owned(), name.to_owned());
             if let Some(previous) = named.insert(key, doc.clone()) {
                 diagnostics.push(diagnostic(
@@ -1800,15 +1868,75 @@ pub(crate) fn prepare(
     t.decisions.push(decision(
         "register-project-atomically",
         &[
-            "SUB-001", "SUB-002", "SUB-003", "SUB-006", "SUB-008", "OBJ-002", "OBJ-003", "OBJ-009",
-            "OBJ-010", "OBJ-011", "OBJ-018", "OBJ-021", "INS-002", "INS-003", "INS-004", "INS-005",
-            "INS-006", "INS-007", "INS-008", "INS-009", "INS-010", "INS-011", "INS-012", "INS-013",
-            "INS-014", "INS-016", "INS-017", "INS-018", "INS-019", "INS-020", "INS-023", "INS-024",
-            "INS-025", "TPL-002", "TPL-003", "TPL-004", "TPL-005", "TPL-019", "NAM-009", "NAM-010",
-            "PLC-001", "PLC-002", "PLC-007", "POOL-001", "POOL-002", "CON-002", "ACC-033",
-            "REC-001", "REC-002", "REC-003", "POOL-004", "CON-017", "CON-021", "OBJ-008",
-            "CTR-004", "OBJ-013", "NAM-019", "SCH-009", "PLC-005", "PKG-007", "POOL-009",
-            "POOL-014", "POOL-016", "PRV-006", "IFC-012", "IFC-014", "ACC-054",
+            "SUB-001",
+            "SUB-002",
+            "SUB-003",
+            "SUB-006",
+            "SUB-008",
+            "OBJ-002",
+            "OBJ-003",
+            "OBJ-009",
+            "OBJ-010",
+            "OBJ-011",
+            "OBJ-018",
+            "OBJ-021",
+            "INS-002",
+            "INS-003",
+            "INS-004",
+            "INS-005",
+            "INS-006",
+            "INS-007",
+            "INS-008",
+            "INS-009",
+            "INS-010",
+            "INS-011",
+            "INS-012",
+            "INS-013",
+            "INS-014",
+            "INS-016",
+            "INS-017",
+            "INS-018",
+            "INS-019",
+            "INS-020",
+            "INS-023",
+            "INS-024",
+            "INS-025",
+            "TPL-002",
+            "TPL-003",
+            "TPL-004",
+            "TPL-005",
+            "TPL-019",
+            "NAM-009",
+            "NAM-010",
+            "PLC-001",
+            "PLC-002",
+            "PLC-007",
+            "POOL-001",
+            "POOL-002",
+            "CON-002",
+            "ACC-033",
+            "REC-001",
+            "REC-002",
+            "REC-003",
+            "POOL-004",
+            "CON-017",
+            "CON-021",
+            "OBJ-008",
+            "CTR-004",
+            "OBJ-013",
+            "NAM-019",
+            "SCH-009",
+            "PLC-005",
+            "PKG-007",
+            "POOL-009",
+            "POOL-014",
+            "POOL-016",
+            "PRV-006",
+            "IFC-012",
+            "IFC-014",
+            "ACC-054",
+            "FLEET-001",
+            "FLEET-006",
         ],
         &["DL15"],
         json!({"objects":registered.len(),"generated_suffixes_consumed":b.suffix}),
@@ -1831,7 +1959,7 @@ fn reject(
     diagnostics.dedup();
     let invalid = diagnostics
         .iter()
-        .any(|d| d["level"] == "error" && d["ruleId"] != "OBJ-002");
+        .any(|d| d["level"] == "error" && d["ruleId"] != "OBJ-002" && d["ruleId"] != "OBJ-025");
     let reason = if invalid { "invalid" } else { "conflict" };
     let mut promises = diagnostics
         .iter()

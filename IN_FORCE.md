@@ -94,7 +94,7 @@ How to read a line:
   - **In spec/**: PKG-031. Packages ship the standard Conduit templates of their capabilities, such as `read` and `read-write` for the filesystem package (63 point 3).
   - **In spec/**: spec/README.md, the author's reading path. `conduit install` writes package pins into the author's file (53 point 5).
   - **In spec/**: NAM-024. A property added to a published Type's schema states no default, so the Agent Types' reach flags ship as `claude-code.v2` and `codex.v2`. NAM-024 covers both Type schema properties at any depth and Requirement inputs (55 A5).
-  - **In spec/** in part: `fleet-management.v1` is in [capabilities.yaml](spec/core/capabilities.yaml), and `retire-with-agents.v1`, `list.v1` and `lift.v1` are in [operations.yaml](spec/core/operations.yaml) (55 A7, 59, 60). The exact `fleet.v1`, `fleet` and Fleet schema edits are [staged for build 040](docs/work-orders/036b-staged/040.md); required Agent owners are [staged for 041a](docs/work-orders/036b-staged/041a.md).
+  - **In spec/** in part: `fleet-management.v1` is in [capabilities.yaml](spec/core/capabilities.yaml), and `retire-with-agents.v1`, `list.v1` and `lift.v1` are in [operations.yaml](spec/core/operations.yaml) (55 A7, 59, 60). The exact `fleet.v1`, `fleet` and Fleet schema edits are in the core package, landed by order 040; required Agent owners are [staged for 041a](docs/work-orders/036b-staged/041a.md).
 - *Spec pending, batch 2*: the core package gains `make.v1`, the keep and withhold operations, and acting for a Fleet (61 B3, B8, B10 and B11).
 
 ## 6. Conduits and access
@@ -116,8 +116,8 @@ How to read a line:
 - Consent on the receiving side is v1, as a new version of `bound.v1` with a consumers item (62 C3).
 - **In spec/**:
   - One lifecycle authority for each family, including the owning Fleet for an Agent: ACC-033, CON-024, OPS-014, REV-010 (30 OL2, 59 A1, 60).
-  - **In spec/**: root's default Conduits and the closing exception: FLEET-005, FST-002, FST-005, ACC-012, ACC-024 (59 A3). The default and first-start template edits are [staged for build 040](docs/work-orders/036b-staged/040.md); the other standard templates are in [templates.yaml](spec/core/templates.yaml).
-  - **In spec/**: tombstones at register and open, and lifting through bounded access: LIF-040, LIF-041, ACC-053, LIF-009, LIF-035 (53 point 3, 55 A7). The contract `lift.v1` is in [operations.yaml](spec/core/operations.yaml), and `inventory.v1` and `tombstone.v1` are in [results.yaml](spec/core/results.yaml); the Fleet kind and Agent tombstone owner additions are [staged for 040](docs/work-orders/036b-staged/040.md).
+  - **In spec/**: root's default Conduits and the closing exception: FLEET-005, FST-002, FST-005, ACC-012, ACC-024 (59 A3). The default and first-start template edits are in the core package, landed by order 040; the other standard templates are in [templates.yaml](spec/core/templates.yaml).
+  - **In spec/**: tombstones at register and open, and lifting through bounded access: LIF-040, LIF-041, ACC-053, LIF-009, LIF-035 (53 point 3, 55 A7). The contract `lift.v1` is in [operations.yaml](spec/core/operations.yaml), and `inventory.v1` and `tombstone.v1` are in [results.yaml](spec/core/results.yaml); the Fleet kind and Agent tombstone owner additions are in the core package, landed by order 040.
   - **In spec/**: opening provenance, retained in inventory and tombstones: ACC-044, LIF-013, LIF-040, REC-004 (54 point 3). The list on close, review and marks remain in batch 2; `provenance.v1`, `inventory.v1` and `tombstone.v1` are in [results.yaml](spec/core/results.yaml).
   - **In spec/**: bound items retain resolved IDs: ACC-029 (59 A7). Printing affected bounds in replacement plans remains for CLI order 052b; the guidance is in spec/README.md.
 - *Spec pending, batch 2*:
@@ -142,7 +142,7 @@ How to read a line:
 - **In spec/** (ACC-056, IFC-050, OPS-023; 52 points 1 and 2):
   - Refusals come in two tiers, for any caller, an Agent's model among them. Every refusal names the operation and the target, as the caller named them, and says that no open Conduit from the caller to that target lists the operation; a target that does not exist gets the same answer where the caller has no authority over it. A caller that may inspect the target is also shown which Conduits from it to the target exist, open or closed, and what each lists, or that the target does not exist; root is always shown them. This is held by ACC-056, OPS-023 and refusal.v1 (52 point 1, 59 A4).
   - Every result, refusal, diagnostic and notice says what happened and why, in full, unless saying it would disclose what the caller may not learn (52 point 2).
-  - **In spec/**: full inventory under object inspection and filtered discovery without counts: LIF-013, OPS-036 (53 point 3, 59 A4). The `inventory.v1` result contract is in [results.yaml](spec/core/results.yaml), and `inspect.v1` and `list.v1`, including their outputs, are in [operations.yaml](spec/core/operations.yaml); Fleet kind additions are [staged for 040](docs/work-orders/036b-staged/040.md).
+  - **In spec/**: full inventory under object inspection and filtered discovery without counts: LIF-013, OPS-036 (53 point 3, 59 A4). The `inventory.v1` result contract is in [results.yaml](spec/core/results.yaml), and `inspect.v1` and `list.v1`, including their outputs, are in [operations.yaml](spec/core/operations.yaml); Fleet kind additions are in the core package, landed by order 040.
 - *Spec pending, with the vectors*: a portable field for the cause of a machine's loss (44, open point 3).
 
 ## 8. Lifecycle, Pools and first start
@@ -154,12 +154,12 @@ How to read a line:
   - Pools, their entries and their retirement: POOL-001 to POOL-017, LIF-020, LIF-021 (21 DD3 and DR12, 27, 28 CS5, 29, 30 OL4, 31 D9, 32 G3 and G12, 37 C14, 41 P14, 42 R5).
   - First start, a fixed set of permanent objects: FST-001 to FST-006, LIF-022, LIF-034 (24 PD4 and PR8, 28 CS10, 30 OL5, 37 C28).
 - **In spec/**: root's default Conduits: FLEET-005, FST-002, ACC-024, under topic 6 (59 A3).
-- **In spec/**: the unique, fixed SPIFFE trust domain at first start and in status: FST-007, PRV-022, DL6, DL13 (51 point 2). The `status.v1` output is in [operations.yaml](spec/core/operations.yaml) and `trust-domain.v1` in [results.yaml](spec/core/results.yaml); the first-start example edit is [staged for 040](docs/work-orders/036b-staged/040.md).
+- **In spec/**: the unique, fixed SPIFFE trust domain at first start and in status: FST-007, PRV-022, DL6, DL13 (51 point 2). The `status.v1` output is in [operations.yaml](spec/core/operations.yaml) and `trust-domain.v1` in [results.yaml](spec/core/results.yaml); the first-start example edit is in place, landed by order 040.
 - *Coordinator's, not yet accepted*: where the run's state is unknown, a retire hook's part is unavailable, not unknown (review list, item 19; work order 027).
 
 ## 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach
 
-- **In spec/**: the Fleet family: FLEET-001 to FLEET-006, OBJ-001, OBJ-013, OBJ-020, CTR-004, TPL-001, TPL-002, PLC-006 (59, 60). Core operation contracts are in [operations.yaml](spec/core/operations.yaml) and `fleet-management.v1` in [capabilities.yaml](spec/core/capabilities.yaml); Fleet documents and schema branches are [staged for 040](docs/work-orders/036b-staged/040.md), and required Agent owners for [041a](docs/work-orders/036b-staged/041a.md).
+- **In spec/**: the Fleet family: FLEET-001 to FLEET-006, OBJ-001, OBJ-013, OBJ-020, CTR-004, TPL-001, TPL-002, PLC-006 (59, 60). Core operation contracts are in [operations.yaml](spec/core/operations.yaml) and `fleet-management.v1` in [capabilities.yaml](spec/core/capabilities.yaml); Fleet documents and schema branches are in the core package, landed by order 040, and required Agent owners for [041a](docs/work-orders/036b-staged/041a.md).
   - **In spec/**: family and kind, core template, Type and capability: FLEET-001, OBJ-020 (60). The CLI spelling `conduit fleet ...` remains for order 051a.
   - **In spec/**: fixed Agent ownership: FLEET-002, FLEET-003 (54 point 1, 59 A1).
   - **In spec/**: ownership permits nothing; a Fleet runs nothing, has no placement, contains no Pool and is no machine group: FLEET-004, FLEET-001, spec/definitions.md (60).

@@ -163,6 +163,11 @@ exports:
   - fleet-manage-own
   - fleet-view
   - retire-pool
+  - fleet.v1
+  - fleet
+  - root-fleet
+  - retire-fleet
+  - fleet-reference.v1
 
 implementations:
   engine:

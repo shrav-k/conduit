@@ -39,7 +39,7 @@ alone, and every `$ref` keeps its target, so the tools of `register.v1` and `rep
 | [document.yaml](document.yaml) | `document.v1` | Any template, instance or contract document |
 | [sectioned.yaml](sectioned.yaml) | `sectioned.v1`, `sectioned-templates.v1`, `sectioned-interface.v1`, `sectioned-agent.v1`, `sectioned-resource.v1`, `sectioned-pool.v1`, `sectioned-conduit.v1`, `consumes-item.v1`, `sectioned-operator.v1`, `manages.v1` | The short form in documents files, defined by SCT translation rules; the wire stays canonical |
 | [envelope.yaml](envelope.yaml) | `api-version.v1`, `envelope.v1`, `template-metadata.v1`, `instance-metadata.v1`, `contract-metadata.v1` | `apiVersion`, what every document carries, and `metadata` |
-| [templates.yaml](templates.yaml) | `template.v1`, `template-spec.v1`, `pool-template-spec.v1`, `conduit-template-spec.v1`, `template-input.v1`, `implementation-map.v1`, `template-controls.v1` | A template document; the `spec` of an Interface, Agent or Resource template, of a Pool template, and of a Conduit template, each with the closed list of places an input's destination may reach; an input; the `implementation` map; a template's `controls` |
+| [templates.yaml](templates.yaml) | `template.v1`, `template-spec.v1`, `pool-template-spec.v1`, `conduit-template-spec.v1`, `template-input.v1`, `implementation-map.v1`, `template-controls.v1` | A template document; the `spec` of an Interface, Agent or Resource template, of a Pool template, and of a Conduit template, and the type-only Fleet branch; each non-Fleet spec has the closed list of places an input's destination may reach; an input; the `implementation` map; a template's `controls` |
 | [instances.yaml](instances.yaml) | `instance.v1`, `template-reference.v1`, `declared-conduit.v1`, `pool-entry.v1` | An instance document of each family, with the standard argument `runtime` of an Agent and a Resource; the four forms of the value of `from`; the two nested instantiations |
 | [contracts.yaml](contracts.yaml) | `contract.v1`, `type-spec.v1`, `capability-spec.v1`, `operation-spec.v1`, `requirement-spec.v1`, `applied-requirement.v1` | A contract document of each of the five kinds, and a requirement applied to a Conduit. `operation-spec.v1` carries `inputSchema` and `outputSchema`, with the root CTR-012 allows, the three hints of CTR-002, and a control's `changes`; `type-spec.v1` states that a Pool type offers `pool-management.v1` |
 | [schema.yaml](schema.yaml) | `schema.v1` | A schema under the profile, with the three forms of a `$ref`. It is the `spec` of a Schema contract and the value of every `schema` key |
@@ -52,7 +52,7 @@ inside `config` or `arguments` a reference (OBJ-021).
 
 | A reference written as | Schema |
 | --- | --- |
-| A bare name, where one kind is accepted | `name.v1`, as a branch of `interface-reference.v1`, `agent-reference.v1`, `resource-reference.v1`, `pool-reference.v1`, `conduit-reference.v1` and `template-reference.v1` |
+| A bare name, where one kind is accepted | `name.v1`, as a branch of `interface-reference.v1`, `agent-reference.v1`, `resource-reference.v1`, `pool-reference.v1`, `fleet-reference.v1`, `conduit-reference.v1` and `template-reference.v1` |
 | `{kind: <Kind>, name: <name>}` | `reference.v1`; with fewer kinds, `actor-reference.v1`, `consumer-reference.v1`, `target-reference.v1` and `secret-reference.v1` |
 | `{kind: Pool, name: <pool>, entry: <entry>}` | `pool-entry-reference.v1` |
 | `{entry: <name>}` | `entry-reference.v1` |
@@ -101,7 +101,7 @@ target: {kind: Resource, id: 0b5c1d7e-2a43-4f6e-9d10-6c8e4f1a2b3c}
 | A framed document, with `kind` | `document.v1` |
 | A documents-file map without `kind`, outside the manifest | `sectioned.v1` (SCT-001); version inheritance and translation are separate checks |
 | A file named `conduit.yaml`, `conduit.yml` or `conduit.json` (takes precedence over document routing) | `manifest.v1` |
-| Only that a document has `apiVersion` and one of the ten kinds | `envelope.v1` |
+| Only that a document has `apiVersion` and one of the eleven kinds | `envelope.v1` |
 | A schema an author wrote | `schema.v1` |
 
 The sectioned [project](examples/valid/sectioned-project) and

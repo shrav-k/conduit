@@ -104,6 +104,12 @@ spec:
         spec: {$ref: github.com/shrav-k/conduit/core#requirement-spec.v1}
       required: [apiVersion, kind, metadata, spec]
       additionalProperties: false
+    signIn:
+      type: object
+      properties:
+        account: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+      required: [account]
+      additionalProperties: false
     schema:
       type: object
       properties:
@@ -119,57 +125,72 @@ kind: Schema
 metadata:
   name: type-spec.v1
   description: >-
-    The `spec` of a Type contract. `family` is required. `schema`, `offers`, `requires`,
-    `implementation`, `controls`, `conditions`, `records` and `nodeSelector` may each be left
-    out, and one that is left out lists nothing. A type that states no `schema` puts no rule
-    on the configuration of its instances, and so lists no control. `nodeSelector` is a label
-    selector that the labels of an instance's node must match. A Type of the family Pool
-    lists the core package's capability `pool-management.v1` under `offers`.
+    The `spec` of a Type contract. `family` is required. `schema`, `offers`, `requires`, `implementation`,
+    `controls`, `conditions`, `records` and `nodeSelector` may each be left out, and one that is left
+    out lists nothing. A type that states no `schema` puts no rule on the configuration of its instances,
+    and so lists no control. `nodeSelector` is a label selector that the labels of an instance's node
+    must match. A Type of the family Pool lists the core package's capability `pool-management.v1`
+    under `offers`. A Type of family Fleet exists only in the core package and offers fleet-management.v1
+    (FLEET-001).
 spec:
   type: object
   properties:
-    family: {enum: [Interface, Agent, Resource, Pool]}
-    signIn:
-      type: object
-      properties:
-        account: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
-      required: [account]
-      additionalProperties: false
-    schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
+    family:
+      enum:
+      - Interface
+      - Agent
+      - Resource
+      - Pool
+      - Fleet
+    schema:
+      $ref: github.com/shrav-k/conduit/core#schema.v1
     offers:
       type: array
-      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+      items:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
     requires:
       type: array
-      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-    implementation: {$ref: github.com/shrav-k/conduit/core#implementation-map.v1}
+      items:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+    implementation:
+      $ref: github.com/shrav-k/conduit/core#implementation-map.v1
     controls:
       type: array
-      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-    nodeSelector: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+      items:
+        $ref: github.com/shrav-k/conduit/core#selection.v1
+    nodeSelector:
+      $ref: github.com/shrav-k/conduit/core#labels.v1
     conditions:
       type: array
-      items: {type: string, minLength: 1}
+      items:
+        type: string
+        minLength: 1
       uniqueItems: true
     records:
       type: object
       description: >-
-        What content the records about the type's instances keep: the inputs of their
-        operations, the outputs, both or neither. A member that is absent means false.
+        What content the records about the type's instances keep: the inputs of their operations,
+        the outputs, both or neither. A member that is absent means false.
       properties:
-        inputs: {type: boolean}
-        outputs: {type: boolean}
+        inputs:
+          type: boolean
+        outputs:
+          type: boolean
       additionalProperties: false
-  required: [family]
+  required:
+  - family
   additionalProperties: false
   if:
     properties:
-      family: {const: Pool}
+      family:
+        const: Pool
   then:
-    required: [offers]
+    required:
+    - offers
     properties:
       offers:
-        contains: {const: github.com/shrav-k/conduit/core#pool-management.v1}
+        contains:
+          const: github.com/shrav-k/conduit/core#pool-management.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

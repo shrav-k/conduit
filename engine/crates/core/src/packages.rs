@@ -584,6 +584,18 @@ impl Catalog {
                 continue;
             }
             for d in &p.documents {
+                // FLEET-001: only the core package defines this family's template and Type.
+                if (d["kind"] == "Fleet" && d.get("from").is_none())
+                    || (d["kind"] == "Type" && d["spec"]["family"] == "Fleet")
+                {
+                    diagnostics.push(diag(
+                        "FLEET-001",
+                        format!(
+                            "{scope}: {} is a non-core Fleet template or Type",
+                            d["metadata"]["name"]
+                        ),
+                    ));
+                }
                 diagnostics.extend(env.check_document(scope, d, core)?);
             }
             for (address, _) in items(&manifest(p), "packages") {

@@ -3,12 +3,12 @@
 #
 # Promises encoded:
 #   api-version.v1        OBJ-017, OBJ-024
-#   envelope.v1           OBJ-017 (`apiVersion`), OBJ-020 (`kind` is one of ten)
+#   envelope.v1           OBJ-017 (`apiVersion`), OBJ-020 (`kind` is one of eleven)
 #   template-metadata.v1  OBJ-018, OBJ-001 (a template's `name` is required)
 #   instance-metadata.v1  OBJ-018, OBJ-001, OBJ-003 (an instance's `name` may be left out)
 #   contract-metadata.v1  OBJ-018, CTR-001, NAM-004 (a contract's `name` is its export name)
 #
-# `envelope.v1` is deliberately open: it states only what all ten kinds have in common, so
+# `envelope.v1` is deliberately open: it states only what all eleven kinds have in common, so
 # that a document with no `apiVersion` or an unknown `kind` can be told apart from one whose
 # body is wrong. The closed schema of each kind is in templates.yaml, instances.yaml and
 # contracts.yaml, and `document.v1` in document.yaml joins them.
@@ -39,21 +39,26 @@ metadata:
 spec:
   type: object
   properties:
-    apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+    apiVersion:
+      $ref: github.com/shrav-k/conduit/core#api-version.v1
     kind:
       enum:
-        - Interface
-        - Agent
-        - Resource
-        - Pool
-        - Conduit
-        - Type
-        - Capability
-        - Operation
-        - Requirement
-        - Schema
-    metadata: {type: object}
-  required: [apiVersion, kind]
+      - Interface
+      - Agent
+      - Resource
+      - Pool
+      - Fleet
+      - Conduit
+      - Type
+      - Capability
+      - Operation
+      - Requirement
+      - Schema
+    metadata:
+      type: object
+  required:
+  - apiVersion
+  - kind
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

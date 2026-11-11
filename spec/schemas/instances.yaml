@@ -51,7 +51,7 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: instance.v1
-  description: An instance document of any of the five families.
+  description: An instance document of any of the six families.
 spec:
   anyOf:
   - $ref: '#/$defs/interface'
@@ -59,6 +59,7 @@ spec:
   - $ref: '#/$defs/resource'
   - $ref: '#/$defs/pool'
   - $ref: '#/$defs/conduit'
+  - $ref: '#/$defs/fleet'
   $defs:
     interface:
       type: object
@@ -169,33 +170,58 @@ spec:
       - consumer
       - target
       additionalProperties: false
+    fleet:
+      type: object
+      properties:
+        apiVersion:
+          $ref: github.com/shrav-k/conduit/core#api-version.v1
+        kind:
+          const: Fleet
+        metadata:
+          $ref: github.com/shrav-k/conduit/core#instance-metadata.v1
+        from:
+          const: github.com/shrav-k/conduit/core#fleet
+      required:
+      - apiVersion
+      - kind
+      - from
+      additionalProperties: false
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: template-reference.v1
   description: >-
-    The value of `from`: the template an instance or a nested instantiation is made from. It has
-    four forms. The name alone, or `{kind, name}`, names a template that exists. A qualified
-    reference names a template that a package exports. `#` and a name names, in a document of a
-    package, a template of the same package: a bare name is never looked up in a package, so a
-    document of a package writes `#name` for a template of its own package. In a submitted
-    project, `#name` resolves as the bare name does, among the templates that exist, of
-    which the templates that the same submission registers are part (INS-025). The value of
-    `from` is not a selection.
+    The value of `from`: the template an instance or a nested instantiation is made from. It has four
+    forms. The name alone, or `{kind, name}`, names a template that exists. A qualified reference
+    names a template that a package exports. `#` and a name names, in a document of a package, a template
+    of the same package: a bare name is never looked up in a package, so a document of a package writes
+    `#name` for a template of its own package. In a submitted project, `#name` resolves as the bare
+    name does, among the templates that exist, of which the templates that the same submission registers
+    are part (INS-025). The value of `from` is not a selection.
 spec:
   anyOf:
-    - $ref: github.com/shrav-k/conduit/core#name.v1
-    - type: object
-      properties:
-        kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
-        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
-      required: [kind, name]
-      additionalProperties: false
-    - $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
-    - type: string
-      pattern: '^#[a-z][a-z0-9-]*$'
-      maxLength: 64
+  - $ref: github.com/shrav-k/conduit/core#name.v1
+  - type: object
+    properties:
+      kind:
+        enum:
+        - Interface
+        - Agent
+        - Resource
+        - Pool
+        - Fleet
+        - Conduit
+      name:
+        $ref: github.com/shrav-k/conduit/core#name.v1
+    required:
+    - kind
+    - name
+    additionalProperties: false
+  - $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+  - type: string
+    pattern: ^#[a-z][a-z0-9-]*$
+    maxLength: 64
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

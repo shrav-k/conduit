@@ -73,6 +73,14 @@
                 },
                 "from": "some-template",
                 "owner": "workspace"
+              },
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Fleet",
+                "metadata": {
+                  "name": "new-fleet"
+                },
+                "from": "@core#fleet"
               }
             ]
           }

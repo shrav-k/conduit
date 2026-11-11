@@ -26,23 +26,39 @@ kind: Schema
 metadata:
   name: object.v1
   description: >-
-    How a result names an object, by its kind, its name and its ID. For an instance that a
-    nested instantiation made, `nested` names that nested instantiation: `instance` is the ID
-    of the instance that holds it, the consumer of a declared Conduit or the Pool of an
-    entry, and `name` is the name of the declared Conduit or of the entry.
+    How a result names an object, by its kind, its name and its ID. For an instance that a nested
+    instantiation made, `nested` names that nested instantiation: `instance` is the ID of the instance
+    that holds it, the consumer of a declared Conduit or the Pool of an entry, and `name` is the name
+    of the declared Conduit or of the entry.
 spec:
   type: object
   properties:
-    kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
-    name: {$ref: github.com/shrav-k/conduit/core#name.v1}
-    id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+    kind:
+      enum:
+      - Interface
+      - Agent
+      - Resource
+      - Pool
+      - Fleet
+      - Conduit
+    name:
+      $ref: github.com/shrav-k/conduit/core#name.v1
+    id:
+      $ref: github.com/shrav-k/conduit/core#id.v1
     nested:
       type: object
       properties:
-        instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
-        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
-      required: [instance, name]
-  required: [kind, name, id]
+        instance:
+          $ref: github.com/shrav-k/conduit/core#id.v1
+        name:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+      required:
+      - instance
+      - name
+  required:
+  - kind
+  - name
+  - id
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -240,7 +256,8 @@ metadata:
     whose loss closed it under PLC-024. Engine-made objects get no tombstone. within is absent in
     this version, meaning the engine. Visibility and lift coverage use the kept IDs, while matching
     uses names. Every permitted viewer sees the full tombstone, including by and provenance; there
-    are no hidden counts. A Resource tombstone requires owner of kind Pool.
+    are no hidden counts. Resource and Agent tombstones require owner of kind Pool and Fleet,
+    respectively.
 spec:
   type: object
   properties:
@@ -278,6 +295,7 @@ spec:
           kind:
             enum:
             - Pool
+            - Fleet
     within:
       $ref: github.com/shrav-k/conduit/core#id.v1
     consumer:
@@ -312,6 +330,20 @@ spec:
           properties:
             kind:
               const: Pool
+  - if:
+      properties:
+        object:
+          properties:
+            kind:
+              const: Agent
+    then:
+      required:
+      - owner
+      properties:
+        owner:
+          properties:
+            kind:
+              const: Fleet
   - if:
       properties:
         object:

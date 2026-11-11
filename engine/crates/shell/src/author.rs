@@ -79,12 +79,12 @@ fn named(argument: &str) -> Result<Value> {
             "object {argument:?}: expected KIND/NAME; use conduit inspect to find its kind and name"
         )
     })?;
-    if !["Agent", "Interface", "Resource", "Pool", "Conduit"].contains(&kind)
+    if !["Agent", "Interface", "Resource", "Pool", "Fleet", "Conduit"].contains(&kind)
         || name.is_empty()
         || name.contains('/')
     {
         return Err(format!(
-            "object {argument:?}: expected KIND/NAME with kind Agent, Interface, Resource, Pool or Conduit"
+            "object {argument:?}: expected KIND/NAME with kind Agent, Interface, Resource, Pool, Fleet or Conduit"
         ));
     }
     Ok(json!({"kind":kind,"name":name}))
@@ -325,7 +325,7 @@ pub async fn run(
             }) {
                 submit_step(directory, "access.open.v1", json!({"conduit":o["name"]}), format!("open Conduit/{}", o["name"].as_str().unwrap_or("?")), &mut steps).await?;
             }
-            for kind in ["Pool", "Resource", "Agent", "Interface"] {
+            for kind in ["Pool", "Fleet", "Resource", "Agent", "Interface"] {
                 for o in objects.iter().filter(|o| {
                     o["kind"] == kind
                         && o.get("spec").is_none()

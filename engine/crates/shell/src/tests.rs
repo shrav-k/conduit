@@ -91,6 +91,9 @@ fn expand(v: &Value, symbols: &BTreeMap<String, Value>, core: &str) -> Value {
 fn fixture_input(raw: &Value, shell: &Shell, symbols: &BTreeMap<String, Value>) -> Value {
     let mut input = expand(raw, symbols, &shell.context.core_package);
     input.as_object_mut().unwrap().remove("evidence");
+    if input["kind"] == "first-start" {
+        input.as_object_mut().unwrap().remove("trustDomain");
+    }
     if input["kind"] == "resolve-project" || input["kind"] == "register-project" {
         input.as_object_mut().unwrap().remove("file");
         input.as_object_mut().unwrap().remove("reverse");
@@ -862,8 +865,12 @@ fn identities_verify_revoke_and_never_enter_state_records_or_output() {
     );
     let engine_id =
         fs::read_to_string(identity.directory.join(files[2].as_str().unwrap())).unwrap();
-    let random_domain = engine_id.strip_suffix(".conduit.local").unwrap();
-    assert_eq!(random_domain.len(), 26);
+    let random_domain = engine_id
+        .strip_prefix("spiffe://")
+        .unwrap()
+        .strip_suffix("/conduit/engine")
+        .unwrap();
+    assert_eq!(random_domain.len(), 64);
     assert!(
         random_domain
             .bytes()
@@ -1061,7 +1068,7 @@ fn evidence_retry_allocates_large_registration_without_partial_commit() {
     let reply = shell.submit(input, &MissingExecutor).unwrap();
     assert_eq!(reply["accepted"], true);
     let after = shell.state().unwrap();
-    assert_eq!(after.objects.len(), 157);
+    assert_eq!(after.objects.len(), 158);
     assert!(after.allocated_ids.len() - before.allocated_ids.len() > 256);
     assert_eq!(
         after
@@ -1069,7 +1076,7 @@ fn evidence_retry_allocates_large_registration_without_partial_commit() {
             .iter()
             .filter(|r| r["data"]["action"] == "registered")
             .count(),
-        157
+        158
     );
     assert!(
         after
@@ -1250,3 +1257,166 @@ fn killed_after_send_before_completion_commit() {
 
 #[path = "server_tests.rs"]
 mod http;
+
+#[test]
+fn configured_trust_domain_survives_restart_and_cannot_be_replaced() {
+    let temp = temporary();
+    let config = Config {
+        trust_domain: Some("tenant_1.example".into()),
+        ..Config::default()
+    };
+    {
+        let shell = Shell::open(temp.path(), context(), config.clone()).unwrap();
+        shell
+            .submit(
+                json!({"kind":"first-start","machine":local_machine(BTreeMap::new()).unwrap()}),
+                &MissingExecutor,
+            )
+            .unwrap();
+        assert_eq!(
+            shell.state().unwrap().objects[0]["status"]["trustDomain"],
+            "tenant_1.example"
+        );
+        assert_eq!(
+            fs::read_to_string(temp.path().join("engine-id")).unwrap(),
+            "spiffe://tenant_1.example/conduit/engine"
+        );
+        assert!(
+            shell
+                .issue_client_token(shell.state().unwrap().objects[7]["id"].as_str().unwrap())
+                .is_err()
+        );
+    }
+    {
+        let shell = Shell::open(temp.path(), context(), Config::default()).unwrap();
+        assert_eq!(
+            shell.state().unwrap().objects[0]["status"]["trustDomain"],
+            "tenant_1.example"
+        );
+    }
+    let changed = Config {
+        trust_domain: Some("other.example".into()),
+        ..Config::default()
+    };
+    assert!(
+        Shell::open(temp.path(), context(), changed)
+            .err()
+            .unwrap()
+            .contains("never changes")
+    );
+    for domain in ["", "Invalid", "a/b"] {
+        let fresh = temporary();
+        let bad = Config {
+            trust_domain: Some(domain.into()),
+            ..Config::default()
+        };
+        assert!(
+            Shell::open(fresh.path(), context(), bad)
+                .err()
+                .unwrap()
+                .contains("FST-007")
+        );
+    }
+}
+
+#[test]
+fn first_start_presents_final_lists_and_unbuilt_operations_name_their_orders() {
+    let temp = temporary();
+    let shell = open(temp.path());
+    shell
+        .submit(
+            json!({"kind":"first-start","machine":local_machine(BTreeMap::new()).unwrap()}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    let root = shell.state().unwrap().objects[4]["id"].clone();
+    let tools = shell
+        .submit(
+            json!({"kind":"list-tools","identity":{"kind":"instance","id":root}}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    let mut expected = vec![];
+    for (prefix, operations) in [
+        (
+            "management",
+            vec![
+                "register",
+                "replace",
+                "unregister",
+                "inspect",
+                "set-up",
+                "retire",
+                "reconcile",
+                "register-replacement",
+                "install",
+                "declare-lost",
+                "purge",
+                "list",
+                "answer",
+            ],
+        ),
+        ("access", vec!["open", "close", "reconcile", "lift"]),
+        (
+            "system",
+            vec![
+                "register",
+                "register-replacement",
+                "inspect",
+                "list",
+                "set-up",
+                "retire",
+                "reconcile",
+                "sign-in",
+                "answer",
+            ],
+        ),
+    ] {
+        expected.extend(operations.into_iter().map(|op| format!("{prefix}.{op}.v1")));
+    }
+    expected.sort();
+    let names: Vec<_> = tools["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|t| t["name"].as_str().unwrap())
+        .collect();
+    assert_eq!(names, expected);
+    for (tool, arguments, order) in [
+        (
+            "access.lift.v1",
+            json!({"id":"00000000-0000-4000-8000-000000009999"}),
+            "042",
+        ),
+        (
+            "management.answer.v1",
+            json!({"action":"00000000-0000-4000-8000-000000009999","answer":"dismissed"}),
+            "047",
+        ),
+        (
+            "system.sign-in.v1",
+            json!({"instance":{"kind":"Resource","name":"management"}}),
+            "048a",
+        ),
+    ] {
+        let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":arguments}}), &MissingExecutor).unwrap();
+        assert_eq!(
+            reply["_meta"][format!("{}reason", shell.context.meta_prefix)],
+            "unavailable"
+        );
+        assert!(
+            reply["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .contains(&format!("not built yet, order {order}"))
+        );
+    }
+    assert!(
+        !shell
+            .state()
+            .unwrap()
+            .records
+            .iter()
+            .any(|r| r["type"] == "invocation-dispatched")
+    );
+}

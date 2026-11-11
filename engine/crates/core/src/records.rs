@@ -6,9 +6,15 @@ use crate::{
 use serde_json::{Value, json};
 
 pub(crate) fn handles(op: &str, c: &Context) -> bool {
-    ["inspect.v1", "purge.v1", "replace.v1", "register.v1"]
-        .iter()
-        .any(|n| op == c.qualified(n))
+    [
+        "inspect.v1",
+        "list.v1",
+        "purge.v1",
+        "replace.v1",
+        "register.v1",
+    ]
+    .iter()
+    .any(|n| op == c.qualified(n))
 }
 
 fn template<'a>(s: &'a State, args: &Value) -> Option<&'a Value> {
@@ -19,31 +25,47 @@ fn template<'a>(s: &'a State, args: &Value) -> Option<&'a Value> {
     })
 }
 
+pub(crate) struct PreflightRejection {
+    pub reason: &'static str,
+    pub rule: String,
+    pub diagnostics: Option<Value>,
+}
+
+impl PreflightRejection {
+    fn new(reason: &'static str, rule: &str) -> Self {
+        Self {
+            reason,
+            rule: rule.into(),
+            diagnostics: None,
+        }
+    }
+}
+
 pub(crate) fn preflight(
     s: &State,
     route: &Value,
     c: &Context,
     a: &Allocation<'_>,
-) -> Result<Option<(&'static str, &'static str)>> {
+) -> Result<Option<PreflightRejection>> {
     let args = &route["arguments"];
     if route["operation"] == c.qualified("inspect.v1") {
         let o = access::object(s, &args["object"])
             .ok_or("inspection object absent after validation")?;
         if args.get("expectedId").is_some_and(|id| *id != o["id"]) {
-            return Ok(Some(("conflict", "LIF-037")));
+            return Ok(Some(PreflightRejection::new("conflict", "LIF-037")));
         }
     }
     if route["operation"] == c.qualified("replace.v1") {
         let Some(o) = template(s, args) else {
-            return Ok(Some(("invalid", "OPS-029")));
+            return Ok(Some(PreflightRejection::new("invalid", "OPS-029")));
         };
         // Validate the new project before comparing revisions (OPS-023).
         let trial = replacement(s, args, c, a)?;
         if trial.reply["accepted"] != true {
-            return Ok(Some(("invalid", "SUB-009")));
+            return Ok(Some(PreflightRejection::new("invalid", "SUB-009")));
         }
         if o["revision"] != args["revision"] {
-            return Ok(Some(("conflict", "REV-002")));
+            return Ok(Some(PreflightRejection::new("conflict", "REV-002")));
         }
     }
     if route["operation"] == c.qualified("register.v1") {
@@ -57,7 +79,7 @@ pub(crate) fn preflight(
         };
         register_project(&mut trial, args, c, a, route)?;
         if trial.reply["reason"] == "refused" {
-            return Ok(Some(("refused", "ACC-054")));
+            return Ok(Some(PreflightRejection::new("refused", "ACC-054")));
         }
         if trial.reply["accepted"] != true {
             let rule = trial.reply["diagnostics"]
@@ -65,20 +87,19 @@ pub(crate) fn preflight(
                 .and_then(|d| d.first())
                 .and_then(|d| d["ruleId"].as_str())
                 .unwrap_or("SUB-003");
-            // Requiring rule IDs here are selected from a finite vocabulary by the resolver.
-            return Ok(Some((
-                if trial.reply["reason"] == "conflict" {
+            // OBJ-025 / FLEET-006: retain the resolver's diagnostic naming both objects.
+            return Ok(Some(PreflightRejection {
+                reason: if trial.reply["reason"] == "conflict" {
                     "conflict"
                 } else {
                     "invalid"
                 },
-                match rule {
-                    "OBJ-002" => "OBJ-002",
-                    "FST-006" => "FST-006",
-                    "SUB-009" => "SUB-009",
-                    _ => "SUB-003",
-                },
-            )));
+                rule: rule.into(),
+                diagnostics: trial.reply["diagnostics"]
+                    .as_array()
+                    .filter(|d| !d.is_empty())
+                    .map(|d| json!(d)),
+            }));
         }
     }
     Ok(None)
@@ -256,6 +277,60 @@ pub(crate) fn execute(
             a.cursor += 1;
         }
         outputs = json!({"objects":created,"diagnostics":[]});
+    } else if v["operation"] == c.qualified("list.v1") {
+        let view = access::publication_state(&t.state, c)?;
+        let container = access::object(&view, &v["target"]).ok_or("list container absent")?;
+        let mut objects = vec![];
+        for object in &view.objects {
+            let candidate = match container["kind"].as_str() {
+                Some("Pool") => {
+                    object["kind"] == "Resource"
+                        && object.get("spec").is_none()
+                        && access::id(&object["owner"]) == &container["id"]
+                }
+                Some("Fleet") => {
+                    object["kind"] == "Agent"
+                        && object.get("spec").is_none()
+                        && access::id(&object["owner"]) == &container["id"]
+                }
+                _ => true,
+            };
+            if !candidate
+                || args.get("kind").is_some_and(|k| object["kind"] != *k)
+                // OPS-036 / IFC-020: the caller's inspection rights determine visibility.
+                || !access::may_inspect(&view, &v["caller"], object, c)?
+            {
+                continue;
+            }
+            // OPS-036 / LIF-012: contracts are neither templates nor lifecycle instances.
+            let family = matches!(
+                object["kind"].as_str(),
+                Some("Interface" | "Agent" | "Resource" | "Pool" | "Fleet" | "Conduit")
+            );
+            let template = family && object.get("spec").is_some();
+            let mut item = json!({"kind":object["kind"],"name":object["name"],"id":object["id"],"template":template});
+            if family && !template {
+                item["state"] = object["state"].clone();
+            }
+            objects.push(item);
+        }
+        let mut packages = vec![];
+        if container["from"] == c.qualified("management")
+            && access::may_inspect_packages(&view, &v["caller"], c)?
+        {
+            for installed in &view.installed_packages {
+                let snapshot = &installed.package;
+                packages.push(json!({"address":snapshot.address,"version":snapshot.version,"digest":snapshot.digest}));
+            }
+        }
+        outputs = json!({"objects":objects,"packages":packages,"tombstones":[]});
+        t.decisions.push(decision(
+            "list-inspectable-items",
+            &["OPS-036", "ACC-033", "LIF-012", "LIF-040"],
+            &[],
+            json!({"kind":args.get("kind")}),
+            vec![],
+        ));
     } else if v["operation"] == c.qualified("inspect.v1") {
         let o = access::object(&t.state, &args["object"])
             .ok_or("inspection object absent")?

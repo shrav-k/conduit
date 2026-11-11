@@ -190,6 +190,8 @@ pub enum Input {
     FirstStart {
         evidence: Evidence,
         machine: Machine,
+        #[serde(rename = "trustDomain")]
+        trust_domain: String,
     },
     Submit {
         evidence: Evidence,
@@ -498,9 +500,11 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
                 vec![],
             ));
         }
-        Input::FirstStart { evidence, machine } => {
-            first_start(&mut transition, &evidence, machine, context)?
-        }
+        Input::FirstStart {
+            evidence,
+            machine,
+            trust_domain,
+        } => first_start(&mut transition, &evidence, machine, &trust_domain, context)?,
         Input::Submit {
             evidence,
             request,
@@ -643,12 +647,25 @@ fn first_start(
     t: &mut Transition,
     evidence: &Evidence,
     machine: Machine,
+    trust_domain: &str,
     context: &Context,
 ) -> Result<()> {
+    // FST-007: the embedding supplies randomness; the pure core validates the namespace.
+    if !valid_trust_domain(trust_domain) {
+        return Err("malformed trustDomain (FST-007)".into());
+    }
     if t.state.started {
+        if t.state
+            .objects
+            .iter()
+            .find(|o| o["from"] == context.qualified("system"))
+            .is_none_or(|o| o["status"]["trustDomain"] != trust_domain)
+        {
+            return Err("trustDomain never changes (FST-007)".into());
+        }
         t.decisions.push(decision(
             "keep-first-start-identities",
-            &["FST-001", "FST-005"],
+            &["FST-001", "FST-005", "FST-007"],
             &["DL6"],
             json!({"started":true}),
             t.state
@@ -674,9 +691,9 @@ fn first_start(
     {
         return Err("invalid first-start machine evidence (PRV-014)".into());
     }
-    if evidence.revisions.len() != 7
+    if evidence.revisions.len() != 8
         || evidence.revisions.iter().any(String::is_empty)
-        || evidence.suffixes.len() != 2
+        || evidence.suffixes.len() != 3
         || evidence.suffixes.iter().any(|s| {
             s.len() != 5
                 || !s
@@ -684,13 +701,13 @@ fn first_start(
                     .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit())
         })
     {
-        return Err("first start needs seven revisions and two five-character suffixes".into());
+        return Err("first start needs eight revisions and three five-character suffixes".into());
     }
     let mut allocations = Allocation {
         evidence,
         cursor: 0,
     };
-    let ids = (0..7)
+    let ids = (0..8)
         .map(|_| allocations.next(&mut t.state))
         .collect::<Result<Vec<_>>>()?;
     let templates = [
@@ -701,6 +718,7 @@ fn first_start(
         "root",
         "root-management",
         "root-access",
+        "root-pool",
     ];
     let names = [
         "system".into(),
@@ -710,6 +728,7 @@ fn first_start(
         "root".into(),
         format!("root-management-{}", evidence.suffixes[0]),
         format!("root-access-{}", evidence.suffixes[1]),
+        format!("root-pool-{}", evidence.suffixes[2]),
     ];
     for (i, template_name) in templates.iter().enumerate() {
         let template = context.template(template_name)?;
@@ -730,22 +749,35 @@ fn first_start(
             object["status"] = json!({"hostname":hostname, "labels":machine.labels});
             promises.extend(["PLC-008", "PLC-026", "PRV-014"]);
         }
+        if i == 0 {
+            object["status"] = json!({"trustDomain":trust_domain});
+            promises.push("FST-007");
+        }
         if i >= 5 {
-            let local_name = if i == 5 { "management" } else { "access" };
+            let local_name = ["management", "access", "system"][i - 5];
             let declaration = &context.template("root")?["spec"]["conduits"][local_name];
             if declaration["from"] != context.qualified(template_name) {
                 return Err("invalid built-in root declaration".into());
             }
             object["consumer"] = json!(ids[4]);
-            object["target"] = json!(ids[i - 3]);
+            object["target"] = json!(ids[if i == 7 { 0 } else { i - 3 }]);
             object["local_name"] = json!(local_name);
             object["capability"] = template["spec"]["capability"].clone();
             object["operations"] = template["spec"]["operations"].clone();
             object["open"] = json!(true);
+            object["provenance"] = json!({"cause":"first-start"});
             promises.extend([
                 "CON-002",
                 "OBJ-003",
-                if i == 5 { "ACC-032" } else { "ACC-022" },
+                "ACC-044",
+                "ACC-024",
+                if i == 5 {
+                    "ACC-032"
+                } else if i == 6 {
+                    "ACC-022"
+                } else {
+                    "FLEET-005"
+                },
             ]);
         }
         t.decisions.push(decision("make-ready-first-start-instance", &promises, if i >= 5 { &["DL6", "DL15"] } else { &["DL6"] },
@@ -775,6 +807,15 @@ fn first_start(
     t.state.started = true;
     t.reply = json!({"started":true});
     Ok(())
+}
+
+/// FST-007's SPIFFE trust-domain alphabet and length.
+pub fn valid_trust_domain(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 255
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b".-_".contains(&b))
 }
 
 fn permits(conduit: &Value, sender: &str, target: &Value, operation: &str) -> bool {

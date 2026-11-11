@@ -67,6 +67,9 @@ promises:
 - PKG-021
 - NAM-014
 - SUB-008
+- FST-007
+- FLEET-005
+- ACC-044
 profile: first-build
 initial:
   recipe: empty
@@ -111,6 +114,9 @@ steps:
       - 00000000-0000-4000-8000-000000000019
       - 00000000-0000-4000-8000-000000000020
       - 00000000-0000-4000-8000-000000000021
+      - 00000000-0000-4000-8000-000000000022
+      - 00000000-0000-4000-8000-000000000023
+      - 00000000-0000-4000-8000-000000000024
       revisions:
       - r1
       - r2
@@ -119,9 +125,11 @@ steps:
       - r5
       - r6
       - r7
+      - r8
       suffixes:
       - abc01
       - abc02
+      - abc03
     machine:
       hostname: ' WORKSTATION.Example '
       labels:
@@ -130,6 +138,7 @@ steps:
         kubernetes.io/arch: arm64
         example.org/role: test
       state: reachable
+    trustDomain: vectors-040.example
   expect:
     state:
       started: true
@@ -143,6 +152,8 @@ steps:
         config: {}
         first_start: true
         type: '@core#pool.v1'
+        status:
+          trustDomain: vectors-040.example
       - id: 00000000-0000-4000-8000-000000000002
         revision: r2
         kind: Resource
@@ -216,7 +227,11 @@ steps:
         - '@core#install.v1'
         - '@core#declare-lost.v1'
         - '@core#purge.v1'
+        - '@core#list.v1'
+        - '@core#answer.v1'
         open: true
+        provenance:
+          cause: first-start
       - id: 00000000-0000-4000-8000-000000000007
         revision: r7
         kind: Conduit
@@ -233,19 +248,36 @@ steps:
         - '@core#open.v1'
         - '@core#close.v1'
         - '@core#reconcile.v1'
+        - '@core#lift.v1'
         open: true
-      records:
-      - specversion: '1.0'
-        id: 00000000-0000-4000-8000-000000000008
-        source: urn:conduit:first-build
-        type: object-change
-        time: '2026-11-09T12:00:00Z'
-        data:
-          target: 00000000-0000-4000-8000-000000000001
+        provenance:
           cause: first-start
-          action: registered
-          previous: null
-          state: registered
+      - id: 00000000-0000-4000-8000-000000000008
+        revision: r8
+        kind: Conduit
+        name: root-pool-abc03
+        from: '@core#root-pool'
+        state: ready
+        config: {}
+        first_start: false
+        consumer: 00000000-0000-4000-8000-000000000005
+        target: 00000000-0000-4000-8000-000000000001
+        local_name: system
+        capability: '@core#pool-management.v1'
+        operations:
+        - '@core#register.v1'
+        - '@core#register-replacement.v1'
+        - '@core#inspect.v1'
+        - '@core#list.v1'
+        - '@core#set-up.v1'
+        - '@core#retire.v1'
+        - '@core#reconcile.v1'
+        - '@core#sign-in.v1'
+        - '@core#answer.v1'
+        open: true
+        provenance:
+          cause: first-start
+      records:
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000009
         source: urn:conduit:first-build
@@ -254,20 +286,20 @@ steps:
         data:
           target: 00000000-0000-4000-8000-000000000001
           cause: first-start
-          action: lifecycle-changed
-          previous: registered
-          state: ready
+          action: registered
+          previous: null
+          state: registered
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000010
         source: urn:conduit:first-build
         type: object-change
         time: '2026-11-09T12:00:00Z'
         data:
-          target: 00000000-0000-4000-8000-000000000002
+          target: 00000000-0000-4000-8000-000000000001
           cause: first-start
-          action: registered
-          previous: null
-          state: registered
+          action: lifecycle-changed
+          previous: registered
+          state: ready
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000011
         source: urn:conduit:first-build
@@ -276,20 +308,20 @@ steps:
         data:
           target: 00000000-0000-4000-8000-000000000002
           cause: first-start
-          action: lifecycle-changed
-          previous: registered
-          state: ready
+          action: registered
+          previous: null
+          state: registered
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000012
         source: urn:conduit:first-build
         type: object-change
         time: '2026-11-09T12:00:00Z'
         data:
-          target: 00000000-0000-4000-8000-000000000003
+          target: 00000000-0000-4000-8000-000000000002
           cause: first-start
-          action: registered
-          previous: null
-          state: registered
+          action: lifecycle-changed
+          previous: registered
+          state: ready
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000013
         source: urn:conduit:first-build
@@ -298,20 +330,20 @@ steps:
         data:
           target: 00000000-0000-4000-8000-000000000003
           cause: first-start
-          action: lifecycle-changed
-          previous: registered
-          state: ready
+          action: registered
+          previous: null
+          state: registered
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000014
         source: urn:conduit:first-build
         type: object-change
         time: '2026-11-09T12:00:00Z'
         data:
-          target: 00000000-0000-4000-8000-000000000004
+          target: 00000000-0000-4000-8000-000000000003
           cause: first-start
-          action: registered
-          previous: null
-          state: registered
+          action: lifecycle-changed
+          previous: registered
+          state: ready
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000015
         source: urn:conduit:first-build
@@ -320,20 +352,20 @@ steps:
         data:
           target: 00000000-0000-4000-8000-000000000004
           cause: first-start
-          action: lifecycle-changed
-          previous: registered
-          state: ready
+          action: registered
+          previous: null
+          state: registered
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000016
         source: urn:conduit:first-build
         type: object-change
         time: '2026-11-09T12:00:00Z'
         data:
-          target: 00000000-0000-4000-8000-000000000005
+          target: 00000000-0000-4000-8000-000000000004
           cause: first-start
-          action: registered
-          previous: null
-          state: registered
+          action: lifecycle-changed
+          previous: registered
+          state: ready
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000017
         source: urn:conduit:first-build
@@ -342,20 +374,20 @@ steps:
         data:
           target: 00000000-0000-4000-8000-000000000005
           cause: first-start
-          action: lifecycle-changed
-          previous: registered
-          state: ready
+          action: registered
+          previous: null
+          state: registered
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000018
         source: urn:conduit:first-build
         type: object-change
         time: '2026-11-09T12:00:00Z'
         data:
-          target: 00000000-0000-4000-8000-000000000006
+          target: 00000000-0000-4000-8000-000000000005
           cause: first-start
-          action: registered
-          previous: null
-          state: registered
+          action: lifecycle-changed
+          previous: registered
+          state: ready
       - specversion: '1.0'
         id: 00000000-0000-4000-8000-000000000019
         source: urn:conduit:first-build
@@ -364,11 +396,22 @@ steps:
         data:
           target: 00000000-0000-4000-8000-000000000006
           cause: first-start
+          action: registered
+          previous: null
+          state: registered
+      - specversion: '1.0'
+        id: 00000000-0000-4000-8000-000000000020
+        source: urn:conduit:first-build
+        type: object-change
+        time: '2026-11-09T12:00:00Z'
+        data:
+          target: 00000000-0000-4000-8000-000000000006
+          cause: first-start
           action: lifecycle-changed
           previous: registered
           state: ready
       - specversion: '1.0'
-        id: 00000000-0000-4000-8000-000000000020
+        id: 00000000-0000-4000-8000-000000000021
         source: urn:conduit:first-build
         type: object-change
         time: '2026-11-09T12:00:00Z'
@@ -379,12 +422,34 @@ steps:
           previous: null
           state: registered
       - specversion: '1.0'
-        id: 00000000-0000-4000-8000-000000000021
+        id: 00000000-0000-4000-8000-000000000022
         source: urn:conduit:first-build
         type: object-change
         time: '2026-11-09T12:00:00Z'
         data:
           target: 00000000-0000-4000-8000-000000000007
+          cause: first-start
+          action: lifecycle-changed
+          previous: registered
+          state: ready
+      - specversion: '1.0'
+        id: 00000000-0000-4000-8000-000000000023
+        source: urn:conduit:first-build
+        type: object-change
+        time: '2026-11-09T12:00:00Z'
+        data:
+          target: 00000000-0000-4000-8000-000000000008
+          cause: first-start
+          action: registered
+          previous: null
+          state: registered
+      - specversion: '1.0'
+        id: 00000000-0000-4000-8000-000000000024
+        source: urn:conduit:first-build
+        type: object-change
+        time: '2026-11-09T12:00:00Z'
+        data:
+          target: 00000000-0000-4000-8000-000000000008
           cause: first-start
           action: lifecycle-changed
           previous: registered
@@ -411,18 +476,10 @@ steps:
       - 00000000-0000-4000-8000-000000000019
       - 00000000-0000-4000-8000-000000000020
       - 00000000-0000-4000-8000-000000000021
+      - 00000000-0000-4000-8000-000000000022
+      - 00000000-0000-4000-8000-000000000023
+      - 00000000-0000-4000-8000-000000000024
     records:
-    - specversion: '1.0'
-      id: 00000000-0000-4000-8000-000000000008
-      source: urn:conduit:first-build
-      type: object-change
-      time: '2026-11-09T12:00:00Z'
-      data:
-        target: 00000000-0000-4000-8000-000000000001
-        cause: first-start
-        action: registered
-        previous: null
-        state: registered
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000009
       source: urn:conduit:first-build
@@ -431,20 +488,20 @@ steps:
       data:
         target: 00000000-0000-4000-8000-000000000001
         cause: first-start
-        action: lifecycle-changed
-        previous: registered
-        state: ready
+        action: registered
+        previous: null
+        state: registered
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000010
       source: urn:conduit:first-build
       type: object-change
       time: '2026-11-09T12:00:00Z'
       data:
-        target: 00000000-0000-4000-8000-000000000002
+        target: 00000000-0000-4000-8000-000000000001
         cause: first-start
-        action: registered
-        previous: null
-        state: registered
+        action: lifecycle-changed
+        previous: registered
+        state: ready
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000011
       source: urn:conduit:first-build
@@ -453,20 +510,20 @@ steps:
       data:
         target: 00000000-0000-4000-8000-000000000002
         cause: first-start
-        action: lifecycle-changed
-        previous: registered
-        state: ready
+        action: registered
+        previous: null
+        state: registered
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000012
       source: urn:conduit:first-build
       type: object-change
       time: '2026-11-09T12:00:00Z'
       data:
-        target: 00000000-0000-4000-8000-000000000003
+        target: 00000000-0000-4000-8000-000000000002
         cause: first-start
-        action: registered
-        previous: null
-        state: registered
+        action: lifecycle-changed
+        previous: registered
+        state: ready
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000013
       source: urn:conduit:first-build
@@ -475,20 +532,20 @@ steps:
       data:
         target: 00000000-0000-4000-8000-000000000003
         cause: first-start
-        action: lifecycle-changed
-        previous: registered
-        state: ready
+        action: registered
+        previous: null
+        state: registered
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000014
       source: urn:conduit:first-build
       type: object-change
       time: '2026-11-09T12:00:00Z'
       data:
-        target: 00000000-0000-4000-8000-000000000004
+        target: 00000000-0000-4000-8000-000000000003
         cause: first-start
-        action: registered
-        previous: null
-        state: registered
+        action: lifecycle-changed
+        previous: registered
+        state: ready
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000015
       source: urn:conduit:first-build
@@ -497,20 +554,20 @@ steps:
       data:
         target: 00000000-0000-4000-8000-000000000004
         cause: first-start
-        action: lifecycle-changed
-        previous: registered
-        state: ready
+        action: registered
+        previous: null
+        state: registered
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000016
       source: urn:conduit:first-build
       type: object-change
       time: '2026-11-09T12:00:00Z'
       data:
-        target: 00000000-0000-4000-8000-000000000005
+        target: 00000000-0000-4000-8000-000000000004
         cause: first-start
-        action: registered
-        previous: null
-        state: registered
+        action: lifecycle-changed
+        previous: registered
+        state: ready
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000017
       source: urn:conduit:first-build
@@ -519,20 +576,20 @@ steps:
       data:
         target: 00000000-0000-4000-8000-000000000005
         cause: first-start
-        action: lifecycle-changed
-        previous: registered
-        state: ready
+        action: registered
+        previous: null
+        state: registered
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000018
       source: urn:conduit:first-build
       type: object-change
       time: '2026-11-09T12:00:00Z'
       data:
-        target: 00000000-0000-4000-8000-000000000006
+        target: 00000000-0000-4000-8000-000000000005
         cause: first-start
-        action: registered
-        previous: null
-        state: registered
+        action: lifecycle-changed
+        previous: registered
+        state: ready
     - specversion: '1.0'
       id: 00000000-0000-4000-8000-000000000019
       source: urn:conduit:first-build
@@ -541,11 +598,22 @@ steps:
       data:
         target: 00000000-0000-4000-8000-000000000006
         cause: first-start
+        action: registered
+        previous: null
+        state: registered
+    - specversion: '1.0'
+      id: 00000000-0000-4000-8000-000000000020
+      source: urn:conduit:first-build
+      type: object-change
+      time: '2026-11-09T12:00:00Z'
+      data:
+        target: 00000000-0000-4000-8000-000000000006
+        cause: first-start
         action: lifecycle-changed
         previous: registered
         state: ready
     - specversion: '1.0'
-      id: 00000000-0000-4000-8000-000000000020
+      id: 00000000-0000-4000-8000-000000000021
       source: urn:conduit:first-build
       type: object-change
       time: '2026-11-09T12:00:00Z'
@@ -556,12 +624,34 @@ steps:
         previous: null
         state: registered
     - specversion: '1.0'
-      id: 00000000-0000-4000-8000-000000000021
+      id: 00000000-0000-4000-8000-000000000022
       source: urn:conduit:first-build
       type: object-change
       time: '2026-11-09T12:00:00Z'
       data:
         target: 00000000-0000-4000-8000-000000000007
+        cause: first-start
+        action: lifecycle-changed
+        previous: registered
+        state: ready
+    - specversion: '1.0'
+      id: 00000000-0000-4000-8000-000000000023
+      source: urn:conduit:first-build
+      type: object-change
+      time: '2026-11-09T12:00:00Z'
+      data:
+        target: 00000000-0000-4000-8000-000000000008
+        cause: first-start
+        action: registered
+        previous: null
+        state: registered
+    - specversion: '1.0'
+      id: 00000000-0000-4000-8000-000000000024
+      source: urn:conduit:first-build
+      type: object-change
+      time: '2026-11-09T12:00:00Z'
+      data:
+        target: 00000000-0000-4000-8000-000000000008
         cause: first-start
         action: lifecycle-changed
         previous: registered
@@ -581,6 +671,9 @@ steps:
     - REC-001
     - REC-002
     - REC-003
+    - FST-007
+    - ACC-044
+    - FLEET-005
     absent:
     - /state/objects/6/bound
     - /state/objects/6/requirements
@@ -592,6 +685,7 @@ steps:
     root: /state/objects/4/id
     root-management: /state/objects/5/id
     root-access: /state/objects/6/id
+    root-system: /state/objects/7/id
 - input:
     kind: resolve-project
     file: fixture
@@ -925,7 +1019,7 @@ steps:
         outcome: succeeded
     reply:
       accepted: true
-    object_count: 26
+    object_count: 27
     required_promises:
     - INS-016
     external_intents: []
@@ -2877,7 +2971,7 @@ steps:
       _meta:
         io.github.shrav-k.conduit/outcome: succeeded
     external_intents: []
-    object_count: 26
+    object_count: 27
     object_facts:
     - id: 00000000-0000-4000-8000-000000000110
       state: ready
@@ -4507,7 +4601,7 @@ steps:
       _meta:
         io.github.shrav-k.conduit/outcome: succeeded
     external_intents: []
-    object_count: 25
+    object_count: 26
     absent_objects:
     - 00000000-0000-4000-8000-000000000111
     object_facts:
@@ -5181,7 +5275,7 @@ steps:
       _meta:
         io.github.shrav-k.conduit/outcome: succeeded
     external_intents: []
-    object_count: 26
+    object_count: 27
     required_promises:
     - LIF-009
     records:
@@ -5331,7 +5425,7 @@ steps:
       _meta:
         io.github.shrav-k.conduit/outcome: succeeded
     external_intents: []
-    object_count: 26
+    object_count: 27
     object_facts:
     - id: $replacement
       state: ready
@@ -5679,7 +5773,7 @@ steps:
       specversion: '1.0'
       source: urn:conduit:first-build
       time: '2026-11-09T12:01:38Z'
-    object_count: 26
+    object_count: 27
     absent_objects:
     - 00000000-0000-4000-8000-000000000111
     object_facts:

@@ -1,7 +1,7 @@
 const COMMANDS: [(&str, &str, &str); 12] = [
     (
         "init",
-        "[--label KEY=VALUE]",
+        "[--label KEY=VALUE] [--trust-domain DOMAIN]",
         "init --store /tmp/conduit --label purpose=demo",
     ),
     (

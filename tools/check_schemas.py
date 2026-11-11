@@ -136,7 +136,7 @@ except ImportError as missing:
         sys.exit(2)
     jsonschema = None                  # steps 3 and 4 are then not run, and the tool says so
 
-FAMILIES = ("Interface", "Agent", "Resource", "Pool", "Conduit")
+FAMILIES = ("Interface", "Agent", "Resource", "Pool", "Fleet", "Conduit")
 CONTRACTS = ("Type", "Capability", "Operation", "Requirement", "Schema")
 SAFE_INT = 9007199254740991
 NAME = re.compile(r"^[a-z][a-z0-9-]*$")

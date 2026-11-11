@@ -1,0 +1,59 @@
+{
+  "id": "fleet-consumer",
+  "layers": [
+    "language",
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "FLEET-004",
+    "IFC-022"
+  ],
+  "title": "A Fleet identity is refused and has no presented server",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "state"
+  },
+  "files": {
+    "state": "state.json",
+    "consumer.json": "consumer.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "list-tools",
+        "identity": {
+          "kind": "instance",
+          "id": "00000000-0000-4000-8000-000000000701"
+        }
+      },
+      "expect": {
+        "reply": {
+          "reason": "refused"
+        },
+        "stateUnchanged": true,
+        "external_intents": [],
+        "required_promises": [
+          "IFC-022"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "consumer.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005"
+          }
+        ]
+      }
+    }
+  ]
+}

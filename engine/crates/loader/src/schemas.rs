@@ -58,8 +58,8 @@ pub enum Role {
     Manifest,
 }
 
-/// The five families and the five kinds of contract (OBJ-020).
-const FAMILIES: [&str; 5] = ["Interface", "Agent", "Resource", "Pool", "Conduit"];
+/// The six families and the five kinds of contract (OBJ-020).
+const FAMILIES: [&str; 6] = ["Interface", "Agent", "Resource", "Pool", "Fleet", "Conduit"];
 const CONTRACTS: [&str; 5] = ["Type", "Capability", "Operation", "Requirement", "Schema"];
 
 /// The schemas of the specification, read and bundled, with a validator for each schema that

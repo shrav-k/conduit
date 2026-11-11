@@ -1115,6 +1115,7 @@ spec:
         - Agent
         - Resource
         - Pool
+        - Fleet
         - Conduit
         - Type
         - Capability
@@ -1139,6 +1140,7 @@ spec:
               - Agent
               - Resource
               - Pool
+              - Fleet
               - Conduit
               - Type
               - Capability
@@ -1172,6 +1174,7 @@ spec:
                 - Agent
                 - Resource
                 - Pool
+                - Fleet
                 - Conduit
           then:
             required:

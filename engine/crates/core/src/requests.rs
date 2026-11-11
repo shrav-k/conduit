@@ -116,6 +116,7 @@ impl RecordInputs<'_> {
                     "interface-reference.v1" => Some("Interface"),
                     "resource-reference.v1" | "secret-reference.v1" => Some("Resource"),
                     "pool-reference.v1" => Some("Pool"),
+                    "fleet-reference.v1" => Some("Fleet"),
                     "conduit-reference.v1" => Some("Conduit"),
                     _ => None,
                 };
@@ -838,9 +839,23 @@ fn invoke_inner(
         return Ok(());
     }
     if (previous.is_none() || redispatch)
-        && let Some((reason, rule)) = crate::records::preflight(&t.state, &route, c, a)?
+        && let Some(rejection) = crate::records::preflight(&t.state, &route, c, a)?
     {
-        return reject(t, a, c, &route, reason, rule, None, None);
+        reject(
+            t,
+            a,
+            c,
+            &route,
+            rejection.reason,
+            &rejection.rule,
+            None,
+            None,
+        )?;
+        // OBJ-025 / IFC-025: preflight rejection carries the trial's full diagnostics.
+        if let Some(diagnostics) = rejection.diagnostics {
+            t.reply["structuredContent"] = json!({"diagnostics":diagnostics});
+        }
+        return Ok(());
     }
     // OPS-023 puts ordinary unavailability after conflicts, including the repeat index.
     let available = access::evaluate(&t.state, request, c, false)?;
@@ -882,6 +897,21 @@ fn invoke_inner(
             vec![],
         ));
         return end(t, a, c, &route, Some(outcome), None, Some(&old["id"]));
+    }
+    // C11's temporary stubs: authority and arguments have already been checked.
+    // OPS-005: unavailable ends before dispatch; its message names the build order.
+    if let Some((_, order, promise)) = [
+        ("lift.v1", "042", "ACC-053"),
+        ("answer.v1", "047", "PND-009"),
+        ("sign-in.v1", "048a", "PND-010"),
+    ]
+    .iter()
+    .find(|(name, _, _)| op == c.qualified(name))
+    {
+        reject(t, a, c, &route, "unavailable", promise, None, None)?;
+        t.reply["content"] =
+            json!([{"type":"text","text":format!("not built yet, order {order}")}]);
+        return Ok(());
     }
     if op == c.qualified("register-replacement.v1") {
         let parent = access::object(&t.state, &route["arguments"]["instance"])

@@ -84,11 +84,22 @@ async fn turn(args: &[String], message: &str, number: usize) {
         tools.push(format!("mcp__engine__fixture{number}"));
         let env: std::collections::BTreeMap<_, _> = std::env::vars().collect();
         let settings = if claude {
-            serde_json::from_slice(&std::fs::read("settings.json").unwrap()).unwrap()
+            let i = args.iter().position(|s| s == "--settings").unwrap();
+            serde_json::from_slice(&std::fs::read(&args[i + 1]).unwrap()).unwrap()
         } else {
             Value::Null
         };
-        reply = json!({"args":args,"environment":env,"cwd":std::env::current_dir().unwrap(),"pid":std::process::id(),"settings":settings,"number":number,"message":message}).to_string();
+        let mcp = if claude {
+            let i = args.iter().position(|s| s == "--settings").unwrap();
+            let path = std::path::Path::new(&args[i + 1])
+                .parent()
+                .unwrap()
+                .join("mcp.json");
+            serde_json::from_slice::<Value>(&std::fs::read(path).unwrap()).unwrap()
+        } else {
+            Value::Null
+        };
+        reply = json!({"mcp":mcp,"args":args,"environment":env,"cwd":std::env::current_dir().unwrap(),"pid":std::process::id(),"settings":settings,"number":number,"message":message}).to_string();
     }
     if message == "BLOCK" {
         std::fs::write("blocked", b"ready").unwrap();
@@ -98,6 +109,22 @@ async fn turn(args: &[String], message: &str, number: usize) {
     }
     if message == "QUEUED" {
         std::fs::write("queued-launched", b"unexpected").unwrap();
+    }
+    if message == "INVALID_JSON" {
+        println!("sentinel-not-json");
+        return;
+    }
+    if message == "MISSING_THREAD" {
+        emit(json!({"type":"thread.started"}));
+        return;
+    }
+    if message == "NO_THREAD" {
+        emit(json!({"type":"turn.completed"}));
+        return;
+    }
+    if message == "CHANGED_THREAD" {
+        emit(json!({"type":"thread.started","thread_id":"changed"}));
+        return;
     }
     if message == "NO_CATALOG" {
         emit(if claude {
@@ -109,6 +136,50 @@ async fn turn(args: &[String], message: &str, number: usize) {
         emit(json!({"type":"system","subtype":"init","tools":tools}));
     } else {
         emit(json!({"type":"thread.started","thread_id":"fixture-exact-thread","tools":tools}));
+    }
+    if let Some(status) = message.strip_prefix("EXIT:") {
+        std::process::exit(status.parse().unwrap());
+    }
+    if message == "SIGNAL" {
+        Command::new("kill")
+            .args(["-KILL", &std::process::id().to_string()])
+            .status()
+            .unwrap();
+        unreachable!();
+    }
+    if message == "ERROR_COMPLETED" || message == "ERROR_FAILED" || message == "ERROR_EXIT" {
+        emit(json!({"type":"error","message":"sentinel-secret quota"}));
+        if message == "ERROR_EXIT" {
+            std::process::exit(1);
+        }
+        if message == "ERROR_FAILED" {
+            emit(json!({"type":"turn.failed","error":{"message":"sentinel-secret unauthorized"}}));
+            return;
+        }
+    }
+    if let Some(cause) = message.strip_prefix("FAIL:") {
+        if claude {
+            emit(
+                json!({"type":"result","is_error":true,"result":format!("sentinel-secret {cause}")}),
+            );
+        } else {
+            emit(
+                json!({"type":"turn.failed","error":{"message":format!("sentinel-secret {cause}")}}),
+            );
+        }
+        return;
+    }
+    if message == "FAIL_NO_TEXT" {
+        emit(if claude {
+            json!({"type":"result","is_error":true})
+        } else {
+            json!({"type":"turn.failed"})
+        });
+        return;
+    }
+    if message == "COMPLETED_EXIT" {
+        emit(json!({"type":"turn.completed"}));
+        std::process::exit(4);
     }
     if message == "EOF" {
         return;
@@ -132,11 +203,20 @@ async fn main() {
     )
     .unwrap();
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args
+        .windows(2)
+        .any(|a| a[0] == "--model" && a[1] == "exit-at-start")
+    {
+        std::process::exit(2);
+    }
     if args.iter().any(|s| s == "--input-format") {
         for (i, line) in io::stdin().lock().lines().enumerate() {
             let v: Value = serde_json::from_str(&line.unwrap()).unwrap();
             turn(&args, v["message"]["content"].as_str().unwrap(), i + 1).await;
-            if v["message"]["content"] == "EOF" || v["message"]["content"] == "ERROR" {
+            if matches!(
+                v["message"]["content"].as_str(),
+                Some("EOF" | "ERROR" | "INVALID_JSON")
+            ) {
                 return;
             }
         }

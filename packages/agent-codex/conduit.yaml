@@ -29,3 +29,15 @@ implementations:
     plain: true
     tools:
       '#turn.v1': turn
+  wrapper-v2-path:
+    implements: ['#turn.v1']
+    command: [agent-codex]
+    environment:
+      AGENT_DIRECTORY: /directory
+      AGENT_TURN_DEADLINE_SECONDS: /turnDeadlineSeconds
+      AGENT_EFFORT: /effort
+      AGENT_ACCOUNT_SERVICES: /accountServices
+      AGENT_MODEL: /model
+    plain: true
+    tools:
+      '#turn.v1': turn

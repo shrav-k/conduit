@@ -82,12 +82,15 @@ metadata:
     Runs an explicit native-client conversation in the directory that `directory` names, or in
     a private directory of the run's own when it is null. When the template names a directory, the
     client's own tools are on: shell, code execution, file edits and network, with the
-    client's sandbox and approval prompts off. They run as the engine's operating-system user
-    and nothing confines them in v0. They reach every file, process, network address, credential and
+    client's sandbox and approval prompts off. On the engine's own runner, they run as the
+    engine's operating-system user and nothing confines them in v0. They reach every file,
+    process, network address, credential and
     signed-in account that user can reach: the engine's store, root's client token, this run's
     token, the user's git and cloud credentials, and the user's own client logins with their
     connectors and apps. That reach does not pass through Conduit: no Conduit grants, limits or
-    records it (ruling 70). The client's own browser, desktop-control, goal, image-generation,
+    records it (ruling 70). Under another runtime provider, these tools run on the machine of
+    the instance's node, as the operating-system user and with the limits that its contract
+    states. The client's own browser, desktop-control, goal, image-generation,
     hook and plugin tools stay off, and so do its multi-agent features, although Codex 0.167.0
     still offers its collaboration tools. Apps follow accountServices, and so does hosted
     search when a directory is named. The shell can still reach the same services and the user's

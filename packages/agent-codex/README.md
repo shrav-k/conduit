@@ -120,6 +120,7 @@ trial and settlement.
 ## The .v2 Agent
 
 The package also exports codex.v2, implemented by the separate `wrapper-v2` item.
+A template may select `wrapper-v2-path` instead, as [its section](#the-wrapper-v2-path-item) says.
 All properties are required after SCH-009 fills their defaults; authors may omit them.
 A null `directory` gives no environment variable (PRV-007).
 
@@ -181,6 +182,43 @@ is unchanged from `.v1`.
 `conduit serve --call-timeout-seconds` must be longer than `turnDeadlineSeconds`.
 With their defaults, 120 and 180, the engine reports a turn longer than 120 seconds
 before the wrapper's deadline. Longer turns may also require the engine fix in order 074.
+
+## The wrapper-v2-path item
+
+`wrapper-v2-path` is `wrapper-v2` with `command: [agent-codex]`. It binds the same inputs
+to the same variables, so everything this README says of `.v2` holds for it. The default
+of `codex.v2` is still `wrapper-v2`.
+
+`bin/agent-codex` is a relative path, a file of the archive on the engine's machine
+(MAN-010). The engine asks no runtime provider but its own runner to run such an item
+(PRV-007). The archive's binary is a host build.
+
+`agent-codex` holds no `/`, so it is a name, found as the one who starts it finds programs
+(MAN-010). Under a runtime provider other than the engine's own runner, that is on the
+machine of the instance's node (PRV-019), as that provider's contract states. The wrapper
+then finds `codex` on its own PATH, as it always does. On the engine's own runner, the item
+runs whatever `agent-codex` is found on the engine's machine, not the archive's: use
+`wrapper-v2` there.
+
+A `command` pins nothing (MAN-010). The archive's digest does not cover the program found
+on that machine. Whoever prepares the machine builds `agent-codex` there from the same
+source as the installed archive, and puts it and `codex` where that provider's runs find
+them. MAN-010 publishes a server meant to run on another machine as a pinned `package` item.
+This item is a shortcut that stands in for one, and is not one.
+
+A template selects it by writing
+`implementation: {example.org/conduit/agent-codex#turn.v1: example.org/conduit/agent-codex#wrapper-v2-path}`
+beside its `type` and `config`. An instance of it names its runtime provider in `runtime`
+(PRV-006). An instance that names none runs on the engine's own runner, on the engine's
+machine (PRV-019).
+
+`directory` is then a path on that machine (PLC-020), and the wrapper checks it there.
+
+The paragraph above on what nothing confines describes the engine's own runner. Under
+another runtime provider, the client and its own tools run on that machine, as the
+operating-system user that the provider runs them as, with that user's files and whatever
+client login that user has there. That provider's contract states what, if anything,
+confines them. This package copies no login.
 
 ## Turn boundaries and failures (both versions)
 

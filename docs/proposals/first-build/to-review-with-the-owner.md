@@ -65,6 +65,10 @@ kept, and the owner answered that everything stands. Items 11 to 14 stand as dec
 | 22 | **`effort` is an input of `.v2`**, whose empty default leaves the client's own (order 050a) | The dogfood workers run at high effort, as `run-order.sh` does | [Order 050a](../../work-orders/050a-agents-v2-own-tools.md) |
 | 23 | **The client's MCP tool timeout equals the turn deadline** (order 050a) | Otherwise the client cuts off a long call to the engine inside a long turn | [Order 050a](../../work-orders/050a-agents-v2-own-tools.md) |
 | 24 | **Project instruction files stay off in `.v2`** (order 050a): an order tells its worker to read AGENTS.md | The Agent's instructions come from its turns, not from files the client loads on its own | [Order 050a](../../work-orders/050a-agents-v2-own-tools.md) |
+| 25 | **On another machine, an Agent's own tools run as that runtime provider's contract states** (order 078): ruling 70 point 2's "as the engine's user" read as the engine's own runner | Names no user, so it leaves the held M2-2 open | [Order 078](../../work-orders/078-agents-codex-path-item.md) |
+| 26 | **The https listener admits a token by its audience alone** (order 079), as IFC-042 says, without the plan's extra placement clause | The plan's clause would have narrowed ruled behavior | [Order 079](../../work-orders/079-shell-https-address.md) |
+| 27 | **A run the provider reports running, with no bridge proving it, stays unknown** (order 080), the cautious reading of IFC-017; the tension with PRV-009 is a finding | Setup does not succeed on an unverified session | [Order 080](../../work-orders/080-shell-runtime-provider-calls.md) |
+| 28 | **A newly admitted node starts `Ready: Unknown`** (order 049a1), the cautious reading of PLC-023 | The node is unavailable until its first report | [Order 049a1](../../work-orders/049a1-build-enrollment-core.md) |
 
 ## What the owner ruled, for reference
 

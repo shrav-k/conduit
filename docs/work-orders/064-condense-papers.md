@@ -22,9 +22,9 @@ extract into them is present, and extract only what is missing. The plan's line 
 in today's tree. The plan's order numbers are older than today's ("WO-033" there is this order).
 
 Since the plan: the brief E23 describes was written as `docs/proposals/projects/brief.md` (not under
-`language-shape/project/`); ruling 63 settled the rerun's counting rules (order 035 put them in the
+`https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project`); ruling 63 settled the rerun's counting rules (order 035 put them in the
 measurement plan), so E11 adds only what ruling 63 did not settle; order 063 did E13's planned work
-in `conformance/README.md`, so E36's to-do from `map-constraints.md` section 1 goes there only if it
+in `conformance/README.md`, so E36's to-do from `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/map-constraints.md` section 1 goes there only if it
 is missing. Keep `language-shape/short-form/synthesis.md` and `critic.md`: spec order 037 still
 works from them (the plan's "later, after the spec batches").
 
@@ -38,8 +38,8 @@ works from them (the plan's "later, after the spec batches").
    options and why each rejected one lost, and the other points E23 lists, and add, verbatim and
    with the source, only what is missing; E9's and E11's parts not yet carried; E36's to-do if
    missing.
-2. **Then remove**: `simplification/research/` (all 13 files); `language-shape/short-form/`'s
-   design-N1 to N4 and its four inventories; and `language-shape/project/` (all 10 files). Remove
+2. **Then remove**: `https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research` (all 13 files); `language-shape/short-form/`'s
+   design-N1 to N4 and its four inventories; and `https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project` (all 10 files). Remove
    nothing else. Before deleting each, check that since C0 it changed only in link targets or path
    mentions, which earlier orders (033 to 063) repointed (`git diff --word-diff f1cb473 HEAD -- <path>` shows only those); if anything else
    changed, stop and report that file, and go on with the others.
@@ -70,3 +70,15 @@ From the repository root: `python3 tools/check_docs.py` (it checks the C0 permal
 history), `python3 tools/check_rulings.py`, `python3 tools/set_names.py --check`,
 `python3 tools/check_schemas.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass. Do
 not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 14 minutes, then a fresh verifier in 5, then a second round. The
+worker removed 31 papers, the simplification's research, the short form's designs and inventories,
+and the Project investigations' papers, a net 270,808 fewer words, after extracting E21 into the
+simplification's record, E22 into the short form's synthesis and what the Projects brief lacked of
+E23. The verifier found four passages copied verbatim that had lost a space, and row IDs, such as
+PRJ-010 and AUT-018, still pointing at definitions only the removed papers held; the second round
+restored the spaces, compared all 31 extracted passages with C0 by script, and linked 47 row
+references to their C0 definitions. The short form's synthesis and critic stay until spec order 037
+lands.

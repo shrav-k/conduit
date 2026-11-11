@@ -110,7 +110,7 @@ rerun; none is settled by this addendum:
 - Its gap 10 asks how the fresh author discovers the short form, Types, operations and config
   keys, and asks for requests, windows without access, concepts, duplicated values and contract
   address lines beside the line count. Framed examples alone may lead an author to canonical JSON.
-- The simplification [critic](../../simplification/research/critic.md), gap 3, asks which run
+- The simplification [critic](#options-for-the-reruns-counting-rules), gap 3, asks which run
   judges the bar: it recommends coordinator versus the experienced baseline author, with the
   fresh run measuring learnability. That comparison choice remains to be stated explicitly.
 - Gap 18’s paper sensitivity: three separate installs instead of one made T1 18 in that paper;

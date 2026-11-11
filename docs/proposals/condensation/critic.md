@@ -17,7 +17,7 @@ MAJOR
 2. The safety_rows premise is false (conformance/manifest.yaml; E15, E36).
    - The manifest uses 21 distinct values: registration (83), snapshot-context (61), S1-plain-ends (44), archive-installation (40), first-start*, loader-* and s1, among others.
    - Only S1-plain-ends, S1-key-scope, S1-reconcile and S1-unknown-write are trace names in https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md §3 (:551-584).
-   - safety_rows is defined in no README, schema or decision. simplification/research/map-constraints.md:22-23 says it is "my reconstruction" and that "the specification has no safety field".
+   - safety_rows is defined in no README, schema or decision. https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/map-constraints.md:22-23 says it is "my reconstruction" and that "the specification has no safety field".
    - Consequences:
      - E15's check ("every safety_rows value names a row of s1-safety-cases.md") fails on about 17 values and about 240 tags in WO-030. check_schemas then fails in every later order, and "report it; do not fix it" conflicts with step (e).
      - E36's claims that the file "is the meaning of the tags", and the list behind draft ruling 47's "every safety vector passes" and A68's done-when, decide something nobody has decided.
@@ -39,7 +39,7 @@ MAJOR
    - closeout-results#how-to-run-the-open-checks, created by E8 in WO-035;
    - conformance/README "Planned work" and "Evidence of vector strength so far", created by E13 in WO-035 (A44's Source and A79);
    - the measurement-plan addendum, created by E11 in WO-036 (the Waiting row "points here");
-   - language-shape/project/brief.md, created by E23 in WO-037.
+   - docs/proposals/projects/brief.md, created by E23 in WO-037.
    E10 (WO-035) also cites WORK_ORDERS record rows that do not exist until E30 (WO-040).
    Fix: create these destinations, or at least their headings, in WO-030 or WO-031, or link today's locations and repoint them later.
 

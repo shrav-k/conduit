@@ -29,7 +29,7 @@ decisions applied, and experiment 011's translator and results show what worked.
 ## What to do
 
 1. **Write 037 as the plan's work-order section states it**: SCT-001 to SCT-009 and SCT-011 to
-   SCT-016 in a new `spec/promises/sections.yaml` (SCT-010 stays unused), PKG-031; NAM-024 and the
+   SCT-016 in a new `spec/promises/sections.yaml` ([SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) stays unused), PKG-031; NAM-024 and the
    other amended promises the plan lists; `spec/schemas/sectioned.yaml`; flow-style examples
    (`valid/sectioned-project`, `valid/sectioned-package` and about twelve invalid ones) with the
    routing fixes of conflict C23 in `tools/check_schemas.py` and `engine/crates/loader/tests/examples.rs`

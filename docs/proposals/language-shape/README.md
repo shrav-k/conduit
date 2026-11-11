@@ -3,7 +3,7 @@
 Not binding. The [specification](../../../spec/README.md) alone binds. The coordinator's summary of
 two investigations the owner asked for in ruling 53 and after it, run on 2026-11-10 with many
 agents, each with designs, skeptics, a synthesis and a critic. The working papers are in
-[short-form/](short-form/synthesis.md) and [project/](project/synthesis.md). Every count is a paper
+[short-form/](short-form/synthesis.md) and [project/](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md). Every count is a paper
 count; ruling 45 accepts only a run.
 
 ## Where they agree
@@ -68,7 +68,7 @@ who may use it ([the owner's direction for Projects](../owner-direction/2026-11-
 The section is kept as the record of what was proposed.
 Superseded: section 2 by [ruling 59](../ruling-59/README.md); step 4's sequence by [ruling 55](../ruling-55/README.md), which puts the Project rulings before the short-form specification batch.
 
-The [project synthesis](project/synthesis.md) recommends a sixth family and works out the owner's
+The [project synthesis](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md) recommends a sixth family and works out the owner's
 direction with the skeptics' fixes:
 
 - **Each object has one home**, a Project or the engine, recorded when it is registered and never

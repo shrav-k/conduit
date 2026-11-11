@@ -418,7 +418,7 @@ What stays true in v0, and is stated in spec/README.md:
   - 42, with the wording of 25, 27 and 37 (the rename);
   - 44 point 2 (make.v1);
   - 51 decision 5 (no expiry for a review) and 51's peer mode (C4);
-  - 53 decision 3 (list.v1 and the inventory reading) and decision 6 (answered by the engine; SCT-010 dropped);
+  - 53 decision 3 (list.v1 and the inventory reading) and decision 6 (answered by the engine; [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) dropped);
   - 54, extended (B9) and read (B10, B11);
   - 55, its grammar extended (A6), and A7's lift extended to withholds;
   - 56 point 8 (the word "answer", used, not amended).
@@ -441,7 +441,7 @@ Short-form rules assumed, each a numbered SCT rule added to ruling 55's batch:
 - `projects: <P>: holds: <k>: {to, from}` makes a Conduit with consumer P and `as: k`, which root opens at apply.
 - `acts-for: <P>: {from}` under an actor makes its act-for Conduit to P, with `as: P`, which root opens.
 - `operator:` is root's turn Conduit.
-- SCT-010 of the short-form synthesis is dropped: the engine makes root's Conduit to each Pool.
+- [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) of the short-form synthesis is dropped: the engine makes root's Conduit to each Pool.
 
 A. S1 AS ONE PROJECT: s1.yaml at T1 (20 lines; the lines marked T2 are added at T2)
 ```yaml
@@ -1338,3 +1338,933 @@ THE S1 RERUN
   - ruling 30 OL5 makes root's two Conduits permanent;
   - the shell issues client tokens only for root (main.rs:178, 234);
   - no vector has root close its own Conduit, closes a Conduit to `access` while grants made through it are open, or gives an Agent a get-secret Conduit.
+
+## Carried from the earlier Project papers
+
+These are historical proposals, alternatives and constraints from C0, not additions to the revised recommendation or accepted decisions. Rulings 59 to 62 and 66 govern their status. Only text absent from this brief is carried below.
+
+The relayed quotations differ between papers. The later correction is the [owner’s Project direction](../owner-direction/2026-11-10-projects.md). The approvals-of-widenings direction came from computed task text, as the sources below distinguish.
+
+### Provenance: authority inventory
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L156-L175). Copied verbatim.
+
+== 9. The promises a Project design must change, matched to the owner's direction ==
+- "Project references every object including pools, agents":
+  - Membership must be a reference, not ownership, to keep ruling 29 (ownership permits nothing) and POOL-001 (one owner per Resource).
+  - It needs a new family or kind, or a standard argument (OBJ-013), and decisions on FST-001..006: is there a default or system project, and does `system` belong to one?
+  - Conduits join objects that may sit in different projects, so the design must say whose project a cross-project Conduit belongs to. Ruling 51 decision 1 says "the target's owner authorizes each request", and today the right to open is judged on the target side (bound covers the target).
+- "Pools accessible from multiple projects":
+  - For use, nothing is needed. Any consumer with a Conduit to a Resource uses it, whatever its Pool (ACC-028).
+  - For administration, multi-membership collides with ACC-033's single-authorizer rule and with the mutual close of ACC-012.
+  - The design must choose. Either Pool-routed rows stay with the Pool and a project grants only the right to open Conduits to it, or ACC-033 changes to let any of several authorizers decide. ACC-033 is cited by 78 conformance files (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/map-mechanisms.md).
+- "Projects determine an Interface's permissions; Interfaces have authority over one or more projects":
+  - This is the missing namespace scope for `management` ([B1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L124), [B2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L130), [B3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L131), [B7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L138)). Keeping ruling 28 (every permission is an open Conduit) and CON-001 (pairwise) points to a Conduit from an Interface to a Project as a new authorizing target, one per project for multiple projects.
+  - It would need new ACC-033 rows routing register, set-up, retire, inspect and unregister of the project's Agents, Interfaces, Pools, Conduits and templates to the Project. It must also leave `management`'s rows intact, or carve the project's objects out of them.
+  - Alternatively, bound.v1 gains a `projects` argument that covers later members, plus a consumer constraint. That scopes `access` only and leaves [B1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L124) unsolved.
+  - CON-028, ACC-029, ACC-030, ACC-012 and the inventory and refusal disclosure tiers all change. Root-only identity powers need project-scoped counterparts or a deliberate statement that they stay root's: SEC-008 for an auth pool, rulings 49 and 50 for pending actions, ACC-024 for protecting an admin's grants.
+  - Names (OBJ-002, LIF-031, IFC-012) must either become project-scoped or stay global, decided explicitly.
+- "Approvals of widenings are pending actions; narrowing never waits; who may approve is declared":
+  - Today a widening is an open (ACC-006, ACC-030), dispatched at once if the actor holds a covering right to open. A narrowing is a close (ACC-011, ACC-012), also at once, so "narrowing never waits" already holds.
+  - The register/open split is the natural pending state: a Conduit sitting in state registered. Today the approver is whoever holds a covering right to open. Declaring approvers separately would be new.
+  - The design-E skeptic's confused-deputy trace (root opens a Conduit someone else registered; https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/design-E-layered.md:454-458) shows the approver must see exactly what it approves, which is the job of ruling 53's expectedId and inventory.
+- Short form: whatever Project is must be expressible both as canonical documents (a document or standard argument plus Conduits) and as the concise form's derived "Pool per project plus operator Conduit" (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/synthesis.md:29-38). That derivation would then become the Project object itself and the operator's Conduit to it.
+
+### Provenance: sixth-family design
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P1-sixth-family.md#L121-L121). Copied verbatim.
+
+- **Granularity.** A share covers every Resource of the Pool, present and future, as a bound naming a Pool does today (ACC-029). The plan and inspection must say so. To share less, split the Pool. This is the owner's "more specialized Pools".
+
+### Provenance: scope design
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P2-scope.md#L185-L192). Copied verbatim.
+
+   - A single Conduit between members of two projects is allowed, with both halves (see authority).
+
+## The owner's two examples
+
+- **Skills Pool for all projects.** Engine-homed, `audience: [{projects: all, operations: [file.read.v1, directory.list.v1]}]`. Root alone writes to it. Each project's managers give their Agents read access.
+- **Auth Pool for one project.** Two correct shapes:
+  - (a) homed in `conduit-core`, private;
+  - (b) homed at the engine, with `audience: [{projects: [conduit-core], operations: [linear list/get]}]`.
+
+### Provenance: use-case inventory
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-use-cases.md#L170-L176). Copied verbatim.
+
+Who may do what:
+- Collab may register, set up, retire and inspect packages members.
+- Collab may open and close Conduits whose consumer is a packages member and whose target is a packages member or within an audience that admits packages, up to its ceiling.
+- Collab approves widenings in packages and receives packages' pending actions: approvals, sign-ins for the declared accounts of packages agents (ruling 49 point 3: a sign-in to another account is refused and undone), and enrollment for packages (UC5).
+- Collab may narrow anything into packages, including closing the coordinator's cross-project Conduits.
+- Ci-hook shows the owner's "more granular interfaces".
+
+## Unverified
+- The approvals direction (widening approved as a pending action at the Interface, narrowing never waits, approvers declared) comes from the computed task text. It is not in the owner's relayed words, and I found it recorded nowhere in the repo. It is consistent with ruling 53 decision 2 (open) and with synthesis item 4 ("`--yes` never accepts a widening").
+
+Source of the approvals caveat above: [use-case inventory, line 431](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-use-cases.md#L431).
+
+### Earlier departures and reasons
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md#where-it-departs-and-why). Copied verbatim.
+
+1. **"Every possible object" stops at the engine.** These stay engine-level: Interfaces, Projects, nodes, everything owned by `system`, the first-start objects, packages and records. Putting `system` in a project would hand out near-root power (FST-001). Kubernetes makes the same split between namespaced and cluster-scoped kinds.
+2. **The reference is computed, not stored.** A member list kept on the Project would drift and race; this is why Kubernetes replaced allowlist prune with ApplySet.
+3. **"Pools accessible from multiple projects" holds for use, not administration.** A Pool has one home and is never co-administered. Two homes would break preservation test 3 ("owned once"), ACC-033 and ACC-012. Every system in the prior-art study uses one home plus explicit share edges.
+4. **Interfaces are principals, not project members, and only root creates them in v0.** If a project homed a person, that project's managers could retire someone whose authority spans other projects. Issuing an identity is an engine act (DL13).
+5. **A project never grants itself anything.** "Projects determine permissions" means the grants live with the project and are opened by authority someone already holds. The first such authority always comes from root.
+6. **"An auth pool for a specific project" is realized as a root-only home with a one-project audience, not a Pool the project administers.** SEC-008 keeps every secret wiring root's own. If the project administered the Pool, its managers could re-point what reads the secret, and root would become a confused deputy.
+7. **Granular Interfaces are mediated in v0.** They bound well-behaved actors and agents and record everything, but they do not isolate a collaborator who can run code on the owner's machines until the three prerequisites in fix 1 exist.
+8. **The approvals direction is not in the owner's relayed words, nor in docs/proposals/owner-direction/2026-11-10.md.** I offer it as the coordinator's answer to ruling 53's open decision 2, staged last, and as an explicit decision for the owner. It also departs in two ways:
+   - It does not gate widenings by a classifier. Authority decides what waits, because a gate would make every work-order dispatch wait for a person.
+   - Agents never approve in v0, a stated exception to preservation test 5.
+9. **No nesting or folders.** Inheritance would contradict "projects determine an Interface's permissions": a parent's grant would apply inside a project that cannot see it or close it. Strong team boundaries belong in separate engines (ruling 51 peers).
+
+### P1 to P4 comparison
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md#comparison). Copied verbatim.
+
+Sources: the four dossiers, their twelve skeptic reports, and checks against the repo.
+- Promise totals are out of about 455 (two cost skeptics' grep of IDs; a third counted 470 unique).
+- "Rename" means keeping the word "Project" for the new object and rewording today's meaning.
+
+| | P1: sixth family, chain of scopes | P2: scope as an engine-served Resource | P3: flat Projects, audiences (nesting tested and declined) | P4: Home Projects (Pool Type, minimal) | Recommended (composite, with fixes) |
+|---|---|---|---|---|---|
+| **Safety, as written** | 2 critical (approval is a tool; a project is not a host boundary), 8 high, 9 medium, 4 low | 1 critical (run a member, become root), 8 high (private Pools bridged; deputies; consumer half skipped through `access` and for Interfaces; replace defeats templates), 12 medium, 2 low | 1 fatal as written (delegated register, then root), 3 high (Interface consumers exempt; replace plus setup as confused deputy; approvals not human), about 9 medium or low | 1 fatal (the same, for every design), 7 high (home granted by any mention; set-up approval swappable; unbounded right smuggled; deputy laundering; Agent-made Interfaces; get-secret laundering; bare names across projects) | Every critical and high finding is closed by a rule (see recommendation). What remains is stated, not fixed: in v0 a project is mediated and needs DL13, a separate OS user and a confining runtime before an untrusted person; "a person" is a client obligation (ruling 49) |
+| **Expressiveness** | 10 unacknowledged majors: approved controls cannot be executed; no 032/033 pairing; no filters in shares; no caller project for implementations; `people` home cuts off reach; re-point outage; `widens` has no direction; whole-Pool shares; Agents not shareable; revocation does not stop a delegate. UC5 no; UC8 yes | 8 majors: templates bypassed; example contradicts itself (bridging); no consumer dimension; revocation not one act; approval only for opens; cross-project proposals impossible; no filters; no node scope | 8 majors: approve-only role approves nothing; proposals cannot reach unshared targets; consumer exemption; bound undefined for management verbs; no route for a project admin to delegate; coordinator needs its own project's authority; no filters; placement | Blocking F1 plus majors: shares and homes attach to actors, so managers bridge projects; unshare is N requests; placement. UC8 (names) and the template limit not served | UC1, UC2, UC3, UC4, UC7, UC8, UC9 and UC10 served, including the template cap, the pairing, cross-project proposals through `requestable`, required restrictions on shares, and revoke. UC5 (machine per project) and UC6 (peer per project) deferred to v1. S8 partial: the caller's project is passed, enforcement comes in v1 |
+| **Promises touched** | Claimed 75 to 80; counted about 105 (new word) or about 147 (rename) | Claimed 36 to 42; counted 46 to 56 or 93 to 103 | Claimed 66; counted 85 to 90, or about 130 | Claimed 22; counted about 30 (6.5%) | About 100 in substance (about 40 new, of which about 5 are owed to rulings 49 to 51; about 60 changed), plus 45 to 55 worded if renamed |
+| **Existing vectors** | 15 to 20 re-expected by hand; about 230 first-start snapshots; store break | 14 steps flip in 5 cases | 13 steps flip in 4 cases | 0 flip | 0 routing outcomes flip (`management` encloses Projects only). About 21 first-start fixtures regenerated (root's operations); stated clean break of lab stores |
+| **Rust** | 8,500 to 15,000 | core +2,000 to 3,500, shell and CLI +1,000 to 1,500 | core 4,500 to 7,000; total about 6,000 to 10,000 | core 1,600 to 2,800 | core 5,000 to 8,000; shell 1,200 to 2,500 (DL13, approval page, confirmations); CLI 800 to 1,500; loader and runner 300 to 800. About 7,500 to 13,000 |
+| **Work orders** | about 1 increment or more | 5 to 8 | 10 to 13 | 3 to 4, after 3 prerequisites | 11 to 14, in 4 stages, after the shared prerequisites |
+| **Concepts** (S1 author / multi-project author) | 0 / +13 to 15 terms | 0 / +12 to 15 | +1 −1 / +6 | 0 / about 8; Pool now has two meanings | +1 (Project) −1 (root's Pool Conduit) / about 8: home, audience, two halves, project bound, role, propose, approve, revoke |
+| **Fit with the short-form question** | Good: `project:` names the object, scoped names; heavy | Good: `managers:`, `audience:`, `to: project X`, `default` Pool | Good, the same keys; "authority not a classifier" suits plan and apply | Weak: replaces the derived Pool one for one, but global names make short local names unsafe | Good: one `project:` line; `managers:`, `approvers:` and `audience:` compile to Conduits and entries; scoped names make `default` and local names safe; apply sends widenings beyond the author's envelope as one proposal (ruling 53, decision 2) |
+| **Main thing kept from it** | Explicit propose and approve; project bound with five dimensions; per-project tombstones | Role templates; the audience as a standing target half; "no member list on the Project" | The skeleton: family, audiences with explicit `future`, two halves, flat with nesting declined, authority deciding what waits | Engine-without-Projects unchanged; no vector flips; approval equals authority | — |
+
+### Earlier decisions 1 to 21 and their alternatives
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md#decisions). Copied verbatim.
+
+Each decision gives the options and a recommendation. Decisions 1 to 6 should be ruled together with the short-form ruling (ruling 53, decision 1), because both redefine "project", names and references.
+
+1. **Whether and when to adopt Project.**
+   - (a) Adopt the composite model, staged A to D, decided with the short form. **Recommended.**
+   - (b) Adopt P4 (about 30 promises) as v0 and add the rest later. This writes tombstones, inventory and names twice.
+   - (c) Defer until after the short form lands.
+   - Note that the change is larger than the short-form move (about 100 promises against 50 to 80), not equal to it.
+
+2. **Form.**
+   - (a) A sixth family, `kind: Project`. **Recommended:** explicit (ruling 52), and no second meaning for "Pool".
+   - (b) A Pool of `core#project.v1` (P4). About 10 to 12 fewer promises, but "Pool" then means two things and `retire-with-resources.v1` retires Agents.
+   - (c) A Resource owned by `system` (P2). Rejected: every bound naming `system` would cover every Project.
+
+3. **The word (ruling 42, one meaning per word).**
+   - (a) "Project" for the registered object, with today's meaning folded into "submission", which definitions.md already defines almost identically, and "a package is a published project" reworded. About 45 to 55 promises reworded, plus runner and loader identifiers. **Recommended:** it is the owner's word and the concise heading.
+   - (b) Another word for the object (workspace, space). No rename cost, but the concise `project:` key then means something else.
+
+4. **How root gets authority over projects.**
+   - (a) `management` and an unbounded `access` enclose every Project. Engine-level Pools, `system` included, keep today's two keys. **Recommended:** root needs no Conduit per project, no existing vector flips, and no existing grant silently widens.
+   - (b) `management` also encloses engine-level Pools (P1 to P3). This removes root's Pool Conduits everywhere, but flips 13 to 14 steps and widens co-admins over `system`'s providers.
+   - (c) A single authorizer with a derived root Conduit to each Project (P4).
+
+5. **Names.**
+   - (a) Unique within a Project across kinds, with qualified cross-project references, the five first-start names reserved, and no fallback. **Recommended:** needed for UC8 and concurrent work orders; stops existence leaking through name clashes.
+   - (b) Global names (P4). Saves about 10 promises, 800 to 1,300 core lines and about 15 cases.
+
+6. **Interfaces.**
+   - (a) Engine-level principals that only root creates. The consumer half for an Interface is held by that Interface itself or by root. A new core Type `person.v1` marks persons. **Recommended.**
+   - (b) Interfaces homed in projects (P1). Their projects' managers could then retire them.
+
+7. **Sharing Pools.**
+   - (a) Audience entries on the Pool, from Pool to project, with listed Resources, explicit `laterProjects` and `laterResources`, a ceiling, required restrictions and `requestable`. The home decides; `projects: all` needs root; no acceptance step inside one engine. **Recommended.**
+   - (b) Shares as rights given to actors (P4). These bridge projects.
+   - (c) Receiving acceptance as a pending action (P1).
+   - Also confirm: project-homed Pools may be shared (Shared VPC style). **Recommended: yes.** Cross-cutting Pools belong in a root-only `commons` project.
+
+8. **Does an audience cap root?**
+   - (a) No; inspection marks root's Conduits as "outside the audience". **Recommended.**
+   - (b) Yes (P2): the audience becomes the complete truth, and root's one-off exceptions are lost.
+
+9. **Conduits across projects.**
+   - (a) Two halves for every open and every Conduit registration, with each half judged on its own bound dimensions. A bridge exists only where a target-half bound names foreign consumers explicitly. **Recommended.**
+   - (b) One opener covering both halves (P2). This silently joins projects.
+
+10. **Approvals.** Note that this direction is in the computed task, not in the owner's relayed words or the owner-direction record.
+    - (a) Adopt at all? **Recommended: yes**, as the answer to ruling 53's open decision 2, staged last.
+    - (b) Mechanism: explicit `propose.v1` and `approve.v1` with a pending action. **Recommended**, over the register/open split of P2 and P4, which cannot carry setups or controls and lets proposals be inferred from half-applied state.
+    - (c) Approval only as a person's answer on an engine page, never a tool. **Recommended.**
+    - (d) No Agent holds approve.v1 in v0, a stated exception to preservation test 5. **Recommended.**
+    - (e) Bounded Conduits are standing approvals, opened only by approvers and confirmed by a person when the consumer is an Agent. Root's own grants to Agents are confirmed too. **Recommended.**
+    - (f) Expiry: a new DL, 24 hours by default and 7 days at most. **Recommended.**
+    - (g) One approver per touched project. **Recommended.** A two-person rule and quorums wait for v1.
+
+11. **Isolation in v0.**
+    - (a) State that projects are mediated. Add the template cap: instances registered through P come only from P's templates, which fix runtime and placement; templates of P are registered only by root or a root-granted `templates: all`; implementation items come only from installed packages unless the submission goes through `management`. **Recommended.**
+    - (b) Also make three things preconditions for any second, untrusted person: a DL13 token, a store that runs cannot read (a separate OS user), and a confining runtime for project-authorized runs. **Recommended.**
+
+12. **Secrets.**
+    - (a) They stay root's. The auth Pool is homed in a root-only project and only its service Resource is shared. Templates behind `get-secret.v1` consumers are replaced only by engine authority. Anything that would open `get-secret.v1` is never proposable. **Recommended.**
+    - (b) Project approvers may approve secret access. Rejected: it changes the secret guarantee in spec/README.md.
+
+13. **Retiring a Pool or Project that others use through shares.**
+    - (a) Refuse unless `includeShared: true` is stated; then act at once and list everything that closes. **Recommended.**
+    - (b) Proceed and list (P2, P3).
+    - (c) Refuse until unshared.
+
+14. **Revocation.**
+    - (a) Store `openedBy` and `registeredBy`, and add `revoke.v1`, a narrowing that closes an actor's grants in a project transitively. **Recommended.**
+    - (b) The CLI composes revocation from the inventory.
+    - (c) Revocation cascades by default (against ACC-030).
+
+15. **Closing between co-managers.**
+    - (a) A Conduit to P is closed only by a holder whose bound contains its bound, by engine authority, or by its consumer. Member Conduits may be closed by any covering half. **Recommended.**
+    - (b) Keep ACC-012 as it is everywhere.
+    - (c) Only the opener may close.
+
+16. **Pairing for work orders.**
+    - (a) A `sameRegistration` flag on the project bound, so the engine keeps worker-032 out of tree-033. **Recommended:** A78 is the real use.
+    - (b) Leave it to the coordinator's code.
+
+17. **Records per scope.**
+    - (a) Records are readable by inspectors of the caller's scope and of the target's home. The other side appears by qualified name only. Inputs a Type records are visible only to the caller's project and root. Root sees everything. **Recommended.**
+    - (b) Root only, as today in practice.
+
+18. **Tombstones.**
+    - (a) Keyed by project ID and by (consumer ID, target ID, capability). They outlive the Project, a namesake inherits nothing, and recreating a name needs an explicit `--recreate`. A tombstone left by a non-approver does not bind an approver's restore. **Recommended.**
+    - (b) Keyed by project name, which leaks to namesakes.
+
+19. **Not in v0.** Scoping nodes and runtimes per project (UC5), exposing a project to a peer engine (UC6), project sets, and nesting. **Recommended:** keep projects flat now. A team boundary is a separate engine (ruling 51). Revisit project sets when a second team exists.
+
+20. **Widening through configuration** (`accountServices`, a directory root moved up).
+    - (a) In v0, only the template cap. In v1, Types mark the direction in which an input widens. **Recommended.**
+    - (b) Type marks now, as new versions of every package.
+
+21. **Order of work.**
+    - (a) Write ruling 53's five additions once, in their per-project form, in stage A after the short-form ruling. **Recommended.**
+    - (b) Land the package first and add Projects later, writing tombstones, inventory and `expectedId` twice.
+
+### Root equivalence and prerequisites
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md#fixes-applied-from-the-skeptics-mapped-to-their-findings). Copied verbatim.
+
+1. **Root-equivalence in v0.** This was fatal or critical in all four designs (P1 C2, P2 C1, P3 C1, P4 #1 and F1). The fixes:
+   - An instance registered through a Project's authority is made only from a template homed in that Project. It takes `runtime` and `placement` from that template and cannot state them itself.
+   - Templates of a Project are registered, replaced or unregistered only by engine authority, or by a holder of `templates: all`, which only engine authority can grant.
+   - A Project submission may select implementation items only from installed packages. Its own `command` or `remote` items need `management`.
+   - The spec README says plainly that in v0 a Project is a **mediated** boundary. A run on the engine's runner can read root's token (IFC-022; shell lib.rs:280-299). Before a second, untrusted person gets authority, three things must exist: a DL13 token path, a store the runs cannot read (a separate OS user, DL16), and a confining runtime.
+
+- **P-a.** The pending-action batch of rulings 49 to 51: shape, routing and elicitation. About 5 promises.
+- **P-b.** A DL13 rule for issuing a token to an Interface other than root, and the shell path that does it. `issue_client_token` exists in shell/src/lib.rs:297, but only root is issued a token (main.rs:157, :212).
+- **P-c.** LIF-021 (`retire-with-resources.v1`) implemented in the reference model. Only its routing exists today (access.rs:280).
+- **P-d.** Runs that cannot read the engine's store: a separate OS user (DL16). This is required before any untrusted second person.
+
+### Earlier risks: isolation, provenance, store break and deferred use cases
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md#risks). Copied verbatim.
+
+2. **A false sense of isolation.** In v0 a Project is a mediated boundary. Any run on the engine's runner can read root's client token (shell lib.rs:280-299; IFC-022; spec/README.md "programs that run as the engine's operating-system user ... can get past every gate"). That includes a prompt-injected Codex worker that a project manager legitimately registered. The template cap stops a manager from choosing the program, runtime or host paths. It does not stop the program itself. Until DL13, a separate OS user (DL16) and a confining runtime exist, granular Interfaces suit trusted collaborators and agents only. This has to be stated in the README, not left in a footnote.
+
+4. **The approvals feature may not be what the owner asked for.** It comes from the computed task, not from the owner's words. The mitigation is to stage it last and decide it explicitly (decision 10), so the owner can drop it without unwinding stages A to C.
+
+12. **The store break.** Root's first-start Conduits are permanent and cannot gain the new operations by request, and objects cannot be moved into projects. Lab stores must be re-initialized and S1 rerun. Anything else in use must be recreated.
+
+14. **Use cases deferred.** UC5 (a machine per project) and UC6 (a peer per project) are deferred, and machines are not isolated per project. The owner's enrollment and WSL direction still needs v1 work: a node audience that the engine checks after placement, which conflicts with placement being fixed (PLC-009).
+
+### Single-authorizer routing A(x)
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P4-minimal.md#authority). Copied verbatim.
+
+THE AUTHORITY OF AN OBJECT, A(x)
+A(x) is x's home Project, where x has one that is not retired. Otherwise it is `management`. That covers engine-level objects, Projects themselves, the first-start objects, and members of a retired Project.
+
+ACC-033's single-authorizer rule stays: in each row below, one target decides, or two where today's row 1 already needs two. For an engine with no Projects, A(x) is always `management` and every row reads exactly as today.
+
+NEW ROUTING TABLE (extends ACC-033; the numbers are today's rows)
+| # | Request | Authorized against (the Conduit must list the operation) |
+|---|---|---|
+| 1 | register.v1 of a Resource into an existing, live Pool Q | The submission's authority (P if the manifest names an existing Project P, otherwise `management`) AND Q. Where Q is P itself, one Conduit (S1's T2: s1 alone, where today it needs `management` and s1) |
+| 2 | register.v1 of anything else | P for a submission naming an existing Project P. `management` for no project, or where the submission makes P itself |
+| 2' | replace.v1 of a template; unregister.v1 of a template or retired instance | A(the object) |
+| 3 | register-replacement.v1 | As 1 or 2 for the instance it makes |
+| 4 | set-up.v1 / retire.v1 of a Resource | Its owning Pool, unchanged; that Pool may be a Project |
+| 5 | set-up.v1 / retire.v1 of an Agent, Interface or Pool | A(x). For a Project: `management` |
+| 6 | inspect.v1 of a Resource | Its owning Pool; A(that Pool) once the Pool is retired |
+| 7 | inspect.v1 of an Agent, Interface, Pool or template | A(x). A Project is inspected through itself (new: its inventory is its managers' view) |
+| 7' | inspect.v1 of a Conduit | A(the Conduit), A(its consumer) or A(its target), whichever the caller holds. This is the one deliberate "any of" in the table: both sides of a cross-project Conduit must see it. A non-existent object stays `management`'s, refused before any diagnostic (OPS-023) |
+| 8 | retire-with-resources.v1 | The Pool itself. For a Project it retires every member (LIF-021 extended) |
+| 9 | install.v1, declare-lost.v1, purge.v1 | `management`, unchanged (reserved operations stay root's, ACC-032) |
+| 10 | open.v1 / close.v1 | `access`, under the home rules below |
+| 11 | a control | The instance, unchanged |
+| 12-14 | reconcile.v1 | `management` becomes A(x), x being the instance the invocation concerned, as recorded. Pool-routed cases are unchanged |
+
+OPEN AND CLOSE (ACC-006, ACC-012, ACC-030, with the home/share idea from the sharing field)
+- Open (ACC-006): unchanged, the right the request travels through must cover the target and name every operation. Added: where the consumer is a member of a Project, some open right of the actor must hold that Project's home.
+  - An engine-level consumer keeps today's rule, "for any consumer".
+  - Recommended small addition: a Conduit whose consumer is root is opened only by root, since ACC-024 makes it unclosable.
+- Close (ACC-012): for a Conduit with an end in a Project, the actor needs a right that names every operation the Conduit lists and holds the home of its target or of its consumer. Either side may narrow; a share alone never closes. For Conduits whose ends are both engine-level, today's rule stands. Root's Conduits are never closed (ACC-024).
+- Rights to open (ACC-030):
+  - Open: the new bound must be within the actor's, as today, and the actor must hold the consumer's home.
+  - Close: within, and the actor must hold the consumer's home or the home of a Project the bound names. So `packages`' managers can close the coordinator's right that names `packages`, but not its `share-skills`.
+- CON-028 is unchanged: a bound still lives only on a Conduit to `access`.
+
+ROOT
+- Unchanged: root-management (all 11 operations) and root-access (unbounded, so it holds every home) (FST-002, ACC-022).
+- Root creates Projects (row 2 through `management`), installs packages, and alone wires get-secret (SEC-008) and the reserved operations.
+- Because one target decides, root still needs a Conduit to each Project to act inside it, as it needed one to each Pool. In the concise form that Conduit is derived (rule D2, now `<project>--manage`, listing the nine operations of project-management.v1). ACC-024 makes it permanent until the project is retired.
+
+HOW AN INTERFACE GETS AUTHORITY OVER ONE OR MORE PROJECTS
+For each project P, two ordinary Conduits:
+- (a) X -> P, from a template whose capability is `core#project-management.v1`: register, register-replacement, replace, unregister, inspect, set-up, retire, retire-with-resources and reconcile, or any subset. This is "manages P" for objects.
+- (b) X -> `access`, whose bound names P in `pools`, with the operations X may grant inside P. This is "acts inside P", and it holds P's home.
+  - Granting other people management of P needs the nine project-management operations in this bound too. A manager who should not create co-managers gets a bound without them.
+- Over three projects, X holds three such pairs. Each pair is revocable by that project's managers: (a) because they hold P's home and name its operations; (b) because its bound names P.
+- Both Conduits may be registered in P's own submission, because (a)'s target is P and (b)'s bound names only P. So P's file lists its managers, and they appear in P's inventory. That is the safe reading of "projects determine an Interface's permissions".
+
+A SECOND PERSON WITH AUTHORITY OVER ONE PROJECT
+1. root registers an engine-level Interface `collab` (`from` a template of type core#interface.v1).
+2. root registers and opens collab -> packages (all nine operations) and collab -> access with bound {pools: [packages], operations: [the operations used in packages and the nine]}.
+3. Optionally, root opens collab -> access `share-skills`.
+
+collab can then:
+- register, set up, retire and inspect members of `packages`, with no `management` at all (gaps [B1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L124), [B2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L130) and [B6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L137) are closed for members);
+- open Conduits among `packages` members, and from them into skills, within read and list;
+- see only `packages` and the Conduits that touch it ([B7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L138) is closed per project).
+
+collab cannot:
+- touch `conduit-core`;
+- install packages;
+- open get-secret Conduits;
+- close root's Conduits;
+- create Projects.
+
+How collab's person gets a token is DL13, and the first build issues none to a second Interface. That is unchanged here and is a precondition.
+
+DELEGATION AND BOUNDS
+- Delegation still only narrows (ACC-030). collab may make the Agent pkg-lead a sub-manager: pkg-lead -> packages [register.v1, inspect.v1] and pkg-lead -> access {pools: [packages], operations: [file.read.v1, directory.list.v1]}.
+- A bound naming a Project covers that Project's future members. This closes gap [B3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L131), the bound frozen at instantiation, for project members.
+- A bound naming `system` remains near-root, as today. A Project never contains `system` or any engine-level object, so naming a Project never covers them.
+- Revocation does not cascade, as today.
+- Two managers of one project can still close each other's grants inside it. Across projects they cannot.
+
+### Root-equivalence and home-granting counterexamples
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P4-minimal.md). Copied verbatim.
+
+1. [F] A project manager becomes root through the engine's own runner. This breaks "collab cannot touch conduit-core", and it applies to every Project design that delegates registration.
+- Trace:
+  - collab (or pkg-lead, which holds packages register.v1) registers an Agent in packages that gives no `runtime`, for example Codex with a shell (row 2, packages).
+  - collab sets it up (row 5, packages). PRV-006 runs it on the engine's own runner, usually as the engine's operating-system user (DL16).
+  - spec/README.md:386-395 says such programs "can get past every gate: they can read the engine's keys and make its proof". It also says that runs sharing one user "can present as one another".
+  - ACC-027: every restriction is only mediated in this version. Placement is unrestricted, so the Agent can also read conduit-core's trees, other Agents' homes (ruling 49) and other runs' environments directly.
+- Why it is new: today only a holder of `management` can register an Agent, and that holder is root-equivalent anyway. The design gives registration to project managers, Agents among them.
+- Fix:
+  - Add a promise: an instance registered under a Project's authority must name a runtime provider whose contract confines it (homed in P or engine-level). An instance on the engine's runner, or on a provider that does not confine, needs `management`. S1 is unaffected, because root holds `management`.
+  - Say plainly that project isolation is mediated only, until confining providers and node scope (UC5) exist.
+  - Enrollment and node admission must never route to project authority while placement is engine-wide.
+
+2. [H] Any bound that names P grants P's home, and the home can come from a different right than the one that covers the target.
+- Trace (the owner's real use, UC2):
+  - root gives the coordinator `turn-packages` with bound {pools: [packages], operations: [turn.v1]}, so it can dispatch work to packages' workers. Under the definition of home, the coordinator now holds packages' home.
+  - The coordinator registers, in a conduit-core submission, `pkg-worker-1 -> core-tree [read, write]`. POOL-019 accepts it, because the target is a conduit-core member.
+  - The coordinator opens it. right-in-core covers the target; "some open right" (turn-packages) holds the consumer's home.
+  - Worse, it opens for pkg-worker-1 a right whose bound is {pools: [conduit-core], ...}. ACC-030's within holds against right-in-core, and the consumer's home is held through turn-packages.
+  - pkg-worker-1, a packages Agent that collab can prompt, now holds conduit-core's home. It can open Conduits for conduit-core members and close their Conduits.
+  - collab cannot close that planted right. The close rule needs it to be within collab's bound, which names only packages.
+- Result: collab reaches conduit-core, and neither packages' managers nor root approved anything.
+- Fix:
+  - The one right a request travels through must both cover the target with its operations and hold the consumer's home.
+  - Home must be explicit. Either the actor also holds X -> P listing a project-management operation, or bound.v1 gains a separate `homes` argument. Naming a Pool or a Project in `pools` should only cover.
+  - Closing any Conduit or right whose consumer's home the actor holds needs only that home (see 9).
+
+### Earlier open questions
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P4-minimal.md#openquestions). Copied verbatim.
+
+3. Root's Conduit to each project.
+   - Keep it, derived and recorded, so the single authorizer stays.
+   - Or give root an identity power: `management` authorizes for root whatever a Project authorizes, as ACC-032 does for the reserved operations. This saves one canonical document per project and breaks "one target decides".
+
+5. Should a Pool that other projects use block its home project's retirement, as PRV-020 and PLC-011 block it for providers and nodes? Or do other projects simply lose access, with the plan listing every Conduit that will close?
+
+6. Should a right to open whose bound names a retired Project be closed automatically? Today a bound that names a retired Pool is simply inert.
+
+7. Who may give access to an engine-level consumer? Today anyone with a covering right may, for any consumer. Recommended at least: a Conduit whose consumer is root is opened only by root, since ACC-024 makes it unclosable.
+
+10. Should a project's managers be able to install packages? install.v1 grants nothing (NAM-013), but it changes what every project can reach by qualified reference.
+
+11. Templates across projects. Is "own project, engine-level or package" the right rule for `from`, or should projects be able to mark a template as usable by others (a template share)?
+
+12. Tombstones and a recreated name. Should a new Project with an old name see the old Project's tombstones and require an explicit `--reopen`? (Design D's skeptic.) They are kept by Project ID either way.
+
+13. Self-declared managers. Is it acceptable that a Project's own file registers the Conduits that make Interfaces its managers, opened by its existing managers, which is this design's reading of "projects determine an Interface's permissions"? Or must every new manager come from root?
+
+15. Which of the use cases this design leaves unserved matter for v0? Per-project names (UC8), node scope (UC5), template-limited registration (UC2 and UC9), two-party consent (UC10) and widening through configuration (R3). Each could be added later as its own ruling on top of this design, without undoing it:
+   - names: a qualified `project/name` reference, changing OBJ-002 and NAM-003;
+   - nodes: a scope on node.v1 checked after place.v1;
+   - template-limited registration: a `templates` argument on a right;
+   - two-party consent: a consumer-side acceptance as a pending action;
+   - configuration: Type-marked widening settings.
+
+### Critic constraints
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/critic.md). Copied verbatim.
+
+1. MAJOR. Ruling 30 OL2 is reversed without being named.
+- The owner ruled "one authority for an object's whole life: its owning Pool for a Resource, management for everything else" (docs/proposals/conventions/README.md:52). Its own rationale cites "Azure and Kubernetes scope management rights by group or namespace", which is the same idea as a Project.
+- ACC-033 builds on it: "at any moment one target authorizes a request".
+- The recommendation's rows [R5](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md#L265), [R7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md#L267) and [R10](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md#L270) give two or three alternative authorizers (the Pool X, the Project P, or management). It says it replaces ACC-033's single authorizer but never cites OL2.
+- Do: put the amendment to the owner as its own decision. Or keep one authority by making P the sole authority over its members, with root reaching each Project through a derived, visible, permanent Conduit (P4's option 4c). That option also fixes gap 23.
+
+2. MAJOR. Ruling 44 point 2 (D03/D04) is reversed early and without comparison.
+- The ruling says v0 states plainly that a bound does not limit filters, and that access to management cannot be narrowed to one template. Narrow provisioning goes through a broker.
+- The ruling also says: "S1 and S2 measure whether that is good enough; if it is clumsy, a focused constraint, such as a list of allowed templates on access to management, comes back to the owner."
+- `project-bound.v1`'s `templates` dimension and the audience `requirements` field reverse both points. S2 has not run, and the broker (the spec's own answer in spec/README.md, "What access does not narrow") is never compared.
+- Do:
+  - cite ruling 44 point 2;
+  - add a per-project broker option to decisions 11 and 20;
+  - say that the S2 evidence is missing;
+  - define "carries" for required restrictions (exact requirement and arguments).
+
+3. MAJOR. The v0 scope breaks rulings 15, 49 and 50.
+- The purpose (ruling 15) says "Teams: not in v0".
+- Ruling 49 point 2: "more granular in the future… fleshing out interfaces more will likely be a lot of the work for v1."
+- Ruling 50: every pending action is "raised at the root Interface in v0".
+- Stages B to D (collab, approvals routed to collab, a phone panel) are team and v1 features, but they are scheduled as v0 work orders. Decision 1 lacks the obvious option (d): stage A (memory, names, inventory, tombstones, `retire-with-members`) in v0, and B to D proposed for v1.
+- The plan never places the stages against ROADMAP steps 3 to 7 (increment 4, the round-7 read, the S2–S9 fan-out, the readiness gate).
+- Do: add option (d), place each stage in the roadmap, and ask the owner to amend rulings 15, 49 and 50 explicitly if B to D stay in v0.
+
+4. MAJOR. The breach of preservation test 5 is wider than stated. The test is "every management action is available to an agent under a grant", and the purpose says "Agents can operate the system… through the same contract a human uses".
+- Only approvers make envelopes, and Agents never hold `approve.v1`. So no Agent can ever open a Conduit to a Project: agents cannot delegate project authority at all.
+- Fix 2 makes every open of a Conduit to a Pool, `management` or `access` with an Agent consumer wait for a person, at engine level too.
+- "The actor's person" is undefined when the actor is an Agent.
+- Do: list every exception, or scope person confirmation to Conduits to Projects and keep ACC-030 delegation among Agents intact.
+
+5. MAJOR (verified). The claim that no routing outcome flips is false.
+- conformance/conventions/access/bounds, observation 3: agent-a opens a Conduit to Pool …116 through its bounded `access`. Permitted today.
+- Observations 9 and 10: agent-a opens a Conduit to `access` for itself. Permitted today.
+- All three become pending or refused under fix 2.
+- Two more rules change engine-level behaviour, contradicting "engine-level objects keep today's rules exactly":
+  - "an Interface consumer's half is the Interface itself or an unbounded `access`" narrows ACC-030's "for any consumer";
+  - "only root opens a Conduit whose consumer is root" is new.
+- Do: scope these rules to opens that touch a Project, or list the flips, re-expect the vectors and reword the regression gate.
+
+6. MAJOR. Ruling 40 and the current direction (identity is a later provider): the approval page is new infrastructure.
+- Ruling 49's URL elicitation points to a third party's page, which does its own authentication. An engine-served approval page must instead:
+  - authenticate a person;
+  - bind the click to a `person.v1` Interface (DL13 issues tokens to instances, not to browsers);
+  - resist forwarding and cross-site request forgery.
+- Unauthenticated, the URL is a bearer capability: any model or transcript that sees it can approve.
+- Delivery is missing too. An MCP elicitation reaches only a connected client during a request. Nothing pushes to an idle phone, and a laptop engine is unreachable from a phone without network exposure.
+- Do: put person authentication (OIDC or WebAuthn user verification) and notification behind provider contracts, specify the binding, and count the cost. Or keep v0 approvals in the Interface's own client.
+
+10. MEDIUM-HIGH. The sign-in phishing guard is weak.
+- "Raised only for instances whose template root registered or approved" covers nearly every project instance, because by design root registers P's templates.
+- So an operator can register, from a root template, an Agent whose expected-account argument names the owner's personal account, and root receives a sign-in that looks legitimate.
+- Do: raise a sign-in only where the template fixes the expected account, or where a list of accounts that root declares for the project includes it.
+
+11. MEDIUM. Secrets can still be reached through a confused deputy.
+- Fix 13 guards templates, but not instance arguments or secret Resources. An operator can register an `op-item` that names any item in a store the engine reaches, and an instance whose declared `get-secret` Conduit targets it. Root's apply then opens the read.
+- "Secret-store providers homed like any Resource" contradicts "the auth Pool lives in a root-only project".
+- Do: make registering secret Resources and secret-store providers engine authority only, and show a get-secret line in the plan or evidence for root's setups.
+
+12. MEDIUM. Widening never waits when it goes through instance arguments or controls.
+- Reach flags (`accountServices` and `peerMessaging`, which S1's fixture holds as instance config), directory roots, and controls (REV-006) can all widen reach. The template cap fixes only runtime and placement.
+- Do: require inputs that affect reach to be fixed by the template for registrations authorized through a Project, or say plainly in the mediation statement that operators widen freely through any input left open.
+
+16. MEDIUM. Who names tools across projects is unsettled.
+- A Conduit homed in the target's project (for example coordinator -> worker-032, homed in packages) has its `as`, and so its tool names, chosen by the foreign project.
+- Under IFC-012 and IFC-014 a colliding Conduit is not instantiated. A foreign project can therefore take the consumer's tool names, and the IFC-014 diagnostic leaks which local names the consumer already has.
+- Do: give `as` to the consumer's side, or prefix the tool names of Conduits from another project.
+
+C. FIRST START, REPAIR, PEERS, ENROLLMENT
+
+17. MEDIUM. Root's Type is not `person.v1`.
+- Root is `@core#interface.v1` (FST-001; conformance/fixtures/root-system-state.json is used by 197 cases). Yet `approve.v1` is limited to `person.v1` Interfaces, while root approves everywhere as the fallback. Root is also often driven by an AI admin session.
+- Do: decide whether first start makes root a person (another FST change and fixture regeneration) or makes root an explicit exception.
+
+18. MINOR-MEDIUM. Repair and state lifecycle are underspecified.
+- Tombstones and pending actions "outlive the Project until root purges it", but `purge.v1` covers records, and no promise in stage A changes it. There is no retention rule.
+- After an unshare cascade, it is unstated whether a later re-share stays blocked until each tombstoned Conduit is restored.
+- `sameRegistration` breaks when a worker is recreated or replaced (`register-replacement.v1`, or the recreation pattern of finding 4-12).
+
+19. MINOR. Peers and vocabulary.
+- Marking an Interface "foreign" needs the trust domain of DL13 and ruling 51 (decision 2); say so.
+- "Separate engines" gives an untrusted second person nothing safe in v0, because sharing across parties is v1 (ruling 51, decision 6).
+- "Half" now has two meanings: in ruling 51 it is each engine's part of a relationship, here it is an authorization. That breaks ruling 42's one-meaning rule; rename one of them.
+
+21. MEDIUM. The concise form and the template cap conflict.
+- Every `agents:` entry compiles to a template, so any concise-form author of a project needs `templates: all`. The cap then protects against Agents only.
+- Non-admin granular Interfaces cannot use the concise form unless it supports `from:` an existing template.
+- Collab also cannot run `conduit install`, which goes through `management`, so the pins in her file need root.
+
+22. MINOR. Ruling 53 decision 6 is answered implicitly.
+- Decision 6 (derived defaults) is open: the owner asked for more detail. The recommendation answers it without saying so: enclosure removes the operator Conduit, and a derived `default` Pool stays.
+- `managers:`, `approvers:` and `audience:` add more objects the CLI derives.
+- The S1 example is inconsistent: the concise plan has `s1/default`, the canonical form has `workspace`.
+- S1's local name `project` (the tool `project.file.read.v1`, the tombstone "as project") becomes confusing beside `project: s1`.
+
+24. MEDIUM. Explicitness (ruling 52). With enclosure, a Project's inventory omits the holders of `management` and of an unbounded `access`.
+- Do: list "engine authority: …" in every inventory and plan, and decide the trade-off with disclosure.
+
+25. MINOR-MEDIUM. Agents shared across projects. The owner named agents. Audiences exist only for Pools, so a reviewer Agent shared with every project needs one consumer grant per project, with no equivalent of `laterProjects`.
+
+E. COST AND CONCEPT COUNT UNDERSTATED
+
+27. MEDIUM. Costs left out of the estimate:
+- spec/core documents: two Types, a capability with 17 operations, about 6 new Operation contracts with schemas, a requirement, 5 role templates, and reference schemas. 33 files under spec/core and spec/schemas mention "project".
+- Document schemas and examples, which check_schemas.py validates.
+- The web surface for approvals and its authentication.
+- The round-7 cold read.
+- Model checking of transitive revoke, two halves and approval races (roadmap step 6).
+- The full cost again in each of the two independent builds (step 7).
+- The rename estimate is fair: 55 of the 455 promises mention "project". But the rows of the ruling log are never rewritten, so ruling 37's row ("unique… within a project") changes meaning after the rename; it needs a note in AUDIT.md.
+- Citation drift: reference-model/crates/shell/src/main.rs has `issue_client_token` at lines 178 and 234, not 157 and 212.
+
+### Requirements R1 to R7 and use cases UC1 to UC10
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-use-cases.md#1-requirements-every-use-case-relies-on). Copied verbatim.
+
+**R1. Membership differs by family.** "A project references every object under it" holds only with these distinctions:
+
+| Object | Relation to projects that the use cases need |
+| --- | --- |
+| Agent | Exactly one home project; it may hold Conduits into other projects with their consent (UC2) |
+| Resource | Through its Pool (POOL-001 unchanged) |
+| Pool | A home project plus a declared audience of other projects, or engine-level and referenced by many. UC7 is the case that tells the two apart |
+| Conduit | Crosses projects. Both ends' projects see it, either side may narrow it, and widening needs both (UC2, UC3, UC10) |
+| Interface | Engine-level, holding authority over one or more projects (UC3). Membership in one project is the alternative, and UC7 tests it |
+| Template, contracts, pins | Per project (each project's manifest pins its versions, NAM-006). `install.v1` stays engine-wide and grants nothing (NAM-013) |
+| First-start objects, nodes, system-owned providers | In no project (FST-001, PLC-026, PRV-013). First start still makes no project (FST-001 to 003) |
+
+**R2. Authority over a project is one relation that can be inspected and revoked** (preservation test 2). It can be read from the project ("managers") and from the Interface ("authority over"). It is granted only by an actor whose own authority covers it (test 5; ACC-030's "only as it is or narrower"). Today's Conduit to a Pool offering `pool-management.v1` is the existing paradigm to extend.
+
+**R3. The engine, not the CLI, decides from declared data whether a change widens.**
+
+| Widening | Narrowing | Neutral |
+| --- | --- | --- |
+| `open.v1`, including a declared Conduit at setup (ACC-005). A successor Conduit that lists an operation its predecessor did not, or drops a filter. Opening a right to open, or a wider bound. Registering or setting up an Agent whose declared Conduits will open. Registering from a template outside the project's allowed set. `replace.v1`, which changes programs and `remote` URLs (ACC-030). A control that sets a setting the Type marks as widening (`accountServices` or `peerMessaging` true, ruling 48; a directory root moved up). Adding a project to a Pool's audience or raising its ceiling. Adding a manager or approver. Admitting a machine, or widening a node's project scope. Introducing a peer | `close.v1`, retire, unregister. Removing a project from an audience. Removing a manager or approver (never root, ACC-024). Narrowing a node scope. Dropping a peer | `inspect.v1`, `install.v1` (NAM-013), reconcile |
+
+A successor must be compared with its predecessor. Without that, every T5 or T6 re-point and every "close then reopen with more" is misclassified, one way or the other. Opaque configuration cannot be judged unless the Type marks it.
+
+**R4. Approval is separate from authority.** Narrowing needs authority and never waits. Widening needs authority and, unless the requester is a declared approver of every scope the change touches, raises a pending action. The shape is ruling 51 decision 5: kind, subject, evidence, expiry, outcome.
+- The subject is the exact requests, with `expectedId` (LIF-037 and ruling 53). Any drift aborts the action (critic gap 1).
+- The evidence is the reach before and after, written by the engine. The proposer's justification is shown only as a quote.
+- The approvers are those of the consumer's project and of the target's home, where they differ.
+- An approver's own authority must cover the change, and the proposer never approves its own proposal.
+- Records attribute both proposer and approver (test 7).
+- A pending widening never holds back a narrowing, and no narrowing is bundled into one. In T4, B's narrowing applies at once while A's widening waits.
+- Sign-ins stay person-only (ruling 49). Machine admission needs a person in v0 (ruling 50, point 2).
+
+**R5. A shared Pool states its audience**: which projects, and the most operations each may be granted. "All projects" must say whether it covers projects made later, as a bound's Pool covers Resources made later (ACC-029). Cross-project access needs consent from both sides, and either side may close it at once.
+
+**R6. Canonical and concise forms both work.** The concise form states membership once per file. The canonical form states it per registration or per document (like `metadata.namespace`). A reference to another project's object is always qualified. The engine has no "current project": a CLI may supply one, as a kubectl context does, but the request is explicit (ruling 52).
+
+**R7. Explicit, and no more disclosed than allowed** (ruling 52, ruling 53 decision 3c). Every derived object (the Pool per project, the operator's authority, turn Conduits) is recorded and shown. A refusal names the scope that refused it. Inventory, tombstones and records of a shared Pool show a project only what that project may inspect, with no counts of the rest.
+
+## 2. Use cases
+
+### UC1. S1 as one project (scenario S1; FIRST_BUILD tasks T1 to T7)
+
+Sketch:
+```
+project s1                                  # one line in the concise form
+  managers: root  approvers: root           # derived from the registrant, shown in plan and inspection
+  pool workspace (home s1; the derived Pool per project)
+    shared:  local-directory root=<lab>/shared
+    history: file-history    root=<lab>/history
+  agent agent-a (claude-code)  reach project->shared [read,list]        history->history [read,list,write]
+  agent agent-b (codex)        reach project->shared [read,list,write]  history->history [read,list,write]
+  turns: root->agent-a, root->agent-b       # derived
+```
+
+Who may do what: root does everything in s1, as today. The agents have only their own Conduits.
+- T3: "inspect s1" lists every member, every Conduit a member consumes or is the target of, and the reach flags.
+- T4: B's narrowing applies at once. A's widening raises nothing, because root is a declared approver acting itself, and the record says so.
+- T5/T6: an equal re-point is not a widening.
+- T7: the revoke leaves a tombstone keyed by (s1, agent-a, project). The restore is an explicit widening.
+
+Must state:
+- each object's membership, once;
+- the project's managers and approvers, derived and shown;
+- the derived Pool, operator Conduit and turns as ordinary recorded objects tied to s1 (this answers ruling 53 decision 6);
+- drift (members present in the engine but absent from the file) and prune, both limited to members;
+- tombstones per project.
+
+Must refuse:
+- prune or drift touching non-members (`system`, `local`, `management`, `access`, `root`, nodes);
+- adopting an existing object by name (synthesis item 2: a first apply refuses a Pool that already has the project's name);
+- a later apply reopening agent-a's revoked grant without an explicit restore (critic gap 2);
+- any design that adds author lines to S1. The owner's bar is less work than A70 on most tasks (docs/proposals/simplification/README.md).
+
+Today: no object remembers s1. Root's own Conduits to its Pool and for turns were 72 of the coordinator's 332 lines (22%) (simplification README; coordinator-run/project/instances.yaml).
+
+### UC2. Conduit building Conduit (owner's direction A14 and S2; A78; WORK_ORDERS.md "Running the orders through Conduit")
+
+Sketch:
+```
+project conduit-core   managers: root  approvers: root
+  pool core-work (home)  tree-<order> (rw directory, one per order)
+  pool repo (home; audience: packages -> main [read], queue [post,read])
+     main  (read-only checkout of main)   queue (message history of orders and reports)
+  pool auth (home; audience: conduit-core only)
+     onepassword  secret-store provider (service account limited to the test vault)
+     linear-key   secret Resource -> vault item       # wired by root only (SEC-008)
+     linear       Linear MCP, remote; its header comes from linear-key through its own Conduit
+  agent coordinator (claude-code)
+     reach: queue [post,read]; linear [list,get,create,update]; skills [read,list]
+     authority in conduit-core and packages (packages by packages' consent):
+       register workers from template `worker` only; set up and retire them;
+       open/close a worker's Conduits to its own tree [rw], main [r], queue, skills [r]; turns to workers
+  agent triage (codex)   reach: linear [list,get]   # S2: one login, two restrictions
+project packages       managers: root  approvers: root
+  pool pkg-work (home)   tree-<order>
+  agents pkg-worker-* (codex), several at once: own tree [rw], main [r], queue, skills [r]
+pool skills  (audience: all projects, ceiling [read,list]; writes: root)
+```
+
+Who may do what:
+- The coordinator acts in packages only through authority that packages' managers grant, and they may close it.
+- Triage cannot reach `linear-key` and has nothing in packages.
+- A worker reaches only its own tree, `main` read-only, the queue and skills read-only.
+- No agent is given the Linear credential (owner-direction 2026-11-10, S2 row).
+
+Must state:
+- a Pool's home and its audience with a ceiling per project;
+- whether "all projects" covers future projects;
+- each Agent's home;
+- cross-project Conduits and the consent behind them;
+- the coordinator's authority scoped by project, by consumer, by template and by operation;
+- pins per project with `install` engine-wide;
+- concurrent workers whose generated names never collide.
+
+Must refuse:
+- any packages member reaching auth, even one with a right to open in packages;
+- the coordinator, under its packages authority, opening a Conduit whose consumer is outside the scopes it holds (the consumer dimension missing in G3);
+- the coordinator registering an Agent from any template but `worker`, such as one with `accountServices` on, without approval (G2; today only a broker can do this);
+- anyone but root opening a Conduit that lists `get-secret.v1` (SEC-008);
+- a worker writing skills or `main`.
+
+Today: G2, G3 and G4. A78 has not started (ROADMAP.md, A78 row).
+
+### UC3. A second person who may manage only packages (rulings 49 and 50, test 8)
+
+Sketch:
+```
+interface collab   (a person; engine-level)  authority: packages
+project packages   managers: root, collab   approvers: root, collab
+interface ci-hook  (an outside system, e.g. a GitHub webhook)  authority: packages queue [post] only
+```
+
+Must state:
+- an Interface's authority over a list of projects, with its operations;
+- how pending actions are routed: to the declared approvers of the scope, and always visible to root;
+- which accounts a person may complete sign-ins for;
+- what collab sees: filtered inventory and records, with no counts of the rest.
+
+Must refuse:
+- collab acting in conduit-core, or on auth, skills or repo beyond packages' ceiling. The refusal is ruling 52's first tier only and does not disclose whether the object exists;
+- collab widening its own authority, or giving ci-hook more than collab holds;
+- collab removing root's authority (ACC-024 spirit), or authority it did not grant;
+- collab seeing or completing a conduit-core sign-in;
+- collab approving alone a widening that touches skills or auth;
+- collab retiring or unregistering a shared Pool;
+- `declare-lost.v1` and `purge.v1`, which stay root's unless re-scoped deliberately (ACC-032, REC-004).
+
+Today: ACC-023 gives a new Interface nothing. A Conduit to pkg-work covers set-up, retire and inspect of its Resources, but registering packages Agents or any standalone Conduit needs global `management` (G2). Ruling 49 left sign-ins by other people to v1.
+
+### UC4. An agent that may propose changes to its project but not approve widenings (test 5, ruling 53 decision 2)
+
+Sketch:
+```
+project packages  approvers: collab, root      # pkg-lead is not one
+  agent pkg-lead (claude-code)
+    may narrow at once: close and retire what it may reach in packages
+    envelope (pre-approved): worker trees [rw], main [r], queue, skills [r]
+    beyond the envelope: may propose only
+```
+
+Flow: pkg-lead proposes `pkg-worker-docker -> linear [list]`. The engine records a pending action:
+- kind: approval;
+- subject: the exact requests, with `expectedId`;
+- the proposer and its caller chain;
+- the reach diff, written by the engine;
+- approvers: packages {collab, root} and auth {root};
+- an expiry.
+
+Collab alone is not enough, because auth's approver is root. Pkg-lead sees the outcome on its next request or inspection and is never woken (test 6; A10).
+
+Must state:
+- whether an envelope counts as standing approval;
+- the pending action's shape and binding;
+- that both proposer and approver are recorded;
+- what happens to a proposal whose proposer is retired (voided).
+
+Must refuse:
+- pkg-lead approving its own proposal, or any approval by an actor whose approval authority comes from pkg-lead. ACC-030's rule that you pass on only what you hold applies to approval too;
+- a split widening: close, then reopen with more, is judged against what was closed;
+- a narrowing waiting behind a pending widening, or bundled into one;
+- an approval after expiry, or of a changed subject;
+- pkg-lead raising a sign-in or enrollment action, or sending any action to an Interface that is not an approver of the scope (no prompt spam; elicitations come only from the engine, ruling 49);
+- pkg-lead removing collab's authority;
+- a widening disguised as a control, such as turning on a worker's `accountServices`.
+
+Today: nothing proposes or approves. The synthesis has `--yes` never accept a widening (synthesis item 4), and the critic finds that a non-interactive author cannot approve (critic gap 1).
+
+### UC5. A machine enrolled for one project's agents, and one for all (rulings 50 to 52; docs/proposals/enrollment/README.md option C)
+
+Sketch:
+```
+machine provider: tailscale (system Pool, PRV-013)
+enroll win-wsl    scope: packages        # collab requests; a person who approves for packages admits
+enroll build-box  scope: all projects    # root only
+pool pkg-work: docker (runtime provider, home packages)
+```
+
+Who may do what: packages instances run on win-wsl through docker, and any project's instances may run on build-box. The join secret goes only into the action shown to the admitting person (ruling 52, decision 4).
+
+Must state:
+- a node's project scope as data the engine enforces, not a label the machine reports;
+- which projects may name a runtime provider in `runtime`;
+- that widening a scope is a widening;
+- what narrowing a scope does to foreign instances already placed there, given that placement is fixed (PLC-009): refuse until they are gone, or retire them;
+- who may declare a scoped node lost.
+
+Must refuse:
+- a conduit-core instance placed on win-wsl, whether the document gives the placement or `place.v1` chooses it. The engine checks the scope after the provider answers;
+- a conduit-core instance naming packages' docker as its `runtime`;
+- the machine claiming a scope or label (ruling 52 decision 3: labels are bound by the provider);
+- collab enrolling for all projects or for conduit-core;
+- network membership treated as a grant (ruling 51 decision 1).
+
+Today: no authority over placement or runtime (G6). What a person checks before admitting is still open (ruling 52 point 5).
+
+### UC6. A peer engine introduced at project level (ruling 51; networking-paradigms.md section 6)
+
+Sketch:
+```
+main engine:  project packages
+  pool peer-win (home packages):  win-build  remote https://<peer engine>
+  introduction: peer trust domain (SPIFFE); scope packages; trust approved by root, exposure by packages' approvers
+peer engine (its own root): interface partner-main-packages
+  the peer's root opens Conduits from it -> builder [build.run.v1]
+```
+
+Who may do what: packages agents call `win-build`, and the peer decides each call under its own Conduits. Each side closes its own half (decision 4). Contrast the owner's caveat: their own WSL engine admitting the owner's root with full management is engine-level, not project-level.
+
+Must state:
+- the introduction as a pending action on both sides (an invitation with a fingerprint);
+- engine-wide trust and project-level exposure as two separate approvals;
+- the partner's project scope on each side;
+- revocation on each side;
+- that the caller chain is recorded and not used in decisions (decision 10);
+- that the credentials are held by the engine.
+
+Must refuse:
+- conduit-core agents reaching `win-build`;
+- the partner acting outside packages;
+- collab introducing a peer engine-wide, or giving it management;
+- one engine opening a Conduit on the other's objects;
+- reachability over the tailnet treated as permission;
+- another party's machine as a node (decision 3).
+
+Today: ruling 51's sketch is engine-wide only.
+
+### UC7. Retiring a project while a shared Pool lives on
+
+Retire packages.
+
+| What happens | Objects |
+| --- | --- |
+| Retired as members | pkg-lead, the workers, pkg-work and peer-win (each with its Resources, LIF-021) |
+| Ended or removed | Collab's authority over packages; packages' entries in the skills and repo audiences; win-wsl's scope; pending actions (voided) |
+| Closed | Every Conduit a member consumes or is the target of, the coordinator's turns into packages included (CON-008, ACC-039) |
+| Unaffected | skills, repo, auth, coordinator, the collab Interface (left with no access), nodes |
+
+In-flight invocations into skills run to their end (ACC-034). Unknown outcomes stay reconcilable by skills' managers (ACC-033 rows 12 to 14). Records and tombstones are kept (purging is root's, REC-004). Retirement is a narrowing, so it waits for no approval. It still goes through explicit plan and apply (ruling 53 decision 4), and the plan lists every Conduit that will close, cross-project ones included (synthesis item 4).
+
+Must state:
+- what a project contains and what it only references;
+- that a shared Pool outlives any one project that uses it;
+- what happens to a Pool whose home is being retired while others use it: refuse, move its home first, or make Pools engine-level;
+- that the project's name is freed;
+- that a new project with the same name inherits no authority, audience or approval, and whether old tombstones bind it.
+
+Must refuse:
+- retiring skills, repo, auth or conduit-core's members as part of packages;
+- retiring conduit-core while it is home to Pools others use, without explicit handling;
+- registering into packages once its retirement is dispatched (as POOL-004 does for Pools);
+- recreating the name to reopen revoked grants without fresh widenings;
+- reaching into a peer's half.
+
+Today: there is no group retirement. LIF-021 covers one Pool, and Agents are not grouped.
+
+### UC8. The same name `shared` in two projects
+
+Sketch:
+```
+conduit-core: resource shared, agent worker
+packages:     resource shared, agent worker
+coordinator:  as core-shared -> conduit-core/shared ; as pkg-shared -> packages/shared
+```
+
+Must state:
+- the scope of name uniqueness: per project and kind, or per project across kinds, as NAM-027 has it for documents;
+- that a reference resolves in its own project only;
+- that a cross-project reference is always qualified;
+- what happens to names held at engine level (the first-start objects, nodes): reserve them or qualify them;
+- how a request names an object, since LIF-031 references by name and the reference now needs the project;
+- that `expectedId` still guards swaps (LIF-037; ruling 53 adds it to open and close);
+- that records, refusals, pending actions and tombstones are all keyed by project;
+- that tool names are unaffected, since they come from the local name or `as` (IFC-012).
+
+Must refuse:
+- an unqualified `shared` in packages resolving to conduit-core's;
+- an unqualified request from an actor whose authority spans both projects;
+- an ambiguous bound, audience or approval subject;
+- two tool prefixes that collide for the coordinator (IFC-014);
+- a project member named `root`, `system`, `management`, `access` or `local`, if those names are referenced unqualified;
+- telling a packages agent that names conduit-core/shared anything beyond the first-tier refusal.
+
+Today: OBJ-002 and OBJ-025 reject the second `shared` with conflict. The synthesis generates `shared--2`, and the critic (gap 16) notes that the derived Pool's name collides across kinds.
+
+### UC9. Work orders through Conduit, concurrently, in both projects (A78; A77; ruling 48)
+
+Order 031 runs in conduit-core while orders 032 and 033 run in packages. For each order the coordinator, within the project's envelope and with no approval:
+- registers a worker from `worker` and a tree in the project's work Pool;
+- opens the worker's Conduits: its tree [rw], main [r], queue, skills [r], and a turn.
+
+At merge it closes them and retires the worker and the tree. That is a narrowing and never waits. A worker that needs more, such as network access or Linear, proposes (UC4).
+
+Must state:
+- per-order objects as project members, with generated names that do not collide;
+- that a worker with a new key is not blocked by a tombstone of a merged worker;
+- whether the queue is per project or filtered, since a shared history would show packages workers conduit-core's orders.
+
+Must refuse:
+- the worker of 032 reaching tree-033;
+- a worker opening any Conduit (it has no right to open);
+- dispatch into packages after collab has closed the coordinator's authority;
+- reopening a merged worker's Conduits.
+
+### UC10. Promoting auth from one project to two
+
+Later, packages needs to read Linear for release notes. Packages is added to auth's audience with the ceiling `linear [list,get]`. This needs the target side's approver (root, for auth) and the consumer side's approver (collab or root, for packages).
+
+Must refuse:
+- the widening approved by collab alone;
+- any audience that reaches `linear-key` (SEC-008; ruling 42 D10: a secret Resource's type offers no other capability);
+- packages getting write.
+
+The reverse, removing packages from the audience, is a narrowing: packages' Conduits to `linear` close at once.
+
+### Fifteen prior-art lessons and sources
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-prior-art.md#key-points). Copied verbatim.
+
+1. In every system studied, an object has exactly one home scope, fixed or tightly controlled. Kubernetes: one namespace, immutable. GCP: "exactly one parent". Azure: one resource group. HCP: exactly one project. Sharing to several scopes is always a separate, explicit edge, never multi-homing. So "pools accessible from multiple projects" should be one home plus share edges.
+2. The owner of the shared thing creates the share; the consumer's scope then grants within it. Examples: Gateway API ReferenceGrant in the target namespace; RAM's managed permission as "the maximum permissions"; Shared VPC host; GitHub org secret `selected` repos; producer-side remote state sharing. Shares are non-transitive: RAM says "can't share a resource that's shared with you".
+3. A cross-scope request needs both sides to allow it: AWS performs "two evaluations", and ruling 51 has two halves. Outside a trust boundary the consumer accepts an invitation that expires (RAM: 12 hours or 7 days).
+4. Membership grants nothing. Examples: ACC-028; Backstage owner "not to be used … to assign authorization"; Azure Service Groups "no RBAC inheritance"; OpenFGA parents inherit only where the model declares it. Authority over a project must be an explicit binding.
+5. "Interfaces over one or many projects" is the RoleBinding, IAM-binding and Lighthouse pattern. One reusable operation set is bound per project, and each binding is created and revocable by that project's authority, not held as a list on the Interface.
+6. This requires project-bounded `management`, the largest core change. Today CON-028 and ACC-030 forbid narrowing `management` (brokers only). Create rights per scope are what Kubernetes namespaces exist for.
+7. Separate caps from grants. SCPs and permissions boundaries grant nothing, they limit. A project should carry a cap (its own Pools plus shared-in Pools with operation ceilings), and every bound used inside it stays within the cap.
+8. A grant on a container covers future members. Examples: GCP networkUser covers "subnets … added … in the future"; Kubernetes wildcards and aggregated roles; HCP global sets; ACC-029 already does this. "All projects" and "whole project" must be explicit and shown in inspection and in the plan. The simplification's skeptic already found that an implicit Pool per project widens access through bounds.
+9. A scope is only as strong as its weakest create right. In Kubernetes, the right to create pods gives every Secret and ServiceAccount in the namespace. AWS: delegating user creation "effectively trusts" the delegate. Whoever registers Agents in a project holds the combined reach of every Pool shared into it, so an auth Pool needs its own project or named consumers.
+10. Confused deputy (CVE-2021-25740, AWS SourceArn/ExternalId): a broker serving several projects must carry and check the requesting project (`serving`, caller chain). An object naming another project's target needs that project's consent. Existence across projects must not be disclosed without a grant (Gateway "MUST NOT"; ruling 52).
+11. Record membership on the member and compute the project's inventory; do not keep a mutable member list on the project. Kubernetes ApplySet uses a part-of label, with each object in at most one set, after allowlist prune deleted things unexpectedly. A concise project file can still list everything for the author.
+12. Names: global names (today's OBJ-002) need never-reuse, as GCP project IDs are never reused, which matches ruling 53's tombstones. Scoped names need qualified references and reserved prefixes (`kube-`, the TLD collision). Never resolve collisions by precedence: GitHub's "lowest level takes precedence" is a silent shadow.
+13. Revocation is immediate and respects order: ReferenceGrant deletion forces recalculation, RAM removal is automatic, and Zanzibar names the new enemy problem. Narrowing never waits; unsharing applies at decision time and leaves tombstones.
+14. Approvals as pending actions: Kubernetes CSR needs an `approve` verb scoped to the signer; GitHub reviewers are declared and can be barred from self-review; GCP PAM declares approvers and expires grants. Add to ruling 51's pending action: a declared approver set, no approval beyond the approver's own authority (Kubernetes bind/escalate), no self-approval, an expiry, and a tie to the exact change (`expectedId`/revision). Avoid GitHub's default admin bypass.
+15. Vocabulary and families: "project" is today's submission unit. Compose, Pulumi and Terraform separate the source from the deployed scope; Terraform CLI workspaces are "not a suitable isolation mechanism". Conduit must decide per family what is engine-scoped and what is project-scoped (Kubernetes: never both), whether projects nest (recommend flat in v0), whether membership is immutable (recommend yes), and the scope's name. The name needs a ruling.
+
+### Cross-system pattern table
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-prior-art.md#9-cross-system-pattern-table). Copied verbatim.
+
+| System | Unit | Homes per object | Sharing edge | Who grants | Ceiling | Consumer acceptance | Inheritance | Can it be moved? |
+|---|---|---|---|---|---|---|---|---|
+| Kubernetes | namespace | exactly one | ReferenceGrant, RoleBinding | target namespace's owner | role or reference | no | none (flat) | no (immutable) |
+| Google Cloud | project | exactly one parent | Shared VPC; IAM on the host project | org/folder admin and host | networkUser on the project or a subnet | no | allow union; deny downward | yes, with rights on both parents |
+| AWS | account | exactly one | RAM share; resource policy | the owning account | managed permission | yes, outside the org | SCP caps | n/a |
+| Azure | resource group / subscription | exactly one | Service Group membership (view only); Lighthouse | member and group; the customer | delegated role | customer onboards | down the hierarchy, not through Service Groups | yes, with rights on both parents |
+| GitHub | repository | exactly one | org secret visibility | org owner | the secret | no | org, then repo, then environment; the lowest shadows | n/a |
+| HCP Terraform | project / workspace | exactly one project | variable sets; remote state sharing | org or project admin; the producer | | no | sets apply to future workspaces | yes |
+| Compose | project name | one label | `external` | outside Compose | | n/a | none | n/a |
+| Zanzibar | any object | many parents allowed | tuples | writer of the tuple | relation | n/a | only where declared | n/a |
+
+### Ownership and lifecycle constraints
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-ownership.md#key-points). Copied verbatim.
+
+3. Retiring a Pool:
+   - `retire.v1` (authorized by `management`) reports conflict while any owned Resource's shutdown is unconfirmed.
+   - `retire-with-resources.v1` (authorized by the Pool) retires the Resources in reverse dependency order, and a failure holds back only the Resources after it.
+   - A runtime provider still named by any instance anywhere blocks it (PRV-020).
+   - No Agent or Interface is retired. CON-008 closes the Conduits to the retired Resources. Objects that referred to them keep the ID and report it missing (LIF-019).
+   - Nothing is ever collected for being unreferenced (LIF-023).
+
+5. "Project" is transient. After registration only each template's pins and the submission digest remain (NAM-009, SUB-008). The manifest is not stored (NAM-010). Which objects a submission made is kept only in records, which root can purge. Any holder of `management` who replaces a template changes what later replacements in other projects get (LIF-009, INS-020).
+
+7. What a Project must hold:
+   - a checked ID and a name;
+   - its manifest(s) in force (NAM-006), with NAM-010 still true for templates already registered;
+   - its submission digests and its address;
+   - membership of everything it owns: Agents, Interfaces, Pools, Conduits, and maybe templates;
+   - separate references to Pools it uses but does not own;
+   - tombstones and applied state that outlive any of its Pools;
+   - its declared authority and approvers;
+   - a Pool-like lifecycle: refuse retirement while owned objects are live, or retire them in explicit order.
+
+9. Today's bound limits only the target. ACC-030 says its holder may open a Conduit "for any consumer". Under project-scoped Interfaces, project A's operator could connect project B's Agent to A's Resources. Cross-project Conduits therefore need consent on both sides, mirroring ruling 51's "two halves".
+
+10. Retiring a shared Pool, or its owning project, closes other projects' Conduits to it (CON-008). Whether a referenced Pool should instead block retirement, as PRV-020 and PLC-011 do for runtime providers and nodes, is an open choice for the owner. Package version skew across projects is already fine: NAM-017 does not block a Conduit, and NAM-023 makes the target's version govern.
+
+### Package-removal gap
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-ownership.md). Copied verbatim.
+
+- Package removal: PKG-006 and NAM-011 speak of an installed package being removed, but I found no operation that removes one. I did not settle whether that is a gap.
+
+### System-Pool authority
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#key-points). Copied verbatim.
+
+15. The hazard to rule out: naming Pool `system` in any bound covers `management` and `access` (FST-001), which is near-root. A shared or system Pool must never become a project member by default.
+
+### Co-administration and decoy names
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md). Copied verbatim.
+
+5. B5, overlap and orphans.
+   - Overlap: anyone whose bound covers a Conduit can close it (ACC-012). A shared "skills" Pool named in several project admins' bounds lets each close the others' grants. A Conduit to the shared Pool listing retire-with-resources.v1 lets any one of them retire the whole Pool ([R9](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L53)).
+   - Orphans: revoking alice leaves her grants live (ACC-030).
+   - Authorship: who opened a Conduit lives only in records (REC-002 caller), not as stored authority. Finding those Conduits needs inspect.v1 on Conduits ([R8](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#L52)), which is engine-wide.
+
+9. B9, names are engine-global per kind (OBJ-002), and requests name objects by name (LIF-031).
+   - Two projects cannot both have an Agent `reviewer`, and a standalone Conduit's name is its tool prefix (IFC-012).
+   - A scoped registrant can plant a decoy Conduit under an expected name (design-D skeptic trace, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/design-D-relationship-first.md:497). Ruling 53's expectedId on open and close only partly fixes this.
+
+### Unverified authority gaps
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md#unverified). Copied verbatim.
+
+- How a bound judges a reconcile.v1 request made through a Conduit to `access`: I found no text. ACC-029 and ACC-030 speak only of covering the target and operations of the Conduit being opened or closed.
+- Registering another Resource of type core#management.v1 or core#access.v1 from a user project: no promise I found forbids it. FST-001 and ACC-033 give meaning only to the first-start objects, so such a Resource would authorize nothing. Not tested.
+- Which Conduit a register.v1 request for a Resource into a live Pool actually travels through: ACC-033 row 1 requires both. The reference model sends it through `management` and checks the Pool Conduit as a second precondition (reference-model/crates/core/src/access.rs:445-455). The spec text does not say which carries the request.
+- That the first build has no way to issue a token to a second Interface: verified by grep of crates/shell (client_token is called only for root at init and serve, and when a run's identity is materialized). I did not run it, and did not check whether a work order is adding such a path.
+- Not yet in spec/ (checked by grep): rulings 49 and 50 (pending actions and sign-ins to root), ruling 52's two-tier refusal, and ruling 53's five additions (as, expectedId on open and close, inventory, tombstones, descriptive tool descriptions). What I say about them comes from the ruling records only.
+- "ACC-033 is cited by 78 conformance files" and "72 of 332 lines (22%) were root's own Conduits" are quoted from the simplification research (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/map-mechanisms.md, README.md), not recounted.
+- The design consequences in section 9 of the findings (a Conduit to a Project as a new authorizing target, a `projects` argument on bound.v1, and their costs) are my analysis of the hinges. No ruling or proposal has written them.
+
+### Worker structure and upgrade costs
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/inventory-scenarios.md#key-points). Copied verbatim.
+
+10. The real use, 10 workers:
+    - 20 objects and about 50 grants, with each worker needing its own working tree, `main` read-only, the queue, a turn grant from the admin, and the admin's and verifier's read grants on its tree;
+    - about 340-420 lines today on paper, against a floor of about 1 line per worker.
+    - The language today cannot instantiate an Agent and its own Resource together (a Pool makes only Resources; an Agent template makes only Conduits), and cannot declare grants whose consumer is the admin inside the worker's template (CON-002).
+
+11. Reuse at scale is constrained by ruling 8: no interpolation (IN5), and a Type is never an input (IN2), so Codex and Claude Code workers need two templates. StatefulSet-style replicas, Compose `extends` and Terraform for_each are the existing patterns. Names derived by interpolation would need the owner.
+
+12. Package upgrades at scale replace every worker (INS-020), and each replacement brings ten new sign-ins (experiment 010: a Codex login cannot be copied between Agents). Agent-driven creation of workers needs either broad `management` trust or a broker (D04, preservation test 5).

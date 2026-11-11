@@ -60,7 +60,7 @@ After that:
    - One row per finding 1-01..1-18, 2-01..2-08 and 3-01..3-07, with columns: decision, promises, vector, rejected alternative and why.
    - The D19 measurement with its caveat.
    - Two open rows from increment 1.
-4. **docs/proposals/language-shape/project/brief.md** (new, about 6k words). It is the one input to the Projects rulings and opens with a **Provenance** section.
+4. **docs/proposals/projects/brief.md** (new, about 6k words). It is the one input to the Projects rulings and opens with a **Provenance** section.
 5. **conformance/s1-safety-cases.md** (new). A verbatim copy of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md §3 (:515-594), with the six E05 cases, the 23 remaining safety traces and the adjacent open boundaries. It is the meaning of the manifest's `safety_rows` tags.
 6. **docs/guides/cold-readers.md** gains a section "The protocol" (what to watch, and the claims checked against MCP 2026-07-28 with their sources) and links AUDIT for the convergence rule.
 7. **docs/archive/README.md**, rewritten:
@@ -128,7 +128,7 @@ After that:
   - language-shape/:
     - README.md.
     - short-form/{synthesis (with "Carried from the papers"), critic}.md until the spec batch.
-    - project/: brief.md, plus synthesis, critic, design-P4, inventory-use-cases and inventory-prior-art until the Projects rulings are recorded.
+    - [project/](../projects/brief.md): brief.md, plus [synthesis, critic, design-P4, inventory-use-cases and inventory-prior-art](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project) until the Projects rulings are recorded.
   - simplification/README.md.
   - enrollment/ (3 files), sign-in/ and owner-direction/: kept until written into the spec, with superseded notes.
 - **experiments/:**
@@ -210,18 +210,18 @@ E-numbers refer to the extractions list. Each extraction is done and verified fi
 
 **D. Language-shape and simplification papers: about 239k words now**
 - **Remove now:**
-  - simplification/research/ (whole, 13 files): E21, E11, E22, E9 and E36's to-do (map-constraints §1).
+  - https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research (whole, 13 files): E21, E11, E22, E9 and E36's to-do ([map-constraints §1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/map-constraints.md#1-guarantees-that-must-survive)).
   - short-form:
-    - design-N1-normative-sugar.md (none).
-    - design-N2-new-core.md (E21).
-    - design-N3-project-document.md (E22).
-    - design-N4-minimal-normative.md (none).
-    - inventory-build.md (E21).
-    - inventory-constructs.md (none).
-    - inventory-prior-art.md (E22, now all thirteen points and the five conditions).
-    - inventory-scenarios.md (E23).
-- **After the brief carries their provenance quotes and listed points, and the admin checks it (WO-037):** project/design-P1-sixth-family.md, design-P2-scope.md, design-P3-hierarchy.md, inventory-authority.md and inventory-ownership.md (E23).
-- **Later, in the PR that records the Projects rulings:** project/synthesis.md, critic.md, design-P4-minimal.md, inventory-use-cases.md and inventory-prior-art.md. They are live inputs to an open ruling.
+    - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N1-normative-sugar.md (none).
+    - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N2-new-core.md (E21).
+    - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N3-project-document.md (E22).
+    - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md (none).
+    - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/inventory-build.md (E21).
+    - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/inventory-constructs.md (none).
+    - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/inventory-prior-art.md (E22, now all thirteen points and the five conditions).
+    - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/inventory-scenarios.md (E23).
+- **After the brief carries their provenance quotes and listed points, and the admin checks it (WO-037):** https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P1-sixth-family.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P2-scope.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P3-hierarchy.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-ownership.md (E23).
+- **Later, in the PR that records the Projects rulings:** https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/critic.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/design-P4-minimal.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-use-cases.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-prior-art.md. They are live inputs to an open ruling.
 - **Later, after the spec batches for rulings 49-56 (E37 first):**
   - short-form/synthesis.md and critic.md go.
   - The three enrollment files become one record of about 2k words.
@@ -300,7 +300,7 @@ Each item gives source, then destination. The verifier checks each against its s
 - **Waiting for the owner:**
   - A20 and the Projects rulings:
     - Language-shape decisions 5 (derived defaults) and 6 (the skeleton).
-    - inventory-ownership point 10: does a referenced Pool block retirement?
+    - [inventory-ownership point 10](../projects/brief.md#ownership-and-lifecycle-constraints): does a referenced Pool block retirement?
     - A request that the owner confirm his Projects direction in his own words. The papers quote him differently, and the approvals-of-widenings direction is not his (see E23 Provenance).
   - The S1 rerun's counting rules (E11).
   - Public name and namespace: PR 14, ruling 47 reserved, A75 and A76.
@@ -326,8 +326,8 @@ Each item gives source, then destination. The verifier checks each against its s
     - :695-706: patternProperties and the additionalProperties beside it are left to the jsonschema crate's engine, which is not ECMA-262.
   - packages/agent-codex/README.md:94 says the real-client check is pending, but order 027 found the six collaboration.* tools still listed. 4-06 is open.
   - The Projects papers' spec gaps:
-    - inventory-authority "Unverified" (:177-185): how a bound judges reconcile.v1 through access; that registering another core#management.v1 or core#access.v1 Resource is not forbidden; which Conduit carries ACC-033 row 1.
-    - inventory-ownership:256: PKG-006 and NAM-011 speak of removing a package, but no operation removes one.
+    - [inventory-authority "Unverified"](../projects/brief.md#unverified-authority-gaps) (:177-185): how a bound judges reconcile.v1 through access; that registering another core#management.v1 or core#access.v1 Resource is not forbidden; which Conduit carries ACC-033 row 1.
+    - [inventory-ownership:256](../projects/brief.md#package-removal-gap): PKG-006 and NAM-011 speak of removing a package, but no operation removes one.
   - multi-machine §6's caveat "No wider survey of spec/ was made", against A65's done-when.
   - LANGUAGE_DEFECTS:41 says runtime rows are "recorded and tested", but reference-model/CONFORMANCE.md cites no L-ID.
   - The 30 type-layer defects (a pointer).
@@ -347,7 +347,7 @@ Each item gives source, then destination. The verifier checks each against its s
     - Cedar, OPA and Biscuit are options behind a contract.
   - A50's Source: RESOURCES:148-250 at C0.
   - A44's Source: conformance/README "Evidence of vector strength so far" (E13).
-  - A68's done-when gains map-round6 §1 (E9).
+  - A68's done-when gains [map-round6 §1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/map-round6.md#1-bottom-line) (E9).
   - New A79: lean vectors.
 - **Scope guard:** from plan-audit-history, next to Purpose.
 
@@ -460,8 +460,8 @@ Each item gives source, then destination. The verifier checks each against its s
   - No operation shows a Resource's package version.
   - Negative permission checks need another route.
 - Into 4-12, from t6-recovery-notes:10: "a failed turn poisons its conversation".
-- map-round6 §1, into A68's done-when in AUDIT: none of round 6's applied simplifications (D06, D07, D11, D12, D14, D18, D21) saves a line of S1, and ruling 41's cuts 3a, 10 and 17 moved cost into T4, T5/T6 and T7.
-- map-constraints §1 goes to E13 and E2 (safety tagging), not to the log.
+- [map-round6 §1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/map-round6.md#1-bottom-line), into A68's done-when in AUDIT: none of round 6's applied simplifications (D06, D07, D11, D12, D14, D18, D21) saves a line of S1, and ruling 41's cuts 3a, 10 and 17 moved cost into T4, T5/T6 and T7.
+- [map-constraints §1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/map-constraints.md#1-guarantees-that-must-survive) goes to E13 and E2 (safety tagging), not to the log.
 - The owner's bar, quoted only in coordinator-run:28, goes to FIRST_BUILD (E32).
 
 **E10. to-review-with-the-owner.md (corrected mapping)**
@@ -474,15 +474,15 @@ Each item gives source, then destination. The verifier checks each against its s
 - Items 18 (4-17) and 15 (4-06) are unchanged.
 
 **E11. increment-4/measurement-plan.md: addendum "Options for the rerun's counting rules"**
-- simplification synthesis:404-416 (decision 11):
+- [simplification synthesis:404-416](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/synthesis.md#L404-L416) (decision 11):
   - The primary reading is file lines plus command lines that carry chosen values.
   - A line removed and restored in one task counts once.
   - Strict and JSON readings are reported beside it.
   - Type statements and the history convention count as provider work.
 - short-form critic gap 1: block style gives T1 32 lines, idiomatic block about 38, which fails, so init and render should use flow style.
 - short-form critic gap 10.
-- simplification critic gap 3: which run decides the bar.
-- simplification critic gap 18: separate installs make T1 18.
+- [simplification critic gap 3](../first-build/increment-4/measurement-plan.md#options-for-the-reruns-counting-rules): which run decides the bar.
+- [simplification critic gap 18](../first-build/increment-4/measurement-plan.md#options-for-the-reruns-counting-rules): separate installs make T1 18.
 - AUDIT's waiting row points here.
 
 **E12. reference-model/README.md: "The core's boundary"**
@@ -586,21 +586,21 @@ Each item gives source, then destination. The verifier checks each against its s
 - Every record keeps its "Amended by" list and the owner's words, and may gain one line "Accepted by ruling 57" (E24).
 
 **E21. simplification/README.md**
-- **"Rejected, and why": synthesis:423-487 copied verbatim**, so the worker does not select. It covers:
+- **"Rejected, and why": [synthesis:423-487](../simplification/README.md#rejected-and-why) copied verbatim**, so the worker does not select. It covers:
   - B (apply in the engine and restart in place).
   - C (revise.v1, swap.v1) and D (apply.v1, operation groups), each with its "Kept" items.
   - **Design E's four rejected parts (:474-479).**
   - A (equal-document resubmission, ownerConduits on pool.v1 at 124 vectors, name reuse after retirement, template-input defaults).
   - Continuous reconciliation, automatic apply, prune by default, version ranges and aliases, the ACC-033 root exception, a default Pool at first start, a spec-level lock file, JSON-first authoring, and in-place upgrade in v0.
-- The eight load-bearing guarantees and the incidental list (map-mechanisms §1).
+- The eight load-bearing guarantees and the incidental list ([map-mechanisms §1](../simplification/README.md#the-load-bearing-guarantees-and-incidental-costs)).
 - v1-candidate reductions with their measured costs:
-  - From design-N2:864-900: what each reduction loses.
-  - From inventory-build points 9-11: removing declared Conduits invalidates 126 of 367 vectors; register-replacement.v1 also serves Pool entries and D09 rotation; replace.v1 is about 120 lines and 15 vectors; the three together invalidate 141 of 367; a form that is only short touches 252 of 367 plus 114 examples.
-  - From synthesis:417-421: LIF-009 should build from the held definition.
+  - From [design-N2:864-900](../simplification/README.md#what-the-v1-candidate-reductions-lose): what each reduction loses.
+  - From [inventory-build points 9-11](../simplification/README.md#measured-costs-of-core-reductions): removing declared Conduits invalidates 126 of 367 vectors; register-replacement.v1 also serves Pool entries and D09 rotation; replace.v1 is about 120 lines and 15 vectors; the three together invalidate 141 of 367; a form that is only short touches 252 of 367 plus 114 examples.
+  - From [synthesis:417-421](../simplification/README.md#later-core-candidates): LIF-009 should build from the held definition.
 
 **E22. short-form/synthesis.md: new closing section "Carried from the papers"**
-- The text of PRJ-011, from design-N3:187.
-- **All thirteen points of short-form inventory-prior-art and its "five conditions" (:45-56)**, including:
+- The text of [PRJ-011](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N3-project-document.md#L187), from [design-N3:187](../language-shape/short-form/synthesis.md#the-package-template-constraint).
+- **All thirteen points of [short-form inventory-prior-art](../language-shape/short-form/synthesis.md#prior-art-key-points-and-five-conditions) and its "five conditions" (:45-56)**, including:
   - Never hash content into generated names.
   - Shorthands fail closed and write the full list of operations.
   - Identity fields are immutable.
@@ -608,8 +608,8 @@ Each item gives source, then destination. The verifier checks each against its s
   - Every rule needs A/B vectors.
   - Point 6 (stored defaults conflict with INS-013).
   - Point 13 (hazards: SUB-008, SUB-005, CON-016, OBJ-003, NAM-027, MAN-001).
-- The 18 golden plan safety cases (simplification synthesis:528-546), for WO-C.
-- simplification critic gaps:
+- The 18 golden plan safety cases ([simplification synthesis:528-546](../language-shape/short-form/synthesis.md#golden-plan-safety-cases)), for WO-C.
+- [simplification critic](../language-shape/short-form/synthesis.md#critic-constraints-on-turns-portability-costs-and-prior-art) gaps:
   - 11: conduit turn, --json, `as: <agent key>`.
   - 12: relative values, undecided since ruling 52 point 3.
   - 13: no Rust YAML editor that keeps comments; lock-file fallback.
@@ -617,32 +617,32 @@ Each item gives source, then destination. The verifier checks each against its s
 - Head notes: tombstone option (a) is superseded by ruling 55 A7; decision 3 is open.
 - critic.md stays unchanged until the batch.
 
-**E23. language-shape/project/brief.md (new)**
+**E23. docs/proposals/projects/brief.md (new)**
 - **Provenance**, verbatim with source lines:
-  - Each relayed quote of the owner's Projects words: inventory-authority.md:165, design-P2:187-189, design-P1:121 and inventory-use-cases.md:176.
+  - Each relayed quote of the owner's Projects words: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-authority.md:165, [design-P2:187-189](../projects/brief.md#provenance-scope-design), [design-P1:121](../projects/brief.md#provenance-sixth-family-design) and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-use-cases.md:176.
   - A note that the papers disagree; owner-direction/2026-11-10-projects.md holds the later correction.
-  - The statement, from synthesis.md:91, :758, :820, :940 (risk 4) and inventory-use-cases.md:431, that the approvals-of-widenings direction "comes from the computed task text. It is not in the owner's relayed words".
-- **Every synthesis decision, 1-20, with its options and why each rejected one lost** (:715-765). This includes:
+  - The statement, from https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/synthesis.md:91, :758, :820, :940 (risk 4) and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project/inventory-use-cases.md:431, that the approvals-of-widenings direction "comes from the computed task text. It is not in the owner's relayed words".
+- **Every [synthesis decision, 1-20](../projects/brief.md#earlier-decisions-1-to-21-and-their-alternatives), with its options and why each rejected one lost** (:715-765). This includes:
   - 2(b): Pool would mean two things, and retire-with-resources.v1 would retire Agents.
   - 2(c): every bound naming system would cover every Project.
   - 4: enclosure against a derived root Conduit. The owner's direction is 4(c); 4(b) flips 13-14 vector steps.
   - 6(b), 9(b), 12b, 14c, 15, 17, 18b, 19 and 20.
-- "Where it departs, and why" (:82-94) and the P1-P4 comparison (:696-711).
-- Root-equivalence: design-P4:702-713, synthesis fix 1 (:23-27) and risk 2.
-- Prerequisites P-a to P-d (synthesis:823-829).
-- The home-granting trace [H] (P4:715-728).
-- The A(x) single-authorizer routing (P4:172-210) and open questions 3, 5, 6, 7, 10, 11, 12, 13 and 15.
-- project/critic gaps 1-6, 10-12, 16-19, 21, 22, 24, 25 and 27, as constraints.
-- Risks 12 and 14 (:962, :966).
-- R1-R7, the R3 table and UC1-UC10 (inventory-use-cases:38-379).
-- The 15 lessons with sources, and the pattern table (project inventory-prior-art:5-20, :232-243).
-- inventory-ownership points 3, 5, 7, 9 and 10 (the open owner choice, also in E2), and the :256 gap.
-- inventory-authority:
+- ["Where it departs, and why" (:82-94)](../projects/brief.md#earlier-departures-and-reasons) and the [P1-P4 comparison (:696-711)](../projects/brief.md#p1-to-p4-comparison).
+- Root-equivalence: [design-P4:702-713](../projects/brief.md#root-equivalence-and-home-granting-counterexamples), [synthesis fix 1 (:23-27) and risk 2](../projects/brief.md#root-equivalence-and-prerequisites).
+- Prerequisites P-a to P-d ([synthesis:823-829](../projects/brief.md#root-equivalence-and-prerequisites)).
+- The home-granting trace [H] ([P4:715-728](../projects/brief.md#root-equivalence-and-home-granting-counterexamples)).
+- The A(x) single-authorizer routing ([P4:172-210](../projects/brief.md#single-authorizer-routing-ax)) and open questions 3, 5, 6, 7, 10, 11, 12, 13 and 15.
+- [project/critic](../projects/brief.md#critic-constraints) gaps 1-6, 10-12, 16-19, 21, 22, 24, 25 and 27, as constraints.
+- [Risks 12 and 14 (:962, :966)](../projects/brief.md#earlier-risks-isolation-provenance-store-break-and-deferred-use-cases).
+- R1-R7, the R3 table and UC1-UC10 ([inventory-use-cases:38-379](../projects/brief.md#requirements-r1-to-r7-and-use-cases-uc1-to-uc10)).
+- The 15 lessons with sources, and the pattern table ([project inventory-prior-art:5-20](../projects/brief.md#fifteen-prior-art-lessons-and-sources), :232-243).
+- [inventory-ownership](../projects/brief.md#ownership-and-lifecycle-constraints) points 3, 5, 7, 9 and 10 (the open owner choice, also in E2), and the :256 gap.
+- [inventory-authority](../projects/brief.md#system-pool-authority):
   - Point 15: a system Pool named in a bound is near-root.
   - B5: co-admins can close each other's Conduits through ACC-012.
   - B9 (:145): decoy names, which expectedId only partly fixes.
   - "Unverified" (:177-185), also in E2.
-- short-form inventory-scenarios points 10-12:
+- [short-form inventory-scenarios](../projects/brief.md#worker-structure-and-upgrade-costs) points 10-12:
   - An Agent cannot be made together with its own Resource.
   - An admin-consumed grant cannot be declared inside a worker template (CON-002).
   - IN5 and IN2 force two templates.
@@ -800,7 +800,7 @@ Each item gives source, then destination. The verifier checks each against its s
 **E37. Extractions for the later triggers (registered now, done in the PR that removes the source)**
 - short-form/synthesis.md "WHY NOT THE OTHERS NOW" (:88-92) and the reasons for F1-F6 go to ruling-55's spec-batch record.
 - enrollment/networking-paradigms.md decisions 6, 7, 9 and 10 (macaroons/UCAN, tailnet sharing, A2A/ANP/NANDA rejected or deferred) go to the merged enrollment record.
-- The five remaining project papers go to the Projects rulings' record, checked against brief.md.
+- The five remaining [project papers](../projects/brief.md#carried-from-the-earlier-project-papers) go to the Projects rulings' record, checked against brief.md.
 - The increment-4 runs: their counted project files and scripts stay; reports are already kept.
 
 ## experiments
@@ -941,10 +941,10 @@ The orders:
 - **6. WO-035, first build** (B; E6-E10, E12, E13).
   - Code dependencies and E36 are already done by WO-030.
   - E10 uses the corrected mapping, and item 17 quotes 028's decision 5.
-- **7. WO-036, the language-shape and simplification papers that go now** (D; E9, E11, E21 with :423-487 verbatim, E22 with all of short-form inventory-prior-art, E24).
+- **7. WO-036, the language-shape and simplification papers that go now** (D; E9, E11, E21 with :423-487 verbatim, E22 with all of [short-form inventory-prior-art](../language-shape/short-form/synthesis.md#prior-art-key-points-and-five-conditions), E24).
 - **8. WO-037, the Projects brief** (E23, with Provenance and decisions 1-20).
   - The admin checks the brief against the inventory's items C1-C8, the ruling conflicts (15, 30 OL2, 44 point 2, 49, 50), and each quote's source line.
-  - A second commit removes design-P1, P2, P3, inventory-authority and inventory-ownership.
+  - A second commit removes [design-P1, P2, P3, inventory-authority and inventory-ownership](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project).
   - The five synthesis-level papers stay until the Projects rulings (later trigger).
 - **9. WO-038, research and archive** (E; E25-E27).
   - Remove reviews/ only after confirming that E1's "Rulings before the plan audit" is merged.
@@ -1097,8 +1097,8 @@ One ruling, **ruling 57**, answered point by point as ruling 39 was.
 - **Option (a), revised:**
   - Write the Projects brief now, as the first step of the investigation. It opens with Provenance: the owner's relayed words with their sources, the note that the papers disagree, and that the approvals-of-widenings direction is not his.
   - The owner is asked to confirm his Projects direction in his own words.
-  - Remove design-P1, P2, P3 and the two authority/ownership inventories after the admin checks the brief.
-  - Remove the five synthesis-level papers (project synthesis, critic, design-P4, use cases, prior art) in the PR that records the Projects rulings.
+  - Remove [design-P1, P2, P3 and the two authority/ownership inventories](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project) after the admin checks the brief.
+  - Remove the five synthesis-level papers ([project synthesis, critic, design-P4, use cases, prior art](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project)) in the PR that records the Projects rulings.
 - Option (b): keep all ten papers until the rulings.
 - **Recommend (a).**
 

@@ -1,0 +1,20 @@
+fleet: s1
+pools:
+  team: {type: github.com/shrav-k/conduit/core#pool.v1}
+resources:
+  shared: {type: example.org/s1/filesystem#local-directory.v1, owner: team, config: {root: /lab/shared-2}}
+  history: {type: example.org/s1/history#file-history.v1, owner: team, config: {root: /lab/history}}
+agents:
+  agent-a:
+    type: example.org/s1/agents#claude-code.v2
+    config: {account: agent-a@example.org}
+    operator: {from: example.org/s1/agents#turn}
+    consumes:
+      history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}
+  agent-b:
+    type: example.org/s1/agents#codex.v2
+    config: {account: agent-b@example.org}
+    operator: {from: example.org/s1/agents#turn}
+    consumes:
+      project: {to: {kind: Resource, name: shared}, from: example.org/s1/filesystem#read}
+      history: {to: {kind: Resource, name: history}, from: example.org/s1/filesystem#read-write}

@@ -80,19 +80,21 @@ metadata:
   name: codex.v2
   description: >-
     Runs an explicit native-client conversation in the directory that `directory` names, or in
-    a private directory of the run's own when it is null. With ownTools true, the default, the
+    a private directory of the run's own when it is null. When the template names a directory, the
     client's own tools are on: shell, code execution, file edits and network, with the
     client's sandbox and approval prompts off. They run as the engine's operating-system user
-    and nothing confines them. They reach every file, process, network address, credential and
+    and nothing confines them in v0. They reach every file, process, network address, credential and
     signed-in account that user can reach: the engine's store, root's client token, this run's
     token, the user's git and cloud credentials, and the user's own client logins with their
     connectors and apps. That reach does not pass through Conduit: no Conduit grants, limits or
     records it (ruling 70). The client's own browser, desktop-control, goal, image-generation,
     hook and plugin tools stay off, and so do its multi-agent features, although Codex 0.167.0
     still offers its collaboration tools. Apps follow accountServices, and so does hosted
-    search when ownTools is true. The shell can still reach the same services and the user's
+    search when a directory is named. The shell can still reach the same services and the user's
     browser and desktop, so accountServices false shapes only the client's tool list. With
-    ownTools false the client has codex.v1's tools and sandbox. A turn longer than
+    directory null the client has codex.v1's tools and sandbox. Limits on this reach, such as
+    allowed hosts or a read-only directory, will come from a confining runtime provider chosen
+    with `runtime:` (ruling 75, B2). A turn longer than
     turnDeadlineSeconds fails and ends the conversation, and the engine's call timeout
     (`conduit serve --call-timeout-seconds`) must be longer.
 spec:
@@ -100,13 +102,12 @@ spec:
   schema:
     type: object
     properties:
-      ownTools: {type: boolean, default: true}
       directory: {type: [string, 'null'], default: null}
       turnDeadlineSeconds: {type: integer, minimum: 1, maximum: 604800, default: 180}
       effort: {type: string, default: ''}
       accountServices: {type: boolean, default: false}
       model: {type: string, default: ''}
-    required: [ownTools, directory, turnDeadlineSeconds, effort, accountServices, model]
+    required: [directory, turnDeadlineSeconds, effort, accountServices, model]
     additionalProperties: false
   offers: ['#conversation.v1']
   requires: []

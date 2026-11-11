@@ -21,7 +21,6 @@ implementations:
     implements: ['#turn.v1']
     command: [bin/agent-claude-code]
     environment:
-      AGENT_OWN_TOOLS: /ownTools
       AGENT_DIRECTORY: /directory
       AGENT_TURN_DEADLINE_SECONDS: /turnDeadlineSeconds
       AGENT_EFFORT: /effort

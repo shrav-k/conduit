@@ -33,7 +33,7 @@ pub struct Config {
     pub peer_messaging: bool,
     pub model: Option<String>,
     pub timeout: Duration,
-    pub own_tools: Option<bool>,
+    pub v2: bool,
     pub directory: Option<PathBuf>,
     pub effort: Option<String>,
     pub configuration_error: Option<String>,
@@ -59,7 +59,7 @@ impl Config {
             peer_messaging: false,
             model: None,
             timeout: Duration::from_secs(180),
-            own_tools: None,
+            v2: false,
             directory: None,
             effort: None,
             configuration_error: None,
@@ -83,10 +83,8 @@ impl Config {
                 "CONDUIT_IDENTITY_DIR".into(),
                 c.identity.display().to_string(),
             );
-            let v2 = std::env::var_os("AGENT_OWN_TOOLS").is_some();
-            if v2 {
-                c.own_tools = Some(boolean("AGENT_OWN_TOOLS")?);
-            }
+            let v2 = std::env::var_os("AGENT_TURN_DEADLINE_SECONDS").is_some();
+            c.v2 = v2;
             c.account_services = boolean("AGENT_ACCOUNT_SERVICES")?;
             c.peer_messaging = if v2 && std::env::var_os("AGENT_PEER_MESSAGING").is_none() {
                 false
@@ -115,7 +113,9 @@ impl Config {
                         "directory: not an existing directory: {}",
                         dir.display()
                     );
-                    c.directory = Some(dir);
+                    c.directory = Some(dir.canonicalize().with_context(|| {
+                        format!("directory: cannot canonicalize: {}", dir.display())
+                    })?);
                 }
                 c.effort = std::env::var("AGENT_EFFORT").ok().filter(|s| !s.is_empty());
                 if let Some(e) = &c.effort {
@@ -145,7 +145,7 @@ impl Config {
     fn client_directory(&self) -> &Path {
         self.directory
             .as_deref()
-            .filter(|_| self.own_tools.is_some())
+            .filter(|_| self.v2)
             .unwrap_or(&self.cwd)
     }
 }
@@ -182,7 +182,7 @@ pub fn settings(c: &Config) -> Value {
         allow.extend(["SendMessage", "ListAgents", "RemoteTrigger"]);
     }
     let mut settings = json!({"permissions":{"allow":allow,"deny":if c.peer_messaging {vec![]} else {vec!["SendMessage","ListAgents","RemoteTrigger"]},"defaultMode":"dontAsk"},"disableAllHooks":true,"enabledPlugins":{},"disableClaudeAiConnectors":!c.account_services});
-    if c.own_tools == Some(true) {
+    if c.v2 && c.directory.is_some() {
         settings["permissions"]["defaultMode"] = json!("bypassPermissions");
     }
     if !c.peer_messaging {
@@ -197,7 +197,7 @@ pub fn prepare(c: &Config) -> Result<()> {
             serde_json::to_vec(&settings(c))?,
         )?;
         let mut mcp = json!({"mcpServers":{"engine":{"type":"http","url":c.url,"headersHelper":helper_command(c)}}});
-        if c.own_tools.is_some() {
+        if c.v2 {
             mcp["mcpServers"]["engine"]["timeout"] = json!(c.timeout_millis()?);
         }
         fs::write(c.cwd.join("mcp.json"), serde_json::to_vec(&mcp)?)?;
@@ -220,7 +220,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
         [
             "exec",
             "--sandbox",
-            if c.own_tools == Some(true) {
+            if c.v2 && c.directory.is_some() {
                 "danger-full-access"
             } else {
                 "read-only"
@@ -234,7 +234,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
     if let Some(model) = &c.model {
         args.extend(["--model".into(), model.clone()]);
     }
-    if !CLAUDE && c.own_tools.is_some() {
+    if !CLAUDE && c.v2 {
         args.extend(["--cd".into(), c.client_directory().display().to_string()]);
     }
     if CLAUDE {
@@ -269,7 +269,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
                 "SendMessage,ListAgents,RemoteTrigger".into(),
             ]);
         }
-        if c.own_tools == Some(true) {
+        if c.v2 && c.directory.is_some() {
             let i = args.iter().position(|a| a == "--tools").unwrap();
             let mut tools = "Bash,Read,Edit,Write,Glob,Grep,WebFetch".to_owned();
             if c.account_services {
@@ -289,7 +289,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
                 .map(str::to_owned),
             );
         }
-        if c.own_tools.is_some()
+        if c.v2
             && let Some(effort) = &c.effort
         {
             args.extend(["--effort".into(), effort.clone()]);
@@ -333,7 +333,8 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
             "goals",
             "image_generation",
         ] {
-            if c.own_tools == Some(true)
+            if c.v2
+                && c.directory.is_some()
                 && matches!(feature, "shell_tool" | "unified_exec" | "view_image")
             {
                 continue;
@@ -349,7 +350,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
             "mcp_servers.engine.startup_readiness=\"connection\"".into(),
             "mcp_servers.engine.required=true".into(),
             "mcp_servers.engine.default_tools_approval_mode=\"approve\"".into(),
-            if c.own_tools == Some(true) && c.account_services {
+            if c.v2 && c.directory.is_some() && c.account_services {
                 "web_search=\"live\""
             } else {
                 "web_search=\"disabled\""
@@ -359,7 +360,7 @@ pub fn arguments(c: &Config, thread: Option<&str>) -> Vec<String> {
         ] {
             args.extend(["-c".into(), setting]);
         }
-        if c.own_tools.is_some() {
+        if c.v2 {
             args.extend([
                 "-c".into(),
                 format!(
@@ -500,7 +501,7 @@ impl Session {
             Err(_) => Err(anyhow::anyhow!(
                 "deadline: no turn boundary within {} seconds{}",
                 duration.as_secs(),
-                if self.config.own_tools.is_some() {
+                if self.config.v2 {
                     " (input turnDeadlineSeconds)"
                 } else {
                     ""

@@ -28,6 +28,16 @@ expected outcomes and validation record together.
 | [009 — native launch and identity](009-native-launch/README.md) | A4: whether Claude Code and Codex, unchanged, can each be run as an Agent on the engine's own runner, with the owner's configuration out, their logins' reach off, a token of their own, and access changed between turns. | Done 2026-11-09; [results](009-native-launch/results-2026-11-09.md). |
 | [010 — subscription terms](010-subscription-terms/README.md) | A8: whether the engine may run Claude Code and Codex headless as Agents on a subscription. | Done 2026-11-10; [results](010-subscription-terms/results-2026-11-10.md). |
 | [011 — short form translation](011-short-form-spike/README.md) | A79: translate S1 in flow and block YAML into today's canonical documents and count authored edits. | Executed 2026-11-10; [results](011-short-form-spike/results-2026-11-10.md). |
+| [012 — model checking of the safety promises](012-model-checking/README.md) | A40: the harness for model checks of the safety promises under loss, reordering, partition and a lost machine. | Being built by work order 104. |
+| [013 — S2: one service login shared by two Agents](013-s2-shared-login/README.md) | S2: one service login shared by two Agents with different restrictions. | Pre-registration being written by work order 101; it awaits the owner's acceptance. |
+| [014 — S3: S1 and S2 across two machines](014-s3-two-machines/README.md) | S3: S1 and S2 across two machines, with a partition and a lost machine. | Pre-registration being written by work order 101; it awaits the owner's acceptance. |
+| [015 — S4: a setup that fails partway](015-s4-partial-setup/README.md) | S4: a setup that fails partway, is retried and loses a response. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
+| [016 — S5: a control change under contention](016-s5-control-contention/README.md) | S5: a control change under contention. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
+| [017 — S6: access revoked while requests are in flight](017-s6-revoke-in-flight/README.md) | S6: access revoked and a Resource retired while requests are in flight. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
+| [018 — S7: an outside author's package](018-s7-outside-package/README.md) | S7: an outside author packages an existing MCP server and a small code plugin. | Pre-registration being written by work order 103; it awaits the owner's acceptance. |
+| [019 — S8: search that returns only what the caller may see](019-s8-filtered-search/README.md) | S8: search over storage returning only what the caller may see. | Pre-registration being written by work order 103; it awaits the owner's acceptance. |
+| [020 — S9: first start, later start and repair](020-s9-start-and-repair/README.md) | S9: first initialization, later start and explicit repair. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
+| [021 — S10: every provider swapped](021-s10-swapped-providers/README.md) | S10: S1 and S2 again with every provider swapped. | Pre-registration being written by work order 103; it awaits the owner's acceptance. |
 
 Keep draft syntax, static checks, synthetic tests and tests against live providers distinct.
 Never present an expected outcome as a result. A result that contradicts a promise is raised
@@ -41,6 +51,8 @@ A75's evidence index keeps the limits of each run with its results:
 
 - [004: Stateright evaluation](004-stateright-evaluation/README.md), for A40; bounded tool
   safety, not a check of a Conduit engine.
+- [012: model checking](012-model-checking/README.md), for A40 and G5; the harness, in
+  progress.
 - [005: keychain observations of 2026-11-06](005-macos-keychain/README.md#results), for A22;
   the daemon case remains open.
 - [007: S1 baseline of 2026-11-09](007-s1-baseline/results-2026-11-09.md), for A70 and A68's

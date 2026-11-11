@@ -1,6 +1,8 @@
 # Ruling 46: the first build
 
-Status: **ruled by the owner on 2026-11-09** (plan-audit ruling 46). This is the record of a
+Status: in force; amended by 58 (point 4: increment logs become settlements register); open (point 2 fallback against ruling 47's gate) (ruled by the owner on 2026-11-09). Holds now: [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 Ruling 44 made the first build (A68) the next milestone, and asked to discuss its nature, and

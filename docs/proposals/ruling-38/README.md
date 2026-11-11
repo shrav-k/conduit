@@ -1,6 +1,8 @@
 # Ruling 38: the open points and the coordinator's least certain decisions
 
-Status: **ruled by the owner on 2026-11-06** (plan-audit ruling 38). This is the record of a
+Status: in force; done (points 2, 14); amended by 41 (points 1, 3, 7, 8, 11, 12); amended by 42 (N1) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 2. The specification: form, layers and conformance](../../../IN_FORCE.md#2-the-specification-form-layers-and-conformance), [IN_FORCE.md: 12. Secrets](../../../IN_FORCE.md#12-secrets), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed); [ACC-019](../../../spec/conventions/access.yaml). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 After round 4 of the [re-audit](../reaudit/round-4/README.md) the coordinator put fourteen

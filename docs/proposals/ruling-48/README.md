@@ -1,6 +1,8 @@
 # Ruling 48: what the first build's review put to the owner, and who does the work
 
-Status: **ruled by the owner on 2026-11-09** (plan-audit ruling 48). This is the record of a
+Status: in force; done (point 2 b: ruling 49); amended by 58 (work-order records); amended by 61 (B12, A78's trigger) (ruled by the owner on 2026-11-09). Holds now: [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed); [SCH-016](../../../spec/promises/schemas.yaml). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 [Ruling 47](../ruling-47/README.md), the owner's pull request 14, is recorded with its public
 name and namespace open.

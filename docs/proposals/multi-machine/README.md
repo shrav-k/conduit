@@ -1,7 +1,8 @@
 # Work across machines: D5, D20 and the road to local enforcement
 
-Status: **ruled by the owner on 2026-11-06 ([ruling 43](../ruling-43/README.md)): accepted, with
-D5's second part as option b and Q1 tightened, as the ruling records.** The text below is the
+Status: ruling 43: in force; amended by 58 (M13, M47, M66: later logged choices) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items), [IN_FORCE.md: 12. Secrets](../../../IN_FORCE.md#12-secrets); [IFC-041, IFC-042](../../../spec/interface/implementation.yaml), [PRV-022](../../../spec/promises/providers.yaml). This record says why.
+
+The text below is the
 proposal as it was put to the owner.
 
 Was: proposed 2026-11-06, for the owner; not ruled. It answers the owner's ruling on

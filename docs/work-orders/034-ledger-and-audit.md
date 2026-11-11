@@ -100,3 +100,17 @@ The four items are done, and every extraction of E1 and E2 is present and faithf
 `python3 tools/check_roadmap.py`, `python3 -m unittest discover -s tools/tests` (run it with the
 interpreter that has PyYAML) and `git diff --check` pass. Report the words of `docs/AUDIT.md` before
 and after. Do not stage anything.
+
+## Record
+
+Run on 2026-11-10 and 2026-11-11, in parallel with orders 033 and 035: the worker in 22 minutes,
+then a fresh verifier in 7. The worker wrote the ledger of 67 rulings with its appendices,
+condensed `docs/AUDIT.md` from 24,882 words to 8,414, gave 49 records their status lines, and added
+`tools/check_rulings.py` with its tests; 17 extractions compared equal to their C0 sources. The
+verifier found that three directive statuses named work orders instead of the action item that
+carries them, and one history row mislabelled round 2's prefixes. The admin added action item A80
+for the rest of the condensation plan, marked ruling 64's point 4 done (order 033 merged) and ruling
+67's directives done with this order and 035, made the check require an action item on a
+directive, and corrected the row. The worker also found that the plan's A79 had since gone to the
+short-form spike (finding 034-F1); the lean-vector work stays under A39. The admin applied order
+033's rename to this order's text and added the new check to continuous integration at merge.

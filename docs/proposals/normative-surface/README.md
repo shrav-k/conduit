@@ -1,7 +1,8 @@
 # Form of the specification — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit ruling 17), for plan-audit items
-[A32 and A33](../../AUDIT.md#p0--make-the-language-concrete-and-complete). Names of
+Status: in force; amended by 27 (grants); amended by 28 (grants); amended by 29 (grants); amended by 42 (names) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 1. Purpose, scope and principles](../../../IN_FORCE.md#1-purpose-scope-and-principles), [IN_FORCE.md: 2. The specification: form, layers and conformance](../../../IN_FORCE.md#2-the-specification-form-layers-and-conformance), [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names); [IMP-001 to IMP-003, IMP-007, IMP-008](../../../spec/conventions/implicit.yaml). This record says why.
+
+Names of
 directories, files and fields are illustrative. By vocabulary decision V8 the "normative surface"
 is called the specification from here on.
 

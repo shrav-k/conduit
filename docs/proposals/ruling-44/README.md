@@ -1,6 +1,8 @@
 # Ruling 44: the Codex read, and building next
 
-Status: **ruled by the owner on 2026-11-07** (plan-audit ruling 44). This is the record of a
+Status: in force; amended by 61 (B8, point 2: Conduits only) (ruled by the owner on 2026-11-07). Holds now: [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement); [CTR-012](../../../spec/promises/contracts.yaml), [LIF-037](../../../spec/conventions/lifecycle.yaml). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 The owner's cold read by Codex, round 6 of the re-audit, read `main` at `c4d7d33` and returned

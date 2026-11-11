@@ -1,6 +1,8 @@
 # Ruling 43: work across machines
 
-Status: **ruled by the owner on 2026-11-06** (plan-audit ruling 43). This is the record of a
+Status: in force; amended by 58 (M13, M47, M66: later logged choices) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items), [IN_FORCE.md: 12. Secrets](../../../IN_FORCE.md#12-secrets); [IFC-041, IFC-042](../../../spec/interface/implementation.yaml), [PRV-022](../../../spec/promises/providers.yaml). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 Ruling 42 left D5 and D20 open and asked for more research on how Conduit works across

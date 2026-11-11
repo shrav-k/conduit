@@ -1,6 +1,8 @@
 # Relationships and access — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit rulings 19 and 20, action A51). The decisions and rules
+Status: ruling 19: in force; amended by 27 (grants); amended by 28 (grants); amended by 29 (grants); amended by 38 (point 6); amended by 41 (items 3a, 5); ruling 20: in force; amended by 38 (point 6); amended by 41 (items 6a, 6c, 15) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation); [CON-001 to CON-004](../../../spec/promises/conduits.yaml), [ACC-011, ACC-030](../../../spec/conventions/access.yaml), [OPS-001 to OPS-014](../../../spec/conventions/operations.yaml), [REV-001 to REV-015](../../../spec/conventions/revisions.yaml). This record says why.
+
+The decisions and rules
 are written as promises in the specification: [Conduits](../../../spec/promises/conduits.yaml)
 and [access](../../../spec/conventions/access.yaml). Spellings follow the
 [ruled vocabulary](../vocabulary/README.md).

@@ -1,6 +1,8 @@
 # Ruling 55: the short form, and the old inconsistencies
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 55). This is the record of a
+Status: in force; done (B: ruling 56) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names), [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas), [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access) (spec pending except where a promise is cited). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 The coordinator put the decisions of [the shape of the language](../language-shape/README.md#decisions-for-the-owner)

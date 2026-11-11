@@ -175,6 +175,7 @@ Run these from the repository root before each commit:
 
 ```sh
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
+python3 tools/check_rulings.py       # ruling ledger, status lines and undated decisions in force
 python3 tools/set_names.py --check   # the names under spec/, engine/, conformance/ and packages/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one

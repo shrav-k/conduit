@@ -54,6 +54,9 @@ jobs:
       - name: python3 tools/check_roadmap.py
         if: ${{ !cancelled() }}
         run: python3 tools/check_roadmap.py
+      - name: python3 tools/check_rulings.py
+        if: ${{ !cancelled() }}
+        run: python3 tools/check_rulings.py
       - name: python3 -m unittest discover -s tools/tests
         if: ${{ !cancelled() && hashFiles('tools/tests/**/*.py') != '' }}
         run: python3 -m unittest discover -s tools/tests

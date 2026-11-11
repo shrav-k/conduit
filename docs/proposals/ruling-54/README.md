@@ -1,6 +1,8 @@
 # Ruling 54: agents stay in their project, and revocation is individual
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 54). This is the record of a
+Status: in force; amended by 60 (Fleet); amended by 61 (B9, B10) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (spec pending except where a promise is cited). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 Under [the owner's direction for Projects](../owner-direction/2026-11-10-projects.md), a Project is

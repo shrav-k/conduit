@@ -1,6 +1,8 @@
 # Ruling 60: the agent-owning family is a Fleet
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 60). This is the record of a
+Status: in force (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 3. Vocabulary and the project's names](../../../IN_FORCE.md#3-vocabulary-and-the-projects-names), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach) (spec pending except where a promise is cited). This record says why.
+
+This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 Ruling 59 accepted the structure of the family that owns Agents and left its name open, after the

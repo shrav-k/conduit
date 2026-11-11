@@ -1,6 +1,8 @@
 # Graphs and the schema profile — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit ruling 23, action A53). Written as promises
+Status: in force; amended by 40 (graphs); amended by 41 (items 1, 8a, 20) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas); [SCH-001 to SCH-021](../../../spec/promises/schemas.yaml). This record says why.
+
+Written as promises
 in the specification: [graphs](https://github.com/shrav-k/conduit/blob/0a9a32326830452d9761f4963077db4fb618918a/spec/promises/graphs.yaml),
 [schemas](../../../spec/promises/schemas.yaml) and the
 [schema profile](../../../spec/schema-profile.md). The owner added a standing instruction with the

@@ -1,6 +1,8 @@
 # Secrets: a secret type in the core package
 
-> **Ruled.** Ruling 41 settled the secret type as section 4 of the [principles review](../principles-review/README.md) reduces this proposal; where they differ, that section governs. This file is the reasoning and the record of the options. See [ruling 41](../ruling-41/README.md).
+Status: ruling 41: in force; amended by 42 (D6, D8, D12, names); amended by 43 (item 4c, Q3); amended by 44 (D14); amended by 58 (M22, M41) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items), [IN_FORCE.md: 12. Secrets](../../../IN_FORCE.md#12-secrets); [PRV-001 to PRV-026](../../../spec/promises/providers.yaml), [SEC-001 to SEC-023](../../../spec/promises/secrets.yaml). This record says why.
+
+This file is the reasoning and the record of the options. See [ruling 41](../ruling-41/README.md).
 
 Was: **proposed, not ruled.** It follows [ruling 38](../ruling-38/README.md), point 1, which set
 the direction and asked for the secret type to be explored. Its first draft was put to the owner as

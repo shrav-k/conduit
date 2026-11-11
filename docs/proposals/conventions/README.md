@@ -1,6 +1,8 @@
 # The remaining shared conventions — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit ruling 30, action A57). Every
+Status: in force; amended by 41 (item 17); amended by 58 (M41); amended by 59 (A1, OL2); amended by 60 (OL2) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 8. Lifecycle, Pools and first start](../../../IN_FORCE.md#8-lifecycle-pools-and-first-start); [LIF-014 to LIF-023](../../../spec/conventions/lifecycle.yaml), [REC-001 to REC-006](../../../spec/conventions/records.yaml), [OBS-001 to OBS-006](../../../spec/conventions/observation.yaml), [IMP-001 to IMP-003, IMP-007, IMP-008](../../../spec/conventions/implicit.yaml). This record says why.
+
+Every
 recommendation was accepted. Written as promises in the specification:
 [ownership and lifecycle](../../../spec/conventions/lifecycle.yaml) LIF-014 to LIF-023, with
 ACC-033 and PLC-016; [observation](../../../spec/conventions/observation.yaml) OBS-001 to OBS-006;

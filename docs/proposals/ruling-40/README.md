@@ -1,6 +1,8 @@
 # Ruling 40: Conduit innovates on connection and access; everything else is swappable
 
-Status: **ruled by the owner on 2026-11-06** (plan-audit ruling 40). The secret type, which
+Status: in force; amended by 43 (point 3e, D5's gate); amended by 47 (the layout of `packages/`) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 1. Purpose, scope and principles](../../../IN_FORCE.md#1-purpose-scope-and-principles), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items); [PRV-001 to PRV-026](../../../spec/promises/providers.yaml). This record says why.
+
+The secret type, which
 this direction reshapes, is ruled separately, with the decisions of the
 [principles review](../principles-review/README.md). This is the record of a ruling. Where it and the
 specification differ, the specification governs.

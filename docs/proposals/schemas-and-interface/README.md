@@ -1,6 +1,8 @@
 # Document schemas, the implementation interface and the implementation-defined list — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit ruling 31, action A58). Every
+Status: in force; amended by 32 (DL13); amended by 33 (F3, F21); amended by 38 (D4; point 5 withdrew the domain); amended by 40 (runtime model); amended by 41 (items 1, 2, 18, 22, 23); amended by 42 (DL16, names); amended by 43 (DL17); amended by 55 (A6); amended by 58 (M69) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 5. Packages, the manifest, contracts, the core package and schemas](../../../IN_FORCE.md#5-packages-the-manifest-contracts-the-core-package-and-schemas), [IN_FORCE.md: 11. The implementation interface, providers, hooks and items](../../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items); [IFC-001, IFC-002, IFC-029](../../../spec/interface/implementation.yaml). This record says why.
+
+Every
 recommendation was accepted, with decision I1 amended as [stated below](#the-ruling-on-i1).
 Written in the specification: [templates](../../../spec/promises/templates.yaml),
 [contracts](../../../spec/promises/contracts.yaml), additions to the object, graph, Conduit, Pool

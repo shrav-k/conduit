@@ -1,7 +1,7 @@
 # Instantiation arguments — accepted direction
 
-Status: owner rulings of 2026-11-05 for
-[plan-audit item A36](../../AUDIT.md#p0--make-the-language-concrete-and-complete) (question Q12).
+Status: in force; amended by 40 (point 3b); amended by 41 (items 8, 31b); amended by 55 (A6) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission); [INS-001 to INS-021, INS-025](../../../spec/promises/instantiation.yaml). This record says why.
+
 The decisions below are accepted. Their spellings were illustrative when this was written, under
 a [vocabulary boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#vocabulary-review-boundary) that ruling 16 has
 since ended. They are now written as numbered promises in the specification:

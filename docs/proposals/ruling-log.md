@@ -228,7 +228,7 @@ Later standing: publication and names follow rulings 47 and 65; the specificatio
   contact details and additional contribution procedures are deferred until needed for distribution.
 
 These are project-owner decisions, not reasons to reopen the five families or invent another runtime
-authority model. The [repository proposal](../archive/reviews/REPOSITORY-2026-11-02.md) retains options and rationale.
+authority model. The [repository proposal](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/REPOSITORY-2026-11-02.md) retains options and rationale.
 
 Apache-2.0 was selected for permissive reuse with an explicit, scoped contributor patent grant.
 The [official license text](https://www.apache.org/licenses/LICENSE-2.0.html) was checked on
@@ -366,7 +366,7 @@ claiming runtime-to-runtime portability. C1 is complete; exact profiles, syntax 
 for the future authoring PR.
 
 **Why now:** collaborator PR #2 makes this choice visible. Its opaque setup/runtime proposal would
-lose the portability we have prioritized. [Comparison and sources](../archive/collaborator-proposals/REVIEW.md).
+lose the portability we have prioritized. [Comparison and sources](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/collaborator-proposals/REVIEW.md).
 
 ### C2 — Whose authority governs a dependent call?
 
@@ -422,7 +422,7 @@ summarize decisions and link to their authority; they do not repeat a second spe
 | Reference implementation | Separate management/executors, supervised instance-associated helpers, SQLite service dependencies, replaceable OS credential custody. |
 | First proof | One machine, management plus two executors; composition/requirements, controlled failures and Interface evidence; native macOS Agent adapters next. |
 
-I1–I7 remain summarized in the [implementation review](../archive/reviews/IMPLEMENTATION.md).
+I1–I7 remain summarized in the [implementation review](#history-implementation-rulings-i1-to-i7).
 The earlier history remains in Git; removing repeated ruling prose does not withdraw accepted rules.
 
 ## History: Later amendments

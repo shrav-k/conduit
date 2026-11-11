@@ -251,18 +251,6 @@ tests exercise the implemented slice; real-client evidence is recorded separatel
 [increment 3 closeout](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md).
 Passing these checks does not establish whole-language conformance.
 
-The dated migration has a separate historical audit:
-
-```sh
-python3 tools/check_doc_migration.py
-```
-
-It reads fixed Git objects, so it cannot fail on later changes and is a record of that migration
-only. It verifies preservation against the recorded baseline and mechanical-move commit, including explicitly
-listed editorial changes. By default it checks the commit that introduced the migration record, so
-future edits need not remain frozen. Full Git history containing those commits is needed. See the
-[migration record](docs/archive/migrations/2026-11-protocol-framing.md) for working-tree use and limits.
-
 ## License and attribution
 
 Original Conduit documentation, contracts and code use the [Apache License, Version 2.0](LICENSE).

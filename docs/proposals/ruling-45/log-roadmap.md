@@ -53,7 +53,7 @@ Not from the plan audit: the experiment across two machines, which ruling 43 acc
 which nothing tracked, is A74 in the register. The proposal keeps its text. X2 of pull request
 10, which ruling 45 dropped, and the candidates of the collaborator's pull request 1 that were
 not adopted, which the archive's
-[review](../../archive/collaborator-proposals/REVIEW.md#additional-roadmap-candidates) holds,
+[review](../../archive/README.md#additional-roadmap-candidates) holds,
 have rows among what is done, dropped or not adopted.
 
 ## Other edits

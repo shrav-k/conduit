@@ -62,6 +62,11 @@ The critic's corrections, taken into account here:
 
 ## 2. Projects: the skeleton now, authority in v1
 
+**Superseded.** The owner found faults with this section and gave a different direction: Projects own
+Agents as Pools own Resources, Pools stay independent, Projects hold Conduits, and no Pool declares
+who may use it ([the owner's direction for Projects](../owner-direction/2026-11-10-projects.md)).
+The section is kept as the record of what was proposed.
+
 The [project synthesis](project/synthesis.md) recommends a sixth family and works out the owner's
 direction with the skeptics' fixes:
 

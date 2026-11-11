@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2) and 107 (MC3), ruling 71's proof lane.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3) and 109 (MC5a), ruling 71's proof lane.
 The expected verdicts below were registered before execution; later orders extend this harness.
 
 ## Question and scope
@@ -1067,3 +1067,311 @@ answer. Onward replies and their relay remain explicitly lossy.
 
 All changed Rust and documentation files are confined to this experiment. The pinned
 lockfile and toolchain remain in force, and `target/` remains ignored.
+
+## MC5a — gates and identity: model registered before execution
+
+Work order 109, ruling 71's proof lane, A40/G5. This is a reference model of the
+promises, independent of engine code. [src/gates.rs](src/gates.rs) defines it.
+The following model, bounds and expected table were written before its first run.
+
+### Nodes, script and bounds
+
+M1 contains the engine and P's server, which runs on the engine's own runner and
+ends on an engine crash. A is a separate consumer node on M1, sending two requests
+for I. M2 holds P's remote part, I's server and gate at URL `u`, and process X.
+X is neither root, I's user nor P's user. The engine's own runner also runs L1 and
+L2, with separate identity and state directories, secrets and listed variables.
+Their runs end with the engine; a further setup after recovery starts them again.
+This is an explicit setup action, not implicit repetition of an ordinary run.
+
+One initial setup starts P, L1 and L2 and sends P's `run.v1` values to M2.
+The remote delivery carries the secret and identity classes. Identity explicitly
+models the variables and file paths, with symbolic contents and token/certificate
+subjects, of the PRV-022 input: the engine URL, identity directory, trust bundle, engine ID,
+I's signed token, and certificate/private key naming I. I presents its token in
+one request to the engine. X can probe the gate without proof. After an engine
+request reaches I, I can stop and X can take `u`, sending a reset that can be
+lost or reordered. X sends one request from I's former address, without a token.
+After a connect reaches X, P may restart I, once. These are M2 local actions,
+independent of the engine crash budget. No other run restart is enabled.
+
+A connect is an atomic transport step carrying no application data, guarded locally
+against a cut; the `Connection`/`ConnectLog` records its process and incarnation.
+Its proof reply is an ordinary lossy, reorderable M2-to-engine message. This abstracts
+transport connection establishment, not an application request or certificate validation
+algorithm. A connection binds delivery to the process that answered, never a later owner
+of the URL. Each connection has a fresh ID, M2 incarnation, cut epoch and engine crash
+epoch. An old proof cannot validate a different connection; an old wire call cannot
+reach a new process. The engine holds its proof only in volatile state. The cut
+invalidates **all** M1-to-M2 connections, including provider delivery and identity
+requests, and blocks both directions; healing requires a fresh server connection and
+proof. Queued provider values can finish delivery after healing over the authenticated,
+confidential provider channel; this assumes that transport re-establishes that channel.
+
+The harness cannot call the model back on cut/heal, nor can `fault_allowed` inspect
+state. Local connect/send guards and receive checks enforce connection incarnation
+and cut epochs. Stop/takeover and remote restart are guarded M2 actions, not harness
+crashes. The harness crash is restricted to the engine with `fault_allowed`.
+Recovery and heal have no hook in the harness; their only eligible crashed node and
+cut pair follow from those restrictions. No harness code is changed.
+
+Seven configurations split faults: Base (none), ReorderA and LossA (one fault on
+A-to-engine), ReorderM2 and LossM2 (one on either direction between engine and M2),
+Cut (one cut and one heal between engine and M2), Crash (one engine crash and one
+recovery). Fault permissions are restricted with `fault_allowed`. Splitting keeps
+fault timing exhaustive within each part without multiplying independent fault histories.
+No simultaneous combinations across parts are claimed. Duplication, a permanently lost
+machine and timers are outside this order; their budgets are zero with reasons.
+
+Every run has two consumer requests, at most three connections, one remote start,
+one stop/takeover, one provider restart, one X gate probe, two identity requests and
+two generations of local setups. Each directed queue holds at most eight messages;
+exceeding it fails, never prunes. The ceiling is 190,000 unique states (strictly below
+200,000), and timeout is 10 seconds, asserted after exploration as well as guarded
+during it. The target for all MC5a tests together is at most about 15 seconds.
+State directories are symbolic relative paths containing instance IDs, initially empty
+with mode 0700; persistence is modelled, filesystem permissions are not executed.
+
+The external ledger records each connect and its verified certificate, sends by request
+ID with contents/secret classes and the proof at send time, admitted requests with
+engine proof, attribution with its token/address basis, identity/secret appearances,
+all local-run variables and files, state directories, channel authentication and
+confidentiality flags, and X's observations. Connect records stand for the
+nothing-secret message class. Ordinary public surfaces carry that class; the seeded
+Diagnostic instead adds an identity appearance. Fixed request slots avoid treating
+irrelevant log order as a new behavior. No safety property reads a node's own state.
+
+The fixed engine environment contains HOME, PATH, USER, GITHUB_TOKEN and deliberately
+wrong CONDUIT_URL/CONDUIT_IDENTITY_DIR values; LOGNAME and SHELL
+are absent, and TERM starts with `()`. The pass list is empty. Listed PATH and LOGNAME
+exercise overrides; PASSWORD is a listed secret; LISTED distinguishes L1/L2.
+Filtered inheritance is computed from that fixed input, then the listed variables,
+secrets, identity and state are installed. Identity variables and files override other sources. The runner's GITHUB_TOKEN variant
+passes the engine's token to L1. OtherIdentity gives L2 L1's directory and files/token.
+OtherState gives L2 L1's state directory only in the post-recovery setup.
+
+### Catalogue accounting (nine promises)
+
+Modelled means the safety slice named here, not every obligation in that promise.
+Each counted promise occurs in exactly one row.
+
+| Promise | Status | Property |
+| --- | --- | --- |
+| PRV-003 | Modelled | R: own-runner identity and secret delivery |
+| PRV-011 | Modelled | C: remote value delivery; R: local secret delivery |
+| PRV-018 | Modelled | A: identity rests on the presented token, never address |
+| PRV-022 | Modelled | H: holders and public exclusion; C: identity channel; R: local identity delivery |
+| PRV-023 | Modelled | R: listed variables, allowed inherited environment and overrides |
+| PRV-024 | Modelled | H: no identity in record, inspection, observation, diagnostic, result or `_meta` |
+| PRV-025 | Modelled | G: only engine proof reaches I's gated server |
+| PRV-028 | Modelled | B: instance certificate proved on this connection before application sends |
+| PRV-029 | Modelled | R: each instance retains its own state directory after recovery |
+
+Counts: **9 modelled, 0 wholly not modelled**. Partial exclusions: PRV-003's “on no
+other” machine, machine provider and fetching (placement and provider kinds absent),
+and PRV-025's silence-to-close bound (time is absent). The model also does not test
+provider contract prose, file encodings, cryptography, OS enforcement, unsupported
+package formats, removal/unregistration, or every runtime environment combination.
+Supporting IFC-017, IFC-022, IFC-041, IFC-042 and PRV-026 inform connection,
+credential, token and restart semantics; they are **outside these counts**. IFC-041's
+remote-item behavior is not modelled: I is a runtime-provider run, not a Remote.
+
+### Expected table, fixed before execution
+
+Safety: G = gate admits only proof; B = proof before sending; A = identity rests on
+what is presented; H = identity material stays with its holders; R = own runner keeps
+its promises; C = channel authenticates M2. H means holds, X means refuted.
+The channel property explicitly checks the model's authentication **and confidentiality
+flags**, not TLS or another channel implementation. X can observe both classes if
+either flag is false; hence Unauthenticated also breaks H.
+
+Reachability: s = proven request reaches I; g = X refused at gate; x = takeover and
+connect to X; n = X attributed to no instance; i = I attributed by token; r = L1/L2
+run again after engine recovery; c = provider channel carries values to M2.
+R means reached, dash means unreachable in that row. Every enabled harness fault
+witness is expected reached in every row. Correct runs in all configurations; each
+variant runs only in the configuration it needs. Early sends carry contents and a
+secret, not an identity input, so they do not independently break H.
+
+| Configuration / variant | G | B | A | H | R | C | s | g | x | n | i | r | c |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Base / Correct | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| ReorderA / Correct | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| LossA / Correct | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| ReorderM2 / Correct | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| LossM2 / Correct | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| Cut / Correct | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| Crash / Correct | H | H | H | H | H | H | R | R | R | R | R | R | R |
+| Base / OpenGate | X | H | H | H | H | H | R | - | R | R | R | - | R |
+| Base / SendFirst | H | X | H | H | H | H | R | R | R | R | R | - | R |
+| Base / StaleProof | H | X | H | H | H | H | R | R | R | R | R | - | R |
+| Base / Address | H | H | X | H | H | H | R | R | R | - | R | - | R |
+| Base / Diagnostic | H | H | H | X | H | H | R | R | R | R | R | - | R |
+| Base / InheritToken | H | H | H | H | X | H | R | R | R | R | R | - | R |
+| Base / OtherIdentity | H | H | H | H | X | H | R | R | R | R | R | - | R |
+| Crash / OtherState | H | H | H | H | X | H | R | R | R | R | R | R | R |
+| Base / Unauthenticated | H | H | H | X | H | X | R | R | R | R | R | - | R |
+
+The full-run test checks every safety verdict and every reachability verdict,
+including enabled harness faults, against this table. A separate single-thread BFS
+prints the first trace on each variant's named property. A replay test erases all
+node data and checks that the ledger still refutes the property.
+
+
+### MC5a results — 2026-11-11
+
+The pinned Rust 1.97.1 toolchain is unavailable in this worker; its rustup directory
+is read-only. Network use is restricted to crates, so no toolchain was downloaded.
+These results use installed Rust/Cargo **1.99.1**, invoked with `+stable`, with the
+repository pin unchanged. `CARGO_BUILD_JOBS=6` was inherited without an override;
+full searches used two checker threads and refutations used one. Re-run with the
+pinned compiler in CI before treating compiler-specific validation as complete.
+
+`cargo +stable fmt --check` and `cargo +stable clippy --all-targets -- -D warnings`
+passed. The complete `cargo +stable test --release` passed **21 tests**, 0 failed,
+and 0 doc tests, in **8.58 seconds wall time** (7.19 seconds in the unit tests).
+The complete `cargo +stable test --release -- --nocapture --test-threads=1` also
+passed 21 tests and 0 doc tests, in **7.01 seconds wall time** (6.90 seconds in
+unit tests). The final module's separate filtered check passed its two tests in
+1.35 seconds. The following counts and traces come from the complete uncaptured
+run, not from estimates. MC5a's 16 full searches total 0.943 seconds as printed.
+No run reached its ceiling or timeout. No observed verdict differs from registration.
+
+The keys and verdict alphabet are exactly those of the expected table above.
+All enabled harness fault witnesses were reached in every row.
+
+| Configuration / variant | Unique states | Depth | Seconds | G | B | A | H | R | C | s | g | x | n | i | r | c |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Base / Correct | 516 | 23 | 0.014 | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| ReorderA / Correct | 1,422 | 23 | 0.042 | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| LossA / Correct | 648 | 23 | 0.017 | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| ReorderM2 / Correct | 1,220 | 23 | 0.035 | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| LossM2 / Correct | 1,375 | 23 | 0.039 | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| Cut / Correct | 3,952 | 25 | 0.140 | H | H | H | H | H | H | R | R | R | R | R | - | R |
+| Crash / Correct | 5,110 | 26 | 0.212 | H | H | H | H | H | H | R | R | R | R | R | R | R |
+| Base / OpenGate | 516 | 23 | 0.021 | X | H | H | H | H | H | R | - | R | R | R | - | R |
+| Base / SendFirst | 3,772 | 23 | 0.127 | H | X | H | H | H | H | R | R | R | R | R | - | R |
+| Base / StaleProof | 1,112 | 23 | 0.034 | H | X | H | H | H | H | R | R | R | R | R | - | R |
+| Base / Address | 516 | 23 | 0.014 | H | H | X | H | H | H | R | R | R | - | R | - | R |
+| Base / Diagnostic | 516 | 23 | 0.013 | H | H | H | X | H | H | R | R | R | R | R | - | R |
+| Base / InheritToken | 516 | 23 | 0.013 | H | H | H | H | X | H | R | R | R | R | R | - | R |
+| Base / OtherIdentity | 516 | 23 | 0.014 | H | H | H | H | X | H | R | R | R | R | R | - | R |
+| Crash / OtherState | 5,110 | 26 | 0.194 | H | H | H | H | X | H | R | R | R | R | R | R | R |
+| Base / Unauthenticated | 516 | 23 | 0.014 | H | H | H | X | H | X | R | R | R | R | R | - | R |
+
+### MC5a first refutations
+
+**OpenGate: PRV-025: gate admits only proof (3 actions)**
+
+```text
+1. engine/M1 Setup
+2. delivered engine/M1 -> M2 [position 0]
+3. M2 Probe
+```
+
+**SendFirst: PRV-028: proof before sending (5 actions)**
+
+```text
+1. engine/M1 Setup
+2. delivered engine/M1 -> M2 [position 0]
+3. delivered A -> engine/M1 [position 0]
+4. engine/M1 Connect
+5. engine/M1 Send
+```
+
+**StaleProof: PRV-028: proof before sending (11 actions)**
+
+```text
+1. engine/M1 Setup
+2. delivered engine/M1 -> M2 [position 0]
+3. delivered A -> engine/M1 [position 0]
+4. engine/M1 Connect
+5. delivered M2 -> engine/M1 [position 0]
+6. engine/M1 Send
+7. delivered engine/M1 -> M2 [position 0]
+8. M2 StopTake
+9. delivered A -> engine/M1 [position 0]
+10. engine/M1 Connect
+11. engine/M1 Send
+```
+
+**Address: PRV-018: identity rests on what is presented (11 actions)**
+
+```text
+1. engine/M1 Setup
+2. delivered engine/M1 -> M2 [position 0]
+3. delivered A -> engine/M1 [position 0]
+4. engine/M1 Connect
+5. delivered M2 -> engine/M1 [position 0]
+6. engine/M1 Send
+7. delivered engine/M1 -> M2 [position 0]
+8. M2 StopTake
+9. delivered M2 -> engine/M1 [position 0]
+10. M2 IdentifyX
+11. delivered M2 -> engine/M1 [position 0]
+```
+
+**Diagnostic: PRV-022 PRV-024: identity material stays with its holders (1 actions)**
+
+```text
+1. engine/M1 Setup
+```
+
+**InheritToken: PRV-003 PRV-023 PRV-029: own runner keeps its promises (1 actions)**
+
+```text
+1. engine/M1 Setup
+```
+
+**OtherIdentity: PRV-003 PRV-023 PRV-029: own runner keeps its promises (1 actions)**
+
+```text
+1. engine/M1 Setup
+```
+
+**OtherState: PRV-003 PRV-023 PRV-029: own runner keeps its promises (4 actions)**
+
+```text
+1. engine/M1 Setup
+2. crashed engine/M1
+3. recovered engine/M1
+4. engine/M1 Setup
+```
+
+**Unauthenticated: PRV-011 PRV-022: channel authenticates the other machine (2 actions)**
+
+```text
+1. engine/M1 Setup
+2. delivered engine/M1 -> M2 [position 0]
+```
+
+### What MC5a shows, and what it does not
+
+Within these separate bounds, admission by engine proof, per-connection server proof,
+presented-token attribution, protected identity delivery, filtered local environment,
+per-instance persistent state paths and authenticated confidential remote delivery
+hold together. Each required precondition has a reachable witness, including an
+engine restart and repeated L1/L2 setup. All nine seeded defects are detected;
+the unauthenticated provider channel also exposes identity material, as registered.
+There are no differences from the expected table and no promise counterexamples.
+
+This does not prove cryptography, real TLS or transport implementations, operating-system
+isolation, filesystem enforcement, liveness, unbounded behavior, or simultaneous fault
+combinations. Authentication and confidentiality are checked flags in this model.
+Connect is an abstract transport step; the certificate proof reply and application
+messages, not TCP handshake packets, are subject to modeled loss and reordering.
+The excluded placement, machine-provider, fetching and silence-time obligations remain
+outside this evidence. State-directory removal and credential revocation on instance
+removal are absent; none of the instances is removed. No engine conformance claim or
+new conformance vector follows from these reference-model results.
+
+The domain of trust is a limit: the engine machine and user, provider value storage,
+run machine and gate, and signing keys/backups/operators are trusted for their values.
+Root, the run's user and the provider's privileged user are excluded from X's powers;
+programs under the engine's user can read keys, make the engine's proof and get past
+gates. Runs sharing a user can read each other's credentials where the kernel permits
+it. The model checks what the runner delivers, not whether its usual same-user runs
+could later read another process's environment or directory. A process given a value
+can use it for all its callers, and its model or children can read it. Confinement,
+plain remote servers and their reach, and data deliberately returned by implementations
+are outside this model. Real-machine evidence remains the separate S3/A74 work.

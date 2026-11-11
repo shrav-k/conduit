@@ -219,3 +219,32 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer (ruling 76, point 6), from a fixed base: the worker in
+14 minutes (842 s), then a fresh verifier in 5 minutes (285 s); one round. The verifier found no
+fault and reproduced every count and trace. The worker built with Rust 1.99.1, since 1.97.1 was
+not installed there; the lane coordinator reran the crate under the pinned 1.97.1 on the Mac.
+
+The order added `gates.rs`. All nine promises are modelled. The parts left out are PRV-003's
+"on no other" machine, its machine provider and fetching, and PRV-025's bound on silence. Sixteen
+bounded runs finished within their limits, the largest 5,110 states.
+
+**No property of the current promises was found broken.** The six properties hold in all seven
+correct configurations:
+
+- the gate admits only proof;
+- proof before sending;
+- identity rests on what is presented;
+- identity material stays with its holders;
+- the engine's own runner keeps its promises;
+- a channel to another machine authenticates it.
+
+Each of the nine broken variants broke its named property, as the table registered. Every
+reachability property was reached where the table expected. The worker's nearest reading of
+decision 6: the harness does not consult `fault_allowed` for recovery or healing, so restricting
+crashes to the engine and cuts to the engine and M2 limits those too.
+
+The lane coordinator reran the crate's 21 tests, fmt and clippy under the pinned toolchain, and
+the repository's checks, before the merge.

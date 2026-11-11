@@ -25,7 +25,8 @@ cargo run --release --bin package
 ```
 
 The last command builds the host wrapper and writes `dist/agent-claude-code.tar.gz` and its `.sha256`
-sidecar. It prints an absolute `ARCHIVE#SHA256` argument for `conduit register --package`.
+sidecar. It prints an absolute `ARCHIVE#SHA256` argument for `conduit install --store DIR ARCHIVE#SHA256`, while `conduit serve` holds that store.
+Install required dependencies first, then use `conduit submit --store DIR PROJECT_DIR`.
 The gzip header and USTAR member metadata are deterministic for identical binary/YAML bytes:
 sorted names, zero owner/group/time, binary mode 0755, YAML mode 0644. This is a host archive,
 not a portable executable for another OS/architecture. Cargo builds and distribution output

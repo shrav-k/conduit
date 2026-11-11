@@ -1,4 +1,5 @@
 //! I4 change routes through real registration, management requests and held packages.
+mod common;
 use conduit_shell::{Config, Execution, Executor, MissingExecutor, Result, Shell, boundary};
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, path::PathBuf, sync::Mutex};
@@ -91,7 +92,13 @@ fn fixture(shell: &Shell, extra: bool) {
         doc["from"] = json!("reader-agent");
         project.documents.push(doc);
     }
-    let v=shell.submit(json!({"kind":"register-project","snapshots":boundary::s1_snapshots(&repo()).unwrap(),"builtin":shell.context.builtin,"project":project,"request":{"sender":root,"caller":root,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}),&MissingExecutor).unwrap();
+    common::install(
+        shell,
+        &repo(),
+        common::snapshots(&repo()).unwrap(),
+        &mut project,
+    );
+    let v=shell.submit(json!({"kind":"register-project","snapshots":[],"builtin":shell.context.builtin,"project":project,"request":{"sender":root,"caller":root,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}),&MissingExecutor).unwrap();
     assert_eq!(v["accepted"], true, "{v}");
     success(invoke(
         shell,

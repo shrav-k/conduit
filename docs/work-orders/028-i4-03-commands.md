@@ -61,3 +61,15 @@ Each decision is applied with its tests. From the repository root: `python3 tool
 `CONDUIT_TEST_NPM=1 cargo test --release` pass. Report the total passed and failed across all
 test binaries of each cargo run. Check the files you create for trailing white space yourself;
 do not stage anything.
+
+## Record
+
+A first run on 2026-11-10 ended after 44 minutes with no change made: the worker printed a large
+fixture whole and passed the model's output limit. The admin ran the order again with a note
+against printing whole fixtures. The second run took 50 minutes, then a fresh verifier 5, which
+found two faults: a run stopped by the runner still showed `RunRunning`, and failures after a
+session's initialization bypassed the descriptive error. The worker's second round fixed both.
+The worker reported one finding, that the specification has no form for a condition that has
+ended (LIF-011, OBS-002); the CLI shows such conditions apart with their end, in its own output.
+The admin reran every check: 163 tests with `CONDUIT_TEST_NPM=1`, clippy, fmt and the
+repository checks pass.

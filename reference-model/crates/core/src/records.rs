@@ -266,6 +266,7 @@ pub(crate) fn execute(
             "resolved_implementations",
             "state",
             "status",
+            "past_conditions",
             "shutdown",
             "first_start",
             "id",

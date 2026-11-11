@@ -10,6 +10,19 @@ fn command(store: &Path, verb: &str, extra: &[&str]) -> Output {
         .args(extra)
         .output()
         .unwrap();
+    if verb == "inspect" {
+        let rows: Vec<Value> = String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .map(|l| serde_json::from_str(l).unwrap())
+            .collect();
+        assert!(!rows.is_empty());
+        assert_eq!(
+            output.status.success(),
+            rows.iter()
+                .all(|r| conduit_shell::author::succeeded(&r["result"]))
+        );
+        return output;
+    }
     assert!(
         output.status.success(),
         "{}",
@@ -101,12 +114,54 @@ fn real_npm_register_completes_setup_and_ends_runs_on_exit() {
             );
         std::fs::write(project.join(entry.file_name()), text).unwrap();
     }
-    let registration = command(&store, "register", &[project.to_str().unwrap()]);
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let archives: Vec<_> = ["filesystem", "history", "agents"]
+        .iter()
+        .map(|name| {
+            let path = repo.join(format!("conformance/fixtures/s1/archives/{name}.tar.gz"));
+            format!(
+                "{}#{}",
+                path.display(),
+                conduit_core::packages::bytes_digest(&std::fs::read(&path).unwrap())
+            )
+        })
+        .collect();
+    let mut extra = vec![project.to_str().unwrap()];
+    for archive in &archives {
+        extra.extend(["--package", archive]);
+    }
+    let registration = command(&store, "register", &extra);
     assert!(
         registration.stderr.is_empty(),
         "{}",
         String::from_utf8_lossy(&registration.stderr)
     );
+    let inspected = command(&store, "inspect", &[]);
+    let rows: Vec<Value> = String::from_utf8(inspected.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    for name in ["shared", "history"] {
+        let row = rows.iter().find(|r| r["object"]["name"] == name).unwrap();
+        let current = &row["result"]["structuredContent"]["status"]["conditions"];
+        let running = current
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["type"] == "Running")
+            .unwrap();
+        assert_eq!(running["reason"], "RunStopped");
+        assert_eq!(running["status"], "False");
+        let past = row["pastConditions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|p| p["condition"]["reason"] == "RunRunning")
+            .unwrap();
+        assert_eq!(past["endedAt"], running["lastTransitionTime"]);
+        assert!(past["endedAt"].is_string());
+    }
     let state: Value =
         serde_json::from_slice(&std::fs::read(store.join("state.json")).unwrap()).unwrap();
     for name in ["workspace", "shared", "history", "agent-a", "agent-b"] {
@@ -200,6 +255,121 @@ fn serve_management_commands_and_fixed_audience() {
     );
     let result: Value = serde_json::from_slice(&result.stdout).unwrap();
     assert_eq!(result["isError"], false);
+    // Several separate author processes initialize and send requests concurrently.
+    // Serial repeats also cover the intermittent sequential failure in the run.
+    for _ in 0..2 {
+        std::thread::scope(|scope| {
+            let threads: Vec<_> = (0..8)
+                .map(|i| {
+                    let store = &store;
+                    scope.spawn(move || {
+                        if i % 2 == 0 {
+                            command(store, "tools", &[]);
+                        } else {
+                            command(
+                                store,
+                                "call",
+                                &[
+                                    "management.inspect.v1",
+                                    r#"{"object":{"kind":"Interface","name":"root"}}"#,
+                                ],
+                            );
+                        }
+                    })
+                })
+                .collect();
+            for thread in threads {
+                thread.join().unwrap();
+            }
+        });
+    }
+    let failed = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["call", "--store"])
+        .arg(&store)
+        .args([
+            "management.inspect.v1",
+            r#"{"object":{"kind":"Resource","name":"absent"}}"#,
+        ])
+        .output()
+        .unwrap();
+    assert!(!failed.status.success());
+    assert!(serde_json::from_slice::<Value>(&failed.stdout).is_ok());
+    let tools_by_kind = command(&store, "tools", &["--as", "Interface/root"]);
+    assert_eq!(
+        serde_json::from_slice::<Value>(&tools_by_kind.stdout).unwrap()["tools"],
+        tools["tools"]
+    );
+    let absent = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["tools", "--store"])
+        .arg(&store)
+        .args(["--as", "Agent/absent"])
+        .output()
+        .unwrap();
+    assert!(!absent.status.success());
+    assert!(String::from_utf8_lossy(&absent.stderr).contains("does not exist"));
+
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let context = conduit_shell::boundary::context(&repo).unwrap();
+    let api = conduit_loader::Specification::read(&repo.join("spec"))
+        .unwrap()
+        .names()
+        .api_version
+        .clone();
+    let core = context.core_package;
+    let project = parent.path().join("partial");
+    std::fs::create_dir(&project).unwrap();
+    std::fs::write(
+        project.join("conduit.json"),
+        serde_json::json!({"apiVersion":api,"address":"example.org/test/partial"}).to_string(),
+    )
+    .unwrap();
+    let docs = serde_json::json!([
+        {"apiVersion":api,"kind":"Type","metadata":{"name":"empty.v1"},"spec":{"family":"Resource","schema":{"type":"object"},"offers":[],"requires":[]}},
+        {"apiVersion":api,"kind":"Pool","metadata":{"name":"team-template"},"spec":{"type":format!("{core}#pool.v1")}},
+        {"apiVersion":api,"kind":"Pool","metadata":{"name":"team"},"from":"team-template"},
+        {"apiVersion":api,"kind":"Conduit","metadata":{"name":"team-inspection"},"spec":{"capability":format!("{core}#pool-management.v1"),"operations":[format!("{core}#inspect.v1")]}},
+        {"apiVersion":api,"kind":"Conduit","metadata":{"name":"root-team-inspection"},"from":"team-inspection","consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Pool","name":"team"}},
+        {"apiVersion":api,"kind":"Resource","metadata":{"name":"empty-template"},"spec":{"type":"#empty.v1"}},
+        {"apiVersion":api,"kind":"Resource","metadata":{"name":"empty"},"from":"empty-template","owner":"team"}
+    ]);
+    std::fs::write(project.join("documents.json"), docs.to_string()).unwrap();
+    let partial = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["submit", "--store"])
+        .arg(&store)
+        .arg(&project)
+        .output()
+        .unwrap();
+    assert!(!partial.status.success());
+    let rows: Vec<Value> = String::from_utf8(partial.stdout)
+        .unwrap()
+        .lines()
+        .map(|l| serde_json::from_str(l).unwrap())
+        .collect();
+    let steps: Vec<_> = rows.iter().filter(|r| r.get("step").is_some()).collect();
+    assert_eq!(
+        steps.len(),
+        4,
+        "{rows:?}: {}",
+        String::from_utf8_lossy(&partial.stderr)
+    );
+    assert_eq!(steps[0]["step"], "registration");
+    assert_eq!(steps[0]["outcome"], "succeeded");
+    assert_eq!(steps[1]["step"], "open Conduit/root-team-inspection");
+    assert_eq!(steps[1]["outcome"], "succeeded");
+    assert_eq!(steps[2]["step"], "setup Pool/team");
+    assert_eq!(steps[2]["outcome"], "succeeded");
+    assert_eq!(steps[3]["step"], "setup Resource/empty");
+    assert_eq!(steps[3]["outcome"], "failed");
+    let first_step = rows.iter().position(|r| r.get("step").is_some()).unwrap();
+    assert!(rows[first_step..].iter().all(|r| r.get("step").is_some()));
+    let unready = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["tools", "--store"])
+        .arg(&store)
+        .args(["--as", "Resource/empty"])
+        .output()
+        .unwrap();
+    assert!(!unready.status.success());
+    assert!(String::from_utf8_lossy(&unready.stderr).contains("instance exists"));
     let permission = std::fs::metadata(store.join("client-tokens")).unwrap();
     use std::os::unix::fs::PermissionsExt;
     assert_eq!(permission.permissions().mode() & 0o777, 0o700);
@@ -227,6 +397,63 @@ fn serve_management_commands_and_fixed_audience() {
             .unwrap()
             .contains("request-ended")
     );
+}
+
+#[test]
+fn help_describes_every_command_without_store_access() {
+    let verbs = [
+        "init",
+        "register",
+        "submit",
+        "replace",
+        "install",
+        "retire",
+        "unregister",
+        "inspect",
+        "records",
+        "serve",
+        "tools",
+        "call",
+    ];
+    let all = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .arg("--help")
+        .output()
+        .unwrap();
+    assert!(all.status.success());
+    for verb in verbs {
+        assert!(String::from_utf8_lossy(&all.stdout).contains(&format!("conduit {verb}")));
+        let help = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .args([verb, "--help"])
+            .output()
+            .unwrap();
+        assert!(help.status.success());
+        assert!(String::from_utf8_lossy(&help.stdout).contains("Example:"));
+    }
+}
+
+#[test]
+fn registration_does_not_install_s1_packages() {
+    let parent = tempfile::tempdir().unwrap();
+    let store = parent.path().join("store");
+    command(&store, "init", &[]);
+    let project =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../conformance/fixtures/s1/project");
+    let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["register", "--store"])
+        .arg(&store)
+        .arg(project)
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    let state: Value =
+        serde_json::from_slice(&std::fs::read(store.join("state.json")).unwrap()).unwrap();
+    for key in ["installed_packages", "preinstalled_snapshots"] {
+        assert!(
+            state["state"]
+                .get(key)
+                .is_none_or(|v| v.as_array().unwrap().is_empty())
+        );
+    }
 }
 
 #[test]
@@ -325,7 +552,13 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
             .map(|s| serde_json::from_str(s).unwrap())
             .collect()
     };
-    let unavailable = read_lines(command(&store, "inspect", &[]));
+    let unavailable = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["inspect", "--store"])
+        .arg(&store)
+        .output()
+        .unwrap();
+    assert!(!unavailable.status.success());
+    let unavailable = read_lines(unavailable);
     let refused = unavailable
         .iter()
         .find(|r| r["object"]["name"] == "repair-me")
@@ -417,6 +650,6 @@ fn failed_startup_setup_can_be_repaired_and_inspected_while_serving() {
     unsafe {
         libc::kill(server.0.id() as i32, libc::SIGTERM);
     }
-    assert!(server.0.wait().unwrap().success());
+    assert!(!server.0.wait().unwrap().success());
     assert_inspection(&read_lines(command(&store, "inspect", &[])));
 }

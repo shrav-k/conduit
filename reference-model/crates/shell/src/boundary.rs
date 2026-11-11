@@ -1,8 +1,8 @@
-//! Load the same core contracts and preinstalled S1 snapshots as the conformance runner.
+//! Load core contracts, projects and explicitly requested package archives.
 use crate::Result;
 use conduit_core::{
     Context,
-    packages::{Project, Snapshot, SnapshotSource},
+    packages::Project,
     schemas::{Environment, Scope},
 };
 use conduit_loader::{Specification, read_file};
@@ -109,52 +109,28 @@ pub fn context(repository: &Path) -> Result<Context> {
     })
 }
 
-pub fn s1_snapshots(repository: &Path) -> Result<Vec<Snapshot>> {
-    let spec = Specification::read(&repository.join("spec")).map_err(|e| e.to_string())?;
-    let fixture = value(&repository.join("conformance/language/registration/s1/fixture.json"))?;
-    fixture["snapshots"]
-        .as_array()
-        .ok_or("missing S1 snapshots")?
-        .iter()
-        .map(|recipe| {
-            let address = recipe["address"]
-                .as_str()
-                .ok_or("missing snapshot address")?;
-            let name = address.rsplit('/').next().ok_or("missing package name")?;
-            let archive = std::fs::read(
-                repository.join(format!("conformance/fixtures/s1/archives/{name}.tar.gz")),
-            )
-            .map_err(|e| e.to_string())?;
-            if conduit_core::packages::bytes_digest(&archive) != recipe["digest"] {
-                return Err("S1 snapshot digest mismatch".into());
-            }
-            Ok(Snapshot {
-                source: SnapshotSource::PreinstalledSnapshot,
-                address: address.into(),
-                version: recipe["version"].as_str().ok_or("missing version")?.into(),
-                digest: recipe["digest"].as_str().ok_or("missing digest")?.into(),
-                project: project(
-                    &repository.join(format!("conformance/fixtures/s1/packages/{name}")),
-                    &spec,
-                )?,
-            })
-        })
-        .collect()
-}
-
 /// Metadata discovery for an explicit public install request. The engine reads and
 /// validates these archive bytes again; this command admits no package itself.
 pub fn install_arguments(argument: &str) -> Result<Value> {
     let (path, hash) = argument
         .rsplit_once('#')
         .ok_or("install needs ARCHIVE#SHA256")?;
-    let path = std::path::Path::new(path)
-        .canonicalize()
-        .map_err(|_| "cannot read package archive")?;
-    let bytes = std::fs::read(&path).map_err(|_| "cannot read package archive")?;
+    let path = std::path::Path::new(path).canonicalize().map_err(|error| {
+        format!(
+            "install archive {path:?}: cannot resolve archive: {error}; use a readable archive path"
+        )
+    })?;
+    let bytes = std::fs::read(&path).map_err(|error| {
+        format!(
+            "install archive {}: cannot read archive: {error}; check its permissions",
+            path.display()
+        )
+    })?;
     let digest = format!("sha256:{}", hash.strip_prefix("sha256:").unwrap_or(hash));
     if conduit_core::packages::bytes_digest(&bytes) != digest {
-        return Err("package archive digest mismatch".into());
+        return Err(format!(
+            "install archive {path:?}: package archive digest mismatch; use the SHA-256 of these exact archive bytes"
+        ));
     }
     let manifest = archive_metadata::manifest(&bytes)?;
     Ok(
@@ -163,14 +139,16 @@ pub fn install_arguments(argument: &str) -> Result<Value> {
 }
 
 /// CLI archive admission. No filesystem extraction; the core owns package validation.
-pub fn install_package(shell: &crate::Shell, repository: &Path, argument: &str) -> Result<()> {
+pub fn install_package(shell: &crate::Shell, _repository: &Path, argument: &str) -> Result<()> {
     let (path, hash) = argument
         .rsplit_once('#')
         .ok_or("--package needs ARCHIVE#SHA256")?;
     let digest = format!("sha256:{}", hash.strip_prefix("sha256:").unwrap_or(hash));
     let bytes = std::fs::read(path).map_err(|_| "cannot read package archive")?;
     if conduit_core::packages::bytes_digest(&bytes) != digest {
-        return Err("package archive digest mismatch".into());
+        return Err(format!(
+            "install archive {path:?}: package archive digest mismatch; use the SHA-256 of these exact archive bytes"
+        ));
     }
     // Discover metadata with the core's virtual archive/link semantics, without extraction.
     let manifest = archive_metadata::manifest(&bytes)?;
@@ -190,7 +168,7 @@ pub fn install_package(shell: &crate::Shell, repository: &Path, argument: &str) 
         .join(digest.trim_start_matches("sha256:"));
     let directory =
         url::Url::from_directory_path(directory).map_err(|_| "invalid package directory")?;
-    let reply = shell.submit(serde_json::json!({"kind":"install-archive","archive":{"name":path,"address":address,"version":version,"digest":digest,"directory":directory.as_str(),"completion":{"status":"complete","bytes":bytes}},"snapshots":s1_snapshots(repository)?,"builtin":shell.context.builtin}), &crate::MissingExecutor)?;
+    let reply = shell.submit(serde_json::json!({"kind":"install-archive","archive":{"name":path,"address":address,"version":version,"digest":digest,"directory":directory.as_str(),"completion":{"status":"complete","bytes":bytes}},"snapshots":[],"builtin":shell.context.builtin}), &crate::MissingExecutor)?;
     if reply["accepted"] != true {
         return Err(format!("package admission failed: {reply}"));
     }

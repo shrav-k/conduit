@@ -55,21 +55,45 @@ From this directory, with an existing parent directory for the store:
 ```sh
 cargo run --release -p conduit-shell -- init --store /tmp/conduit-store
 mkdir -p /tmp/conduit-s1/shared /tmp/conduit-s1/history
-cargo run --release -p conduit-shell -- register --store /tmp/conduit-store ../conformance/fixtures/s1/project
+cargo run --release -p conduit-shell -- serve --store /tmp/conduit-store
+# In another terminal, install filesystem, history and agents in this order.
+# Use the SHA-256 of each archive (the checked-in project's manifest pins it).
+cargo run --release -p conduit-shell -- install --store /tmp/conduit-store ../conformance/fixtures/s1/archives/filesystem.tar.gz#SHA256
+cargo run --release -p conduit-shell -- install --store /tmp/conduit-store ../conformance/fixtures/s1/archives/history.tar.gz#SHA256
+cargo run --release -p conduit-shell -- install --store /tmp/conduit-store ../conformance/fixtures/s1/archives/agents.tar.gz#SHA256
+cargo run --release -p conduit-shell -- submit --store /tmp/conduit-store ../conformance/fixtures/s1/project
 cargo run --release -p conduit-shell -- inspect --store /tmp/conduit-store
+# Stop serve with Ctrl-C before exporting records.
 cargo run --release -p conduit-shell -- records --store /tmp/conduit-store
 ```
 
 First start uses the machine's hostname, OS and architecture, plus no custom labels unless
-`--label KEY=VALUE` is supplied. Registration preinstalls S1's three package snapshots, reads
-the submitted directory through the strict loader, then explicitly requests opening root's
-submitted Conduits and setup. The built-in runner now starts S1's unchanged npm filesystem
-server for each held directory; those directories must already exist. Registration waits for
-initialization and setup to end. The command owns its runs and ends them when it exits;
+`--label KEY=VALUE` is supplied. Install every required package explicitly, including S1's
+filesystem, history and registration-only agents packages. Neither registration nor first
+start installs them. `submit` reads the directory through the strict loader, registers it,
+then explicitly requests opening root's submitted Conduits and setup. The built-in runner now starts S1's unchanged npm filesystem
+server for each held directory; those directories must already exist. `register` waits for
+initialization and setup to end. This local command owns its runs and ends them when it exits;
 `serve` owns the persistent runner and consumer HTTP server. Every open of a store
 first commits recovery, ending interrupted invocations unknown without replay. Inspection makes
 core inspect requests as root, one JSON line per object, including authority refusals.
-Records exports ordered CloudEvents as JSON lines and reports gaps on stderr.
+Records exports ordered CloudEvents as JSON lines and reports gaps on stderr; stop `serve`
+before exporting records. Any printed error result, rejection, or outcome other than
+`succeeded` gives a nonzero exit. Inspection still prints every object's result when some
+inspections are refused. `submit` stops at its first failed step and prints JSON summary
+lines with `step` and `outcome` after the result lines, including the failed step. Earlier
+successful steps persist; inspect and resume explicitly through `call`.
+
+`conduit --help` and `conduit COMMAND --help` describe arguments and examples without a store.
+`tools --as NAME` also accepts `KIND/NAME`, distinguishes absent instances from instances
+without a client identity, and explains setup/opening when no tools are presented.
+Client initialization waits up to 10 seconds per attempt, with three attempts. Errors name
+the initialization step and elapsed wait. Authentication runs its blocking store read off
+the async workers. A sent request is never automatically retried, including after an expired
+session. Run observations are updated when startup succeeds; CLI inspection shows ended
+observations separately as `pastConditions` with `endedAt`, while current `conditions` holds
+the latest observation. The specification has no defined ended-condition form; this history
+is a CLI supplement, like `consumedConduits`.
 
 The shell holds an exclusive store lease. One mutex serializes read/step/commit; executors
 run outside it, and their completions reenter it. The whole State and records are committed
@@ -524,8 +548,8 @@ See [CONFORMANCE.md](CONFORMANCE.md#consumer-server-order-022) for these boundar
 [Live S1](examples/s1/README.md) replaces the registration-only Agent fixtures with the
 standalone [Claude Code](../packages/agent-claude-code/README.md) and
 [Codex](../packages/agent-codex/README.md) packages. Each crate builds and packs on its own.
-`conduit register --store DIR --package ARCHIVE#SHA256 --package ARCHIVE#SHA256 PROJECT_DIR`
-admits both archives through the core before registering the project. The CLI checks each
+`conduit install --store DIR ARCHIVE#SHA256` admits each archive through the serving engine;
+`conduit submit --store DIR PROJECT_DIR` then registers and sets up the project. The CLI checks each
 compressed archive's digest and leaves package admission to the core; it does not rewrite
 project pins. Pins in a live working copy must match the generated host archives. The checked-in
 example instead pins portable metadata-only archives for the registration vector.

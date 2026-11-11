@@ -1,6 +1,6 @@
 {
   "id": "setup-review-conditions-builtin",
-  "title": "Running conditions preserve other conditions and transition and heartbeat times",
+  "title": "Running conditions supersede stopped observations and preserve other conditions and heartbeat times",
   "layers": [
     "convention",
     "interface"
@@ -1299,7 +1299,7 @@
         "invocation": "$conditionSetup2",
         "report": {
           "kind": "run",
-          "outcome": "failed"
+          "outcome": "succeeded"
         },
         "evidence": {
           "time": "2026-11-09T13:34:00Z",
@@ -1454,13 +1454,40 @@
       "expect": {
         "reply": {
           "_meta": {
-            "io.github.shrav-k.conduit/outcome": "failed"
+            "io.github.shrav-k.conduit/outcome": "succeeded"
           }
         },
         "external_intents": [],
         "state": {
           "started": true
-        }
+        },
+        "object_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000000118",
+            "status": {
+              "conditions": [
+                {
+                  "type": "Available",
+                  "status": "True",
+                  "reason": "Observed",
+                  "message": "Available",
+                  "lastTransitionTime": "2026-11-09T10:00:00Z",
+                  "lastHeartbeatTime": "2026-11-09T10:00:00Z",
+                  "source": "urn:test"
+                },
+                {
+                  "type": "Running",
+                  "status": "True",
+                  "reason": "RunRunning",
+                  "message": "The run is running.",
+                  "lastTransitionTime": "2026-11-09T13:34:00Z",
+                  "lastHeartbeatTime": "2026-11-09T13:34:00Z",
+                  "source": "urn:conduit:builtin-runner"
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     {
@@ -1820,7 +1847,7 @@
                   "status": "True",
                   "reason": "RunRunning",
                   "message": "The run is running.",
-                  "lastTransitionTime": "2026-11-09T13:36:00Z",
+                  "lastTransitionTime": "2026-11-09T13:34:00Z",
                   "lastHeartbeatTime": "2026-11-09T13:36:00Z",
                   "source": "urn:conduit:builtin-runner"
                 }

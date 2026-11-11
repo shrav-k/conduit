@@ -1,3 +1,5 @@
+#[path = "fixtures.rs"]
+mod fixtures;
 use super::*;
 use conduit_core::access::Identity;
 use std::fs;
@@ -48,7 +50,7 @@ fn fixture_input(raw: &Value, shell: &Shell, symbols: &BTreeMap<String, Value>) 
     if input["kind"] == "resolve-project" || input["kind"] == "register-project" {
         input.as_object_mut().unwrap().remove("file");
         input.as_object_mut().unwrap().remove("reverse");
-        let mut snapshots = boundary::s1_snapshots(&repository()).unwrap();
+        let mut snapshots = fixtures::snapshots(&repository()).unwrap();
         for s in &mut snapshots {
             s.project.directory = None;
         }

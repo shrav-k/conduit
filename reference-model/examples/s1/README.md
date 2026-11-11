@@ -15,14 +15,18 @@ can run on any host. Those archives contain no executable. Before a live run:
    version unchanged. The engine never silently replaces a submitted digest.
 3. In `instances.yaml`, set the shared/history roots to two existing directories, separate
    from the engine store and every Agent working directory.
-4. Initialize a fresh store, register the copy with both printed package arguments, and serve:
+4. Initialize a fresh store and start serving. In another terminal, install the filesystem and
+   history fixture archives, then both host Agent archives, and submit the copy:
 
 ```sh
 reference-model/target/release/conduit init --store /tmp/conduit-live-store
-reference-model/target/release/conduit register --store /tmp/conduit-live-store \
-  --package /absolute/agent-claude-code.tar.gz#HOST_SHA256 \
-  --package /absolute/agent-codex.tar.gz#HOST_SHA256 /absolute/live-project
 reference-model/target/release/conduit serve --store /tmp/conduit-live-store
+# In another terminal; use the SHA-256 pins of the matching archives:
+reference-model/target/release/conduit install --store /tmp/conduit-live-store conformance/fixtures/s1/archives/filesystem.tar.gz#SHA256
+reference-model/target/release/conduit install --store /tmp/conduit-live-store conformance/fixtures/s1/archives/history.tar.gz#SHA256
+reference-model/target/release/conduit install --store /tmp/conduit-live-store /absolute/agent-claude-code.tar.gz#HOST_SHA256
+reference-model/target/release/conduit install --store /tmp/conduit-live-store /absolute/agent-codex.tar.gz#HOST_SHA256
+reference-model/target/release/conduit submit --store /tmp/conduit-live-store /absolute/live-project
 ```
 
 In another terminal, request turns explicitly:

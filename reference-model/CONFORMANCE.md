@@ -348,3 +348,26 @@ three multi_agent switches false when explicitly disabled. Its strings also cont
 collaboration tools. This metadata and the argument tests do not establish their absence in
 a real client; the admin's check is pending. No native Agent client or model work ran here.
 Findings 4-01, 4-03, 4-08 and 4-11 remain open.
+
+
+## Author commands (work order 028)
+
+Every printed failed result makes the command exit nonzero, including `isError`, an outcome
+other than `succeeded`, a rejected local registration, and incomplete record export.
+`submit` prints each attempted registration, open and setup step's outcome after its results;
+it stops on failure and preserves completed steps. Help describes every command and example.
+`tools --as` accepts both names and kind/name references and explains missing identities.
+
+S1 packages have no special treatment in engine code. Tests explicitly install their archives
+(or scripted variants) before registration. Portable vectors retain snapshots as fixtures.
+Authentication's blocking store read and verification run on the blocking pool so commits do
+not occupy async workers. Client initialization gets three attempts of up to ten seconds;
+errors identify the step and elapsed time. Requests already sent are never retried by the CLI,
+and automatic transport reinitialization/replay is disabled.
+
+A successful run start supersedes the earlier stopped observation. The core retains ended
+observations internally; authorized CLI inspection shows them in `pastConditions`, each with
+`condition` and `endedAt`, separately from the current status. LIF-011 and `condition.v1`
+define no ended-condition history form, so this is a CLI supplement, not a new status promise.
+The regression tests cover current running/unknown observations, ended times, parallel CLI
+processes, failure exits and partial submission summaries.

@@ -1,1 +1,0 @@
-{"source_line":2,"type":"user","message":{"role":"user","content":[{"content":"{\"state\":1}","tool_use_id":"toolu_01LGExcgiHwWQwHSY3e3MW75","type":"tool_result"}]},"tool_use_result":{"_meta":{"io.github.shrav-k.conduit/invocation":"inv-1","io.github.shrav-k.conduit/outcome":"succeeded"},"content":"{\"state\":1}","structuredContent":{"state":1}}}

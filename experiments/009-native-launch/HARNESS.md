@@ -1,5 +1,10 @@
 # Experiment 009 harness
 
+Historical method as run on 2026-11-09. The [harness code at C0](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch)
+is superseded by [the engine](../../engine/README.md) and the
+Agent packages for [Claude Code](../../packages/agent-claude-code/README.md) and
+[Codex](../../packages/agent-codex/README.md). The commands below describe that archived harness.
+
 This implements the [pre-registration](README.md) under
 [work order 010](../../docs/work-orders/010-native-launch-harness.md). It runs a stub, not an
 engine. No real client was run by the worker. Offline fixtures are not experiment results.
@@ -43,8 +48,8 @@ configuration homes and separate logins remain a step requiring the owner, not i
 
 ## The wrappers
 
-`claude-wrapper` and `codex-wrapper` are separate binaries, sharing `src/wrapper.rs` and
-`src/client.rs`. They speak newline-delimited MCP over stdin/stdout using the official Rust
+`claude-wrapper` and `codex-wrapper` are separate binaries, sharing [src/wrapper.rs](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src/wrapper.rs) and
+[src/client.rs](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src/client.rs). They speak newline-delimited MCP over stdin/stdout using the official Rust
 SDK, `rmcp` 3.9.0. They expose exactly one tool, `turn`, with one required string argument,
 `message`, and reject unknown tools, extra arguments and non-string messages before launching
 a client. Its result has text content plus `structuredContent` containing `text`, the client's

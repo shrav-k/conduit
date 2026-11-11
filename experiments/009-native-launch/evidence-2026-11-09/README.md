@@ -1,5 +1,8 @@
 # Evidence for experiment 009, 2026-11-09
 
+The raw records described below are [kept at C0](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/evidence-2026-11-09).
+This index preserves their trimming and sanitization method.
+
 These are trimmed records for the [dated results](../results-2026-11-09.md), read offline from
 the admin's three external record directories. Directory names here identify attempts only;
 no original machine path is retained. Matrix boundaries supplied by the admin were:
@@ -35,13 +38,13 @@ Each scenario record retains:
 - `request_attribution`, a derived index of all request IDs by instance, checked against the
   unabridged request rows. It does not replace them or claim process isolation.
 
-[classification-counts.json](classification-counts.json) has 36 rows: one per client and
+[classification-counts.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/evidence-2026-11-09/classification-counts.json) has 36 rows: one per client and
 scenario in each attempt. It uses the order's interpretation of the report schema. The 54
 started turns are counted as 42 `told_user` and 12 `other`; the 18 unstarted second turns are
 not outcomes. Classification was checked against tool events, stub records and final answers,
 not inferred solely from successful wrapper status. The results quote the failure outcomes.
 
-[harness.json](harness.json) inventories physical lines and preserves selected source excerpts
+[harness.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/evidence-2026-11-09/harness.json) inventories physical lines and preserves selected source excerpts
 with original file and line numbers from the admin-designated order-010 working tree for
 attempt 3. It is not the older harness in this checkout and is not a full source snapshot.
 It also identifies excerpts of the reused experiment-008 library; that library is excluded

@@ -1,1 +1,0 @@
-Called `files.read.v1` with path `fail.txt`. It returned `failed` with `isError: true`.

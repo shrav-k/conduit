@@ -1,5 +1,0 @@
-`control.next.v1({})` succeeded and returned `{"state":1}`.
-
-Afterward, tool discovery still showed only `control.next.v1`, `files.read.v1`, and `files.write.v1`. Attempting `notes.read.v1` with `{"path":"hello.txt"}` failed because the client had not exposed it (`TypeError: ... is not a function`).
-
-`hello.txt` was not read. No shell commands or substitute tools were used.

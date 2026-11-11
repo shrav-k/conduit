@@ -1,5 +1,0 @@
-# Codex run diag-b2-1 (agent B), trimmed from its --json output
-## stderr
-Reading additional input from stdin...
-## events
-MESSAGE MCP servers: chatgpt_space, codex_document_control, hotline, pets, plugin_management, safety_settings, search_service, sites; MCP tool name explicitly exposed: codex_document_control.list_document_sessions; remaining MCP tool names are deferred and cannot be listed without a tool call.

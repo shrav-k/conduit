@@ -20,8 +20,8 @@ can be launched this way; this order makes that a product.
 
 Read: the handoff; orders 020 to 022 and their records; the shell as they left it; needs 1 to 10
 of the first build; [ruling 48](../proposals/ruling-48/README.md), point 1 and 2;
-[experiment 009](../../experiments/009-native-launch/README.md), its results and its code
-(`src/client.rs`, `src/wrapper.rs`, `src/runner.rs`), and experiment 008's later-turn results;
+[experiment 009](../../experiments/009-native-launch/README.md), its results and [its code](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src)
+([src/client.rs](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src/client.rs), [src/wrapper.rs](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src/wrapper.rs), [src/runner.rs](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src/runner.rs)), and experiment 008's later-turn results;
 `conformance/fixtures/s1/packages/agents/`; and these promises: MAN-010, PKG-020, PRV-007,
 PRV-022, PRV-023, TPL-019, IMP-001, IMP-002, IFC-012, IFC-013, IFC-038.
 

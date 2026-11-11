@@ -1,3 +1,0 @@
-{"source_line":1,"canonical_audience":"https://localhost:52503/","case":"C3","first_401":true,"kind":"start","ttl_ms":0,"unix_ms":1794260823268,"url":"http://127.0.0.1:52503/"}
-{"source_line":2,"body":"{\"jsonrpc\":\"2.0\",\"id\":0,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{\"elicitation\":{\"form\":{},\"url\":{}}},\"clientInfo\":{\"name\":\"codex-mcp-client\",\"title\":\"Codex\",\"version\":\"0.167.0\"}}}","headers":{},"http_method":"POST","id":1,"kind":"request","revision":null,"token_valid":true,"unix_ms":1794260823458}
-{"source_line":3,"headers":{"www-authenticate":"Bearer error=\"invalid_token\""},"id":1,"kind":"response","notification_stream":false,"reason":null,"status":401,"unix_ms":1794260823458}

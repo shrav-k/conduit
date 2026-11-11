@@ -34,7 +34,7 @@ This order extends the harness of [order 002](002-real-client-harness.md) to run
 
 ## Scope
 
-Only files under `experiments/008-real-client/` other than `README.md` and the results.
+Only files under [experiments/008-real-client/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client) other than `README.md` and the results.
 
 ## Done when
 

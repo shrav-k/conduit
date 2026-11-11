@@ -1,1 +1,0 @@
-Use only the experiment stub's MCP tools. Call control.next.v1 with {}, then use the newly opened tool notes.read.v1 with path hello.txt. Discover the new tool if your client permits it. Report what happened. Do not substitute shell commands or other tools for the requested calls.

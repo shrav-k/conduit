@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "stub": {
-      "headersHelper": "'<lab>' '--headers-helper' '--identity-dir' '<runs>/claude-C1-cache-off-ttl-60000-auth-valid-r3/identity' '--helper-log' '<runs>/claude-C1-cache-off-ttl-60000-auth-valid-r3/helper.jsonl'",
-      "type": "http",
-      "url": "http://127.0.0.1:51255/"
-    }
-  }
-}

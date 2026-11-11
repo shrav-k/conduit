@@ -110,7 +110,7 @@ Run on 2026-11-06 from 18:23:56 to 18:23:59 UTC, on an Apple M2 Max, macOS 26.6.
 rustc 1.97.1, security-framework 3.7.0. The probe ran under Claude Code, with no terminal, in the
 user's logged-in graphical session: `launchctl managername` printed `Aqua`. `cargo test --release`
 passed: six tests of the helpers, none of which touches a keychain. The raw output is
-[results.json](results.json), and the console output is [results.txt](results.txt).
+[results.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.json), and the console output is [results.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.txt).
 
 Every read was made with user interaction disabled in the reader, as a session leader with no
 controlling terminal (opening `/dev/tty` failed with "Device not configured"). No reader timed
@@ -201,8 +201,8 @@ is the independent repetition that is kept.
 A review ran the probe again, as [Run it](#run-it) says, on 2026-11-06 from 18:31:31 to 18:31:33
 UTC, on the same machine, macOS, toolchain and crate versions, in the same kind of session
 (`Aqua`, attributes `0x2030`). Cargo ran offline (`CARGO_NET_OFFLINE=true`), and the whole probe
-ran under a 900-second alarm. Its raw output is [results-rerun.json](results-rerun.json) and its
-console output [results-rerun.txt](results-rerun.txt), renamed after the run so that the run
+ran under a 900-second alarm. Its raw output is [results-rerun.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.json) and its
+console output [results-rerun.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.txt), renamed after the run so that the run
 above keeps its files.
 
 - **Every case matched.** All 46 reads had the same outcome, code, message and value check as
@@ -350,14 +350,22 @@ Nothing here binds, and nothing here decides. Points for the owner:
 
 ```sh
 cargo build --release
-./target/release/probe        # or: cargo run --release
+probe_stamp=$(date -u +%Y-%m-%dT%H%M%SZ)
+./target/release/probe >"results-${probe_stamp}.txt"
+probe_status=$?
+if [ -f results.json ]; then mv results.json "results-${probe_stamp}.json"; fi
+cat "results-${probe_stamp}.txt"
+test "$probe_status" -eq 0
 cargo test --release          # tests of the helpers; none touches a keychain
 ```
 
 The probe needs macOS with `/usr/bin/security` and `/usr/bin/codesign`. It builds the readers into
-`target/scratch/build/`, writes `results.json` here and prints the summary that `results.txt`
-holds. A new run overwrites `results.json`. The review's run was renamed to `results-rerun.json`
-and `results-rerun.txt` afterward, so that each recorded run keeps its own files. The probe exits
+`target/scratch/build/`, writes an intermediate `results.json` here and prints the summary
+shown in the historical [results.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.txt). The executable writes that intermediate filename; the commands above immediately move it
+to a dated JSON file and capture dated console output. Keep both with the next run's dated
+results, rather than replacing a recorded run. The review's run was renamed to
+[results-rerun.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.json)
+and [results-rerun.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.txt) afterward. The probe exits
 0 when the run completed, 1 when it stopped, and 3 when the search list or the default keychain
 changed, which it then prints. It never shows a dialog on purpose; if one ever
 appears, cancel it, since every child process is killed after its timeout.
@@ -366,5 +374,5 @@ appears, cancel it, since every child process is killed after its timeout.
 
 | Date | Work | Evidence |
 | --- | --- | --- |
-| 2026-11-06 | Built the probe; ran it three times; recorded the third run | The tables above; [results.json](results.json); [results.txt](results.txt); `cargo test --release` passed; search list and default keychain unchanged after every run |
-| 2026-11-06 | Review: ran the probe again; checked the claims against both raw files, the SDK's headers, Apple's Security source and TN3137; corrected a mislabelled timing row and statements that went beyond what was measured | [Re-run](#re-run-by-the-review); [results-rerun.json](results-rerun.json); [results-rerun.txt](results-rerun.txt); same outcome in all 46 cases; `cargo test --release` passed; search list and default keychain unchanged, checked against copies saved before the run; no throwaway keychain left |
+| 2026-11-06 | Built the probe; ran it three times; recorded the third run | The tables above; [results.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.json); [results.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.txt); `cargo test --release` passed; search list and default keychain unchanged after every run |
+| 2026-11-06 | Review: ran the probe again; checked the claims against both raw files, the SDK's headers, Apple's Security source and TN3137; corrected a mislabelled timing row and statements that went beyond what was measured | [Re-run](#re-run-by-the-review); [results-rerun.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.json); [results-rerun.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.txt); same outcome in all 46 cases; `cargo test --release` passed; search list and default keychain unchanged, checked against copies saved before the run; no throwaway keychain left |

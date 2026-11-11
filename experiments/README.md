@@ -1,7 +1,7 @@
 # Experiments
 
 Experiments are evidence. Nothing here binds: the [specification](../spec/README.md) alone states
-accepted behavior. No experiment has run a Conduit engine, because none exists.
+accepted behavior. The first build's real-engine runs are indexed below with the earlier probes.
 
 Every experiment and probe, planned, running, done or dropped, has one row in the
 [register](../ROADMAP.md#experiments-and-probes) of the roadmap, with its state and what it
@@ -19,19 +19,54 @@ expected outcomes and validation record together.
 
 | Experiment | Purpose | Current evidence |
 | --- | --- | --- |
-| 001 — shared access | Exercised all five families on paper, with static fixtures. | Removed on 2026-11-05: its fixtures used only shapes the rulings replaced. Its files are in the [last commit that held it](https://github.com/shrav-k/conduit/tree/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access). For current example documents see [spec/schemas/examples/](../spec/schemas/examples/). |
-| 002 — runtime and plugins | A plan to test authored implementations, operations implemented by graphs, composed requirements, access over the Model Context Protocol and recovery, written before the specification. | Removed by ruling 39: a plan only, with no code and no measurements, in shapes the specification replaced. Its [last version](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/002-runtime-plugins/README.md). |
-| 003 — language library probes | Checked how JSON Schema and YAML libraries behave, before the schema profile was chosen. | Removed by ruling 39: 20 offline cases in Python, of libraries and not of Conduit; the schema profile now settles what they probed. Its [last version](https://github.com/shrav-k/conduit/tree/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes). |
-| [004 — Stateright evaluation](004-stateright-evaluation/README.md) | Evaluate a Rust-embedded model checker for checking safety promises under loss, reordering and crashes. | Executed 2026-11-05 in Rust: five rule sets checked, three seeded defects found, one defect found in an accepted rule. A tool evaluation, not evidence about a Conduit engine. |
-| [005 — macOS keychain](005-macos-keychain/README.md) | Probe E10 of the plan audit (A22): whether a macOS keychain can be read with no person present, by a trusted, an untrusted and a rebuilt binary, and when locked. | Executed 2026-11-06 in Rust, on two throwaway keychains, never the login keychain. A binary on an item's lists read it silently in under 6 ms; an unlisted binary, a rebuilt binary and a locked keychain were refused at once, with errSecAuthFailed. In the login keychain's format, an item added with the `security` tool was refused to an ad-hoc-signed binary until its partition list was changed with the keychain's password. A review ran it again the same day, with the same outcome in every case. A daemon was not tested. |
-| [007 — the baseline for S1](007-s1-baseline/README.md) | A70: what S1's tasks, set up and then changed and repaired, cost an author with today's tools, as the bar for the first build's author measurements. | Executed 2026-11-09 with Claude Code and Codex: T1 to T7 done, checked by running both agents and counted, in its [results](007-s1-baseline/results-2026-11-09.md). Setup took 49 lines in 7 files and 13 concepts. Each later change of access was one file per agent. The upgrade gave the read-only agent two new write tools until the server's `--read-only` replaced a list of tool names. No engine ran. |
-| [008 — what a real client shows its model](008-real-client/README.md) | A71: what Claude Code and Codex, unchanged, receive, pass to their models and do next when the engine's presented server answers as IFC-012, IFC-013, IFC-025 and IFC-038 say, through a stub in Rust. | Done on 2026-11-09: [dated results](008-real-client/results-2026-11-09.md), 68 runs accounted for; the [later-turn follow-up](008-real-client/results-2026-11-09-later-turn.md) ran 12 two-turn sessions that day; follow-up worker classifications await admin review. |
-| [009 — native launch and identity](009-native-launch/README.md) | A4: whether Claude Code and Codex, unchanged, can each be run as an Agent on the engine's own runner, with the owner's configuration out, their logins' reach off, a token of their own, and access changed between turns. | Done on 2026-11-09: [dated results](009-native-launch/results-2026-11-09.md) record three attempts; the third completed all nine scenarios after a Codex header-helper change. Per-request attribution and second-turn access changes are shown; configuration, login and inbound-message observations have stated limits. |
-| [010 — subscription terms](010-subscription-terms/README.md) | A8: whether the engine may run Claude Code and Codex headless as Agents on a subscription. | A desk check on 2026-11-10: allowed for each user's own unmodified client and own login, with API keys the alternative both vendors recommend; a Codex login file is one per runner, so not shared between Agents. |
-| [011 — short form translation](011-short-form-spike/README.md) | A79: translate S1 in flow and block YAML into today's canonical documents and count authored edits. | Executed 2026-11-10: [dated results](011-short-form-spike/results-2026-11-10.md), all 14 exact states rejected because canonical Conduit instances have no `as`; 14 separately labeled probes with that field removed register. Prospective counts are 55 flow / 97 block lines including commands, with stated limits; no live author run. |
+| 002 — runtime and plugins | A plan to test authored implementations, operations implemented by graphs, composed requirements, access over the Model Context Protocol and recovery, written before the specification. | Removed on 2026-11-06; [archive](../docs/archive/README.md#removed-from-the-tree). |
+| 003 — language library probes | Checked how JSON Schema and YAML libraries behave, before the schema profile was chosen. | Removed on 2026-11-06; [archive](../docs/archive/README.md#removed-from-the-tree). |
+| [004 — Stateright evaluation](004-stateright-evaluation/README.md) | Evaluate a Rust-embedded model checker for checking safety promises under loss, reordering and crashes. | Executed 2026-11-05; [results](004-stateright-evaluation/README.md#results). |
+| [005 — macOS keychain](005-macos-keychain/README.md) | Probe E10 of the plan audit (A22): whether a macOS keychain can be read with no person present, by a trusted, an untrusted and a rebuilt binary, and when locked. | Executed and reviewed 2026-11-06; [dated observations](005-macos-keychain/README.md#results). |
+| [007 — the baseline for S1](007-s1-baseline/README.md) | A70: what S1's tasks, set up and then changed and repaired, cost an author with today's tools, as the bar for the first build's author measurements. | Executed 2026-11-09; [results](007-s1-baseline/results-2026-11-09.md). |
+| [008 — what a real client shows its model](008-real-client/README.md) | A71: what Claude Code and Codex, unchanged, receive, pass to their models and do next when the engine's presented server answers as IFC-012, IFC-013, IFC-025 and IFC-038 say, through a stub in Rust. | Done 2026-11-09; [results](008-real-client/results-2026-11-09.md) and [later-turn results](008-real-client/results-2026-11-09-later-turn.md). |
+| [009 — native launch and identity](009-native-launch/README.md) | A4: whether Claude Code and Codex, unchanged, can each be run as an Agent on the engine's own runner, with the owner's configuration out, their logins' reach off, a token of their own, and access changed between turns. | Done 2026-11-09; [results](009-native-launch/results-2026-11-09.md). |
+| [010 — subscription terms](010-subscription-terms/README.md) | A8: whether the engine may run Claude Code and Codex headless as Agents on a subscription. | Done 2026-11-10; [results](010-subscription-terms/results-2026-11-10.md). |
+| [011 — short form translation](011-short-form-spike/README.md) | A79: translate S1 in flow and block YAML into today's canonical documents and count authored edits. | Executed 2026-11-10; [results](011-short-form-spike/results-2026-11-10.md). |
 
 Keep draft syntax, static checks, synthetic tests and tests against live providers distinct.
 Never present an expected outcome as a result. A result that contradicts a promise is raised
 with a concrete counterexample; the fix is a change to the specification, which needs an owner
 ruling logged in the [plan audit](../docs/AUDIT.md#ruling-log). New experiments follow the same
 pattern, in their own directory, and state no rules of their own.
+
+## Evidence for v0
+
+A75's evidence index keeps the limits of each run with its results:
+
+- [004: Stateright evaluation](004-stateright-evaluation/README.md), for A40; bounded tool
+  safety, not a check of a Conduit engine.
+- [005: keychain observations of 2026-11-06](005-macos-keychain/README.md#results), for A22;
+  the daemon case remains open.
+- [007: S1 baseline of 2026-11-09](007-s1-baseline/results-2026-11-09.md), for A70 and A68's
+  comparison; [counted setup](007-s1-baseline/setup/) and
+  [exact prompts](007-s1-baseline/evidence-2026-11-09/prompts.txt).
+- [008: real-client results of 2026-11-09](008-real-client/results-2026-11-09.md) and
+  [later-turn results](008-real-client/results-2026-11-09-later-turn.md), for A71;
+  [method as run](008-real-client/HARNESS.md).
+- [009: native-launch results of 2026-11-09](009-native-launch/results-2026-11-09.md), for A4;
+  [method as run](009-native-launch/HARNESS.md).
+- [010: subscription-terms reading of 2026-11-10](010-subscription-terms/results-2026-11-10.md),
+  for A8; to be read again before v0 is published.
+- The first build's [increment-3 closeout results](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
+  and increment 4's [measurement plan](../docs/proposals/first-build/increment-4/measurement-plan.md),
+  [coordinator report](../docs/proposals/first-build/increment-4/coordinator-run-2026-11-10.md)
+  and [fresh-author report](../docs/proposals/first-build/increment-4/fresh-author-run-2026-11-10.md).
+  These real-engine runs stay beside their first-build records. Their raw runs stay until the
+  S1 rerun on the simplified language; counted project files and scripts stay as evidence
+  afterward.
+
+## Keeping evidence
+
+Results are self-contained; a harness's method and flags as run, and each evidence directory's
+README, stay with them; raw run records are committed with their results and leave the tree in
+the next condensation, the results linking their last version. Exact prompts and counted
+artifacts stay as evidence. The [archive index](../docs/archive/README.md#removed-from-the-tree)
+lists removed records and superseded harness code. Future engine work goes to
+[engine/](../engine/README.md), and provider work to `packages/`, including
+[Claude Code](../packages/agent-claude-code/README.md) and [Codex](../packages/agent-codex/README.md).

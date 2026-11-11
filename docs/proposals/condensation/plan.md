@@ -242,15 +242,15 @@ E-numbers refer to the extractions list. Each extraction is done and verified fi
 - **Condensed:** research/README.md, archive/plan-audit-history.md (E26; Multi-system options moves verbatim to E1), docs/LANGUAGE_DEFECTS.md (E27) and archive/README.md (E25).
 
 **F. experiments/: 942 files, about 148k words.** Details are in the experiments section.
-- 005: results.json, results-rerun.json, results.txt, results-rerun.txt.
-- 007: evidence-2026-11-09/, except prompts.txt.
+- 005: [results.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.json), [results-rerun.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.json), [results.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.txt), [results-rerun.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.txt).
+- 007: [evidence-2026-11-09/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/007-s1-baseline/evidence-2026-11-09), except prompts.txt.
 - 008:
-  - src/, tests/, Cargo.toml, Cargo.lock, rust-toolchain.toml, .gitignore.
-  - The raw files of evidence-2026-11-09/ (819 files) and evidence-2026-11-09-later-turn/ (37 files), except each directory's README.md.
+  - [src/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/src), [tests/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/tests), [Cargo.toml](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/Cargo.toml), [Cargo.lock](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/Cargo.lock), [rust-toolchain.toml](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/rust-toolchain.toml), [.gitignore](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/.gitignore).
+  - The raw files of [evidence-2026-11-09/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09) (819 files) and [evidence-2026-11-09-later-turn/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09-later-turn) (37 files), except each directory's README.md.
   - **HARNESS.md stays.**
 - 009:
-  - src/, tests/, Cargo.*, rust-toolchain.toml, .gitignore.
-  - The raw files of evidence-2026-11-09/, except its README.md.
+  - [src/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src), [tests/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/tests), [Cargo.*](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch), [rust-toolchain.toml](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/rust-toolchain.toml), [.gitignore](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/.gitignore).
+  - The raw files of [evidence-2026-11-09/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/evidence-2026-11-09), except its README.md.
   - **HARNESS.md stays.**
   - The "source" field of packages/agent-claude-code/tests/fixtures/stale-init.json becomes a C0 link.
 - Later: 004's code, once A40's model runs in reference-model.
@@ -820,26 +820,26 @@ Each item gives source, then destination. The verifier checks each against its s
 - **005 (keychain probe; A22, A63, A73):**
   - Keep the README, with anchors #safety and #what-it-means-for-a-macos-keychain-provider-package. Its citations of the secrets proposal's S5 and "[promises that would follow](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)" stay valid, because that file is condensed in place. If E18 drops "[Promises that would follow](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow)", that one link becomes a C0 permalink.
   - Keep the probe code, because A22's daemon case is open.
-  - Remove results.json and results-rerun.json (195 KB of raw ACLs and timings, all tabulated in README:129-262). Remove results.txt and results-rerun.txt, which are byte-identical. The README's 8 links become C0 links.
+  - Remove [results.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.json) and [results-rerun.json](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.json) (195 KB of raw ACLs and timings, all tabulated in README:129-262). Remove [results.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results.txt) and [results-rerun.txt](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/005-macos-keychain/results-rerun.txt), which are byte-identical. The README's 8 links become C0 links.
   - The next run writes dated output instead of overwriting.
   - Listed in "Evidence for v0" as A22's dated observations.
 - **007 (A70 baseline; the bar for A68 and for the comparison draft ruling 47 asks for):**
   - Keep the README, results-2026-11-09.md (unedited apart from link targets; anchor #how-each-measure-was-counted), setup/ (the counted artifact), and **evidence-2026-11-09/prompts.txt**, the exact check prompts that results:69 only summarizes.
-  - Remove the other 32 files of evidence-2026-11-09/. The results restate every cited message and count, and README:71 and results:146 already state what was trimmed.
+  - Remove the other 32 files of [evidence-2026-11-09/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/007-s1-baseline/evidence-2026-11-09). The results restate every cited message and count, and README:71 and results:146 already state what was trimmed.
   - Repoint 46 links to C0, except the prompts link.
 - **008 (A71, real clients on the presented server):**
   - Keep:
     - The README, with its stale "await admin review" lines (4, 142, 150) fixed and anchors #the-stub, #limits-stated-before-the-run and the follow-up anchor kept.
-    - **HARNESS.md** (about 3k words): the stub as built, its answers, the flags run, and the later-turn mechanics. Its links into src/ become C0.
+    - **HARNESS.md** (about 3k words): the stub as built, its answers, the flags run, and the later-turn mechanics. Its links into [src/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/src) become C0.
     - results-2026-11-09.md and results-2026-11-09-later-turn.md.
     - **evidence-2026-11-09/README.md and evidence-2026-11-09-later-turn/README.md**: what was kept, trimmed and sanitized. Their links to raw files become C0.
   - Repoint the 313 and 49 result links to C0.
-  - Remove src/, tests/, Cargo.*, rust-toolchain.toml, .gitignore, and the raw files of both evidence directories (819 + 37 files minus the two READMEs).
+  - Remove [src/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/src), [tests/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/tests), [Cargo.*](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client), [rust-toolchain.toml](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/rust-toolchain.toml), [.gitignore](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/.gitignore), and the raw files of both evidence directories (819 + 37 files minus the two READMEs).
   - Optional and not recommended now: replacing the per-run quotes with a link.
 - **009 (A4, native launch):**
   - Keep the README (with E24's note on point 3 and finding 3-04), **HARNESS.md** (the flags run, :105-134), results-2026-11-09.md, and **evidence-2026-11-09/README.md** (trimming and sanitization, :47-58).
   - Repoint 67 links to C0.
-  - Remove src/, tests/, Cargo.*, rust-toolchain.toml, .gitignore and the raw files of evidence-2026-11-09/. Do it in the same change as 008, because 009 depends on 008's crate by path.
+  - Remove [src/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/src), [tests/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/tests), [Cargo.*](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch), [rust-toolchain.toml](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/rust-toolchain.toml), [.gitignore](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/.gitignore) and the raw files of [evidence-2026-11-09/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/evidence-2026-11-09). Do it in the same change as 008, because 009 depends on 008's crate by path.
   - The provenance field in packages/agent-claude-code/tests/fixtures/stale-init.json becomes the C0 link.
   - Today's flags live in packages/agent-* and CONFORMANCE.md:169-175. The flags as run stay in HARNESS.md.
 - **010 (A8, subscription terms):**

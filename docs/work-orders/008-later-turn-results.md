@@ -24,7 +24,7 @@ the repository; never copy its absolute path into a file.
    log shows each client fetched between the turns, and what each client's events show its model
    was given in the second turn.
 3. Write `experiments/008-real-client/results-2026-11-09-later-turn.md`, with its trimmed
-   evidence under `experiments/008-real-client/evidence-2026-11-09-later-turn/`, every absolute
+   evidence under [experiments/008-real-client/evidence-2026-11-09-later-turn/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/008-real-client/evidence-2026-11-09-later-turn), every absolute
    path replaced and no credential of any kind; link it from the pre-registration's "Results"
    and from the first results' summary; and add to the roadmap's A71 row and the register's 008
    row that the follow-up ran, with a link.

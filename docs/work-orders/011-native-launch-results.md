@@ -31,7 +31,7 @@ absolute path into a file.
    writes the identity directory into the helper's command line; this is a finding for increment
    3's Codex Agent type, and goes under the candidate findings with its runs.
 3. **Write** `experiments/009-native-launch/results-2026-11-09.md` and trimmed evidence under
-   `experiments/009-native-launch/evidence-2026-11-09/`, every absolute path, user name and
+   [experiments/009-native-launch/evidence-2026-11-09/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/009-native-launch/evidence-2026-11-09), every absolute path, user name and
    home directory replaced, and no token, key or credential of any kind (the identity
    directories hold tokens: never copy them). Link the results from the pre-registration's
    status and "Results", the [register](../../experiments/README.md)'s row for 009 and the

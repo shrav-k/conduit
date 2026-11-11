@@ -69,6 +69,6 @@ result, and the first build is judged against it.
   counts and evidence, the observed time and mistakes, what surprised the author, the limits
   and the deviations. The measured configuration files are in [setup/](setup/), and the
   author's log, the prompts and each run's trimmed output in
-  [evidence-2026-11-09/](evidence-2026-11-09/).
+  [evidence-2026-11-09/](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/experiments/007-s1-baseline/evidence-2026-11-09).
 
 The [register](../../ROADMAP.md#experiments-and-probes) records the state.

@@ -122,7 +122,7 @@ Only the owner settles these questions; later-stage questions below retain their
 
 | What | Where it is recorded |
 | --- | --- |
-| Metrics M4: metrics as a general, customizable feature (any metric, any display or aggregation), with model usage by account and model and never one shared sum; may amend ruling 68 point 1 (ruling 68, point 6); being researched | [Ruling 68](proposals/ruling-68/README.md), [metrics proposal](proposals/metrics/README.md) |
+| Metrics M4: metrics as a general, customizable feature; six rulings R1 to R6, which may amend ruling 68 point 1 (ruling 68, point 6) | [General metrics proposal](proposals/metrics/general.md), [ruling 68](proposals/ruling-68/README.md) |
 | A20: v0 authorization's cross-path, issuer-independence and provider-scope questions, after the bypass probe A7 | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings), [A7](../ROADMAP.md#experiments-and-probes) |
 | C6 to C12 after the S1 rerun | [Ruling 62](proposals/ruling-62/README.md) |
 | Review-list items 15 to 19 and increment 4's open decisions, excepted by ruling 58 point 1 | [Review list](proposals/first-build/to-review-with-the-owner.md), [increment 4](proposals/first-build/log-increment-4.md) |

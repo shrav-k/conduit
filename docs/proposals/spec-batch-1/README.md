@@ -227,7 +227,7 @@ Why this order:
 
 CONFLICTS RESOLVED
 C1. IDs.
-- **Batch-2 reservations.** The brief's reservations keep their meaning and are left for batch 2: IFC-048, OPS-035, ACC-045..052 and FLEET-007..010. The brief's LIF-038 and LIF-039 (the Fleet retire rules) are folded into LIF-020 and LIF-021 (C2) and stay unused. SCT-010 (the synthesis's root-Pool rule, which the brief dropped) stays unused. So no number changes meaning between the brief and the spec.
+- **Batch-2 reservations.** The brief's reservations keep their meaning and are left for batch 2: IFC-048, OPS-035, ACC-045..052 and FLEET-007..010. The brief's LIF-038 and LIF-039 (the Fleet retire rules) are folded into LIF-020 and LIF-021 (C2) and stay unused. [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) (the synthesis's root-Pool rule, which the brief dropped) stays unused. So no number changes meaning between the brief and the spec.
 - **Retired ACC IDs.** ACC-040..043 are retired in access.yaml's head comment and are never reused; check_schemas step 7 would fail them. Batch 1's ACC IDs:
   - ACC-044 provenance (from the brief);
   - ACC-053 lift;

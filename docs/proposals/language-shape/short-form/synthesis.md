@@ -19,7 +19,7 @@ Use N4 (sectioned documents) as the base, with the fixes below. Reasons:
 
 Two ideas are taken from the other designs:
 - From N1: names that are pure functions of the author's keys, kept stable by replacing break-before-make.
-- From N3: the safety rules PRJ-010 (high-trust grants) and PRJ-011 (package templates).
+- From N3: the safety rules [PRJ-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N3-project-document.md#L186) (high-trust grants) and [PRJ-011 (package templates)](#the-package-template-constraint).
 
 FIXES THE SKEPTICS DEMANDED, ADOPTED
 F1. Stable names: replacement is break-before-make under the key's own name. This is Compose's recreate, StatefulSet's delete-then-create and Terraform's default.
@@ -52,7 +52,7 @@ F5. In the form:
 - A grant has a `from` variant, so package-exported Conduit templates and templates with inputs are reachable.
 - The words `entry` and `grant` are not used, because definitions.md reserves both.
 - The examples harness routes the 3 kindless examples by file name.
-- SCT-009 locates a diagnostic at the definition, and at the field where the rejecting check gives one, so the core still needs 0 lines.
+- [SCT-009](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L139) locates a diagnostic at the definition, and at the field where the rejecting check gives one, so the core still needs 0 lines.
 - The as-if rule requires equal objects and records, and diagnostics with the same rule and promise located in the author's text.
 
 F6. Plan rules (tooling, with golden cases that do not bind):
@@ -89,7 +89,7 @@ THESIS 2, HONESTLY
 WHY NOT THE OTHERS NOW
 - N2 (one form over a pruned core): about 120-140 promise touches, 152 vectors with changed expectations (about 104 with re-authored steps), a store break, re-evidence of increments 1-3, and an unbudgeted conflict with NAM-025 for core 0.2.0. It also loses expressiveness: templates can no longer carry relationships (S7 adapters), and S4's entries lose their ordering. Its deletions stay v1 candidates, each by its own ruling after the rerun.
 - N3 (project document plus normative plan.v1 and a Project object): about 60-80 touches, 6-10.5k lines of Rust and 120-190 vectors. Seven major holes would become binding spec text: tombstone classes, renames, root grants, consent, held IDs, a confused deputy and restoration. Promote the plan later only if a second planner must agree, at about 25-30 promises.
-- N1 (sections inside conduit.yaml): it entangles SUB-008 and MAN-004. It makes the translation depend on packages (stage 2). Its normative AUT-018 correspondence adopts other projects' objects. Grants whose consumer is root are inexpressible. Its stable-name insight is adopted as F1.
+- N1 (sections inside conduit.yaml): it entangles SUB-008 and MAN-004. It makes the translation depend on packages (stage 2). Its normative [AUT-018](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N1-normative-sugar.md#L241) correspondence adopts other projects' objects. Grants whose consumer is root are inexpressible. Its stable-name insight is adopted as F1.
 
 CHECKLIST
 All 15 inventory items are answered:
@@ -103,7 +103,7 @@ S1 lines are paper counts by the measurement plan's primary rule: file lines plu
 
 | | Layered package (E with fixes) | N1 sugar in conduit.yaml | N2 one form, smaller core | N3 project document plus plan.v1 | N4 sectioned documents, as drafted | RECOMMENDED: N4 with the fixes |
 |---|---|---|---|---|---|---|
-| S1 lines per task, T1-T7 | 16,6,0,2,1,1,1 = 27 (28 with the --reopen fix) | 17,6,0,2,1,1,1 = 28 (34 with stage 2 off) | 20,6,0,2,1,1,1 = 31 | 19,4,0,2,1,1,1 = 28 (25 with D6) | 19,6,0,2,1,1,1 = 30 (33 with its skeptics' fixes) | 20,7,0,2,1,1,2 = 33 (34 without SCT-010) |
+| S1 lines per task, T1-T7 | 16,6,0,2,1,1,1 = 27 (28 with the --reopen fix) | 17,6,0,2,1,1,1 = 28 (34 with stage 2 off) | 20,6,0,2,1,1,1 = 31 | 19,4,0,2,1,1,1 = 28 (25 with D6) | 19,6,0,2,1,1,1 = 30 (33 with its skeptics' fixes) | 20,7,0,2,1,1,2 = 33 (34 without [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140)) |
 | Bar, primary reading | pass, better on 6 | pass, better on 6 | pass, better on 6 | pass, better on 6 | pass, better on 6 | pass, better on 5, same on T3 and T7 |
 | Strict reading, against the better T5 baseline | fails (3 of 7) | fails | fails | fails | fails | fails; settled by decision 2, not by the form |
 | T1 at the fresh author's 1.7 times factor | about 27 (passes) | about 29 | about 34 (fails) | about 32 | about 32 | about 34 (fails narrowly; risk 1) |
@@ -113,10 +113,10 @@ S1 lines are paper counts by the measurement plan's primary rule: file lines plu
 | Vectors | 10-17 new; 0-7 changed by tombstones | 50-65 new for the form; 0 changed by the form | 317 cases with inputs converted, 152 with expectations changed (about 104 re-authored), 114 examples, 84 archives repacked | 120-190 new; 5 cases and 11 snapshots, plus tombstone breaks | 40-55 new; 0 of 367 invalidated (scan) | 55-80 new and binding; 0 changed by the form; 0-7 changed by the additions on either route |
 | Reference model | CLI 3.5-5.5k lines plus 2.5-3.5k tests; core +0.3-0.6k; nothing rebuilt | +0.7-1.5k over layered; core +0.45-0.9k | 1-3k core lines touched; store break; increments 1-3 re-evidenced; 12-16 work orders | 6-10.5k lines of Rust (1.5-1.8 times layered); core +4.5-7.5k; store break, avoidable | about equal to layered; core 0 for the form | about equal to layered; loader translator 0.7-1.2k plus tests; core 0 for the form plus 0.3-0.6k for the additions; no store break; increments 1-3 stand; 5-6 work orders |
 | Reading cost for implementers | 455 promises plus about 5 concepts; a CLI mirrors about 27 promises, so later changes cost 1.3-1.5 times | 474 promises, +7 terms, two syntaxes, a translation that needs packages | about 460, words within 1%, 7 concepts out and 5 in, one form | 486-505 promises, +13-15 concepts, +10-13% words | 466-469 promises, +7-8 concepts | about 466-470 promises, +7-8 concepts, nothing removed; later changes about 1.0-1.1 times |
-| Thesis 2 for what authors write | Not tested (golden compiler cases, not binding) | Registration tested; AUT-018 conformance normative (unsafe as written) | Holds only at first registration on an empty engine | Registration and change both normative | Registration only, and false after the first replacement | Registration tested by translate and equivalence vectors. It stays true after replacements, with IDs, held pins and values set by controls apart. Change is tooling made of normative requests |
+| Thesis 2 for what authors write | Not tested (golden compiler cases, not binding) | Registration tested; [AUT-018](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N1-normative-sugar.md#L241) conformance normative (unsafe as written) | Holds only at first registration on an empty engine | Registration and change both normative | Registration only, and false after the first replacement | Registration tested by translate and equivalence vectors. It stays true after replacements, with IDs, held pins and values set by controls apart. Change is tooling made of normative requests |
 
 ## grammar
-THE SECTIONED DOCUMENT (core#sectioned.v1; promises SCT-001 to SCT-010)
+THE SECTIONED DOCUMENT (core#sectioned.v1; promises [SCT-001](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L124) to [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140))
 
 WHERE
 - A sectioned document may stand in any top-level documents file of a project or package (MAN-011, SUB-010) except the manifest. It is a YAML document, or a JSON value or array item (SCH-018 amended).
@@ -152,7 +152,7 @@ DEFINITION of family F: INLINE or REFERENCED, plus COMMON
   - `description?` and `annotations?`;
   - standard arguments: a Resource has `owner` (REQUIRED), `placement?` and `runtime?`; an Agent has `placement?` and `runtime?`;
   - `consumes?` (not on a Pool);
-  - `operator?`: an OPERATOR, or `null` on a Pool to opt out of SCT-010.
+  - `operator?`: an OPERATOR, or `null` on a Pool to opt out of [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140).
 
 CONSUMES: {LOCAL: GRANT}. A GRANT is closed and takes one of two forms:
 - (a) {to, capability, operations, requirements?, description?}
@@ -181,7 +181,7 @@ TEMPLATE-BODY
 - Exactly the canonical template `spec` of the family, with inputs allowed, plus `description?` and `annotations?`.
 - A package may hold sectioned documents with `templates` only.
 
-TRANSLATION (SCT-004 to SCT-007; meaning is translation, SCT-003)
+TRANSLATION ([SCT-004](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L131) to [SCT-007](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L137); meaning is translation, [SCT-003](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L130))
 
 | Authored | Translated documents |
 |---|---|
@@ -190,7 +190,7 @@ TRANSLATION (SCT-004 to SCT-007; meaning is translation, SCT-003)
 | Referenced N | Instance N {from, arguments, standard arguments} |
 | N.consumes.L | Conduit template N--L--t {capability, operations, requirements}, plus Conduit N--L {from: N--L--t, consumer: {kind: F, name: N}, target: to, as: L}. Form (b) gives Conduit N--L {from, arguments, consumer, target, as: L} |
 | N.operator | Template N--operator--t, plus Conduit N--operator {consumer: {kind: Interface, name: root}, target: {kind: F, name: N}, as: N} |
-| A Pool with no operator member (SCT-010) | As if operator were {capability: core#pool-management.v1, operations: [register.v1, register-replacement.v1, inspect.v1, set-up.v1, retire.v1, retire-with-resources.v1, reconcile.v1]}. All are fully qualified and printed in the promise for this spec version |
+| A Pool with no operator member ([SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140)) | As if operator were {capability: core#pool-management.v1, operations: [register.v1, register-replacement.v1, inspect.v1, set-up.v1, retire.v1, retire-with-resources.v1, reconcile.v1]}. All are fully qualified and printed in the promise for this spec version |
 | conduits.N | Template N--t plus Conduit N, or Conduit N from its template |
 | description, annotations | metadata.description, metadata.annotations |
 
@@ -202,7 +202,7 @@ Purity
 
 As-if rule
 - The objects and records equal those of the translated documents.
-- Diagnostics carry the same SCT rule and kernel promise, located in the authored text (SCT-009). Secret values are redacted.
+- Diagnostics carry the same SCT rule and kernel promise, located in the authored text ([SCT-009](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L139)). Secret values are redacted.
 
 Equivalence
 - Registering the rendered translation gives the same transition as registering the sectioned document.
@@ -316,6 +316,9 @@ agents:
 - A grant from an Agent to `management`, or an unbounded grant to `access`, would have to be written in the `conduits:` section.
 
 ## decisions
+
+Historical status: tombstone option (a) is superseded by ruling 55 A7; decision 3 is open.
+
 1. THE SHAPE (ruling 53, decision 1).
 - (a) Layered: the CLI defines the short form.
 - (b) A normative notation in spec/, defined by translation into the unchanged kernel. This is N4 with fixes F1-F6.
@@ -340,7 +343,7 @@ agents:
   - It saves 1 line per Resource.
   - Risk: a new Resource silently falls under any bound that names that Pool (ACC-029).
   - Recommended: `owner` written.
-- Root's Conduit to each Pool (SCT-010).
+- Root's Conduit to each Pool ([SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140)).
   - The seven pool-management operations are printed in the promise for each spec version.
   - It applies to root only, which is unbounded anyway (ACC-022). It can only be added to (ACC-024). It is shown by render, plan and inspect, and `operator: null` opts out.
   - It saves one 400-character line, and prevents mistakes 1 and 2 of both runs (72 lines).
@@ -442,7 +445,7 @@ agents:
    - descriptions: IFC-033 and OBJ-018;
    - NAM-024 for Type schemas;
    - the operation schemas in spec/core/operations.yaml.
-3. spec/promises/sections.yaml: SCT-001 to SCT-009, plus SCT-010 if decided. Amend OBJ-006, 012, 013, 017, 019, 020, 022 and 024, INS-001, MAN-003, MAN-011, SUB-004, SUB-005, SUB-010, SCH-018 and NAM-027.
+3. spec/promises/sections.yaml: [SCT-001](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L124) to [SCT-009](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L139), plus [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) if decided. Amend OBJ-006, 012, 013, 017, 019, 020, 022 and 024, INS-001, MAN-003, MAN-011, SUB-004, SUB-005, SUB-010, SCH-018 and NAM-027.
 4. spec/schemas/sectioned.yaml, 250-400 lines. The keys of each family are restated, because the profile has no unevaluatedProperties. Then:
    - the core export lists in spec/core/conduit.yaml and the README tables;
    - 10-15 YAML examples (valid, invalid, by rule);
@@ -453,7 +456,7 @@ agents:
 2. BUILD (work orders, Codex; the admin plans and reviews)
 - WO-A, core additions and their vectors: 10-17, plus 4-8 tombstone safety rows (rename, cascade, unauthorized supersede, purge, restoration through register-replacement). Report the 0-7 existing vectors that change.
 - WO-B, loader translator:
-  - the translation map carrying SCT rule IDs, and SCT-009 diagnostics at the definition and field;
+  - the translation map carrying SCT rule IDs, and [SCT-009](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L139) diagnostics at the definition and field;
   - the runner's `translate` input kind and an `equivalent` option on register-project, modelled on registration-orders;
   - 40-55 vectors: per-rule A/B pairs, names over 63 characters and clashes, high-trust grants rejected, first-start names reserved, redaction, mixed framed and sectioned projects, a package holding only templates, and one exact S1 equivalence case.
   - WO-B runs in parallel with WO-A.
@@ -494,7 +497,7 @@ agents:
 - The count is 33 against 64: better on 5 tasks, the same on T3 and T7. T5 and T6 win by 1 line each.
 - At the fresh author's earlier factor of 1.7, T1 becomes about 34, against the baseline's 33: a fail on T1. The layered package (about 27) is less exposed.
 - Only N4's T2 registration has been run. Ruling 45 counts only the rerun.
-- Mitigations: a `conduit init` skeleton in YAML; diagnostics that print the line to add; SCT-010 (decision 3).
+- Mitigations: a `conduit init` skeleton in YAML; diagnostics that print the line to add; [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) (decision 3).
 
 2. THE STRICT READING AND JSON FAIL ON EVERY ROUTE.
 - The strict reading (every command a line, T5 against the better baseline) fails, and so does authoring in JSON.
@@ -519,7 +522,7 @@ agents:
 - The committed applied record and the author's repository are authority inputs: whoever edits the file and runs apply can widen access.
 
 7. ROOT GRANTS CAN ONLY BE ADDED TO (ACC-024).
-- `operator` lines and SCT-010's Conduits can be narrowed or removed only by retiring their target, so the file can describe a state the engine cannot reach.
+- `operator` lines and [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140)'s Conduits can be narrowed or removed only by retiring their target, so the file can describe a state the engine cannot reach.
 
 8. CASCADES.
 - Declared Conduits, config references and bound targets hold the IDs they resolved (OBJ-010). Replacing a target forces their holders to be replaced too.
@@ -540,3 +543,95 @@ agents:
 - Ruling 47 is unread.
 
 12. THE VOCABULARY AND RULING AMENDMENTS (decisions 4 and 12) MUST LAND BEFORE THE SPEC BATCH. Writing `entry` or `grant` into normative text would contradict definitions.md.
+
+## Carried from the papers
+
+Historical design constraints and proposed tests. The specification alone binds; later rulings govern their status.
+
+### The package-template constraint
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N3-project-document.md). Copied verbatim.
+
+- PRJ-011 A template exported by a package, used by an entry, may not hold a declared Conduit or an entry whose reference is fixed by name rather than given by an input (D #2).
+
+### Prior-art key points and five conditions
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/inventory-prior-art.md#key-points). Copied verbatim.
+
+1. Defining a concise form by translating it into a core is common and normative in practice: Haskell's kernel, Scheme's derived expressions (formal semantics on primitives only), WebAssembly's text abbreviations ("rewrite rules... before applying the core grammar rules"), Dhall's record completion (`T::r` = `(T.default ⫽ r) : T.Type`), Rust's `for` loops. The core stays small because every rule of the core is stated over the core alone.
+2. An option the first investigation did not cost: make the short form normative by translating it into today's canonical documents, with no `revise.v1`, `swap.v1` or restart in place. From design C's own cost verdict, about half of its roughly 80 promises came from revise and swap. Expansion alone is roughly 30 to 40 promise touches (my estimate), against 11 to 14 for the layered route.
+3. No surveyed system makes the short form change deployed objects implicitly. CloudFormation runs the SAM transform, then builds a change set from the processed template, which is executed as a separate step. Terraform writes identity changes as `moved`/`removed` blocks and keeps them forever. SpiceDB refuses schema changes that would orphan data. So OBJ-002 and SUB-007 can stay, with change made of today's requests, `expectedId` and tombstones.
+4. Thesis 2 for what authors write requires the translation rules themselves to be promises, tested by input/expected pairs (Dhall's A/B acceptance tests, SAM's translator input/output templates) plus an equivalence property: submitting the rendered expansion gives the same objects as submitting the short form. Haskell's own `let` exception shows that a translation identity can be wrong, so each rule needs vectors.
+5. Name one authority (the translation) and allow an as-if rule. Haskell: "it is not expected that it will use them directly". Rust shows the risk of two descriptions: `?` is defined per type, and its translation is only "roughly equivalent".
+6. Defaults must depend only on the text and the version it declares, and be written into the stored object with provenance. Precedents: Kubernetes static defaults are per API version and "stored... Subsequent GETs... include the default values explicitly"; Rust editions are "skin deep"; SAM stamps `Metadata: aws:sam:connectors`. Anti-precedent: GitHub Actions' default token permissions come from organization settings and changed in 2023. This conflicts with INS-013's observable.
+7. Generated names: deterministic, derived from the author's keys, under a reserved separator, and bound to core entities whatever names are in scope (Haskell's Prelude rule, Rust's lang items). Never hash content into them: SAM warns its hashed logical IDs "might change".
+8. Diagnostics must speak in the author's text. Validate the authored form against a schema of that form (Compose's oneOf short|long), keep the original beside the expansion (GHC's HsExpansion), tag generated code (rustc's DesugaringKind), and name every contributing location (Nix, CUE, HCL Subject/Context ranges). SAM's "Resource with id [X]" is the floor. SUB-005's JSON Pointer rule should extend to point into the short-form document.
+9. The long form stays legal inside the short form, and round-tripping is not required. Compose implementations "must allow use of both short and long syntaxes within the same document", and SAM templates carry plain CloudFormation resources. ALFA's lossless round-trip with XACML complicated its grammar and its successor dropped the requirement. This keeps ruling 4's scope guard for S2 to S10.
+10. Access shorthands must fail closed and never group operations beyond the pinned contract. GitHub Actions sets unspecified permissions to none once any is given. SAM Connectors' Read/Write expand from a profiles file the translator owns, which shows the risk. The expansion writes the full operation list, as SAM writes the full action list into the policy.
+11. Fields that carry identity are immutable in practice: Verified Permissions forbids changing a policy's effect, principal or resource; Kubernetes' roleRef is immutable; SpiceDB uses preconditions on writes. Identity changes are explicit statements, not inferences.
+12. Normative status and where the expansion runs are separate choices. SpiceDB, CloudFormation and Compose accept the short form in the engine; OpenFGA compiles in clients. Kubernetes never made a short form normative; generators multiplied and kustomize was later folded into kubectl without a specification, which is the long-run path of the layered approach.
+13. Specific hazards in Conduit's spec for a normative short form:
+   - SUB-008 takes the contracts digest over the manifest as handed over, so keep the short form out of the manifest;
+   - SUB-005 locations;
+   - INS-013, which forbids marking derived values;
+   - CON-016, if `capability` may be inferred;
+   - OBJ-003 and NAM-027 for generated names;
+   - MAN-001, if a lock file is added.
+14. A normative short form in spec/ also answers critic point 3: under ruling 48 the fresh author would learn the format from spec/ alone, so decision 9's separate format reference is no longer needed.
+
+The sources support defining a concise form normatively by translating it into a core. Languages and configuration systems do this often, and the core stays small and testable. That holds only under five conditions:
+
+1. Every rule of the core is stated over the core alone.
+2. The translation is total and deterministic, and its rules are themselves normative.
+3. The translation depends only on the author's text and a version the text declares. It never depends on the caller, on history or on the environment.
+4. Diagnostics speak in the author's text.
+5. The core form stays writable beside the short form.
+
+### Golden plan safety cases
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/synthesis.md#risksandtests). Copied verbatim.
+
+B. Golden (file, applied IDs, inventory, tombstones) -> plan vectors, one per class C1-C8, plus these safety cases:
+1. A grant closed by close.v1 outside apply; the same line is edited; apply: conflict, nothing opened.
+2. A grant removed and re-added under a renamed key: conflict.
+3. Agent-b retired by a responder; an unrelated apply: conflict, nothing re-created.
+4. Records purged by root; apply: the tombstone still blocks.
+5. A stale working copy re-widens a grant that another copy narrowed: conflict.
+6. An actor registers a decoy between apply's register and open: open with expectedId reports conflict.
+7. A plan made stale by a narrowing between y/N and dispatch: conflict.
+8. An apply killed after its first part in T4: no state in which both Agents write.
+9. T5 with a package whose granted operation gains an optional input, or whose tools map changes: refused without a flag.
+10. Replacement with a Conduit from outside the file targeting the old Resource: refused without a flag.
+11. A write with an unknown outcome through a grant to `shared` before T5: the plan refuses.
+12. Placement inherited on replacement on a store with two nodes.
+13. A change to a root-consumed derived Conduit: refused before dispatch, with the reason.
+14. A key containing `--`, or colliding with a generated name: rejected at compile time.
+15. A value at a place marked secret-reference: redacted in every diagnostic.
+16. Inventory to a caller with only a Pool's authority: no Agent's Conduits, counts only.
+17. A set-up whose sign-in is pending under `--yes`: stops as pending, nothing answered.
+18. A downgrade of a pin: needs a flag.
+
+### Critic constraints on turns, portability, costs and prior art
+
+Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/critic.md). Copied verbatim.
+
+11. LOW-MEDIUM: the claim of removing the fresh author's 130 script lines is overstated.
+   - Exit codes, retries, the `--store` flag and document generation are addressed. The check harness is not: turn.py exists to escape JSON for `<agent>--turn.turn.v1`.
+   - Generated names (`agent-a--turn`) reach the author in every check.
+   - What to do: give derived turn Conduits `as: <agent key>`, or add `conduit turn <agent> <message>`, and offer `--json` output for plan, apply and reach.
+   - 4-12's fix is still unspecified. The fresh author's 128 lines at T7 came from it, so the T7 projection for a fresh author depends on that fix. Under ruling 49, replacing an Agent also loses its login, and the plan should say so.
+
+12. LOW-MEDIUM: relative paths and portability.
+   - Ruling 52 pt 3 left the question of relative values to this simplification, and the package is silent on it.
+   - A committed project file with absolute `<lab>` paths, plus `conduit init` recording a store path, is tied to one machine. Ruling 51 implies recording an engine endpoint (a context), not a store.
+
+13. LOW-MEDIUM: costs.
+   - The cargo-add pattern relies on toml_edit. Rust has no mature YAML editor that keeps comments and layout, so "200-300 lines" for install is optimistic. Consider option 5(b), a separate lock file the tool writes in full.
+   - 1,500-2,500 lines for the planner and executor looks low: about nine change classes, three-way diff, waits, resume, contract and tools-map diffs, pending sign-ins. The CLI as a whole would be about 50-80% of today's shell (6,869 lines).
+   - Documentation of the layer is not budgeted.
+
+19. LOW: prior art.
+   - MCP's `instructions` field in the initialize result could carry target and Type descriptions once, instead of repeating them in every tool description as 5e does.
+   - Kubernetes server-side apply field managers address ownership among several appliers.
+   - Terraform's moved and import blocks cover key renames and adopting existing objects.
+   - Tailscale ACL files and IAM policy versions replace a policy atomically, which supports bringing swap.v1 forward.

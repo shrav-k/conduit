@@ -263,7 +263,7 @@ Manifest (conduit.yaml):
 - Without `fleet:`, each Agent writes `owner:` as a bare name.
 - Two documents of one project with the same `fleet:` make one Fleet, a narrow exception to NAM-027.
 - `fleet:` makes the Fleet. To add Agents to a Fleet registered earlier, a document writes `owner:`.
-- `operator:` on a Pool is rejected, and SCT-010 is not written: the engine makes root's Conduits.
+- `operator:` on a Pool is rejected, and [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) is not written: the engine makes root's Conduits.
 - The reserved short-form names already cover FLEET-006.
 
 ## I. CLI (stated in the plan's or the CLI's reference)
@@ -509,7 +509,7 @@ Ruling 54:
 - Ruling 53's `as`: the promise and `instance.v1`'s field, with local-name uniqueness per consumer (finding 1). Defaults and FLEET-005 and FLEET-006 depend on it.
 - Ruling 53's tombstones: the exemption for defaults, and the cascade Conduit (finding 3).
 - Ruling 53's inventory in `inspect.v1`: the A4(i) reading is applied there. One order should write `inspect.v1` once.
-- Ruling 55's sectioned-document grammar (SCT): needed for the `fleet:` key, SCT-010 dropped, and `operator:` on a Pool rejected.
+- Ruling 55's sectioned-document grammar (SCT): needed for the `fleet:` key, [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) dropped, and `operator:` on a Pool rejected.
 - ID allocation across the batch-1 areas by the coordinator: FLEET-, OPS-035 or OBS-, and ACC-044 onward.
 - ACC-033 needs a single writer. Ruling 62's C1 and C2 (bound limits reconcile; only root opens Conduits whose consumer is root, next to ACC-024) and ruling 66 point 4 (reconcile by sender) edit the same rows.
   - Recommendation: one spec order writes ACC-033 and ACC-024 with all three inputs.

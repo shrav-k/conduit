@@ -20,7 +20,7 @@ The ruling 62 and 66 points:
 - C2: a bound limits reconcile through `access`.
 - Ruling 66 point 4: a holder other than root reconciles through a Pool or a Fleet only the invocations it, its Fleet or its Fleet's Agents sent.
 
-Grounding: rulings 53, 55, 59, 60, 61 (read only so as not to foreclose it), 62 and 66; docs/proposals/simplification/ (README, research/synthesis.md, research/critic.md); docs/proposals/language-shape/README.md and short-form/synthesis.md (F2, F3, decision 5); docs/proposals/projects/brief.md (sections 4, 9, 10, 15, staging, group C); experiments/011-short-form-spike/results-2026-11-10.md; and the current text of every promise named below.
+Grounding: rulings 53, 55, 59, 60, 61 (read only so as not to foreclose it), 62 and 66; docs/proposals/simplification/ (README, [research/synthesis.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/synthesis.md), [research/critic.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/critic.md)); docs/proposals/language-shape/README.md and short-form/synthesis.md (F2, F3, decision 5); docs/proposals/projects/brief.md (sections 4, 9, 10, 15, staging, group C); experiments/011-short-form-spike/results-2026-11-10.md; and the current text of every promise named below.
 
 ## Promise and core changes
 
@@ -404,7 +404,7 @@ READINGS RECORDED AS COORDINATOR CHOICES
 - `by` (who closed or retired) is shown only to root and to that caller, as in F2.
 - Retention lasts until lifted; there is no purge route. Growth goes in the README limits.
 - "It sent" means the sending instance of OPS-008, not the caller of an onward request. A hook counts as sent by the sender of its setup or retirement.
-- C2's "a bound limits reconcile" means the reconciled request's own coverage. The brief's source, inventory-authority.md, found no text on this.
+- C2's "a bound limits reconcile" means the reconciled request's own coverage. The brief's source, [inventory-authority.md](../../projects/brief.md#unverified-authority-gaps), found no text on this.
 - The key is named `within`, not "scope", which ruling 66 uses for an Interface's managed set (ruling 42).
 - register-replacement no longer acknowledges a tombstone: F2's proposal conflicts with A7.
 - Ruling 53's literal "listing only what the caller may inspect", read with ACC-033 row 7, would list nothing except to holders of `management`. Ruling 59 A4 settles it as implemented. No action is needed.

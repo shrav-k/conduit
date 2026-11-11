@@ -20,7 +20,7 @@ RECOUNT (verified)
 Small errors in the counts:
 - The "5 extra lines" over the layered package are 2 operator lines, 2 owner lines, and +1 from the 3-line Pool block replacing the layered file's 2 lines (`conduit:` and `project:`).
 - T5 wins by 2 lines against A70 and by 1 against the better baseline. It is not "1 line each".
-- The "72 lines" said to be prevented by SCT-010 include the turn Conduits, which authors still write. The Pool part was 35 lines (coordinator run, item 4).
+- The "72 lines" said to be prevented by [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) include the turn Conduits, which authors still write. The Pool part was 35 lines (coordinator run, item 4).
 - The Bar row compares columns on different bases. Every other column keeps T7 at 1 (no --reopen). Applied uniformly, F6's --reopen rule makes every column "better on 5, same on T3 and T7".
 - Two sensitivities are omitted:
   - Three separate installs, as both real authors ran them, add 2 lines to T1 (critic gap 18).
@@ -49,7 +49,7 @@ GAPS, MOST SEVERE FIRST
      - Derived defaults (decision 3) are a separate choice that applies to both routes.
 
 3. MAJOR: "No CLI mirror of about 27 promises; later core changes cost about 1.0-1.1x" is wrong.
-   - The 27 promises in research/design-E-layered.md, line 748, are mostly the planner's: ACC-022, ACC-024, ACC-033, LIF-007, LIF-017, LIF-027, LIF-035, LIF-037, OBJ-011, INS-020, CON-031, NAM-017, NAM-023, REC-002, PKG-005 and PKG-006.
+   - The 27 promises in https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/simplification/research/design-E-layered.md, line 748, are mostly the planner's: ACC-022, ACC-024, ACC-033, LIF-007, LIF-017, LIF-027, LIF-035, LIF-037, OBJ-011, INS-020, CON-031, NAM-017, NAM-023, REC-002, PKG-005 and PKG-006.
    - Change stays tooling (decision 10), so the planner still mirrors them. F6 adds more: OBJ-010 cascades, control pointers and ACC-024.
    - Only the compile-side promises move into spec/: INS-025, NAM-027, IFC-012, IFC-014, SUB-003, SUB-005 and OBJ-018.
    - sectioned.yaml also restates every family's keys, which is a new mirror (the recommendation's own risk 5).
@@ -163,7 +163,7 @@ GAPS, MOST SEVERE FIRST
     - The shell store must persist marks; check that this is additive ("no store break").
 
 17. LOW: preservation test 8 ("no rule assumes exactly one owner").
-    - `operator` and SCT-010 hard-wire root into the form. Give a v1 path, such as naming an Interface.
+    - `operator` and [SCT-010](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/short-form/design-N4-minimal-normative.md#L140) hard-wire root into the form. Give a v1 path, such as naming an Interface.
 
 18. LOW: vocabulary.
     - The grammar itself writes GRANT and "grant", which definitions.md, line 369, forbids for access.

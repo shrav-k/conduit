@@ -42,3 +42,11 @@ three, and none over the limit. It remains a forecast; the bar is judged on the 
 ## What it amends
 
 Ruling 53, point 4: pruning a Conduit the file dropped no longer takes a flag; reopening still does.
+
+## Later answers
+
+2026-11-11, evening: before being away until the next morning, the owner let the coordinator adopt
+the recommendations of the plan for enrolling the Windows computer through Conduit during that
+night, logged for the owner to strike, except a choice that changes behavior already ruled or that
+exposes anything beyond the private Tailscale network: "agreed". The owner also kept the Windows
+computer awake and logged in for the night.

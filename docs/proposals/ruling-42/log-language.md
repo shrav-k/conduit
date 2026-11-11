@@ -152,7 +152,7 @@ Each is the editor's, and the owner can strike it.
 
 Run from the repository root after the edits:
 
-- The validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation): "439 promises
+- The validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation): "439 promises
   ok". The implementation-defined list loads as YAML, with 15 items.
 - `python3 tools/check_docs.py`: 1 error, in `spec/core/README.md`, which links to
   `docs/proposals/ruling-42/log-core.md`, the log of another group not yet written. None is in

@@ -213,7 +213,7 @@ These protect Pool-scoped delegation for Agents and, later, teams (preservation 
 - **IFC-014:** each tool name maps to exactly one Conduit per consumer, which keeps attribution. Load-bearing.
 - **Declared Conduits:** G9, the access an instance needs is open before its run starts. Load-bearing.
 - **Standalone Conduits:** granting access to a live instance. Ruling 19: "issuing a Conduit to a live instance must be a core part of the language." Load-bearing.
-- **A standalone Conduit's own name as its tool prefix:** not load-bearing. `docs/proposals/reaudit/log-followups-ab.md`, point 2, chose it because the alternative "would need the engine to keep that name after a rename", and rename was removed by ruling 41.
+- **A standalone Conduit's own name as its tool prefix:** not load-bearing. `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-followups-ab.md`, point 2, chose it because the alternative "would need the engine to keep that name after a rename", and rename was removed by ruling 41.
 - **The spec already values stable tool names.** LIF-009's observable: "The local name of a declared Conduit does not change, so the tool name ... is the one it had."
 
 **Option:** a standard argument giving a Conduit instance its local name, defaulting to the Conduit's own name. IFC-014's check per consumer already prevents collisions, and the swap operation in (b) is keyed by consumer and local name. This changes OBJ-013 (a new standard argument) and one sentence of IFC-012. One edge needs a rule of precedence: a standalone Conduit can take the local name of a closed declared one and then block that declared one's `register-replacement.v1` (noted by round 4, reader 3). The Agent's frozen definition either records the swap (its revision advances, a narrow exception to OBJ-011) or inspection reports the current Conduit under each local name (order 027's fix of 4-09).
@@ -296,7 +296,7 @@ How the later tasks would run under P2:
 - **Swap of a declared Conduit's target or template:** LIF-009's source.
 - **Default Pool:** FST-001 to FST-003 and OL5 (ruling 30).
 - **Root covering Pools:** OL2 (ruling 30) for root only.
-- **Local name argument:** nothing ruled; the choice in `docs/proposals/reaudit/log-followups-ab.md`, point 2, now has no reason.
+- **Local name argument:** nothing ruled; the choice in `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-followups-ab.md`, point 2, now has no reason.
 - **Manifest written by a tool:** none.
 
 ## 7. Checks against v1 and the later rulings
@@ -325,7 +325,7 @@ How the later tasks would run under P2:
 - docs/proposals/conventions/README.md (OL1, OL2, DO2)
 - docs/proposals/instantiation/README.md (IN1–IN10)
 - docs/proposals/principles-review/README.md (items 10, 12, 17, 29)
-- docs/proposals/reaudit/log-followups-ab.md (point 2)
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/log-followups-ab.md (point 2)
 - docs/proposals/reaudit/round-6/design-critique.md (D04, D08, D09, D11)
 
 ## Numbers

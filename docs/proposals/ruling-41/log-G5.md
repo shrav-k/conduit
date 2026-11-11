@@ -72,7 +72,7 @@ IFC-020, IFC-023, IFC-026, IFC-027, IFC-030, IFC-031, IFC-036; DL4, DL11.
 | --- | --- |
 | IFC-006 | The step sentence is pointed at hooks rather than only cut (plan rule 8): `conduit` is absent for a hook, which carries the restrictions of its setup or retirement under ACC-018. Added pointers to SEC-011 (whose read it is) and PRV-005 (what a provider call carries). "Every request has a caller" is limited to requests the engine sends, so it does not contradict IFC-032's record with no caller. |
 | IFC-008 | The outcome stays failed, as before: IFC-008 obliges the implementation to perform nothing, so its -32021 error says nothing was done. The record names the revision declared. |
-| IFC-004, IFC-008, IFC-037 | -32021 is described as the error a server gives a request that does not declare a capability it requires, as the second check against the protocol (`docs/proposals/reaudit/round-4/mcp-recheck.md`, row 26) reads it. The declaration goes in `io.modelcontextprotocol/clientCapabilities`. |
+| IFC-004, IFC-008, IFC-037 | -32021 is described as the error a server gives a request that does not declare a capability it requires, as the second check against the protocol (`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/mcp-recheck.md`, row 26) reads it. The declaration goes in `io.modelcontextprotocol/clientCapabilities`. |
 | IFC-012, IFC-014 | The length sentences go from IFC-012, as the plan says; IFC-014's observable keeps the 128-character statement with its reason (63 + 1 + 63). |
 | IFC-016 | `when` kept as it was. The observable says how a caller with no task learns the result, which replaces retrieval (6c). |
 | IFC-017 | `when` names the items reached by `command`, `package` or `remote`. Where the engine's own runner runs an item, how it starts the process is the engine's own. |
@@ -149,7 +149,7 @@ PRV-007, SEC-013). All exist.
 
 ## Validation
 
-The validation command of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) passed over
+The validation command of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) passed over
 the whole tree as it stood (411 promises, other groups mid-edit). Both files parse; every
 promise of the interface file has exactly the seven fields; no line is longer than 96
 characters. `python3 tools/set_names.py --check` reports three errors, all outside these files

@@ -38,7 +38,7 @@ Run from the repository root after the renames.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | 439 promises ok |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | 439 promises ok |
 | Every promise has exactly the seven fields, its text fields folded with `>-` | Yes |
 | A YAML line over 96 characters under `spec/` | None |
 | `python3 tools/check_docs.py` | 0 errors in 151 Markdown files, with this log written |

@@ -141,7 +141,7 @@ Run from the repository root at the end of this pass.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
 | `python3 tools/check_docs.py` | `Errors: 0` |
 | `python3 tools/set_names.py --check` | `Errors: 0`; `CONDUIT_URL` x13, `CONDUIT_IDENTITY_DIR` x10, `` `ca.crt` `` x8, `` `token` `` x8, `` `tls.crt` `` x7, `` `tls.key` `` x6 |
 | `python3 tools/check_schemas.py` | `Errors: 0` |

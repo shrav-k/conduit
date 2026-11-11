@@ -35,7 +35,7 @@ Sources:
 - the critique: docs/proposals/reaudit/round-6/design-critique.md
 - the decisions: docs/proposals/reaudit/round-6/DECISIONS.md:103-126
 - the ruling: docs/proposals/ruling-44/README.md
-- the D06 and D12 log: docs/proposals/reaudit/round-6/log-d06-d12.md
+- the D06 and D12 log: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-d06-d12.md
 
 "Coordinator / owner" means the coordinator decided under rulings 37 and 38, and the owner accepted it in ruling 44 on 2026-11-07.
 
@@ -215,7 +215,7 @@ Figures are from coordinator-run-2026-11-10.md:82-96 unless marked "my recount" 
 | No change | D13, D17 | DECISIONS.md:117, 121 |
 | Experiment programme | D01, D02, D05, D08, D09, D10, D15, D16, D19, D20 | DECISIONS.md |
 | S1 author lines saved by the applied round-6 simplifications | 0 (no S1 author file uses `implementation`, `controls`, `expectedId`, `inputSchema` or local `#` references) | grep over both runs' files |
-| Promises: before ruling 41 / after it / round 6 / after D06 and D12 / now | 434 / 426 / 452 / 454 / 455 | PLAN.md Counts; log-d06-d12.md; my count of `- id:` lines |
+| Promises: before ruling 41 / after it / round 6 / after D06 and D12 / now | 434 / 426 / 452 / 454 / 455 | PLAN.md Counts; https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-6/log-d06-d12.md; my count of `- id:` lines |
 | Ruling 41: promises removed / added | 67 / 59 | ruling-41/PLAN.md |
 | ACC-033 `then`, words, before D18 / now | 406 / 418 | critique :512; my count |
 | Lines written: baseline / coordinator / fresh author | 64 / 332 / 646 JSON + 130 script | results files |

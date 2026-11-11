@@ -26,7 +26,7 @@ stood then.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
 | `python3 tools/check_schemas.py` | `Errors: 0`. 106 files holding 250 documents read as strict YAML; 58 Schema contracts checked against the profile; 146 documents validated; 55 invalid documents each rejected; 102 exports and 1 implementation; 414 references checked for their kind; 992 citations of promises in 109 files, every one of a promise that exists; 24 rules from 23 promises applied, and the 28 sets under `examples/invalid-by-rule/` each rejected by the rule they are named for; 10 defaults validated |
 | `python3 tools/set_names.py --check` | `Errors: 0`. `CONDUIT_URL` x12, `CONDUIT_IDENTITY_DIR` x9, `` `ca.crt` `` x7, `` `token` `` x8, `` `tls.crt` `` x7, `` `tls.key` `` x6 under `spec/` |
 | `python3 tools/check_docs.py` | `Errors: 0` once this log exists; before it, the two links to it from the READMEs |

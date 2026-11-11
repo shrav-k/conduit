@@ -24,12 +24,12 @@ what it did beside this record. Where two items change one text, the section
 
 | Reader | Unsafe | Contradiction | Undetermined | Wrong | Misleading | Minor | Total |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [Reader 1](reader-1.md), contradictions | 1 | 4 | 4 | 6 | 2 | 7 | 24 |
-| [Reader 2](reader-2.md), terms and shapes | 0 | 1 | 1 | 3 | 4 | 12 | 21 |
-| [Reader 3](reader-3.md), behavior on one engine | 1 | 1 | 10 | 1 | 1 | 2 | 16 |
-| [Reader 4](reader-4.md), behavior across machines | 7 | 0 | 11 | 1 | 1 | 3 | 23 |
-| [Reader 5](reader-5.md), the whole repository | 0 | 1 | 2 | 2 | 7 | 2 | 14 |
-| [Reader 6](reader-6.md), the protocol | 1 | 1 | 6 | 7 | 2 | 4 | 21 |
+| [Reader 1](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-1.md), contradictions | 1 | 4 | 4 | 6 | 2 | 7 | 24 |
+| [Reader 2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-2.md), terms and shapes | 0 | 1 | 1 | 3 | 4 | 12 | 21 |
+| [Reader 3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-3.md), behavior on one engine | 1 | 1 | 10 | 1 | 1 | 2 | 16 |
+| [Reader 4](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-4.md), behavior across machines | 7 | 0 | 11 | 1 | 1 | 3 | 23 |
+| [Reader 5](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-5.md), the whole repository | 0 | 1 | 2 | 2 | 7 | 2 | 14 |
+| [Reader 6](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-5/reader-6.md), the protocol | 1 | 1 | 6 | 7 | 2 | 4 | 21 |
 | All findings | 10 | 8 | 34 | 20 | 17 | 30 | 119 |
 | The 111 items | 10 | 8 | 32 | 19 | 16 | 26 | 111 |
 

@@ -301,7 +301,7 @@ names include their work. One earlier run of `check_docs.py` reported 10 errors,
 to two files under `docs/research/vocabulary` that another editor was removing at that moment;
 none was in a file of this batch, and the next run reported none.
 
-The validation command of the [consolidation instructions](../reaudit/CONSOLIDATION.md) was
+The validation command of the [consolidation instructions](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md) was
 run over every promise file, the new one included: 369 promises, each with the seven fields, no
 ID used twice. Every promise ID that `spec/promises/manifest.yaml` cites exists.
 
@@ -508,7 +508,7 @@ names include their work.
 
 A YAML load of `spec/promises/manifest.yaml`: 14 promises, each with exactly the keys `id`,
 `layer`, `level`, `when`, `then`, `observable` and `vectors`, in that order, and no ID twice.
-The validation command of the [consolidation instructions](../reaudit/CONSOLIDATION.md) over
+The validation command of the [consolidation instructions](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md) over
 every promise file: 376 promises. Every promise ID that this section and
 `spec/promises/manifest.yaml` cite exists.
 

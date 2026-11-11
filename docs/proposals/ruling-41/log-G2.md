@@ -2,7 +2,7 @@
 
 Written 2026-11-06 by the editor of group G2, under the
 [work order](PLAN.md#g2-placement-and-providers) and the rules of
-[CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#rules-for-every-edit). G2's files are
+[CONSOLIDATION.md](../../../CONTRIBUTING.md#writing-promises). G2's files are
 [spec/promises/placement.yaml](../../../spec/promises/placement.yaml),
 [spec/promises/pools.yaml](../../../spec/promises/pools.yaml),
 [spec/promises/first-start.yaml](../../../spec/promises/first-start.yaml) and the new
@@ -24,7 +24,7 @@ rest) are the planner's (P1), kept as the work order gives them; the vocabulary 
 These are the plan's counts for G2 (5, 16 and 22). Two layers changed in place, as the plan
 says: PLC-002 `language` → `convention`, PLC-013 `convention` → `language`.
 
-Checks. The validation command of CONSOLIDATION.md passes: 425 promises at the last run, the
+Checks. The validation command of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md passes: 425 promises at the last run, the
 rest in files that other editors were changing at the same time. In G2's four files every
 promise has exactly the seven fields, folded `>-` text indented four spaces, and no line is
 longer than 96 characters. No promise in them cites an ID that the plan removes, and every ID

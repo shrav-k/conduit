@@ -5,7 +5,7 @@ Editor's log of 2026-11-05 and 2026-11-06. It records what was changed under `sp
 of [GAPS.md](GAPS.md) except GP3, which that page leaves to the owner. Nothing outside `spec/`
 was edited except `tools/check_schemas.py` and this file, and nothing was committed. The rules
 followed are those of the
-[consolidation instructions](../reaudit/CONSOLIDATION.md#rules-for-every-edit).
+[consolidation instructions](../../../CONTRIBUTING.md#writing-promises).
 
 Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
 logged decision of the coordinator and choice of an editor.

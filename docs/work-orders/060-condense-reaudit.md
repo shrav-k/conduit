@@ -55,3 +55,14 @@ From the repository root: `python3 tools/check_docs.py` (it checks the C0 permal
 history), `python3 tools/check_rulings.py`, `python3 tools/set_names.py --check`,
 `python3 tools/check_schemas.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass. Do
 not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 16 minutes, then a fresh verifier in 6. The worker removed the 57
+files of removal list A, keeping 39,919 of the re-audit's 255,446 words: the round records, their
+decisions and the "Choices that set behavior" extracted from the editors' logs (E35, 68 lines), with
+every removed path linked at C0 and listed in the archive's index. It stopped short of three links
+in the ledger, which the order had put out of its scope, and prepared a patch that changes only
+their targets (finding WO060-01). The verifier found one choice the extraction missed, M75's dropped
+wording and its reason; the admin added it and applied the ledger patch, mending two targets the
+patch had joined without a slash.

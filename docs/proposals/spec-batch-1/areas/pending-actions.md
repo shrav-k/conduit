@@ -339,7 +339,7 @@ MUST LAND BEFORE OR WITH THIS AREA
    - the expected-account configuration key;
    - a home per Agent;
    - for Resources, a declared account operation (F4).
-7. An MCP citation check of revision 2026-07-28, in the style of docs/proposals/reaudit/round-2/mcp-citations.md, covering URL-mode elicitation: input_required with inputRequests and requestState; the retry with inputResponses; how the capability is declared; elicitation-complete or URL-required signals; content annotations for the user audience. It must pass before IFC-049, IFC-016 and IFC-045 are final.
+7. An MCP citation check of revision 2026-07-28, in the style of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/mcp-citations.md, covering URL-mode elicitation: input_required with inputRequests and requestState; the retry with inputResponses; how the capability is declared; elicitation-complete or URL-required signals; content annotations for the user audience. It must pass before IFC-049, IFC-016 and IFC-045 are final.
 
 THIS AREA BLOCKS
 - The enrollment area: its pending action, evidence presentation and expiry case (S3).

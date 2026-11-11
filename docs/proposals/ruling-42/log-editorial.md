@@ -32,7 +32,7 @@ Run from the repository root after the fixes.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | 439 promises ok |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | 439 promises ok |
 | Every promise has exactly the seven fields, its text fields folded with `>-` | Yes |
 | A YAML line over 96 characters under `spec/` | None |
 | `python3 tools/check_docs.py` | 0 errors, with this log written |
@@ -164,7 +164,7 @@ input's `default`, of `restoresRuntimes` and `records` and of a constituent, fol
 retire operations, the resolved form of a reference, replace, rename, result, `supports` and
 management verb, and what the rows say of a project, of `from`, of `obliges`, of
 a control's `changes`, of the scope of an operation identity and of `<digest>#<name>`, follow the
-[decisions of the second round of the re-audit](../reaudit/round-2/DECISIONS.md).
+[decisions of the second round of the re-audit](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/DECISIONS.md).
 So do what the rows say of which target a reconciliation is authorized against, of a policy's
 `actors` and `targets`, and of `optional`, which a runtime no longer carries: those are the
 decisions on what the fix pass left. The decisions on what
@@ -172,7 +172,7 @@ the closing pass left, and on the check against the Model Context Protocol, are 
 the rows say of the Conduits of a retired consumer, of a request that names what does not
 exist, of `#name` written as `from`, of a requirement that does not narrow requests, of
 installing, and of `isError`. The
-[decisions of the third round of the re-audit](../reaudit/round-3/DECISIONS.md)
+[decisions of the third round of the re-audit](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3/DECISIONS.md)
 are behind the row for `deduplicates`, and what the rows say of the caller of a retrieval, of a
 request that holds the resolved form of a reference, of the requests that `management`
 authorizes for a retired Pool, of a
@@ -181,7 +181,7 @@ whose access decision cannot be made. The decisions on what the fix pass of
 that round left are behind what the rows say of a graph and `supports`, of until when an
 instance holds a runtime, and of the shutdown of an instance one of whose runtimes has a start
 of unknown outcome.
-The [decisions of the fourth round](../reaudit/round-4/DECISIONS.md) are behind
+The [decisions of the fourth round](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/DECISIONS.md) are behind
 the row for chain, and what the rows say of a submitted project, of the
 manifest that the digest of an unpublished package hashes, of a management verb, of the
 shutdown of an instance that holds a runtime, of what a reconciliation states, of a composite

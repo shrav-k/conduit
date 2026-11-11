@@ -208,7 +208,7 @@ B14. core-and-schemas (in flux; confirm when the editors finish).
 
 B15. reaudit folder: correct as a record.
 - Its eight logs and reader reports (186 KB) are clearly marked verbatim.
-- CONSOLIDATION.md:90-91 and the logs write the keys as `conduit.dev/...`; that is fine as history.
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#L90-L91 and the logs write the keys as `conduit.dev/...`; that is fine as history.
 
 ====================================================================
 C. RESEARCH, ARCHIVE, AUTHORING, EXPERIMENTS

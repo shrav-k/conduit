@@ -20,7 +20,7 @@ Run from the repository root at the end of this pass.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `447 promises ok` |
 | Every promise has exactly the seven fields, its text fields folded with `>-`; a YAML line over 96 characters under `spec/` | Yes; none |
 | An ID cited under `spec/`, outside the comments that name removed IDs, that does not exist; a DL item cited that does not exist | None. PRV-025, PRV-026, IFC-042, DL17, SEC-024 and MAN-018 exist, and so do the groups' own PRV-027 and IFC-043 |
 | `python3 tools/check_docs.py` | `Errors: 0` |
@@ -432,7 +432,7 @@ Run from the repository root at the end of the verification.
 
 | Check | Result |
 | --- | --- |
-| Validation of [CONSOLIDATION.md](../reaudit/CONSOLIDATION.md#validation) | `449 promises ok` |
+| Validation of [CONSOLIDATION.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/CONSOLIDATION.md#validation) | `449 promises ok` |
 | A YAML line over 96 characters under `spec/` | None |
 | `python3 tools/check_docs.py` | `Errors: 0`; 159 Markdown files and 2247 local links |
 | `python3 tools/set_names.py --check` | `Errors: 0`; `CONDUIT_URL` x14, `CONDUIT_IDENTITY_DIR` x10, `` `ca.crt` `` x11, `` `jwks.json` `` x12, `` `engine-id` `` x12, `` `token` `` x9, `` `tls.crt` `` x14, `` `tls.key` `` x12 |

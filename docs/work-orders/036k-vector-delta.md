@@ -51,3 +51,14 @@ From the repository root: `python3 tools/check_docs.py`, `python3 tools/check_ru
 `python3 tools/set_names.py --check`, `python3 tools/check_schemas.py`,
 `python3 tools/check_roadmap.py`, `python3 -m unittest discover -s tools/tests` (with the
 interpreter that has PyYAML) and `git diff --check` pass. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 8 minutes, then a fresh verifier in 6. The worker wrote
+`tools/vector_delta.py` with 18 tests: it pairs cases by `id` and steps by position, reports flips
+of reason, outcome, acceptance, tool and `stateUnchanged`, every other change by JSON Pointer, and
+fixture changes by hash, and fails on any flip or undeclared change. Today's tree shows no change;
+order 033 changed three fixture paths and no expectation. The verifier found that its YAML fallback
+used YAML 1.1's scalars, so `no` and `off` both read as false and a changed tool description passed
+unseen; the admin gave it YAML 1.2's core schema, as the engine and `check_schemas.py` read, with a
+regression test.

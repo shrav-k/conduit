@@ -82,33 +82,6 @@ These involved no real choice once the decisions were fixed. The owner accepted 
 | OR8 | A control's result states the settings it confirmed. The engine stores exactly those, after validating the resulting configuration, and stores nothing if that validation fails. | L98 |
 | OR9 | While a control's outcome is unknown, the stored configuration and revision are unchanged, and inspection reports the affected settings as uncertain. | L100 |
 
-## Where each is written
-
-| Decision or rule | Promises |
-| --- | --- |
-| OD1 | OPS-002, OPS-003, OPS-004 |
-| OD2 | OPS-012, OPS-013, OPS-014 |
-| OD3 | OPS-015, OPS-016, OPS-017 |
-| OD4 | REV-001 |
-| OD5 | REV-006 |
-| OR1 | OPS-001, OPS-005 |
-| OR2 | OPS-006, OPS-007 |
-| OR3 | OPS-008 |
-| OR4 | OPS-009, OPS-018 |
-| OR5 | OPS-010 |
-| OR6 | OPS-011 |
-| OR7 | REV-003, REV-004, REV-005 |
-| OR8 | REV-007, REV-008 |
-| OR9 | REV-009 |
-| A stale revision is refused | REV-002 |
-
-> Later ruling: "refused" in the last row is loose. A change that names a stale revision is not
-> dispatched and reports conflict (ruling 28, one table of words; REV-002).
-
-Model checking in [Experiment 004](../../../experiments/004-stateright-evaluation/README.md)
-supports OD2 and OPS-018: the rule sets that match the accepted decision applied the effect at
-most once in every reachable state, and the rule set that matches the earlier text did not.
-
 ## Not in this batch
 
 - What an engine does when it cannot reach the service that holds grants, whether it holds or

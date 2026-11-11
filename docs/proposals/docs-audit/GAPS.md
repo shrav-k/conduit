@@ -12,6 +12,10 @@ can strike any of them.
 Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
 logged decision of the coordinator and choice of an editor.
 
+GP3 was settled by [ruling 41](../ruling-41/README.md), section 4 of the
+[principles review](../principles-review/README.md#4-secrets-reduced), and is written in
+[secrets.yaml](../../../spec/promises/secrets.yaml). The rows below keep their original wording.
+
 ## The nineteen behaviors
 
 | ID | Behavior the older text accepted | How the specification states it | Layer |

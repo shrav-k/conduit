@@ -116,7 +116,7 @@ checked against this list before it is offered.
 | CS7 | **Three default mechanisms with no stated order:** an input's own default, a schema's default, and controls, which apply none. Promise INS-008 says an unsupplied optional input leaves its destination absent, and SCH-009 then fills the type's default. | State the order: the input's default first, then the type's schema defaults for whatever is still absent. Controls stay as ruled. |
 | CS8 | **Three ways to point at a place in an instance:** an input's destination, a value reference's path, and a control's list of what it changes. | All three are JSON Pointers with one stated root. |
 | CS9 | **Selecting a contract or an implementation uses a different key and shape each time:** `type` for an object's type and for a filter's requirement, `capability`, `operation`, `driver`, `handler`, and a requirement applied as type and config while a template is applied as `from` and inputs. | Fold into the naming ruling: every such selection is a reference to a package's export, and applying any reusable definition has the same shape, a reference and its arguments. |
-| CS10 | **First-start objects have no templates,** although every instance comes from a template. The placement record's example already writes `from: location`. | They are instances of templates exported by a built-in core package. This waits on the naming ruling. |
+| CS10 | **First-start objects have no templates,** although every instance comes from a template. [The placement record's example](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/placement/README.md#worked-example) already writes `from: location`. | They are instances of templates exported by a built-in core package. This waits on the naming ruling. |
 | CS11 | **Built-in schemas are named in yet another way:** `conduit:reference#/$defs/resource` in one record and `.../$defs/location` in another. | Name them as exports of the built-in core package, under the naming ruling. |
 | CS12 | **"Owner" means the Pool that owns a Resource and the person who owns the installation.** | Keep "owner" for the Pool. Describe the person's special powers as the root Interface's. |
 | CS13 | **Management verbs are called "actions" in the specification and "operations" in the records:** rename, issue, revoke, declare lost. | Call them operations, since the accepted model is that an agent uses them through the same contract as anything else. |
@@ -133,22 +133,9 @@ from a ruling already made.
 | Promise ACC-010 spoke of a consumer's definition being imported, and PLC-001 of exporting an instance, although a complete instance document no longer exists. | Both reworded. |
 | A template was defined as a document that declares inputs, but a template may declare none. | Defined as a document with no `from`. |
 | Promise INS-001 rejected an instance document that "declares inputs", which read literally rejects every instance. | It rejects an instance document that carries a `spec`. |
-| The instantiation record's template example gave a destination inside a `conduits` block the template did not have. | The example now declares the Conduit. |
+| [The instantiation record's template example](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/instantiation/README.md#worked-example) gave a destination inside a `conduits` block the template did not have. | [The example now declares the Conduit.](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/instantiation/README.md#worked-example) |
 | Promise CON-005 duplicated PLC-006. | CON-005 removed. |
 | The specification said "revision" for its own version. | It says version; revision is kept for objects. |
-
-### Wording to settle when each area is next edited
-
-- "Target" is used for a Conduit's end, for what a reference resolves to and for what an effect
-  changes. Only the first should keep the word.
-- "Declaration" is used for any document and for a declared Conduit. A standalone Conduit has no
-  declaration for the access promises to read.
-- "Create", "instantiate" and "register" are used loosely for making an instance.
-- Undefined but used: value reference, status, state, diagnostic, type contract, registry.
-- Overlapping promises to merge: INS-016 with SUB-006; PLC-005 with POOL-009; OBJ-002 with
-  SUB-004, OBJ-011 and FST-004; INS-005 with SCH-011; INS-002 with OBJ-007.
-- The placement, instantiation and naming records still use retired words in their prose. The
-  specification itself is clean of them.
 
 ### Not inconsistencies
 

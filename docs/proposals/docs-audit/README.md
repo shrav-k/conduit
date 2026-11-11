@@ -2,28 +2,13 @@
 
 Status: audit of 2026-11-05 (plan-audit action A61), asked for by the owner in ruling 37 so
 that the repository can be read cold by an outside reviewer. The thirteen decisions below are
-applied; [Applied](#applied) links the logs. What the readers concluded describes the
+applied; [Applied](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/README.md#applied) links the logs. What the readers concluded describes the
 repository as it stood before that. Two readers reported:
 
 | Reader | Scope | Report |
 | --- | --- | --- |
-| Entry points and tracker | `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/README.md`, the overview, the review queue, the vocabulary map, the plan audit, the defect register, the implementation notes and the experiment indexes | [report](reader-entry-points.md) |
-| Older and supporting text | The protocol topics, every proposal record, the research, the archive, the authoring documents and Experiments 001 to 003, each checked against the specification | [report](reader-older-text.md) |
-
-## What they concluded
-
-This is the state the two readers found on 2026-11-05, before the decisions were applied. It is
-not the state now.
-
-- Links, checks and hygiene were clean, and the specification and the ruling log agreed with
-  each other.
-- The repository was not ready for a cold read. The front door never sent a reader to `spec/`.
-  It presented the overview and the protocol topics, which teach the model the rulings
-  replaced, as the accepted reference.
-- The tracker's status tables were behind its own ruling log.
-- Twelve of fifteen proposal records never said that the specification governs, and several
-  showed examples that later rulings reversed.
-- Nineteen accepted behaviors in the older text were not stated in the specification.
+| Entry points and tracker | `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/README.md`, the overview, the review queue, the vocabulary map, the plan audit, the defect register, the implementation notes and the experiment indexes | [report](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-entry-points.md) |
+| Older and supporting text | The protocol topics, every proposal record, the research, the archive, the authoring documents and Experiments 001 to 003, each checked against the specification | [report](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md) |
 
 ## Decisions taken to fix it
 
@@ -50,30 +35,44 @@ logged decision of the coordinator and choice of an editor.
 | DA12 | The same list of four checks in `AGENTS.md` and `CONTRIBUTING.md`. | — |
 | DA13 | The build brief asks each builder for a runtime profile, uses "documents" and "contents list" for what it called declarations and the manifest, says that `tools/` ships on the build base, and says that its tags are revisions of version `v0`. | The Engine conformance level in `spec/README.md`; the definitions. |
 
-## Applied
 
-All thirteen decisions are applied. Each log lists the edits made, file by file.
+## Choices that set behavior
 
-| Log | Decisions | What it covers |
-| --- | --- | --- |
-| [Entry points and tracker](log-entry-points.md) | DA1 to DA4, DA7 and DA9 to DA13 | `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/README.md`, the overview, the plan audit, the defect register, the build documents and the experiment index |
-| [Older and supporting text](log-older-text.md) | DA1 to DA6 and DA8 | The protocol topics, the proposal records, the research packets, the archive's index, the authoring documents and the experiments |
-| [Conversion list](GAPS.md) and its [log](log-gaps.md) | DA3 | The nineteen behaviors that the older text accepted and the specification did not state. Eighteen are converted: the specification went from 376 promises to 395, and the implementation-defined list from 13 items to 14. The nineteenth, on secrets (GP3), is left for the owner |
+### Entry-point log
 
-A later reader read the whole repository cold, as the fourth reader of round 2 of the
-re-audit. Its [report](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/reader-4.md) found the entry points consistent and
-the tracker two commits behind, and the [log of the fixes](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/log-reader-4-fixes.md)
-says what was done. The fourth readers of rounds 3 and 4 read it again:
-[round 3](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-3/reader-4.md), 23 findings, and
-[round 4](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-4/reader-4.md), 26.
+Source: [log-entry-points](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/log-entry-points.md#findings-not-carried-out-and-why).
 
-## Left for the owner
+| Finding | Why |
+| --- | --- |
+| [D6, moving the historical sections to the archive](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-entry-points.md) | The smaller fix was taken: a banner on each. |
 
-- `docs/AUDIT.md` names a private repository among its references, and says that its links fail
-  for outside readers. The name was already public on `main` before this audit. Whether to keep
-  it is the owner's call.
-- The branch `implementation/rust-runtime-plugins` still exists, and the plan audit has a note
-  about it.
-- The purpose section says "the grant is an object". Since rulings 27 to 29 the object is the
-  Conduit. A note now says how to read it; rewording the sentence is the owner's call.
-- Whether readiness condition G7 is judged on two clean rounds of the re-audit.
+### Older-text log
+
+Source: [log-older-text](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/log-older-text.md#findings-not-carried-out-and-why).
+
+| Finding | Why |
+| --- | --- |
+| [A4 to A10](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md): the contradicted sentences inside the topic files; [A8](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md) "reduce `POOLS.md`"; [A9](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md) "strike `RESOURCES.md` :28-51"; [A10](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md) "retitle `AGENT.md`", and its two references to sections "below" that are in other files | Decision DA2 chose option (a) of [A11](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md): a banner only, with bodies and headings untouched. The banner says what each file is kept for. |
+| [A11 option (b)](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md): archive four topics | Not chosen (DA2). |
+| [C2](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md), for `CONFIGURATION.md`, `CONSTRUCTION.md`, `RUST_RUNTIME.md` and `PI_RUNTIME.md` | The wrong sentence is part of the opening paragraph, not a separate banner. The one line is added above it and says how to read it; DA5 allows nothing else to be edited. |
+| [C5, C6, D4](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md): archive or move `docs/authoring/` and the authoring-syntax folder | DA6: a banner on each file, and they are not moved. |
+| [C7](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md): the labels "SPEC.md" and "DESIGN.md" in research | DA5: one line only. The line says what the labels mean. |
+| [C8](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/reader-older-text.md): research sentences that call Experiment 001 "the current YAML packet" | DA5. The links are repointed and the one line says how to read "current". |
+
+### Gaps log
+
+Source: [log-gaps](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/log-gaps.md#choices-made-that-gapsmd-does-not-state).
+
+| Choice | Why |
+| --- | --- |
+| GP8, GP9 and GP10 are in `graphs.yaml`, with the layer `convention`. GP7 and GP19 are in `operations.yaml` | Their subject is a step and a graph. The two invariants of a graph are already there with that layer |
+| GP2 is two promises, ACC-036 and ACC-037 | One obligation to a promise, and the second names a reason |
+| GP6 is two promises, SCH-020 and SCH-021 | The same |
+| GP15's convention half is in `access.yaml`, beside ACC-027, which is the other thing an inspected Conduit reports | — |
+| SCH-019 covers an input's `default` against the input's `schema`, as well as the keyword `default` inside a schema | In this specification an input states its default beside its schema, not inside it. The row's "its template registered" fits only that reading |
+| An input of an Operation that states a `default` may be left out whether or not it is marked `optional: true` (OPS-026, GRA-007) | Otherwise GRA-007 would reject the step that the default is for. INS-004 already reads a template's input so |
+| A constituent's value reference may add `pointer` | GRA-020 allows it for the source `input`, and the row says value bindings |
+| A constituent has its own form inside `requirement-spec.v1`, and no new Schema contract | A new contract would be a new export of the core package |
+| No core contract states `obliges`, `restoresRuntimes` or `records`, and no core input states a `default` | No promise says what obliging an end requires of it, so no value for `bound.v1` or `shared-host.v1` could be checked. No core type declares a runtime |
+| ACC-037 cites DL4 for whether the engine waits | DL4 already leaves that to the engine, and the two then agree |
+| The Implementation level names four promises as examples and does not list them all | Which promises bind an implementation follows from each promise's own wording |

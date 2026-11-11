@@ -64,30 +64,6 @@ These involved no real choice once the decisions were fixed. The owner accepted 
 | SR4 | When a default supplies an object, the defaults of that object's own properties then apply to it, as they would to an object the author supplied. | L18 |
 | SR5 | A schema keyword or format outside the lists above is rejected when the schema is accepted, never ignored. Schemas published by an external MCP service keep their own rules. | L20, L21 |
 
-## Where each is written, and what it relies on
-
-| Decision or rule | Promises | Existing standard or practice |
-| --- | --- | --- |
-| GD1 | GRA-001, GRA-002 | Terraform: a reference is a dependency |
-| GR1 | GRA-004 to GRA-008 | — |
-| GR2 | GRA-009 | — |
-| GR3 | GRA-010 | — |
-| GR4 | GRA-011 | JSON Pointer, RFC 6901 |
-| SD1, SR5 | SCH-001, SCH-002, SCH-014 | JSON Schema 2020-12, narrowed as Kubernetes narrows OpenAPI for structural schemas |
-| SD2, SR5 | SCH-003, SCH-004 | RFC 3339, RFC 3986, RFC 9562 |
-| SD3 | SCH-005 | JSON Schema's definition of integer |
-| SR1 | SCH-006 | I-JSON, RFC 7493 |
-| SR2 | SCH-007 | JSON Schema's definition of equality |
-| SR3 | SCH-008 | Kubernetes structural schemas |
-| SR4 | SCH-009, SCH-010 | Kubernetes defaulting |
-| The two invariants of layer decision LD2 | GRA-002, GRA-003 | Docker Compose and Terraform ordering |
-| Accepted earlier: step order has no meaning; the four binding forms; no conversion; the YAML restrictions; JSON equivalence | GRA-012, GRA-013, SCH-011, SCH-012, SCH-013 | YAML 1.2.2, RFC 8259, I-JSON |
-
-One part of the graph language has no counterpart in an existing framework: the object and list
-binding forms. The literal and reference forms correspond to Kubernetes's `value` and
-`valueFrom`. Whether the object and list forms stay is already queued as a scope question
-(plan-audit action A18).
-
 ## Not in this batch
 
 - Scheduling, retry, cancellation, what happens to outputs when a later step fails, and when a

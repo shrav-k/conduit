@@ -112,10 +112,3 @@ The owner did not rule on these one by one. Each can be changed by a ruling.
 | A purge never removes the record of an earlier purge. | Otherwise two purges would erase the trail RC3 exists to keep. | REC-004 |
 | An operation without the mark does not start model work. | The same convention as `optional`: one mark, and its absence has one meaning. | IMP-003 |
 | Inspecting a Conduit is authorized against `management`, like other objects that no Pool owns. | OL2 gave `access` only opening and closing. | ACC-033 |
-
-## After this batch
-
-One more batch of rulings remains: the schema of each family's `spec`, the implementation
-interface, and the list of implementation-defined behavior. After it, the promises are
-consolidated: overlapping ones merged, each file reviewed against the definitions, and the whole
-specification put back through the cold-reader, consolidation and defect sweeps.

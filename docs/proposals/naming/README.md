@@ -140,54 +140,6 @@ Options for two versions inside one project:
 
 Accepted: options 1 and 4 together. Neither adds a second place to write a version.
 
-## What it would look like
-
-The heading is as first written. The shapes were accepted with the decisions (ruling 27).
-
-> Later rulings changed the shapes in the two examples below.
->
-> - A manifest's `source` is now `fetch` (ruling 33; NAM-012). A manifest also carries
->   `apiVersion`, and its file name is fixed as `conduit.yaml` (ruling 37; MAN-001, MAN-003).
-> - An instance writes its values under `arguments`, not `inputs` (rulings 28 and 29; OBJ-013).
-> - `conduit.dev/files` stands for some package's address. `conduit.dev` is not a name of the
->   specification: its names are derived from the repository (ruling 33;
->   [`spec/names.yaml`](../../../spec/names.yaml)), and its own examples use `example.org`.
->
-> The current worked example is
-> [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
-
-The manifest, with an illustrative file name of `conduit.yaml`:
-
-```yaml
-packages:
-  github.com/acme/conduit-history:
-    version: 1.4.0
-    digest: sha256:0f3a...
-  conduit.dev/files:
-    version: 0.3.0
-    digest: sha256:9b1c...
-    source: ../files
-```
-
-Documents in the same project:
-
-```yaml
-kind: Agent
-metadata: {name: reviewer}
-from: github.com/acme/conduit-history#shared-reviewer
-placement: laptop
-inputs: {account: agent-account-a}
----
-kind: Resource
-metadata: {name: project-directory}
-spec:
-  type: conduit.dev/files#local-directory.v1
-  setup:
-    steps:
-      establish:
-        operation: conduit.dev/files#directory.establish
-```
-
 ## Costs
 
 - References are long. That is the price of having no aliases.
@@ -195,16 +147,3 @@ spec:
   manifest beside it.
 - A contract's version is part of its name, so two versions of a contract are, to the language,
   two different exports that happen to be related.
-
-## Rules that would follow
-
-The heading is as first written. These rules were accepted with the decisions (ruling 27) and
-are written among the naming promises.
-
-| ID | Rule |
-| --- | --- |
-| NR1 | An address begins with a host name that contains a dot, followed by path segments of lowercase letters, digits, `-`, `_` and `.`. |
-| NR2 | A reference to an address that the project's manifest does not list is rejected. |
-| NR3 | A package listed in the manifest that no document uses is reported and does not prevent registration. |
-| NR4 | When an instance is created, each address it uses is resolved through its project's manifest to a version and digest, which the instance holds. This is promise PKG-005. |
-| NR5 | A local name never contains `#` or `/`, so a reference is local exactly when it contains neither. |

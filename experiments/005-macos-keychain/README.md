@@ -297,7 +297,7 @@ again took longer: 215.9 ms (2a) and 208.4 ms (4a).
 
 Nothing here binds, and nothing here decides. Points for the owner:
 
-- The proposal's draft SEC-12 ([promises that would follow](../../docs/proposals/secrets/README.md#promises-that-would-follow))
+- The proposal's draft SEC-12 ([promises that would follow](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/secrets/README.md#promises-that-would-follow))
   has a locked keychain give the outcome failed, with no other source tried. With interaction
   disabled that is reachable unattended, and fast. With it enabled it was not measured. A
   candidate addition, not decided: an implementation never waits for a person, with an

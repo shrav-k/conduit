@@ -72,7 +72,7 @@ operations and filters. Fields the engine owns are never written.
 
 | ID | Decision | Options | Recommendation | Existing practice |
 | --- | --- | --- | --- | --- |
-| D1 | Where an implementation is selected. The sources disagree: an alias map, a key on each step, and a step that names only its operation. | (1) One `implementation` map in `spec`, keyed by what is implemented, an operation's qualified reference or a runtime's name. Its value is a qualified reference to an implementation, or an inline graph. Anything absent falls back to the default its type or its operation's contract states. Steps, runtimes and controls never carry their own selection. (2) A key on every step, runtime and control. | (1). A step then names only its operation, as the naming record's example already does, and overriding an implementation is one line. | Terraform picks a provider from the resource type and lets one line override it |
+| D1 | Where an implementation is selected. The sources disagree: an alias map, a key on each step, and a step that names only its operation. | (1) One `implementation` map in `spec`, keyed by what is implemented, an operation's qualified reference or a runtime's name. Its value is a qualified reference to an implementation, or an inline graph. Anything absent falls back to the default its type or its operation's contract states. Steps, runtimes and controls never carry their own selection. (2) A key on every step, runtime and control. | (1). A step then names only its operation, as [the naming record's example](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/naming/README.md#what-it-would-look-like) already does, and overriding an implementation is one line. | Terraform picks a provider from the resource type and lets one line override it |
 | D2 | Spelling conventions for keys. | (1) camelCase keys; a step's dependencies under `dependsOn`; every document carries `apiVersion`, and one with an unknown version is rejected; `metadata` holds `name`, an optional `description`, and optional `annotations`, a map of strings with no meaning to the language. (2) snake_case, as Compose and Terraform write. | (1). The envelope is already Kubernetes' and the fixtures already use camelCase. | Kubernetes |
 | D3 | How a value reference is written, beyond `source`. | A closed list of five sources, each a small map: `{source: input, name}`, `{source: config, pointer}`, `{source: step, step, output, pointer}`, `{source: runtime, name}` for a handle, and `{source: instance, name}` for the instance's own `id` or `name`. No string interpolation. | As stated. The four binding forms are written `literal`, the reference map, `object` and `list`. | Structured references rather than `${...}` strings, which the instantiation ruling already excluded |
 | D4 | What a runtime declaration holds. | (1) A named pair of operations: `runtimes: {watcher: {start: <operation>, stop: <operation>, optional: true}}`. The start operation returns one handle, which the instance keeps; the stop operation takes it. A setup step starts a runtime by naming it, `{runtime: watcher, arguments: {...}}`, in place of `operation`. (2) A fifth kind of contract with its own start, stop and inspect methods in the implementation interface. (3) No runtimes in the language; a long-lived process is the implementation's private matter. | (1). It adds no contract kind and nothing to the interface, and the engine still knows what an instance holds and must stop. | The Model Context Protocol's guidance for stateful tools: one tool creates and returns a handle, others take it |
@@ -94,65 +94,6 @@ Every field traces to a promise that already exists.
 | `Capability` | The `operations` it includes. An operation reserved to the root Interface can be listed only by the core package. |
 | `Type` | Its family; the schema of `config`; the capabilities it `offers`; the operations and runtimes it requires, with default implementations; its controls; its requirements on placement, stated even when there are none; the further conditions it reports, such as running or paused; whether its implementation may restore its own runtime; what content its records keep. |
 | `Requirement` | `inputs`; where it may be applied, on a Conduit, as a policy or on placement; whether it narrows requests; and, for a composition, its constituents. |
-
-### Example
-
-> Later rulings changed three shapes in the example below.
->
-> - `conduit.dev` names are now derived from the repository (ruling 33;
->   [`spec/names.yaml`](../../../spec/names.yaml)): `apiVersion` is
->   `github.com/shrav-k/conduit/v0`, and the core package is `github.com/shrav-k/conduit/core`.
->   A package outside the core, written here as `conduit.dev/files`, has its own address.
-> - A template's `controls` map is keyed by the control's qualified reference, and narrows an
->   input under `inputs`, as in `inputs: {limit: {schema: {maximum: 50}}}` (ruling 32; TPL-010).
->   It is not keyed by a bare name such as `set-read-limit`.
-> - The reference schema is `github.com/shrav-k/conduit/core#resource-reference.v1` (rulings 33
->   and 37).
->
-> The current worked example is
-> [`spec/schemas/examples/valid/project/`](../../../spec/schemas/examples/valid/project/).
-
-```yaml
-apiVersion: conduit.dev/v0
-kind: Resource
-metadata: {name: project-directory}
-spec:
-  type: conduit.dev/files#local-directory.v1
-  inputs:
-    path: {schema: {type: string, minLength: 1}, to: [/config/path]}
-  config: {readLimit: 10}
-  runtimes:
-    watcher: {start: conduit.dev/files#watcher.start, stop: conduit.dev/files#watcher.stop, optional: true}
-  setup:
-    steps:
-      establish:
-        operation: conduit.dev/files#directory.establish
-        arguments: {path: {source: config, pointer: /path}}
-      watch:
-        runtime: watcher
-        arguments: {directory: {source: step, step: establish, output: directory}}
-  controls:
-    set-read-limit: {schema: {properties: {limit: {maximum: 50}}}}
----
-apiVersion: conduit.dev/v0
-kind: Conduit
-metadata: {name: directory-read}
-spec:
-  capability: conduit.dev/files#directory-access.v1
-  operations: [conduit.dev/files#directory.read, conduit.dev/files#directory.list]
-  requirements:
-    same-machine: {requirement: conduit.dev/core#shared-host.v1}
----
-apiVersion: conduit.dev/v0
-kind: Agent
-metadata: {name: reviewer}
-spec:
-  type: github.com/acme/harness#coding-agent.v1
-  inputs:
-    checkout: {schema: {$ref: "conduit.dev/core#resource-reference"}, to: [/conduits/checkout/target]}
-  conduits:
-    checkout: {from: directory-read}
-```
 
 ## Part 2: the implementation interface
 
@@ -247,9 +188,3 @@ The owner did not rule on these one by one. Each can be changed by a ruling.
 | An implementation that does not support the interface version performs nothing, and the outcome is failed. | It is confirmed that nothing happened. | IFC-008 |
 | `apiVersion` is `conduit.dev/v0`. | Decision X1 kept `conduit.dev` as a placeholder. Superseded by plan-audit ruling 33: the names now come from `github.com/shrav-k/conduit`. | OBJ-017 |
 | The JSON Schemas of documents, contracts and manifests are written after the specification has been audited again. | So that they are written once. | — |
-
-## After this batch
-
-The promises are consolidated: overlapping ones merged, each file checked against the
-definitions, and the whole specification put back through the cold-reader, consolidation and
-defect sweeps.

@@ -84,37 +84,6 @@ the text was silent or inconsistent. The owner accepted them as a group.
 | RR15 | When a target is retired or declared lost, its Conduits close. Their consumers stay set up and report that capability as unavailable. | L157, L159 |
 | RR16 | A Conduit's record is held by management. A shared-host requirement is valid only between an Agent and a Resource, since only they have a placement; anywhere else it is rejected at validation. | L165 |
 
-## Where each is written
-
-| Decision or rule | Promises |
-| --- | --- |
-| Pairwise Conduit | CON-001 |
-| RD1 | CON-007, CON-008 |
-| RD2 | ACC-010 |
-| RD3, RR4 | CON-002, CON-004 |
-| RD4 | CON-003 |
-| RD5 | ACC-024 |
-| RD6 | ACC-013 |
-| RD7 | ACC-006, ACC-007 |
-| RD8 | ACC-009 |
-| RR1 | ACC-003, ACC-004 |
-| RR2 | ACC-007 |
-| RR3 | ACC-005 |
-| RR5 | CON-009, CON-010 |
-| RR6 | ACC-014 |
-| RR7 | ACC-015 |
-| RR8 | ACC-019 |
-| RR9 | ACC-016, ACC-017, ACC-018 |
-| RR10 | ACC-020, ACC-021 |
-| RR11 | ACC-022, ACC-023 |
-| RR12 | ACC-025 |
-| RR13 | ACC-026 |
-| RR14 | ACC-011, ACC-012 |
-| RR15 | CON-008, CON-011 |
-| RR16 | PLC-006, CON-006 |
-| Grant required; checked at the target; restrictions only narrow | ACC-001, ACC-002, ACC-008 |
-| Enforced or mediated is reported | ACC-027 |
-
 ## Conduits to live instances
 
 The owner asked whether a Conduit can be issued to an instance that is already running, and

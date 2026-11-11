@@ -84,32 +84,6 @@ These involved no real choice once the decisions were fixed. The owner accepted 
 | DR12 | An entry's placement comes from the Pool template's inputs, whose destinations are the entries. A Pool template never names a location. | L164 |
 | DR13 | The text that describes creating an instance by editing a template's fields is replaced by the instantiation rulings. | L49 |
 
-## Where each is written
-
-| Decision or rule | Promises |
-| --- | --- |
-| DD1 | OBJ-008, OBJ-009, OBJ-010 |
-| DD2 | SUB-001, SUB-002, SUB-003, SUB-006, SUB-007 |
-| DR9 | SUB-004 |
-| DR10 | SUB-005 |
-| DD3 | POOL-003, POOL-004 |
-| DD4 | POOL-007, POOL-008 |
-| DD5 | INS-018 |
-| DR1 | INS-010 |
-| DR2 | INS-011 |
-| DR3 | INS-008 |
-| DR4 | INS-009 |
-| DR5 | OBJ-011 |
-| DR6 | OBJ-004 |
-| DR7 | OBJ-001 |
-| DR8 | OBJ-003 |
-| DR11 | POOL-005, POOL-006 |
-| DR12 | POOL-009 |
-| DR13 | INS-001 to INS-017 state the instantiation rulings; the protocol text is replaced when its topic is converted |
-
-The instantiation rulings themselves (IN1 to IN10) are INS-001 to INS-017, and the accepted
-ownership rules are POOL-001 and POOL-002.
-
 ## Not in this batch
 
 - Graphs and the schema profile: the next batch.

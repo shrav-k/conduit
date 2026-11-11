@@ -80,13 +80,6 @@ date for the next reader, and merges pull request 7.
 
 ## After the ruling
 
-The ruling was applied to `spec/` on 2026-11-06 and 2026-11-07. The logs are beside this record:
-[providers](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-providers.md), [interface](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-interface.md), [secrets](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-secrets.md),
-[core](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-core.md), [docs](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-docs.md) and the [integration](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/ruling-43/log-integration.md), whose
-section "Verification" answers 43 findings of three verifiers: coverage of the ruling, cost on
-one machine and for the Model Context Protocol, and scenarios across machines. The
-specification then held 449 promises.
-
 The coordinator's decisions on what the logs left open, under rulings 37 and 38, each as the
 log recommends:
 

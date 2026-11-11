@@ -143,14 +143,6 @@ Events and faults are named in terms of the public surfaces and the plugin inter
 engine's internals, so any build can run them. A vector for the language layer needs no events at
 all: it gives declarations and expects resolved objects or diagnostics.
 
-## Open points
-
-- Whether promises are authored as YAML with a generated readable page, or as Markdown in a
-  rigid, machine-readable layout. This proposal recommends YAML because coverage can then be
-  checked without parsing prose.
-- The granularity of promise topics and their identifier prefixes.
-- Whether the readable guide is written by hand or generated from the promise data.
-
 ## Rulings
 
 All four were accepted as written.

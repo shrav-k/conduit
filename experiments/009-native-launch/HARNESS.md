@@ -6,7 +6,7 @@ Agent packages for [Claude Code](../../packages/agent-claude-code/README.md) and
 [Codex](../../packages/agent-codex/README.md). The commands below describe that archived harness.
 
 This implements the [pre-registration](README.md) under
-[work order 010](../../docs/work-orders/010-native-launch-harness.md). It runs a stub, not an
+[work order 010](../../docs/implementation/WORK_ORDERS.md#order-010). It runs a stub, not an
 engine. No real client was run by the worker. Offline fixtures are not experiment results.
 
 ## Commands for the admin

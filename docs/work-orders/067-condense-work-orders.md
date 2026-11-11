@@ -51,3 +51,14 @@ decisions, a ruling's decisions or an owner's words. Report anything else.
 From the repository root: `python3 tools/check_docs.py`, `python3 tools/check_rulings.py`,
 `python3 tools/set_names.py --check`, `python3 tools/check_schemas.py`,
 `python3 tools/check_roadmap.py` and `git diff --check` pass. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 9 minutes, then a fresh verifier in 4, then a second round. The
+worker wrote a row in the work-order record for each of the 45 merged orders, 001 to 036k and 060 to
+066, with E30's two verbatim passages and lessons, and removed their 45 files and four schemas of
+their own; `docs/work-orders/` went from 45,379 words to 6,631. The verifier found that rows for
+orders whose decisions sat under "What to do" said their decisions were not recorded; the second
+round restored 118 decisions in 20 rows from the orders as they were, split order 008's third
+decision, and corrected A77's state and the tracker's sentences on Codex's real-client check and
+finding 4-06.

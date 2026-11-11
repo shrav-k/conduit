@@ -6,7 +6,7 @@ including two failed Codex attempts and the limits of the observations. Pre-regi
 [roadmap](../../ROADMAP.md#experiments-and-probes), probe E1 of the plan audit, which
 [ruling 48](../../docs/proposals/ruling-48/README.md) runs before increment 3 of
 [the first build](../../docs/implementation/FIRST_BUILD.md#what-increment-3-needs). A Codex
-worker builds its harness under [work order 010](../../docs/work-orders/010-native-launch-harness.md).
+worker builds its harness under [work order 010](../../docs/implementation/WORK_ORDERS.md#order-010).
 Under ruling 45's rule, this page states what the probe must show before anything runs.
 
 It runs no Conduit engine. It starts each client as the engine's own runner would start an

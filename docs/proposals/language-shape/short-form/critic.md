@@ -107,7 +107,7 @@ GAPS, MOST SEVERE FIRST
      - Register the spike in the ROADMAP register, with pass conditions stated before it runs (AGENTS.md, ruling 45).
 
 9. MEDIUM: the plan misassigns 4-12.
-   - "Order 028: 4-12 to 4-16" is wrong. docs/work-orders/028-i4-03-commands.md, line 20, covers 4-13 to 4-16.
+   - "Order 028: 4-12 to 4-16" is wrong. [docs/work-orders/028-i4-03-commands.md](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/work-orders/028-i4-03-commands.md#L20), line 20, covers 4-13 to 4-16.
    - 4-12, the turn deadline, is open in log-increment-4.md. It drove the fresh author's 112 T5 lines and 128 T7 lines.
    - Do: decide it, or give it its own order, before the rerun.
 

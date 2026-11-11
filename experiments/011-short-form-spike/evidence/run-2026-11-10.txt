@@ -1,0 +1,103 @@
+    Finished `release` profile [optimized] target(s) in 0.10s
+     Running `target/release/short-form-spike`
+FAIL exact flow/t1: flow/t1: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 8, line 1, column 1411, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 14, line 1, column 2735, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe flow/t1: 14 documents
+FAIL exact flow/t2: flow/t2: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1635, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1859, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3499, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe flow/t2: 18 documents
+FAIL exact flow/t4: flow/t4: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1636, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1860, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3499, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe flow/t4: 18 documents
+FAIL exact flow/t5: flow/t5: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1636, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1860, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3499, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe flow/t5: 18 documents
+FAIL exact flow/t6: flow/t6: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1636, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1860, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3504, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe flow/t6: 18 documents
+FAIL exact flow/t7-revoked: flow/t7-revoked: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 8, line 1, column 1413, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1637, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 17, line 1, column 3281, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe flow/t7-revoked: 17 documents
+FAIL exact flow/t7: flow/t7: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1636, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1860, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3504, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe flow/t7: 18 documents
+flow: task file-edits commands digest-edits total
+T1 31 3 2 34
+T2 7 2 1 9
+T3 0 0 0 0
+T4 2 1 0 3
+T5 1 2 1 3
+T6 1 1 0 2
+T7 2 2 0 4
+PASS flow/t5 stable-name comparison (without-as probe): ["shared", "shared--t"]
+PASS flow/t6 stable-name comparison (without-as probe): ["shared", "shared--t"]
+FAIL exact block/t1: block/t1: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 8, line 1, column 1411, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 14, line 1, column 2735, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe block/t1: 14 documents
+FAIL exact block/t2: block/t2: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1635, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1859, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3499, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe block/t2: 18 documents
+FAIL exact block/t4: block/t4: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1636, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1860, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3499, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe block/t4: 18 documents
+FAIL exact block/t5: block/t5: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1636, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1860, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3499, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe block/t5: 18 documents
+FAIL exact block/t6: block/t6: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1636, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1860, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3504, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe block/t6: 18 documents
+FAIL exact block/t7-revoked: block/t7-revoked: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 8, line 1, column 1413, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1637, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 17, line 1, column 3281, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe block/t7-revoked: 17 documents
+FAIL exact block/t7: block/t7: loader: documents.json, document 5, line 1, column 876, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 6, line 1, column 1100, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 9, line 1, column 1636, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 10, line 1, column 1860, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+documents.json, document 18, line 1, column 3504, at /: not valid against `instance.v1`: Additional properties are not allowed ('as' was unexpected) (SUB-005)
+PASS without-as probe block/t7: 18 documents
+block: task file-edits commands digest-edits total
+T1 53 3 2 56
+T2 18 2 1 20
+T3 0 0 0 0
+T4 2 1 0 3
+T5 2 2 1 4
+T6 1 1 0 2
+T7 10 2 0 12
+PASS block/t5 stable-name comparison (without-as probe): ["shared", "shared--t"]
+PASS block/t6 stable-name comparison (without-as probe): ["shared", "shared--t"]
+Without-as probes: 14 passed; 0 failed
+Exact translation states: 0 passed; 14 failed
+Error: "translation spike found failures (see diagnostics)"

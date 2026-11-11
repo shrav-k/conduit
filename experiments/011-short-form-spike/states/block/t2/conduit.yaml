@@ -1,0 +1,11 @@
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/s1/filesystem:
+    version: 0.1.0
+    digest: sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160
+  example.org/s1/agents:
+    version: 0.1.0
+    digest: sha256:3b73fe853164e58125d960da62795f748b88c06a6eefe86046bbef00bc08b44a
+  example.org/s1/history:
+    version: 0.1.0
+    digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69

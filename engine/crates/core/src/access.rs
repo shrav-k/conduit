@@ -443,6 +443,14 @@ fn evaluate_path(
     }
     let registration = op == context.qualified("register.v1");
     if registration {
+        // ACC-054 / SEC-008 / OPS-023: decide authority before validating any document.
+        // An onward request, including one whose sender is root, is not root's own act.
+        if (instance["id"] != root["id"] || request.serving.is_some())
+            && values(&request.arguments, "documents")
+                .any(|doc| crate::registration::root_consumed(state, doc, root))
+        {
+            return Ok(Verdict::reason("refused", "ACC-054"));
+        }
         for doc in values(&request.arguments, "documents")
             .filter(|d| d["kind"] == "Resource" && d.get("from").is_some())
         {
@@ -476,6 +484,12 @@ fn evaluate_path(
             return Ok(Verdict::reason("refused", "ACC-024"));
         }
         if opening {
+            // ACC-054 / SEC-008: an onward request is never root's own act.
+            if id(&conduit["consumer"]) == &root["id"]
+                && (instance["id"] != root["id"] || request.serving.is_some())
+            {
+                return Ok(Verdict::reason("refused", "ACC-054"));
+            }
             for operation in values(conduit, "operations").filter_map(Value::as_str) {
                 if operation == context.qualified("get-secret.v1")
                     && (instance["id"] != root["id"]

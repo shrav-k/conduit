@@ -1,0 +1,770 @@
+{
+  "requests": [
+    {
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008000",
+          "target": "00000000-0000-4000-8000-000000000200",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "state": "in-progress",
+          "hook": true,
+          "filters": []
+        }
+      ],
+      "call": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009200",
+            "00000000-0000-4000-8000-000000009201",
+            "00000000-0000-4000-8000-000000009202",
+            "00000000-0000-4000-8000-000000009203",
+            "00000000-0000-4000-8000-000000009204",
+            "00000000-0000-4000-8000-000000009205",
+            "00000000-0000-4000-8000-000000009206",
+            "00000000-0000-4000-8000-000000009207",
+            "00000000-0000-4000-8000-000000009208",
+            "00000000-0000-4000-8000-000000009209",
+            "00000000-0000-4000-8000-000000009210",
+            "00000000-0000-4000-8000-000000009211",
+            "00000000-0000-4000-8000-000000009212",
+            "00000000-0000-4000-8000-000000009213",
+            "00000000-0000-4000-8000-000000009214",
+            "00000000-0000-4000-8000-000000009215",
+            "00000000-0000-4000-8000-000000009216",
+            "00000000-0000-4000-8000-000000009217",
+            "00000000-0000-4000-8000-000000009218",
+            "00000000-0000-4000-8000-000000009219"
+          ],
+          "revisions": [
+            "e1-1600-0",
+            "e1-1600-1",
+            "e1-1600-2",
+            "e1-1600-3",
+            "e1-1600-4",
+            "e1-1600-5",
+            "e1-1600-6",
+            "e1-1600-7",
+            "e1-1600-8",
+            "e1-1600-9"
+          ],
+          "suffixes": [
+            "e0000",
+            "e0001",
+            "e0002",
+            "e0003",
+            "e0004"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000200"
+          },
+          "tool": "delegate-management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "link"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#inspect.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "long-link"
+                },
+                "from": "link",
+                "consumer": {
+                  "kind": "Interface",
+                  "name": "root"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "management"
+                },
+                "as": "root-new"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "person"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#interface.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "extra"
+                },
+                "from": "person",
+                "arguments": {
+                  "as": "x"
+                }
+              }
+            ],
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/e1"
+            }
+          },
+          "serving": "00000000-0000-4000-8000-000000008000"
+        }
+      }
+    },
+    {
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008001",
+          "target": "00000000-0000-4000-8000-000000000005",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "state": "in-progress",
+          "hook": true,
+          "filters": []
+        }
+      ],
+      "call": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009230",
+            "00000000-0000-4000-8000-000000009231",
+            "00000000-0000-4000-8000-000000009232",
+            "00000000-0000-4000-8000-000000009233",
+            "00000000-0000-4000-8000-000000009234",
+            "00000000-0000-4000-8000-000000009235",
+            "00000000-0000-4000-8000-000000009236",
+            "00000000-0000-4000-8000-000000009237",
+            "00000000-0000-4000-8000-000000009238",
+            "00000000-0000-4000-8000-000000009239",
+            "00000000-0000-4000-8000-000000009240",
+            "00000000-0000-4000-8000-000000009241",
+            "00000000-0000-4000-8000-000000009242",
+            "00000000-0000-4000-8000-000000009243",
+            "00000000-0000-4000-8000-000000009244",
+            "00000000-0000-4000-8000-000000009245",
+            "00000000-0000-4000-8000-000000009246",
+            "00000000-0000-4000-8000-000000009247",
+            "00000000-0000-4000-8000-000000009248",
+            "00000000-0000-4000-8000-000000009249"
+          ],
+          "revisions": [
+            "e1-1600-0",
+            "e1-1600-1",
+            "e1-1600-2",
+            "e1-1600-3",
+            "e1-1600-4",
+            "e1-1600-5",
+            "e1-1600-6",
+            "e1-1600-7",
+            "e1-1600-8",
+            "e1-1600-9"
+          ],
+          "suffixes": [
+            "e0000",
+            "e0001",
+            "e0002",
+            "e0003",
+            "e0004"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "link"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#inspect.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "long-link"
+                },
+                "from": "link",
+                "consumer": {
+                  "kind": "Interface",
+                  "name": "root"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "management"
+                },
+                "as": "root-new"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "person"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#interface.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "extra"
+                },
+                "from": "person",
+                "arguments": {
+                  "as": "x"
+                }
+              }
+            ],
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/e1"
+            }
+          },
+          "serving": "00000000-0000-4000-8000-000000008001"
+        }
+      }
+    },
+    {
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008000",
+          "target": "00000000-0000-4000-8000-000000000200",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "state": "in-progress",
+          "hook": true,
+          "filters": []
+        }
+      ],
+      "call": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009260",
+            "00000000-0000-4000-8000-000000009261",
+            "00000000-0000-4000-8000-000000009262",
+            "00000000-0000-4000-8000-000000009263",
+            "00000000-0000-4000-8000-000000009264",
+            "00000000-0000-4000-8000-000000009265",
+            "00000000-0000-4000-8000-000000009266",
+            "00000000-0000-4000-8000-000000009267",
+            "00000000-0000-4000-8000-000000009268",
+            "00000000-0000-4000-8000-000000009269",
+            "00000000-0000-4000-8000-000000009270",
+            "00000000-0000-4000-8000-000000009271",
+            "00000000-0000-4000-8000-000000009272",
+            "00000000-0000-4000-8000-000000009273",
+            "00000000-0000-4000-8000-000000009274",
+            "00000000-0000-4000-8000-000000009275",
+            "00000000-0000-4000-8000-000000009276",
+            "00000000-0000-4000-8000-000000009277",
+            "00000000-0000-4000-8000-000000009278",
+            "00000000-0000-4000-8000-000000009279"
+          ],
+          "revisions": [
+            "e1-1600-0",
+            "e1-1600-1",
+            "e1-1600-2",
+            "e1-1600-3",
+            "e1-1600-4",
+            "e1-1600-5",
+            "e1-1600-6",
+            "e1-1600-7",
+            "e1-1600-8",
+            "e1-1600-9"
+          ],
+          "suffixes": [
+            "e0000",
+            "e0001",
+            "e0002",
+            "e0003",
+            "e0004"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000200"
+          },
+          "tool": "delegate-management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "link"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#inspect.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "long-link"
+                },
+                "from": "link",
+                "consumer": {
+                  "kind": "Interface",
+                  "name": "root"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "management"
+                },
+                "as": "root-new"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "person"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#interface.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "extra"
+                },
+                "from": "person"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "extra"
+                },
+                "from": "person"
+              }
+            ],
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/e1"
+            }
+          },
+          "serving": "00000000-0000-4000-8000-000000008000"
+        }
+      }
+    },
+    {
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008001",
+          "target": "00000000-0000-4000-8000-000000000005",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "state": "in-progress",
+          "hook": true,
+          "filters": []
+        }
+      ],
+      "call": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009290",
+            "00000000-0000-4000-8000-000000009291",
+            "00000000-0000-4000-8000-000000009292",
+            "00000000-0000-4000-8000-000000009293",
+            "00000000-0000-4000-8000-000000009294",
+            "00000000-0000-4000-8000-000000009295",
+            "00000000-0000-4000-8000-000000009296",
+            "00000000-0000-4000-8000-000000009297",
+            "00000000-0000-4000-8000-000000009298",
+            "00000000-0000-4000-8000-000000009299",
+            "00000000-0000-4000-8000-000000009300",
+            "00000000-0000-4000-8000-000000009301",
+            "00000000-0000-4000-8000-000000009302",
+            "00000000-0000-4000-8000-000000009303",
+            "00000000-0000-4000-8000-000000009304",
+            "00000000-0000-4000-8000-000000009305",
+            "00000000-0000-4000-8000-000000009306",
+            "00000000-0000-4000-8000-000000009307",
+            "00000000-0000-4000-8000-000000009308",
+            "00000000-0000-4000-8000-000000009309"
+          ],
+          "revisions": [
+            "e1-1600-0",
+            "e1-1600-1",
+            "e1-1600-2",
+            "e1-1600-3",
+            "e1-1600-4",
+            "e1-1600-5",
+            "e1-1600-6",
+            "e1-1600-7",
+            "e1-1600-8",
+            "e1-1600-9"
+          ],
+          "suffixes": [
+            "e0000",
+            "e0001",
+            "e0002",
+            "e0003",
+            "e0004"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "link"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#inspect.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "long-link"
+                },
+                "from": "link",
+                "consumer": {
+                  "kind": "Interface",
+                  "name": "root"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "management"
+                },
+                "as": "root-new"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "person"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#interface.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "extra"
+                },
+                "from": "person"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "extra"
+                },
+                "from": "person"
+              }
+            ],
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/e1"
+            }
+          },
+          "serving": "00000000-0000-4000-8000-000000008001"
+        }
+      }
+    },
+    {
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008000",
+          "target": "00000000-0000-4000-8000-000000000200",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "state": "in-progress",
+          "hook": true,
+          "filters": []
+        }
+      ],
+      "call": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009320",
+            "00000000-0000-4000-8000-000000009321",
+            "00000000-0000-4000-8000-000000009322",
+            "00000000-0000-4000-8000-000000009323",
+            "00000000-0000-4000-8000-000000009324",
+            "00000000-0000-4000-8000-000000009325",
+            "00000000-0000-4000-8000-000000009326",
+            "00000000-0000-4000-8000-000000009327",
+            "00000000-0000-4000-8000-000000009328",
+            "00000000-0000-4000-8000-000000009329",
+            "00000000-0000-4000-8000-000000009330",
+            "00000000-0000-4000-8000-000000009331",
+            "00000000-0000-4000-8000-000000009332",
+            "00000000-0000-4000-8000-000000009333",
+            "00000000-0000-4000-8000-000000009334",
+            "00000000-0000-4000-8000-000000009335",
+            "00000000-0000-4000-8000-000000009336",
+            "00000000-0000-4000-8000-000000009337",
+            "00000000-0000-4000-8000-000000009338",
+            "00000000-0000-4000-8000-000000009339"
+          ],
+          "revisions": [
+            "e1-1600-0",
+            "e1-1600-1",
+            "e1-1600-2",
+            "e1-1600-3",
+            "e1-1600-4",
+            "e1-1600-5",
+            "e1-1600-6",
+            "e1-1600-7",
+            "e1-1600-8",
+            "e1-1600-9"
+          ],
+          "suffixes": [
+            "e0000",
+            "e0001",
+            "e0002",
+            "e0003",
+            "e0004"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000200"
+          },
+          "tool": "delegate-management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "link"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#inspect.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "long-link"
+                },
+                "from": "missing",
+                "consumer": {
+                  "kind": "Interface",
+                  "name": "root"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "missing"
+                },
+                "as": "root-new"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "person"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#interface.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "extra"
+                },
+                "from": "person"
+              }
+            ],
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/e1"
+            }
+          },
+          "serving": "00000000-0000-4000-8000-000000008000"
+        }
+      }
+    },
+    {
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008001",
+          "target": "00000000-0000-4000-8000-000000000005",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "state": "in-progress",
+          "hook": true,
+          "filters": []
+        }
+      ],
+      "call": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000009350",
+            "00000000-0000-4000-8000-000000009351",
+            "00000000-0000-4000-8000-000000009352",
+            "00000000-0000-4000-8000-000000009353",
+            "00000000-0000-4000-8000-000000009354",
+            "00000000-0000-4000-8000-000000009355",
+            "00000000-0000-4000-8000-000000009356",
+            "00000000-0000-4000-8000-000000009357",
+            "00000000-0000-4000-8000-000000009358",
+            "00000000-0000-4000-8000-000000009359",
+            "00000000-0000-4000-8000-000000009360",
+            "00000000-0000-4000-8000-000000009361",
+            "00000000-0000-4000-8000-000000009362",
+            "00000000-0000-4000-8000-000000009363",
+            "00000000-0000-4000-8000-000000009364",
+            "00000000-0000-4000-8000-000000009365",
+            "00000000-0000-4000-8000-000000009366",
+            "00000000-0000-4000-8000-000000009367",
+            "00000000-0000-4000-8000-000000009368",
+            "00000000-0000-4000-8000-000000009369"
+          ],
+          "revisions": [
+            "e1-1600-0",
+            "e1-1600-1",
+            "e1-1600-2",
+            "e1-1600-3",
+            "e1-1600-4",
+            "e1-1600-5",
+            "e1-1600-6",
+            "e1-1600-7",
+            "e1-1600-8",
+            "e1-1600-9"
+          ],
+          "suffixes": [
+            "e0000",
+            "e0001",
+            "e0002",
+            "e0003",
+            "e0004"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "link"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#inspect.v1"
+                  ]
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "long-link"
+                },
+                "from": "missing",
+                "consumer": {
+                  "kind": "Interface",
+                  "name": "root"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "missing"
+                },
+                "as": "root-new"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "person"
+                },
+                "spec": {
+                  "type": "github.com/shrav-k/conduit/core#interface.v1"
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Interface",
+                "metadata": {
+                  "name": "extra"
+                },
+                "from": "person"
+              }
+            ],
+            "manifest": {
+              "apiVersion": "github.com/shrav-k/conduit/v0",
+              "address": "example.org/e1"
+            }
+          },
+          "serving": "00000000-0000-4000-8000-000000008001"
+        }
+      }
+    }
+  ]
+}

@@ -69,7 +69,7 @@ How to read a line:
 - *Spec pending, batch 1*:
   - **In spec/**: the Agent's required, fixed Fleet owner: OBJ-013, FLEET-002, FLEET-003 (54 point 1, 59 A1, 60).
   - **In spec/**: Pool and Fleet names and the reserved names: FLEET-006 (59 A3).
-  - **In spec/**: standalone Conduit local names and `expectedId` on opening and closing: OBJ-013, IFC-012, IFC-014, LIF-037 (53 point 3). The exact `instance.v1` and open/close input edits are [staged for build 039](docs/work-orders/036b-staged/039.md); they bind when landed.
+  - **In spec/**: standalone Conduit local names and `expectedId` on opening and closing: OBJ-013, IFC-012, IFC-014, LIF-037 (53 point 3). The `instance.v1` and open/close input edits are in the core package, landed by order 039.
   - **In spec/**: SCT-001 to SCT-016 (SCT-010 unused), spec/promises/sections.yaml. The short form is part of the language. It is a sectioned document that `spec/` defines by numbered translation rules into the canonical documents. These stay unchanged and legal, and they remain the kernel, the wire and the stored form (55 A1).
   - **In spec/**: SCT-002, SCT-006, OBJ-012, OBJ-017, INS-001 and INS-002. An inline definition in the short form makes a template and its instance together, which amends rulings 8 and 18 (INS-001, INS-002, SCT-006). The frame is optional, with the version taken from the manifest, which amends the wording of rulings 31, 35 and 37 and changes OBJ-017. A reference still names its kind, and ruling 19 is kept: the name alone stays allowed where the field accepts exactly one kind (55 A6).
   - **In spec/**: SCT-011. `fleet: <name>` at the top of a file makes the Fleet, which owns every Agent in the file. An Agent written elsewhere states `owner:` (59 A6, 60).

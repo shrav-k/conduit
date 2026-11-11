@@ -1,0 +1,36 @@
+{
+  "id": "e05-description-bare",
+  "title": "e05-description-bare; work order 039",
+  "layers": [
+    "interface"
+  ],
+  "promises": [
+    "IFC-033"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../initial.json",
+    "schema": "schema.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "schema-case",
+        "file": "schema"
+      },
+      "expect": {
+        "reply": {
+          "tool": {
+            "name": "use.test.v1",
+            "description": "Target: Resource named-target, of Type example.org/e05/main#target.v1."
+          }
+        },
+        "stateUnchanged": true
+      }
+    }
+  ]
+}

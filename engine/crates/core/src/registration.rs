@@ -457,7 +457,8 @@ impl Builder<'_> {
         let mut argument_values = json!({});
         let apply = (|| -> Checked<()> {
             for (name, _) in items(document, "arguments") {
-                if ["owner", "placement", "runtime", "consumer", "target"].contains(&name.as_str())
+                if ["owner", "placement", "runtime", "consumer", "target", "as"]
+                    .contains(&name.as_str())
                 {
                     return Err(fault(
                         "OBJ-013",
@@ -550,6 +551,8 @@ impl Builder<'_> {
         }
         if kind == "Conduit" {
             object["open"] = json!(false);
+            // OBJ-013 / IFC-012: a standalone Conduit's alias is local to its consumer.
+            object["local_name"] = document.get("as").cloned().unwrap_or(json!(name));
         }
         if let Some((owner, slot, local)) = parent {
             object[if slot == "entries" {
@@ -558,6 +561,9 @@ impl Builder<'_> {
                 "consumer"
             }] = json!({"kind":owner["kind"],"id":owner["id"]});
             object["nested"] = json!({"parent":owner["id"],"slot":slot,"name":local});
+            if slot == "conduits" {
+                object["local_name"] = json!(local); // IFC-012: the declaration supplies the name.
+            }
             if slot == "entries" {
                 object["entry_pool"] = owner["id"].clone();
             }
@@ -1456,7 +1462,33 @@ pub(crate) fn register(
     prepare(t, snapshots, builtin, project, evidence, request, context)
 }
 
-/// Resolve and stage an already authorized submission, also used for one-template replacement.
+/// ACC-054 / OPS-023: inspect the consumer independently of template or target validity.
+/// Standalone consumers are standard arguments (OBJ-013), so no expansion is needed.
+pub(crate) fn root_consumed(state: &crate::State, document: &Value, root: &Value) -> bool {
+    document["kind"] == "Conduit"
+        && crate::access::object(state, &document["consumer"])
+            .is_some_and(|consumer| consumer["id"] == root["id"])
+}
+
+fn refuse_root_registration(
+    t: &mut Transition,
+    evidence: &Evidence,
+    request: &Request,
+    context: &Context,
+) -> Result<()> {
+    t.decisions.push(decision(
+        "refuse-root-consumer-registration",
+        &["ACC-054", "OPS-023"],
+        &[],
+        json!({}),
+        vec![],
+    ));
+    end_request(t, evidence, request, None, "refused", context)?;
+    t.reply = json!({"accepted":false,"reason":"refused"});
+    Ok(())
+}
+
+/// Resolve and stage a submission, also used for one-template replacement.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn prepare(
     t: &mut Transition,
@@ -1467,6 +1499,22 @@ pub(crate) fn prepare(
     request: &Request,
     context: &Context,
 ) -> Result<()> {
+    let root = t
+        .state
+        .objects
+        .iter()
+        .find(|o| o["from"] == context.qualified("root"))
+        .ok_or("root absent")?;
+    let root_own = root["id"] == request.sender && root["id"] == request.caller;
+    // ACC-054 precedes every validation or conflict, even if catalog resolution fails.
+    if !root_own
+        && project
+            .documents
+            .iter()
+            .any(|doc| root_consumed(&t.state, doc, root))
+    {
+        return refuse_root_registration(t, evidence, request, context);
+    }
     // Canonical traversal fixes allocations, diagnostics and nested names independently of file order.
     project.documents.sort_by_key(|d| {
         (
@@ -1698,6 +1746,10 @@ pub(crate) fn prepare(
             }
         }
     }
+    // ACC-054 / OPS-023: expansion must not make authority depend on valid targets.
+    if !root_own && b.objects.iter().any(|o| root_consumed(&b.state, o, root)) {
+        return refuse_root_registration(t, evidence, request, context);
+    }
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
         return reject(t, b.diagnostics, evidence, request, context);
     }
@@ -1756,7 +1808,7 @@ pub(crate) fn prepare(
             "PLC-001", "PLC-002", "PLC-007", "POOL-001", "POOL-002", "CON-002", "ACC-033",
             "REC-001", "REC-002", "REC-003", "POOL-004", "CON-017", "CON-021", "OBJ-008",
             "CTR-004", "OBJ-013", "NAM-019", "SCH-009", "PLC-005", "PKG-007", "POOL-009",
-            "POOL-014", "POOL-016", "PRV-006",
+            "POOL-014", "POOL-016", "PRV-006", "IFC-012", "IFC-014", "ACC-054",
         ],
         &["DL15"],
         json!({"objects":registered.len(),"generated_suffixes_consumed":b.suffix}),
@@ -1927,9 +1979,22 @@ fn check_conduit(
     let presented = names(path)?;
     for other in all.iter().filter(|o| {
         o["kind"] == "Conduit"
+            && o["state"] != "closed"
             && o["id"] != path["id"]
             && crate::access::id(&o["consumer"]) == crate::access::id(&path["consumer"])
     }) {
+        // IFC-014: local names collide even when neither Conduit presents a tool.
+        if local(path) == local(other) {
+            return Ok(Some((
+                "IFC-014",
+                format!(
+                    "local name {} collides with Conduit {} ({})",
+                    local(path),
+                    other["name"].as_str().unwrap_or(""),
+                    other["id"].as_str().unwrap_or("")
+                ),
+            )));
+        }
         if let Some(name) = names(other)?.intersection(&presented).next() {
             return Ok(Some((
                 "IFC-014",

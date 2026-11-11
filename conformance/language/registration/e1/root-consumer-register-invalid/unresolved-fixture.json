@@ -1,0 +1,9 @@
+{
+  "snapshots": [],
+  "project": {
+    "files": {
+      "conduit.yaml": "manifest",
+      "documents.json": "unresolved"
+    }
+  }
+}

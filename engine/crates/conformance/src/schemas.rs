@@ -202,6 +202,20 @@ fn run_with_step(
         .find(|o| o["id"] == fixture["target"])
         .ok_or("missing fixture target")?;
     target["schema_environment"] = serde_json::to_value(&env).map_err(|e| e.to_string())?;
+    // Schema-only fixtures omit unrelated instance metadata. Supply a complete
+    // target for IFC-033's description without weakening the publisher's boundary.
+    for (key, default) in [
+        ("kind", json!("Resource")),
+        ("name", fixture["target"].clone()),
+        (
+            "type",
+            json!(format!("{}#interface.v1", context.core_package)),
+        ),
+    ] {
+        if target.get(key).is_none() {
+            target[key] = default;
+        }
+    }
     let input = json!({"kind":"tool-definition","consumer":fixture["consumer"],"conduit":fixture["conduit"],"operation":fixture["operation"]});
     let mut t = checked_step(
         &state,

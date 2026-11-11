@@ -1,0 +1,163 @@
+{
+  "id": "root-consumer-register-onward-invalid",
+  "title": "ACC-054 / OPS-023: onward registration serving root refuses before unrelated validation or resolution errors, including an onward sender that is root",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "ACC-054",
+    "OPS-023",
+    "SEC-008",
+    "IFC-028"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../initial.json",
+    "requests": "requests.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-054",
+          "OPS-023"
+        ],
+        "stateUnchanged": true,
+        "absent": [
+          "/reply/structuredContent"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 1
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-054",
+          "OPS-023"
+        ],
+        "stateUnchanged": true,
+        "absent": [
+          "/reply/structuredContent"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 2
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-054",
+          "OPS-023"
+        ],
+        "stateUnchanged": true,
+        "absent": [
+          "/reply/structuredContent"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 3
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-054",
+          "OPS-023"
+        ],
+        "stateUnchanged": true,
+        "absent": [
+          "/reply/structuredContent"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 4
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-054",
+          "OPS-023"
+        ],
+        "stateUnchanged": true,
+        "absent": [
+          "/reply/structuredContent"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 5
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-054",
+          "OPS-023"
+        ],
+        "stateUnchanged": true,
+        "absent": [
+          "/reply/structuredContent"
+        ]
+      }
+    }
+  ]
+}

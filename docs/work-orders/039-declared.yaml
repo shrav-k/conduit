@@ -1,0 +1,116 @@
+[
+  {
+    "name": "039: new promise-directed vectors",
+    "kind": "added",
+    "cases": [
+      "conduit-as",
+      "conduit-as-invalid",
+      "as-unique",
+      "as-declared",
+      "expected-id-open",
+      "expected-id-close",
+      "expected-id-access-order",
+      "e05-description-target",
+      "e05-description-bare",
+      "root-consumer-open",
+      "root-consumer-onward",
+      "root-consumer-register"
+    ]
+  },
+  {
+    "name": "IFC-014: duplicate local names are invalid even without tool collision",
+    "kind": "flip",
+    "cases": [
+      "access-collision-secret",
+      "access-collision-control-type",
+      "access-collision-control-template",
+      "access-collision-missing-contract"
+    ],
+    "paths": [
+      "/steps/0/expect/reply/accepted"
+    ],
+    "before": true,
+    "after": false
+  },
+  {
+    "name": "IFC-014: rejection reports invalid",
+    "kind": "flip",
+    "cases": [
+      "access-collision-secret",
+      "access-collision-control-type",
+      "access-collision-control-template",
+      "access-collision-missing-contract"
+    ],
+    "paths": [
+      "/steps/0/expect/reply/reason"
+    ],
+    "operation": "add",
+    "after": "invalid"
+  },
+  {
+    "name": "IFC-014: atomic rejection diagnostics and unchanged state replace registration assertions",
+    "kind": "expectation",
+    "cases": [
+      "access-collision-secret",
+      "access-collision-control-type",
+      "access-collision-control-template",
+      "access-collision-missing-contract"
+    ],
+    "paths": [
+      "/steps/0/expect/*"
+    ]
+  },
+  {
+    "name": "IFC-014: collision case titles explain unconditional local-name rule",
+    "kind": "metadata",
+    "cases": [
+      "access-collision-secret",
+      "access-collision-control-type",
+      "access-collision-control-template",
+      "access-collision-missing-contract"
+    ],
+    "paths": [
+      "/title"
+    ]
+  },
+  {
+    "name": "IFC-014: tool-collision reports duplicate local names first",
+    "kind": "expectation",
+    "cases": [
+      "access-tool-collision"
+    ],
+    "paths": [
+      "/steps/0/expect/reply/diagnostics/*/message/text"
+    ]
+  },
+  {
+    "name": "IFC-033: e05-local description includes target and held Type",
+    "kind": "flip",
+    "cases": [
+      "e05-local"
+    ],
+    "paths": [
+      "/steps/0/expect/reply/tool"
+    ]
+  },
+  {
+    "name": "IFC-014: rejected collisions leave objects unchanged",
+    "kind": "flip",
+    "cases": [
+      "access-collision-*"
+    ],
+    "paths": [
+      "/steps/0/expect/stateUnchanged"
+    ],
+    "operation": "add",
+    "after": true
+  },
+  {
+    "name": "ACC-054 / OPS-023: registration authority precedes validation for direct and onward requests",
+    "kind": "added",
+    "cases": [
+      "root-consumer-register-invalid",
+      "root-consumer-register-onward-invalid"
+    ]
+  }
+]

@@ -5,33 +5,16 @@ const CORE: &str = "github.com/shrav-k/conduit/core";
 const API: &str = "github.com/shrav-k/conduit/v0";
 
 #[test]
-fn exact_s1_translations_report_unsupported_as_for_every_state() {
-    let h = Harness::new().unwrap();
-    for style in STYLES {
-        for task in STAGES {
-            let error = h.check(style, task).unwrap_err();
-            assert!(error.contains("(SUB-005)"), "{error}");
-            assert_eq!(
-                error.matches("'as' was unexpected").count(),
-                if task == "t1" {
-                    3
-                } else if task == "t7-revoked" {
-                    4
-                } else {
-                    5
-                },
-                "{style}/{task}: {error}"
-            );
-        }
-    }
-}
-
-#[test]
-fn without_as_probes_register_and_styles_agree() {
+fn exact_s1_translations_register_with_as_and_styles_agree() {
     let h = Harness::new().unwrap();
     for task in STAGES {
-        let flow = h.without_as("flow", task).unwrap();
-        let block = h.without_as("block", task).unwrap();
+        let flow = h.check("flow", task).unwrap();
+        let block = h.check("block", task).unwrap();
+        assert!(flow.documents.iter().any(|d| d.get("as").is_some()));
+        for document in flow.documents.iter().filter(|d| d.get("as").is_some()) {
+            let name = document["metadata"]["name"].as_str().unwrap();
+            assert_eq!(instance(&flow, name)["local_name"], document["as"]);
+        }
         access(&flow, task).unwrap();
         access(&block, task).unwrap();
         assert_eq!(flow.manifest, block.manifest, "{task}");
@@ -54,9 +37,9 @@ fn without_as_probes_register_and_styles_agree() {
 fn upgrades_and_new_directory_change_only_replacement_definitions() {
     let h = Harness::new().unwrap();
     for style in STYLES {
-        let t4 = h.without_as(style, "t4").unwrap();
-        let t5 = h.without_as(style, "t5").unwrap();
-        let t6 = h.without_as(style, "t6").unwrap();
+        let t4 = h.check(style, "t4").unwrap();
+        let t5 = h.check(style, "t5").unwrap();
+        let t6 = h.check(style, "t6").unwrap();
         assert_eq!(
             stable_changes(&t4, &t5, "t5").unwrap(),
             ["shared", "shared--t"]
@@ -72,9 +55,9 @@ fn upgrades_and_new_directory_change_only_replacement_definitions() {
 fn t7_restores_identical_canonical_state_and_counts_both_edits() {
     let h = Harness::new().unwrap();
     for style in STYLES {
-        let t6 = h.without_as(style, "t6").unwrap();
-        let revoked = h.without_as(style, "t7-revoked").unwrap();
-        let restored = h.without_as(style, "t7").unwrap();
+        let t6 = h.check(style, "t6").unwrap();
+        let revoked = h.check(style, "t7-revoked").unwrap();
+        let restored = h.check(style, "t7").unwrap();
         let a = by_name(&t6.documents);
         let b = by_name(&revoked.documents);
         assert_eq!(
@@ -208,8 +191,8 @@ fn line_edits_charge_replacements_deletions_and_separators() {
 #[test]
 fn stable_comparison_detects_unrelated_changes() {
     let h = Harness::new().unwrap();
-    let t5 = h.without_as("flow", "t5").unwrap();
-    let mut t6 = h.without_as("flow", "t6").unwrap();
+    let t5 = h.check("flow", "t5").unwrap();
+    let mut t6 = h.check("flow", "t6").unwrap();
     t6.documents
         .iter_mut()
         .find(|d| d["metadata"]["name"] == "agent-b--project")

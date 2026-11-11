@@ -1,0 +1,17 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Conduit",
+  "metadata": {
+    "name": "long-link"
+  },
+  "from": "link",
+  "consumer": {
+    "kind": "Interface",
+    "name": "delegate"
+  },
+  "target": {
+    "kind": "Resource",
+    "name": "management"
+  },
+  "as": ""
+}

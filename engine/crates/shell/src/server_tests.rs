@@ -1077,6 +1077,7 @@ async fn custom_controls_are_unfinished_for_consumers_and_management() {
             .objects
             .retain(|o| o["id"] != "target" && o["id"] != "connection");
         let mut target = fixture["state"]["objects"][0].clone();
+        target["name"] = json!("target"); // IFC-033 includes the actual target's name.
         let mut environment = fixture["environment"].clone();
         environment["scopes"]["main"]["contracts"]["controlled.v1"] = json!({"kind":"Type","metadata":{"name":"controlled.v1"},"spec":{"controls":["#test.v1"]}});
         // A registered instance keeps its environment in held, rather than on the

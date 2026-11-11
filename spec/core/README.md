@@ -221,7 +221,7 @@ from `run.v1` and `stop.v1`.
   the engine gave it. A request made through a Conduit that lists the operation, and that
   names an object or an invocation that does not exist, reports invalid (OPS-029). So does a
   request for `set-up.v1` or `retire.v1` that names a template or a Conduit (LIF-032).
-  `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take the optional input
+  `set-up.v1`, `retire.v1`, `inspect.v1`, `unregister.v1`, `open.v1` and `close.v1` take the optional input
   `expectedId`, the ID the actor expects the object it names to have, as Kubernetes's
   `preconditions.uid`: it names nothing and grants nothing, and where the reference resolves to
   an object with another ID, as after a name is given to another object (LIF-035), the request

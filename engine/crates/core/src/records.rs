@@ -56,6 +56,9 @@ pub(crate) fn preflight(
             request_replies: vec![],
         };
         register_project(&mut trial, args, c, a, route)?;
+        if trial.reply["reason"] == "refused" {
+            return Ok(Some(("refused", "ACC-054")));
+        }
         if trial.reply["accepted"] != true {
             let rule = trial.reply["diagnostics"]
                 .as_array()

@@ -34,7 +34,7 @@ For each client, with evidence:
    from its own identity directory, through its header helper.
 3. **The owner's configuration kept out**, by flags alone: none of the owner's settings, MCP
    servers, hooks or instructions loads, shown by what the client reports at its start.
-   Point 3 was observed under `--setting-sources project`, which [finding 3-04](../../docs/proposals/first-build/log-increment-3.md) later showed loads an ancestor CLAUDE.md.
+   Point 3 was observed under `--setting-sources project`, which [finding 3-04](../../docs/proposals/first-build/README.md#3-04) later showed loads an ancestor CLAUDE.md.
 4. **The reach of the login off** (ruling 48, point 1): for Claude Code, no claude.ai connector
    and no `SendMessage`, `ListAgents` or `RemoteTrigger`, and messages from other sessions
    refused; for Codex, no apps. Shown by the tools each client reports, not by its flags.

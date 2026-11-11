@@ -36,7 +36,7 @@ the plan's A79 is now the short-form spike, so its lean-vector work goes under A
    log and A68's done-when; E10's corrected mapping in `to-review-with-the-owner.md`; E12, "The
    core's boundary" in `engine/README.md`, rebuilt from the current code and not copied; E13's
    "Planned work" in `conformance/README.md`, with "Evidence of vector strength so far" verbatim.
-   Check that what increment-2/plan.md's sections 4 to 7 hold is carried by `conformance/README.md`,
+   Check that what https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md's sections 4 to 7 hold is carried by `conformance/README.md`,
    `increment-2/decisions.md` or the code; report what is not, for the tracker's "Known to be open".
 2. **Then remove** the files the list names, and only those. Before deleting each, check that
    since C0 it changed only in link targets or path mentions, which orders 033, 034, 035 and 060
@@ -71,3 +71,16 @@ From the repository root: `python3 tools/check_docs.py` (it checks the C0 permal
 history), `python3 tools/check_rulings.py`, `python3 tools/set_names.py --check`,
 `python3 tools/check_schemas.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass. Do
 not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 20 minutes, then a fresh verifier in 5. The worker removed 16 files,
+49,269 words, keeping 22,853 in the first build's records: the logs of increments 1 to 3 became one
+settlements register (33 findings, with D19's caveat, the sentinel method, the evidence of vector
+strength and the rejected alternatives verbatim), the closeout gained "How to run the open checks",
+`engine/README.md` gained "The core's boundary", rebuilt from the code, and `conformance/README.md`
+its planned work. One path stays inside an invalid example's JSON value, which is data and not a
+link. The verifier found three C0 links whose line numbers had become part of the file name, an
+instruction for future findings that pointed at the closed register instead of the open increment's
+log, and two historical references to the handoff sent to its rebuilt summary; the admin fixed all
+of them. The shell's loopback tests could not run in the sandbox; no code changed.

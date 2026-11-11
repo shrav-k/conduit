@@ -36,13 +36,13 @@ critic's correction to it applied below.
    in `tools/*.py`, `conformance/manifest.yaml` and `reference-model/` sources must exist. Report
    what fails today; fix only what this order's items 4 and 5 move.
 4. **The frozen S1 set** (the plan's E14): `conformance/s1-promises.yaml` holds the 308 promise IDs
-   of `docs/proposals/first-build/increment-2/plan.md` section 2, verbatim. Point
+   of `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md` section 2, verbatim. Point
    `reference-model/crates/conformance/src/lib.rs` (around lines 145 to 147 and 206 to 260),
    `conformance/manifest.yaml` (around line 6883) and `conformance/README.md` (around line 399) at it.
    Remove the loader test `reference-model/crates/loader/tests/s1_drafts.rs`, or point it at
    `reference-model/examples/s1`; repoint `conformance/fixtures/s1/README.md` line 7.
 5. **S1's proposed safety traces** (the plan's E36, as the critic corrected it): copy
-   `docs/proposals/first-build/increment-2/plan.md` section 3 (around lines 515 to 594) verbatim to
+   `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md` section 3 (around lines 515 to 594) verbatim to
    `conformance/s1-safety-cases.md`, headed as **the safety traces proposed for S1 in increment 2**.
    Do not say it defines the manifest's `safety_rows` tags: the manifest uses about 21 tag values, and
    only four are trace names of that section, so no one has yet decided what "safety vector" means.

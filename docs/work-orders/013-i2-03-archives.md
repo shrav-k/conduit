@@ -8,7 +8,7 @@ This order has network access, to fetch crates; use it for nothing else.
 ## What and why
 
 The second part of I2-03 of the
-[study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders),
+[study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders),
 which [decision 2](../proposals/first-build/increment-2/decisions.md) set apart: until now the
 core has resolved packages from snapshots, which prove no installation. This order installs a
 package from the bytes of its archive, so that the build may claim installation.

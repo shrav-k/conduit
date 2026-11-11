@@ -8,7 +8,7 @@ and for tests that bind a loopback port; use it for nothing else.
 
 ## What and why
 
-I2-08 of the [study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders):
+I2-08 of the [study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders):
 every order so far has emitted records as it went; this one completes them and checks them
 whole, adds inspection, and the repairs the promises allow. Who did what, through which
 Conduit, is the accountability Conduit promises.

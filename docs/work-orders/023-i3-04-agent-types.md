@@ -10,7 +10,7 @@ here: tests use a scripted client, and the admin runs the real ones at the close
 ## What and why
 
 The fourth order of increment 3, items H05 to H09 of
-[the handoff](../proposals/first-build/increment-3-handoff.md#work-the-shells-orders-can-take),
+[the handoff](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md#work-the-shells-orders-can-take),
 and the first build's [needs 1 to 10](../implementation/FIRST_BUILD.md#what-increment-3-needs).
 An Agent in S1 is a real client, run by the engine's runner, reaching the shared directory and
 the history only through the engine. The owner ruled (ruling 47's review, point 4) that these
@@ -99,7 +99,7 @@ PRV-022, PRV-023, TPL-019, IMP-001, IMP-002, IFC-012, IFC-013, IFC-038.
     clients, calls `turn` on each through `conduit call`, and shows that each scripted client
     reached the engine with its own identity.
 11. **What only the real clients can show** (need 10): write
-    `docs/proposals/first-build/increment-3/closeout.md`, not binding, as the admin's plan for
+    `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3/closeout.md`, not binding, as the admin's plan for
     the closeout: each check of need 10 and of increment 3's done-when that needs a real client,
     with the sentinel or evidence that would show it (such as an instruction file, a hook and a
     user setting each planted where the client would load it if it could), the command to run
@@ -112,8 +112,8 @@ Create and change only: `packages/agent-claude-code/`, `packages/agent-codex/`,
 `reference-model/crates/shell/`, `reference-model/examples/s1/`, `reference-model/Cargo.lock`,
 `reference-model/README.md`, `reference-model/CONFORMANCE.md`,
 `conformance/fixtures/agents/`, `tools/set_names.py`, one new vector under `conformance/` with its manifest entry,
-`docs/proposals/first-build/log-increment-3.md` and
-`docs/proposals/first-build/increment-3/closeout.md`. Report anything else that needs changing;
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-3.md` and
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3/closeout.md`. Report anything else that needs changing;
 do not change `spec/` or the core's decisions.
 
 ## Done when
@@ -142,4 +142,4 @@ target directory. The admin sent the worker back once with all six. The admin al
 `AGENTS.md` and `CONTRIBUTING.md`, which this order's scope left out, to say the names check
 covers `packages/`. The admin reran every check: 136 Rust tests in `reference-model/` and six
 in each package pass, and clippy, fmt and the five repository checks are clean. No real client
-ran; the [closeout plan](../proposals/first-build/increment-3/closeout.md) is for the admin.
+ran; the [closeout plan](../proposals/first-build/increment-3/closeout-results-2026-11-10.md#how-to-run-the-open-checks) is for the admin.

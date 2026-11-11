@@ -67,7 +67,7 @@ For S1, I read:
 - the coordinator's run files (docs/proposals/first-build/increment-4/coordinator-run/*);
 - the fresh author's run, counted by its keys;
 - S1's shipped packages (conformance/fixtures/s1/packages/*, packages/agent-*/conduit.yaml and contracts.yaml);
-- the S1-touched promise set in conformance/manifest.yaml `s1_coverage`, which comes from section 2 of docs/proposals/first-build/increment-2/plan.md.
+- the S1-touched promise set in conformance/manifest.yaml `s1_coverage`, which comes from section 2 of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md.
 
 Promise files, by ID prefix:
 - spec/promises/: OBJ objects, INS instantiation, TPL templates, CTR contracts, NAM naming, PKG packages, MAN manifest, SUB submissions, POOL pools, PLC placement, CON conduits, FST first-start, PRV providers, SEC secrets, SCH schemas.

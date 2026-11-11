@@ -1,7 +1,7 @@
 # Increment 3: the closeout with the real clients, 2026-11-10
 
 Not binding. The [specification](../../../../spec/README.md) alone binds. These are the admin's
-results of running the [closeout plan](closeout.md) with the real clients, against increment 3's
+results of running the [closeout plan](closeout-results-2026-11-10.md#how-to-run-the-open-checks) with the real clients, against increment 3's
 done-when and [needs 1 to 10](../../../implementation/FIRST_BUILD.md#what-increment-3-needs).
 Paths under the run's own directory are written `<closeout>/`. No token, credential or account
 identifier is recorded here.
@@ -119,3 +119,73 @@ outside them is refused; closing one Agent's Conduit leaves the other working; e
 a record; and this page states that access is mediated and lists the routes around the engine.
 The coordinator counts increment 3 done on that basis, with the items under
 [what is not shown](#what-is-not-shown) carried to increment 4 as open, and never claimed.
+
+## How to run the open checks
+
+Use a fresh live S1 store with built host archives, shared/history directories and a harmless
+unknown marker in hello.txt. Record client/package/Node versions; keep evidence outside the
+shared, identity and private working directories. Save each JSON reply and export records
+after each case. Never retain tokens, Authorization headers, authentication files, API keys
+or whole owner configurations. Review redaction before retaining raw events. Keep engine
+lists, native observations and model reports apart: prose is not a native catalog.
+`not_reported` and `session_init_unverified` both mean unshown.
+
+The admin arranges disposable sentinels in the places each client would normally load. Where
+an owner file must be touched, the owner/admin controls that change and restoration; the
+worker did not inspect or change any such file. Preserve existing content without copying
+credentials into the evidence. Use unique, harmless marker strings for this closeout and
+record their paths, purpose, installation and removal, without publishing private paths.
+Repeat each test with only its one sentinel installed, so one marker cannot explain another.
+Use an isolated baseline invocation outside Conduit to confirm that the sentinel is effective;
+an ineffective sentinel cannot establish exclusion. Baseline model turns are separately
+explicitly authorized by the admin, counted separately, and never automatic wrapper work.
+
+| Check | Sentinel and command/action | Pass | Fail or unshown |
+| --- | --- | --- | --- |
+| Claude instructions | In the user instruction file and a CLAUDE.md in an ancestor of the actual private run working directory (outside that directory), put distinct instructions to include `OWNER_INSTRUCTION_SEEN` and `ANCESTOR_INSTRUCTION_SEEN`. Confirm each in the baseline; then `conduit call --store STORE turn-a.turn.v1 '{"message":"Reply with the single word READY."}'` | Neither marker is used by the wrapped client; each baseline proves discovery from that same private working directory with project sources enabled. Review --setting-sources empty, with the server/helper/allow rule supplied by --mcp-config and --settings alone; inspect instruction diagnostics if available | Any marker, diagnostic showing an owner source loaded, or ineffective/unobserved baseline |
+| Codex rules | Put distinct markers in the user/global rules and AGENTS.md in an ancestor of the actual private run working directory. Baseline each from that directory with document loading on, then the same READY call through `turn-b.turn.v1` | No marker/rule load, with effective baseline and both `--ignore-rules` and `-c project_doc_max_bytes=0` in reviewed launch arguments | Marker or rules load, or insufficient baseline evidence |
+| Hooks | Install a harmless user hook per client that writes a unique marker file in the disposable evidence directory on a turn/tool call. Verify it fires in baseline; run READY and a project read through each wrapper | No marker file from either wrapped turn; baseline hook did fire | Hook executes; an unsupported or ineffective hook makes the test unshown |
+| User settings | Set a harmless user setting with an observable result, such as an added sentinel MCP server exposing only `owner_sentinel`, and a separately observable output-style sentinel. Baseline each; run READY and an instruction to list/use only engine tools through both turn tools | No sentinel server/tool, no style marker and startup/diagnostics consistent with exclusion | Sentinel loads or is usable; a missing catalog alone is unshown |
+| Claude account services false | With an available harmless account connector, confirm a baseline connector read works. Keep accountServices false and request that connector's sentinel read via turn-a | Connector unavailable, with native catalog/config evidence and no service-side read receipt | Read succeeds, connector appears enabled, or no effective baseline/service receipt |
+| Codex apps false | Use an installed benign app with a harmless sentinel item, baseline its read, then ask turn-b to read it while accountServices is false | App tool cannot be used; independent app-side activity evidence shows no read and effective baseline | Any app call/read, or relying only on startup events (009 did not list apps) |
+| Claude outgoing peers false | With a disposable known peer Agent, ask turn-a to SendMessage, ListAgents and RemoteTrigger against it, one explicit turn per tool | Native rejection/unavailability for each and no peer-side receipt/trigger | Any succeeds or only a model's refusal is available |
+| Claude incoming peers false | Keep one Claude conversation alive after its first turn. From a disposable real Claude session, send it a uniquely tagged message using the native cross-session mechanism; then request the next explicit turn and inspect both sender receipt and receiver evidence | A positive native refusal/no delivery, correlated sender/receiver diagnostics, and no injected message at the next turn | Delivery; silence alone, no routable receiving session, or inability to establish a baseline delivery is unshown |
+| Opt in per Agent | In separate copies of the project, change only one reach input true for one Agent, register a fresh store, and repeat its effective baseline exercise plus the other Agent's false case | The selected Agent gains that reach; the other remains off; each input tested independently and together | Global widening, true ineffective, or false bypass. Codex has no qualified peer-messaging switch; report that limit instead of claiming it was enabled |
+
+Claude's true peer case selects only SendMessage, ListAgents and RemoteTrigger as native
+tools, allows them beside engine tools, and omits the explicit inbound refusal. Verify the
+native inbound default accepts messages in this configuration, and that no machine tools
+become available. For every reach-input combination, review Codex's --disable flags for
+shell_tool, unified_exec, browser_use, browser_use_external, in_app_browser,
+computer_use, multi_agent, hooks, plugins, view_image, goals and image_generation. Only apps
+may be enabled by accountServices; none of those features may turn back on. `code_mode_host`
+stays on (finding 3-06). No unqualified
+inbound enum value is supplied. The false case retains --tools empty and the experiment 009 refuse setting. The worker could not qualify the true
+case on a real client; positive baseline and opt-in evidence remain required.
+
+A real client’s token-rotation check needs an authorized harness; do not infer refresh from
+an engine-only credential test. For revocation, compare A’s and B’s engine lists and actual
+work, then restore A explicitly; account for stale catalogs separately from enforcement.
+
+To show one conversation per Agent across revocation/restoration, correlate Claude’s one
+streamed process/conversation and Codex’s exact resumed thread, with no --last fallback.
+Do not retain sensitive raw events. A new conversation, automatic turn, unauthorized success
+or cross-Agent notification/access change fails; notification delivery alone does not prove
+a current model catalog. Missing native evidence leaves that part unshown.
+
+For routes around the engine (ACC-027, feeding A7), put an unknown harmless sentinel outside
+all exposed roots. Baseline an unwrapped read, then explicitly ask the wrapped Codex for the
+same read with its own tools. Save prompt, reply, native tool/file-access evidence and engine
+records. A successful outside read is a bypass; model refusal alone leaves native exclusion
+unshown. Repeat an ambiguous shared-file request and correlate successful reads/writes with
+engine records. Keep code_mode_host on under 3-06, with shell and unified exec off.
+
+Inventory every remaining native tool, including apply_patch in the read-only sandbox and
+user input; exercise harmless disposable-path attempts and record actual refusals or reach.
+Include Claude’s native tools, the shared OS user’s access to other run credentials, shared
+login, and opted-in account/peer routes. These settings provide no OS isolation. Absent engine
+records never prove absence of bypass. Separate enforcement, refresh/isolation limits and
+unshown need-10 properties. Native peer receipts and service-side evidence matter; silence
+alone establishes neither refusal nor exclusion.
+
+Not run: the user-settings sentinel; Claude Code's user skills were not tried.

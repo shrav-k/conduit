@@ -61,7 +61,7 @@ After that:
    - The D19 measurement with its caveat.
    - Two open rows from increment 1.
 4. **docs/proposals/language-shape/project/brief.md** (new, about 6k words). It is the one input to the Projects rulings and opens with a **Provenance** section.
-5. **conformance/s1-safety-cases.md** (new). A verbatim copy of increment-2/plan.md §3 (:515-594), with the six E05 cases, the 23 remaining safety traces and the adjacent open boundaries. It is the meaning of the manifest's `safety_rows` tags.
+5. **conformance/s1-safety-cases.md** (new). A verbatim copy of https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md §3 (:515-594), with the six E05 cases, the 23 remaining safety traces and the adjacent open boundaries. It is the meaning of the manifest's `safety_rows` tags.
 6. **docs/guides/cold-readers.md** gains a section "The protocol" (what to watch, and the claims checked against MCP 2026-07-28 with their sources) and links AUDIT for the convergence rule.
 7. **docs/archive/README.md**, rewritten:
    - One table, "Removed from the tree": Path | What it was | Source material for | Last version (C0). About 45 rows; the ruling-39 rows are kept.
@@ -168,19 +168,19 @@ E-numbers refer to the extractions list. Each extraction is done and verified fi
 - **Condensed by deleting sections:** README.md (drop only :1-37, replaced by the index, and :125-157; keep :241-284), round-5/README.md, round-5/log-fixes.md and round-6/log-integration.md (E5).
 
 **B. docs/proposals/first-build/: about 44k words now, 8.8k later**
-- log-increment-1.md, log-increment-2.md and log-increment-3.md go after:
-  - E6: register rows with reasons; D19 with its caveat; log-increment-1:680-706.
-  - E13: lean vectors; coverage; the mutation evidence at log-increment-2:390-394, :1062-1070, :1094-1112 and :1209-1220.
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-1.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-3.md go after:
+  - E6: register rows with reasons; D19 with its caveat; https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-1.md#L680-L706.
+  - E13: lean vectors; coverage; the mutation evidence at https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md#L390-L394, :1062-1070, :1094-1112 and :1209-1220.
   - Plain-text citations in tools/check_schemas.py:83 and :221, and in spec comments, become finding IDs.
-- increment-3-handoff.md: E12 and E13 (H12). reference-model/CONFORMANCE.md:63-67 is retargeted to its live destination, not to C0 (sequence, step c).
-- check-plain-errors.md: E7.
-- increment-3/closeout.md: E8, extended. reference-model/examples/s1/README.md:44-46 is retargeted to closeout-results#how-to-run-the-open-checks.
-- increment-2/plan.md:
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md: E12 and E13 (H12). reference-model/CONFORMANCE.md:63-67 is retargeted to its live destination, not to C0 (sequence, step c).
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/check-plain-errors.md: E7.
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3/closeout.md: E8, extended. reference-model/examples/s1/README.md:44-46 is retargeted to closeout-results#how-to-run-the-open-checks.
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md:
   - E14 (§2, the frozen S1 set).
   - E36 (§3, verbatim to conformance/s1-safety-cases.md).
   - E13 (D08, :136-155).
   - A verifier check that §4-§7 are carried by conformance/README, increment-2/decisions.md and the code. Anything not carried goes to the register or to Known to be open.
-- increment-2/s1/ (9 YAML files): no extraction. Remove the loader test s1_drafts.rs, or point it at reference-model/examples/s1. Repoint conformance/fixtures/s1/README.md:7.
+- https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/s1 (9 YAML files): no extraction. Remove the loader test s1_drafts.rs, or point it at reference-model/examples/s1. Repoint conformance/fixtures/s1/README.md:7.
 - **Later, after the S1 rerun on the simplified language:** increment-4/coordinator-run/ (17 files) and fresh-author-run/ (57 files). Each run's counted project files and scripts stay, as 007's setup/ does, because v0 must account for failed runs. Do E9 now.
 
 **C. Ruling and batch records: about 173k words**
@@ -392,7 +392,7 @@ Each item gives source, then destination. The verifier checks each against its s
 
 **E6. first-build/README.md: index plus settlements register**
 - One row per finding: ID, decision, promises, vector, rejected alternative and why.
-- Increment 1 (log-increment-1):
+- Increment 1 (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-1.md):
   - 1-01: SUB-005 for every schema rejection; per-keyword annotations would change every schema.
   - 1-04 and 1-17: ECMA-262 kept; I-Regexp would force rewrites without lookahead; ruling 48 point 3 restricts tokens instead.
   - 1-06: dot-names are skipped, taking only the dot part of Terraform's rule (the case was macOS tar's ._ files).
@@ -405,12 +405,12 @@ Each item gives source, then destination. The verifier checks each against its s
   - 1-14: SCH-015 for a $ref to a non-Schema.
   - 1-18.
   - Two open rows: the saphyr `---` fault to report upstream (:680-686) and patternProperties left to the jsonschema crate (:695-706).
-- Increment 2 (log-increment-2):
+- Increment 2 (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md):
   - 2-01: two BOMs rejected (YAML 1.2.2 prefix), applied in the vector only.
   - 2-03: different unconditional defaults rejected under SCH-009; equal ones count as one.
   - 2-02 and 2-04 to 2-08.
-- Increment 3 (log-increment-3:11-24): 3-01 to 3-07, including 3-02 (model required, empty default) and 3-06 (code_mode_host on).
-- D19 (log-increment-2:1010-1014):
+- Increment 3 (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-3.md#L11-L24): 3-01 to 3-07, including 3-02 (model required, empty default) and 3-06 (code_mode_host on).
+- D19 (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md#L1010-L1014):
   - Records-purge bytes fell from 9,187 to 4,495.
   - The unknown write's entry stayed at 373,365.
   - The invocation array grew from 499,935 to 622,636.
@@ -419,7 +419,7 @@ Each item gives source, then destination. The verifier checks each against its s
   - Replace the token-helper note with experiment 008's answer: Claude does not re-run the helper after a 401; Codex re-runs it but fails initialization with "Auth required". This bears on PRV-022.
   - Confirm the missing-plain-tool note against IFC-002 (unavailable), then drop it.
 
-**E7. increment-2/decisions.md under 8a, about 300 words, from check-plain-errors**
+**E7. increment-2/decisions.md under 8a, about 300 words, from https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/check-plain-errors.md**
 - The conclusion (:7-18).
 - The tags and commits checked (:36-42 and :230-233):
   - TS SDK v2.4.0 951fe560.
@@ -486,7 +486,7 @@ Each item gives source, then destination. The verifier checks each against its s
 - AUDIT's waiting row points here.
 
 **E12. reference-model/README.md: "The core's boundary"**
-- From increment-3-handoff:9-175, rebuilt from the current code, not copied:
+- From https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md#L9-L175, rebuilt from the current code, not copied:
   - Input kinds, including BuiltinRunStopped.
   - Requests, intents and completions.
   - The identity materialization.
@@ -495,7 +495,7 @@ Each item gives source, then destination. The verifier checks each against its s
 - Alternatively, doc comments on conduit_core's types.
 
 **E13. conformance/README.md "Planned work", plus AUDIT A79 and A44, and the ROADMAP citation**
-- The lean-vector proposal (log-increment-2:1137-1175):
+- The lean-vector proposal (https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md#L1137-L1175):
   - The measurements: 8.2 MB in 1,269 files; 361 cases at 6.67 MB; 224 snapshot recipes; 207 repeated register inputs; 129 whole-array expectations.
   - The five steps.
   - conformance/ is now 12 MB and about 414k words.
@@ -508,7 +508,7 @@ Each item gives source, then destination. The verifier checks each against its s
 - Safety tagging: tag the 74 untagged cases and review the 38 empty lists against s1-safety-cases.md.
 - Port the scenarios of the 16 "vector pending" and 29 DL-mapped runtime rows of LANGUAGE_DEFECTS.
 - **"Evidence of vector strength so far"**, verbatim:
-  - log-increment-2:390-394: two resolver mutations, each failing all three S1 variants.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md#L390-L394: two resolver mutations, each failing all three S1 variants.
   - :1062-1070: nine targeted mutations, each caught.
   - :1209-1220: the 75-run record-omission fault injection, each omission caught at /records.
   - :1094-1112: increment 2's done-when table with its limits.
@@ -791,7 +791,7 @@ Each item gives source, then destination. The verifier checks each against its s
 - The worker reports a count per log; the verifier samples 20%.
 
 **E36. conformance/s1-safety-cases.md (new)**
-- increment-2/plan.md §3 (:515-594) verbatim:
+- https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md §3 (:515-594) verbatim:
   - The six E05 cases.
   - The 23 safety traces (bootstrap, S1-register-set, S1-duplicate, S1-archive-escape, S1-no-fetch, S1-target-type, S1-plain-filter, ..., S1-purge, S1-records, E08-broker, E11-replace, E12-name-reuse), each with its inputs, expected decision and requiring promises.
   - The adjacent open boundaries (:586-592).

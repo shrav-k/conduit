@@ -8,12 +8,12 @@ beside this file. This order has network access, to fetch crates; use it for not
 ## What and why
 
 This is the first of increment 2's build orders, I2-01 of the
-[study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders). It
+[study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders). It
 lays down what every later order builds on: the format of the conformance vectors, the pure
 core and the runner of the vectors, and the core's first transition, first start, with every
 decision citing the promise that requires it.
 
-Read: [the study](../proposals/first-build/increment-2/plan.md), sections 2 (its "First start"
+Read: [the study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md), sections 2 (its "First start"
 table), 4 and 5; [the admin's decisions](../proposals/first-build/increment-2/decisions.md),
 which bind this order, decisions 3, 4 and 7 above all; [the first build](../implementation/FIRST_BUILD.md);
 the loader's [README](../../engine/README.md); and the promises FST-001 to FST-006,
@@ -50,8 +50,8 @@ LIF-034, NAM-020, PLC-008, PLC-026, PRV-014 and REC-001 to REC-003, with what th
    whose only vectors are the loader's tests: write each as a vector that the runner runs
    through the loader (the log of increment 1 and the study's section 4 name them).
 6. **A finding**: where a promise does not decide what the core must do, stop that case, do not
-   invent its answer, and log it in a new `docs/proposals/first-build/log-increment-2.md`, in
-   the form of [the log of increment 1](../proposals/first-build/log-increment-1.md), with
+   invent its answer, and log it in a new `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md`, in
+   the form of [the log of increment 1](../proposals/first-build/README.md#settlements-register), with
    "For the admin" as its state. Add the log to the table in
    [the first build's findings](../proposals/first-build/README.md).
 
@@ -60,7 +60,7 @@ LIF-034, NAM-020, PLC-008, PLC-026, PRV-014 and REC-001 to REC-003, with what th
 Create and change only: `conformance/`, `reference-model/Cargo.toml`, `reference-model/Cargo.lock`,
 `reference-model/crates/core/`, `reference-model/crates/conformance/`, the loader's public
 interface where the runner needs it, `reference-model/README.md`,
-`docs/proposals/first-build/log-increment-2.md` and `docs/proposals/first-build/README.md`.
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md` and `docs/proposals/first-build/README.md`.
 Report anything else that needs changing; do not change `spec/`.
 
 ## Done when

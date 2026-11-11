@@ -33,7 +33,7 @@ twice. This order checks both against the protocol's text and what its servers d
    error with that code, for instance). Cite files and lines of a tagged release.
 3. **The reference servers**: whether the filesystem server that S1 uses, at the versions
    experiment 008 and A70 ran (2.1.0 and 2.2.0), ever answers either code after writing.
-4. **Write** `docs/proposals/first-build/check-plain-errors.md`, not binding: for each reading,
+4. **Write** `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/check-plain-errors.md`, not binding: for each reading,
    what the protocol says, what its servers do, whether the reading holds, and if it does not,
    the options for IFC-010 or IFC-046 with a recommendation for the admin. Decide nothing.
 

@@ -8,7 +8,7 @@ use it for nothing else.
 
 ## What and why
 
-I2-04 of the [study](../proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders):
+I2-04 of the [study](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md#7-a-proposed-sequence-of-work-orders):
 the core registers a submitted project atomically and resolves its instances, so that S1's
 documents become objects. It builds on first start (order 004), the schemas (order 006) and the
 contexts of packages and projects (order 009).

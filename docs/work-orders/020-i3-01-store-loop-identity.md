@@ -15,7 +15,7 @@ what the core asks for, recovery after a crash, the retention of outputs, and th
 the engine gives each run. It starts no process, serves no HTTP and runs no Agent: orders 021
 (the runner), 022 (the server consumers connect to) and 023 (the Agent types) do.
 
-Read: [the handoff](../proposals/first-build/increment-3-handoff.md), all of it, which is the
+Read: [the handoff](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md), all of it, which is the
 interface you build on, and its items H01 and H04; the first build's increment 3 and "What
 increment 3 needs"; `reference-model/CONFORMANCE.md`; the core as it stands
 (`reference-model/crates/core/`), and the conformance runner
@@ -92,7 +92,7 @@ IFC-032, IFC-042, PRV-022, PRV-024, SEC-018.
 9. **Tests** run the loop end to end on S1 with the scripted executor standing in for the
    runner and the servers, as the `s1-whole` vector's completions do, and check that the
    records the shell exports match those the vector expects, apart from times and IDs.
-10. **The log of increment 3**: create `docs/proposals/first-build/log-increment-3.md` in the
+10. **The log of increment 3**: create `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-3.md` in the
     form of the log of increment 2, and log there any finding under ruling 46, numbered 3-01 on.
     A case the core cannot decide is a finding; unfinished shell work is not.
 
@@ -100,7 +100,7 @@ IFC-032, IFC-042, PRV-022, PRV-024, SEC-018.
 
 Create and change only: `reference-model/crates/shell/`, `reference-model/Cargo.toml`,
 `reference-model/Cargo.lock`, `reference-model/README.md`, `reference-model/CONFORMANCE.md`,
-`docs/proposals/first-build/log-increment-3.md` and `docs/proposals/first-build/README.md`.
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-3.md` and `docs/proposals/first-build/README.md`.
 The core's public interface may gain what the shell needs to call it, with no change to any
 decision; say what you changed and why. Report anything else that needs changing; do not change
 `spec/` or `conformance/`.
@@ -124,7 +124,7 @@ a waiting caller could be given an earlier success instead of the core's refusal
 forever; outputs held under a pending repeat escaped the retention cap; and tokens carried no
 `exp`. The third was the admin's: this order said "no exp", against DL13 and JWT-SVID
 section 3.3. The admin settled it for an `exp` 100 years ahead, logged as finding 3-01 in the
-[log of increment 3](../proposals/first-build/log-increment-3.md), and sent the worker back
+[log of increment 3](../proposals/first-build/README.md#settlements-register), and sent the worker back
 once with all three. The second round added `request_replies` to the core's `Transition`, so
 the shell delivers the core's own reply, made `expire-outputs` reach outputs held in previous
 snapshots, and issued and checked the `exp`. The core's decisions did not change; every vector

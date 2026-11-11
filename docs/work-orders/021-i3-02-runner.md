@@ -9,7 +9,7 @@ package named below, and for tests that bind a loopback port; use it for nothing
 ## What and why
 
 The second order of increment 3, item H02 of
-[the handoff](../proposals/first-build/increment-3-handoff.md#work-the-shells-orders-can-take).
+[the handoff](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md#work-the-shells-orders-can-take).
 Order 020 built the shell's store, loop and identities, and left an `Executor` with a scripted
 stand-in. This order gives it the engine's own runner (PRV-003): it starts the processes of
 runs, speaks MCP to them over stdio, and carries out the intents that reach a server. With it,
@@ -89,7 +89,7 @@ is `Config::engine_url`.
 
 Create and change only: `reference-model/crates/shell/`, `reference-model/Cargo.toml`,
 `reference-model/Cargo.lock`, `reference-model/README.md`, `reference-model/CONFORMANCE.md` and
-`docs/proposals/first-build/log-increment-3.md`. Report anything else that needs changing; do
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-3.md`. Report anything else that needs changing; do
 not change `spec/`, `conformance/` or the core's decisions.
 
 ## Done when

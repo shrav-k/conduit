@@ -9,7 +9,7 @@ that bind a loopback port; use it for nothing else.
 ## What and why
 
 The third order of increment 3, items H04 and H03 of
-[the handoff](../proposals/first-build/increment-3-handoff.md#work-the-shells-orders-can-take).
+[the handoff](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-3-handoff.md#work-the-shells-orders-can-take).
 The engine presents MCP at its address, and every Agent reaches what it may reach only through
 it. This order serves that address on loopback, establishes who each request comes from by
 the token order 020 issues, and gives each consumer exactly its own tools, as the core decides.
@@ -87,7 +87,7 @@ is `Config::engine_url`.
 
 Create and change only: `reference-model/crates/shell/`, `reference-model/Cargo.toml`,
 `reference-model/Cargo.lock`, `reference-model/README.md`, `reference-model/CONFORMANCE.md` and
-`docs/proposals/first-build/log-increment-3.md`. Report anything else that needs changing; do
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-3.md`. Report anything else that needs changing; do
 not change `spec/`, `conformance/` or the core's decisions.
 
 ## Done when

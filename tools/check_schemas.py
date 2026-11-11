@@ -83,7 +83,7 @@ did not run.
 
 Where it reads otherwise than the specification, and why no verdict here depends on it. The
 strict loader in engine/ follows the specification in each, and the first build's log
-of increment 1 (docs/proposals/first-build/log-increment-1.md) lists them. Where the two
+of increment 1 (docs/proposals/first-build/README.md#1-09) lists them. Where the two
 differ, this tool is not the reference, and no example may rely on a difference listed here.
 
   - `pattern` uses SCH-016's interoperable tokens, checked by a tokenizer. Python's `re`
@@ -221,7 +221,7 @@ SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 # lists; and added engine-selected (TPL-003), for a template or a Type whose `implementation`
 # map selects an implementation for such an operation.
 # The coordinator's decision on finding 1-03 of the first build's log of increment 1
-# (docs/proposals/first-build/log-increment-1.md) added ecma-pattern (SCH-016), for a pattern
+# (docs/proposals/first-build/README.md#1-03) added ecma-pattern (SCH-016), for a pattern
 # that a schema of a document writes and that is not a regular expression of ECMA-262.
 RULES = {
     "one-name": "NAM-027",

@@ -1,6 +1,6 @@
 # Ruling 39: the open points before the cold read by Codex
 
-Status: in force; amended by 41 (points 1 to 5; logged decisions on composition, `obliges`, `narrows`, re-exports); amended by 42 (R5); amended by 44 (C42, accepted again under point 6); amended by 57 (point 11); amended by 58 (point 6 record notes; point 8 assessment); done (points 8 to 14) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 1. Purpose, scope and principles](../../../IN_FORCE.md#1-purpose-scope-and-principles), [IN_FORCE.md: 12. Secrets](../../../IN_FORCE.md#12-secrets), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed); [CON-001](../../../spec/promises/conduits.yaml). This record says why.
+Status: in force; amended by 41 (points 1 to 5; logged decisions on composition, `obliges`, `narrows`, re-exports); amended by 42 (R5); amended by 44 (C42, accepted again under point 6); amended by 57 (point 11); amended by 58 (point 6 record notes; point 8 assessment); done (points 8 to 14); amended by 75 (G5: every convention-layer safety promise) (ruled by the owner on 2026-11-06). Holds now: [IN_FORCE.md: 1. Purpose, scope and principles](../../../IN_FORCE.md#1-purpose-scope-and-principles), [IN_FORCE.md: 12. Secrets](../../../IN_FORCE.md#12-secrets), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed); [CON-001](../../../spec/promises/conduits.yaml). This record says why.
 
 This is the record of a
 ruling. Where it and the specification differ, the specification governs.

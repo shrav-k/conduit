@@ -1,6 +1,6 @@
 # Ruling 70: Agents run code, permissively for now, so that Conduit can build Conduit
 
-Status: in force (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed) (spec pending: the Agent packages 0.2.0, order 050). This record says why.
+Status: in force; amended by 75 (points 1 and 3: the folder is the grant) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed) (spec pending: the Agent packages 0.2.0, order 050). This record says why.
 
 The first build's Agent Types, `codex.v1` and `claude-code.v1`, turn off what an Agent reaches
 through its own login, as [ruling 48](../ruling-48/README.md) point 1 decided. They also turn off

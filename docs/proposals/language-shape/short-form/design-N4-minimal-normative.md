@@ -42,7 +42,7 @@ Top-level keys (all optional; at least one section required):
 - `templates`: a map whose keys are among `interfaces`, `agents`, `resources`, `pools` and `conduits`. Each is a map NAME → TEMPLATE-BODY.
 - `interfaces`, `agents`, `resources`, `pools`, `conduits`: each a map NAME → ENTRY of that family.
 
-NAME: the name grammar of OBJ-001 (`[a-z][a-z0-9-]*`, at most 63 characters), with no `--` anywhere.
+NAME: the name grammar of OBJ-001 (`[a-z](?:[a-z0-9-])*`, at most 63 characters), with no `--` anywhere.
 
 TEMPLATE-BODY: exactly today's template `spec` for that family (`template-spec.v1`, `pool-template-spec.v1`, `conduit-template-spec.v1`, `inputs` allowed), plus optional `metadata: {description, annotations}`. It translates to the framed template NAME. This form exists for reuse and for templates exported by packages.
 

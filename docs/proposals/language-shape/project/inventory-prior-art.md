@@ -202,7 +202,7 @@ Not binding. The [specification](../../../../spec/README.md) alone binds. A work
 # 7. Backstage and Docker Compose
 
 **Backstage (https://backstage.io/docs/features/software-catalog/descriptor-format):**
-- `metadata.namespace` "has no special semantics apart from bounding the name uniqueness constraint"; the default is `default`. References are `[kind:][namespace/]name`, with missing parts filled from context.
+- `metadata.namespace` "has no special semantics apart from bounding the name uniqueness constraint"; the default is `default`. References are `[kind:]\[namespace/]name`, with missing parts filled from context.
 - `spec.owner` is "the singular entity (commonly a team) that bears ultimate responsibility" and is "not to be used by automated processes to for example assign authorization in runtime systems."
 - System and Domain group components and APIs.
 

@@ -31,7 +31,7 @@ Not binding. The [specification](../../../../spec/README.md) alone binds. A work
    - many standalone Conduits: turns, root to Pool, history and grants;
    - manifests with pins;
    - the requests `replace.v1`, `register-replacement.v1`, `install.v1`, `open`/`close`, `retire` and `unregister`.
-   
+
    They wrote no contracts, requirements, controls, entries, placement, runtime, secrets or `remote` items.
 10. S1's costs fall on these classes: about 100 re-declaration lines (change: no in-place change, pins per object, standalone names); 80 to 190 frame lines (notation); 72 lines of root's Conduits to its Pool and for turns (essential under G2, but derivable by a rule that makes real Conduits); 21 pin lines (an essential pin in a notational place); 17 lines of template plumbing (reuse); and 23 lines of access facts.
 11. Rules that look like notation but carry safety:
@@ -50,7 +50,7 @@ Not binding. The [specification](../../../../spec/README.md) alone binds. A work
     - the inventory in `inspect.v1`;
     - tombstones enforced at open and at register, which change registration's meaning;
     - descriptive tool descriptions, which give `metadata.description` a wire meaning where OBJ-018 says it has none.
-    
+
     Rulings 49 to 51 (an account field, pending actions at an Interface, peer mode) need room too.
 14. The specific checks for any candidate form are the 15 items at the end of the findings.
 
@@ -103,7 +103,7 @@ Legend:
   - providers: PRV-001, PRV-004, PRV-016;
   - secrets: SEC-001, SEC-002, SEC-003, SEC-005, SEC-009, SEC-021, SEC-022;
   - LIF-007, the one outlier: S1 retires instances, but the increment-2 list leaves it out.
-  
+
   A short form tuned on S1 alone would lose these 36 without anyone noticing.
 - My class tally of the 203 (a judgment; per-entry classes are below):
 
@@ -187,7 +187,7 @@ A. DOCUMENTS, PROJECT AND SUBMISSION
 - Protects: no forged state or IDs. S1: X. Class: ESS.
 
 **A8. Names.**
-- Grammar: `[a-z][a-z0-9-]*`, at most 63 characters (OBJ-001).
+- Grammar: `[a-z](?:[a-z0-9-])*`, at most 63 characters (OBJ-001).
 - Unique per kind, templates and instances together (OBJ-002).
 - Unique across kinds within a project or package, implementations included, because `#name` carries no kind (NAM-027).
 - Member names of `inputs`, `conduits`, `entries` and `requirements` follow the same grammar, written as maps (OBJ-022).
@@ -212,7 +212,7 @@ A. DOCUMENTS, PROJECT AND SUBMISSION
   - `register.v1` takes `documents` (`document.v1`) and `manifest` (spec/core/operations.yaml:221);
   - `replace.v1` takes `template`, `revision`, `contracts` and `manifest` (:279);
   - `inspect.v1` returns `declared` in the resolved canonical form (:361).
-  
+
   An Agent that manages objects through a Conduit sends these values (preservation test 5, docs/AUDIT.md:486).
 - Conformance vectors are files, which is why every engine takes a directory (SUB-010).
 - Protects: G6 and G8, and atomicity.
@@ -339,7 +339,7 @@ D. TEMPLATES AND INSTANTIATION (reuse machinery)
   - a declared Conduit's `target`, or its `arguments` or a place inside them;
   - an entry's `placement`, `runtime`, or `arguments` or a place inside them;
   - a Conduit template's whole `operations`, and an applied requirement's `arguments`.
-  
+
   Never `type`, `implementation`, `controls`, `capability`, `from`, `optional`, a whole nested instantiation, one item of `operations`, the requirement's selection or `inputs`.
 - Destinations must not overlap (INS-010), and each needs its parent (INS-011). One input may have several destinations, as with `token` in spec/schemas/examples/valid/project/templates.yaml (to config and a Conduit's target).
 - Argument rules:
@@ -743,7 +743,7 @@ THE CHECKLIST: what any short form must answer, condensed
   - a key count of the fresh author's JSON (I did not read all 46 files);
   - S1's shipped packages;
   - the s1_coverage list, which comes from the increment-2 plan's inventory and is not a trace of the runs.
-  
+
   LIF-007 is outside that list although S1 retires instances. The list is not a measured record of which promises the runs exercised.
 - I read the language-layer promises in full. I did not read every convention or interface promise in full: providers, secrets, operations, records, observation and most of lifecycle, access and implementation.
 - From core/operations.yaml I read only the inputs and outputs of nine core operations.

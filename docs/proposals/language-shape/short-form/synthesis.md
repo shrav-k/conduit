@@ -132,7 +132,7 @@ TOP-LEVEL KEYS (closed, OBJ-019)
 - conduits: {NAME: CONDUIT}
 
 NAMES
-- NAME follows OBJ-001 ([a-z][a-z0-9-]*, at most 63 characters). In addition, it:
+- NAME follows OBJ-001 (`[a-z](?:[a-z0-9-])*`, at most 63 characters). In addition, it:
   - contains no `--`;
   - is none of system, local, management, access or root;
   - is unique across all sections and the project's framed documents (NAM-027).

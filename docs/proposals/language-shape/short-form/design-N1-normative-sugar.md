@@ -62,7 +62,7 @@ TOP LEVEL (closed keys; checked by the Schema contract `core#project.v1` before 
 - A package's manifest may hold `templates` and nothing else of these.
 
 KEYS
-- An entry <Key> follows OBJ-001: [a-z][a-z0-9-]*, at most 63 characters. In addition:
+- An entry <Key> follows OBJ-001: `[a-z](?:[a-z0-9-])*`, at most 63 characters. In addition:
   - it contains no "--" (reserved for translated names);
   - it is not a first-start name (system, local, management, access, root);
   - it is unique across all sections and against every name of the project's other documents (NAM-027).

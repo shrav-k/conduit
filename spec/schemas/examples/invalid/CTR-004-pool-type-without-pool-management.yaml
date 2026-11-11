@@ -3,6 +3,8 @@
 # this one does not (CTR-004). No Conduit that carries that capability could be instantiated
 # to a Pool of this type, so nothing could be registered into it, set up, retired or
 # inspected. The schema `type-spec.v1` states the rule with `if`, `then` and `contains`.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

@@ -5,9 +5,8 @@
 # default implementation of `example.org/files#directory.read.v1` that the type
 # `any-directory.v1` states, gives its variable `FILES_ROOT` the place `/path`, and the type
 # requires `path` but gives it the schema `{}`, which admits a map or a list.
-# Ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md): an Operation contract states no default
-# implementation, so the type here states the one that the operation's contract stated.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

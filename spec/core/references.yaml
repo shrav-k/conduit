@@ -1,21 +1,3 @@
-# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since is logged in the records that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, added `secret-reference.v1` (section 4 of the review, point 1) and
-# changed the description of the resolved form, which no graph and no control's `settings`
-# holds any longer (decisions 1 and 15). The log is docs/proposals/ruling-41/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in the description of
-# `resource-reference.v1`.
-# The names of ruling 42 (the vocabulary audit's N1 and N16; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`,
-# in the comment below and in the description of `secret-reference.v1`, and the restrictions
-# that an implementation is sent to its filters, in the comment below.
-#
 # The reference schemas: the Schema contracts that make a value a reference (OBJ-021). A
 # value inside `config` or `arguments` is resolved to an ID only where the schema that
 # governs its place is one of these: directly, as the `items` of a list, or as a branch of
@@ -41,7 +23,7 @@
 # by `secret-reference.v1`, which accepts one kind and no bare name: at a place it governs
 # a string is a literal, which SEC-001 rejects.
 #
-# The resolved form (decision R2-G1 of docs/proposals/reaudit/round-2/DECISIONS.md). Where a
+# The resolved form. Where a
 # value is a reference, the instance stores `{kind: <Kind>, id: <ID>}` in its place when it
 # is made (OBJ-009, OBJ-021), with the kind and the ID of the object the reference resolved
 # to. Every schema below accepts that form as its last branch, with the kinds it accepts, so
@@ -68,6 +50,9 @@
 # schema of a place, as the `items` of a list, or beside `{type: null}` under `anyOf` or
 # `oneOf` (SEC-001), which tools/check_schemas.py applies itself. That a secret reference
 # resolves to a Resource whose type offers `secret-provider.v1` is the engine's (SEC-002).
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

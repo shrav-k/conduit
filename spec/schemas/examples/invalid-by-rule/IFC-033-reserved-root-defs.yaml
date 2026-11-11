@@ -1,4 +1,7 @@
 # Example: the schema is shaped correctly, but IFC-033 reserves this root copy key.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:

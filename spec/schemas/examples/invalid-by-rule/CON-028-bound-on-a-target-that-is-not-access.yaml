@@ -2,6 +2,8 @@
 # a Conduit that applies `bound.v1` has `access` as its target. The Conduit `reviewer-scratch`
 # is made from a template that applies it, and its target is the Resource `scratch`, so it is
 # not instantiated.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

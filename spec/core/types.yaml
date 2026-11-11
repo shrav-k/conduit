@@ -1,31 +1,3 @@
-# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since is logged in the records that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, removed `system-pool.v1` and changed `location.v1`, which has no
-# configuration, offers no capability and lists no control (decision 8); took `rename.v1` and
-# the policy operations out of the `requires` of `management.v1` and `access.v1` (decisions 10
-# and 3a); and dropped `placement: {}` from every type, since `placement` is now an optional
-# label selector (decision 8a). The log is docs/proposals/ruling-41/log-core.md.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying row 13 of the
-# coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, said in the
-# description of `location.v1` that a location stands for a hostname in canonical form,
-# whichever machines provider reports it. The log is docs/proposals/ruling-42/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N2, N9 and N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed `location.v1` to `node.v1`, location to
-# node, "stand for" to "represent", the machines provider to the machine provider and the key
-# `placement` of a type to `nodeSelector`, in the description of `node.v1` and below.
-# The editorial fixes of ruling 42 (the vocabulary audit's E10 and E17; log
-# docs/proposals/ruling-42/log-editorial.md) call `node.v1` the type of every node, where the
-# description and the list below said the node type, which no promise says; and below, that the
-# engine implements no `get-secret.v1`, where it said that the engine serves no secret store.
-# Ruling 44 (D06, as revised after the ruling; log docs/proposals/reaudit/round-6/
-# log-d06-d12.md) says below that the engine implements the operations the types require,
-# where it said that each operation states the engine as its default.
-#
 # The Type contracts of the core package.
 #
 # Promises encoded:
@@ -48,6 +20,9 @@
 # (CTR-004, REC-002). No core type offers a provider capability: the engine's own runner,
 # machine provider and fetching serve where no provider does (PRV-003), and the engine
 # implements no `get-secret.v1` (SEC-020).
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

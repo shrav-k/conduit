@@ -1,6 +1,8 @@
 # Example. One document, valid against the schemas, that must be rejected:
 # `{entry: name}` is written only in an entry of a Pool template. From outside the Pool the
 # Resource of an entry is written `{kind: Pool, name: <pool>, entry: <entry>}` (POOL-014).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

@@ -3,9 +3,10 @@
 Draft. These are the terms the promises rely on, each with one meaning. The promises govern:
 where a row names a promise, that promise states the rule and the row only says what the word
 means. The first table gives the core terms in one line each; the section it links holds the
-full row of each. How this file came to stand as it does, pass by pass, is under
-[How this file changed](#how-this-file-changed) at the end. The latest pass is that of
-[ruling 45](../docs/proposals/ruling-45/README.md), which added six core terms.
+full row of each. The decision records and their reasons are listed in
+[Where the reasons are](README.md#where-the-reasons-are).
+
+`serving` and `unreconciled` are working names.
 
 ## Core terms
 
@@ -364,160 +365,51 @@ promise.
 
 ## Words the promises do not use
 
+The `_meta` key rows use the prefix defined in [names.yaml](names.yaml).
+
 | Term | Meaning |
 | --- | --- |
 | grant | Not used for access. The access an open Conduit carries is the operations it lists; it begins when the Conduit is opened and ends when the Conduit is closed (ACC-003, ACC-011). The word keeps only the sense of the protocol's authorization, which follows OAuth 2.1: a grant by which a client obtains a token from an authorization server, as a consumer does from the one that DL13 states (IFC-042, DL13). |
 | declaration | Not used for a document. What is submitted is a document, and an instantiation written inside a template is a nested instantiation. The word keeps only the senses of declaring a node lost (PLC-017, PLC-024) and of declaring an extension of the Model Context Protocol, as a client declares Conduit's extension (IFC-036, IFC-037). |
 | create | Not used for an operation. An instance is instantiated, and that is done by registering its document. |
 | later work | Not part of this version. No operation arranges, through the engine, work that outlasts its invocation: once an invocation has ended, no request that names it as served is dispatched, and the engine dispatches none on its behalf, apart from the read of a secret that SEC-023 makes again, for the caller of the setup that made a connection, once that connection's values are lost, and the read for a provider's run that PRV-026 asks for again after the engine restarts, or the part of it that held that run stops, for the caller of the setup that last asked for that run (ACC-019, IFC-028). Work that is to happen later is asked for later, by an actor, through a Conduit that is open then. An invocation that outlasts its call is something else, and is one invocation (IFC-016). |
-| graph, setup graph, retire graph | Removed by ruling 41. An instance's own setup and retirement work is its setup hook and its retire hook (TPL-017, TPL-018), and an operation built from others is an ordinary implementation, a server that makes onward requests (ACC-016). Declared Conduits and entries keep their order (CON-004, POOL-013). An implementation item that states `graph` is rejected (MAN-009). |
-| step | Removed by ruling 41. What a setup or a retirement does is its parts (TPL-012, OPS-022). |
-| value binding, value reference, `source` of a value reference, output of a graph | Removed with graphs by ruling 41, and nothing replaces them. Source is now the context in which a record or an observation was made (REC-005). An implementation learns its instance's configuration from `config` (IFC-006) or, where it is plain, from what its item's `environment`, `packageArguments` or `headers` take from it (PKG-020). An operation's outputs remain (CTR-002). |
-| runtime (declared by a template or a type), `runtimes`, `restoresRuntimes`, restore | Removed by ruling 41. A runtime provider runs an instance's item that is run as its run (PRV-007), and may restart it under its own restart policy (PRV-010). `runtime` is now only the standard argument (PRV-006), and a template that writes `runtimes` is rejected (TPL-001, OBJ-019). |
-| hold (a handle), the request for no actor | Removed by ruling 41. No instance holds a handle (IFC-011), and every request that the engine sends has a caller (IFC-006). |
-| policy, `apply-policy.v1`, `remove-policy.v1` | Removed by ruling 41. Access is narrowed by closing a Conduit and opening a narrower one (ACC-011). Ruling 41 records policies as a candidate for a later version. "Policy" is not used for access: it stays only in restart policy, a runtime provider's own term (PRV-010), and in a network policy, which names a machine and never a run (PRV-018, PRV-025). |
-| composite, component, component Conduit | Removed by ruling 41. A template that needs two capabilities of one target declares two Conduits (CON-016). |
-| constituent, composition, composed requirement | Removed by ruling 41. Several requirements are applied side by side (CTR-005). |
-| `obliges`, `narrows`, `appliesTo` | Keys of a Requirement contract, removed by ruling 41, and rejected (CTR-005). A filter binds the target's implementations alone (CON-022), a requirement of the core package is applied by the engine and any other is a filter (CTR-005), and a requirement is applied only to a Conduit. |
-| re-export | Removed by ruling 41. `exports` lists only the package's own documents (MAN-007). |
-| rename, `rename.v1` | Removed by ruling 41. A name is fixed once its object is made (OBJ-011): another name means another object. |
-| facts, location fact, host, `set-facts.v1`, `location-settings.v1` | Removed by ruling 41. What is known of a node's machine is its labels (PRV-014, PLC-026). "Host" is not used for a machine, whose name is its hostname (PRV-014). It stays only in the name of the shared-host requirement (PLC-013), in the host part of an address (NAM-001), and in the host of a URL, as RFC 3986 names it (SEC-024, IFC-017, PRV-022). |
-| default location, `set-default-location.v1`, `system-settings.v1`, `system-pool.v1` | Removed by ruling 41. The machine provider places an instance that is given no placement (PLC-002, PRV-015), and `system` is of the type `pool.v1`. |
-| requirement on placement | Removed by ruling 41, and replaced by the label selector (PLC-007). |
-| retained result, retrieval tool, `retrieve-result.v1` | Removed by ruling 41. A caller that lost a result repeats its request (OPS-009, OPS-032). |
-| withheld, `inProgress`, `interfaceVersion` | Removed by ruling 41, with the keys `state`, `withheld` and `interfaceVersion` of Conduit's keys. A result is delivered with its outputs even where its Conduit was closed while it ran (ACC-034); a repeat of an invocation that has not ended reports conflict (OPS-032); and Conduit's keys travel as Conduit's extension (IFC-037). |
-| isolation plugin | Removed by ruling 41. A restriction is enforced only where a runtime provider whose contract confines its consumer runs it (ACC-027, PRV-006). |
-| location, `location.v1`, location type, stand for | Renamed by ruling 42 (name N10 of the [vocabulary audit](../docs/proposals/vocabulary-audit/README.md)): a node, of the type `node.v1` and made from the core package's template `node`, represents a machine (PLC-008, PLC-026), and `declare-lost.v1` names it in its input `node`. A value tied to a location is a value tied to a node (PLC-020). The word keeps only the senses of the standards that use it: JSON Schema's instance location, and SARIF's `locations` in a diagnostic. |
-| machines provider, the engine's own machine | Renamed by ruling 42 (N2): the machine provider, whose type offers `machine-provider.v1` (PRV-013), and the engine's own machine provider, its built-in implementation (PRV-003). The computer itself is the machine the engine runs on, and the promises call it that. |
-| `label-selector.v1`, `placement` of a Type or an implementation item, `selector` of `place.v1` | Renamed by ruling 42 (N8, N9): the schema `labels.v1`, and the key and the input `nodeSelector` (CTR-004, MAN-010, PRV-015). `placement` is only the standard argument (OBJ-013, PLC-001). |
-| `location` of `run.v1` | Renamed by ruling 42 (N3): `machine`, the hostname and the labels of the machine of the instance's node (PRV-007). |
-| counts as declared lost | Not used since ruling 42 (N11): the engine declares a node lost when the machine provider reports its machine gone (PLC-024). |
-| `secret-reveal.v1`, `reveal-secret.v1` | Renamed by ruling 42 (N1): the capability `secret-provider.v1`, which the type of a secret Resource offers (SEC-002), and its one operation `get-secret.v1` (SEC-005). The engine's request for that operation is still the engine's read of a secret (SEC-010). |
-| `endpoint` of `run.v1` | Renamed by ruling 42 (N5): `url`, the Streamable HTTP URL at which the engine reaches a run, as server.json names it (PRV-007, IFC-017). The prose may still call it the MCP endpoint, as the Model Context Protocol does. |
-| `arguments` of an implementation item and of `run.v1` | Renamed by ruling 42 (N6): `packageArguments`, keyed by the `name` of a named argument or the `valueHint` of a positional one in the Package's own `packageArguments`; no key binds its `runtimeArguments` (MAN-010, PRV-007). `arguments` is only what an instance document, a nested instantiation or an applied requirement supplies (OBJ-013, NAM-019), and the arguments of a call of the Model Context Protocol (IFC-001). |
-| `digest` of a `package` item | Removed by ruling 42 (N7): the Package states the hash of its file in its own `fileSha256`, and an `oci` image is pinned by a digest in its `identifier` (MAN-010). A digest is a package's or a submission's (PKG-004, SUB-008). |
-| the instance that acted for the caller, the reading instance, `instance` of a record | Not used since ruling 42 (N12): a record names the consumer of the Conduit used, in `consumer` (REC-002), and the engine reads a secret for an instance through that instance's own Conduit (SEC-010). |
-| `observedGeneration` | Removed from a condition by ruling 42 (N13): no object has a generation, and a revision is not one (REV-001). |
-| origin | Renamed by ruling 42 (N14): source, the CloudEvent's `source` of a record and the `source` of a condition (REC-005, OBS-002). The word keeps only the sense of a web origin, as RFC 6454 defines one, which a request on HTTP names in its `Origin` header, and which the engine's server accepts or rejects (IFC-036, DL12). |
-| operation identity, `operationIdentity` | Renamed by ruling 42 (N15): idempotency key, sent in `io.github.shrav-k.conduit/idempotencyKey` (OPS-008, IFC-023). The convention is that of idempotency keys and outcomes. |
-| `io.github.shrav-k.conduit/restrictions` | Renamed by ruling 42 (N16): `io.github.shrav-k.conduit/filters`, the filters that apply to a request (IFC-018). A bound is applied by the engine and never sent (CON-018), and the key `io.github.shrav-k.conduit/restriction` of a result stays, since it can name a bound (IFC-025). |
-| `io.github.shrav-k.conduit/interface` | Renamed by ruling 42 (N17): Conduit's extension is `io.github.shrav-k.conduit/implementation-interface` (IFC-029, IFC-037). |
-| runtime profile | Renamed by ruling 42 (N18): conformance document. |
-| trust domain (of a secret) | Renamed by ruling 42 (N19): domain of trust. |
-| its own setting for restarts | Not used since ruling 42 (N20): a runtime provider restarts a run under its own restart policy (PRV-010). |
-| node type | Not used since ruling 42 (E10 of the [vocabulary audit](../docs/proposals/vocabulary-audit/README.md)): the promises say the type `node.v1` (PLC-008, PLC-028). |
-| setup operation, retire operation | Not used since ruling 42 (E11): `set-up.v1` and `retire.v1` are themselves the operations, and the setup and the retirement of an instance are each one invocation of one of them (TPL-008). |
-| fail over, failover | Not used. Where the engine stops and starts again, on its machine or on another, the promises say that it restarts. What ruling 43 calls an engine that can fail over, the promises call an engine that can restart on another machine or run as several parts, as configured and as its conformance document states under DL17, which gives the outcomes it meets; such an engine sends a header that carries a secret to no `http` URL, whenever the template was registered (SEC-024, SEC-013). A connection that lasts across a restart, whose values the engine no longer holds, has its secrets read again before its next HTTP request (SEC-023, IFC-041), and a provider whose run ended with the engine is run again when the engine first needs it (PRV-026). |
-| unpublished package, `<digest>#<name>` | Removed by ruling 41, and replaced by the contracts of a submitted project, named `address#name` (SUB-008). |
-| secret store | Not used. The promises and the core package say secret Resource for the object (SEC-002), the type of a secret Resource for its Type (SEC-022), and an implementation of `get-secret.v1` for what reads the store (SEC-020); a store is the system outside the engine that a locator names (SEC-006). The records of the rulings, and the lines of head comments and READMEs that record earlier passes, still say it for a secret Resource's kind of provider: its Type, its implementation of `get-secret.v1` and the store it reads (E17 of the [vocabulary audit](../docs/proposals/vocabulary-audit/README.md)). |
-
-## How this file changed
-
-The owner accepted this file as it stood at
-[ruling 39](../docs/proposals/ruling-39/README.md), which accepted every logged decision of the
-coordinator and choice of an editor. [Ruling 40](../docs/proposals/ruling-40/README.md) and
-[ruling 41](../docs/proposals/ruling-41/README.md), of 2026-11-06, then changed it: Conduit
-innovates only on connection and access, and everything else is a provider behind a contract
-that the user picks. Ruling 41 accepted the
-[principles review](../docs/proposals/principles-review/README.md) as recommended, with the
-secret type as its section 4 reduces it, and the terms that came and went with it are those of
-section 1 of the [work order](../docs/proposals/ruling-41/PLAN.md#1-terms) that applied it. The
-sections [Providers](#providers) and [Secrets](#secrets) are new, the section on graphs is gone,
-and each term that went is listed under
-[Words the promises do not use](#words-the-promises-do-not-use) with what replaced it. The
-[log of the docs editor](../docs/proposals/ruling-41/log-docs.md) says where this file differs
-from the work order's table and why. The names that the review and the work order coined, such
-as the names of the provider capabilities, are settled:
-[ruling 42](../docs/proposals/ruling-42/README.md) accepted the names and the editorial fixes
-that the [vocabulary audit](../docs/proposals/vocabulary-audit/README.md) proposes. The names
-and the editorial fixes are applied, as the end of this paragraph says. The names `serving` and
-`unreconciled`, which the decisions after the rewrite coined, are working names, and
-[ruling 43](../docs/proposals/ruling-43/README.md) kept the third, `identity`. The
-[coverage check](../docs/proposals/ruling-41/log-integration.md#coverage-check) of the rewrite
-changed the rows for location, first-start object, the engine's own runner, runtime provider,
-`runtime`, run, shutdown and bound, and added no term. The decisions and answers of ruling 42
-changed the rows that the
-[log of its integration](../docs/proposals/ruling-42/log-integration.md) names, and added the
-row for `identity`; the [log of its docs editor](../docs/proposals/ruling-42/log-docs.md) then
-changed the rows for argument, location, hook, implementation item, `runtime`, `identity`,
-revision and later work, and added the rows for `serving`, `unreconciled`, the list set on the
-engine's own runner and fail over. The names N2, N3 and N8 to N11 of ruling 42, which the
-[log of their renames](../docs/proposals/ruling-42/log-rename-a.md) lists, then renamed the rows
-location, location type, stand for, machines provider, value tied to a location and the
-engine's own runner, machine and fetching to node, node type, represent, machine provider,
-value tied to a node and the engine's own runner, machine provider and fetching; changed the
-rows for type, placement, unreachable, gone, first-start object, implementation item,
-provider, runtime provider, `runtime`, run, machine, label, label selector and declare lost,
-and others where the words occur; and listed the earlier words among those the promises do not
-use. Its other names, N1, N5 to N7 and N12 to N20, which the
-[log of the other renames](../docs/proposals/ruling-42/log-rename-b.md) lists, then renamed the
-rows operation identity, origin, runtime profile and trust domain to idempotency key, source,
-conformance document and domain of trust; changed the rows for argument, which no longer
-carves out the key of an implementation item, implementation item, plain, run, digest, secret
-Resource, the engine's read of a secret, request, onward request, hook, Conduit's keys,
-Conduit's extension, condition, observation and policy, and others where the words occur; and
-listed the earlier words among those the promises do not use. Its editorial fixes, which
-the [log of the editorial fixes](../docs/proposals/ruling-42/log-editorial.md) lists,
-then added the row call (E6); removed the rows node type (E10) and setup operation, retire
-operation (E11), which no promise uses, and listed them among the words the promises do not
-use; changed the rows reconcile, `deduplicates`, Conduit's extension, revision, request,
-provider call, ready, Resource, connection, item that is run, set up, retire, record, Agent,
-model work and secret store; and moved the history of the rows before ruling 41 to that log
-(E22). The
-[verification of ruling 42](../docs/proposals/ruling-42/log-integration.md#verification) then
-changed the rows argument, resolved form, node, caller, setup hook, retire hook, hook,
-connection, Conduit's extension, the engine's own runner, machine provider and fetching, the
-list set on the engine's own runner and `identity`. Ruling 43, on work across machines, then
-added the rows decision point, enforcement point, gate and trust bundle, and changed the rows
-engine, caller, mediated, enforced, request, implementation item, connection, plain, the
-engine's own runner, machine provider and fetching, the list set on the engine's own runner,
-runtime provider, run, `identity`, machine, the engine's read of a secret, domain of trust,
-names a version assigns, later work and fail over, as the
-[log of its integration](../docs/proposals/ruling-43/log-integration.md) says. The terms
-decision point, enforcement point, gate and trust bundle, and the names of what `identity`
-carries, were coined in applying it, for the owner to strike. The
-[log of its docs editor](../docs/proposals/ruling-43/log-docs.md) then added the row
-credential, and changed the rows represent, access decision, invocation, `serving`, cancel,
-`identity`, provider and secret Resource. The
-[verification of ruling 43](../docs/proposals/ruling-43/log-integration.md#verification) then
-changed the rows ID, implementation item, connection, gate, provider, runtime provider, run,
-`identity`, trust bundle, credential, secret Resource and fail over, and coined the names of
-the two files that it added to `identity`. The
-[decisions of round 5](../docs/proposals/reaudit/round-5/DECISIONS.md) of the re-audit then
-changed the rows register, ID, connection, gate, `identity`, credential, label, configuration,
-provider call, hook, status, address, contract, names a version assigns, grant, declaration,
-policy, facts, machines provider and origin, and added the rows the engine's credential ID, the
-engine's address and a type's contract. The
-[integration of that round's fixes](../docs/proposals/reaudit/round-5/log-fixes.md) then changed
-the rows run, item that is run, provider, request, later work, install, placement, reference
-schema, repeat, control, reconcile, retired, remove, unregister, attempt, `unreconciled`,
-implementation item, hook and shutdown, as the decisions of that round say. The
-[verification of those fixes](../docs/proposals/reaudit/round-5/log-fixes.md#verification)
-then changed the rows caller, `serving`, runtime provider, the engine's read of a secret, part,
-conflict, result, tool, Conduit's keys, Conduit's extension, the engine's ID for an invocation,
-inspect, unreachable, contract and shared-host requirement, and the text under "How a request
-ends".
-
-The history of the rows as they stood before ruling 41, which names many rows that are gone,
-is in the [log of ruling 42's editorial fixes](../docs/proposals/ruling-42/log-editorial.md#the-history-of-the-rows-before-ruling-41),
-where E22 of the vocabulary audit moved it.
-
-[Ruling 44](../docs/proposals/ruling-44/README.md), on
-[round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit, then added the table of
-[core terms](#core-terms) at the head of this file and moved this history to its end (D21);
-added the rows broker (D03, D04) and bundle (finding 6-1-04); and changed the rows project,
-register, replace, the contracts of a submitted project (D11), `management` (D04, D18), bound,
-filter (D03, finding 6-1-02), narrow, tool, control (D07, findings 6-1-03 and 6-1-05),
-operation (D14), hook (the open point on a type's default for a hook), repeat, attempt (finding
-6-1-02), plain, Conduit's extension (finding 6-1-01), package-source provider and configuration
-(finding 6-1-05), and the text under "How a request ends" (finding 6-1-02), as the
-[log of its docs editor](../docs/proposals/reaudit/round-6/log-specdocs.md) says. The
-[verification of that round](../docs/proposals/reaudit/round-6/log-integration.md#verification)
-then changed the rows plain (C-01), filter and repeat (C-07, R-06, R-13), tool (R-07), bundle
-(R-08), hook (C-05, R-10) and `management` (R-11), and the text under "How a request ends"
-(R-13).
-
-[Ruling 45](../docs/proposals/ruling-45/README.md), of 2026-11-09, added six rows to the core
-terms, for terms that a collaborator's list of components named and the table lacked: project,
-root Interface, gate, node, manifest and core package. Each restates its full row and changes no
-meaning.
+| graph, setup graph, retire graph | Not used. An instance's own setup and retirement work is its setup hook and its retire hook (TPL-017, TPL-018), and an operation built from others is an ordinary implementation, a server that makes onward requests (ACC-016). Declared Conduits and entries keep their order (CON-004, POOL-013). An implementation item that states `graph` is rejected (MAN-009). |
+| step | Not used. What a setup or a retirement does is its parts (TPL-012, OPS-022). |
+| value binding, value reference, `source` of a value reference, output of a graph | Not used; nothing replaces them. Source is the context in which a record or an observation was made (REC-005). An implementation learns its instance's configuration from `config` (IFC-006) or, where it is plain, from what its item's `environment`, `packageArguments` or `headers` take from it (PKG-020). An operation's outputs remain (CTR-002). |
+| runtime (declared by a template or a type), `runtimes`, `restoresRuntimes`, restore | Not used. A runtime provider runs an instance's item that is run as its run (PRV-007), and may restart it under its own restart policy (PRV-010). `runtime` is only the standard argument (PRV-006), and a template that writes `runtimes` is rejected (TPL-001, OBJ-019). |
+| hold (a handle), the request for no actor | Not used. No instance holds a handle (IFC-011), and every request that the engine sends has a caller (IFC-006). |
+| policy, `apply-policy.v1`, `remove-policy.v1` | Not used. Access is narrowed by closing a Conduit and opening a narrower one (ACC-011). Policies are a candidate for a later version; see the [decision records](README.md#where-the-reasons-are). "Policy" is not used for access: it stays only in restart policy, a runtime provider's own term (PRV-010), and in a network policy, which names a machine and never a run (PRV-018, PRV-025). |
+| composite, component, component Conduit | Not used. A template that needs two capabilities of one target declares two Conduits (CON-016). |
+| constituent, composition, composed requirement | Not used. Several requirements are applied side by side (CTR-005). |
+| `obliges`, `narrows`, `appliesTo` | Rejected keys of a Requirement contract (CTR-005). A filter binds the target's implementations alone (CON-022), a requirement of the core package is applied by the engine and any other is a filter (CTR-005), and a requirement is applied only to a Conduit. |
+| re-export | Not used. `exports` lists only the package's own documents (MAN-007). |
+| rename, `rename.v1` | Not used. A name is fixed once its object is made (OBJ-011): another name means another object. |
+| facts, location fact, host, `set-facts.v1`, `location-settings.v1` | Not used. What is known of a node's machine is its labels (PRV-014, PLC-026). "Host" is not used for a machine, whose name is its hostname (PRV-014). It stays only in the name of the shared-host requirement (PLC-013), in the host part of an address (NAM-001), and in the host of a URL, as RFC 3986 names it (SEC-024, IFC-017, PRV-022). |
+| default location, `set-default-location.v1`, `system-settings.v1`, `system-pool.v1` | Not used. The machine provider places an instance that is given no placement (PLC-002, PRV-015), and `system` is of the type `pool.v1`. |
+| requirement on placement | Use the label selector (PLC-007). |
+| retained result, retrieval tool, `retrieve-result.v1` | Not used. A caller that lost a result repeats its request (OPS-009, OPS-032). |
+| withheld, `inProgress`, `interfaceVersion` | Not used; `state`, `withheld` and `interfaceVersion` are not Conduit keys. A result is delivered with its outputs even where its Conduit was closed while it ran (ACC-034); a repeat of an invocation that has not ended reports conflict (OPS-032); and Conduit's keys travel as Conduit's extension (IFC-037). |
+| isolation plugin | Not used. A restriction is enforced only where a runtime provider whose contract confines its consumer runs it (ACC-027, PRV-006). |
+| location, `location.v1`, location type, stand for | Use node (ruling 42). A node, of the type `node.v1` and made from the core package's template `node`, represents a machine (PLC-008, PLC-026), and `declare-lost.v1` names it in its input `node`. A value tied to a location is a value tied to a node (PLC-020). The word keeps only the senses of the standards that use it: JSON Schema's instance location, and SARIF's `locations` in a diagnostic. |
+| machines provider, the engine's own machine | Use the machine provider, whose type offers `machine-provider.v1` (PRV-013), and the engine's own machine provider, its built-in implementation (PRV-003). The computer itself is the machine the engine runs on, and the promises call it that. |
+| `label-selector.v1`, `placement` of a Type or an implementation item, `selector` of `place.v1` | Use the schema `labels.v1`, and the key and the input `nodeSelector` (CTR-004, MAN-010, PRV-015). `placement` is only the standard argument (OBJ-013, PLC-001). |
+| `location` of `run.v1` | Use `machine`, the hostname and the labels of the machine of the instance's node (PRV-007). |
+| counts as declared lost | Not used: the engine declares a node lost when the machine provider reports its machine gone (PLC-024). |
+| `secret-reveal.v1`, `reveal-secret.v1` | Use the capability `secret-provider.v1`, which the type of a secret Resource offers (SEC-002), and its one operation `get-secret.v1` (SEC-005). The engine's request for that operation is still the engine's read of a secret (SEC-010). |
+| `endpoint` of `run.v1` | Use `url`, the Streamable HTTP URL at which the engine reaches a run, as server.json names it (PRV-007, IFC-017). The prose may still call it the MCP endpoint, as the Model Context Protocol does. |
+| `arguments` of an implementation item and of `run.v1` | Use `packageArguments`, keyed by the `name` of a named argument or the `valueHint` of a positional one in the Package's own `packageArguments`; no key binds its `runtimeArguments` (MAN-010, PRV-007). `arguments` is only what an instance document, a nested instantiation or an applied requirement supplies (OBJ-013, NAM-019), and the arguments of a call of the Model Context Protocol (IFC-001). |
+| `digest` of a `package` item | Not used: the Package states the hash of its file in its own `fileSha256`, and an `oci` image is pinned by a digest in its `identifier` (MAN-010). A digest is a package's or a submission's (PKG-004, SUB-008). |
+| the instance that acted for the caller, the reading instance, `instance` of a record | Not used: a record names the consumer of the Conduit used, in `consumer` (REC-002), and the engine reads a secret for an instance through that instance's own Conduit (SEC-010). |
+| `observedGeneration` | Not used: no object has a generation, and a revision is not one (REV-001). |
+| origin | Use source, the CloudEvent's `source` of a record and the `source` of a condition (REC-005, OBS-002). The word keeps only the sense of a web origin, as RFC 6454 defines one, which a request on HTTP names in its `Origin` header, and which the engine's server accepts or rejects (IFC-036, DL12). |
+| operation identity, `operationIdentity` | Use idempotency key, sent in `io.github.shrav-k.conduit/idempotencyKey` (OPS-008, IFC-023). The convention is that of idempotency keys and outcomes. |
+| `restrictions` (`_meta` key) | Use `io.github.shrav-k.conduit/filters`, the filters that apply to a request (IFC-018). A bound is applied by the engine and never sent (CON-018), and the key `io.github.shrav-k.conduit/restriction` of a result stays, since it can name a bound (IFC-025). |
+| `interface` (`_meta` key) | Conduit's extension is `io.github.shrav-k.conduit/implementation-interface` (IFC-029, IFC-037). |
+| runtime profile | Use conformance document. |
+| trust domain (of a secret) | Use domain of trust. |
+| its own setting for restarts | Not used: a runtime provider restarts a run under its own restart policy (PRV-010). |
+| node type | Not used: the promises say the type `node.v1` (PLC-008, PLC-028). |
+| setup operation, retire operation | Not used: `set-up.v1` and `retire.v1` are themselves the operations, and the setup and the retirement of an instance are each one invocation of one of them (TPL-008). |
+| fail over, failover | Not used. Where the engine stops and starts again, on its machine or on another, the promises say that it restarts. An engine can restart on another machine or run as several parts as configured and as its conformance document states under DL17, which gives the outcomes it meets; such an engine sends a header that carries a secret to no `http` URL, whenever the template was registered (SEC-024, SEC-013). A connection that lasts across a restart, whose values the engine no longer holds, has its secrets read again before its next HTTP request (SEC-023, IFC-041), and a provider whose run ended with the engine is run again when the engine first needs it (PRV-026). |
+| unpublished package, `<digest>#<name>` | Use the contracts of a submitted project, named `address#name` (SUB-008). |
+| secret store | Not used. The promises and the core package say secret Resource for the object (SEC-002), the type of a secret Resource for its Type (SEC-022), and an implementation of `get-secret.v1` for what reads the store (SEC-020); a store is the system outside the engine that a locator names (SEC-006). |

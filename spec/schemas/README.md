@@ -1,156 +1,11 @@
 # The schemas of documents
 
-Status: **accepted by the owner as it stands at
-[ruling 39](../../docs/proposals/ruling-39/README.md)** (2026-11-06), which accepted every
-logged decision of the coordinator and choice of an editor, and **changed by
-[ruling 41](../../docs/proposals/ruling-41/README.md)**,
-**[ruling 42](../../docs/proposals/ruling-42/README.md)** and
-**[ruling 43](../../docs/proposals/ruling-43/README.md)** of the same day; see
-[the specification's README](../README.md). Plan-audit ruling 37 first accepted it on
-2026-11-05, as one batch with [the core package](../core/README.md) and
-[the manifest's promises](../promises/manifest.yaml). It was written for decision G1 of the
-[re-audit](../../docs/proposals/reaudit/README.md). The record of the batch is
-[docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
-the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md).
+Status: draft specification. See [the specification's status](../README.md) for coverage and
+pending rulings. The promises are the source of truth: where a schema and a promise differ,
+the schema is wrong.
 
-What follows was changed after ruling 37, on the logged decisions of the coordinator of the
-re-audit, and on [ruling 38](../../docs/proposals/ruling-38/README.md), which made an Operation
-contract hold no `arrangesLaterWork`. The decisions of the
-[docs audit](../../docs/proposals/docs-audit/GAPS.md) and of the second, third and fourth rounds
-of the re-audit ([round 2](../../docs/proposals/reaudit/round-2/DECISIONS.md),
-[round 3](../../docs/proposals/reaudit/round-3/DECISIONS.md),
-[round 4](../../docs/proposals/reaudit/round-4/DECISIONS.md)) changed shapes and added rules
-that no schema could express; the logs that each names say what changed in each file.
-
-[Ruling 40](../../docs/proposals/ruling-40/README.md) and ruling 41, which accepted the
-[principles review](../../docs/proposals/principles-review/README.md), changed these schemas
-more than any ruling before; the [work order](../../docs/proposals/ruling-41/PLAN.md) applied
-them, and the [log of that pass](../../docs/proposals/ruling-41/log-core.md) lists each change.
-The schema profile is now JSON Schema 2020-12's applicator vocabulary and its validation
-vocabulary less `multipleOf` (decision 20), so several rules that this tool once applied by
-hand are now stated by the schemas with `propertyNames`, `if`, `contains`,
-`dependentRequired` and `not`. Graphs, runtimes, composite Conduit templates, requirement
-composition, re-exports and placement requirements are gone, and with them `graphs.yaml`, the
-schemas `graph.v1`, `lifecycle-graph.v1`, `step.v1`, `value-binding.v1`, `value-reference.v1`,
-`runtime.v1` and `conduit-component.v1`, and the rules this tool applied to them. An Operation
-contract is written as the Model Context Protocol writes a tool, an implementation item holds
-`command`, a server.json `package` or a server.json `remote`, and a placement need is a label
-selector. The [coverage check](../../docs/proposals/ruling-41/log-integration.md#coverage-check)
-of the rewrite then limited a Package's transport to `stdio` and `streamable-http`, stopped
-this tool from requiring that a control's `inputSchema` list `revision` alone, and added the
-rule for PLC-028 and its example.
-
-Ruling 42 struck none of the decisions that the coordinator settled in the [open questions after
-the rewrite](../../docs/proposals/ruling-41/open-decisions.md) and answered most of the others,
-and the [log of that pass](../../docs/proposals/ruling-42/log-core.md) lists what
-changed here. No schema changed shape. The description of `implementation-item.v1` says how
-`arguments` names a positional argument. This tool's rule for PLC-025 also compares the items a
-template selects with each other, its rule for MAN-017 also rejects a place at which the type's
-schema admits an object or an array, or null for an input that the Package or the Remote
-requires, and two rules were added, for SEC-022 and PKG-020, each with an example. The names
-N8 to N10 of ruling 42 then renamed the schema `label-selector.v1` to `labels.v1` and the key
-`placement` of `type-spec.v1`, of `implementation-item.v1` and of the core form of
-`manifest.v1` to `nodeSelector`, and this tool's rule for PLC-028 reads the type `node.v1`, as
-the [log of the renames](../../docs/proposals/ruling-42/log-rename-a.md) lists, with the
-examples whose names held the old words. Its other names, as the
-[log of the other renames](../../docs/proposals/ruling-42/log-rename-b.md) lists, renamed the
-key `arguments` of `implementation-item.v1` to `packageArguments` and removed its `digest`: a
-Package is pinned by its own `fileSha256`, or an `oci` one by a digest in its `identifier`,
-which two new examples under examples/invalid show. This tool's rule for MAN-017 reads
-`packageArguments`, and no longer a Package's `runtimeArguments`, and its rule for SEC-022 reads
-`secret-provider.v1`. Its editorial fix E17, as the
-[log of the editorial fixes](../../docs/proposals/ruling-42/log-editorial.md) lists, says the
-type of a secret Resource, where the description of the example project and the message of
-this tool's rule for SEC-022 said a secret store's type, and renamed that rule's example to
-`SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml`.
-
-Ruling 43 accepted the
-[proposal on work across machines](../../docs/proposals/multi-machine/README.md), and the
-[log of that pass](../../docs/proposals/ruling-43/log-core.md) lists what changed here.
-`implementation-item.v1` rejects an item reached by `remote` and not marked `plain` that names
-`Authorization`, in any case, in its `headers` (IFC-043), with an example under
-examples/invalid. This tool has two new rules, each with an example: for MAN-018, a template
-whose selected item binds in its `environment` a variable that `identity` carries, as
-[spec/names.yaml](../names.yaml) names them; and for SEC-024, a template whose selected `remote`
-item sends a header that carries a secret to an `http` URL whose host is not a loopback
-address. A set under examples/invalid-by-rule may now hold its project's manifest, from which
-the rules read the items its templates select. The example project's Pool template
-`workspace` no longer routes a runtime provider to an entry whose item is a program inside a
-package, which only the engine's own runner runs (D20). The
-[verification of ruling 43](../../docs/proposals/ruling-43/log-integration.md#verification) then
-made `implementation-item.v1` reject an item reached by `remote` and not marked `plain` whose
-Remote's `url` is not an `https` URL (IFC-044), with an example under examples/invalid; made
-the example for SEC-024 a plain item, since only a plain item stands at an `http` URL; made the
-rule for MAN-018 compare names without regard to case, and that for SEC-024 reject an `http`
-URL whose host is a variable of the Remote; and has this tool check that `run.v1`'s `identity`
-holds exactly the files that `spec/names.yaml` fixes. The
-[decisions of round 5 of the re-audit](../../docs/proposals/reaudit/round-5/DECISIONS.md)
-marked the example project's `git-mirror-server` plain, with `tools` (M79); said in the rows
-on `record.v1` and `object.v1` under "Choices the schemas encode" that a record's `data` also
-holds `serving`, `inputs` and `outputs`, and that `nested` gives an ID where
-`register-replacement.v1` takes a reference (M84); and had this tool read the key
-`x509BundleFile` of `spec/names.yaml`, which was `trustBundleFile` (M86). The
-[log of that pass](../../docs/proposals/reaudit/round-5/log-fix-F5.md) lists each change. Its
-[integration](../../docs/proposals/reaudit/round-5/log-fixes.md) then said in the row for
-SEC-024 that an item selected for `get-secret.v1` stands at no `http` URL off loopback, and no
-`remote` item at a loopback host on an engine that can move (M01, M02), and struck its clause on
-a host written as a variable of the Remote, whose URL MAN-010 rejects (M23); in the row for
-TPL-019, that an Interface or a Pool selects no item that is run (M06); in the row on a schema,
-that the names under `dependentRequired` and `dependentSchemas` and the patterns under
-`patternProperties` are the author's (M24); added the rule `remote-provider`, for PKG-030, with
-an example (M25); and had the rule for MAN-017 require that a bound place confine its value to a
-string, a number, a boolean or null, with an example (M30). The
-[verification of those fixes](../../docs/proposals/reaudit/round-5/log-fixes.md#verification)
-said above that ruling 42 struck none of the coordinator's decisions (V10).
-
-[Ruling 44](../../docs/proposals/ruling-44/README.md) of 2026-11-07 accepted the coordinator's
-decisions on [round 6 of the re-audit](../../docs/proposals/reaudit/round-6/README.md) and
-simplifications that its design critique proposed, and the
-[log of that pass](../../docs/proposals/reaudit/round-6/log-core.md) lists what changed here.
-`operation-spec.v1` lets the root of an Operation contract's `inputSchema` and `outputSchema`
-hold any keyword of the profile beside `type: object`, and keeps the four keys for a control,
-one whose `spec` holds `changes` (D14): the example package has a new operation,
-`directory.find.v1`, with `oneOf` at its root, and the example under examples/invalid for
-CTR-012 is now a control, in a file renamed for it. This tool has two new rules, each with
-examples under examples/invalid-by-rule, which compare pointers as their reference tokens: for
-CTR-006, no two pointers of a control's `changes` are equal or lie one inside another (finding
-6-1-03); and for PRV-016, a Type that offers `package-source.v1` lists no control whose
-`changes` reaches `/schemes` (finding 6-1-05). The row on what `replace.v1` is handed follows
-D11, and `template-controls.v1` and this page say what the tool presented for an operation
-holds (finding 6-1-04, D07). The promises are the source of truth: where a schema and a
-promise differ, the schema is wrong.
-
-The first build's strict loader, under [ruling 46](../../docs/proposals/ruling-46/README.md),
-reads and validates these examples too, and its
-[log of increment 1](../../docs/proposals/first-build/log-increment-1.md) found three places
-where this tool read otherwise than the promises. It matched `pattern` with Python's `re`, and
-accepted a name that ends in a line feed; it now reads `$` and `\s` in a pattern as ECMA-262
-does (SCH-016). It rounded a number with a fractional part into the range of binary64; it now
-rejects one beyond that range (SCH-021). And it checked `uuid` and `duration` by Python's
-libraries; it now checks them by the grammars the profile cites (SCH-004). Each fix has an
-example: `OBJ-001-name-ending-in-a-line-feed.yaml` and
-`SCH-021-fraction-just-above-binary64.yaml` under examples/invalid, and the two examples of
-SCH-019 for a `default` that is not a `uuid` or a `duration` under examples/invalid-by-rule.
-
-The coordinator then settled the log's other findings under ruling 46, point 4, and the owner
-can strike each. This tool now reads a file as bytes and rejects one that is not UTF-8
-(SUB-005); reads files whose names end in `.yml` and `.json` as well as `.yaml`, a JSON file as
-SCH-018 reads it; reads no file whose name begins with a dot (MAN-011); rejects a number written
-with a fraction whose binary64 value is whole and outside the range of SCH-006; and, by a new
-rule of its step 6, initially rejected patterns as far as Python's `re` could tell (SCH-016).
-The review of 2026-11-09 replaced that partial check with a tokenizer of SCH-016's interoperable
-subset, under ruling 48, point 3. The loader and this tool reject both a malformed pattern and
-a valid ECMA-262 pattern that uses a token outside the subset. Each has an example: `SUB-005-not-utf-8.yaml`,
-`SUB-005-json-value-that-is-not-a-map.json` and
-`SCH-006-fraction-read-as-an-integer-out-of-range.yaml` under examples/invalid,
-`SCH-016-pattern-that-is-not-ecma-262.yaml` under examples/invalid-by-rule, and the file
-`.notes.yaml` of examples/valid/project, which is not read. The review added
-`SCH-016-pattern-outside-the-interoperable-tokens.yaml` under examples/invalid-by-rule, and
-`bom.json` under examples/valid/project, which begins with the byte order mark now allowed in
-either syntax. The schemas' eight patterns that used lookahead or a whitespace shorthand now
-use only the tokens, with their verdicts compared by `regress` in the loader's
-`tests/pattern_rewrites.rs`. Schema rejections report SUB-005 and the failing keyword's location,
-whichever promise a schema encodes.
+The decision records and their reasons are listed in
+[Where the reasons are](../README.md#where-the-reasons-are).
 
 ## What this is
 
@@ -352,10 +207,8 @@ could accept. It never says a document is accepted.
 
 ## Choices the schemas encode
 
-Where a promise left the shape open, the schema took the smallest reading, and the
-[record](../../docs/proposals/core-and-schemas/README.md#b-choices-that-no-promise-states)
-lists each. The owner accepted them all, and most are now stated by a promise: `metadata` and
-`arguments` may be left out (OBJ-013, OBJ-014); a template narrows a control's input as
+The schemas encode the following shapes: `metadata` and `arguments` may be left out
+(OBJ-013, OBJ-014); a template narrows a control's input as
 `inputs: {<name>: {schema: ...}}` (TPL-010); a schema may be a boolean; a Requirement's input
 holds `schema` and may hold `default` and `optional` (CTR-005); and an implementation item
 that is not marked `plain: true` holds no `tools` (PKG-020). These remain choices of the
@@ -364,8 +217,8 @@ accepted; and a Type's `family` is one of the four families that have a type. No
 requires `optional` beside `default`: an input that states a `default` may be left out, whether
 or not it is marked optional (OBJ-015).
 
-The work of ruling 41 made these choices where the promises left the shape open; the
-[log](../../docs/proposals/ruling-41/log-core.md) gives the reason for each:
+The table lists further shapes the schemas encode. Their reasons are in the
+[decision records](../README.md#where-the-reasons-are).
 
 | What | Schema | Promise |
 | --- | --- | --- |

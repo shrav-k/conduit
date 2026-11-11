@@ -1,79 +1,21 @@
 # Packages: versions, digests and the selection of implementations.
-# Owner rulings of 2026-11-05 (plan-audit rulings 24, 32 and 33). Each rule follows an existing
-# practice: Semantic Versioning for versions, one exact version for each package a manifest
-# lists, a digest of the distributed archive as OCI, npm and Cargo use, and a gzip-compressed
-# tar file as the archive, as npm and Cargo distribute. How a package and its exports are
-# named is in naming.yaml. Consolidation pass 1: PKG-002 was folded into NAM-006; PKG-008 into
-# NAM-011; PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004; and PKG-015 into
-# PLC-007. PKG-021 was added. The follow-up decisions (ruling 33) added PKG-022. The ruling on
-# the core package and the schemas (ruling 37) changed PKG-005, PKG-013, PKG-017 to PKG-020 and
-# PKG-022, and added PKG-023 to PKG-025. The conversion of the older text (decision DA3 of the
-# docs audit, docs/proposals/docs-audit/GAPS.md) changed PKG-012, and kept PKG-023 to PKG-025 as
-# three promises, since a promise names one reason. The manifest's own format is in
-# manifest.yaml. The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md)
-# changed PKG-003, PKG-005, PKG-013, PKG-019 to PKG-021 and PKG-023, and removed none. Its
-# closing pass (docs/proposals/reaudit/round-2/log-closing.md; finding 15 of reader-3.md)
-# changed PKG-017, PKG-020, PKG-022 and PKG-023, and added PKG-026 to PKG-028, on three
-# requests to install whose ending no promise stated. PKG-027 is of the layer `convention`.
-# Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed PKG-006, PKG-020 and
-# PKG-028: a registration installs no package. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed PKG-020 and PKG-023 to PKG-027: an implementation that is a graph is
-# never plain, and a request to install what is already installed is decided from what is
-# installed. It removed none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed PKG-019 and PKG-020: an item that states
-# `graph` states no `supports`.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# PKG-017, PKG-018, PKG-023 and PKG-027: a request to install what is already installed is
-# decided like any other. It added none and removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), removed PKG-013 and PKG-014 under the review's
-# decision 9: a package exports only its own documents (MAN-007), and nothing replaces them. It
-# changed PKG-005, PKG-006, PKG-017, PKG-019, PKG-020, PKG-023, PKG-024 and PKG-028: a
-# registration or an installation is rejected while a package its manifest lists is not
-# installed (decision 12), an implementation is reached by `command`, `package` or `remote`
-# (decision 25), a submitted project's contracts carry its address (decision 11), and archives
-# are fetched as NAM-012 and PRV-017 say (decision 21). It added PKG-029. The log is
-# docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
-# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed PKG-006, which also
-# rejects a replacement whose manifest lists a package that is not installed (decision 12).
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md. Applying them, it changed PKG-020:
-# a plain implementation implements no operation of `runtime-provider.v1`,
-# `machine-provider.v1` or `package-source.v1` (row 15); and PKG-029: installing at a submitted
-# project's address reports conflict only while a template or an instance holds a submission
-# there (row 36). It added none and removed none.
-# The names of ruling 42 (the vocabulary audit's N9 and N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of an implementation
-# item to `nodeSelector`, and location to node, in PKG-019. It removed none and added none.
-# The names of ruling 42 (the vocabulary audit's N1, N6 and N7; log
-# docs/proposals/ruling-42/log-rename-b.md) said in PKG-019 that a `package` item's Package is
-# pinned, where it said that the item states `digest`; renamed the item's `arguments` to
-# `packageArguments` in PKG-019 and PKG-020; and renamed `reveal-secret.v1` to `get-secret.v1`
-# in PKG-020. It removed none and added none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
-# work across machines (docs/proposals/multi-machine/README.md), changed PKG-020, whose
-# observable says that a plain server reached by `remote` stands behind no gate and is reached
-# as before (D5). It added none and removed none. What changed is in
-# docs/proposals/ruling-43/log-secrets.md.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, added PKG-030, of
-# the layer `language`: an implementation item reached by `remote` that implements an
-# operation of a provider's capability is rejected (M25). It changed none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
-# (log docs/proposals/reaudit/round-6/log-promises.md), changed PKG-029, which also
-# counts the project that a request to replace a template hands over (D11). It added none and
-# removed none.
+# Each rule follows an existing practice: Semantic Versioning for versions, one exact version for
+# each package a manifest lists, a digest of the distributed archive as OCI, npm and Cargo use,
+# and a gzip-compressed tar file as the archive, as npm and Cargo distribute. How a package and
+# its exports are named is in naming.yaml.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: PKG-002 → NAM-006 (ruling 32).
+# Removed: PKG-008 → NAM-011 (ruling 32).
+# Removed: PKG-009 → TPL-004 (ruling 32).
+# Removed: PKG-010 → TPL-003 (ruling 32).
+# Removed: PKG-011 → TPL-004 and CTR-004 (ruling 32).
+# PKG-013: nothing replaces it (ruling 41).
+# PKG-014: nothing replaces it (ruling 41).
+# Removed: PKG-015 → PLC-007 (ruling 32).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: PKG-001
   layer: language
@@ -191,7 +133,7 @@
     has also served others, in one process or several.
   vectors: []
 
-# --- The manifest of a package (plan-audit ruling 31). Go's `module` line states a module's own
+# --- The manifest of a package. Go's `module` line states a module's own
 # --- address in the same way.
 
 - id: PKG-017
@@ -277,7 +219,7 @@
     proof is used as plain, under IFC-041.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
 
 - id: PKG-021
   layer: language
@@ -292,7 +234,7 @@
     is not put in place of the one the manifest gives.
   vectors: []
 
-# --- Added by the follow-up decisions (plan-audit ruling 33; decision F26 of the re-audit).
+
 
 - id: PKG-022
   layer: language
@@ -308,8 +250,7 @@
     of the tar formats and extensions an engine reads is DL7 of the implementation-defined list.
   vectors: []
 
-# --- Added with the core package (plan-audit ruling 37; point P5 of the ruling on the core
-# --- package and the schemas). These three are of the layer `convention`.
+
 
 - id: PKG-023
   layer: convention
@@ -369,8 +310,7 @@
     is not yet installed at that address and version.
   vectors: []
 
-# --- Added by the closing pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/reader-3.md, finding 15).
+
 
 - id: PKG-026
   layer: language
@@ -428,8 +368,7 @@
     installed is rejected under PKG-007.
   vectors: []
 
-# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decision 11 of the principles
-# --- review, docs/proposals/principles-review/README.md). It is of the layer `convention`.
+
 
 - id: PKG-029
   layer: convention
@@ -453,8 +392,7 @@
     reported.
   vectors: []
 
-# --- Added by the fix pass of round 5 of the re-audit (item M25 of
-# --- docs/proposals/reaudit/round-5/DECISIONS.md).
+
 
 - id: PKG-030
   layer: language

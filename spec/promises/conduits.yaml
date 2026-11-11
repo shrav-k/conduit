@@ -1,83 +1,20 @@
 # Conduits: what a Conduit is, when it exists, and when it is open.
-# Owner rulings of 2026-11-05 (plan-audit rulings 17 to 20, 28, 29, 32 and 33). A Conduit has
-# the lifecycle every instance has (conventions/lifecycle.yaml): to open one is to set it up,
-# and to close one is to retire it. CON-005 was removed as a duplicate of PLC-006, and CON-009
-# was folded into LIF-007. Removed by consolidation pass 1: CON-010 was folded into LIF-008, and
-# CON-015 into LIF-001, LIF-003, LIF-005 and LIF-006. The follow-up rulings removed nothing.
-# The ruling on the core package and the schemas (ruling 37) changed CON-003, CON-016 to
-# CON-018 and CON-026, and added CON-028. The conversion of the older text (decision DA3 of the
-# docs audit, docs/proposals/docs-audit/GAPS.md) changed CON-003 and added CON-029. The second
-# round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed CON-004, CON-008,
-# CON-020, CON-022, CON-024 and CON-028, and removed none. Its closing pass
-# (docs/proposals/reaudit/round-2/log-closing.md) changed CON-022: the implementation of the
-# target always states a filter's requirement. It also wrote "composite" where CON-003,
-# CON-016, CON-019 and CON-020 said "composition" of a Conduit template, a word that is kept
-# for a composed requirement. Its last pass (docs/proposals/reaudit/round-2/log-tail.md)
-# changed CON-008, CON-018 and CON-022, and added CON-030: a Conduit whose consumer is retired
-# is closed once the consumer's shutdown is confirmed, and a requirement that does not narrow
-# requests is applied to a Conduit only where it is the core package's. The follow-up to that
-# pass changed CON-018, CON-022, CON-023 and CON-030, which judges a composition by its
-# constituents alone, and added CON-031, of the layer `convention`: a Conduit either of whose
-# ends is retired is not opened. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed CON-008, CON-022, CON-028, CON-030 and CON-031: a graph written in
-# place supports a requirement where the implementations of its steps do, and CON-031 is about a
-# Conduit that is not open. It removed none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed CON-008 and CON-022: no graph states
-# `supports`, wherever it is written.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# CON-004, CON-008 and CON-024: a declared Conduit that is made from a composite template is
-# opened as a whole or not at all. It added none and removed none.
-# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
-# of the same file, which are the coordinator's too, changed CON-004, CON-008 and CON-022: the
-# opening of a composite declared Conduit is decided for every component before any is opened,
-# and nothing is closed where one cannot be.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review (docs/proposals/principles-review/README.md), removed CON-003, CON-019 and
-# CON-029, on composite Conduit templates (decision 5): a template that needs two capabilities
-# of one target declares two Conduits, and nothing else replaces them; CON-026, on renaming a
-# Conduit (decision 10): a name is fixed once the object is made, under OBJ-011; and CON-030, on
-# a requirement that does not narrow (C20): a requirement of the core package is applied by the
-# engine and any other is a filter, under CON-018. It changed CON-001, CON-002, CON-004,
-# CON-007, CON-008, CON-016, CON-018, CON-020, CON-022, CON-024, CON-028 and CON-031: CON-004
-# now carries what GRA-022 and GRA-003 said of declared Conduits, and a closed Conduit is
-# removed. It added none. What changed is in docs/proposals/ruling-41/log-G3.md. The removed
-# IDs are not reused.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md, changed CON-008: the record of a
-# closing names the invocation within which the Conduit was closed, or states the cause, and
-# the engine reads a secret through a retired consumer's Conduit for a connection that the
-# consumer's retirement makes. It added and removed none. The owner's answer D6 keeps
-# CON-008's refused for a request to a retired target. What changed is in
-# docs/proposals/ruling-42/log-secrets.md.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in CON-007 and CON-008. It
-# removed none and added none.
-# The editorial fixes of ruling 42 (the vocabulary audit's E19; log
-# docs/proposals/ruling-42/log-editorial.md) changed CON-007, whose observable says "after it",
-# where it said "after the event". It removed none and added none.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed CON-008:
-# a Conduit whose consumer is unregistered is closed, under LIF-017 (M41); and CON-022, whose
-# observable says that an implementation sent an argument that its version of the requirement
-# does not declare cannot apply the filter (M45). It added none and removed none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed CON-006, which rejects a shared-host requirement where an end runs
-# nothing (V2-01); CON-022, on an input that a later release adds with no `default` (V2-02); and
-# CON-031, on a consumer that is unregistered (V2-09). It added none and removed none.
-# Ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md) changed CON-022, which speaks of an operation
-# that the engine implements, where it said one for which the target selected `engine`. It
-# added none and removed none.
+# A Conduit has the lifecycle every instance has (conventions/lifecycle.yaml): to open one is to
+# set it up, and to close one is to retire it.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# CON-003: nothing replaces it (ruling 41).
+# Removed: CON-005 → PLC-006 (earlier removal accepted) (ruling 39).
+# Removed: CON-009 → LIF-007 (earlier removal accepted) (ruling 39).
+# Removed: CON-010 → LIF-008 (ruling 32).
+# Removed: CON-015 → LIF-001, LIF-003, LIF-005 and LIF-006 (ruling 32).
+# CON-019: nothing replaces it (ruling 41).
+# Removed: CON-026 → OBJ-011 (fixed names) (ruling 41).
+# CON-029: nothing replaces it (ruling 41).
+# Removed: CON-030 → CON-018 (core requirements and filters) (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: CON-001
   layer: language
@@ -211,8 +148,7 @@
     capability it carried as no longer reachable through it.
   vectors: []
 
-# --- Conduits to live instances. The owner ruled on 2026-11-05 that this is a core part of the
-# --- language (plan-audit rulings 19 and 20).
+# --- Conduits to live instances.
 
 - id: CON-012
   layer: language
@@ -253,7 +189,7 @@
     through the closed Conduit report is ACC-011.
   vectors: []
 
-# --- The Conduit template (plan-audit ruling 31).
+# --- The Conduit template.
 
 - id: CON-016
   layer: language
@@ -331,7 +267,7 @@
     Resolving returns a diagnostic naming the capability and the target's type.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32, decisions G9 and G6).
+
 
 - id: CON-022
   layer: language
@@ -407,8 +343,7 @@
     Resolving returns a diagnostic naming the retired instance.
   vectors: []
 
-# --- Added by the follow-up rulings (plan-audit ruling 33; decisions F5 and F20 of the
-# --- re-audit).
+
 
 - id: CON-027
   layer: language
@@ -424,8 +359,7 @@
     consumer, and a Conduit given as either end, are each rejected in this way.
   vectors: []
 
-# --- Added with the core package (plan-audit ruling 37; change X3 of the ruling on the core
-# --- package and the schemas).
+
 
 - id: CON-028
   layer: language
@@ -443,9 +377,7 @@
     only by a Conduit to `access`, and such a Conduit carries at most one.
   vectors: []
 
-# --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;
-# --- decision 8 of "The last pass, and what it left" in DECISIONS.md). It is of the layer
-# --- `convention`.
+
 
 - id: CON-031
   layer: convention

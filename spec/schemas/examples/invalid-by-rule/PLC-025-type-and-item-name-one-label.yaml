@@ -3,11 +3,8 @@
 # both name (PLC-025). The type `windows-directory.v1` asks for `kubernetes.io/os: windows`,
 # and the default implementation of `example.org/files#directory.read.v1` that it states,
 # `files-server` in ../valid/files-package/, asks for `linux`, so no node could match both.
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed the Type's key
-# `placement` to `nodeSelector`, and location to node here.
-# Ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md): an Operation contract states no default
-# implementation, so the type here states the one that the operation's contract stated.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

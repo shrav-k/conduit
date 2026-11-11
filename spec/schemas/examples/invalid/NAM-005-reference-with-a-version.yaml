@@ -2,6 +2,8 @@
 # a qualified reference has no part that selects a release: the address names the package,
 # and the manifest names its version. `@` is not a character of an address (NAM-001), so
 # nothing written after the address can carry a version.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

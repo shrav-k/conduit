@@ -1,6 +1,8 @@
 # Example. One document, valid against the schemas, that must be rejected:
 # a Conduit template writes `operations` unless the destination of one of its inputs fills
 # it. This one writes none, and its one input fills something else.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

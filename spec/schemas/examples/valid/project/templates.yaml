@@ -1,17 +1,9 @@
 # Example. The templates of a small project. Every name under example.org is invented; the
 # contracts of `example.org/files` are in ../files-package/, and `example.org/harness` is not
 # in this repository. The project's own contracts are in contracts.yaml.
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed the input `location`
-# of `workspace` to `node`.
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1`
-# to `secret-provider.v1` and `reveal-secret.v1` to `get-secret.v1`.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on D20, took the input `runtime`
-# out of `workspace`: its entries run `bin/files-server`, a program inside a package, which only
-# the engine's own runner runs (PRV-007). The log is docs/proposals/ruling-43/log-core.md.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
-# re-audit (D07; log docs/proposals/reaudit/round-6/log-core.md), says below what the tool
-# presented for the narrowed control shows.
-
+# `workspace` has no `runtime` input: its entries run `bin/files-server`, a program inside
+# a package, which only the engine's own runner runs (PRV-007).
+#
 # A Resource template with an input and a narrowed control, which selects a setup hook. The
 # hook's implementation is `files-server`, the item that its type's operations already
 # select, so an instance has one item that is run (TPL-019). The engine dispatches the hook
@@ -21,6 +13,9 @@
 # schema `allOf` of the contract's, `#read-limit.v1`, and `{maximum: 50}`, so the consumer sees
 # the limit that the engine enforces (IFC-033). A control of the type that `controls` did not
 # list would have no tool (IFC-012).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource
 metadata:

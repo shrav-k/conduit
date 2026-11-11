@@ -1,6 +1,8 @@
 # Example. One set of documents. Each is valid alone, and together they must be rejected:
 # a `$ref` written `#name` names a Schema contract of the same project or package. Here
 # `#directory.read.v1` names an Operation contract.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation

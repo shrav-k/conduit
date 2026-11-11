@@ -1,5 +1,7 @@
 # Example. It must be rejected:
 # a label of the host part of an address is at most 63 characters. This one has 64.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: a123456789b123456789c123456789d123456789e123456789f123456789g123.example.org/history

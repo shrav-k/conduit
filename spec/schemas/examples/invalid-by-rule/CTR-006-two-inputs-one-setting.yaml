@@ -5,8 +5,8 @@
 # stored under REV-006; sent both, with different values, it could store neither, since a map
 # has no order of its keys (SCH-007). A schema cannot relate the values of a map to each
 # other, so this tool's rule compares the pointers, as reference tokens.
-# Added by round 6 of the re-audit, under ruling 44 (finding 6-1-03; log
-# docs/proposals/reaudit/round-6/log-core.md).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation

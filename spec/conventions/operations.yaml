@@ -1,117 +1,17 @@
 # Operations: the shared convention on idempotency keys and outcomes.
-# Owner rulings of 2026-11-05 (plan-audit rulings 20, 28, 32 and 33). Draft: no vector exists
-# yet.
-# The at-most-once promises were explored by model checking in
-# experiments/004-stateright-evaluation.
 # A record is kept and never altered (conventions/records.yaml). What is kept for an idempotency
-# key is the invocation's state, which is in progress or its outcome; since ruling 41 the
-# engine keeps it as its own state, apart from the records (OPS-008). ACC-020 and ACC-021 were
-# folded into OPS-005 and REC-001. The
-# ruling on the core package and the schemas (ruling 37) changed OPS-007, OPS-009, OPS-014,
-# OPS-016 and OPS-019, and added OPS-025. The conversion of the older text (decision DA3 of the
-# docs audit, docs/proposals/docs-audit/GAPS.md) changed OPS-016 and added OPS-026 and OPS-027.
-# The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed
-# OPS-005, OPS-006, OPS-008 to OPS-010, OPS-012, OPS-014 to OPS-019, OPS-021 to OPS-023, OPS-025
-# and OPS-026, made OPS-015 the rule for an identity under which the sending instance has no
-# invocation, and added OPS-028. Its closing pass
-# (docs/proposals/reaudit/round-2/log-closing.md) changed
-# OPS-007, OPS-009, OPS-012, OPS-014, OPS-016, OPS-017, OPS-022 and OPS-024. Its last pass
-# (docs/proposals/reaudit/round-2/log-tail.md) changed OPS-005, OPS-007, OPS-009 and OPS-014,
-# and added OPS-029, on a request that names what does not exist. The follow-up to that pass
-# changed OPS-007. No promise of this file has been removed.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed OPS-014, OPS-016, OPS-021, OPS-023, OPS-028 and OPS-029, and added
-# OPS-030, on reconciling an invocation whose outcome is not unknown. It removed none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed OPS-014 and added OPS-031, on an input of
-# `reconcile.v1` that does not belong to the invocation it names.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# OPS-005, OPS-006, OPS-009, OPS-010, OPS-012, OPS-015 to OPS-017, OPS-022, OPS-024, OPS-026 and
-# OPS-031: an invocation counts as dispatched through the Conduit of its latest attempt, a step
-# that a further run does not dispatch counts with the outcome it has, and the default of a
-# property is filled before a request is validated or compared. It added none and removed none.
-# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
-# of the same file, which are the coordinator's too, changed OPS-005 and OPS-022.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), removed OPS-015 and OPS-016 (decision 6c: the
-# retrieval of a result goes, and a caller that lost a result repeats its request, under OPS-009
-# and OPS-032) and OPS-017 (decision 6a: nothing is withheld, and nothing replaces it). They are
-# the first promises removed from this file, and their IDs are not reused. It changed OPS-005,
-# OPS-007 to OPS-009, OPS-014, OPS-019, OPS-021 to OPS-024, OPS-026 to OPS-029 and OPS-031,
-# and added OPS-032, on a repeat of an invocation that has not ended or whose outputs are no
-# longer kept. What changed is in docs/proposals/ruling-41/log-G4.md. The integration of the
-# rewrite (docs/proposals/ruling-41/log-integration.md) changed OPS-007, so that the error of
-# IFC-008 gives failed and not unknown. Its coverage check (the same log, "Coverage check")
-# changed OPS-008, whose state is kept for every invocation that is dispatched, as alignment
-# C33 has it, and added OPS-033, on arguments that do not satisfy an operation's
-# `inputSchema`, so that IFC-025 has a promise to name for the commonest invalid request.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
-# in docs/proposals/ruling-41/open-decisions.md, changed OPS-005, OPS-008, OPS-009, OPS-014,
-# OPS-024, OPS-027, OPS-028 and OPS-032, and added OPS-034: OPS-032 is split, and keeps a
-# repeat of an invocation that has not ended, while OPS-034 takes a repeat of one that
-# succeeded and whose outputs are no longer kept; a cancellation is passed on to the parts of a
-# setup or a retirement; a new attempt of a hook is made for the caller of the setup or the
-# retirement that dispatches it; and an invocation of unknown outcome is found in the status of
-# its instance. It removed none. What changed is in docs/proposals/ruling-42/log-conventions.md.
-# The names of ruling 42 (the vocabulary audit's N15; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed operation identity to idempotency key, and
-# `operationIdentity` to `idempotencyKey`, in OPS-008 to OPS-012, OPS-018, OPS-019, OPS-021,
-# OPS-024, OPS-025 and OPS-028, and the convention to that of idempotency keys and outcomes, in
-# the first line of this comment. It removed none and added none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
-# work across machines (docs/proposals/multi-machine/README.md), changed OPS-027, whose
-# observable says that a connection the engine sees drop cancels the invocation for the
-# engine, and that whether and when the implementation learns of it is its transport's and its
-# gate's, under PRV-025. It added none and removed none. What changed is in
-# docs/proposals/ruling-43/log-secrets.md. The verification of ruling 43
-# (docs/proposals/ruling-43/log-integration.md, "Verification") changed the observables of
-# OPS-014, on what an actor can check of an invocation dispatched to a machine that is cut off,
-# and of OPS-027, on the gate's bound.
-# The fix pass of the fifth round of the re-audit
-# (docs/proposals/reaudit/round-5/log-fix-F3.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-5/DECISIONS.md, changed OPS-007, which tells the error -32021 of
-# IFC-008 apart by `data.requiredCapabilities` (M60); OPS-008, OPS-009 and OPS-034, under which
-# a repeat is answered from the stored outputs only where every filter that applies to it was
-# sent with the latest attempt, and no outputs are kept of an invocation whose outcome a
-# reconciliation set (M32, M39); OPS-021 and OPS-028, since no hook declares
-# `deduplicates: true` (M42); OPS-022, which counts the connection to a `remote` item as a part
-# with no effect (M40); OPS-030, under which a reconciliation settles the latest attempt (M34);
-# and OPS-031, on a control whose instance is retired (M35). It added none and removed none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed OPS-005, on a repeat to which a filter applies that the latest attempt
-# was not sent (V4), and OPS-007, which excepts -32021 for a capability that the call did not
-# declare and an error after which the call is sent once more under IFC-046 (V2, V2-15). It
-# added none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), on round 6 of the re-audit
-# (docs/proposals/reaudit/round-6/), changed OPS-007, which excepts -32021 for a capability
-# that the call did not declare only from an implementation that carries Conduit's keys, under
-# IFC-047, so that IFC-010 reads a plain server's as any other error, reversing V2-15 (6-1-01);
-# and OPS-005, OPS-008, OPS-009, OPS-024, OPS-032 and OPS-034, under which a repeat to which a
-# filter applies, of an invocation that succeeded, is dispatched again where the operation has
-# no effect, reports conflict where it has one and declares outputs, and is answered from its
-# outcome where it has one and declares none, and the filters of the latest attempt are no
-# longer kept (6-1-02). It added none and removed none. What changed is in
-# docs/proposals/reaudit/round-6/log-conventions.md. Its integration
-# (docs/proposals/reaudit/round-6/log-integration.md) changed the observable of OPS-005 again:
-# a call to the tool that a Conduit would give a control its target does not have reports
-# invalid under TPL-013, as IFC-012 now states, and every other call to a tool that is not
-# presented reports refused. The verification of round 6
-# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed OPS-007, whose
-# first case is a missing result from an implementation that carries Conduit's keys, so that a
-# plain server's errors are read by IFC-010 alone (R-03), and whose observable uses IFC-033's
-# test (C-01); OPS-005, whose invalid case holds where the target holds the control's contract
-# (R-07); OPS-008, under which a repeat that OPS-024 dispatches does not report conflict once
-# outputs are not kept (R-06); and OPS-025, which no longer reaches a request that matches a
-# repeat that ended with a reason (R-13). It added none and removed none.
+# key is the invocation's state, which is in progress or its outcome; the engine keeps it as its
+# own state, apart from the records (OPS-008).
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: ACC-020 → REC-001 and OPS-005 (ruling 32).
+# Removed: ACC-021 → REC-001 and OPS-005 (ruling 32).
+# OPS-015: nothing replaces it (ruling 38).
+# OPS-016: nothing replaces it (ruling 38).
+# OPS-017: nothing replaces it (ruling 38).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: OPS-001
   layer: convention
@@ -436,7 +336,7 @@
     in every ordering of those events.
   vectors: []
 
-# --- Added by the consolidation rulings (plan-audit ruling 28).
+
 
 - id: OPS-019
   layer: convention
@@ -473,8 +373,7 @@
     an outcome, and is not dispatched for the same reasons as any other operation.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32; decisions U5, Q3, Q5 and Q1 of the
-# --- re-audit).
+
 
 - id: OPS-021
   layer: convention
@@ -584,8 +483,7 @@
     changes none of this.
   vectors: []
 
-# --- Added with the core package (plan-audit ruling 37; point P10 of the ruling on the core
-# --- package and the schemas).
+
 
 - id: OPS-025
   layer: convention
@@ -608,8 +506,7 @@
     performed nothing.
   vectors: []
 
-# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP7 and
-# --- GP19 of docs/proposals/docs-audit/GAPS.md).
+
 
 - id: OPS-026
   layer: convention
@@ -677,8 +574,7 @@
     long the engine waits for a result is DL3 and DL10 of the implementation-defined list.
   vectors: []
 
-# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
-# --- finding R3-2).
+
 
 - id: OPS-028
   layer: convention
@@ -714,9 +610,7 @@
     decided for the latest caller: a limit of this version.
   vectors: []
 
-# --- Added by the last pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 4 of "The closing pass, and what it
-# --- left" in DECISIONS.md).
+
 
 - id: OPS-029
   layer: convention
@@ -754,9 +648,7 @@
     result says of the thing that was named, it says in a diagnostic, as IFC-025 states.
   vectors: []
 
-# --- Added by the fix pass of the third round of the re-audit
-# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3A-14): the rule stood in the
-# --- observable of OPS-014.
+
 
 - id: OPS-030
   layer: convention
@@ -801,8 +693,7 @@
     gives refused first.
   vectors: []
 
-# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decision 6b of the principles
-# --- review and choice P8 of docs/proposals/ruling-41/PLAN.md).
+
 
 - id: OPS-032
   layer: convention
@@ -827,9 +718,7 @@
     under ACC-011, which OPS-023 puts first.
   vectors: []
 
-# --- Added by the coverage check of ruling 41 (docs/proposals/ruling-41/log-integration.md,
-# --- "Coverage check"), for decision 24a of the principles review: the promise that decides
-# --- the commonest request that reports invalid.
+
 
 - id: OPS-033
   layer: convention
@@ -850,9 +739,7 @@
     first.
   vectors: []
 
-# --- Added by ruling 42 (docs/proposals/ruling-42/README.md; row 31 of
-# --- docs/proposals/ruling-41/open-decisions.md, on R22): split from OPS-032, which keeps
-# --- a repeat of an invocation that has not ended.
+
 
 - id: OPS-034
   layer: convention

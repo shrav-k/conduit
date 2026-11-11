@@ -1,22 +1,3 @@
-# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since is logged in the records that README.md in this directory names.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, changed the template `system`, which selects `pool.v1`, and `location`,
-# which has no input and no `config` (decision 8), and took `rename.v1` out of
-# `root-management` (decision 10) and the policy operations out of `root-access` (decision
-# 3a). The log is docs/proposals/ruling-41/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N2 and N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the template `location` to `node`, whose
-# type is `node.v1`, and location to node, "stand for" to "represent" and the machines provider
-# to the machine provider in the descriptions and below.
-# The editorial fixes of ruling 42 (the vocabulary audit's E23; log
-# docs/proposals/ruling-42/log-editorial.md) dropped NAM-020, which names no template, from the
-# promises that the template `node` encodes.
-#
 # The templates that first start instantiates (FST-005): those of the five first-start objects
 # and of the two Conduits of `root`, which are not first-start objects (FST-002). At first start
 # the engine instantiates them under the names FST-001 gives: the Pool `system` from
@@ -49,6 +30,9 @@
 # `system` do not clash under OBJ-002. The declared Conduits of `root` have the local names
 # `management` and `access`, which gives the root Interface the tools `management.register.v1`,
 # `access.open.v1` and so on under IFC-012.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool

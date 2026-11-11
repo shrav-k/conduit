@@ -4,6 +4,8 @@
 # item, and under the token form that proof is the protocol's own authorization, which the
 # `Authorization` header carries (IFC-041); a value from configuration there would be the same
 # for every request. This item names the header in lowercase. A plain item may name it.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/files

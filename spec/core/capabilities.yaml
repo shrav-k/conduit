@@ -1,56 +1,3 @@
-# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since is logged in the records that README.md in this directory names.
-# Ruling 38 (2026-11-06) changed no contract of this file; the tool `start-later-work.v1`,
-# which was in no capability, is gone from the package.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, removed `system-settings.v1` and `location-settings.v1` (decision 8),
-# took `rename.v1` out of `object-management.v1` (decision 10) and the policy operations out
-# of `access-control.v1` (decision 3a), and added the four provider capabilities,
-# `runtime-provider.v1`, `machine-provider.v1` and `package-source.v1` (decisions 2, 8, 21 and
-# 31a) and `secret-reveal.v1` (decision 19). The log is docs/proposals/ruling-41/log-core.md.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the owner's answer D10,
-# changed the description of `secret-reveal.v1`: a Type that offers it offers no other
-# capability, and is rejected when its package is installed, or its project submitted, if it
-# does (SEC-022). The log is docs/proposals/ruling-42/log-core.md.
-# The names of ruling 42 (the vocabulary audit's N2; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the machines provider to the machine
-# provider, and the engine's own machine to the engine's own machine provider, in the
-# description of `machine-provider.v1`.
-# The names of ruling 42 (the vocabulary audit's N1 and N12; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`
-# and its operation `reveal-secret.v1` to `get-secret.v1`, and the description says that the
-# engine reads a secret for an instance through that instance's own Conduit, where it named the
-# reading instance.
-# The editorial fixes of ruling 42 (the vocabulary audit's E17; log
-# docs/proposals/ruling-42/log-editorial.md) say secret Resource, or the type of a secret
-# Resource, in the description of `secret-provider.v1` and below, where it said secret store.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# says in that description that each kind of store is its own Type, as SEC-005 does, where it
-# said each store, which a store, the system outside the engine, is not.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), on D5, says in the descriptions
-# of `runtime-provider.v1` and `secret-provider.v1` that the server of every run of a runtime
-# provider stands behind its gate (PRV-025), and that a secret Resource's server is reached
-# only with the engine's proof. The log is docs/proposals/ruling-43/log-core.md. Its
-# verification (docs/proposals/ruling-43/log-integration.md, "Verification") says in the first
-# that what answers at a run's `url` proves itself with the run's certificate and words the
-# gate's bound on the connection from the enforcement point, and in the second that a store
-# reached by `remote` that cannot check the engine's proof is used as plain and learns its
-# locator from a header that its item binds.
-# Round 5 of the re-audit (docs/proposals/reaudit/round-5/DECISIONS.md; log
-# docs/proposals/reaudit/round-5/log-fix-F5.md) said in the description of `secret-provider.v1`
-# that a secret Resource's server is reached only with the engine's proof where another runtime
-# provider runs it or it is a `remote` item that is not plain, and that a plain one stands
-# behind no gate (M81); and calls what is reached by `remote` there an implementation of
-# `get-secret.v1`, where it said a store (M18).
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
-# re-audit (finding 6-1-05; log docs/proposals/reaudit/round-6/log-core.md), says in the
-# description of `package-source.v1` that a provider's Type lists no control that changes its
-# `schemes`, so it claims them for its whole life (PRV-016).
-#
 # The Capability contracts of the core package: what `management`, `access` and a Pool offer
 # through a Conduit (OPS-019, CTR-003), and the provider capabilities (PRV-001). The
 # operations are in operations.yaml.
@@ -106,6 +53,9 @@
 # with `retire.v1` through `management` (LIF-026). No Resource is registered into a retired
 # Pool, and none for one of its entries: the document is rejected (POOL-004), and either
 # request reports invalid (OBJ-023, POOL-017).
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability

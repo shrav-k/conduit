@@ -1,6 +1,8 @@
 # Example. It must be rejected:
 # a plain implementation gives `tools` and states no `supports` (PKG-020), whether it is
 # reached by `command`, `package` or `remote`.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/files

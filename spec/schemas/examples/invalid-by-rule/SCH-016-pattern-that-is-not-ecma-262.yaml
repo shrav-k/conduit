@@ -2,8 +2,9 @@
 # a pattern is a regular expression of ECMA-262, matched in Unicode mode, and a schema whose
 # pattern is not one is rejected under SCH-016.
 # `schema.v1` checks only that a pattern is a string. The pattern below is a class whose range
-# runs backwards, from `z` to `a`, which ECMA-262 and Python's `re` both reject. The first
-# build's log of increment 1 (docs/proposals/first-build/log-increment-1.md) added it.
+# runs backwards, from `z` to `a`, which ECMA-262 and Python's `re` both reject.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

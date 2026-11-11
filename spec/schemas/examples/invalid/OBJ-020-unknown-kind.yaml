@@ -1,5 +1,7 @@
 # Example. It must be rejected:
 # `kind` is one of ten, and `Policy` is not among them.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Policy

@@ -7,6 +7,8 @@
 # the three operations of a runtime provider. A provider that works through a service
 # elsewhere is a `command` or `package` item whose server reaches that service itself. The rule
 # matches the operations by their qualified references in the core package.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/hosted-runner

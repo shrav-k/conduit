@@ -3,9 +3,8 @@
 # `system`, `management`, `access` or `root` (FST-006). The engine alone makes a node,
 # for each machine that the machine provider reports (PLC-026). A schema cannot tell: only
 # resolving `from` says which template it names.
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed this file from
-# FST-006-instance-from-location.yaml, the template `location` to `node` and the machines
-# provider to the machine provider.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

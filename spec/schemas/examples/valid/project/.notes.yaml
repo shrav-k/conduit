@@ -2,7 +2,8 @@
 # so the project in this directory is accepted with this file beside it. Read, it would be
 # rejected: what follows is not a template, an instance, a contract or a manifest (SUB-005).
 # Editors and other tools leave such names, and `tar` on macOS stores `._templates.yaml` beside
-# `templates.yaml` for its extended attributes. The first build's log of increment 1
-# (docs/proposals/first-build/log-increment-1.md) added it.
+# `templates.yaml` for its extended attributes.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 notes: Ask the owner of the shared directory before its layout changes.

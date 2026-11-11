@@ -12,8 +12,8 @@
 # `local` is the node that represents the machine the engine runs on (PLC-026). A node has an
 # empty configuration and is its own placement (PLC-008): its labels are what the machine
 # provider reports for its machine, held in its status, and no document writes them.
-# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed the template
-# `location` to `node`, location to node and the machines provider to the machine provider here.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool

@@ -1,129 +1,10 @@
-# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since is logged in the records that README.md in this directory names.
-# Ruling 38 (2026-11-06, docs/proposals/ruling-38/README.md) removed the tool
-# `start-later-work.v1`, because later work is not part of this version.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, removed `rename.v1` (decision 10), `retrieve-result.v1` (decision 6c),
-# `apply-policy.v1` and `remove-policy.v1` (decision 3a), and `set-default-location.v1` and
-# `set-facts.v1` (decision 8); wrote every contract with `inputSchema` and `outputSchema`
-# (decision 16a); changed `register-replacement.v1` (it names the instance that holds the
-# nested instantiation and, in `nested`, its name), `reconcile.v1` (no `handle` and no
-# `settings`, decisions 2a and 15), `inspect.v1` (`conditions` and `record.v1`, decision 24),
-# `install.v1` (`fetch` is a URI reference, decision 21) and the descriptions of `set-up.v1`,
-# `retire.v1`, `unregister.v1` and the others; and added `setup-hook.v1` and `retire-hook.v1`
-# (decision 1a), `run.v1`, `stop.v1` and `inspect-run.v1` (decision 2), `list-machines.v1`
-# and `place.v1` (decision 8), `fetch-package.v1` (decision 21) and `reveal-secret.v1`
-# (section 4 of the review). The log is docs/proposals/ruling-41/log-core.md. The coverage
-# check of the rewrite (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed
-# the description and the effect of `run.v1`, which runs the item on the machine that
-# `location` names or ends failed (PRV-019).
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying the decisions of the
-# coordinator in docs/proposals/ruling-41/open-decisions.md and the owner's answers D6, D11,
-# D12, D17 and R5, changed `run.v1` (it requires `endpoint`; `secrets` holds the values read
-# under `environment` and `arguments`, by name; values that are not strings are converted,
-# and a place that holds null gives nothing; never a `command` item whose program is a
-# relative path; the new input `identity`, D17), `inspect.v1` (`unreconciled` in the status),
-# `unregister.v1` and `stop.v1` (the stop asked once more when an instance on a location
-# declared lost is unregistered, D11), `retire-with-resources.v1` (it goes on with every
-# Resource that the order does not hold back, R5) and `reveal-secret.v1` (the read again after
-# a connection's values are lost, D12), and the descriptions of `register.v1`, `install.v1`,
-# `set-up.v1`, `retire.v1`, `register-replacement.v1`, `close.v1`, the two hooks,
-# `list-machines.v1` and `place.v1`. The log is docs/proposals/ruling-42/log-core.md. The
-# integration of ruling 42 (docs/proposals/ruling-42/log-integration.md) changed the
-# descriptions of `unregister.v1` and `stop.v1` to say, as D11 does, that what a runtime
-# provider does with a stop it cannot carry out now is what its contract states.
-# The names of ruling 42 (the vocabulary audit's N2, N3 and N8 to N11; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed the input `location` of `run.v1` to
-# `machine`, that of `declare-lost.v1` to `node`, and that of `place.v1`, `selector`, to
-# `nodeSelector`; made `labels.v1` the schema of the labels in `run.v1`, `list-machines.v1` and
-# `place.v1`; renamed location to node, "stand for" to "represent" and the machines provider to
-# the machine provider in the descriptions; and said in that of `declare-lost.v1` that the
-# engine declares a node lost when its machine is reported gone.
-# The names of ruling 42 (the vocabulary audit's N1, N5, N6, N12 and N15; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed `reveal-secret.v1` to `get-secret.v1`, in
-# its contract and in the description of `open.v1`, and said in its description that each read
-# is made for an instance through that instance's own Conduit; renamed the output `endpoint` of
-# `run.v1` to `url`, and its input `arguments`, with that of its `secrets`, to
-# `packageArguments`; and renamed operation identity to idempotency key in the rules below and
-# in the descriptions of `set-up.v1` and of the two hooks.
-# The editorial fixes of ruling 42 (the vocabulary audit's E17; log
-# docs/proposals/ruling-42/log-editorial.md) call `get-secret.v1` the operation of a secret
-# Resource, below and in the heading of its section, where it said that of a secret store.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# changed the descriptions of `retire.v1` and `retire-hook.v1`: a retirement connects to the
-# `remote` item first where no connection to it lasts whose values the engine holds, so after a
-# restart its reads belong to it (row 9 of the open questions, TPL-018).
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), accepting the proposal on work
-# across machines with D5's second part as option b and Q1 tightened, changed `run.v1` (its
-# input `identity` is required and holds the names fixed under Q1, `CONDUIT_URL` and
-# `CONDUIT_IDENTITY_DIR` and the files `ca.crt`, `token`, `tls.crt` and `tls.key`; a credential
-# lasts as long as its instance; the run's server stands behind its provider's gate; a
-# `package` of a transport the provider does not run ends failed), `stop.v1` and
-# `inspect-run.v1` (each takes `machine`, as `run.v1` does, X10; the stop a provider cannot
-# carry out now is kept where neither a restart of the engine nor the provider's retirement
-# loses it; `inspect-run.v1` may give `url`), `get-secret.v1` (the read again is of the secret
-# Resources that the setup read, X11; the reads before a provider's run made again after the
-# engine restarts, Q3) and `register.v1` (a template whose item binds a variable of `identity`,
-# X3, or sends a secret header to an `http` URL, D5's second part, is rejected). The log is
-# docs/proposals/ruling-43/log-core.md. Its verification
-# (docs/proposals/ruling-43/log-integration.md, "Verification") closed `identity.files` to the
-# names that spec/names.yaml fixes, added `jwks.json` and `engine-id` among them, and required
-# every one but `tls.crt` and `tls.key`; and said in the description of `run.v1` that the
-# server's side proves itself with the run's certificate (PRV-028).
-# Round 5 of the re-audit (docs/proposals/reaudit/round-5/DECISIONS.md; log
-# docs/proposals/reaudit/round-5/log-fix-F5.md) said in `run.v1` that a provider starts no run
-# for an ID while one that it started may still be running, and in `inspect-run.v1` when it
-# reports `stopped` and that the engine asks for a run only then (M03); had the reads before a
-# provider runs again follow also the stop of the part of the engine that held its run, in
-# `get-secret.v1` (M09); bounded `hostname` to 63 characters in `list-machines.v1` and
-# `place.v1` (M20); had `reconcile.v1` store nothing for a control of a retired instance (M35)
-# and leave a retired instance, or a Conduit whose consumer is retired, as it is (M37); let
-# `unregister.v1` remove any retired instance, which `stop.v1` follows (M41); said in
-# `register.v1`, with "omitted" also in `register-replacement.v1`, that for want of a machine
-# a registration is rejected wherever PRV-015 rejects it (M80); said in `get-secret.v1` which
-# servers are reached only with the engine's proof, and that a plain `remote` item and a
-# process of the engine's own runner are not (M81); and began the description of
-# `declare-lost.v1` as the row "declare lost" does (M82).
-# The integration of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md) had
-# `setup-hook.v1` and `retire-hook.v1` say that the implementation learns its instance's
-# configuration from its call, under IFC-006 (M98), and `retire-hook.v1` that the run is asked
-# for where its runtime provider reports it `stopped`, as TPL-018 has it, as do `set-up.v1` and
-# `retire.v1` (M03); and said in the notes above when a repeat reports conflict (M32, M39).
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") restated SEC-024 in the description of `register.v1`, with the item selected
-# for `get-secret.v1` and the loopback host on an engine that can move (V3, V2-10), and dropped
-# "not yet reconciled" from that of `inspect.v1` (V2-05).
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applied with round 6 of the
-# re-audit (log docs/proposals/reaudit/round-6/log-core.md), gave `replace.v1` the input
-# `contracts` and a whole manifest, so that the replacing template is resolved against the
-# project submitted with it, as a registration is (D11, SUB-009); said in the notes below that
-# the root of the schemas of an Operation contract that is not a control may hold any keyword
-# of the profile, though no core operation uses one but the four keys (D14, CTR-012); and
-# said there when a repeat of an invocation that succeeded is dispatched again or reports
-# conflict, where a filter applies to it (finding 6-1-02; OPS-009, OPS-034). The descriptions
-# of the two hooks say that a type's default for a hook is used only where the type requires
-# the hook (the first of round 6's four open points, TPL-004).
-# Ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md) took `implementation` out of the fourteen
-# contracts that stated the engine as their default: the engine implements the operations that
-# `engine` lists in conduit.yaml, with no selection (CTR-002, TPL-004). Ruling 44 (D12, as
-# revised after the ruling; the same log) gave
-# `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` the optional input `expectedId`,
-# which reports conflict where the object named has another ID (LIF-037).
-#
 # The Operation contracts of the core package: every management verb (OPS-019, CON-024); the
 # two hooks that a template may select (TPL-017, TPL-018); the operations of the provider
 # capabilities (PRV-001), which the engine invokes by provider calls (PRV-005); and the one
 # operation of a secret Resource (SEC-005). Which capability includes each is in
 # capabilities.yaml, and which open Conduit authorizes each management verb is ACC-033.
 #
-# Read with these rules. The record lists the ones that the owner accepted with the batch;
-# those added or changed since are logged in the records that README.md in this directory
-# names.
+# Read with these rules:
 #   - Each contract is written as the Model Context Protocol writes a tool (CTR-002): the
 #     properties of `inputSchema` are its inputs and those of `outputSchema` its outputs, and
 #     one that `required` does not list is optional (OBJ-015). The root of each holds
@@ -212,8 +93,11 @@
 #     no Conduit lists one (PRV-004). `get-secret.v1` is invoked by the engine's reads,
 #     which are requests (SEC-010, SEC-011, SEC-023, PRV-026), and no actor's request for it
 #     is dispatched (SEC-007).
-
+#
 # --- Operations of `management`, some of them also operations of a Pool.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation

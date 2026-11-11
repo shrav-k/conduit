@@ -1,83 +1,14 @@
 # Records: what is always recorded, what a record holds and how long it is kept.
-# Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). The list of events and the
-# fields follow Kubernetes audit events and AWS CloudTrail, which record who, what, when and how
-# it ended, and cannot be deleted through the interface they record. A record is added and never
-# altered. ACC-020 and ACC-021 were folded into REC-001 and OPS-005. No promise of this file has
-# been removed. The ruling on the core package and the schemas (ruling 37) changed REC-004. The
-# conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed REC-002. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) changed REC-002, and its closing pass changed
-# REC-004: a purge keeps the engine's ID for an invocation, which `retrieve-result.v1` returns
-# and `reconcile.v1` names. Draft: no vector exists yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed REC-002 and REC-004: a purge also keeps the operation, the instance
-# and the target of an invocation. It removed none.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed REC-003
-# and REC-004: a purge also keeps the caller and the Conduit of an invocation and, for a step
-# that names a runtime, the name of that runtime. It added none and removed none.
-# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
-# of the same file, which are the coordinator's too, changed REC-001: a request that cannot be
-# read, and from which no instance can be established, is not recorded.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), removed none, changed REC-001 to REC-004 and
-# added none. A record takes the form of the core schema `record.v1`, a CloudEvent as the
-# CloudEvents specification defines one; a provider call and the removal of an object are
-# recorded; and what repeats and reconciliations need is the engine's own state under
-# OPS-008, which a purge does not touch, so a purge keeps no fields of an invocation. What
-# changed is in docs/proposals/ruling-41/log-G4.md. The integration of the rewrite
-# (docs/proposals/ruling-41/log-integration.md) changed REC-002, so that the caller of a
-# provider call is the one PRV-005 gives it.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
-# and the owner's answers in docs/proposals/ruling-41/open-decisions.md, changed REC-002 and
-# REC-004: a record names the invocation that it serves in `serving`; a record of a run names
-# its instance in `subject`; a change that no request asked for holds the invocation within
-# which it happened; a read of a secret made again has the caller of the setup that made the
-# connection (D12); no record holds a run's `identity` (D17); and an invocation of unknown
-# outcome whose records were purged is found in the status of its instance. It added none and
-# removed none. What changed is in docs/proposals/ruling-42/log-conventions.md.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in REC-005. It removed none
-# and added none.
-# The names of ruling 42 (the vocabulary audit's N12, N14 and N15; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed the instance that acted for the caller to
-# the consumer of the Conduit used, which a record holds in `consumer`, in REC-002; origin to
-# source in REC-002 and REC-005, which now says that a record's source is its CloudEvent's
-# `source` and that an engine that names one source for every record keeps them all in one
-# order; and operation identity to idempotency key in REC-002 and REC-004. It removed none and
-# added none.
-# The editorial fixes of ruling 42 (the vocabulary audit's E19; log
-# docs/proposals/ruling-42/log-editorial.md) changed REC-001, whose observable calls what is
-# recorded an occurrence, where it said an event, since a record is the event in CloudEvents'
-# sense. It removed none and added none.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# changed REC-002, whose observable points to PRV-024 for the rule that no record holds any part
-# of `identity`, and REC-005, whose observable says that a record's `source` is a URI-reference
-# that the engine names for the context, such as one node, where it read as though a node were
-# the URI-reference. It removed none and added none.
-# Ruling 43 (docs/proposals/ruling-43/README.md, 2026-11-06), which accepted the proposal on
-# work across machines (docs/proposals/multi-machine/README.md), changed REC-002: a read for a
-# provider's run that the engine asks for again once it has restarted names, as the invocation
-# it serves, the setup that last asked for that run, and has that setup's caller (Q3, PRV-026).
-# It added none and removed none. What changed is in docs/proposals/ruling-43/log-secrets.md.
-# The fix pass of the fifth round of the re-audit
-# (docs/proposals/reaudit/round-5/log-fix-F3.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-5/DECISIONS.md, changed REC-002, under which a read for a
-# provider's run that PRV-026 asks for again serves the setup that last asked for that run,
-# whether the engine restarted or the part of it that held the run stopped (M09). It added none
-# and removed none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed REC-002: the record of a request that ACC-037 decides because the
-# instance that its credential names cannot be read holds no caller (V2-13). It added none and
-# removed none.
+# The list of events and the fields follow Kubernetes audit events and AWS CloudTrail, which
+# record who, what, when and how it ended, and cannot be deleted through the interface they record.
+# A record is added and never altered.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: ACC-020 → REC-001 and OPS-005 (ruling 32).
+# Removed: ACC-021 → REC-001 and OPS-005 (ruling 32).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: REC-001
   layer: convention

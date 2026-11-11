@@ -3,6 +3,8 @@
 # in its manifest (MAN-015): outside its own documents its contracts and implementations are
 # named `address#name`. This manifest lists one and states none. A schema cannot tell: a
 # project with no contract and no implementation needs no address.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 implementations:

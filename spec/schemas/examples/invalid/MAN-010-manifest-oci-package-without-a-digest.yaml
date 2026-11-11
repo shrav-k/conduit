@@ -2,6 +2,8 @@
 # the Package of a `package` item whose `registryType` is `oci` is pinned by a digest in its
 # `identifier`, `@sha256:` and the hash in lowercase hexadecimal after the repository
 # (MAN-010). This one names the image by a tag alone.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/files

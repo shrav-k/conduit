@@ -1,66 +1,7 @@
 # Submissions: handing the engine several documents at once.
-# Owner rulings of 2026-11-05 (plan-audit rulings 21, 22, 32 and 33). Draft: no vector exists
-# yet. Consolidation pass 1: SUB-007 was reduced to the replace operation; the rejection it
-# shared with OBJ-011 is OBJ-002. SUB-008 was added. The ruling on the core package and the
-# schemas (ruling 37) changed SUB-005 and SUB-008. The conversion of the older text (decision
-# DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed SUB-008. The second round
-# of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) reduced SUB-007 to its rule on
-# documents, changed SUB-005 and SUB-008, and added SUB-009, which is of the layer
-# `convention`. Its closing pass changed SUB-005, SUB-008 and SUB-009. Its last pass
-# (docs/proposals/reaudit/round-2/log-tail.md) changed SUB-005 and added SUB-010: every engine
-# takes a directory. No promise of this file has been removed.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed SUB-008 and SUB-009: a contract of a project may need a package that
-# is not installed, and SUB-009 says what a manifest handed to `replace.v1` may state. It
-# removed none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed SUB-009: a manifest handed to `replace.v1` may
-# hold `packages` alone.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed SUB-008
-# to SUB-010: the digest of an unpublished package hashes the manifest as it was handed over,
-# and SUB-009 names the output `revision` of `replace.v1`. It added none and removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
-# (docs/proposals/ruling-40/README.md) and the principles review
-# (docs/proposals/principles-review/README.md), changed SUB-005 and SUB-008 to SUB-010:
-# documents may end in `.yml` (alignment C14), a submitted project's contracts are named
-# `address#name` outside its documents and keep the digest of their submission (decision 11),
-# and a registration whose manifest lists a package that is not installed is rejected
-# (decision 12). It removed none and added none. The log is docs/proposals/ruling-41/log-G6.md.
-# The coverage check of the rewrite (docs/proposals/ruling-41/log-integration.md, "Coverage
-# check") changed SUB-009, whose manifest is rejected where it lists a package that is not
-# installed, under PKG-006.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md. Applying them, it changed SUB-008:
-# two submissions may state one address, each told apart by its digest, and a package may be
-# installed at the address once no template or instance holds a submission there (rows 10 and
-# 36). It added none and removed none.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed SUB-008,
-# under which each template keeps its own items where two submissions share a digest, and
-# which no longer provides for a project with no manifest (M28, M31), and SUB-010, under which
-# a program resolved against the directory is still one given as a relative path (M27). It
-# added none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
-# (log docs/proposals/reaudit/round-6/log-promises.md), changed SUB-009: `replace.v1`
-# takes the project that the replacing template belongs to, its contracts and its manifest,
-# and resolves the template against it as a registration does, with the digest of SUB-008
-# (D11). It added none and removed none.
-# The coordinator's decisions on the findings of increment 1 of the first build, under ruling
-# 46, point 4 (docs/proposals/first-build/log-increment-1.md), changed SUB-005: a document or
-# a manifest that a Schema contract rejects is rejected under it, with the place and the
-# contract (1-01), a file that is not UTF-8, or not YAML or JSON as its ending says, holds no
-# document (1-05), and a name that begins with a dot is not read (1-06); and SUB-010: an entry
-# that MAN-011 reads and that cannot be read is rejected under it (1-06). They added SUB-011: a
-# document beyond a limit that the engine states under DL10 is rejected, with a diagnostic
-# that names the limit (1-11). It removed none. The owner can strike each.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: SUB-001
   layer: language
@@ -171,7 +112,7 @@
     operation that SUB-009 names.
   vectors: []
 
-# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
 
 - id: SUB-008
   layer: language
@@ -224,8 +165,7 @@
     when the project is submitted.
   vectors: []
 
-# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
-# --- finding R1-5.1). It is of the layer `convention`.
+
 
 - id: SUB-009
   layer: convention
@@ -284,9 +224,7 @@
     diagnostics, as IFC-025 states.
   vectors: []
 
-# --- Added by the last pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 13 of "The closing pass, and what it
-# --- left" in DECISIONS.md).
+
 
 - id: SUB-010
   layer: language
@@ -325,8 +263,7 @@
     that DL7 has the engine name, and is authorized under ACC-033.
   vectors: []
 
-# --- Added by the coordinator's decision on finding 1-11 of the first build, under ruling 46,
-# --- point 4 (docs/proposals/first-build/log-increment-1.md).
+
 
 - id: SUB-011
   layer: language

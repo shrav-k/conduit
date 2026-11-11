@@ -1,104 +1,22 @@
 # Templates: what the `spec` of a template holds.
-# Owner rulings of 2026-11-05 (plan-audit rulings 31 to 33). One `implementation` map follows
-# Terraform, which picks a provider from a resource's type and lets one line override it. A
-# setup hook and a retire hook follow Kubernetes's PostStart and PreStop hooks and Compose's
-# `post_start` and `pre_stop`. A Conduit template's own keys are in conduits.yaml and a Pool's
-# entries in pools.yaml. The JSON Schemas of these shapes are in spec/schemas/templates.yaml.
-# Consolidation pass 1 took PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004.
-# The ruling on the core package and the schemas (plan-audit ruling 37) changed TPL-002,
-# TPL-003, TPL-006 and TPL-010. The second round of the re-audit
-# (docs/proposals/reaudit/round-2/DECISIONS.md) changed TPL-003, TPL-004, TPL-006 to TPL-009
-# and TPL-012: an instance is set up by one invocation of `set-up.v1` and retired by one of
-# `retire.v1`, and a template's `setup` and `retire` graphs are the steps the engine runs. Its
-# closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed TPL-006, where a runtime
-# is no longer marked optional, and TPL-010, and added TPL-013, of the layer `convention`.
-# Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed TPL-004, which now covers
-# every operation of a capability the type offers and every control it lists, and TPL-009, and
-# added TPL-014. No promise of this file was removed before ruling 38. Draft: no vector exists
-# yet.
-# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
-# accepted, changed TPL-003 and TPL-007, and added TPL-015, of the layer `convention`,
-# on reconciling the start or the stop of a runtime. It removed none.
-# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
-# file, which are the coordinator's too, changed TPL-007, TPL-009 and TPL-015: an instance holds
-# a runtime until a stop of it has succeeded or has been reconciled as having occurred.
-# The fix pass of the fourth round of the re-audit
-# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
-# TPL-007, TPL-009, TPL-011 and TPL-015, and added TPL-016, of the layer `language`: no step
-# invokes the start or the stop operation of a runtime of its own instance by naming it as its
-# `operation`. It removed none.
-# Standing: the owner accepted this file as it stands at ruling 39
-# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
-# and choice of an editor.
-# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
-# what changed is in docs/proposals/ruling-38/log-spec.md. It removed TPL-014, on
-# later work, which is not part of this version. Those IDs are not reused.
-# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
-# principles review, removed TPL-006 and TPL-007 (decision 2: runtimes go, and the run that the
-# instance's runtime provider makes replaces them, PRV-007), TPL-015 (decision 2a: a run of
-# unknown outcome is settled by its status, PRV-009) and TPL-016 (decisions 1 and 2: nothing
-# replaces it); changed TPL-001, TPL-003, TPL-004, TPL-008, TPL-009 and TPL-012, which is now of
-# the layer `convention`; and added TPL-017 and TPL-018, the setup hook and the retire hook
-# (decision 1a), and TPL-019, one item that is run for each instance (decision 2a). What
-# changed is in docs/proposals/ruling-41/log-G1.md. Those IDs are not reused. The integration
-# of the rewrite (docs/proposals/ruling-41/log-integration.md) changed TPL-009, whose parts
-# include the run that TPL-018 asks for, as OPS-022 counts them. Its coverage check (the same
-# log, "Coverage check") changed TPL-009, which asks for the stop whatever came of the retire
-# hook, and TPL-018, which asks for a run only where the hook is to be dispatched.
-# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying the coordinator's
-# decisions in docs/proposals/ruling-41/open-decisions.md, changed TPL-009, TPL-012, TPL-017
-# and TPL-018: a retirement connects to a `remote` item to serve its retire hook, and asks for
-# the stop when it is cancelled; no part of a setup is begun once the instance is retired or
-# the setup cancelled, and the run and the connections stand at one position in its order;
-# and a type may require a hook and state its default. It added and removed none. What
-# changed is in docs/proposals/ruling-42/log-secrets.md.
-# The names of ruling 42 (the vocabulary audit's N10; log
-# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in TPL-018. It removed none
-# and added none.
-# The names of ruling 42 (the vocabulary audit's N15 and N16; log
-# docs/proposals/ruling-42/log-rename-b.md) renamed operation identity to idempotency key in
-# TPL-017 and TPL-018, and the restrictions that the setup hook carries to its filters in
-# TPL-017. It removed none and added none.
-# The editorial fixes of ruling 42 (the vocabulary audit's E8 and E11; log
-# docs/proposals/ruling-42/log-editorial.md) changed TPL-008, whose observable no longer defines
-# the setup operation and the retire operation of an instance, since `set-up.v1` and
-# `retire.v1` are themselves those operations, and TPL-017, whose observable says that the hook
-# carries the filters, where it said that its request does, since a hook is not a request. It
-# removed none and added none.
-# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
-# changed TPL-018: a retirement connects anew to the `remote` item that serves its retire hook
-# where no connection to it lasts whose values the engine holds, as after the engine restarts,
-# so the reads for the hook belong to the retirement, as row 9 of the open questions has it,
-# and none is the read again of SEC-023 that ACC-039 would refuse. It removed none and added
-# none.
-# The fix pass of round 5 of the re-audit (docs/proposals/reaudit/round-5/log-fix-F2.md), on
-# the coordinator's decisions in docs/proposals/reaudit/round-5/DECISIONS.md, changed TPL-018,
-# which asks for a run to serve the retire hook only where the hook's implementation is the
-# item that is run and its runtime provider reports the run `stopped`, and does not dispatch
-# the hook where it reports `unknown` (M03, M29), and TPL-019, under which an Interface or a
-# Pool selects no item that is run (M06). It added none and removed none.
-# The verification of the fixes of round 5 (docs/proposals/reaudit/round-5/log-fixes.md,
-# "Verification") changed TPL-017, which no longer implies that a hook reached by `remote` makes
-# onward requests (V2-16). It added none and removed none.
-# Ruling 44 (docs/proposals/ruling-44/README.md, 2026-11-07), applying round 6 of the re-audit
-# (log docs/proposals/reaudit/round-6/log-promises.md), changed TPL-004, whose observable
-# says that a type's default for a hook it does not require is not used, and that registering
-# a template that selects no implementation for that hook reports it (the open point on a
-# Type's default hook). It added none and removed none. The verification of round 6
-# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed TPL-004 again: the
-# diagnostic on that default is CTR-004's, made when the type is read, so that one is reported
-# whatever its templates select (C-05, R-10). It added none and removed none.
-# Ruling 44 (D06, as revised after the ruling; log
-# docs/proposals/reaudit/round-6/log-d06-d12.md) changed TPL-003, whose map selects no
-# operation that the engine implements, and TPL-004: the template's selection, then the type's
-# default, and no default of an Operation contract; the engine implements the operations that
-# the core package's `engine` lists. It added none and removed none.
-# A check of that merge (docs/proposals/reaudit/round-6/log-d06-d12.md) then changed TPL-004,
-# whose `then` says that an implementation a promise calls selected includes the engine, TPL-003
-# (the `implementation` map), and TPL-017 and TPL-018 (no Operation contract states a default).
-# It added none and removed none.
+# One `implementation` map follows Terraform, which picks a provider from a resource's type and
+# lets one line override it. A setup hook and a retire hook follow Kubernetes's PostStart and
+# PreStop hooks and Compose's `post_start` and `pre_stop`. A Conduit template's own keys are in
+# conduits.yaml and a Pool's entries in pools.yaml. The JSON Schemas of these shapes are in
+# spec/schemas/templates.yaml.
+# Standing: draft specification; see spec/README.md for status and coverage.
+#
+# Removed IDs (not reused):
+# Removed: PKG-009 → TPL-004 (ruling 32).
+# Removed: PKG-010 → TPL-003 (ruling 32).
+# Removed: PKG-011 → TPL-004 and CTR-004 (ruling 32).
+# Removed: TPL-006 → PRV-007 (the runtime provider's run) (ruling 41).
+# Removed: TPL-007 → PRV-007 (the runtime provider's run) (ruling 41).
+# TPL-014: nothing replaces it (ruling 38).
+# Removed: TPL-015 → PRV-009 (run status) (ruling 41).
+# TPL-016: nothing replaces it (ruling 41).
+#
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: TPL-001
   layer: language
@@ -316,8 +234,7 @@
     as OPS-021 and OPS-028 allow.
   vectors: []
 
-# --- Added by the closing pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/reader-3.md, finding 28). It is of the layer `convention`.
+
 
 - id: TPL-013
   layer: convention
@@ -335,9 +252,7 @@
     refused first.
   vectors: []
 
-# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decisions 1a and 2a of the
-# --- principles review). TPL-017 and TPL-018 are of the layer `convention`, and TPL-019, a
-# --- rule on documents, of the layer `language`.
+
 
 - id: TPL-017
   layer: convention

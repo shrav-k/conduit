@@ -1,11 +1,12 @@
 id: 04-t4
 area: grants
-shows: Narrowing precedes widening; stable Conduit names; same-apply lifts need no reopen.
+shows: B narrows without a flag; only A widening needs replace; stable names and same-apply lifts.
 sources:
 - ruling 53 points 3-5
 - ruling 55 A3-A4
 - ruling 59 A3/A7
 - ruling 63 points 1-3
+- ruling 76 points 1-5
 - spec-batch-1 plan lines 320, 412, 643-652
 - SCT-003
 - SCT-004
@@ -17,7 +18,7 @@ sources:
 - OPS-008
 - IFC-023
 - NAM-008
-command: conduit apply . --replace agent-a--project --replace agent-b--project
+command: conduit apply --replace agent-a--project
 files:
   conduit.yaml: |
     apiVersion: github.com/shrav-k/conduit/v0
@@ -185,23 +186,23 @@ engine:
 printed: |
   plan
   1 access.close.v1 Conduit/agent-a--project expected=00000000-0000-4000-8000-000000000110 narrows flag=--replace agent-a--project LIF-037
-  2 access.close.v1 Conduit/agent-b--project expected=00000000-0000-4000-8000-000000000111 narrows flag=--replace agent-b--project LIF-037
+  2 access.close.v1 Conduit/agent-b--project expected=00000000-0000-4000-8000-000000000111 narrows flag=- LIF-037
   3 management.list.v1 Tombstone/* expected=- neither flag=- LIF-040
   4 access.lift.v1 Tombstone/agent-a--project expected=(step 3) neither flag=- ACC-053
   5 access.lift.v1 Tombstone/agent-b--project expected=(step 3) neither flag=- ACC-053
-  6 management.register.v1 Conduit/agent-a--project expected=(step 6) adds flag=--replace agent-a--project,--replace agent-b--project SCT-007
+  6 management.register.v1 Conduit/agent-a--project expected=(step 6) adds flag=--replace agent-a--project SCT-007
   detail document={"apiVersion":"github.com/shrav-k/conduit/v0","as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","kind":"Conduit","metadata":{"name":"agent-a--project"},"target":{"kind":"Resource","name":"shared"}}
   detail document={"apiVersion":"github.com/shrav-k/conduit/v0","as":"project","consumer":{"kind":"Agent","name":"agent-b"},"from":"example.org/s1/filesystem#read","kind":"Conduit","metadata":{"name":"agent-b--project"},"target":{"kind":"Resource","name":"shared"}}
   detail manifest={"apiVersion":"github.com/shrav-k/conduit/v0","packages":{"example.org/s1/agents":{"digest":"sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71","version":"0.2.0"},"example.org/s1/filesystem":{"digest":"sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614","version":"0.1.1"},"example.org/s1/history":{"digest":"sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69","version":"0.1.0"}}}
   detail objects=[Conduit/agent-a--project,Conduit/agent-b--project]
   7 management.inspect.v1 Conduit/agent-b--project expected=(step 6) neither flag=- LIF-013
-  8 access.open.v1 Conduit/agent-b--project expected=(step 6) widens flag=--replace agent-b--project LIF-037
+  8 access.open.v1 Conduit/agent-b--project expected=(step 6) widens flag=- LIF-037
   detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1]
   9 management.inspect.v1 Conduit/agent-a--project expected=(step 6) neither flag=- LIF-013
   10 access.open.v1 Conduit/agent-a--project expected=(step 6) widens flag=--replace agent-a--project LIF-037
   detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1,example.org/s1/filesystem#file.write.v1]
   affects bounds=[] closed-conduits=[agent-a--project,agent-b--project]
-  flags [--replace agent-a--project,--replace agent-b--project]
+  flags [--replace agent-a--project]
   ready
   result 1 succeeded {"invocation":"00000000-0000-4000-8000-000000000901","outcome":"succeeded"}
   result 2 succeeded {"invocation":"00000000-0000-4000-8000-000000000902","outcome":"succeeded"}
@@ -214,28 +215,28 @@ printed: |
   result 9 succeeded {"outcome":"succeeded","view":["Conduit","agent-a--project","00000000-0000-4000-8000-000000000118","r1","registered",{"as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","resolved":{"capability":"example.org/s1/filesystem#directory.v1","operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1","example.org/s1/filesystem#file.write.v1"]},"target":{"kind":"Resource","name":"shared"}},[{"address":"example.org/s1/filesystem","digest":"sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614","version":"0.1.1"}]]}
   result 10 succeeded {"invocation":"00000000-0000-4000-8000-000000002118","outcome":"succeeded"}
 recorded:
-  path: .conduit/plans/0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257.txt
-  digest: sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  path: .conduit/plans/c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241.txt
+  digest: sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
   text: |
     plan
     1 access.close.v1 Conduit/agent-a--project expected=00000000-0000-4000-8000-000000000110 narrows flag=--replace agent-a--project LIF-037
-    2 access.close.v1 Conduit/agent-b--project expected=00000000-0000-4000-8000-000000000111 narrows flag=--replace agent-b--project LIF-037
+    2 access.close.v1 Conduit/agent-b--project expected=00000000-0000-4000-8000-000000000111 narrows flag=- LIF-037
     3 management.list.v1 Tombstone/* expected=- neither flag=- LIF-040
     4 access.lift.v1 Tombstone/agent-a--project expected=(step 3) neither flag=- ACC-053
     5 access.lift.v1 Tombstone/agent-b--project expected=(step 3) neither flag=- ACC-053
-    6 management.register.v1 Conduit/agent-a--project expected=(step 6) adds flag=--replace agent-a--project,--replace agent-b--project SCT-007
+    6 management.register.v1 Conduit/agent-a--project expected=(step 6) adds flag=--replace agent-a--project SCT-007
     detail document={"apiVersion":"github.com/shrav-k/conduit/v0","as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","kind":"Conduit","metadata":{"name":"agent-a--project"},"target":{"kind":"Resource","name":"shared"}}
     detail document={"apiVersion":"github.com/shrav-k/conduit/v0","as":"project","consumer":{"kind":"Agent","name":"agent-b"},"from":"example.org/s1/filesystem#read","kind":"Conduit","metadata":{"name":"agent-b--project"},"target":{"kind":"Resource","name":"shared"}}
     detail manifest={"apiVersion":"github.com/shrav-k/conduit/v0","packages":{"example.org/s1/agents":{"digest":"sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71","version":"0.2.0"},"example.org/s1/filesystem":{"digest":"sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614","version":"0.1.1"},"example.org/s1/history":{"digest":"sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69","version":"0.1.0"}}}
     detail objects=[Conduit/agent-a--project,Conduit/agent-b--project]
     7 management.inspect.v1 Conduit/agent-b--project expected=(step 6) neither flag=- LIF-013
-    8 access.open.v1 Conduit/agent-b--project expected=(step 6) widens flag=--replace agent-b--project LIF-037
+    8 access.open.v1 Conduit/agent-b--project expected=(step 6) widens flag=- LIF-037
     detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1]
     9 management.inspect.v1 Conduit/agent-a--project expected=(step 6) neither flag=- LIF-013
     10 access.open.v1 Conduit/agent-a--project expected=(step 6) widens flag=--replace agent-a--project LIF-037
     detail operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1,example.org/s1/filesystem#file.write.v1]
     affects bounds=[] closed-conduits=[agent-a--project,agent-b--project]
-    flags [--replace agent-a--project,--replace agent-b--project]
+    flags [--replace agent-a--project]
     ready
 requests:
 - tool: access.close.v1
@@ -244,7 +245,7 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000110
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:1
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:1
   flag: --replace agent-a--project
   result:
     outcome: succeeded
@@ -255,14 +256,14 @@ requests:
       kind: Conduit
       name: agent-b--project
     expectedId: 00000000-0000-4000-8000-000000000111
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:2
-  flag: --replace agent-b--project
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:2
+  flag: null
   result:
     outcome: succeeded
     invocation: 00000000-0000-4000-8000-000000000902
 - tool: management.list.v1
   arguments: {}
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:3
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:3
   flag: null
   result:
     outcome: succeeded
@@ -340,7 +341,7 @@ requests:
 - tool: access.lift.v1
   arguments:
     id: 00000000-0000-4000-8000-000000000301
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:4
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:4
   flag: null
   result:
     outcome: succeeded
@@ -348,7 +349,7 @@ requests:
 - tool: access.lift.v1
   arguments:
     id: 00000000-0000-4000-8000-000000000302
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:5
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:5
   flag: null
   result:
     outcome: succeeded
@@ -392,8 +393,8 @@ requests:
         example.org/s1/history:
           version: 0.1.0
           digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:6
-  flag: --replace agent-a--project,--replace agent-b--project
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:6
+  flag: --replace agent-a--project
   result:
     outcome: succeeded
     objects:
@@ -418,7 +419,7 @@ requests:
       kind: Conduit
       name: agent-b--project
     expectedId: 00000000-0000-4000-8000-000000000119
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:7
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:7
   flag: null
   result:
     outcome: succeeded
@@ -433,8 +434,8 @@ requests:
       kind: Conduit
       name: agent-b--project
     expectedId: 00000000-0000-4000-8000-000000000119
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:8
-  flag: --replace agent-b--project
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:8
+  flag: null
   result:
     outcome: succeeded
     invocation: 00000000-0000-4000-8000-000000002119
@@ -444,7 +445,7 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000118
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:9
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:9
   flag: null
   result:
     outcome: succeeded
@@ -459,7 +460,7 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000118
-  idempotencyKey: plan:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257:1:10
+  idempotencyKey: plan:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241:1:10
   flag: --replace agent-a--project
   result:
     outcome: succeeded
@@ -538,9 +539,9 @@ kept:
   plans:
   - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
   journals:
     sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
 exit: 0

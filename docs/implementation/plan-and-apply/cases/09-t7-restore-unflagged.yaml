@@ -6,6 +6,7 @@ sources:
 - ruling 55 A3-A4
 - ruling 59 A3/A7
 - ruling 63 points 1-3
+- ruling 76 points 1-5
 - spec-batch-1 plan lines 320, 412, 643-652
 - SCT-003
 - SCT-004
@@ -16,7 +17,7 @@ sources:
 - ACC-033
 - OPS-008
 - IFC-023
-command: conduit apply .
+command: conduit apply
 files:
   conduit.yaml: |
     apiVersion: github.com/shrav-k/conduit/v0
@@ -123,17 +124,17 @@ applied:
   plans:
   - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
   - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
   - sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade
-  - sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546
+  - sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f
   journals:
     sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
     sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
     sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade: safe:case:06-t6/requests
-    sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546: safe:case:07-t7-revoke/requests
+    sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f: safe:case:07-t7-revoke/requests
 engine:
   base: first-start
   packages:
@@ -240,16 +241,16 @@ engine:
   unknown: []
 printed: |
   plan
-  stop Conduit/agent-a--project tombstone=00000000-0000-4000-8000-000000000330 requires=--reopen agent-a/project LIF-041
+  stop Conduit/agent-a--project tombstone=00000000-0000-4000-8000-000000000330 requires=--reopen agent-a--project LIF-041
   difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
   flags []
   stopped
 recorded:
   path: null
-  digest: sha256:36a6b4554f6a537f799bf89a9944bae4f677b859b7420ee4ed0e4f3872dc8594
+  digest: sha256:d27daadd823d27eb4b648066d03b362efba1dfe8c6033ac09a660b61d725949b
   text: |
     plan
-    stop Conduit/agent-a--project tombstone=00000000-0000-4000-8000-000000000330 requires=--reopen agent-a/project LIF-041
+    stop Conduit/agent-a--project tombstone=00000000-0000-4000-8000-000000000330 requires=--reopen agent-a--project LIF-041
     difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
     flags []
     stopped
@@ -351,15 +352,15 @@ kept:
   plans:
   - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
   - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
   - sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade
-  - sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546
+  - sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f
   journals:
     sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
     sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
     sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade: safe:case:06-t6/requests
-    sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546: safe:case:07-t7-revoke/requests
+    sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f: safe:case:07-t7-revoke/requests
 exit: 2

@@ -1,11 +1,12 @@
 id: 07-t7-revoke
 area: grants
-shows: Explicit prune closes only A project; B read and both history grants remain open.
+shows: Bare apply prints and records closure of dropped A project; B read and both history grants remain open.
 sources:
 - ruling 53 points 3-5
 - ruling 55 A3-A4
 - ruling 59 A3/A7
 - ruling 63 points 1-3
+- ruling 76 points 1-5
 - spec-batch-1 plan lines 320, 412, 643-652
 - SCT-003
 - SCT-004
@@ -16,7 +17,7 @@ sources:
 - ACC-033
 - OPS-008
 - IFC-023
-command: conduit apply . --prune agent-a--project
+command: conduit apply
 files:
   conduit.yaml: |
     apiVersion: github.com/shrav-k/conduit/v0
@@ -100,13 +101,13 @@ applied:
   plans:
   - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
   - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
   - sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade
   journals:
     sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
     sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
     sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade: safe:case:06-t6/requests
 engine:
@@ -192,26 +193,26 @@ engine:
   unknown: []
 printed: |
   plan
-  1 access.close.v1 Conduit/agent-a--project expected=00000000-0000-4000-8000-000000000124 narrows flag=--prune agent-a--project LIF-037
+  1 access.close.v1 Conduit/agent-a--project expected=00000000-0000-4000-8000-000000000124 narrows flag=- LIF-037
   2 management.list.v1 Tombstone/* expected=- neither flag=- LIF-040
   affects bounds=[] closed-conduits=[agent-a--project]
   difference agent-b--project remains ready id=00000000-0000-4000-8000-000000000125 operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1]
   difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
-  flags [--prune agent-a--project]
+  flags []
   ready
   result 1 succeeded {"invocation":"00000000-0000-4000-8000-000000000930","outcome":"succeeded"}
   result 2 succeeded {"outcome":"succeeded","packages":[{"address":"example.org/s1/filesystem","digest":"sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614","version":"0.1.1"},{"address":"example.org/s1/agents","digest":"sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71","version":"0.2.0"},{"address":"example.org/s1/filesystem","digest":"sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160","version":"0.1.0"},{"address":"example.org/s1/history","digest":"sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69","version":"0.1.0"},{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}],"tombstones":[{"by":"00000000-0000-4000-8000-000000000005","capability":"example.org/s1/filesystem#directory.v1","cause":{"invocation":"00000000-0000-4000-8000-000000000930"},"consumer":{"id":"00000000-0000-4000-8000-000000000106","kind":"Agent","name":"agent-a"},"id":"00000000-0000-4000-8000-000000000330","localName":"project","object":{"id":"00000000-0000-4000-8000-000000000124","kind":"Conduit","name":"agent-a--project"},"operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1","example.org/s1/filesystem#file.write.v1"],"provenance":{"actor":"00000000-0000-4000-8000-000000000005","invocation":"00000000-0000-4000-8000-000000002124","openedThrough":["00000000-0000-4000-8000-000000000007"],"sentBy":"00000000-0000-4000-8000-000000000005"},"target":{"id":"00000000-0000-4000-8000-000000000123","kind":"Resource","name":"shared"},"time":"2026-11-11T00:00:00Z"}]}
 recorded:
-  path: .conduit/plans/50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546.txt
-  digest: sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546
+  path: .conduit/plans/7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f.txt
+  digest: sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f
   text: |
     plan
-    1 access.close.v1 Conduit/agent-a--project expected=00000000-0000-4000-8000-000000000124 narrows flag=--prune agent-a--project LIF-037
+    1 access.close.v1 Conduit/agent-a--project expected=00000000-0000-4000-8000-000000000124 narrows flag=- LIF-037
     2 management.list.v1 Tombstone/* expected=- neither flag=- LIF-040
     affects bounds=[] closed-conduits=[agent-a--project]
     difference agent-b--project remains ready id=00000000-0000-4000-8000-000000000125 operations=[example.org/s1/filesystem#file.read.v1,example.org/s1/filesystem#directory.list.v1]
     difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
-    flags [--prune agent-a--project]
+    flags []
     ready
 requests:
 - tool: access.close.v1
@@ -220,14 +221,14 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000124
-  idempotencyKey: plan:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546:1:1
-  flag: --prune agent-a--project
+  idempotencyKey: plan:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f:1:1
+  flag: null
   result:
     outcome: succeeded
     invocation: 00000000-0000-4000-8000-000000000930
 - tool: management.list.v1
   arguments: {}
-  idempotencyKey: plan:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546:1:2
+  idempotencyKey: plan:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f:1:2
   flag: null
   result:
     outcome: succeeded
@@ -374,15 +375,15 @@ kept:
   plans:
   - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
-  - sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257
+  - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
   - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
   - sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade
-  - sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546
+  - sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f
   journals:
     sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
-    sha256:0625127322b38b3a1b726f515ed2b9d13a5a2e644429286a48317b53a5275257: safe:case:04-t4/requests
+    sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
     sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
     sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade: safe:case:06-t6/requests
-    sha256:50e0392f7181017085014dcf89360bafb166e164d82436a188485f8f29f3a546: safe:case:07-t7-revoke/requests
+    sha256:7415bd165b9a42d4dbde679df28d7a1de1bbcbbc341bfda6688af748a757463f: safe:case:07-t7-revoke/requests
 exit: 0

@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1) and 105 (MC2), ruling 71's proof lane.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2) and 107 (MC3), ruling 71's proof lane.
 The expected verdicts below were registered before execution; later orders extend this harness.
 
 ## Question and scope
@@ -566,3 +566,504 @@ coverage and the candidate contradiction need the admin's follow-up outside this
 scope. The catalogue was filled in later on 2026-11-11 (work order 100). The lane
 coordinator then checked the sixteen promises this order names: each is listed in it as a
 safety promise. The original harness model and `retry.rs` tests remain unchanged and passing.
+
+## MC3 access over time: model and pre-registration
+
+Work order 107 adds [access.rs](src/access.rs), a reference model of the promises, not the
+engine. The expected table and initial description preceded the first MC3 run. Later completion
+of the emission ledger and explicit U reply relay changed state counts, not expectations.
+
+A sends `op(k1)` through c1 and then `op(k2)` through c2, queued together in that order.
+R queues `open(c2)`, `close(c1)`, `close(cT)` together, on an independent FIFO link to the
+engine. c1 (A to T, `op`, one filter) and cT (T to U, `op2`) start open. c2 (A to T,
+`op`, no filter) starts registered. cAU (A to U, `op2`) stays open; only Borrow misuses it.
+The engine saves its Conduits and keyed invocation index. T starts registered and has one
+setup step; readiness is lifecycle state and survives T's crash. A close removes its route,
+never reopening it; c2 makes the separate opening possible. U is ready and states support
+for c1's filter. T receives a dispatch, sends one onward request, waits for its answer,
+and returns its own succeeded outcome regardless of the onward answer. T's crash clears
+its active calls, preserves readiness and does not give dispatched calls unavailable.
+
+The send to T or U is atomic with the access decision. Top-level copies are checked for
+access before OPS-032/OPS-009: `op` declares an effect and no outputs, is Conduit aware,
+and is not deduplicating. A repeat in progress conflicts, a succeeded repeat gives only
+its outcome, and an unknown repeat stays unknown. No replay or reconciliation is modelled.
+An engine timer ends one selected in-progress invocation unknown; timer selection is a
+local nondeterministic action so any top-level or onward invocation can time out first.
+Two timers are allowed; timer selectors 0/1 name top-level keys, 2/3 their onward calls. Recovery ends all in-progress invocations unknown, under IMP-007; a pending
+recovery record is flushed before the engine's next decision or local work. A single
+local unreadable/readable pair supplies the unreadable window in Window.
+
+All six safety predicates read only the ledger. Per-key histories commute, avoiding an
+irrelevant total order across keys. Open/close entries retain their Conduit and version.
+Decisions retain current and read versions, readable state, readiness, openness, prior
+keyed state, dispatch and the answer given. Invocation entries retain dispatch version,
+end and cause, original answer at reply receipt and whether the route had closed.
+Onward emission entries retain caller, filter, route, version, closed chain and ended
+parent even if the wire request is lost before a decision. Separate onward decision
+entries retain those snapshots at decision, readability, dispatch, answer and end cause.
+Immediate reasons and completion answers are observed at the engine's reply boundary;
+top-level transport of those answers is not another lossy link. U's reply travels back
+to the engine and is relayed to T, on separately lossy links. Recovery ends in-progress
+top-level and onward invocations unknown, preserving either end against a late reply.
+
+### Configurations and bounds
+
+Every row starts with both scripts and all four Conduits. Each correct model runs in
+every part; mutants run only in their listed part. Faults are split to bound the product
+of independent failures, rather than claim their simultaneous composition was checked.
+Each run has a ceiling of 190,000 unique states, a 10-second timeout (both asserted),
+three messages per directed link, two keys, at most one wire copy and one onward per
+top-level invocation (at most four invocations total), three version changes and one
+readiness transition. There are no unbounded
+retries. Full runs exhaust the bounded graph even after finding a counterexample.
+
+| Part | Enabled faults and local window |
+| --- | --- |
+| Base | None; all ordinary message and setup interleavings |
+| Timers | Two timer actions, with either pending invocation selectable |
+| ReorderA | One out-of-order delivery on A to engine |
+| ReorderService | One out-of-order delivery between engine, T and U |
+| LossA | One lost request on A to engine |
+| LossService | One lost message between engine, T and U |
+| Copies | One duplicated request on A to engine |
+| EngineCrash | One engine crash and recovery; Conduits and key index saved |
+| TargetCrash | One T crash and recovery; readiness persists |
+| Cut | One engine/T cut; both directions held |
+| Window | One unreadable/readable pair, no network fault |
+
+R's link cannot reorder or lose messages: the order requires opening c2 before closing
+c1, and isolates request/close races from failures of R's management script. R's messages
+cannot duplicate either. Only A's requests duplicate, to exercise keyed repeats without
+introducing implementation idempotency into this access model. Reordering and loss are
+restricted to the named links to keep those independent products small. A, R and U do
+not crash: only engine recovery and loss of T's active calls are this order's faults.
+Permanent machine loss and healing are omitted: lifecycle belongs to MC's lifecycle model,
+and a held-link cut already suffices for the safety races; eventual reconnection is no
+liveness claim. T/U traffic is mediated: T-to-engine-to-U and U-to-engine-to-T. There
+is no direct T/U wire queue; LossService covers every leg of those logical calls. Only Window enables the unreadable pair and only Timers enables timers,
+to isolate state-read and unknown-outcome interactions. All other budgets are zero with
+reasons in `Config`. Nonzero budgets are one, except two timers.
+
+The sole harness change consults `fault_allowed` for reordering and loss as well as its
+existing fault classes. FIFO delivery remains unconditional on this hook. MC2 inherits
+`true` for both classes, so its transition graphs are unchanged; a harness test checks
+both the restricted MC3 links and MC2's unchanged permissions.
+
+### Catalogue accounting (44 promises)
+
+“Modelled” means only the slice named here. The property keys below match the following
+table; other obligations of that same promise remain outside this bounded model.
+
+| Promise | Status | Property or reason |
+| --- | --- | --- |
+| ACC-001 | Modelled | C |
+| ACC-002 | Modelled | C (decision before atomic send) |
+| ACC-003 | Not modelled | a static decision, to be shown by vectors |
+| ACC-005 | Not modelled | belongs to the lifecycle model |
+| ACC-006 | Not modelled | a static decision, to be shown by vectors |
+| ACC-008 | Not modelled | filters are judged by the implementation (IFC-019); this model checks carriage only |
+| ACC-009 | Not modelled | a static decision, to be shown by vectors |
+| ACC-011 | Modelled | C |
+| ACC-012 | Not modelled | a static decision, to be shown by vectors |
+| ACC-014 | Not modelled | implementation restriction evaluation and its diagnostic need a filter implementation, absent here |
+| ACC-015 | Not modelled | unsupported-filter path is outside this model; U explicitly supports the carried requirement |
+| ACC-016 | Modelled | O |
+| ACC-017 | Modelled | O (identity and carried filter) |
+| ACC-018 | Not modelled | belongs to the lifecycle model |
+| ACC-019 | Modelled | O |
+| ACC-023 | Not modelled | a static decision, to be shown by vectors |
+| ACC-024 | Not modelled | a static decision, to be shown by vectors |
+| ACC-027 | Not modelled | inspection output, absent from the transition alphabet |
+| ACC-028 | Not modelled | a static decision, to be shown by vectors |
+| ACC-029 | Not modelled | a static decision, to be shown by vectors |
+| ACC-030 | Not modelled | a static decision, to be shown by vectors |
+| ACC-032 | Not modelled | a static decision, to be shown by vectors |
+| ACC-033 | Not modelled | a static decision, to be shown by vectors |
+| ACC-034 | Modelled | F, O |
+| ACC-036 | Modelled | C |
+| ACC-037 | Modelled | U |
+| ACC-038 | Not modelled | inspection output naming the enforcing implementation, absent here |
+| ACC-039 | Not modelled | belongs to the lifecycle model |
+| ACC-044 | Not modelled | provenance, inspection, inventory and tombstone retention require a separate record model |
+| ACC-053 | Not modelled | a static decision, to be shown by vectors |
+| ACC-054 | Not modelled | a static decision, to be shown by vectors |
+| ACC-055 | Not modelled | a static decision, to be shown by vectors |
+| ACC-057 | Not modelled | a static decision, to be shown by vectors |
+| ACC-056 | Not modelled | disclosure tiers and diagnostic contents are not represented |
+| CON-004 | Not modelled | belongs to the lifecycle model |
+| CON-008 | Not modelled | belongs to the lifecycle model |
+| CON-011 | Not modelled | what an inspection shows, absent from the transition alphabet |
+| CON-013 | Modelled | P (literal dispatch reading) |
+| CON-014 | Not modelled | belongs to the lifecycle model |
+| CON-023 | Not modelled | belongs to the lifecycle model |
+| CON-024 | Modelled | N |
+| CON-031 | Not modelled | belongs to the lifecycle model |
+| FLEET-004 | Not modelled | a static decision, to be shown by vectors |
+| FLEET-005 | Not modelled | default grant creation and its visibility-filtered collision diagnostics are absent |
+
+Counts: 11 modelled, 16 static, 8 lifecycle, 9 other; total 44.
+
+Static exclusions include the complete operation list and reserved secret reads, management
+bounds and delegation, ownership and Fleet authority, root-only operations, tombstone lift,
+registration and reconciliation. c2's lack of a filter is not checked against c1's filter:
+that independence is fixed input, not a proof of all of ACC-009. Inspection, tool listing,
+wire schemas, authentication, invalid arguments, diagnostic disclosure and outputs are
+absent. There is no claim of checking IFC-012/013/019/025 beyond their abstract reasons,
+caller identity and carried-filter facts. Invalid is an answer in the model's vocabulary,
+but no input produces it. Setup/retirement hooks, consumer retirement and chain depth
+beyond T to U await the lifecycle and composition models. The unreadable window concerns
+Conduit state, not credential existence; its implementation-defined wait is abstracted
+as immediate unavailable. No filter predicate or unsupported-version argument is invented.
+
+### Expected table, fixed before execution
+
+Safety keys: C = current access (ACC-001/002/011/036); P = open permits dispatch (CON-013);
+F = in flight (ACC-034); O = onward ownership, caller, filter, chain and ended-parent
+(ACC-016/017/019/034); U = unreadable unavailable (ACC-037); N = registered unavailable
+(CON-024). H means holds, X refuted. Reach keys: r = refused after close, f = outcome
+after close, o = onward dispatched, c = onward refused after chain close, u = unreadable
+unavailable, n = registered unavailable. R means reached, dash means not reached.
+Every enabled harness fault witness is expected reached in every row.
+
+The order's literal P requires dispatch even for an authorized keyed repeat, although
+OPS-032 forbids dispatch. Literal F requires T's outcome whenever its reply arrives,
+although OPS-013 and IMP-007 preserve an earlier unknown outcome. These anticipated
+counterexamples are kept, not hidden with an exemption. They concern the property as
+written in the order, and require interpretation against the full promises.
+
+| Configuration / variant | C | P | F | O | U | N | r | f | o | c | u | n |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Base / Correct | H | H | H | H | H | H | R | R | R | R | - | R |
+| Timers / Correct | H | H | X | H | H | H | R | R | R | R | - | R |
+| ReorderA / Correct | H | H | H | H | H | H | R | R | R | R | - | R |
+| ReorderService / Correct | H | H | H | H | H | H | R | R | R | R | - | R |
+| LossA / Correct | H | H | H | H | H | H | R | R | R | R | - | R |
+| LossService / Correct | H | H | H | H | H | H | R | R | R | R | - | R |
+| Copies / Correct | H | X | H | H | H | H | R | R | R | R | - | R |
+| EngineCrash / Correct | H | H | X | H | H | H | R | R | R | R | - | R |
+| TargetCrash / Correct | H | H | H | H | H | H | R | R | R | R | - | R |
+| Cut / Correct | H | H | H | H | H | H | R | R | R | R | - | R |
+| Window / Correct | H | H | H | H | H | H | R | R | R | R | R | R |
+| Copies / Reuse | X | X | H | H | H | H | R | R | R | R | - | R |
+| Base / CloseRefused | H | H | X | H | H | H | R | - | R | R | - | R |
+| Base / Borrow | H | H | H | X | H | H | R | R | R | R | - | R |
+| Base / Chain | H | H | H | X | H | H | R | R | R | R | - | R |
+| Base / DropFilter | H | H | H | X | H | H | R | R | R | R | - | R |
+| Base / Caller | H | H | H | X | H | H | R | R | R | R | - | R |
+| Timers / Ended | H | H | X | X | H | H | R | R | R | R | - | R |
+| Window / ReadOpen | H | H | H | H | X | H | R | R | R | R | - | R |
+| Base / Registered | H | H | H | H | H | X | R | R | R | R | - | - |
+
+Reuse keeps an earlier operation decision, including its old version. CloseRefused
+answers the original call refused when c1 closes. Borrow uses A's cAU after cT closes.
+Chain checks cT alone. DropFilter and Caller separately corrupt filter and identity.
+Ended ignores the ended parent. ReadOpen treats unreadable access as open. Registered
+sends work before setup. Tests compare every full verdict and witness with this table;
+separate single-thread BFS runs print the first counterexample for each mutant, plus
+the literal-property counterexamples on Correct. Ledger-only regression checks erase
+all node state after each mutant refutation and ensure the failure remains visible.
+
+### Supplemental control, registered before its first run
+
+Q = `ACC-034 OPS-013 IMP-007: control preserves recorded end`. This labelled control
+stands beside literal F. It requires the original response at T's reply receipt to give
+the recorded unknown where a timer, engine recovery or observed T crash already ended
+the invocation unknown, and T's outcome otherwise. Its expected verdict is H in all 20
+rows above except Base / CloseRefused, where it is X. It does not replace F. A separate
+refutation prints the first trace on Q for CloseRefused. Catalogue ACC-034's modelled
+slice thus includes F, O and Q. This control makes no ruling about changing the promises.
+
+T's crash leaves a pending observation that recovery cannot erase. The engine applies it
+before its next decision, or as a priority local action, ending pending calls unknown,
+never unavailable. While T remains down the observation remains pending, including for
+calls dispatched to the still-ready target in that interval; after recovery the engine
+clears it only after applying it. The first draft omitted the observation; implementing
+the order's unknown-on-crash requirement adds a late-reply failure to F in TargetCrash.
+The original table remains unchanged. Setup requires T to be running.
+
+## MC3 dated results, 2026-11-11
+
+Measured on this shared arm64 macOS machine, Rust `1.97.1`, Stateright `0.31.0`.
+No processor model is claimed: that system query was unavailable. Full runs used two
+checker threads; refutations used one-thread BFS. The measured ordinary release command
+passed 19 tests and zero doc tests in **11.99 seconds wall time**
+(the test body took 10.56 seconds). The counted `--nocapture --test-threads=1`
+command passed the same totals in **10.04 seconds wall time**, 9.88 seconds in tests.
+These include MC1 and MC2 unchanged. No Linux timing was measured; the local times leave
+substantial margin for the order's roughly one-minute Ubuntu target.
+
+Each row is a full bounded run from the counted command. Safety letters are ordered
+**C P F O U N Q**, reach letters **r f o c u n**; every enabled harness fault witness
+was reached. Thus every safety verdict and reach verdict, including the Q control,
+is stated for every row. Depth includes the initial state. The ceiling and timeout
+were asserted after each full run; none was truncated.
+
+Verifier refresh, 2026-11-11: the prior implementation enabled `TargetUnknown` only
+while T was crashed, so recovery could skip the unknown end and permit queued onward
+work. The pending observation now survives recovery and is flushed before further
+engine decisions or local work. The six-action regression is `SetupT`; deliver k1 to
+the engine; deliver its invocation to T; crash T; recover T; deliver its queued onward
+request. It failed before the fix and now records the parent's unknown end and refuses
+onward dispatch, with readiness preserved. All rows and refutation traces below were
+refreshed. TargetCrash changes from 36,633 states / depth 22 to 51,529 / depth 21; every
+other state count and depth, all verdicts and reachability, and both recorded table
+differences stay the same. No timing-test rerun with `RUST_TEST_THREADS=2` was needed.
+
+| Configuration / variant | Unique states | Depth | Seconds | Observed safety C P F O U N Q | Observed reach r f o c u n |
+| --- | --- | --- | --- | --- | --- |
+| Base / Correct | 3,228 | 19 | 0.026 | H H H H H H H | R R R R - R |
+| Timers / Correct | 120,264 | 23 | 2.054 | H H X H H H H | R R R R - R |
+| ReorderA / Correct | 4,360 | 19 | 0.043 | H H H H H H H | R R R R - R |
+| ReorderService / Correct | 7,148 | 19 | 0.072 | H H H H H H H | R R R R - R |
+| LossA / Correct | 3,517 | 19 | 0.029 | H H H H H H H | R R R R - R |
+| LossService / Correct | 7,938 | 19 | 0.096 | H H H H H H H | R R R R - R |
+| Copies / Correct | 27,629 | 21 | 0.310 | H X H H H H H | R R R R - R |
+| EngineCrash / Correct | 35,259 | 21 | 0.454 | H H X H H H H | R R R R - R |
+| TargetCrash / Correct | 51,529 | 21 | 0.671 | H H X H H H H | R R R R - R |
+| Cut / Correct | 6,456 | 20 | 0.067 | H H H H H H H | R R R R - R |
+| Window / Correct | 19,233 | 21 | 0.221 | H H H H H H H | R R R R R R |
+| Copies / Reuse | 40,817 | 21 | 0.511 | X X H H H H H | R R R R - R |
+| Base / CloseRefused | 3,228 | 19 | 0.025 | H H X H H H X | R - R R - R |
+| Base / Borrow | 3,854 | 19 | 0.034 | H H H X H H H | R R R R - R |
+| Base / Chain | 3,808 | 19 | 0.033 | H H H X H H H | R R R R - R |
+| Base / DropFilter | 3,228 | 19 | 0.025 | H H H X H H H | R R R R - R |
+| Base / Caller | 3,228 | 19 | 0.030 | H H H X H H H | R R R R - R |
+| Timers / Ended | 150,702 | 23 | 2.322 | H H X X H H H | R R R R - R |
+| Window / ReadOpen | 47,984 | 21 | 0.541 | H H H H X H H | R R R R R R |
+| Base / Registered | 11,726 | 19 | 0.120 | H H H H H X H | R R R R - - |
+
+### Findings and differences from the registered table
+
+**MC3-001 — gap in the literal open-dispatch property's scope (CON-013, OPS-009,
+OPS-032, ACC-036).** Correct/Copies refutes P: an authorized repeat in progress
+reports conflict rather than dispatch. The first trace has five actions below. CON-013
+speaks of the next request through a newly opened Conduit, while the order's predicate
+speaks of every request through an open one, with no repeat exemption. This trace uses
+c1, which starts open, rather than a first request after opening c2. It does not establish
+that the specification is inconsistent. It establishes that literal P cannot serve as an
+unqualified proxy for CON-013. No property or promise was weakened to hide the failure.
+The expected failure in Copies (Correct and Reuse) was registered, so it is no table delta.
+
+**MC3-002 — gap in the literal in-flight property's treatment of an ended unknown
+(ACC-034, OPS-013, IMP-007).** Correct/Timers and Correct/EngineCrash refute F in
+eight actions each. An invocation ends unknown, then T's late reply reaches the engine;
+the original request remains answered unknown. The first traces do not need a close.
+The order's unconditional reply/outcome predicate omits both ACC-034's close-while-in-progress
+precondition and OPS-013's earlier unknown end. ACC-034 says the result is delivered as
+for any other invocation; this model supplies no evidence that a closed route permits
+turning an already ended unknown into succeeded. Q holds in every Correct configuration,
+and CloseRefused refutes Q as well as F. This is a property-scope finding, not a claim of
+an unsafe specification contradiction. Timers and EngineCrash failures were registered.
+
+**MC3-003 — expectation gap, ReadOpen/Window (ACC-037, CON-024).** The table expected
+u not reached; observed u reached. When state is unreadable and T is registered, the
+mutant skips the unreadable check but still returns unavailable on readiness. The u
+witness records the unreadable snapshot and answer; it does not isolate the reason's
+branch. This overlap does not make U hold: the separate three-action trace makes T ready
+and dispatches during the unreadable window, refuting U. The table remains unchanged;
+the test checks the recorded observation beside its registered expectation.
+
+**MC3-004 — expectation gap, Correct/TargetCrash (ACC-034, OPS-013, LIF-011).** The
+table expected F to hold; observed F refuted. The target's crash must allow an in-progress
+call to end unknown without changing readiness. That observation was missing from the
+first draft and was added to apply the order, exposing rather than hiding a failure.
+The first trace crashes T after dispatch but before it receives the queued call. T
+recovers and receives the call; its onward request reaches the engine, which first
+records the pending crash's unknown end, then refuses the onward request because the
+parent ended. T still answers its own outcome. The eight-action first trace below
+refutes F; Q still holds. This is
+the same missing unknown qualification as MC3-002, on a third path. The registered table
+remains unchanged, and the test checks this separately recorded observed verdict.
+
+There were no other differences. All nine mutants refuted their named property. Missing
+u outside Window is the disabled read-fault stimulus; CloseRefused also loses f, and
+Registered loses n, as registered. All 44 catalogue rows are accounted for: **11 modelled,
+16 not modelled as static decisions to be shown by vectors, 8 belonging to the lifecycle
+model, 9 with the other individual reasons above**.
+
+### First single-thread BFS traces
+
+These are the first traces printed by the counted command, not traces inferred from a
+full run. Each begins from the same initial scripts. Successive FIFO R deliveries are
+open c2, close c1 and close cT; successive A deliveries follow that part's actual queue,
+including an appended copy in Copies. An engine-to-T message is either the initial
+invocation or its onward answer; the surrounding T-to-engine deliveries distinguish them.
+
+**MC3 refutation Reuse: ACC-001 ACC-002 ACC-011 ACC-036: current access**
+
+```text
+1. engine SetupT
+2. delivered A -> engine [position 0]
+3. delivered A -> engine [position 0]
+```
+
+**MC3 refutation CloseRefused: ACC-034: in flight runs to its end**
+
+```text
+1. delivered R -> engine [position 0]
+2. engine SetupT
+3. delivered A -> engine [position 0]
+4. delivered R -> engine [position 0]
+5. delivered engine -> T [position 0]
+6. delivered T -> engine [position 0]
+7. delivered engine -> T [position 0]
+8. delivered T -> engine [position 0]
+```
+
+**MC3 refutation Borrow: ACC-016 ACC-017 ACC-019 ACC-034: target owns onward access**
+
+```text
+1. delivered R -> engine [position 0]
+2. engine SetupT
+3. delivered A -> engine [position 0]
+4. delivered R -> engine [position 0]
+5. delivered R -> engine [position 0]
+6. delivered engine -> T [position 0]
+7. delivered T -> engine [position 0]
+```
+
+**MC3 refutation Chain: ACC-016 ACC-017 ACC-019 ACC-034: target owns onward access**
+
+```text
+1. delivered R -> engine [position 0]
+2. engine SetupT
+3. delivered A -> engine [position 0]
+4. delivered R -> engine [position 0]
+5. delivered engine -> T [position 0]
+6. delivered T -> engine [position 0]
+```
+
+**MC3 refutation DropFilter: ACC-016 ACC-017 ACC-019 ACC-034: target owns onward access**
+
+```text
+1. engine SetupT
+2. delivered A -> engine [position 0]
+3. delivered engine -> T [position 0]
+4. delivered T -> engine [position 0]
+```
+
+**MC3 refutation Caller: ACC-016 ACC-017 ACC-019 ACC-034: target owns onward access**
+
+```text
+1. engine SetupT
+2. delivered A -> engine [position 0]
+3. delivered engine -> T [position 0]
+4. delivered T -> engine [position 0]
+```
+
+**MC3 refutation Ended: ACC-016 ACC-017 ACC-019 ACC-034: target owns onward access**
+
+```text
+1. engine SetupT
+2. delivered A -> engine [position 0]
+3. delivered engine -> T [position 0]
+4. engine SelectTimer(0)
+5. timer engine
+6. delivered T -> engine [position 0]
+```
+
+**MC3 refutation ReadOpen: ACC-037: unreadable is unavailable**
+
+```text
+1. engine SetupT
+2. engine Unreadable
+3. delivered A -> engine [position 0]
+```
+
+**MC3 refutation Registered: CON-024: registered is unavailable**
+
+```text
+1. delivered A -> engine [position 0]
+```
+
+**MC3 control refutation CloseRefused: ACC-034 OPS-013 IMP-007: control preserves recorded end**
+
+```text
+1. delivered R -> engine [position 0]
+2. engine SetupT
+3. delivered A -> engine [position 0]
+4. delivered R -> engine [position 0]
+5. delivered engine -> T [position 0]
+6. delivered T -> engine [position 0]
+7. delivered engine -> T [position 0]
+8. delivered T -> engine [position 0]
+```
+
+**MC3 literal promise refutation Copies: CON-013: open permits dispatch**
+
+```text
+1. duplicated A -> engine [position 0]
+2. engine SetupT
+3. delivered A -> engine [position 0]
+4. delivered A -> engine [position 0]
+5. delivered A -> engine [position 0]
+```
+
+**MC3 literal promise refutation Timers: ACC-034: in flight runs to its end**
+
+```text
+1. engine SetupT
+2. delivered A -> engine [position 0]
+3. delivered engine -> T [position 0]
+4. engine SelectTimer(0)
+5. timer engine
+6. delivered T -> engine [position 0]
+7. delivered engine -> T [position 0]
+8. delivered T -> engine [position 0]
+```
+
+**MC3 literal promise refutation EngineCrash: ACC-034: in flight runs to its end**
+
+```text
+1. engine SetupT
+2. delivered A -> engine [position 0]
+3. delivered engine -> T [position 0]
+4. crashed engine
+5. recovered engine
+6. delivered T -> engine [position 0]
+7. delivered engine -> T [position 0]
+8. delivered T -> engine [position 0]
+```
+
+**MC3 literal promise refutation TargetCrash: ACC-034: in flight runs to its end**
+
+```text
+1. engine SetupT
+2. delivered A -> engine [position 0]
+3. crashed T
+4. recovered T
+5. delivered engine -> T [position 0]
+6. delivered T -> engine [position 0]
+7. delivered engine -> T [position 0]
+8. delivered T -> engine [position 0]
+```
+
+### What MC3 shows, and what it does not
+
+Within each separate fault bound, fresh versioned access, removal of a closed route,
+caller and filter carriage, the sender's own onward authority, all links of its chain,
+ended-parent rejection, unreadable fail-closed decisions and readiness checks can hold
+together. Every required outcome is reachable where its stimulus is enabled. Deliberate
+violations are detected through external ledger facts even after node data is erased.
+The P and F scope findings remain visible beside Q; they must not be counted as proof
+that the literal properties hold. The 11 modelled promises are slices, not 11 complete
+proofs. MC8 must retain these qualifications and the 33 explicit exclusions.
+
+This is bounded safety and reachability evidence about the reference model. It proves
+neither the engine nor implementations conform, nor unbounded behavior, fairness,
+progress, reliable delivery, compound faults, long chains, consumer retirement,
+filter enforcement or the excluded static rules. The engine-boundary observation of answers excludes transport losses after a top-level
+answer. Onward replies and their relay remain explicitly lossy.
+
+| Property | S1 traces it stands beside |
+| --- | --- |
+| C: fresh decision and closed-route refusal | S1-exact-access, S1-close, S1-reason-order (access before repeat lookup only) |
+| P: open route (scope finding retained) | S1-exact-access; also CON-013's opening rule, for which S1 has no dedicated trace |
+| F and Q: original result across a close and recorded unknown | S1-close-in-flight; S1-close distinguishes the later repeat |
+| O: own onward route, caller, filter, chain, live parent | S1-close-in-flight, E08-broker (filter carriage only; no broker or unsupported-filter behavior) |
+| U: unreadable state unavailable | S1-authority-unreadable (Conduit state only; no credential-existence or diagnostic-disclosure claim) |
+| N: registered target unavailable | S1-target-registered |
+
+All changed Rust and documentation files are confined to this experiment. The pinned
+lockfile and toolchain remain in force, and `target/` remains ignored.

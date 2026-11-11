@@ -283,11 +283,15 @@ impl<P: Protocol> Model for Harness<P> {
                 for index in 0..s.links[s.link(src, dst)].len() {
                     if s.nodes[dst].status == Status::Running
                         && !s.cut.contains(&pair(src, dst))
-                        && (index == 0 || self.available(s, Fault::Reorder))
+                        && (index == 0
+                            || (self.available(s, Fault::Reorder)
+                                && self.protocol.fault_allowed(Fault::Reorder, src, dst)))
                     {
                         out.push(Action::Deliver { src, dst, index });
                     }
-                    if self.available(s, Fault::Loss) {
+                    if self.available(s, Fault::Loss)
+                        && self.protocol.fault_allowed(Fault::Loss, src, dst)
+                    {
                         out.push(Action::Drop { src, dst, index });
                     }
                     if self.available(s, Fault::Duplication)
@@ -621,6 +625,51 @@ mod hook_tests {
     use super::*;
     use crate::mc2::Part;
     use crate::operations::{Message, Request, Variant, model};
+    #[test]
+    fn reorder_and_loss_consult_fault_hook_without_restricting_fifo() {
+        use crate::access::{Part as AccessPart, Variant as AccessVariant, model as access_model};
+        for part in [
+            AccessPart::ReorderA,
+            AccessPart::ReorderService,
+            AccessPart::LossA,
+            AccessPart::LossService,
+        ] {
+            let mut m = access_model(AccessVariant::Correct, part);
+            m.config.budgets[Fault::Reorder as usize] = 1;
+            m.config.budgets[Fault::Loss as usize] = 1;
+            let mut s = m.init_states().remove(0);
+            for src in 0..5 {
+                for dst in 0..5 {
+                    s.links[src * 5 + dst] = vec![crate::access::Message::Request(0); 2];
+                }
+            }
+            let mut actions = vec![];
+            m.actions(&s, &mut actions);
+            for src in 0..5 {
+                for dst in 0..5 {
+                    assert!(actions.contains(&Action::Deliver { src, dst, index: 0 }));
+                    assert_eq!(
+                        actions.contains(&Action::Deliver { src, dst, index: 1 }),
+                        m.protocol.fault_allowed(Fault::Reorder, src, dst)
+                    );
+                    for index in 0..2 {
+                        assert_eq!(
+                            actions.contains(&Action::Drop { src, dst, index }),
+                            m.protocol.fault_allowed(Fault::Loss, src, dst)
+                        );
+                    }
+                }
+            }
+        }
+        // MC2 inherits the default permission for these two fault classes.
+        let m = model(Variant::Deduplicating, Part::Timers, true);
+        for src in 0..4 {
+            for dst in 0..4 {
+                assert!(m.protocol.fault_allowed(Fault::Reorder, src, dst));
+                assert!(m.protocol.fault_allowed(Fault::Loss, src, dst));
+            }
+        }
+    }
     #[test]
     fn fault_hook_restricts_links_and_nodes() {
         let mut m = model(Variant::Deduplicating, Part::Timers, true);

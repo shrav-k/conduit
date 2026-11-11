@@ -221,3 +221,39 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 from a fixed base: the worker in 22 minutes (1,312 s), then a fresh verifier in
+5 minutes (327 s). That verifier found one must: T could recover before its crash was observed, so
+the unknown outcome was skipped and onward work went on. A second round of 4 minutes (270 s)
+carried the crash across recovery, with a regression that failed before the fix. A fresh verifier
+in 5 minutes (328 s) then found no fault. Neither verifier could rerun the tools' unit tests in its
+read-only sandbox.
+
+The order added `access.rs`, and to the harness the `fault_allowed` check for reordering and
+loss; MC2's runs are unchanged. Twenty bounded runs finished within their limits, the largest
+150,702 states. Of the 44 promises, 11 are modelled. The other 33 are listed with reasons:
+
+- 16 are static decisions, to be shown by vectors;
+- 8 belong to the lifecycle model;
+- 9 have reasons of their own.
+
+**No property of the current promises was found broken.** On the correct model, two properties
+broke only as this order worded them, which is the coordinator's fault, not the spec's:
+
+- **CON-013's "the next request is permitted"** was written so that it also demanded dispatch for
+  a keyed repeat, which OPS-032 rightly answers with conflict (MC3-001).
+- **ACC-034's "in flight runs to its end"** was written so that a late reply replaced an outcome
+  the engine had already recorded as unknown on its timer or a crash, which OPS-013 forbids
+  (MC3-002, MC3-004).
+
+The worker kept the literal properties and their traces, as decision 8 asks. It added a control,
+registered before its first run, that reads ACC-034 with that precondition, and the control holds
+in every configuration. Each broken variant broke its named property. Two cells differed from the
+table: TargetCrash, which is MC3-004, and the unreadable path reached through a registered target
+(MC3-003). The table is kept, with the observed one beside it.
+
+The lane coordinator reran the crate's 19 tests, fmt and clippy, and the repository's checks,
+before the merge. The order's two over-broad properties are noted for MC8, which states each
+promise's property as the promise has it.

@@ -37,6 +37,7 @@ alone, and every `$ref` keeps its target, so the tools of `register.v1` and `rep
 | File | Schema contracts | What they describe |
 | --- | --- | --- |
 | [document.yaml](document.yaml) | `document.v1` | Any template, instance or contract document |
+| [sectioned.yaml](sectioned.yaml) | `sectioned.v1`, `sectioned-templates.v1`, `sectioned-interface.v1`, `sectioned-agent.v1`, `sectioned-resource.v1`, `sectioned-pool.v1`, `sectioned-conduit.v1`, `consumes-item.v1`, `sectioned-operator.v1`, `manages.v1` | The short form in documents files, defined by SCT translation rules; the wire stays canonical |
 | [envelope.yaml](envelope.yaml) | `api-version.v1`, `envelope.v1`, `template-metadata.v1`, `instance-metadata.v1`, `contract-metadata.v1` | `apiVersion`, what every document carries, and `metadata` |
 | [templates.yaml](templates.yaml) | `template.v1`, `template-spec.v1`, `pool-template-spec.v1`, `conduit-template-spec.v1`, `template-input.v1`, `implementation-map.v1`, `template-controls.v1` | A template document; the `spec` of an Interface, Agent or Resource template, of a Pool template, and of a Conduit template, each with the closed list of places an input's destination may reach; an input; the `implementation` map; a template's `controls` |
 | [instances.yaml](instances.yaml) | `instance.v1`, `template-reference.v1`, `declared-conduit.v1`, `pool-entry.v1` | An instance document of each family, with the standard argument `runtime` of an Agent and a Resource; the four forms of the value of `from`; the two nested instantiations |
@@ -97,10 +98,20 @@ target: {kind: Resource, id: 0b5c1d7e-2a43-4f6e-9d10-6c8e4f1a2b3c}
 
 | To check | Use |
 | --- | --- |
-| A document, whatever its kind | `document.v1` |
-| A file named `conduit.yaml`, `conduit.yml` or `conduit.json` | `manifest.v1` |
+| A framed document, with `kind` | `document.v1` |
+| A documents-file map without `kind`, outside the manifest | `sectioned.v1` (SCT-001); version inheritance and translation are separate checks |
+| A file named `conduit.yaml`, `conduit.yml` or `conduit.json` (takes precedence over document routing) | `manifest.v1` |
 | Only that a document has `apiVersion` and one of the ten kinds | `envelope.v1` |
 | A schema an author wrote | `schema.v1` |
+
+The sectioned [project](examples/valid/sectioned-project) and
+[package](examples/valid/sectioned-package) show flow-style definitions and Conduits. The
+example project's pins are illustrative, including a placeholder digest for the `.v2` Agent
+Types. The checkers validate these authored examples against `sectioned.v1`; their translation,
+export resolution and semantic rules await the translator. `sectioned.v1` leaves the checks
+listed in its head comment to translation, including per-file Fleet ownership, an Agent's own
+Fleet in `manages`, generated-name lengths and the restrictions on `consumes` targets. Passing
+that schema alone establishes syntax, not a valid registration or package installation.
 
 ## Closed and open
 
@@ -236,7 +247,7 @@ The table lists further shapes the schemas encode. Their reasons are in the
 | [examples/valid/project](examples/valid/project) | A small submitted project, whose manifest states `address` because it holds contracts and lists implementations: a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input and a narrowed control, which selects a setup hook; a Pool template with two entries, one referring to the other, whose input supplies their placement, and whose items, a program inside a package, run on the engine's own runner; a Conduit template with the shared-host requirement and a filter; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open, naming an operation of the project by its address; a runtime provider's type and template; the type of a secret Resource, a secret Resource and the Conduit through which it is read; a type whose configuration holds a secret reference, with a plain `command` item whose `environment` binds it; and instance documents of every family, an Agent that names its `runtime` among them. `bom.json` begins with one byte order mark, which is ignored. Beside them lies `.notes.yaml`, whose name begins with a dot, so that it is not read (MAN-011), and which would be rejected if it were |
 | [examples/valid/files-package](examples/valid/files-package) | A package: a manifest with `address`, `version`, `exports` and three implementations, reached by `command`, by a server.json `package` pinned by its `fileSha256` and by a plain `remote`, each binding a value of the configuration, the `command` and the `remote` with label selectors that name one label with different values; and one contract of each of the five kinds, two of which use a `$ref` written `#name`. Among them are Operation contracts in `inputSchema` form, one with a `default`, one with a hint, one with `oneOf` at the root of its `inputSchema` and two with a handle, a control whose `changes` maps its input to a setting, a Type with a label selector, the default implementations of the operations it needs, since no Operation contract states one, and `records`, and a Requirement that is a filter |
 | [examples/valid/first-start](examples/valid/first-start) | The instance documents of the five first-start objects, written out to show what first start makes. Each is valid against the schemas. The engine makes these objects itself and is handed no such document: submitting them is rejected, under FST-006 for the five made from the templates `system`, `node`, `management`, `access` and `root`, and under OBJ-002 because the five names are taken |
-| [examples/invalid](examples/invalid) | 62 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents. One is a JSON file, whose value is a string |
+| [examples/invalid](examples/invalid) | 74 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents. One is a JSON file, whose value is a string |
 | [examples/invalid-by-rule](examples/invalid-by-rule) | 38 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. Four files have `-manifest-` in their names and hold a manifest, which is valid against `manifest.v1`. Three others hold, beside their documents, the manifest of their project, a document with no `kind`, whose items their templates select. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
 
 Every name under `example.org` is invented, and every digest and hash in an example is

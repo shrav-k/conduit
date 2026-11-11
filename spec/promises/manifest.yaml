@@ -58,14 +58,15 @@
   when: >-
     A manifest is read.
   then: >-
-    It carries `apiVersion`, as OBJ-017 requires of a document, and has no `kind`, no
+    It carries `apiVersion`, as a framed document does under OBJ-017, and has no `kind`, no
     `metadata` and no `spec`.
   observable: >-
     A manifest with no `apiVersion`, or with one the engine does not know, is rejected with a
     diagnostic naming it, and so is a manifest that carries `kind`, `metadata` or `spec`. The
     `apiVersion` says which version's names apply to the manifest, as OBJ-024 states for a
     document. The rules on syntax and on numbers of SCH-012, SCH-017, SCH-006, SCH-020 and
-    SCH-021 apply to a manifest as to any document.
+    SCH-021 apply to a manifest as to any document. A sectioned document that omits its own
+    version takes this `apiVersion` under SCT-002. The manifest itself is never sectioned.
   vectors: []
 
 - id: MAN-004
@@ -152,6 +153,7 @@
     so no item names one. An implementation is not listed in `exports`: its item under
     `implementations` is what exports it, as PKG-019 states. A name written twice is rejected
     by `manifest.v1`, under SUB-005, and a name that an implementation also has under NAM-027.
+    An export may name a template made by a sectioned document under SCT-005.
   vectors: []
 
 - id: MAN-009
@@ -245,23 +247,27 @@
   observable: >-
     A project keeps the programs of its implementations, and any other file, in directories
     below its own. A file in the directory itself that has one of the three endings and holds
-    something other than templates, instances or contracts is rejected under SUB-005. A
-    submitted project may hold instance documents, which the registration instantiates. A
-    package may not: installing registers nothing, under NAM-013, so an instance document in an
-    archive could never be used, and installation returns a diagnostic naming it. The request to
-    install reports invalid under PKG-023. A file with any other ending is not a document and is
-    not read. Nor is a file whose name begins with a dot, such as `.notes.yaml`, or
-    `._templates.yaml`, which `tar` on macOS stores beside `templates.yaml` for its extended
-    attributes, as Terraform skips such a name when it reads a module. Names and endings are
-    compared exactly: the manifest is named `conduit.yaml`, `conduit.yml` or `conduit.json`, and
-    the endings are `.yaml`, `.yml` and `.json`, in lower case, so `Conduit.yaml` is a file of
-    documents and `notes.YAML` is not read. A link to a file is read as that file, and a link to
-    a directory is not entered. An entry whose name this promise reads and that cannot be read
-    as a regular file, such as a link that leads nowhere, a file that the engine may not read or
-    anything that is not a regular file, is rejected under SUB-010 and never skipped, so that a
-    link named `conduit.yaml` that leads nowhere does not leave the project read as one with no
-    manifest. Documents in a directory below are another project, with a manifest of its own if
-    it uses packages.
+    something other than framed templates, instances, contracts or sectioned documents is
+    rejected under SUB-005. A submitted project may hold instance documents, which the
+    registration instantiates. A package may not: installing registers nothing, under NAM-013,
+    so an instance document in an archive could never be used, and installation returns a
+    diagnostic naming it. The request to install reports invalid under PKG-023. A file with
+    any other ending is not a document and is not read. Nor is a file whose name begins with a
+    dot, such as `.notes.yaml`, or `._templates.yaml`, which `tar` on macOS stores beside
+    `templates.yaml` for its extended attributes, as Terraform skips such a name when it reads
+    a module. Names and endings are compared exactly: the manifest is named `conduit.yaml`,
+    `conduit.yml` or `conduit.json`, and the endings are `.yaml`, `.yml` and `.json`, in lower
+    case, so `Conduit.yaml` is a file of documents and `notes.YAML` is not read. A link to a
+    file is read as that file, and a link to a directory is not entered. An entry whose name
+    this promise reads and that cannot be read as a regular file, such as a link that leads
+    nowhere, a file that the engine may not read or anything that is not a regular file, is
+    rejected under SUB-010 and never skipped, so that a link named `conduit.yaml` that leads
+    nowhere does not leave the project read as one with no manifest. Documents in a directory
+    below are another project, with a manifest of its own if it uses packages. A documents
+    file may mix framed and sectioned documents. A package's sectioned documents hold only
+    `templates` and optional `apiVersion`: `fleet` and every instance section are rejected at
+    install under this promise, even if empty. A sectioned project is translated before
+    registration (SCT-003).
   vectors: []
 
 - id: MAN-012

@@ -1,0 +1,2 @@
+interfaces:
+  console: {type: github.com/shrav-k/conduit/core#interface.v1, from: console-template}

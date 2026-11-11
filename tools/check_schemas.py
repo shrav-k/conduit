@@ -747,9 +747,22 @@ def explain(error):
     return f"at {at}: {message}"
 
 
+def is_sectioned(doc):
+    """Documents-file routing only; register.v1's wire schema stays canonical."""
+    return isinstance(doc, dict) and "kind" not in doc
+
+
+def embedded_manifest(doc):
+    """Legacy by-rule sets embed a manifest. Section keys never select that route."""
+    return is_sectioned(doc) and set(doc) <= {
+        "apiVersion", "address", "version", "packages", "exports", "implementations"}
+
+
 def expected(doc, is_manifest):
     if is_manifest:
         return "manifest.v1"
+    if is_sectioned(doc):
+        return "sectioned.v1"
     kind = doc.get("kind") if isinstance(doc, dict) else None
     if kind in CONTRACTS:
         return "contract.v1"
@@ -760,8 +773,9 @@ def expected(doc, is_manifest):
 
 def validate(bundled, doc, is_manifest):
     """Return None if valid, else one line saying why not."""
-    top = "manifest.v1" if is_manifest else "document.v1"
-    if not is_manifest:
+    sectioned = not is_manifest and is_sectioned(doc)
+    top = "manifest.v1" if is_manifest else "sectioned.v1" if sectioned else "document.v1"
+    if not is_manifest and not sectioned:
         outer = list(validator(bundled, "envelope.v1").iter_errors(doc))
         if outer:
             return explain(outer[0])
@@ -2391,7 +2405,13 @@ def main():
                 why = validate(bundled, doc, is_manifest_file(path))
                 if why:
                     fail(f"{rel(path)} document {index + 1}: not valid: {why}")
-                if isinstance(doc, dict) and doc.get("apiVersion") != named_values["apiVersion"]:
+                effective_version = doc.get("apiVersion") if isinstance(doc, dict) else None
+                if is_sectioned(doc) and not is_manifest_file(path) and effective_version is None:
+                    effective_version = next((d.get("apiVersion")
+                                              for p, ds in loaded.items()
+                                              if p.parent == path.parent and is_manifest_file(p)
+                                              for d in ds if isinstance(d, dict)), None)
+                if isinstance(doc, dict) and effective_version != named_values["apiVersion"]:
                     fail(f"{rel(path)} document {index + 1}: apiVersion is not the one "
                          f"spec/names.yaml states")
     if validating:
@@ -2461,8 +2481,16 @@ def main():
     package_docs = {core: contents(core_files)}
     items = {core: manifest.get("implementations") or {}}
     by_dir = {}
+    sectioned_directories = {
+        path.parent for path in groups["valid"] if not is_manifest_file(path)
+        and any(is_sectioned(d) for d in loaded.get(path, []))}
     for path in groups["valid"]:
-        by_dir.setdefault(path.parent, []).append((path, loaded.get(path, [])))
+        if path.parent not in sectioned_directories:
+            by_dir.setdefault(path.parent, []).append((path, loaded.get(path, [])))
+    if sectioned_directories:
+        print(f"   {len(sectioned_directories)} sectioned example projects were schema-checked; "
+              "translation, export resolution and semantic rules await the translator "
+              "(orders 043a and 043b).")
     local, private, own_items = {}, 0, {}
     for directory, files in by_dir.items():
         local[directory], twice = kinds_in(files)
@@ -2632,13 +2660,12 @@ def main():
         # A set may hold its project's manifest, a document with no `kind`, from which the
         # rules read the items that its templates select.
         own_manifests = [] if is_manifest else [d for d in docs
-                                                 if isinstance(d, dict) and "kind" not in d]
+                                                 if embedded_manifest(d)]
         held = docs if is_manifest else [d for d in docs
-                                         if not (isinstance(d, dict) and "kind" not in d)]
+                                         if not embedded_manifest(d)]
         if validating:
             for index, doc in enumerate(docs):
-                why = validate(bundled, doc, is_manifest or not (isinstance(doc, dict)
-                                                                 and "kind" in doc))
+                why = validate(bundled, doc, is_manifest or embedded_manifest(doc))
                 if why:
                     fail(f"{rel(path)} document {index + 1}: not valid against the schemas, "
                          f"so no rule is what rejects it: {why}")

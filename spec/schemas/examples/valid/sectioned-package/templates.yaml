@@ -1,0 +1,4 @@
+templates:
+  conduits:
+    read: {capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1, example.org/s1/filesystem#directory.list.v1]}
+    read-write: {capability: example.org/s1/filesystem#directory.v1, operations: [example.org/s1/filesystem#file.read.v1, example.org/s1/filesystem#directory.list.v1, example.org/s1/filesystem#file.write.v1]}

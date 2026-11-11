@@ -1,0 +1,2 @@
+interfaces:
+  bad--name: {from: console-template}

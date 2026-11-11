@@ -179,13 +179,14 @@
   layer: language
   level: must
   when: >-
-    A template document is read.
+    A framed template document is read.
   then: >-
     It has `apiVersion`, `kind`, `metadata` and `spec`, and everything the template declares is
     under `spec`.
   observable: >-
     A template document with any other top-level key is rejected with a diagnostic naming the
-    key.
+    key. SCT-005 gives the other notation, a member of the sectioned document's `templates`
+    section; its translation has this framed form.
   vectors: []
 
 - id: OBJ-013
@@ -287,11 +288,12 @@
   when: >-
     A document is read.
   then: >-
-    It carries `apiVersion`, whose value names the version of this specification it is written
-    for.
+    A framed document carries `apiVersion`, whose value names the version of this
+    specification it is written for. A sectioned document takes its version under SCT-002.
   observable: >-
-    A document with no `apiVersion`, or with one the engine does not know, is rejected with a
-    diagnostic naming it. For this version the value is `github.com/shrav-k/conduit/v0`.
+    A framed document with no `apiVersion`, or with one the engine does not know, is rejected
+    with a diagnostic naming it. For this version the value is
+    `github.com/shrav-k/conduit/v0`.
   vectors: []
 
 - id: OBJ-018
@@ -336,7 +338,9 @@
     `default` inside its `inputSchema`, so a key inside a `default` that is a map is the
     author's. Inside a schema only the names and the patterns are the author's: its keywords
     are closed by the profile, and one outside it is rejected by `schema.v1`, under SUB-005,
-    as SCH-002 requires.
+    as SCH-002 requires. Section maps, `templates` family maps, `consumes` and the maps under
+    `manages` have author-named members (SCT-001, SCT-005 to SCT-007, SCT-012, SCT-013). Their
+    member bodies remain closed.
   vectors: []
 
 
@@ -352,7 +356,8 @@
     `Requirement` and `Schema`.
   observable: >-
     A framed document with no `kind`, or one outside the eleven, is rejected with a diagnostic
-    naming it.
+    naming it. Outside the manifest, a map without `kind` is judged as a sectioned document
+    under SCT-001, which rejects a frame missing its kind.
   vectors: []
 
 - id: OBJ-021
@@ -388,8 +393,9 @@
   layer: language
   level: must
   when: >-
-    A document declares named members: the `inputs`, `conduits`, `entries` or `requirements` of
-    a template, or the `inputs` of a Requirement contract.
+    A document declares named members: the `inputs`, `conduits`, `entries` or `requirements`
+    of a template, or the `inputs` of a Requirement contract, or section members, members
+    under `templates` families, `consumes` keys or `manages` members in a sectioned document.
   then: >-
     Each is a map keyed by a name the document chooses. Such a name is made only of lowercase
     letters, digits and hyphens, starts with a letter and is no longer than 63 characters, the
@@ -397,11 +403,12 @@
   observable: >-
     Any of them written as a list, and a member whose name breaks the rule, is rejected with a
     diagnostic naming it. The schemas of documents state the rule with `propertyNames`. The
-    names of an Operation contract's inputs and outputs, the properties of its `inputSchema` and
-    `outputSchema`, are outside this rule: CTR-002 lets each be any non-empty string, and the
-    keys of a control's `changes` and of the `inputs` a template gives a control are those
+    names of an Operation contract's inputs and outputs, the properties of its `inputSchema`
+    and `outputSchema`, are outside this rule: CTR-002 lets each be any non-empty string, and
+    the keys of a control's `changes` and of the `inputs` a template gives a control are those
     names. The keys of a label selector under PLC-007 are labels and not names, and the schema
-    `labels.v1` gives their form.
+    `labels.v1` gives their form. SCT-013 further restricts sectioned names and local names;
+    their generated names must fit OBJ-001 too.
   vectors: []
 
 
@@ -432,12 +439,12 @@
   then: >-
     It states its names in `names.yaml`: the address of the core package, the value of
     `apiVersion`, the prefix of the keys Conduit adds to `_meta`, and the names of what
-    `identity` carries, under PRV-022. Only a new version may change them, and a document's
-    `apiVersion` says which version's names apply to it.
+    `identity` carries, under PRV-022. Only a new version may change them, and the effective
+    version of each document (OBJ-017, SCT-002) says which version's names apply to it.
   observable: >-
     An engine that supports two versions loads a document written for either, and resolves the
     core package at the address the document's own version states. A document that uses one
-    version's `apiVersion` with another version's core address is rejected.
+    version (OBJ-017, SCT-002) with another version's core address is rejected.
   vectors: []
 
 

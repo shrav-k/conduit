@@ -1,0 +1,2 @@
+interfaces:
+  console: {from: console-template, manages: {pools: {system: view}}}

@@ -1,0 +1,2 @@
+agents:
+  worker: {from: worker-template, owner: team, consumes: {files: {to: files, from: read}}}

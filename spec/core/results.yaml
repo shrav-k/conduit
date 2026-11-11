@@ -173,3 +173,280 @@ spec:
         inputs: {type: object}
         outputs: {type: object}
   required: [specversion, id, source, type, time, data]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: provenance.v1
+  description: >-
+    The immutable provenance of a Conduit opening (ACC-044). A requested opening keeps the caller,
+    sending instance and invocation, and openedThrough lists the authorizing Conduit IDs. A direct
+    open lists its authorizing Conduit; a setup part lists every independently sufficient Conduit
+    to access in ID order. An engine-made opening states only its cause. Repeats and reconciliation
+    preserve the original provenance; a purge never removes it.
+spec:
+  oneOf:
+  - type: object
+    properties:
+      actor:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+      sentBy:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+      invocation:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+      openedThrough:
+        type: array
+        items:
+          $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - actor
+    - sentBy
+    - invocation
+    - openedThrough
+    additionalProperties: false
+  - type: object
+    properties:
+      cause:
+        enum:
+        - first-start
+        - default
+    required:
+    - cause
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: tombstone.v1
+  description: >-
+    State retained apart from records until lift.v1 removes it (LIF-040, LIF-041, ACC-053). object
+    and both ends of a Conduit keep kind, name and ID. owner, where applicable, is the owning Pool
+    or Fleet at closing or retirement, also by kind, name and ID. by is the actor that closed or retired
+    it where one exists; provenance retains the opening provenance of a Conduit that was opened. cause
+    names the closing or retiring invocation, the end tombstone that caused a closing, or the node
+    whose loss closed it under PLC-024. Engine-made objects get no tombstone. within is absent in
+    this version, meaning the engine. Visibility and lift coverage use the kept IDs, while matching
+    uses names. Every permitted viewer sees the full tombstone, including by and provenance; there
+    are no hidden counts. A Resource tombstone requires owner of kind Pool.
+spec:
+  type: object
+  properties:
+    id:
+      $ref: github.com/shrav-k/conduit/core#id.v1
+    object:
+      $ref: github.com/shrav-k/conduit/core#object.v1
+    cause:
+      type: object
+      properties:
+        invocation:
+          $ref: github.com/shrav-k/conduit/core#id.v1
+        tombstone:
+          $ref: github.com/shrav-k/conduit/core#id.v1
+        node:
+          $ref: github.com/shrav-k/conduit/core#object.v1
+      oneOf:
+      - required:
+        - invocation
+      - required:
+        - tombstone
+      - required:
+        - node
+    time:
+      type: string
+      format: date-time
+    by:
+      $ref: github.com/shrav-k/conduit/core#id.v1
+    provenance:
+      $ref: github.com/shrav-k/conduit/core#provenance.v1
+    owner:
+      allOf:
+      - $ref: github.com/shrav-k/conduit/core#object.v1
+      - properties:
+          kind:
+            enum:
+            - Pool
+    within:
+      $ref: github.com/shrav-k/conduit/core#id.v1
+    consumer:
+      $ref: github.com/shrav-k/conduit/core#object.v1
+    target:
+      $ref: github.com/shrav-k/conduit/core#object.v1
+    localName:
+      $ref: github.com/shrav-k/conduit/core#name.v1
+    capability:
+      $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+    operations:
+      type: array
+      items:
+        $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+  required:
+  - id
+  - object
+  - cause
+  - time
+  allOf:
+  - if:
+      properties:
+        object:
+          properties:
+            kind:
+              const: Resource
+    then:
+      required:
+      - owner
+      properties:
+        owner:
+          properties:
+            kind:
+              const: Pool
+  - if:
+      properties:
+        object:
+          properties:
+            kind:
+              const: Conduit
+    then:
+      required:
+      - consumer
+      - target
+      - localName
+      - capability
+      - operations
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: inventory.v1
+  description: >-
+    The inventory of an instance other than a Conduit (LIF-013). consumes and targetOf show its Conduits
+    in full, with opening provenance wherever one was opened. tombstones holds the Conduit tombstones
+    at either end. Whoever may inspect the instance sees this inventory without separate authority
+    to inspect each Conduit. No count or position discloses anything omitted. Additional members may
+    extend this shape.
+
+    scope is present for Interfaces and Agents and lists each scope target with the consumed Conduits
+    that establish it. An Agent lists only its owning Fleet. administrators is present for a Pool
+    and lists each administrator with its Conduits. Membership is computed from open Conduits under
+    LIF-013, never stored separately.
+spec:
+  type: object
+  properties:
+    consumes:
+      type: array
+      items:
+        type: object
+        properties:
+          conduit:
+            $ref: github.com/shrav-k/conduit/core#object.v1
+          consumer:
+            $ref: github.com/shrav-k/conduit/core#object.v1
+          target:
+            $ref: github.com/shrav-k/conduit/core#object.v1
+          localName:
+            $ref: github.com/shrav-k/conduit/core#name.v1
+          capability:
+            $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+          operations:
+            type: array
+            items:
+              $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+          state:
+            enum:
+            - registered
+            - ready
+            - retired
+          provenance:
+            $ref: github.com/shrav-k/conduit/core#provenance.v1
+        required:
+        - conduit
+        - consumer
+        - target
+        - localName
+        - capability
+        - operations
+        - state
+    targetOf:
+      type: array
+      items:
+        type: object
+        properties:
+          conduit:
+            $ref: github.com/shrav-k/conduit/core#object.v1
+          consumer:
+            $ref: github.com/shrav-k/conduit/core#object.v1
+          target:
+            $ref: github.com/shrav-k/conduit/core#object.v1
+          localName:
+            $ref: github.com/shrav-k/conduit/core#name.v1
+          capability:
+            $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+          operations:
+            type: array
+            items:
+              $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+          state:
+            enum:
+            - registered
+            - ready
+            - retired
+          provenance:
+            $ref: github.com/shrav-k/conduit/core#provenance.v1
+        required:
+        - conduit
+        - consumer
+        - target
+        - localName
+        - capability
+        - operations
+        - state
+    tombstones:
+      type: array
+      items:
+        $ref: github.com/shrav-k/conduit/core#tombstone.v1
+    scope:
+      type: array
+      items:
+        type: object
+        properties:
+          target:
+            $ref: github.com/shrav-k/conduit/core#object.v1
+          conduits:
+            type: array
+            items:
+              $ref: github.com/shrav-k/conduit/core#object.v1
+        required:
+        - target
+        - conduits
+    administrators:
+      type: array
+      items:
+        type: object
+        properties:
+          consumer:
+            $ref: github.com/shrav-k/conduit/core#object.v1
+          conduits:
+            type: array
+            items:
+              $ref: github.com/shrav-k/conduit/core#object.v1
+        required:
+        - consumer
+        - conduits
+  required:
+  - consumes
+  - targetOf
+  - tombstones
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: trust-domain.v1
+  description: >-
+    The unique SPIFFE trust domain named at first start, fixed for this engine and recorded as trustDomain
+    in the status of system (FST-007). It is the authority of a SPIFFE ID without the spiffe scheme
+    or a path: one through 255 lowercase letters, digits, dots, hyphens or underscores. It carries
+    no user information, port, query or fragment.
+spec:
+  type: string
+  minLength: 1
+  maxLength: 255
+  pattern: ^[a-z0-9._-]+$

@@ -69,7 +69,7 @@ How to read a line:
 - *Spec pending, batch 1*:
   - **In spec/**: the Agent's required, fixed Fleet owner: OBJ-013, FLEET-002, FLEET-003 (54 point 1, 59 A1, 60).
   - **In spec/**: Pool and Fleet names and the reserved names: FLEET-006 (59 A3).
-  - **In spec/**: standalone Conduit local names and `expectedId` on opening and closing: OBJ-013, IFC-012, IFC-014, LIF-037 (53 point 3). Schemas and core inputs remain for order 036b, staged there for build 039.
+  - **In spec/**: standalone Conduit local names and `expectedId` on opening and closing: OBJ-013, IFC-012, IFC-014, LIF-037 (53 point 3). The exact `instance.v1` and open/close input edits are [staged for build 039](docs/work-orders/036b-staged/039.md); they bind when landed.
   - The short form is part of the language. It is a sectioned document that `spec/` defines by numbered translation rules into the canonical documents. These stay unchanged and legal, and they remain the kernel, the wire and the stored form (55 A1).
   - An inline definition in the short form makes a template and its instance together, which amends rulings 8 and 18 and changes INS-002. The frame is optional, with the version taken from the manifest, which amends the wording of rulings 31, 35 and 37 and changes OBJ-017. A reference still names its kind, and ruling 19 is kept: the name alone stays allowed where the field accepts exactly one kind (55 A6).
   - `fleet: <name>` at the top of a file makes the Fleet, which owns every Agent in the file. An Agent written elsewhere states `owner:` (59 A6, 60).
@@ -94,7 +94,7 @@ How to read a line:
   - Packages ship the standard Conduit templates of their capabilities, such as `read` and `read-write` for the filesystem package (63 point 3).
   - `conduit install` writes package pins into the author's file (53 point 5).
   - A property added to a published Type's schema states no default, so the Agent Types' reach flags ship as `claude-code.v2` and `codex.v2`. This widens NAM-024, which covers only Requirement inputs today (55 A5).
-  - The core package gains `fleet.v1`, `fleet-management.v1`, the template `fleet`, `retire-with-agents`, `list.v1`, and `lift`, the operation that lifts a tombstone (55 A7, 59, 60).
+  - **In spec/** in part: `fleet-management.v1` is in [capabilities.yaml](spec/core/capabilities.yaml), and `retire-with-agents.v1`, `list.v1` and `lift.v1` are in [operations.yaml](spec/core/operations.yaml) (55 A7, 59, 60). The exact `fleet.v1`, `fleet` and Fleet schema edits are [staged for build 040](docs/work-orders/036b-staged/040.md); required Agent owners are [staged for 041a](docs/work-orders/036b-staged/041a.md).
 - *Spec pending, batch 2*: the core package gains `make.v1`, the keep and withhold operations, and acting for a Fleet (61 B3, B8, B10 and B11).
 
 ## 6. Conduits and access
@@ -116,9 +116,9 @@ How to read a line:
 - Consent on the receiving side is v1, as a new version of `bound.v1` with a consumers item (62 C3).
 - **In spec/**:
   - One lifecycle authority for each family, including the owning Fleet for an Agent: ACC-033, CON-024, OPS-014, REV-010 (30 OL2, 59 A1, 60).
-  - **In spec/**: root's default Conduits and the closing exception: FLEET-005, FST-002, FST-005, ACC-012, ACC-024 (59 A3). Core templates remain for order 036b, staged there for build 040.
-  - **In spec/**: tombstones at register and open, and lifting through bounded access: LIF-040, LIF-041, ACC-053, LIF-009, LIF-035 (53 point 3, 55 A7). Core contracts remain for order 036b.
-  - **In spec/**: opening provenance, retained in inventory and tombstones: ACC-044, LIF-013, LIF-040, REC-004 (54 point 3). The list on close, review and marks remain in batch 2; provenance contracts remain for order 036b.
+  - **In spec/**: root's default Conduits and the closing exception: FLEET-005, FST-002, FST-005, ACC-012, ACC-024 (59 A3). The default and first-start template edits are [staged for build 040](docs/work-orders/036b-staged/040.md); the other standard templates are in [templates.yaml](spec/core/templates.yaml).
+  - **In spec/**: tombstones at register and open, and lifting through bounded access: LIF-040, LIF-041, ACC-053, LIF-009, LIF-035 (53 point 3, 55 A7). The contract `lift.v1` is in [operations.yaml](spec/core/operations.yaml), and `inventory.v1` and `tombstone.v1` are in [results.yaml](spec/core/results.yaml); the Fleet kind and Agent tombstone owner additions are [staged for 040](docs/work-orders/036b-staged/040.md).
+  - **In spec/**: opening provenance, retained in inventory and tombstones: ACC-044, LIF-013, LIF-040, REC-004 (54 point 3). The list on close, review and marks remain in batch 2; `provenance.v1`, `inventory.v1` and `tombstone.v1` are in [results.yaml](spec/core/results.yaml).
   - **In spec/**: bound items retain resolved IDs: ACC-029 (59 A7). Printing affected bounds in replacement plans remains for CLI order 052b; the guidance is in spec/README.md.
 - *Spec pending, batch 2*:
   - An actor other than root creates a Conduit with `make.v1`, an operation of `access`. It makes the Conduit from a registered template, within the actor's bound, and every condition on opening applies to making. This amends 44 point 2 for Conduits only (61 B8).
@@ -126,7 +126,7 @@ How to read a line:
   - `conduit close <grant> --withhold` also refuses that Fleet re-making the same consumer and target until the lift removes it. A Fleet never holds withhold or lift. A withhold only refuses, and permits nothing (61 B11).
 - Access limits:
   - **In spec/**: only root opens or registers root-consumed Conduits on its own behalf: ACC-054, ACC-006 (62 C1). `make.v1` remains for batch 2 (61 B8).
-  - **In spec/**: bounded reconciliation through `access` and sender-limited reconciliation through Pools and Fleets: ACC-055, ACC-033, OPS-008, OPS-014 (62 C2, 66 point 4).
+  - **In spec/**: bounded reconciliation through `access` and sender-limited reconciliation through Pools and Fleets: ACC-055, ACC-033, OPS-008, OPS-014 and `reconcile.v1` in [operations.yaml](spec/core/operations.yaml) (62 C2, 66 point 4).
 
 ## 7. Operations, outcomes, revisions, records and observation
 
@@ -142,7 +142,7 @@ How to read a line:
 - *Spec pending, with batch 1*:
   - Refusals come in two tiers, for any caller, an Agent's model among them. Every refusal names the operation and the target, as the caller named them, and says that no open Conduit from the caller to that target lists the operation; a target that does not exist gets the same answer where the caller has no authority over it. A caller that may inspect the target is also shown which Conduits from it to the target exist, open or closed, and what each lists, or that the target does not exist; root is always shown them. This changes OPS-023 (52 point 1, 59 A4).
   - Every result, refusal, diagnostic and notice says what happened and why, in full, unless saying it would disclose what the caller may not learn (52 point 2).
-  - **In spec/**: full inventory under object inspection and filtered discovery without counts: LIF-013, OPS-036 (53 point 3, 59 A4). Result contracts remain for order 036b.
+  - **In spec/**: full inventory under object inspection and filtered discovery without counts: LIF-013, OPS-036 (53 point 3, 59 A4). The `inventory.v1` result contract is in [results.yaml](spec/core/results.yaml), and `inspect.v1` and `list.v1`, including their outputs, are in [operations.yaml](spec/core/operations.yaml); Fleet kind additions are [staged for 040](docs/work-orders/036b-staged/040.md).
 - *Spec pending, with the vectors*: a portable field for the cause of a machine's loss (44, open point 3).
 
 ## 8. Lifecycle, Pools and first start
@@ -154,12 +154,12 @@ How to read a line:
   - Pools, their entries and their retirement: POOL-001 to POOL-017, LIF-020, LIF-021 (21 DD3 and DR12, 27, 28 CS5, 29, 30 OL4, 31 D9, 32 G3 and G12, 37 C14, 41 P14, 42 R5).
   - First start, a fixed set of permanent objects: FST-001 to FST-006, LIF-022, LIF-034 (24 PD4 and PR8, 28 CS10, 30 OL5, 37 C28).
 - **In spec/**: root's default Conduits: FLEET-005, FST-002, ACC-024, under topic 6 (59 A3).
-- **In spec/**: the unique, fixed SPIFFE trust domain at first start and in status: FST-007, PRV-022, DL6, DL13 (51 point 2). Status contracts remain for order 036b.
+- **In spec/**: the unique, fixed SPIFFE trust domain at first start and in status: FST-007, PRV-022, DL6, DL13 (51 point 2). The `status.v1` output is in [operations.yaml](spec/core/operations.yaml) and `trust-domain.v1` in [results.yaml](spec/core/results.yaml); the first-start example edit is [staged for 040](docs/work-orders/036b-staged/040.md).
 - *Coordinator's, not yet accepted*: where the run's state is unknown, a retire hook's part is unavailable, not unknown (review list, item 19; work order 027).
 
 ## 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach
 
-- **In spec/**: the Fleet family: FLEET-001 to FLEET-006, OBJ-001, OBJ-013, OBJ-020, CTR-004, TPL-001, TPL-002, PLC-006 (59, 60). Core contracts and schemas remain for order 036b.
+- **In spec/**: the Fleet family: FLEET-001 to FLEET-006, OBJ-001, OBJ-013, OBJ-020, CTR-004, TPL-001, TPL-002, PLC-006 (59, 60). Core operation contracts are in [operations.yaml](spec/core/operations.yaml) and `fleet-management.v1` in [capabilities.yaml](spec/core/capabilities.yaml); Fleet documents and schema branches are [staged for 040](docs/work-orders/036b-staged/040.md), and required Agent owners for [041a](docs/work-orders/036b-staged/041a.md).
   - **In spec/**: family and kind, core template, Type and capability: FLEET-001, OBJ-020 (60). The CLI spelling `conduit fleet ...` remains for order 051a.
   - **In spec/**: fixed Agent ownership: FLEET-002, FLEET-003 (54 point 1, 59 A1).
   - **In spec/**: ownership permits nothing; a Fleet runs nothing, has no placement, contains no Pool and is no machine group: FLEET-004, FLEET-001, spec/definitions.md (60).
@@ -171,9 +171,9 @@ How to read a line:
   - Any Interface that root appoints may act for a Fleet, with its own token, and may bridge several Fleets, marked as bridging them. A Fleet's own Agents act only for their own Fleet. Only root opens or makes an act-for Conduit, and closing one follows the ordinary rule; and only root drives, sets up or retires an Agent that acts for a Fleet. Appointing an Agent that others already hold Conduits to is refused, and the refusal names them (B4 to B6).
   - A grant made through a Fleet goes to the Fleet itself, to one of its Agents that acts for no Fleet, or to an instance it sets up. It targets a Pool other than `system`, or a Resource. It never lists what starts model work, `get-secret`, an operation reserved to root, `register`, `register-replacement` or `retire-with-resources`. A Fleet closes only the grants it sent, and reconciles only its own invocations and its Agents' (B7).
 - **In spec/**: tool descriptions name the target and its Type and carry the Type's description: IFC-033 (53 point 3).
-- **In spec/** in part: Pool inspection shows every administrator (LIF-013; 62 C5). The notice pending action on another Fleet's Resource retirement and shared-Pool guidance remain for order 038a; no rule of one administrator is added.
+- **In spec/** in part: Pool inspection shows every administrator (LIF-013; 62 C5), through `inspect.v1` in [operations.yaml](spec/core/operations.yaml) and `inventory.v1` in [results.yaml](spec/core/results.yaml). The notice pending action on another Fleet's Resource retirement and shared-Pool guidance remain for order 038a; no rule of one administrator is added.
 - *Open, after the S1 rerun*: 62 C6 to C12. These are people other than the owner acting for Fleets, registration through a Fleet, names per Fleet, a Fleet setting what an Interface may use, records filtered by Fleet, root's tool count, and reach beyond one hop.
-- **In spec/** in part: scope is computed from open inspection Conduits and shown in inspection (spec/definitions.md, LIF-013; 66). The `manages:` notation remains for order 037, the standard contracts for 036b and sign-in and pending actions for 038a; Fleet-held Pools remain for batch 2.
+- **In spec/** in part: scope is computed from open inspection Conduits and shown in inspection (spec/definitions.md, LIF-013; 66). The `manages:` notation remains for order 037; the standard scope templates are in [templates.yaml](spec/core/templates.yaml), and `inventory.v1` is in [results.yaml](spec/core/results.yaml). Sign-in and pending actions remain for 038a; Fleet-held Pools remain for batch 2.
   - An Interface, or a Fleet's own Agent for its own Fleet, or a Fleet for Pools, writes `manages: {fleets: [...], pools: [...]}` with the role manage or view. It expands at apply into ordinary Conduits, made from standard templates and opened by root, and inspection shows them back as a scope. There is no wildcard, and `system`, `management` and `access` are never members.
   - Manage covers listing, inspecting, setting up and reconciling the scope's Agents and Resources, administering the Pools its Fleets hold, and acting for its Fleets within ruling 61. It never covers creating anything, retiring members, the cascades, `system`, use or grants of its own, turns, appointing, keeping or withholding, or secrets. Root may write explicit turns for the owner's own consoles.
   - There is no Scope object and no grouping shorthand. An Interface is the named set. Scopes do not replace what a Fleet holds.

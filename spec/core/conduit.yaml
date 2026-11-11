@@ -130,6 +130,21 @@ exports:
   - server-package.v1
   - server-remote.v1
   - document.v1
+  - fleet-management.v1
+  - provenance.v1
+  - tombstone.v1
+  - inventory.v1
+  - trust-domain.v1
+  - list.v1
+  - lift.v1
+  - retire-with-agents.v1
+  - root-pool
+  - pool-manage
+  - pool-view
+  - fleet-manage
+  - fleet-manage-own
+  - fleet-view
+  - retire-pool
 
 implementations:
   engine:
@@ -148,3 +163,6 @@ implementations:
       - github.com/shrav-k/conduit/core#retire-with-resources.v1
       - github.com/shrav-k/conduit/core#open.v1
       - github.com/shrav-k/conduit/core#close.v1
+      - github.com/shrav-k/conduit/core#list.v1
+      - github.com/shrav-k/conduit/core#lift.v1
+      - github.com/shrav-k/conduit/core#retire-with-agents.v1

@@ -18,18 +18,18 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 23 Operation contracts: every management verb, the setup hook and the retire hook, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
-| [capabilities.yaml](capabilities.yaml) | The 7 Capability contracts: what `management`, `access` and a Pool offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
+| [operations.yaml](operations.yaml) | The 26 Operation contracts: every management verb, the setup hook and the retire hook, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
+| [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
 | [types.yaml](types.yaml) | The 5 Type contracts: the basic Interface and Pool types, and the types of a node, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 12 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
-| [results.yaml](results.yaml) | 5 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition and a record |
-| [templates.yaml](templates.yaml) | The 7 templates that first start instantiates: those of the five first-start objects and of the two Conduits of `root` |
+| [results.yaml](results.yaml) | 9 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
+| [templates.yaml](templates.yaml) | The 14 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
 
 The package also exports the 41 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 102 documents, 58 of them Schema contracts,
+its inputs with them. In all the package exports 117 documents, 62 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -38,6 +38,11 @@ refers to something in its own package as `#name` (NAM-022).
 
 Every document here validates against those schemas, and `python3 tools/check_schemas.py`
 checks it.
+
+The unreleased core remains version 0.1.0. Runtime-sensitive contract edits are staged for
+build orders 039, 040 and 041a under [036b-staged](../../docs/work-orders/036b-staged/).
+Those files contain exact patches; only the contracts present here are active. Orders 038a and
+038b supply the later sign-in, pending-action and enrollment contracts.
 
 ## Names
 
@@ -52,7 +57,7 @@ The convention, which follows the names the promises already use (`local-directo
 | Operation | The verb, in the imperative, as the commands of `kubectl` and `docker` are named. Words are joined by hyphens | `register.v1`, `set-up.v1` |
 | Hook | Named for the invocation it belongs to, then `-hook` | `setup-hook.v1`, `retire-hook.v1` |
 | Type, Capability, Requirement, Schema | A noun, with hyphens | `node.v1`, `access-control.v1`, `bound.v1`, `resource-reference.v1` |
-| Template | The name of the first-start object made from it, except `node`, which FST-005 names, and the two Conduit templates, which are named for their consumer and their target | `system`, `root`, `root-access` |
+| Template | The name of the first-start object made from it, except `node`, which FST-005 names; Conduit templates name their consumer and target or their use | `system`, `root`, `root-access` |
 | Every contract | Ends in its compatibility version, written `v` and a whole number (CTR-001) | `.v1` |
 
 No two exports share a name, whatever their kinds (PKG-012). That is why the Type of the
@@ -102,13 +107,13 @@ set up by `open.v1` and retired by `close.v1`.
 
 | Operation | Included in | `revision` input | `deduplicates` | Reserved to `root` | Promise |
 | --- | --- | --- | --- | --- | --- |
-| `register.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | SUB-006, ACC-033, PKG-006, MAN-015, MAN-018, SEC-024 |
+| `register.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | yes | — | SUB-006, ACC-033, PKG-006, MAN-015, MAN-018, SEC-024 |
 | `replace.v1` | `object-management.v1` | required | yes | — | SUB-009, SUB-008, PKG-006, MAN-015, MAN-016 |
 | `unregister.v1` | `object-management.v1` | required | yes | — | LIF-012, LIF-017, LIF-036, LIF-037 |
-| `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013, LIF-037 |
-| `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, TPL-012, LIF-037 |
-| `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009, LIF-037 |
-| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1` | for a control that took effect | yes | — | OPS-014, ACC-033, LIF-028, REV-010, OPS-031 |
+| `inspect.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | — | — | LIF-013, LIF-037 |
+| `set-up.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | no | — | LIF-003, TPL-012, LIF-037 |
+| `retire.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | no | — | LIF-005, TPL-009, LIF-037 |
+| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1`, `access-control.v1` | for a control that took effect | yes | — | OPS-014, ACC-033, LIF-028, REV-010, OPS-031 |
 | `register-replacement.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | LIF-009, POOL-003 |
 | `install.v1` | `object-management.v1` | — | yes | — | ACC-033, OPS-019, PRV-017 |
 | `declare-lost.v1` | `object-management.v1` | — | yes | yes | PLC-017, ACC-032 |
@@ -116,6 +121,9 @@ set up by `open.v1` and retired by `close.v1`.
 | `retire-with-resources.v1` | `pool-management.v1` | — | no | — | LIF-021 |
 | `open.v1` | `access-control.v1` | — | yes | — | ACC-006 |
 | `close.v1` | `access-control.v1` | — | yes | — | ACC-012 |
+| `list.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | — | — | OPS-036, ACC-033 |
+| `retire-with-agents.v1` | `fleet-management.v1` | — | no | — | LIF-021 |
+| `lift.v1` | `access-control.v1` | — | yes | — | ACC-053 |
 
 ### The hooks, and the operations of providers
 
@@ -161,13 +169,13 @@ from `run.v1` and `stop.v1`.
   alone as required, and shows each input that the target's template narrows with both
   schemas (IFC-033). It applies exactly the values it is sent or fails, and the engine checks
   them against the type's schema before it dispatches (REV-007, REV-015).
-- **Reconciling.** `reconcile.v1` is in the capability of `management`, of a Pool and of
+- **Reconciling.** `reconcile.v1` is in the capability of `management`, of a Pool, of a Fleet and of
   `access`, and in no other. A management verb is every operation of the first table
   (CON-024). An invocation of one is reconciled through the target that authorized the request
   being reconciled, by an open Conduit to that target that lists `reconcile.v1`. Any other
   invocation, of a control, of a hook or of any other operation, is reconciled through the
   target that manages the instance it was dispatched to: the Pool that owns it where it is a
-  Resource, and `management` where it is an Agent, an Interface or a Pool (ACC-033, OPS-014).
+  Resource, its owning Fleet where it is an Agent, and `management` where it is an Interface, Pool or Fleet (ACC-033, OPS-014).
   Where a Pool is retired, two of the requests that the Pool would have authorized are
   authorized against `management` in its place: inspecting a Resource the Pool owns, and
   reconciling an invocation. Where the instance of an invocation no longer exists, the
@@ -186,6 +194,10 @@ from `run.v1` and `stop.v1`.
   `io.github.shrav-k.conduit/invocation` of its result, or of a repeat of its request (IFC-025,
   OPS-032, OPS-034), and finds each invocation whose outcome is unknown and that concerns an
   instance in `unreconciled` in its status, which no purge shortens (LIF-013).
+  A bound limits reconciliation through `access`. Through a Pool, a holder other than root
+  reconciles only invocations it sent. Through a Fleet, it reconciles invocations it sent or
+  that the Fleet or an Agent the Fleet owns sent; a Fleet is never a sender in this version
+  (FLEET-004). Root is exempt only as the consumer of the authorizing Conduit (ACC-055).
 - **Defaults.** No input of a core operation states a `default` (CTR-002, OPS-026). An input
   that may be left out is one that `required` does not list. Each input of the requirement
   `bound.v1` states `default: []`, and may be left out for that reason alone (OBJ-015).
@@ -331,7 +343,10 @@ stands at an `https` URL, which `implementation-item.v1` states (IFC-044). The e
 address at an `https` URL always accepts a token as the protocol's authorization, whichever
 machine the request comes from (IFC-042).
 
-`inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records` (LIF-013).
+`inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records`,
+plus `inventory` for instances other than Conduits, opening `provenance` for Conduits,
+`inventory.scope` for Interfaces and Agents, and `inventory.administrators` for Pools (LIF-013, ACC-044).
+The `system` status also holds `trustDomain` (FST-007).
 `packages` is a list. A package's item has `address`, `version` and `digest`; the core package's
 item has no `digest`; and the item of a submitted project has `address`, the digest that
 identifies the contracts of that submission and `version` where its manifest states one
@@ -428,6 +443,10 @@ machine or run as several parts, whatever its headers; an engine configured so a
 template was registered sends nothing to the item (SEC-024, SEC-013, IFC-041, DL17).
 
 ## First start
+
+The third declared Conduit, `system`, and the root list additions specified by FST-002
+are in the [040 patch](../../docs/work-orders/036b-staged/040.md). The descriptions below
+list the active templates until that build order lands them.
 
 At first start (FST-001, FST-002) the engine instantiates five documents, which are written out
 as an example in
@@ -565,6 +584,21 @@ lifecycle state and the labels reported for it (PLC-008).
 | `server-package.v1` | Schema of the manifest's part | MAN-010, PKG-019 |
 | `server-remote.v1` | Schema of the manifest's part | MAN-010, IFC-041 |
 | `document.v1` | Schema of a document | OBJ-020, SUB-005 |
+| `fleet-management.v1` | Capability | FLEET-001, FLEET-004, ACC-033, OPS-019 |
+| `provenance.v1` | Schema | ACC-044, REC-004 |
+| `tombstone.v1` | Schema | LIF-040, LIF-041, ACC-053, PLC-024 |
+| `inventory.v1` | Schema | LIF-013, ACC-044, LIF-040 |
+| `trust-domain.v1` | Schema | FST-007 |
+| `list.v1` | Operation | OPS-036, ACC-033, LIF-040 |
+| `lift.v1` | Operation | ACC-053, LIF-040 |
+| `retire-with-agents.v1` | Operation | LIF-020, LIF-021, REV-014 |
+| `root-pool` | Conduit template | FLEET-005, ACC-024 |
+| `pool-manage` | Conduit template | LIF-013, ACC-033, ACC-055 |
+| `pool-view` | Conduit template | LIF-013, ACC-033 |
+| `fleet-manage` | Conduit template | LIF-013, ACC-033, ACC-055 |
+| `fleet-manage-own` | Conduit template | LIF-013, ACC-033, ACC-055 |
+| `fleet-view` | Conduit template | LIF-013, ACC-033 |
+| `retire-pool` | Conduit template | LIF-021 |
 | `engine` | Implementation | TPL-004 (the engine implements every operation it lists, with no selection), TPL-003 (no template or type selects one of them), MAN-012 (it states none of `command`, `package` and `remote` and no `supports`) |
 
 ## What this package does not settle

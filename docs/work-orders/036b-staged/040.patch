@@ -1,0 +1,1027 @@
+--- a/spec/README.md
++++ b/spec/README.md
+@@ -202,15 +202,15 @@
+ | [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 6 promises; vectors test slices of 5 promises |
+ | [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself, other than a `plain` server reached by `remote`, and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a provider's run made again after the engine restarts | Draft; 28 promises; vectors test slices of 7 promises |
+ | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; vectors test slices of 1 promise |
+-| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 117 documents exported and 1 implementation, which is also an export |
++| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 122 documents exported and 1 implementation, which is also an export |
+ | [core/conduit.yaml](core/conduit.yaml) | The core package's manifest: its address, its version, its exports and its one implementation, the engine itself | Draft |
+ | [core/operations.yaml](core/operations.yaml) | The Operation contracts: every management verb, the setup hook and the retire hook, the operations of the three provider capabilities that the engine invokes by provider calls, and `get-secret.v1` | Draft; 26 contracts |
+ | [core/capabilities.yaml](core/capabilities.yaml) | The Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities | Draft; 8 contracts |
+-| [core/types.yaml](core/types.yaml) | The Type contracts: the basic Interface and Pool types, and the types of a node, of `management` and of `access` | Draft; 5 contracts |
++| [core/types.yaml](core/types.yaml) | The Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` | Draft; 6 contracts |
+ | [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1`, which the engine applies itself | Draft; 2 contracts |
+-| [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference, `secret-reference.v1` among them | Draft; 12 contracts |
++| [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference, `secret-reference.v1` among them | Draft; 13 contracts |
+ | [core/results.yaml](core/results.yaml) | The Schema contracts `object.v1`, `diagnostic.v1`, `handle.v1`, `condition.v1`, `record.v1`, `inventory.v1`, `tombstone.v1`, `provenance.v1` and `trust-domain.v1`: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain | Draft; 9 contracts |
+-| [core/templates.yaml](core/templates.yaml) | The core templates, including those of the five first-start objects and root's declared Conduits | Draft; 14 templates |
++| [core/templates.yaml](core/templates.yaml) | The core templates, including those of the five first-start objects and root's declared Conduits | Draft; 17 templates |
+ | [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 41 contracts in 8 files |
+ | [schemas/document.yaml](schemas/document.yaml) | `document.v1`: any template, instance or contract document | Draft; 1 contract |
+ | [schemas/envelope.yaml](schemas/envelope.yaml) | `apiVersion`, what every document carries, and `metadata` | Draft; 5 contracts |
+--- a/spec/core/README.md
++++ b/spec/core/README.md
+@@ -20,16 +20,16 @@
+ | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
+ | [operations.yaml](operations.yaml) | The 26 Operation contracts: every management verb, the setup hook and the retire hook, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
+ | [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
+-| [types.yaml](types.yaml) | The 5 Type contracts: the basic Interface and Pool types, and the types of a node, of `management` and of `access` |
++| [types.yaml](types.yaml) | The 6 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` |
+ | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
+-| [references.yaml](references.yaml) | The 12 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
++| [references.yaml](references.yaml) | The 13 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
+ | [results.yaml](results.yaml) | 9 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
+-| [templates.yaml](templates.yaml) | The 14 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
++| [templates.yaml](templates.yaml) | The 17 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
+ 
+ The package also exports the 41 Schema contracts under [spec/schemas](../schemas/README.md),
+ which are the schemas of documents themselves. They are part of this package because a `$ref`
+ from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
+-its inputs with them. In all the package exports 117 documents, 62 of them Schema contracts,
++its inputs with them. In all the package exports 122 documents, 63 of them Schema contracts,
+ and has one implementation, which is also an export (PKG-019).
+ 
+ A document of the core package refers to another by its full address, as
+@@ -442,10 +442,6 @@
+ 
+ ## First start
+ 
+-The third declared Conduit, `system`, and the root list additions specified by FST-002
+-are in the [040 patch](../../docs/work-orders/036b-staged/040.md). The descriptions below
+-list the active templates until that build order lands them.
+-
+ At first start (FST-001, FST-002) the engine instantiates five documents, which are written out
+ as an example in
+ [spec/schemas/examples/valid/first-start](../schemas/examples/valid/first-start/first-start.yaml).
+@@ -458,10 +454,10 @@
+ | `local` | Resource | `github.com/shrav-k/conduit/core#node` | Owned by `system`; its own placement; the node that represents the machine the engine runs on, with an empty configuration and the labels reported for that machine (PLC-008, PLC-026) |
+ | `management` | Resource | `github.com/shrav-k/conduit/core#management` | Owned by `system`, placed on `local` |
+ | `access` | Resource | `github.com/shrav-k/conduit/core#access` | Owned by `system`, placed on `local` |
+-| `root` | Interface | `github.com/shrav-k/conduit/core#root` | Declares two Conduits, which are instantiated with it |
+-
+-The two Conduits of FST-002 are the declared Conduits of the template `root`. Their local names
+-are `management` and `access`, so the root Interface's tools are `management.register.v1`,
++| `root` | Interface | `github.com/shrav-k/conduit/core#root` | Declares three Conduits, which are instantiated with it |
++
++The three Conduits of FST-002 are the declared Conduits of the template `root`. Their local names
++are `management`, `access` and `system`, so the root Interface's tools are `management.register.v1`,
+ `access.open.v1` and so on. `root-access` applies no bound, which is what ACC-022 requires.
+ `management` and `access` are not entries of the `system` Pool's template: an entry's Resource
+ gets a generated name (OBJ-003), and FST-001 fixes these two names.
+@@ -597,6 +593,11 @@
+ | `fleet-manage-own` | Conduit template | LIF-013, ACC-033, ACC-055 |
+ | `fleet-view` | Conduit template | LIF-013, ACC-033 |
+ | `retire-pool` | Conduit template | LIF-021 |
++| `fleet.v1` | Type | FLEET-001, FLEET-004 |
++| `fleet` | Fleet template | FLEET-001 |
++| `root-fleet` | Conduit template | FLEET-005, ACC-024 |
++| `retire-fleet` | Conduit template | LIF-021 |
++| `fleet-reference.v1` | Schema, a reference schema | FLEET-002, OBJ-006, OBJ-021 |
+ | `engine` | Implementation | TPL-004 (the engine implements every operation it lists, with no selection), TPL-003 (no template or type selects one of them), MAN-012 (it states none of `command`, `package` and `remote` and no `supports`) |
+ 
+ ## What this package does not settle
+--- a/spec/core/conduit.yaml
++++ b/spec/core/conduit.yaml
+@@ -145,6 +145,11 @@
+   - fleet-manage-own
+   - fleet-view
+   - retire-pool
++  - fleet.v1
++  - fleet
++  - root-fleet
++  - retire-fleet
++  - fleet-reference.v1
+ 
+ implementations:
+   engine:
+--- a/spec/core/operations.yaml
++++ b/spec/core/operations.yaml
+@@ -1109,6 +1109,7 @@
+         - Agent
+         - Resource
+         - Pool
++        - Fleet
+         - Conduit
+         - Type
+         - Capability
+@@ -1129,6 +1130,7 @@
+               - Agent
+               - Resource
+               - Pool
++              - Fleet
+               - Conduit
+               - Type
+               - Capability
+@@ -1162,6 +1164,7 @@
+                 - Agent
+                 - Resource
+                 - Pool
++                - Fleet
+                 - Conduit
+           then:
+             required:
+--- a/spec/core/references.yaml
++++ b/spec/core/references.yaml
+@@ -13,7 +13,7 @@
+ #   entry-reference.v1       POOL-005 (`{entry: name}`)
+ #   actor-reference.v1       the definition of actor: an Interface or an Agent
+ #   consumer-reference.v1    OBJ-013, CON-027 (an Interface, an Agent or a Resource)
+-#   target-reference.v1      OBJ-013, CON-027 (an Interface, an Agent, a Resource or a Pool)
++#   target-reference.v1      OBJ-013, CON-027 (an Interface, an Agent, a Resource, a Pool or a Fleet)
+ #   secret-reference.v1      SEC-001 (a reference to a Resource, written with its kind, and
+ #                            never a bare name or a literal), SEC-002, OBJ-021
+ #   every one of them        OBJ-009, OBJ-021 (the resolved form)
+@@ -105,24 +105,44 @@
+ metadata:
+   name: reference.v1
+   description: >-
+-    A reference to an object of any family, written with its kind. The engine stores
+-    `{kind, id}` in its place, the resolved form, which only the engine writes.
+-spec:
+-  anyOf:
+-    - type: object
+-      properties:
+-        kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
+-        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+-      required: [kind, name]
+-      additionalProperties: false
+-    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+-    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
+-    - type: object
+-      properties:
+-        kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
+-        id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+-      required: [kind, id]
+-      additionalProperties: false
++    A reference to an object of any family, written with its kind. The engine stores `{kind, id}`
++    in its place, the resolved form, which only the engine writes.
++spec:
++  anyOf:
++  - type: object
++    properties:
++      kind:
++        enum:
++        - Interface
++        - Agent
++        - Resource
++        - Pool
++        - Fleet
++        - Conduit
++      name:
++        $ref: github.com/shrav-k/conduit/core#name.v1
++    required:
++    - kind
++    - name
++    additionalProperties: false
++  - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
++  - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
++  - type: object
++    properties:
++      kind:
++        enum:
++        - Interface
++        - Agent
++        - Resource
++        - Pool
++        - Fleet
++        - Conduit
++      id:
++        $ref: github.com/shrav-k/conduit/core#id.v1
++    required:
++    - kind
++    - id
++    additionalProperties: false
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Schema
+@@ -295,25 +315,43 @@
+ metadata:
+   name: target-reference.v1
+   description: >-
+-    A reference to an instance that may be the target of a Conduit: an Interface, an Agent, a
+-    Resource or a Pool, written with its kind. The engine stores `{kind, id}` in its place,
+-    the resolved form, which only the engine writes.
+-spec:
+-  anyOf:
+-    - type: object
+-      properties:
+-        kind: {enum: [Interface, Agent, Resource, Pool]}
+-        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+-      required: [kind, name]
+-      additionalProperties: false
+-    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+-    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
+-    - type: object
+-      properties:
+-        kind: {enum: [Interface, Agent, Resource, Pool]}
+-        id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+-      required: [kind, id]
+-      additionalProperties: false
++    A reference to an instance that may be the target of a Conduit: an Interface, an Agent, a Resource,
++    a Pool or a Fleet, written with its kind. The engine stores `{kind, id}` in its place, the resolved
++    form, which only the engine writes.
++spec:
++  anyOf:
++  - type: object
++    properties:
++      kind:
++        enum:
++        - Interface
++        - Agent
++        - Resource
++        - Pool
++        - Fleet
++      name:
++        $ref: github.com/shrav-k/conduit/core#name.v1
++    required:
++    - kind
++    - name
++    additionalProperties: false
++  - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
++  - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
++  - type: object
++    properties:
++      kind:
++        enum:
++        - Interface
++        - Agent
++        - Resource
++        - Pool
++        - Fleet
++      id:
++        $ref: github.com/shrav-k/conduit/core#id.v1
++    required:
++    - kind
++    - id
++    additionalProperties: false
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Schema
+@@ -341,3 +379,34 @@
+         id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+       required: [kind, id]
+       additionalProperties: false
++---
++apiVersion: github.com/shrav-k/conduit/v0
++kind: Schema
++metadata:
++  name: fleet-reference.v1
++  description: >-
++    A reference to an Agent's owning Fleet (FLEET-002, OBJ-006). The name alone, kind and name, or
++    the resolved kind and ID; only the engine writes the resolved form.
++spec:
++  anyOf:
++  - $ref: github.com/shrav-k/conduit/core#name.v1
++  - type: object
++    properties:
++      kind:
++        const: Fleet
++      name:
++        $ref: github.com/shrav-k/conduit/core#name.v1
++    required:
++    - kind
++    - name
++    additionalProperties: false
++  - type: object
++    properties:
++      kind:
++        const: Fleet
++      id:
++        $ref: github.com/shrav-k/conduit/core#id.v1
++    required:
++    - kind
++    - id
++    additionalProperties: false
+--- a/spec/core/results.yaml
++++ b/spec/core/results.yaml
+@@ -26,23 +26,39 @@
+ metadata:
+   name: object.v1
+   description: >-
+-    How a result names an object, by its kind, its name and its ID. For an instance that a
+-    nested instantiation made, `nested` names that nested instantiation: `instance` is the ID
+-    of the instance that holds it, the consumer of a declared Conduit or the Pool of an
+-    entry, and `name` is the name of the declared Conduit or of the entry.
+-spec:
+-  type: object
+-  properties:
+-    kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
+-    name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+-    id: {$ref: github.com/shrav-k/conduit/core#id.v1}
++    How a result names an object, by its kind, its name and its ID. For an instance that a nested
++    instantiation made, `nested` names that nested instantiation: `instance` is the ID of the instance
++    that holds it, the consumer of a declared Conduit or the Pool of an entry, and `name` is the name
++    of the declared Conduit or of the entry.
++spec:
++  type: object
++  properties:
++    kind:
++      enum:
++      - Interface
++      - Agent
++      - Resource
++      - Pool
++      - Fleet
++      - Conduit
++    name:
++      $ref: github.com/shrav-k/conduit/core#name.v1
++    id:
++      $ref: github.com/shrav-k/conduit/core#id.v1
+     nested:
+       type: object
+       properties:
+-        instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
+-        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+-      required: [instance, name]
+-  required: [kind, name, id]
++        instance:
++          $ref: github.com/shrav-k/conduit/core#id.v1
++        name:
++          $ref: github.com/shrav-k/conduit/core#name.v1
++      required:
++      - instance
++      - name
++  required:
++  - kind
++  - name
++  - id
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Schema
+@@ -227,7 +243,8 @@
+     whose loss closed it under PLC-024. Engine-made objects get no tombstone. within is absent in
+     this version, meaning the engine. Visibility and lift coverage use the kept IDs, while matching
+     uses names. Every permitted viewer sees the full tombstone, including by and provenance; there
+-    are no hidden counts. A Resource tombstone requires owner of kind Pool.
++    are no hidden counts. Resource and Agent tombstones require owner of kind Pool and Fleet,
++    respectively.
+ spec:
+   type: object
+   properties:
+@@ -265,6 +282,7 @@
+           kind:
+             enum:
+             - Pool
++            - Fleet
+     within:
+       $ref: github.com/shrav-k/conduit/core#id.v1
+     consumer:
+@@ -299,6 +317,20 @@
+           properties:
+             kind:
+               const: Pool
++  - if:
++      properties:
++        object:
++          properties:
++            kind:
++              const: Agent
++    then:
++      required:
++      - owner
++      properties:
++        owner:
++          properties:
++            kind:
++              const: Fleet
+   - if:
+       properties:
+         object:
+--- a/spec/core/templates.yaml
++++ b/spec/core/templates.yaml
+@@ -1,9 +1,9 @@
+ # The templates that first start instantiates (FST-005): those of the five first-start objects
+-# and of the two Conduits of `root`, which are not first-start objects (FST-002). At first start
++# and of the three Conduits of `root`, which are not first-start objects (FST-002). At first start
+ # the engine instantiates them under the names FST-001 gives: the Pool `system` from
+ # `system`; the node `local` from `node`; the Resources `management` and `access`,
+ # owned by `system`, from the templates of those names; and the Interface `root` from `root`,
+-# whose two declared Conduits are made from `root-management` and `root-access`. The instance
++# whose three declared Conduits are made from `root-management` `root-access` and `root-pool`. The instance
+ # documents are written out, as an example, in spec/schemas/examples/valid/first-start/: they
+ # show what first start makes, and a submission that held them would be rejected (FST-006,
+ # OBJ-002).
+@@ -17,7 +17,7 @@
+ #                    provider reports, and nothing else does (FST-006)
+ #   management       FST-001, FST-005
+ #   access           FST-001, FST-005
+-#   root             FST-001, FST-002 (one Conduit to `management` and one to `access`),
++#   root             FST-001, FST-002 (one Conduit each to `management`, `access` and `system`),
+ #                    FST-005, CON-002 (they are its declared Conduits)
+ #   root-management  FST-002, ACC-032 (it lists the operations reserved to the root Interface)
+ #   root-access      FST-002, ACC-022 (it applies no bound)
+@@ -28,7 +28,7 @@
+ #
+ # A package's templates are not registered (NAM-013), so the template `system` and the Pool
+ # `system` do not clash under OBJ-002. The declared Conduits of `root` have the local names
+-# `management` and `access`, which gives the root Interface the tools `management.register.v1`,
++# `management`, `access` and `system`, which gives the root Interface the tools `management.register.v1`,
+ # `access.open.v1` and so on under IFC-012.
+ # Standing: draft specification; see spec/README.md for status and coverage.
+ #
+@@ -78,55 +78,64 @@
+ kind: Interface
+ metadata:
+   name: root
+-  description: >-
+-    The template of the root Interface, the only Interface with access at first start. It
+-    declares one Conduit to `management` and one to `access`.
++  description: The root Interface, with declared management, access and system Conduits (FST-002).
+ spec:
+   type: github.com/shrav-k/conduit/core#interface.v1
+   config: {}
+   conduits:
+     management:
+       from: github.com/shrav-k/conduit/core#root-management
+-      target: {kind: Resource, name: management}
++      target:
++        kind: Resource
++        name: management
+     access:
+       from: github.com/shrav-k/conduit/core#root-access
+-      target: {kind: Resource, name: access}
++      target:
++        kind: Resource
++        name: access
++    system:
++      from: github.com/shrav-k/conduit/core#root-pool
++      target:
++        kind: Pool
++        name: system
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Conduit
+ metadata:
+   name: root-management
+   description: >-
+-    The root Interface's Conduit to `management`. It lists every operation of
+-    `object-management.v1`, the two reserved to the root Interface among them.
++    The root Interface's Conduit to `management`. It lists every operation of `object-management.v1`,
++    the two reserved to the root Interface among them.
+ spec:
+   capability: github.com/shrav-k/conduit/core#object-management.v1
+   operations:
+-    - github.com/shrav-k/conduit/core#register.v1
+-    - github.com/shrav-k/conduit/core#replace.v1
+-    - github.com/shrav-k/conduit/core#unregister.v1
+-    - github.com/shrav-k/conduit/core#inspect.v1
+-    - github.com/shrav-k/conduit/core#set-up.v1
+-    - github.com/shrav-k/conduit/core#retire.v1
+-    - github.com/shrav-k/conduit/core#reconcile.v1
+-    - github.com/shrav-k/conduit/core#register-replacement.v1
+-    - github.com/shrav-k/conduit/core#install.v1
+-    - github.com/shrav-k/conduit/core#declare-lost.v1
+-    - github.com/shrav-k/conduit/core#purge.v1
++  - github.com/shrav-k/conduit/core#register.v1
++  - github.com/shrav-k/conduit/core#replace.v1
++  - github.com/shrav-k/conduit/core#unregister.v1
++  - github.com/shrav-k/conduit/core#inspect.v1
++  - github.com/shrav-k/conduit/core#set-up.v1
++  - github.com/shrav-k/conduit/core#retire.v1
++  - github.com/shrav-k/conduit/core#reconcile.v1
++  - github.com/shrav-k/conduit/core#register-replacement.v1
++  - github.com/shrav-k/conduit/core#install.v1
++  - github.com/shrav-k/conduit/core#declare-lost.v1
++  - github.com/shrav-k/conduit/core#purge.v1
++  - github.com/shrav-k/conduit/core#list.v1
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Conduit
+ metadata:
+   name: root-access
+   description: >-
+-    The root Interface's Conduit to `access`. It lists every operation of `access-control.v1`
+-    and applies no bound, so it is a right to open with no bound, which is unlimited.
++    The root Interface's Conduit to `access`. It lists every operation of `access-control.v1` and
++    applies no bound, so it is a right to open with no bound, which is unlimited.
+ spec:
+   capability: github.com/shrav-k/conduit/core#access-control.v1
+   operations:
+-    - github.com/shrav-k/conduit/core#open.v1
+-    - github.com/shrav-k/conduit/core#close.v1
+-    - github.com/shrav-k/conduit/core#reconcile.v1
++  - github.com/shrav-k/conduit/core#open.v1
++  - github.com/shrav-k/conduit/core#close.v1
++  - github.com/shrav-k/conduit/core#reconcile.v1
++  - github.com/shrav-k/conduit/core#lift.v1
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Conduit
+@@ -229,3 +238,40 @@
+   capability: github.com/shrav-k/conduit/core#pool-management.v1
+   operations:
+   - github.com/shrav-k/conduit/core#retire-with-resources.v1
++---
++apiVersion: github.com/shrav-k/conduit/v0
++kind: Fleet
++metadata:
++  name: fleet
++  description: The only Fleet template, instantiated without arguments (FLEET-001).
++spec:
++  type: github.com/shrav-k/conduit/core#fleet.v1
++---
++apiVersion: github.com/shrav-k/conduit/v0
++kind: Conduit
++metadata:
++  name: root-fleet
++  description: >-
++    The root-fleet Conduit template. Its explicit operations do not widen when its capability gains
++    an operation. The engine makes root defaults from this template (FLEET-005); it includes no cascade.
++spec:
++  capability: github.com/shrav-k/conduit/core#fleet-management.v1
++  operations:
++  - github.com/shrav-k/conduit/core#register.v1
++  - github.com/shrav-k/conduit/core#inspect.v1
++  - github.com/shrav-k/conduit/core#list.v1
++  - github.com/shrav-k/conduit/core#set-up.v1
++  - github.com/shrav-k/conduit/core#retire.v1
++  - github.com/shrav-k/conduit/core#reconcile.v1
++---
++apiVersion: github.com/shrav-k/conduit/v0
++kind: Conduit
++metadata:
++  name: retire-fleet
++  description: >-
++    The retire-fleet Conduit template. Its explicit operations do not widen when its capability gains
++    an operation. A one-time cascade Conduit lists only retire-with-agents.v1 (LIF-021).
++spec:
++  capability: github.com/shrav-k/conduit/core#fleet-management.v1
++  operations:
++  - github.com/shrav-k/conduit/core#retire-with-agents.v1
+--- a/spec/core/types.yaml
++++ b/spec/core/types.yaml
+@@ -120,3 +120,27 @@
+   - github.com/shrav-k/conduit/core#close.v1
+   - github.com/shrav-k/conduit/core#reconcile.v1
+   - github.com/shrav-k/conduit/core#lift.v1
++---
++apiVersion: github.com/shrav-k/conduit/v0
++kind: Type
++metadata:
++  name: fleet.v1
++  description: >-
++    The sole Fleet Type (FLEET-001). It owns Agents and offers fleet-management.v1, implemented by
++    the engine. It has no configuration, placement, run, hooks, entries or declared Conduits; ownership
++    permits no use of its Agents.
++spec:
++  family: Fleet
++  schema:
++    type: object
++    additionalProperties: false
++  offers:
++  - github.com/shrav-k/conduit/core#fleet-management.v1
++  requires:
++  - github.com/shrav-k/conduit/core#register.v1
++  - github.com/shrav-k/conduit/core#inspect.v1
++  - github.com/shrav-k/conduit/core#list.v1
++  - github.com/shrav-k/conduit/core#set-up.v1
++  - github.com/shrav-k/conduit/core#retire.v1
++  - github.com/shrav-k/conduit/core#retire-with-agents.v1
++  - github.com/shrav-k/conduit/core#reconcile.v1
+--- a/spec/schemas/README.md
++++ b/spec/schemas/README.md
+@@ -38,7 +38,7 @@
+ | --- | --- | --- |
+ | [document.yaml](document.yaml) | `document.v1` | Any template, instance or contract document |
+ | [envelope.yaml](envelope.yaml) | `api-version.v1`, `envelope.v1`, `template-metadata.v1`, `instance-metadata.v1`, `contract-metadata.v1` | `apiVersion`, what every document carries, and `metadata` |
+-| [templates.yaml](templates.yaml) | `template.v1`, `template-spec.v1`, `pool-template-spec.v1`, `conduit-template-spec.v1`, `template-input.v1`, `implementation-map.v1`, `template-controls.v1` | A template document; the `spec` of an Interface, Agent or Resource template, of a Pool template, and of a Conduit template, each with the closed list of places an input's destination may reach; an input; the `implementation` map; a template's `controls` |
++| [templates.yaml](templates.yaml) | `template.v1`, `template-spec.v1`, `pool-template-spec.v1`, `conduit-template-spec.v1`, `template-input.v1`, `implementation-map.v1`, `template-controls.v1` | A template document; the `spec` of an Interface, Agent or Resource template, of a Pool template, and of a Conduit template, and the type-only Fleet branch; each non-Fleet spec has the closed list of places an input's destination may reach; an input; the `implementation` map; a template's `controls` |
+ | [instances.yaml](instances.yaml) | `instance.v1`, `template-reference.v1`, `declared-conduit.v1`, `pool-entry.v1` | An instance document of each family, with the standard argument `runtime` of an Agent and a Resource; the four forms of the value of `from`; the two nested instantiations |
+ | [contracts.yaml](contracts.yaml) | `contract.v1`, `type-spec.v1`, `capability-spec.v1`, `operation-spec.v1`, `requirement-spec.v1`, `applied-requirement.v1` | A contract document of each of the five kinds, and a requirement applied to a Conduit. `operation-spec.v1` carries `inputSchema` and `outputSchema`, with the root CTR-012 allows, the three hints of CTR-002, and a control's `changes`; `type-spec.v1` states that a Pool type offers `pool-management.v1` |
+ | [schema.yaml](schema.yaml) | `schema.v1` | A schema under the profile, with the three forms of a `$ref`. It is the `spec` of a Schema contract and the value of every `schema` key |
+@@ -51,7 +51,7 @@
+ 
+ | A reference written as | Schema |
+ | --- | --- |
+-| A bare name, where one kind is accepted | `name.v1`, as a branch of `interface-reference.v1`, `agent-reference.v1`, `resource-reference.v1`, `pool-reference.v1`, `conduit-reference.v1` and `template-reference.v1` |
++| A bare name, where one kind is accepted | `name.v1`, as a branch of `interface-reference.v1`, `agent-reference.v1`, `resource-reference.v1`, `pool-reference.v1`, `fleet-reference.v1`, `conduit-reference.v1` and `template-reference.v1` |
+ | `{kind: <Kind>, name: <name>}` | `reference.v1`; with fewer kinds, `actor-reference.v1`, `consumer-reference.v1`, `target-reference.v1` and `secret-reference.v1` |
+ | `{kind: Pool, name: <pool>, entry: <entry>}` | `pool-entry-reference.v1` |
+ | `{entry: <name>}` | `entry-reference.v1` |
+@@ -99,7 +99,7 @@
+ | --- | --- |
+ | A document, whatever its kind | `document.v1` |
+ | A file named `conduit.yaml`, `conduit.yml` or `conduit.json` | `manifest.v1` |
+-| Only that a document has `apiVersion` and one of the ten kinds | `envelope.v1` |
++| Only that a document has `apiVersion` and one of the eleven kinds | `envelope.v1` |
+ | A schema an author wrote | `schema.v1` |
+ 
+ ## Closed and open
+--- a/spec/schemas/contracts.yaml
++++ b/spec/schemas/contracts.yaml
+@@ -119,51 +119,72 @@
+ metadata:
+   name: type-spec.v1
+   description: >-
+-    The `spec` of a Type contract. `family` is required. `schema`, `offers`, `requires`,
+-    `implementation`, `controls`, `conditions`, `records` and `nodeSelector` may each be left
+-    out, and one that is left out lists nothing. A type that states no `schema` puts no rule
+-    on the configuration of its instances, and so lists no control. `nodeSelector` is a label
+-    selector that the labels of an instance's node must match. A Type of the family Pool
+-    lists the core package's capability `pool-management.v1` under `offers`.
+-spec:
+-  type: object
+-  properties:
+-    family: {enum: [Interface, Agent, Resource, Pool]}
+-    schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
++    The `spec` of a Type contract. `family` is required. `schema`, `offers`, `requires`, `implementation`,
++    `controls`, `conditions`, `records` and `nodeSelector` may each be left out, and one that is left
++    out lists nothing. A type that states no `schema` puts no rule on the configuration of its instances,
++    and so lists no control. `nodeSelector` is a label selector that the labels of an instance's node
++    must match. A Type of the family Pool lists the core package's capability `pool-management.v1`
++    under `offers`. A Type of family Fleet exists only in the core package and offers fleet-management.v1
++    (FLEET-001).
++spec:
++  type: object
++  properties:
++    family:
++      enum:
++      - Interface
++      - Agent
++      - Resource
++      - Pool
++      - Fleet
++    schema:
++      $ref: github.com/shrav-k/conduit/core#schema.v1
+     offers:
+       type: array
+-      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
++      items:
++        $ref: github.com/shrav-k/conduit/core#selection.v1
+     requires:
+       type: array
+-      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+-    implementation: {$ref: github.com/shrav-k/conduit/core#implementation-map.v1}
++      items:
++        $ref: github.com/shrav-k/conduit/core#selection.v1
++    implementation:
++      $ref: github.com/shrav-k/conduit/core#implementation-map.v1
+     controls:
+       type: array
+-      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+-    nodeSelector: {$ref: github.com/shrav-k/conduit/core#labels.v1}
++      items:
++        $ref: github.com/shrav-k/conduit/core#selection.v1
++    nodeSelector:
++      $ref: github.com/shrav-k/conduit/core#labels.v1
+     conditions:
+       type: array
+-      items: {type: string, minLength: 1}
++      items:
++        type: string
++        minLength: 1
+       uniqueItems: true
+     records:
+       type: object
+       description: >-
+-        What content the records about the type's instances keep: the inputs of their
+-        operations, the outputs, both or neither. A member that is absent means false.
+-      properties:
+-        inputs: {type: boolean}
+-        outputs: {type: boolean}
+-      additionalProperties: false
+-  required: [family]
++        What content the records about the type's instances keep: the inputs of their operations,
++        the outputs, both or neither. A member that is absent means false.
++      properties:
++        inputs:
++          type: boolean
++        outputs:
++          type: boolean
++      additionalProperties: false
++  required:
++  - family
+   additionalProperties: false
+   if:
+     properties:
+-      family: {const: Pool}
++      family:
++        const: Pool
+   then:
+-    required: [offers]
++    required:
++    - offers
+     properties:
+       offers:
+-        contains: {const: github.com/shrav-k/conduit/core#pool-management.v1}
++        contains:
++          const: github.com/shrav-k/conduit/core#pool-management.v1
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Schema
+--- a/spec/schemas/document.yaml
++++ b/spec/schemas/document.yaml
+@@ -1,5 +1,5 @@
+ # Any document an author writes: a template, an instance or a contract. The manifest is not a
+-# document of one of the ten kinds and has its own schema, `manifest.v1`.
++# document of one of the eleven kinds and has its own schema, `manifest.v1`.
+ # JSON Schema 2020-12, within spec/schema-profile.md.
+ #
+ # Promises encoded:
+--- a/spec/schemas/envelope.yaml
++++ b/spec/schemas/envelope.yaml
+@@ -3,12 +3,12 @@
+ #
+ # Promises encoded:
+ #   api-version.v1        OBJ-017, OBJ-024
+-#   envelope.v1           OBJ-017 (`apiVersion`), OBJ-020 (`kind` is one of ten)
++#   envelope.v1           OBJ-017 (`apiVersion`), OBJ-020 (`kind` is one of eleven)
+ #   template-metadata.v1  OBJ-018, OBJ-001 (a template's `name` is required)
+ #   instance-metadata.v1  OBJ-018, OBJ-001, OBJ-003 (an instance's `name` may be left out)
+ #   contract-metadata.v1  OBJ-018, CTR-001, NAM-004 (a contract's `name` is its export name)
+ #
+-# `envelope.v1` is deliberately open: it states only what all ten kinds have in common, so
++# `envelope.v1` is deliberately open: it states only what all eleven kinds have in common, so
+ # that a document with no `apiVersion` or an unknown `kind` can be told apart from one whose
+ # body is wrong. The closed schema of each kind is in templates.yaml, instances.yaml and
+ # contracts.yaml, and `document.v1` in document.yaml joins them.
+@@ -39,21 +39,26 @@
+ spec:
+   type: object
+   properties:
+-    apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
++    apiVersion:
++      $ref: github.com/shrav-k/conduit/core#api-version.v1
+     kind:
+       enum:
+-        - Interface
+-        - Agent
+-        - Resource
+-        - Pool
+-        - Conduit
+-        - Type
+-        - Capability
+-        - Operation
+-        - Requirement
+-        - Schema
+-    metadata: {type: object}
+-  required: [apiVersion, kind]
++      - Interface
++      - Agent
++      - Resource
++      - Pool
++      - Fleet
++      - Conduit
++      - Type
++      - Capability
++      - Operation
++      - Requirement
++      - Schema
++    metadata:
++      type: object
++  required:
++  - apiVersion
++  - kind
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Schema
+--- a/spec/schemas/examples/valid/first-start/first-start.yaml
++++ b/spec/schemas/examples/valid/first-start/first-start.yaml
+@@ -6,8 +6,12 @@
+ # rejected under FST-006, and the five names are taken from first start under OBJ-002. They
+ # refer only to the core package, so no manifest is needed (NAM-020).
+ #
+-# The two Conduits of FST-002 are not written here: they are the declared Conduits of the
+-# template `root`, and are instantiated with it (CON-002).
++# The three Conduits of FST-002 are not written here: they are the declared Conduits of the
++# template `root`, and are instantiated with it (CON-002): management from root-management,
++# access from root-access and system from root-pool, targeting Pool system. Their provenance
++# cause is first-start. Root has no cascade tool (FLEET-005).
++# The engine names a unique SPIFFE trust domain at first start and records trustDomain in
++# system status (FST-007); this is engine state, never a field of an instance document.
+ #
+ # `local` is the node that represents the machine the engine runs on (PLC-026). A node has an
+ # empty configuration and is its own placement (PLC-008): its labels are what the machine
+--- a/spec/schemas/instances.yaml
++++ b/spec/schemas/instances.yaml
+@@ -51,7 +51,7 @@
+ kind: Schema
+ metadata:
+   name: instance.v1
+-  description: An instance document of any of the five families.
++  description: An instance document of any of the six families.
+ spec:
+   anyOf:
+   - $ref: '#/$defs/interface'
+@@ -59,6 +59,7 @@
+   - $ref: '#/$defs/resource'
+   - $ref: '#/$defs/pool'
+   - $ref: '#/$defs/conduit'
++  - $ref: '#/$defs/fleet'
+   $defs:
+     interface:
+       type: object
+@@ -169,33 +170,58 @@
+       - consumer
+       - target
+       additionalProperties: false
++    fleet:
++      type: object
++      properties:
++        apiVersion:
++          $ref: github.com/shrav-k/conduit/core#api-version.v1
++        kind:
++          const: Fleet
++        metadata:
++          $ref: github.com/shrav-k/conduit/core#instance-metadata.v1
++        from:
++          const: github.com/shrav-k/conduit/core#fleet
++      required:
++      - apiVersion
++      - kind
++      - from
++      additionalProperties: false
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Schema
+ metadata:
+   name: template-reference.v1
+   description: >-
+-    The value of `from`: the template an instance or a nested instantiation is made from. It has
+-    four forms. The name alone, or `{kind, name}`, names a template that exists. A qualified
+-    reference names a template that a package exports. `#` and a name names, in a document of a
+-    package, a template of the same package: a bare name is never looked up in a package, so a
+-    document of a package writes `#name` for a template of its own package. In a submitted
+-    project, `#name` resolves as the bare name does, among the templates that exist, of
+-    which the templates that the same submission registers are part (INS-025). The value of
+-    `from` is not a selection.
++    The value of `from`: the template an instance or a nested instantiation is made from. It has four
++    forms. The name alone, or `{kind, name}`, names a template that exists. A qualified reference
++    names a template that a package exports. `#` and a name names, in a document of a package, a template
++    of the same package: a bare name is never looked up in a package, so a document of a package writes
++    `#name` for a template of its own package. In a submitted project, `#name` resolves as the bare
++    name does, among the templates that exist, of which the templates that the same submission registers
++    are part (INS-025). The value of `from` is not a selection.
+ spec:
+   anyOf:
+-    - $ref: github.com/shrav-k/conduit/core#name.v1
+-    - type: object
+-      properties:
+-        kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
+-        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+-      required: [kind, name]
+-      additionalProperties: false
+-    - $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+-    - type: string
+-      pattern: '^#[a-z][a-z0-9-]*$'
+-      maxLength: 64
++  - $ref: github.com/shrav-k/conduit/core#name.v1
++  - type: object
++    properties:
++      kind:
++        enum:
++        - Interface
++        - Agent
++        - Resource
++        - Pool
++        - Fleet
++        - Conduit
++      name:
++        $ref: github.com/shrav-k/conduit/core#name.v1
++    required:
++    - kind
++    - name
++    additionalProperties: false
++  - $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
++  - type: string
++    pattern: ^#[a-z][a-z0-9-]*$
++    maxLength: 64
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Schema
+--- a/spec/schemas/templates.yaml
++++ b/spec/schemas/templates.yaml
+@@ -79,39 +79,91 @@
+ kind: Schema
+ metadata:
+   name: template.v1
+-  description: A template document of any of the five families.
++  description: A template document of any of the six families. Only the core package supplies a Fleet
++    template (FLEET-001).
+ spec:
+   anyOf:
+-    - $ref: '#/$defs/consumer'
+-    - $ref: '#/$defs/pool'
+-    - $ref: '#/$defs/conduit'
++  - $ref: '#/$defs/consumer'
++  - $ref: '#/$defs/pool'
++  - $ref: '#/$defs/conduit'
++  - $ref: '#/$defs/fleet'
+   $defs:
+     consumer:
+       type: object
+       properties:
+-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+-        kind: {enum: [Interface, Agent, Resource]}
+-        metadata: {$ref: github.com/shrav-k/conduit/core#template-metadata.v1}
+-        spec: {$ref: github.com/shrav-k/conduit/core#template-spec.v1}
+-      required: [apiVersion, kind, metadata, spec]
++        apiVersion:
++          $ref: github.com/shrav-k/conduit/core#api-version.v1
++        kind:
++          enum:
++          - Interface
++          - Agent
++          - Resource
++        metadata:
++          $ref: github.com/shrav-k/conduit/core#template-metadata.v1
++        spec:
++          $ref: github.com/shrav-k/conduit/core#template-spec.v1
++      required:
++      - apiVersion
++      - kind
++      - metadata
++      - spec
+       additionalProperties: false
+     pool:
+       type: object
+       properties:
+-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+-        kind: {const: Pool}
+-        metadata: {$ref: github.com/shrav-k/conduit/core#template-metadata.v1}
+-        spec: {$ref: github.com/shrav-k/conduit/core#pool-template-spec.v1}
+-      required: [apiVersion, kind, metadata, spec]
++        apiVersion:
++          $ref: github.com/shrav-k/conduit/core#api-version.v1
++        kind:
++          const: Pool
++        metadata:
++          $ref: github.com/shrav-k/conduit/core#template-metadata.v1
++        spec:
++          $ref: github.com/shrav-k/conduit/core#pool-template-spec.v1
++      required:
++      - apiVersion
++      - kind
++      - metadata
++      - spec
+       additionalProperties: false
+     conduit:
+       type: object
+       properties:
+-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+-        kind: {const: Conduit}
+-        metadata: {$ref: github.com/shrav-k/conduit/core#template-metadata.v1}
+-        spec: {$ref: github.com/shrav-k/conduit/core#conduit-template-spec.v1}
+-      required: [apiVersion, kind, metadata, spec]
++        apiVersion:
++          $ref: github.com/shrav-k/conduit/core#api-version.v1
++        kind:
++          const: Conduit
++        metadata:
++          $ref: github.com/shrav-k/conduit/core#template-metadata.v1
++        spec:
++          $ref: github.com/shrav-k/conduit/core#conduit-template-spec.v1
++      required:
++      - apiVersion
++      - kind
++      - metadata
++      - spec
++      additionalProperties: false
++    fleet:
++      type: object
++      properties:
++        apiVersion:
++          $ref: github.com/shrav-k/conduit/core#api-version.v1
++        kind:
++          const: Fleet
++        metadata:
++          $ref: github.com/shrav-k/conduit/core#template-metadata.v1
++        spec:
++          type: object
++          properties:
++            type:
++              const: github.com/shrav-k/conduit/core#fleet.v1
++          required:
++          - type
++          additionalProperties: false
++      required:
++      - apiVersion
++      - kind
++      - metadata
++      - spec
+       additionalProperties: false
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+--- a/spec/schemas/values.yaml
++++ b/spec/schemas/values.yaml
+@@ -35,7 +35,7 @@
+ metadata:
+   name: name.v1
+   description: >-
+-    The name of a template or an instance of one of the five families, and a name a document
++    The name of a template or an instance of one of the six families, and a name a document
+     chooses for a member of a named map.
+ spec:
+   type: string
+--- a/tools/check_schemas.py
++++ b/tools/check_schemas.py
+@@ -136,7 +136,7 @@
+         sys.exit(2)
+     jsonschema = None                  # steps 3 and 4 are then not run, and the tool says so
+ 
+-FAMILIES = ("Interface", "Agent", "Resource", "Pool", "Conduit")
++FAMILIES = ("Interface", "Agent", "Resource", "Pool", "Fleet", "Conduit")
+ CONTRACTS = ("Type", "Capability", "Operation", "Requirement", "Schema")
+ SAFE_INT = 9007199254740991
+ NAME = re.compile(r"^[a-z][a-z0-9-]*$")

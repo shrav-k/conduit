@@ -63,8 +63,10 @@ jobs:
         run: git diff --check HEAD^1 HEAD
 
   # Every directory with a Cargo.toml: the workspace in reference-model/, each package and each
-  # experiment. A directory listed in macos_only is a probe of macOS itself that cannot compile on
-  # Linux; it is only checked for formatting here.
+  # experiment. An experiment is evidence, kept as it ran: its tests run, but formatting and
+  # clippy, whose rules change with the toolchain, are checked only in reference-model/ and
+  # packages/. A directory listed in macos_only is a probe of macOS itself that cannot compile on
+  # Linux, and is listed without being built.
   rust-dirs:
     name: rust directories
     runs-on: ubuntu-latest
@@ -84,7 +86,9 @@ jobs:
             dir=${manifest%/Cargo.toml}
             build=true
             case "$macos_only" in *" $dir "*) build=false ;; esac
-            entries+=("$(jq -cn --arg dir "$dir" --argjson build "$build" '{dir: $dir, build: $build}')")
+            lint=true
+            case "$dir" in experiments/*) lint=false ;; esac
+            entries+=("$(jq -cn --arg dir "$dir" --argjson build "$build" --argjson lint "$lint" '{dir: $dir, build: $build, lint: $lint}')")
           done
           matrix=$(printf '%s\n' "${entries[@]}" | jq -cs .)
           echo "$matrix" | jq .
@@ -94,7 +98,8 @@ jobs:
     name: rust (${{ matrix.dir }})
     needs: rust-dirs
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # The reference model's release build and tests run for tens of minutes on a standard runner.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -127,9 +132,10 @@ jobs:
           restore-keys: cargo-${{ runner.os }}-${{ matrix.dir }}-
       # Each step runs even if one before it failed, so that one run reports every failure.
       - name: cargo fmt --check
+        if: ${{ matrix.lint }}
         run: cargo fmt --check
       - name: cargo clippy --all-targets -- -D warnings
-        if: ${{ !cancelled() && matrix.build }}
+        if: ${{ !cancelled() && matrix.build && matrix.lint }}
         run: cargo clippy --all-targets -- -D warnings
       - name: cargo test --release
         if: ${{ !cancelled() && matrix.build }}

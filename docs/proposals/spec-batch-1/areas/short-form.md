@@ -4,7 +4,7 @@ Not binding. An area planner's draft for [the batch 1 plan](../README.md); where
 
 ## Scope
 
-The short form and its keys, for spec batch 1. This covers ruling 55's sectioned documents: the SCT promises, the translation table, the schema `sectioned.v1`, examples, the error mapping, the as-if and equivalence rules, and stable names. It also covers ruling 63's documented flow style and the standard Conduit templates that packages ship, NAM-024 with the Agent Types `claude-code.v2` and `codex.v2`, and the amended wording of rulings 8, 18, 31, 35 and 37 (ruling 19 is kept). Last, it covers the `fleet:` key (ruling 59 A6 and ruling 60) and the `manages:` key (ruling 66). Repository root for every path below: /Users/shravankumaran/Projects/Conduit/conduit. Nothing was modified.
+The short form and its keys, for spec batch 1. This covers ruling 55's sectioned documents: the SCT promises, the translation table, the schema `sectioned.v1`, examples, the error mapping, the as-if and equivalence rules, and stable names. It also covers ruling 63's documented flow style and the standard Conduit templates that packages ship, NAM-024 with the Agent Types `claude-code.v2` and `codex.v2`, and the amended wording of rulings 8, 18, 31, 35 and 37 (ruling 19 is kept). Last, it covers the `fleet:` key (ruling 59 A6 and ruling 60) and the `manages:` key (ruling 66). Every path below is relative to the repository root. Nothing was modified.
 
 ## Promise and core changes
 

@@ -15,7 +15,7 @@ The Fleet family: rulings 59 and 60, with ruling 54's ownership points (1 and 5)
 - names: no Pool and Fleet share a name, and `management`, `access` and `system` are reserved;
 - what a Fleet is not.
 
-Repository: /Users/shravankumaran/Projects/Conduit/conduit. Nothing in it was modified.
+Repository: this one. Nothing in it was modified.
 
 ## Promise and core changes
 

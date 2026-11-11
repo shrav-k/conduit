@@ -29,8 +29,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # full history: a check may read older commits
+          fetch-depth: 0 # full history: check_docs.py reads permalinked commits with git cat-file
           persist-credentials: false
+      # Some permalinks cite a commit of a pull request's branch that was squashed and deleted;
+      # GitHub keeps it only under the pull request's ref.
+      - name: Fetch the pull requests' commits
+        run: git fetch --quiet --no-tags origin '+refs/pull/*/head:refs/remotes/origin/pull/*'
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"

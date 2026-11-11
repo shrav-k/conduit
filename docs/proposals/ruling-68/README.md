@@ -80,8 +80,8 @@ standards for that the same we do for agents?"
 ## What it amends
 
 Ruling 5 (option (b) replaced), ruling 7 (PL8 to type contracts), ruling 46 (point 2's fallback void
-for v0), ruling 47 (the safety vectors defined), ruling 62 (C4 placed in batch 2) and ruling 1 (the
-clones' end). It answers the metrics proposal and spec batch 1's R1 to R3, and confirms ruling 67.
+for v0), ruling 47 (the safety vectors defined), ruling 62 (C4 placed in batch 2), ruling 56 (point 9: R2 requires the fingerprint the person read
+on the machine, so attestation alone no longer meets the minimum) and ruling 1 (the clones' end). It answers the metrics proposal and spec batch 1's R1 to R3, and confirms ruling 67.
 
 ## Later answers
 

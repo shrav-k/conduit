@@ -3,8 +3,8 @@
 Not binding. This file holds the sections of the [plan audit](../AUDIT.md) that record how the
 work stood at the audit of 2026-11-05 and in the days after, and the action items that are done
 or superseded. Ruling 39 moved them here on 2026-11-06, so that the tracker holds what is
-current. They are kept as they were written, apart from links, which point where they did,
-and the names of two private repositories, which ruling 39 removed. Sections marked
+current. Work order 065 condensed the retained history under rulings 57 and 58; the removed
+closure plan, research gaps and inconsistencies remain at C0 in git. Sections marked
 **Historical** were not maintained after the rulings that replaced their concepts.
 
 ## Completed and superseded action items
@@ -33,25 +33,6 @@ and the names of two private repositories, which ruling 39 removed. Sections mar
 | A23 | Map Experiment 002's cases onto promises and vectors, then remove it. | D3, ruling 9 | Every case is covered by a vector or dropped with a reason. | superseded: ruling 39 removed Experiment 002, a plan with no code; the scenario program (A14) covers what it planned |
 | A28 | Decide the final vocabulary, with merging of concepts permitted, folding in the reviewer's simplification pass. | D7, ruling 16 | Decisions V1 to V8 of the [vocabulary proposal](../proposals/vocabulary/README.md) are ruled. | done: rulings 17 and 18 |
 
-## Defect closure plan
-
-> **Historical.** Recorded at the audit, before rulings 13 to 37. Not maintained. The plan is
-> complete: the triage it describes is done.
-
-The register's 167 defects were found against the withdrawn claim. After the layer decisions were
-ruled, each defect was assigned to a layer:
-
-| Layer | What happens to the defect |
-| --- | --- |
-| Language or shared convention | Fixed in the language, with a promise and a vector. Only these count for readiness condition G7. |
-| Type contract | Recorded against that type and decided when its contract is written. |
-| Runtime profile | Decided for the reference engine, recorded and tested there. |
-| None | Closed with the reason, where the layering makes the question disappear. |
-
-The triage is recorded in the [defect register](../LANGUAGE_DEFECTS.md#triage-by-layer): 48
-language, 39 shared convention, 30 type contract and 50 runtime profile. The estimate made before
-triage, about a third in the first two layers, was low; the figure is about half.
-
 ## Behaviors not carried into the specification
 
 For the owner. The audit of the documents outside `spec/` (A61) compared the older text with the
@@ -60,11 +41,8 @@ specification. It found nineteen accepted behaviors that the specification did n
 or an item of the implementation-defined list (decision DA3). Eighteen are converted, and the
 [log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/docs-audit/log-gaps.md) lists every promise that was changed or added for them.
 
-One of the nineteen is not converted, because it needs a decision first: secrets never appear
-in configuration, records or events, and a credential is never handed to a caller (GP3 of the
-conversion list). Stating it needs a way to mark a value as secret. Ruling 38 gave the
-direction: a secret is referred to and never written as a literal. The secret type is
-[proposed](../proposals/secrets/README.md) and not yet ruled.
+GP3, the secrets behavior, was settled by ruling 41; see the
+[conversion list](../proposals/docs-audit/GAPS.md) and [secrets record](../proposals/secrets/README.md).
 
 The audit also found six behaviors that the older text accepted and that appear to have been
 dropped rather than missed. The owner confirmed all six as dropped in ruling 38, point 2. They
@@ -133,133 +111,6 @@ These need no engine. Code is Rust and may be thrown away afterwards.
 
 Earlier experiment ideas E0, E6, E7, E9 and E12 are superseded by A42, A14, A40, A43 and A34.
 
-## Scope guard
-
-The acceptance scenario is the first thing that must work. It does not define what Conduit is.
-
-- Passing the scenario removes nothing from the accepted model. A capability is not dropped or
-  narrowed because the scenario does not exercise it.
-- "Never exercised by a scenario" is evidence about sequencing, not about scope. Moving anything
-  to later scope, or dropping it, takes an explicit owner ruling (A18).
-- The object model is checked against scenarios unlike the acceptance scenario before any
-  pruning (S3 to S9), so that a design fitted to one scenario is caught early.
-- Simplifications made to reach the scenario sooner are recorded here as shortcuts with the
-  general behavior they stand in for, so they can be replaced rather than inherited.
-
-| Shortcut taken for the first slice | General behavior it stands in for | Status |
-| --- | --- | --- |
-| — | — | — |
-
-## Multi-system options
-
-> **Historical.** Recorded at the audit, before rulings 13 to 37. Not maintained.
-
-Kept as the record of ruling 5. "Multi-system support" has two parts, and the plans at the
-time of the audit covered only the first.
-
-**Runtime.** Can parts of Conduit run in separate processes or machines and survive each other's
-failure? The accepted first proof answers by building one management service and two execution
-services as separate processes on one machine, each with its own store.
-
-**Language.** Can an author say that this Resource runs on one system and that Agent on another?
-At the time of the audit, no: Pool ownership was explicitly not placement and nothing else selected
-a host or execution service. The [placement record](../proposals/placement/README.md) now answers it.
-
-The audit's original objection (D4) was to the build order, not the goal. Starting with three
-processes means the first code must solve lost replies between services, stale views and
-unreachable policy before any single feature works, and a failing test cannot say whether a rule
-or the plumbing is wrong. The opposite risk is equally real: code written as one process tends to
-assume shared memory and then cannot be split.
-
-| Option | What is built first | What it proves early | What it cannot prove | Main risk |
-| --- | --- | --- | --- | --- |
-| (a) Keep the accepted layout | Management and two executors as real processes | Real process death, separate stores, real reconnection | Nothing about the language unless Q11 is settled | Slow first result; rule defects hidden behind plumbing defects |
-| (b) Separated components, simulated network | The same components, each with its own store, exchanging only serialized messages, run in one process under a simulated network that can drop, delay, reorder and partition, and can crash a component | Every cross-service rule: outage admission, lost receipts, stale coordinator, retained results, deterministically and repeatably | OS-level behavior: orphaned child processes, file locks, helper supervision, a real second machine | A component quietly sharing state. Mitigated by allowing only the message boundary and by running the same code as real processes as the next step |
-| (c) Settle placement in the language first | A written answer to Q11, checked against the two-system breadth scenario | That the language can express a multi-system deployment | Any runtime behavior | None beyond the time it takes; combines with (a) or (b) |
-
-Under every option the accepted evidence rule stands: no remote support is claimed before a test
-across two machines.
-
-Owner ruling, 2026-11-05: (c), then (b). After that, the same code runs as real processes, then
-across two machines. Option (c) is the [placement record](../proposals/placement/README.md).
-
-## Supporting detail
-
-### Research and design gaps
-
-> **Historical.** Recorded at the audit, before rulings 13 to 37. Not maintained.
-
-- The Rust runtime research says its runtime, worker and persistence choices remain
-  recommendations until Experiment 002 measures them. SQLite, helper processes and MCP as the
-  plugin invocation base are accepted without that experiment having run.
-- The research asks for a stated, tested consistency contract for revocation. The protocol says
-  managed requests use new rules immediately and gives none.
-- The research takeaway from policy engines is to keep decisions out of service code. The
-  accepted text has the governed plugin evaluate its own restriction.
-- MCP 2026-07-28 removes stream resumption, replaces server-initiated elicitation with multiple
-  round trips, and deprecates dynamic client registration. None of these is reflected in the
-  interaction-wait, deferred-work or shared-login designs.
-- stdio servers take credentials from the environment. The planned stdio bridge for native
-  clients makes that the relevant case, and the research does not analyse it.
-- The only executed evidence before the audit was a set of Pi helper probes kept outside the
-  repository, 13 offline render checks whose fixtures were not retained, and the Experiment 003
-  library probe. None tests Conduit behavior. Experiment 004 has since run a model checker over
-  one promise group.
-
-### Known inconsistencies
-
-> **Historical.** Recorded at the audit, before rulings 13 to 37. The items are as first
-> written. Each was checked against the tree on 2026-11-06, and the sentence in italics after
-> it says what was found. Action A21 tracks what is left.
-
-- `proposals/authoring-syntax/AUTHORING.md` lines 433–436 declare a singular runtime with output
-  references, against the accepted named runtime map and explicit start operation.
-  *Stands as written, now near line 440. The file is marked as not binding (decision DA6 of the
-  documents audit). The shape of a runtime in force is TPL-006 and TPL-007.*
-- The two package entry-document examples (authoring proposal and package walkthrough) use
-  different fields, and neither carries a format version.
-  *Stands as written. Both files are marked as not binding (DA6). The manifest's format in
-  force is in `spec/promises/manifest.yaml`.*
-- Control declarations differ between the package walkthrough and `instances.yaml`.
-  *Overtaken. `instances.yaml` was a file of Experiment 001, which is removed (DA4), and the
-  walkthrough is marked as not binding. Controls in force are CTR-006 and TPL-010.*
-- Templates in Experiment 001 hard-code predicted instance names, so they are per-deployment
-  documents rather than reusable templates.
-  *Overtaken. Experiment 001 is removed (DA4).*
-- Operations that create instances, open Conduits and start runtimes are presented as ordinary
-  plugin exports, with no plugin-to-host interface described.
-  *Overtaken in the specification. Registering and opening are Operation contracts of the core
-  package, which the engine itself implements (OPS-019, MAN-012). A runtime's start is an
-  operation that returns a handle (TPL-006, TPL-007). The older documents that present them as
-  plugin exports are marked as not binding.*
-- The conceptual review relies on rulings R1–R7, which are defined nowhere in the current tree.
-  *Stands as written. The file is in the archive, which is not edited.*
-- `research/ESTABLISHMENT.md` has `<session-workspace>`, an artifact of a Session-to-Agent
-  replacement whose intended text is not known.
-  *Stands as written, at line 389. The content of a research packet is not edited.*
-- Rulings R1, R5 and R6 are cited in the lifecycle topic and defined nowhere.
-  *Stands as written, at lines 222 to 228 of `protocol/LIFECYCLE.md`. The topic is superseded
-  and is not edited.*
-- Bare labels such as `[DESIGN]`, `[REVIEW]` and "specification" point at files that have since
-  moved; the link targets resolve but the labels mislead.
-  *Partly overtaken. The older files that carry one now say under their title that they do
-  not bind, apart from the files of the archive, where only the index says so. The note on each
-  research packet says what "SPEC.md" and "DESIGN.md" meant. The label in Experiment 002 that
-  called the overview the specification was corrected on 2026-11-06. The other labels stand.*
-- About 30 links point into Experiments 001 to 003 and will break when those are removed; the
-  vocabulary map holds 17 of them.
-  *Partly overtaken. The links to Experiment 001 now point at commit `de6566a` on `main`, the
-  last there that held it (DA4). About twenty links still point into Experiments 002 and 003, and break when
-  those are removed (A23, A43).*
-- The local branch `implementation/rust-runtime-plugins` contains no code and its name could
-  mislead.
-  *Still so: the branch exists locally and on the remote. Left for the owner.*
-
-Fixed on 2026-11-05: stale status and sequence statements in the entry documents; the overview's
-date; the corrupted citation URL in `research/CONFIGURATION.md`; "a Agent-local"; the two shapes
-used for a Pool entry; the placement record's proposal wording; and the note that the migration
-checker cannot fail.
-
 ### Deferrable scope
 
 > **Historical.** Recorded at the audit, before rulings 13 to 37. Not maintained. Several of
@@ -302,3 +153,6 @@ Removed on 2026-11-05; re-clone at the pin if needed:
 | `josephkern/pi-memory` | `312627f` |
 | `nicobailon/pi-messenger` | `09937ed` |
 | `desek/agent-observability` | `bab5337` (cited nowhere in this repository) |
+
+The multi-system options under ruling 5 are preserved verbatim in the
+[ledger appendix](../proposals/ruling-log.md#history-multi-system-options-under-ruling-5).

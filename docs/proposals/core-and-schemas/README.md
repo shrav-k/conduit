@@ -322,8 +322,8 @@ Names: corePackage x398, apiVersion x197, metaPrefix x51. Errors: 0
 The docs check reported 21 errors in this run. None is in a file of this batch: every one is a
 link to `experiments/001-shared-access`, a directory that another editor removed while this
 pass was being finished, from `docs/VOCABULARY.md`,
-`docs/archive/collaborator-proposals/PR-002-protocol.md`,
-`docs/archive/reviews/AUTHORING-2026-11-04.md`, `docs/archive/reviews/CONCEPTUAL.md`,
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/collaborator-proposals/PR-002-protocol.md`,
+`https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/AUTHORING-2026-11-04.md`, `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/CONCEPTUAL.md`,
 `experiments/README.md`. Earlier runs in this pass, before that removal, reported no error.
 Other editors were changing the repository at the same time, so the counts of files, links and
 names include their work.

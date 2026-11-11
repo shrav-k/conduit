@@ -26,9 +26,9 @@ After that:
    - AUDIT's rows 1-37, verbatim. They are the only record of rulings 1-6, 9-12, 16, 26 and 34-36.
    - Under ruling 5, plan-audit-history's "Multi-system options" (:153-185), verbatim: the options table, why (a) was rejected, the evidence rule (no remote support is claimed before a test across two machines), and the owner's "(c), then (b). After that, the same code runs as real processes, then across two machines".
    - A section "Rulings before the plan audit", verbatim, each with a one-line "superseded by" note where a later ruling or the spec changed it:
-     - From AUTHORING-2026-11-04.md: M1 (no backward-compatibility promises; users pin a working set), M2 and M3 (:77-95); "Owner decisions before public distribution" (:96-119); "Explicitly later scope" (:790-798).
-     - IMPLEMENTATION.md I1-I7, including I2 (native adapters first, macOS first) and I6 (capture defaults).
-     - CONCEPTUAL.md C1-C3 and "Review outcomes".
+     - From https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/AUTHORING-2026-11-04.md: M1 (no backward-compatibility promises; users pin a working set), M2 and M3 (:77-95); "Owner decisions before public distribution" (:96-119); "Explicitly later scope" (:790-798).
+     - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/IMPLEMENTATION.md I1-I7, including I2 (native adapters first, macOS first) and I6 (capture defaults).
+     - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/CONCEPTUAL.md C1-C3 and "Review outcomes".
    - The later-amendments tables (AUDIT.md:612-697), including the six coordinator changes ruling 38 accepted. New rows are added for rulings 45-56 from each record's list of rulings it changes, for example ruling 55 A6, which amends rulings 8 and 18 and the wording of 31, 35 and 37.
    - The round-5 changes no ruling accepted (M22, M41 with the PLC-023/LIF-036 choice, M69, the V2-15 reversal), plus M13, M47, M59, M66 and M107. They are recorded as amendments accepted by ruling 57.
    - The record-specific ID prefixes, with rows mapping R1-/R2-/R3-, 3A-3D, 4A-4D, D/R and P to their records or to C0.
@@ -229,16 +229,16 @@ E-numbers refer to the extractions list. Each extraction is done and verified fi
 
 **E. docs/research and docs/archive: about 108k words**
 - **docs/research/:**
-  - AUTHORIZATION.md: E2 (A66's Source cell) and E25.
-  - CLOUD_AUTHORITY.md, CONDUITS.md, ESTABLISHMENT.md, OBSERVABILITY.md, PI_CONNECTORS.md, PI_RUNTIME.md, RESOURCES.md and ECOSYSTEM_ORGANIZATION.md: E25 (RESOURCES also gets the A50 pointer in E2).
-  - CONFIGURATION.md (:115-145, :220-238), CONSTRUCTION.md (:82-95) and RUNTIME_ESTABLISHMENT.md (:169-186): E25 "Prior art still applied".
-  - DISTRIBUTED_RUNTIME.md and RUST_RUNTIME.md: no extraction.
-  - language-protocol-foundations/ (whole, 6 files): FORMATS.md:53-70 goes to E25.
-  - vocabulary/README.md, PRECEDENTS.md and SOURCES.md: E25 (ruling 57 lists ruling 36 as amended). **SIMPLIFICATION.md stays as written.**
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/AUTHORIZATION.md: E2 (A66's Source cell) and E25.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CLOUD_AUTHORITY.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONDUITS.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/ESTABLISHMENT.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/OBSERVABILITY.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/PI_CONNECTORS.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/PI_RUNTIME.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RESOURCES.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/ECOSYSTEM_ORGANIZATION.md: E25 (RESOURCES also gets the A50 pointer in E2).
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONFIGURATION.md (:115-145, :220-238), https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/CONSTRUCTION.md (:82-95) and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RUNTIME_ESTABLISHMENT.md (:169-186): E25 "Prior art still applied".
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/DISTRIBUTED_RUNTIME.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RUST_RUNTIME.md: no extraction.
+  - https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/language-protocol-foundations (whole, 6 files): https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/language-protocol-foundations/FORMATS.md:53-70 goes to E25.
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/vocabulary/README.md, https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/vocabulary/PRECEDENTS.md and https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/vocabulary/SOURCES.md: E25 (ruling 57 lists ruling 36 as amended). **SIMPLIFICATION.md stays as written.**
 - **docs/archive/:**
-  - collaborator-proposals/ (whole, 4 files): E25 (attribution, plus REVIEW.md's "What needs adaptation" and "Additional roadmap candidates", verbatim) and the CONTRIBUTING license paragraph (E19). ROADMAP:84 points to C0.
-  - migrations/ (whole, 3 files), together with tools/check_doc_migration.py, the CONTRIBUTING block at :176-186 and docs/README's tools row.
-  - reviews/ (whole, 4 files): only after E1's "Rulings before the plan audit" is merged. REPOSITORY §5 and §6 go to E2's waiting question and to E25.
+  - https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/collaborator-proposals (whole, 4 files): E25 (attribution, plus https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/collaborator-proposals/REVIEW.md's "What needs adaptation" and "Additional roadmap candidates", verbatim) and the CONTRIBUTING license paragraph (E19). ROADMAP:84 points to C0.
+  - https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/migrations (whole, 3 files), together with https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/tools/check_doc_migration.py, the CONTRIBUTING block at :176-186 and docs/README's tools row.
+  - https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews (whole, 4 files): only after E1's "Rulings before the plan audit" is merged. REPOSITORY §5 and §6 go to E2's waiting question and to E25.
 - **Condensed:** research/README.md, archive/plan-audit-history.md (E26; Multi-system options moves verbatim to E1), docs/LANGUAGE_DEFECTS.md (E27) and archive/README.md (E25).
 
 **F. experiments/: 942 files, about 148k words.** Details are in the experiments section.
@@ -282,9 +282,9 @@ Each item gives source, then destination. The verifier checks each against its s
 - AUDIT.md:556-592: ruling rows 1-37, verbatim.
 - Under row 5: plan-audit-history.md:153-185, "Multi-system options", verbatim.
 - A section "Rulings before the plan audit", verbatim, each with a one-line "superseded by" note where the spec or a later ruling changed it:
-  - From docs/archive/reviews/AUTHORING-2026-11-04.md: :77-95 (M1-M3), :96-119 (owner decisions before public distribution) and :790-798 (explicitly later scope).
-  - IMPLEMENTATION.md :19-108 (I1-I7).
-  - CONCEPTUAL.md :24-102 (C1-C3 and the review outcomes).
+  - From https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/AUTHORING-2026-11-04.md: :77-95 (M1-M3), :96-119 (owner decisions before public distribution) and :790-798 (explicitly later scope).
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/IMPLEMENTATION.md :19-108 (I1-I7).
+  - https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews/CONCEPTUAL.md :24-102 (C1-C3 and the review outcomes).
 - AUDIT.md:612-697: the later-amendments tables, including the six coordinator changes ruling 38 accepted. Add rows for rulings 45-56 from each record's "earlier rulings it changes". For example, ruling 55 A6 amends rulings 8 and 18 and the wording of 31, 35 and 37, while ruling 19 is kept.
 - AUDIT.md:698-721: M22, M41 with the PLC-023/LIF-036 choice, M69 and the V2-15 reversal. Add M13, M47, M59, M66 and M107. All are recorded as amendments accepted by ruling 57.
 - AUDIT.md:33-75: the ID prefixes. Add rows: R1-/R2-/R3-, 3A-3D and 4A-4D point to the C0 round directories; D/R (ruling-41 log-integration) to C0; P to ruling-41/README#planners-choices.
@@ -676,7 +676,7 @@ Each item gives source, then destination. The verifier checks each against its s
   - JSON alone was the runner-up.
   - CUE was the strongest alternative, to reconsider only if authoring exposes constraint or generation behavior the model cannot represent.
   - Dhall needs another evaluator; Smithy and WIT need a mapping; a new notation carries the largest burden.
-- **"Not adopted from the collaborator's proposals, and why"**: REVIEW.md "What needs adaptation" and "Additional roadmap candidates", verbatim. It covers a local root Agent, a VM per environment, Sealmesh, a fixed JSON-RPC catalog, and every request naming its actor.
+- **"Not adopted from the collaborator's proposals, and why"**: https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/collaborator-proposals/REVIEW.md "What needs adaptation" and "Additional roadmap candidates", verbatim. It covers a local root Agent, a VM per environment, Sealmesh, a fixed JSON-RPC catalog, and every request naming its actor.
 - **"Prior art still applied"**, one line each with a C0 permalink to the exact lines:
   - CONFIGURATION:115-145: no generic deep-merge of permission lists.
   - CONFIGURATION:220-238: labels and selectors not adopted.
@@ -947,9 +947,9 @@ The orders:
   - A second commit removes [design-P1, P2, P3, inventory-authority and inventory-ownership](https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/language-shape/project).
   - The five synthesis-level papers stay until the Projects rulings (later trigger).
 - **9. WO-038, research and archive** (E; E25-E27).
-  - Remove reviews/ only after confirming that E1's "Rulings before the plan audit" is merged.
+  - Remove https://github.com/shrav-k/conduit/tree/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/archive/reviews only after confirming that E1's "Rulings before the plan audit" is merged.
   - Keep vocabulary/SIMPLIFICATION.md.
-  - Remove check_doc_migration.py together with its CONTRIBUTING block and its docs/README row.
+  - Remove https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/tools/check_doc_migration.py together with its CONTRIBUTING block and its docs/README row.
   - Never remove plan-audit-history.md (check_roadmap reads it). Keep its anchors #completed-and-superseded-action-items, #findings, #standing-probes-and-comparisons, #behaviors-not-carried-into-the-specification, #deferrable-scope and #reference-repositories.
 - **10. WO-039, experiments** (F; E28, E29). Keep HARNESS.md files, the evidence READMEs and 007's prompts.txt.
 - **11. WO-040, work orders and the implementation documents** (G; E30-E32).

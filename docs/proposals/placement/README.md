@@ -60,7 +60,7 @@ an author no way to say any of it. Five things cannot be written or are ambiguou
 5. "One designated service is authoritative for each instance" has no author-visible form: who
    designates it, where it is recorded and whether it can be inspected are unstated.
 
-The [distributed-runtime research](../../research/DISTRIBUTED_RUNTIME.md) reached the same point
+The [distributed-runtime research](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/DISTRIBUTED_RUNTIME.md) reached the same point
 and stopped: the protocol "needs an execution-location identity separate from a mutable address",
 without a sixth family, and whether that is deployment configuration, an environment capability
 or an existing Resource type "remains open".

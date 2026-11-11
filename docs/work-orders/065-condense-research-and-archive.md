@@ -31,7 +31,7 @@ in today's tree. The plan's order numbers are older than today's ("WO-033" there
    `docs/research/SIMPLIFICATION.md` stays as written. Where an extraction's destination was already
    written by an earlier order, check it and add only what is missing.
 2. **Then remove** the files removal list E names under `docs/research/` and `docs/archive/` (including
-   `tools/check_doc_migration.py` with the migrations, its CONTRIBUTING block and its row in
+   `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/tools/check_doc_migration.py` with the migrations, its CONTRIBUTING block and its row in
    `docs/README.md`, and the reviews only because the ledger already holds "Rulings before the plan
    audit"), and only those. Before deleting each, check that since C0 it changed only in link targets or path
    mentions, which earlier orders (033 to 063) repointed (`git diff --word-diff f1cb473 HEAD -- <path>` shows only those); if anything else
@@ -50,7 +50,7 @@ in today's tree. The plan's order numbers are older than today's ("WO-033" there
 
 ## Scope
 
-Change: `docs/research/`, `docs/archive/`, `docs/LANGUAGE_DEFECTS.md`, `tools/check_doc_migration.py` and its test if any, `CONTRIBUTING.md` and `docs/README.md` (only the migration lines), `ROADMAP.md` (a link target), and links and path mentions elsewhere that point into what this order removes. Do not change `spec/`, `IN_FORCE.md`'s decisions, a ruling's decisions or an owner's words. Report anything else.
+Change: `docs/research/`, `docs/archive/`, `docs/LANGUAGE_DEFECTS.md`, `https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/tools/check_doc_migration.py` and its test if any, `CONTRIBUTING.md` and `docs/README.md` (only the migration lines), `ROADMAP.md` (a link target), and links and path mentions elsewhere that point into what this order removes. Do not change `spec/`, `IN_FORCE.md`'s decisions, a ruling's decisions or an owner's words. Report anything else.
 
 ## Done when
 
@@ -58,3 +58,15 @@ From the repository root: `python3 tools/check_docs.py` (it checks the C0 permal
 history), `python3 tools/check_rulings.py`, `python3 tools/set_names.py --check`,
 `python3 tools/check_schemas.py`, `python3 tools/check_roadmap.py` and `git diff --check` pass. Do
 not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 12 minutes, then a fresh verifier in 5. The worker removed 35 files,
+a net 108,381 fewer words, from `docs/research/` and `docs/archive/`, with the migration checker and
+its lines: the archive's index now says what each removed group was and what it is source material
+for, carries FORMATS' paragraph, the collaborator proposals' "not adopted, and why" verbatim and the
+prior art still applied; the plan-audit history keeps what E26 keeps; `docs/LANGUAGE_DEFECTS.md`
+keeps its open rows in full and a crosswalk line for each other. The verifier found two statements
+to correct: the count of promises the manifest's cases cite, which counted ranges by their ends
+only (100, not 76), and "labels and selectors were not adopted", which read against PLC-007's node
+selectors; the admin corrected both.

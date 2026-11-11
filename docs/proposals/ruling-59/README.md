@@ -1,6 +1,6 @@
 # Ruling 59: the structure of the agent-owning family
 
-Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 59). This is the record of a
+Status: **ruled by the owner on 2026-11-10** (plan-audit ruling 59). Its open items were answered by [ruling 60](../ruling-60/README.md): the family is a Fleet, and "project" keeps its meaning. This is the record of a
 ruling. Where it and the specification differ, the specification governs.
 
 The investigation of [the owner's direction for Projects](../owner-direction/2026-11-10-projects.md)

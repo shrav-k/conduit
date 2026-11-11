@@ -167,7 +167,7 @@ How to read a line:
   - **In spec/**: ownership permits nothing; a Fleet runs nothing, has no placement, contains no Pool and is no machine group: FLEET-004, FLEET-001, spec/definitions.md (60).
   - **In spec/**: retirement conflicts and cascades: LIF-020, LIF-021, REV-014, IFC-025 (59 A2). The flag opening, using and closing a one-time cascade Conduit remains for CLI order 051a (59 A3).
   - **In spec/**: only root registers Agents on its own behalf: ACC-057 (59 A1).
-- *Spec pending, batch 2*: a Fleet's authority (61 B1 to B7 and B13). Fleet authority ships in v0, as the second specification batch, after the S1 rerun; batch 1, written before the rerun, holds the Fleet's structure (59, 61 B1).
+- *Spec pending, batch 2*: a Fleet's authority (61 B1 to B7 and B13). Fleet authority ships in v0, as the second specification batch. It is written and built on a `batch-2` branch from the build the S1 rerun pins, and merges after the owner judges S1's bar; batch 1, written before the rerun, holds the Fleet's structure (59, 61 B1, 71 point 2).
   - A Fleet may administer a Pool other than `system`, never listing `register`, `register-replacement` or `retire-with-resources`. It may hold a bounded right to grant, never unbounded, never listing lift, keep or withhold, and its bound naming none of the excluded operations nor acting for a Fleet nor `get-secret`. Root, or any actor whose own right covers them, gives these (B2).
   - An actor uses what a Fleet holds by forwarding. It asks the Fleet through its own act-for Conduit, and the engine, as the Fleet, makes one onward request through the Conduit named. Two linked records result (B3).
   - Any Interface that root appoints may act for a Fleet, with its own token, and may bridge several Fleets, marked as bridging them. A Fleet's own Agents act only for their own Fleet. Only root opens or makes an act-for Conduit, and closing one follows the ordinary rule; and only root drives, sets up or retires an Agent that acts for a Fleet. Appointing an Agent that others already hold Conduits to is refused, and the refusal names them (B4 to B6).
@@ -253,7 +253,7 @@ How to read a line:
   - S1 to S10 run end to end, with their vectors passing.
   - The engine runs Claude Code and Codex as Agents through S1's and S2's tasks, with a record for each request. Simulated clients alone do not pass v0, and ruling 46's fallback of two Claude Code instances is void for v0 (68 point 4).
   - Every safety vector passes. A safety vector is one whose failure would be an unsafe finding as the tracker defines it; each carries a field naming the safety promise it tests, and each of S1's proposed safety traces has at least one or is listed as missing; the manifest's group tags are not safety tags (68 point 2). *Spec pending, with the vectors*: the field and the tagging.
-  - The author measurements, against the baseline (A70), take less of an author's work than the baseline on most of S1's tasks and much more on none.
+  - The author measurements, against the baseline (A70), take less of an author's work than the baseline on most of S1's tasks and much more on none. The measure is the author's lines as ruling 63 counts them, with 68 R1's actions at the panel listed apart. Both runs must pass, the coordinator's and the fresh Codex author's. "Much more" on a task is more than one and a half times the baseline's count for that task (71 point 3).
   - Model checking shows the safety promises hold under loss, reordering and partition (A40).
   - The subscription terms allow the engine to run the native clients headless on a subscription, or v0 names the alternative it uses (A8).
   - The observational probes do not block. A7's findings go into v0's public security claim.
@@ -290,9 +290,9 @@ How to read a line:
 
 - The two reference clones that ruling 1 kept are removed when convenient, by the owner, on the owner's machine (1, 68 point 4).
 - The external audit report is the basis. docs/AUDIT.md holds the action items and their priorities, and ROADMAP.md shows the order of the work and each experiment's state (1, 45).
-- Who decides (37, 38 point 13, 46 point 4, 48):
-  - The owner rules where settling a finding would change what Conduit is for, or would add or remove a feature.
-  - The coordinator, the admin session, settles the rest. It plans, decides, reviews and merges, and logs each decision for the owner to strike.
+- Who decides (37, 38 point 13, 46 point 4, 48, 71):
+  - The owner rules where settling a finding would change what Conduit is for, or would add or remove a feature. The exception is a small finding that adds a feature, which a coordinator settles and logs for the owner to strike. Until the S1 rerun, the exception excludes anything that could move S1's author counts: CLI flags, short-form keys, templates and defaults (71 point 4).
+  - Two or three coordinators settle the rest. Each plans, decides and reviews, and logs each decision for the owner to strike. The admin session is the merge authority for the engine's core, the conformance runner and manifest, `spec/`, this file and the ledger. A lane coordinator merges only pull requests confined to its lane's paths, once CI is green and a fresh verifier is clean; a conflict between lanes goes to the merge authority (48, 71 point 1).
   - Codex sessions carry out work orders. Fresh reads by Codex test what a reader without context can do.
 - Every decision the coordinator, an editor or a work order logged before ruling 57 is accepted. The exceptions are items 15 to 19 of the review list and increment 4's open decisions, which stay open to the owner until reviewed (39 point 6, 42, 58 point 1).
 - *Coordinator's*: decisions logged since ruling 57 stay open to the owner to strike. Ruling 67, which the owner delegated, the owner confirmed (68 point 5).

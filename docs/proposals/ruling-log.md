@@ -75,6 +75,7 @@ The specification alone binds behavior. IN_FORCE.md holds every other decision i
 | 67 | 2026-11-10 | [Decisions in force, ledger and reasons](ruling-67/README.md), delegated by the owner and decided by the coordinator. | In the record. | in force (delegated; confirmed by the owner in 68) |
 | 68 | 2026-11-11 | [Metrics, safety vectors, spec batch 1's questions and four older rulings](ruling-68/README.md); attribution of usage open. | "I accept all recommendations, but each package should be responsible for fixing its own metrics (codex fixing its token usage metric). Do we have to decide on shared standards for that the same we do for agents?" | in force; amended by 69 (points 1 and 6: metrics as packages emit them) |
 | 69 | 2026-11-11 | [Metrics emitted by packages, aggregated by Fleets and Pools, viewed from Interfaces](ruling-69/README.md); settles 68's M4. | In the record. | in force |
+| 70 | 2026-11-11 | [Agents run code, permissively for now, so that Conduit can build Conduit](ruling-70/README.md): the clients' own tools on by default, a flag turns them off, confinement later. | "A, and for now we should be overly permissive in order to test conduit, we can work in more strict sandboxing and isolation later" | in force |
 
 ## History: ruling-log preamble
 

@@ -1,6 +1,6 @@
 # Ruling 56: how a person checks a joining machine
 
-Status: in force (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment) (spec pending except where a promise is cited). This record says why.
+Status: in force; amended by 68 (point 9: R2 requires the fingerprint read on the machine) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment) (spec pending except where a promise is cited). This record says why.
 
 This is the record of a
 ruling. Where it and the specification differ, the specification governs.

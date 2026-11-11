@@ -18,18 +18,18 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 26 Operation contracts: every management verb, the setup hook and the retire hook, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
+| [operations.yaml](operations.yaml) | The 31 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
 | [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
 | [types.yaml](types.yaml) | The 5 Type contracts: the basic Interface and Pool types, and the types of a node, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 12 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
-| [results.yaml](results.yaml) | 9 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
+| [results.yaml](results.yaml) | 12 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
 | [templates.yaml](templates.yaml) | The 14 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
 
 The package also exports the 41 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 117 documents, 62 of them Schema contracts,
+its inputs with them. In all the package exports 125 documents, 65 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -41,8 +41,7 @@ checks it.
 
 The unreleased core remains version 0.1.0. Runtime-sensitive contract edits are staged for
 build orders 039, 040 and 041a under [036b-staged](../../docs/work-orders/036b-staged/).
-Those files contain exact patches; only the contracts present here are active. Orders 038a and
-038b supply the later sign-in, pending-action and enrollment contracts.
+Those files contain exact patches; only the contracts present here are active. Sign-in and pending-action contracts are present; 038b supplies enrollment.
 
 ## Names
 
@@ -124,6 +123,8 @@ set up by `open.v1` and retired by `close.v1`.
 | `list.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | — | — | OPS-036, ACC-033 |
 | `retire-with-agents.v1` | `fleet-management.v1` | — | no | — | LIF-021 |
 | `lift.v1` | `access-control.v1` | — | yes | — | ACC-053 |
+| `answer.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | yes | — | PND-009, ACC-033 |
+| `sign-in.v1` | `pool-management.v1`, `fleet-management.v1` | — | no | — | PND-010, PND-011, IFC-049 |
 
 ### The hooks, and the operations of providers
 
@@ -131,6 +132,9 @@ set up by `open.v1` and retired by `close.v1`.
 | --- | --- | --- | --- |
 | `setup-hook.v1` | No capability: a template selects it | The engine, as the last part of a setup, through no Conduit | TPL-017, OPS-028 |
 | `retire-hook.v1` | No capability: a template selects it | The engine, within a retirement, before the stop | TPL-018, OPS-028 |
+| `sign-in-hook.v1` | No capability: required by a signIn Type | The engine, as a part of sign-in or setup | CTR-013, PND-011 |
+| `account-hook.v1` | No capability: required by a signIn Type | The engine, as a part of sign-in or setup | CTR-013, PND-011 |
+| `sign-out-hook.v1` | No capability: required by a signIn Type | The engine, as a part of sign-in or setup | CTR-013, PND-011 |
 | `run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-007, PRV-011, PRV-012, PRV-022, PRV-025, PRV-028 |
 | `stop.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-008, PRV-021, PRV-027, LIF-036 |
 | `inspect-run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-009, PRV-027, PRV-028, IFC-017 |
@@ -235,13 +239,11 @@ from `run.v1` and `stop.v1`.
   declare the output `diagnostics`, for the diagnostics that did not prevent the request. What
   a request that is not dispatched says beyond its reason, it says in `diagnostics` in the
   `structuredContent` of its result, whether or not the operation declares an output of that
-  name, and a result that reports invalid or conflict carries there an error diagnostic whose
+  name, and every reason carries there an error diagnostic whose
   `ruleId` is the ID of the promise that decided it (IFC-025). A diagnostic is SARIF 2.1.0's
   `result`, reduced (`diagnostic.v1`). A rejected registration carries them so (OBJ-023), and a
   request to retire a Pool whose Resources are in the way names those Resources so (LIF-020),
-  though `retire.v1` declares no output. A request that is not permitted reports refused and
-  says nothing else about the objects it names, and so does one whose access decision cannot
-  be made, which reports unavailable (OPS-023, ACC-037). A request to install that installs
+  though `retire.v1` declares no output. A request that is not permitted carries ACC-056's refusal explanation. If its access decision cannot be made, it carries one ACC-037 diagnostic naming no object (OPS-023, IFC-050). A request to install that installs
   nothing reports invalid, unavailable or conflict as PKG-023 to PKG-025 and PKG-029 state.
 - **Retiring and removing.** A request to retire an instance whose shutdown is not confirmed
   is a further retirement (LIF-026). Once the shutdown of an instance is confirmed it is
@@ -442,6 +444,21 @@ one anywhere else, or that stands at a loopback host on an engine that can resta
 machine or run as several parts, whatever its headers; an engine configured so after such a
 template was registered sends nothing to the item (SEC-024, SEC-013, IFC-041, DL17).
 
+## Pending actions and account hooks
+
+answer.v1 and sign-in.v1 require an Interface acting on its own behalf (PND-009,
+PND-010). Their capability lists do not add them to an Agent's tools. pool-manage has
+answer only; fleet-manage has both; view templates and fleet-manage-own have neither.
+Root's defaults have both. object-management has answer for subjects inspected there.
+Sign-in hooks are required by a Type stating signIn, implemented by its selected client,
+and run only as parts for the initiating Interface's caller and filters (CTR-013).
+
+inspect.v1 adds status.pending and list.v1 adds pending for Interfaces at which an action
+is raised (PND-002). Codes and fingerprints are never serialized in these views or other
+wire messages. The engine shows them in its own panel and records them with the answer.
+The URL exchange is IFC-049: integrity-protected requestState, retries that poll, and
+URL capability errors -32021. No completion notification drives a hook.
+
 ## First start
 
 The third declared Conduit, `system`, and the root list additions specified by FST-002
@@ -539,6 +556,14 @@ lifecycle state and the labels reported for it (PLC-008).
 | `pool-entry-reference.v1` | Schema, a reference schema | OBJ-021, POOL-014 |
 | `secret-reference.v1` | Schema, a reference schema | OBJ-021, SEC-001, SEC-002 |
 | `object.v1` | Schema | OBJ-003, LIF-009: a result names each instance made, and says which nested instantiation made a nested one. Its shape is a choice |
+| `answer.v1` | Operation | PND-009, ACC-033: answer a setup or notice, as an Interface |
+| `sign-in.v1` | Operation | PND-010, PND-011, IFC-049: sign in and check the expected account |
+| `sign-in-hook.v1` | Operation | CTR-013: begin login, as a part only |
+| `account-hook.v1` | Operation | CTR-013, PND-011: report the client account, as a part only |
+| `sign-out-hook.v1` | Operation | CTR-013, PND-011: undo the client sign-in, as a part only |
+| `pending-action.v1` | Schema | PND-001 to PND-004: action, evidence, expiry and answer |
+| `evidence-item.v1` | Schema | PND-004: kind, value, where and proves |
+| `refusal.v1` | Schema | ACC-056: the two disclosure tiers |
 | `diagnostic.v1` | Schema | IFC-025, OBJ-008, PKG-006: SARIF 2.1.0's `result`, reduced |
 | `handle.v1` | Schema | CTR-002, IFC-011 |
 | `condition.v1` | Schema | LIF-011, OBS-002, PRV-009 |

@@ -29,6 +29,8 @@
     recorded as one, without its value, under SEC-015. One request is not recorded: one that
     cannot be read and from which no instance can be established, under IFC-036. Nothing else is
     required to be recorded.
+    A request ending with a reason records the deciding promise's ID and, for a refusal, its
+    tier (ACC-056). Raising and answering actions are recorded as PND-012 states.
   vectors: []
 
 - id: REC-002
@@ -54,8 +56,9 @@
     within, under PRV-005. The invocation served is the one that an onward request names in
     `io.github.shrav-k.conduit/serving`, under IFC-020; for a hook, a read of a secret or a part
     that is an invocation of its own, such as an `open.v1` under CON-004, an entry's setup under
-    POOL-013 or a Resource's retirement under LIF-021, it is the setup or the retirement that it
-    belongs to; for a read made again under SEC-023 it is the setup that made the connection;
+    POOL-013 or a Resource's retirement under LIF-021, it is the invocation that the part
+    belongs to: the setup, the retirement or sign-in.v1 (PND-011);
+    for a read made again under SEC-023 it is the setup that made the connection;
     and for a read for a provider's run that PRV-026 asks for again, it is the setup that last
     asked for that run. A provider call's record names none. The records of an invocation's
     parts are those whose invocation or invocation served is that invocation, whatever their
@@ -78,6 +81,8 @@
     under SEC-015; the record of a call of `run.v1` holds no value of its `secrets`, as `run.v1`
     states, and no part of its `identity`, under PRV-024; and a record holds a value at a place
     that `secret-reference.v1` governs only in the resolved form, under SEC-004.
+    Records naming pending actions follow PND-012: request records hold action IDs and no
+    prompt, code or fingerprint; the answer records its evidence separately (PND-004).
   vectors: []
 
 - id: REC-003
@@ -120,6 +125,8 @@
     list. The outputs that the engine keeps for repeats under OPS-009 are not records either,
     and a purge does not touch them. Tombstones and Conduit provenance are also engine state
     apart from records (LIF-040, ACC-044); a purge removes neither.
+    Pending actions and the answered state that prevents answering twice are engine state
+    and are not removed by a purge (PND-012).
   vectors: []
 
 - id: REC-005

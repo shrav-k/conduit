@@ -272,3 +272,11 @@ report says of each rejection whether a schema or one of its own rules made it. 
 that `run.v1` holds the names of `identity` that `spec/names.yaml` fixes, its files closed to
 them. It does not do
 anything else the table leaves to an engine.
+
+## Sign-in declarations
+
+The optional type-spec.v1 member signIn holds a required account pointer (CTR-013).
+The schema checks that closed shape; the required configuration path, confinement to string
+or null, and the three required hook selections are cross-document checks for the loader.
+MAN-018 also reserves the state-directory variable from names.yaml. The current checker
+reservation change is [staged for 048a](../../docs/work-orders/036b-staged/048a.md).

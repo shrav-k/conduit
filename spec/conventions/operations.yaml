@@ -71,22 +71,23 @@
     It has no outcome. It reports why, as exactly one of: refused, invalid, conflict or
     unavailable.
   observable: >-
-    The result that is returned and the record of the request carry the same one of those four
-    reasons and no outcome. Where the request was not dispatched, the implementation received no
-    call. Where the implementation gave the reason, which is refused or unavailable, it
-    performed nothing. Where more than one reason applies, OPS-023 says which is reported. What
-    a request that is not dispatched says beyond its reason, it says in diagnostics, as IFC-025
-    states: a result that reports invalid or conflict carries among them an error diagnostic
-    whose `ruleId` is the ID of the promise that decided it. A repeat of an invocation that has
-    not ended is not dispatched and reports conflict, under OPS-032, and so does a repeat of one
-    that succeeded, of an operation that declares outputs, that OPS-009 does not answer and
-    OPS-024 does not dispatch, under OPS-034. A call that names a tool the engine does not
-    present is answered with no result: its reason is in the protocol's error, as IFC-012
-    states, and is refused, or invalid under TPL-013 where the call names the tool that an open
-    Conduit would give a control that its target does not have, where the target holds the
-    control's contract. So is a request that the protocol has the engine reject with an error of
-    its own: where the engine could establish the instance that sent it, its reason is invalid
-    and is in that error, under IFC-036.
+    The result that is returned and the record of the request carry the same one of those
+    four reasons and no outcome. Where the request was not dispatched, the implementation
+    received no call. Where the implementation gave the reason, which is refused or
+    unavailable, it performed nothing. Where more than one reason applies, OPS-023 says
+    which is reported. What a request that is not dispatched says beyond its reason, it says
+    in diagnostics, as IFC-025 states: every reason carries an error diagnostic under
+    IFC-050 whose `ruleId` is the ID of the promise that decided it. A repeat of an
+    invocation that has not ended is not dispatched and reports conflict, under OPS-032, and
+    so does a repeat of one that succeeded, of an operation that declares outputs, that
+    OPS-009 does not answer and OPS-024 does not dispatch, under OPS-034. A call that names
+    a tool the engine does not present is answered with no result: its reason is in the
+    protocol's error, as IFC-012 states, and is refused, or invalid under TPL-013 where the
+    call names the tool that an open Conduit would give a control that its target does not
+    have, where the target holds the control's contract. So is a request that the protocol
+    has the engine reject with an error of its own: where the engine could establish the
+    instance that sent it, its reason is invalid and is in that error, under IFC-036. The
+    protocol error also carries the explanation and deciding diagnostic.
   vectors: []
 
 - id: OPS-006
@@ -438,16 +439,16 @@
     cannot be made, nothing else about the request is examined or reported.
   observable: >-
     A request that is not permitted reports refused whatever else is wrong with it, and its
-    result says nothing else about the objects it names. A request whose access decision cannot
-    be made, because the state of the Conduits cannot be established, reports unavailable
-    whatever else is wrong with it, provided it can be read, and its result carries no
-    diagnostic and says nothing else about the objects it names either: the actor has not been
-    found to be permitted. A request to register a document under a name that is taken, made
-    while that state cannot be established, reports unavailable, and not conflict with a
-    diagnostic that names the object. A permitted request that fails a schema and also names a
-    revision that is not current reports invalid. Unavailable for any other cause, such as a
-    restriction that cannot be evaluated under ACC-014 or a target that is not ready under
-    CON-024, is reported only where no other reason applies.
+    result carries ACC-056's diagnostic and nothing about any other reason that applies. A
+    request whose access decision cannot be made, because the state of the Conduits cannot
+    be established, reports unavailable whatever else is wrong with it, provided it can be
+    read, and its result carries no diagnostic except one naming ACC-037 and no object: the
+    actor has not been found to be permitted. A request to register a document under a name
+    that is taken, made while that state cannot be established, reports unavailable, and not
+    conflict with a diagnostic that names the object. A permitted request that fails a
+    schema and also names a revision that is not current reports invalid. Unavailable for
+    any other cause, such as a restriction that cannot be evaluated under ACC-014 or a
+    target that is not ready under CON-024, is reported only where no other reason applies.
   vectors: []
 
 - id: OPS-024
@@ -627,31 +628,32 @@
     The request is not dispatched, and reports invalid.
   observable: >-
     This holds for every operation of the core package that names something: `inspect.v1`,
-    `set-up.v1`, `retire.v1`, `unregister.v1`, `declare-lost.v1`, `open.v1` and `close.v1` for
-    an object; `register-replacement.v1` for the instance that it names in `instance`, which
-    holds the nested instantiation; `replace.v1` for the template that its document names; and
-    `reconcile.v1` for an invocation. An object that has been unregistered or removed no longer
-    exists. Refused means that no open Conduit permits the request. For a thing that exists,
-    ACC-033 fixes the target whose Conduit permits it; a thing that does not exist has no owning
-    Pool or Fleet, so only a Conduit to `management` can reach it. So a request for `inspect.v1`
-    that names nothing reports invalid when it is made through a Conduit to `management`, and
-    refused when it is made through a Conduit to a Pool alone, under OPS-023, so that a caller
-    with only a Pool's authority learns nothing of whether a name exists outside that Pool; and
-    one that names a Resource through a Conduit to `management` reports refused while the Pool
-    that owns the Resource is not retired. A bound is judged against what exists, and does not
-    make such a request report refused: a request for `open.v1` that names no Conduit reports
-    invalid whatever the bound of the actor's Conduit to `access`. A request from an actor with
-    no open Conduit that lists the operation reports refused under ACC-001, and says nothing of
-    whether the thing exists, as OPS-023 states. A request for `set-up.v1` or for `retire.v1`
-    that names a template or a Conduit reports invalid too, under LIF-032: the thing exists, and
-    is not one the operation addresses. So does a request for `register-replacement.v1` whose
-    `nested` names no nested instantiation that the instance holds, under LIF-033. A request
-    that an actor makes on its own behalf names an object by a reference, and one that holds the
-    resolved form `{kind, id}` in its place reports invalid under LIF-031, whether or not an
-    object has that ID. What the result says of the thing that was named, it says in a
-    diagnostic, as IFC-025 states. A Fleet-only holder learns nothing of a missing Agent, as a
-    Pool-only holder learns nothing of a missing Resource. `lift.v1` names a tombstone in `id`:
-    where none has that ID, an unbounded holder reports invalid and a bounded holder reports
+    `set-up.v1`, `retire.v1`, `unregister.v1`, `declare-lost.v1`, `open.v1` and `close.v1`
+    for an object; `register-replacement.v1` for the instance that it names in `instance`,
+    which holds the nested instantiation; `replace.v1` for the template that its document
+    names; and `reconcile.v1` for an invocation. An object that has been unregistered or
+    removed no longer exists. Refused means that no open Conduit permits the request. For a
+    thing that exists, ACC-033 fixes the target whose Conduit permits it; a thing that does
+    not exist has no owning Pool or Fleet, so only a Conduit to `management` can reach it.
+    So a request for `inspect.v1` that names nothing reports invalid when it is made through
+    a Conduit to `management`, and refused when it is made through a Conduit to a Pool
+    alone, under OPS-023, so that a caller with only a Pool's authority learns nothing of
+    whether a name exists outside that Pool; and one that names a Resource through a Conduit
+    to `management` reports refused while the Pool that owns the Resource is not retired. A
+    bound is judged against what exists, and does not make such a request report refused: a
+    request for `open.v1` that names no Conduit reports invalid whatever the bound of the
+    actor's Conduit to `access`. A request from an actor with no open Conduit that lists the
+    operation reports refused under ACC-001, and discloses only what ACC-056 permits. A
+    request for `set-up.v1` or for `retire.v1` that names a template or a Conduit reports
+    invalid too, under LIF-032: the thing exists, and is not one the operation addresses. So
+    does a request for `register-replacement.v1` whose `nested` names no nested
+    instantiation that the instance holds, under LIF-033. A request that an actor makes on
+    its own behalf names an object by a reference, and one that holds the resolved form
+    `{kind, id}` in its place reports invalid under LIF-031, whether or not an object has
+    that ID. What the result says of the thing that was named, it says in a diagnostic, as
+    IFC-025 states. A Fleet-only holder learns nothing of a missing Agent, as a Pool-only
+    holder learns nothing of a missing Resource. `lift.v1` names a tombstone in `id`: where
+    none has that ID, an unbounded holder reports invalid and a bounded holder reports
     refused under ACC-053.
   vectors: []
 

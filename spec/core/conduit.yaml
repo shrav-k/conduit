@@ -20,6 +20,14 @@ address: github.com/shrav-k/conduit/core
 version: 0.1.0
 
 exports:
+  - answer.v1
+  - sign-in.v1
+  - sign-in-hook.v1
+  - account-hook.v1
+  - sign-out-hook.v1
+  - pending-action.v1
+  - evidence-item.v1
+  - refusal.v1
   # The templates that first start instantiates (templates.yaml).
   - system
   - node
@@ -166,3 +174,5 @@ implementations:
       - github.com/shrav-k/conduit/core#list.v1
       - github.com/shrav-k/conduit/core#lift.v1
       - github.com/shrav-k/conduit/core#retire-with-agents.v1
+      - github.com/shrav-k/conduit/core#answer.v1
+      - github.com/shrav-k/conduit/core#sign-in.v1

@@ -121,6 +121,8 @@
     provider capability must be is PRV-001. The only Type of family Fleet is the core
     `fleet.v1`, which offers `fleet-management.v1` (FLEET-001); a Type of that family outside
     the core package is rejected.
+    A Type may also state signIn, the expected-account declaration and three required hooks
+    of CTR-013.
   vectors: []
 
 - id: CTR-005
@@ -239,38 +241,59 @@
   layer: language
   level: must
   when: >-
-    An Operation contract's `inputSchema` or `outputSchema` holds no `type` at its root, or a
-    `type` other than `object`; or the contract is a control's, whose `spec` holds `changes`,
-    and either root holds a keyword other than `type`, `properties`, `required` and
-    `additionalProperties`.
+    An Operation contract's `inputSchema` or `outputSchema` holds no `type` at its root, or
+    a `type` other than `object`; or the contract is a control's, whose `spec` holds
+    `changes`, and either root holds a keyword other than `type`, `properties`, `required`
+    and `additionalProperties`.
   then: >-
-    The contract is rejected: a package that holds it is rejected when it is installed, and a
-    project that holds it is rejected when it is submitted.
+    The contract is rejected: a package that holds it is rejected when it is installed, and
+    a project that holds it is rejected when it is submitted.
   observable: >-
     Installation or resolving returns a diagnostic naming the contract and the keyword. An
     `inputSchema` with `type: array` is rejected; `{type: object, properties: {path: {type:
     string}}, required: [path]}` is accepted. `type: object` is required at both roots: the
-    protocol requires it of a tool's `inputSchema`, and IFC-001 makes the outputs the members of
-    `structuredContent`, keyed by name, so without it the root's `properties` would admit a
-    result that is not a map, although the protocol lets an `outputSchema` be any schema. Beside
-    `type: object`, the root of an Operation contract that is not a control's may hold any
-    keyword of the profile, under SCH-002, as the protocol's tool definition lets an
-    `inputSchema` hold any keyword of JSON Schema 2020-12 beside `type` and an `outputSchema` be
-    any schema: `{type: object, properties: {path: {type: string}, uri: {type: string}}, oneOf:
-    [{required: [path]}, {required: [uri]}]}` is accepted, and takes a path or a URI and not
-    both. The inputs and the outputs are still the members of the root's `properties`, under
-    CTR-002, as the protocol advises a schema that uses composition to declare `properties` at
-    its root and to keep its branches to presence assertions such as `required`: a keyword
-    beside them, `$ref` and `oneOf` among them, constrains the arguments or the outputs as a
-    whole and adds no input and no output. A `default` stands on a property, where SCH-008
-    accepts it, and never inside `oneOf`, `if` or another of the keywords that SCH-008 names, at
-    the root or below it. A `default` that the root reaches only through a keyword beside its
-    `properties`, such as one on a property of the schema that a `$ref` written at the root
-    refers to, fills no argument, under SCH-009 and OPS-026, and no output, under SCH-009, as
-    that keyword adds no input and no output. A control's root is held to the four keywords, so
-    `oneOf` or `$ref` at the root of its `inputSchema` is rejected: every input of a control but
-    `revision` may be left out, under REV-006, and a keyword at the root such as `oneOf:
-    [{required: [a]}, {required: [b]}]` would make one of them required all the same. Inside a
-    property every keyword of the profile may be used, under SCH-002. What a property that is a
-    handle holds is CTR-002.
+    protocol requires it of a tool's `inputSchema`, and IFC-001 makes the outputs the
+    members of `structuredContent`, keyed by name, so without it the root's `properties`
+    would admit a result that is not a map, although the protocol lets an `outputSchema` be
+    any schema. Beside `type: object`, the root of an Operation contract that is not a
+    control's may hold any keyword of the profile, under SCH-002, as the protocol's tool
+    definition lets an `inputSchema` hold any keyword of JSON Schema 2020-12 beside `type`
+    and an `outputSchema` be any schema: `{type: object, properties: {path: {type: string},
+    uri: {type: string}}, oneOf: [{required: [path]}, {required: [uri]}]}` is accepted, and
+    takes a path or a URI and not both. The inputs and the outputs are still the members of
+    the root's `properties`, under CTR-002, as the protocol advises a schema that uses
+    composition to declare `properties` at its root and to keep its branches to presence
+    assertions such as `required`: a keyword beside them, `$ref` and `oneOf` among them,
+    constrains the arguments or the outputs as a whole and adds no input and no output. A
+    `default` stands on a property, where SCH-008 accepts it, and never inside `oneOf`, `if`
+    or another of the keywords that SCH-008 names, at the root or below it. A `default` that
+    the root reaches only through a keyword beside its `properties`, such as one on a
+    property of the schema that a `$ref` written at the root refers to, fills no argument,
+    under SCH-009 and OPS-026, and no output, under SCH-009, as that keyword adds no input
+    and no output. A control's root is held to the four keywords, so `oneOf` or `$ref` at
+    the root of its `inputSchema` is rejected: every input of a control but `revision` may
+    be left out, under REV-006, and a keyword at the root such as `oneOf: [{required: [a]},
+    {required: [b]}]` would make one of them required all the same. Inside a property every
+    keyword of the profile may be used, under SCH-002. What a property that is a handle
+    holds is CTR-002.
+  vectors: []
+
+- id: CTR-013
+  layer: language
+  level: must
+  when: >-
+    A Type contract states signIn.
+  then: >-
+    It holds exactly {account: <JSON Pointer into configuration>}. The place and every
+    member on its path are required, and the place is confined to string or null by
+    MAN-017's test. The Type requires the three core operations sign-in-hook.v1, account-
+    hook.v1 and sign-out-hook.v1. A contract that fails any of these rules is rejected at
+    install or submission.
+  observable: >-
+    A string at that place is the expected account for sign-in. A null value disables the
+    account check and sign-in actions, as for an API-key configuration. The engine reads
+    only what account-hook reports, never the instance's state directory. The hooks are
+    selected as implementations under the Type's requires and template implementation rules
+    (TPL-004), invoked only as parts of sign-in.v1 or setup, for their caller and filters
+    (PND-011), and exposed through no consumer tool.
   vectors: []

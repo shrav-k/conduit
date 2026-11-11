@@ -211,7 +211,10 @@
     The setup is these parts, in this order: first opening its declared Conduits, under CON-004,
     or for a Pool setting up the Resources of its entries, under POOL-013; then asking for its
     run, under PRV-007, and connecting to each `remote` item among its selected implementations,
-    under IFC-041; then dispatching its setup hook, under TPL-017. A part is begun only once
+    under IFC-041; then, where its Type states signIn and its account pointer holds a string,
+    checking the account with account-hook.v1 and undoing any different account with
+    sign-out-hook.v1, under PND-005 and PND-011; then dispatching its setup hook, under TPL-017.
+    A part is begun only once
     every part that comes before it in that order, and is not marked optional, has succeeded. No
     part is begun once the instance is retired, or once the setup is cancelled under OPS-027.
     Nothing else is dispatched, apart from the reads of secrets that the run or a connection
@@ -220,8 +223,11 @@
     No record shows a part begun before every earlier part that is not marked optional has
     succeeded: one that failed, ended unknown, was cancelled or was not dispatched leaves every
     later part not begun, and the setup's outcome is as OPS-022 gives it. The run and the
-    connections stand at one position in the order: none of them waits for another, and the hook
-    waits for all of them. A run is asked for only once the declared Conduits are open, so the
+    connections stand at one position in the order: none of them waits for another. The account
+    check waits for all of them, any undo waits for the check, and the setup hook waits for
+    those parts. No account or a different account raises the sign-in action under PND-005;
+    setup does not wait for the person to sign in. A run is asked for only once the declared
+    Conduits are open, so the
     reads it needs go through Conduits that are open. Among the Resources of a Pool's entries,
     POOL-013 gives the order. Where the instance is retired during its setup, under PLC-017 or
     PLC-024, the parts already dispatched end as they end, the setup's outcome is OPS-022's and
@@ -229,7 +235,8 @@
     container of a Pod that is terminating; a run that such a part started is stopped by a
     further retirement, under LIF-026, or by the stop that LIF-036 asks for when the instance is
     unregistered. An instance whose selected implementations include no item that is run and no
-    `remote` item that names `headers`, and whose template selects no setup hook, dispatches
+    `remote` item that names `headers`, whose template selects no setup hook, and for which
+    no account check applies under CTR-013, dispatches
     nothing in its setup beyond the first part. A further setup leaves an open Conduit, a ready
     Resource and a running run as they are, under CON-004, POOL-013 and PRV-007, connects to
     each `remote` item again and reads again, under SEC-013, and dispatches the hook again only

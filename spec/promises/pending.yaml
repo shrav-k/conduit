@@ -1,0 +1,236 @@
+# Pending actions: one mechanism for what waits on a person.
+# Standing: draft specification; see spec/README.md for status and coverage.
+# PND-008 is reserved for enrollment; review and keep wait for batch 2.
+
+- id: PND-001
+  layer: convention
+  level: must
+  when: >-
+    Something waits on a person.
+  then: >-
+    It is one pending action, with an ID, a kind, subjects in resolved form {kind, id,
+    name}, evidence under PND-004 and an expiry. An answer holds its value, actor where
+    there is one, invocation where there is one and time. Its form is pending-action.v1.
+    Raising one permits nothing.
+  observable: >-
+    The documented kinds in this batch are sign-in, setup and notice; enrollment, machine
+    and machine-removal are reserved for enrollment. kind and answer values are strings, so
+    adding values needs no new schema version. An answer is never a request's outcome. An
+    instance has at most one unanswered sign-in and one unanswered setup action. A setup
+    action uses its setup invocation's ID; stored kinds receive an engine ID within the
+    invocation that raises them.
+  vectors: []
+
+- id: PND-002
+  layer: convention
+  level: must
+  when: >-
+    An action is unanswered and has not expired.
+  then: >-
+    It is raised at root and every Interface whose scope contains a subject: the Pool or
+    Fleet itself, the owner of an instance, or an owner of either end of a Conduit. Scope is
+    computed from the Interface's open inspection Conduits (definitions.md). It is never
+    raised at an Agent.
+  observable: >-
+    Raised means listed in list.v1's pending output and in inspect.v1's status.pending for
+    the subject, for such an Interface. Each result of that Interface's own request carries
+    io.github.shrav-k.conduit/unanswered, the number raised there, only when nonzero.
+    Another Interface sees only subjects and evidence about objects it may inspect, with no
+    count of the rest. Root sees all subject objects. Codes and fingerprints remain withheld
+    under PND-004 even from root's tool results. Agents' list and inspect results carry no
+    pending actions. Peer delivery waits on R3 and is not defined here.
+  vectors: []
+
+- id: PND-003
+  layer: convention
+  level: must
+  when: >-
+    An operation answers a pending action, or its expiry passes.
+  then: >-
+    The answer is decided under ordinary access using the Conduits the actor holds. Sign-in
+    is answered signed-in by sign-in.v1; setup is answered retried, ready, retired or
+    dismissed (PND-006); notice is answered acknowledged by answer.v1. Enrollment and
+    anything touching a secret remain root's. A scoped Interface completes sign-ins only for
+    Agents of its scoped Fleets. A retired sign-in subject answers void.
+  observable: >-
+    Every action has an expiry, whose duration is DL19. Once it passes the answer is
+    expired, with no actor, and nothing is dispatched. An operation answering an answered,
+    expired or void action reports conflict after the access decision. Expiry starts no
+    hook, setup or model work. Answers add no authority and do not resume any request that
+    ended.
+  vectors: []
+
+- id: PND-004
+  layer: interface
+  level: must
+  when: >-
+    The engine presents or records evidence or a prompt for a pending action.
+  then: >-
+    Evidence is a list of evidence-item.v1 items {kind, value, where, proves}, all four
+    required. Documented kinds are code, fingerprint, attestation and fact. It comes from
+    what the engine observed or an implementation or provider reported through a call the
+    engine made, never a model's turn. The engine alone renders evidence at its panel.
+    Values of kind code or fingerprint appear in no elicitation message, tool result, _meta,
+    notification or record of a request; they are shown only in the engine's own panel and
+    recorded with the answer.
+  observable: >-
+    Other evidence is disclosed only to Interfaces at which the action is raised, limited by
+    inspection under PND-002. A URL to open is a prompt, not evidence: only IFC-049 relays
+    it, never tool content, structuredContent or records. It is held only until its expiry
+    or the action's answer. An enrollment command action likewise appears only in the panel.
+    Evidence with an answer follows its disclosure; a record of that answer is distinct from
+    a record of a request. Inspection or export of answer records through a tool also
+    withholds code and fingerprint values; storing them with the answer never authorizes
+    returning them on the wire. The panel can display the full recorded evidence to a person
+    permitted to inspect the answer.
+  vectors: []
+
+- id: PND-009
+  layer: convention
+  level: must
+  when: >-
+    An Interface asks answer.v1 with {action, answer}.
+  then: >-
+    It is dispatched only on the Interface's own behalf, through an open Conduit listing it
+    to the target that authorizes inspection of the subject (ACC-033): the owning Pool for a
+    Resource, the owning Fleet for an Agent or a notice's Fleet, and management otherwise,
+    with the inspection fallback for a retired owner. A Conduit whose consumer is not an
+    Interface cannot be opened listing answer.v1; that open reports refused.
+  observable: >-
+    An action not raised at the caller reports refused before invalid, revealing nothing of
+    whether it exists. An answer not accepted by the kind reports invalid and names the
+    answering operation: sign-in.v1 for sign-in, and the enrollment verbs for enrollment.
+    answer.v1 accepts dismissed for setup and acknowledged for notice. It has no outputs and
+    dispatches no hook or model work. Already answered actions report conflict (PND-003).
+    Where subjects have different inspection targets, authorization follows the subject the
+    kind defines for answering: the notice's Fleet under PND-007. A setup action touches a
+    secret only through its setup operation; dismissing it dispatches nothing. Root alone
+    answers an action whose answer itself touches a secret.
+    For an action already answered, the raised-at test uses its retained subjects and the
+    Interface's current scope; it is no longer listed, but an authorized further answer
+    reports conflict under PND-003.
+  vectors: []
+
+- id: PND-012
+  layer: convention
+  level: must
+  when: >-
+    A request raises or answers an action.
+  then: >-
+    Its record names the action's ID. The recorded answer holds the kind, the evidence shown
+    and the answer with actor, invocation and time. No record holds a prompt; a request
+    record holds no code or fingerprint value (PND-004).
+  observable: >-
+    Raising adds no record type of its own. Computed setup actions add none. Pending state
+    and answered state used to prevent repeated answers survive a purge of records under
+    REC-004; expiry changes no request outcome.
+  vectors: []
+
+- id: PND-005
+  layer: convention
+  level: must
+  when: >-
+    An instance whose Type states signIn has a string at its account pointer, and setup's
+    account-hook reports no account or a different account; or its implementation sends URL-
+    mode elicitation outside sign-in.v1; or its contract reports a missing or lapsed login.
+  then: >-
+    A sign-in action is raised for the instance, with expiry. Evidence names the expected
+    account, method, device user code where relevant, triggering request and attempts with
+    their results, subject to PND-004. Until answered, operations that start model work on
+    that instance are not dispatched and report unavailable with the action ID in
+    io.github.shrav-k.conduit/pendingAction.
+  observable: >-
+    Every held request is final. Nothing is queued, resumed or dispatched after it ends; the
+    caller sends a new request. A mid-call URL elicitation ends that call unknown under
+    IFC-016. No action is raised for a Type without signIn or with a null account setting;
+    its call ends unknown with an explicit diagnostic. After expiry a new sign-in is raised
+    on the next held request or setup, never by expiry alone.
+  vectors: []
+
+- id: PND-010
+  layer: convention
+  level: must
+  when: >-
+    An Interface calls sign-in.v1 {instance, expectedId?}.
+  then: >-
+    The engine implements it only for the Interface acting on its own behalf, authorized
+    through the Agent's owning Fleet or the Resource's owning Pool (ACC-033). A caller other
+    than root signs in only an Agent of a Fleet in its scope; Resources remain root's.
+    expectedId follows LIF-037. The Type must state signIn with a string expected account,
+    otherwise the permitted request reports invalid. A Conduit whose consumer is not an
+    Interface cannot be opened listing sign-in.v1; the open reports refused.
+  observable: >-
+    The engine first dispatches account-hook.v1 as a part, before sign-in-hook.v1. If that
+    check succeeds with the expected account, compared ignoring ASCII case, sign-in.v1
+    succeeds with output account and answers any sign-in action signed-in. If that check
+    succeeds with no account or another account, the engine invokes sign-in-hook.v1 as a
+    part and relays its URL elicitation under IFC-049; that initial mismatch does not undo
+    the account or end sign-in.v1. Each retry polls account-hook.v1 to check the account
+    after the person's sign-in, under PND-011, until an account appears or DL18 ends; no
+    account yet is not failed. The same invocation may answer another InputRequiredResult or
+    block. Decline or cancel received on a retry ends failed. DL18 ending without completion
+    ends unknown and no hook runs later. The operation starts no model work and resumes no
+    held request. Missing URL capability uses -32021 with requiredCapabilities, not invalid.
+  vectors: []
+
+- id: PND-011
+  layer: convention
+  level: must
+  when: >-
+    An account-hook.v1 part checks the account during setup, before sign-in-hook.v1 in
+    sign-in.v1, or while polling after that hook's URL elicitation.
+  then: >-
+    Only the expected account, compared ignoring ASCII case, completes sign-in. The check
+    before sign-in-hook.v1 follows PND-010: no account or another account proceeds to that
+    hook. During polling after its URL elicitation, the expected account succeeds with output
+    account and answers the action signed-in; a different account is undone by a
+    sign-out-hook.v1 part, sign-in.v1 ends failed naming both accounts, and the action stays
+    pending with the attempt as evidence. A failed or unknown
+    account hook does not complete sign-in, and its uncertainty is explained; no account yet
+    during polling follows PND-010.
+  observable: >-
+    If sign-out does not succeed, the engine reports SignInUndone=False with its cause and
+    holds back all model work. Only a later account-hook.v1 part within sign-in.v1 or setup
+    that reports the expected account or none clears that condition; reconciliation never
+    clears it. Hooks run only as parts of sign-in.v1 or setup, for that invocation's caller
+    and filters, through no Conduit, never on an implementation notification. Setup checks
+    the account after its run and connections and before its setup hook, in TPL-012's order;
+    no account or a different account raises the action under PND-005, and a different
+    account is undone by a sign-out-hook.v1 part before setup proceeds.
+  vectors: []
+
+- id: PND-006
+  layer: convention
+  level: must
+  when: >-
+    An instance is not retired and its latest set-up.v1 invocation ended failed or unknown.
+  then: >-
+    One setup action is computed, with that invocation's ID, the instance as subject, and
+    evidence naming the invocation, outcome, reason and diagnostics where present, parts
+    that did not succeed and unreconciled IDs. It has an expiry under DL19.
+  observable: >-
+    Dispatch of a further set-up.v1 answers retried; reconciliation as having occurred
+    answers ready; retirement answers retired; answer.v1 may answer dismissed. A dismissal
+    or expiry for that invocation stays answered and is not recomputed as unanswered. A
+    later unsuccessful setup makes a new action. Computation adds no record and dispatches
+    nothing.
+  vectors: []
+
+- id: PND-007
+  layer: convention
+  level: must
+  when: >-
+    A Resource's retirement sent by an instance other than root closes under CON-008 a
+    Conduit consumed by an Agent of a Fleet other than the sender's.
+  then: >-
+    One notice is raised per such Fleet. If the sender is not an Agent, every Fleet counts
+    as other. Its subjects are the Resource and that Fleet's closed Conduits, retained by
+    their resolved identities. Its evidence gives the Resource, owning Pool, sender, caller,
+    invocation and closed Conduits. It is stored with an engine ID allocated within
+    retirement and an expiry under DL19.
+  observable: >-
+    It is raised at root and Interfaces whose scope contains that Fleet. answer.v1 answers
+    acknowledged. The retirement result names each notice in
+    io.github.shrav-k.conduit/pendingAction. Raising a notice closes nothing beyond CON-008
+    and confers no permission. Evidence is disclosed under PND-002 and PND-004.
+  vectors: []

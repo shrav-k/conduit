@@ -35,6 +35,9 @@ metaPrefix: io.github.shrav-k.conduit/
 # change one, run `python3 tools/set_names.py --identity <key>=<value>`.
 engineUrlVariable: CONDUIT_URL
 identityDirVariable: CONDUIT_IDENTITY_DIR
+# The instance's state directory, supplied by the engine's own runner (PRV-029).
+# Rename with `tools/set_names.py --identity stateDirVariable=<value>`. This is not identity.
+stateDirVariable: CONDUIT_STATE_DIR
 x509BundleFile: ca.crt
 jwtBundleFile: jwks.json
 engineIdFile: engine-id

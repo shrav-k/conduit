@@ -129,6 +129,12 @@ spec:
   type: object
   properties:
     family: {enum: [Interface, Agent, Resource, Pool]}
+    signIn:
+      type: object
+      properties:
+        account: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+      required: [account]
+      additionalProperties: false
     schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
     offers:
       type: array

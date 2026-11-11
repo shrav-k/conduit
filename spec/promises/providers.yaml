@@ -711,6 +711,8 @@
     no value of the engine's environment, under SEC-020. How the user sets the list, which
     variables the runner passes in place of the six, and the process's working directory, user
     and login session are DL16 of the implementation-defined list.
+    The runner also gives CONDUIT_STATE_DIR its own value under PRV-029; neither the
+    inherited environment nor the pass list overrides it.
   vectors: []
 
 
@@ -883,20 +885,42 @@
     result of `run.v1` or of `inspect-run.v1`.
   then: >-
     What answers at that `url` proves by TLS, before it is sent anything, that it serves the
-    instance, with the certificate that `identity` holds in `tls.crt` for that run, which names
-    the instance's ID, whether it is the run's gate or the runtime provider's own end of its
-    channel to the run's machine.
+    instance, with the certificate that `identity` holds in `tls.crt` for that run, which
+    names the instance's ID, whether it is the run's gate or the runtime provider's own end
+    of its channel to the run's machine.
   observable: >-
     This is the server's side of the check that IFC-017 has the engine make before it sends
-    anything, `server/discover` among it: the engine checks the certificate against the roots of
-    DL13 and the ID that it names, so a server that serves another instance, or a program that
-    has taken the address once the provider's process has ended, as after the engine restarts,
-    is sent nothing. A listener that proves nothing, such as one over unencrypted `http` on
-    loopback, is no proof: the provider's own channel carries a request on from its end to the
-    process it started, and that end presents the certificate. The certificate lasts as long as
-    the instance, under DL13, and the gate may serve it, under PRV-022, as the kubelet serves a
-    certificate that the Kubernetes API server checks under `--kubelet-certificate-authority`.
-    Where nothing at the `url` proves it, the engine sends nothing, and the part or the request
-    reports unavailable, under IFC-017. The engine's own runner returns no `url`, and reaches
-    its process over stdio, under PRV-003.
+    anything, `server/discover` among it: the engine checks the certificate against the
+    roots of DL13 and the ID that it names, so a server that serves another instance, or a
+    program that has taken the address once the provider's process has ended, as after the
+    engine restarts, is sent nothing. A listener that proves nothing, such as one over
+    unencrypted `http` on loopback, is no proof: the provider's own channel carries a
+    request on from its end to the process it started, and that end presents the
+    certificate. The certificate lasts as long as the instance, under DL13, and the gate may
+    serve it, under PRV-022, as the kubelet serves a certificate that the Kubernetes API
+    server checks under `--kubelet-certificate-authority`. Where nothing at the `url` proves
+    it, the engine sends nothing, and the part or the request reports unavailable, under
+    IFC-017. The engine's own runner returns no `url`, and reaches its process over stdio,
+    under PRV-003.
+  vectors: []
+
+- id: PRV-029
+  layer: convention
+  level: must
+  when: >-
+    The engine's own runner starts a process for an instance's run.
+  then: >-
+    It gives that instance its own state directory, made empty before its first run, private
+    to the engine's operating-system user (mode 0700 on systems with those modes). Every
+    later run, including after engine restart, gets the same directory. Its path contains
+    the instance ID and is never reused for another instance. CONDUIT_STATE_DIR names it.
+    Removal or unregistration of the instance removes it with its contents (LIF-035).
+  observable: >-
+    The engine reads none of its contents, records none and passes it to no other run. A
+    process under the same operating-system user may still read it; isolation is mediated
+    (ACC-027, DL16). Another runtime provider supplies such a directory only where its
+    contract states it does. A Type whose implementation needs one states that requirement;
+    setup under a runner that gives none fails with an explicit diagnostic. Agent packages
+    use it for the Agent's own home; their client-specific subdirectories and credential
+    storage belong to their contracts.
   vectors: []

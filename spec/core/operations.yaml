@@ -71,7 +71,7 @@
 #     in its result's `structuredContent`, whether or not the operation declares an output
 #     of that name, and one that reports invalid or conflict carries there an error
 #     diagnostic that names the promise that decided it (IFC-025). A request that is not
-#     permitted reports refused and says nothing else about the objects it names (OPS-023).
+#     permitted reports refused with ACC-056's tiered explanation (OPS-023, IFC-050).
 #   - A result has `isError` true where the request ended with a reason or its outcome is
 #     failed or unknown, and in no other case; any other result holds the outputs in its
 #     `structuredContent` where it declares outputs, and omits that member where it declares
@@ -351,6 +351,10 @@ spec:
             type: array
             items:
               $ref: github.com/shrav-k/conduit/core#id.v1
+          pending:
+            type: array
+            items:
+              $ref: github.com/shrav-k/conduit/core#pending-action.v1
           trustDomain:
             $ref: github.com/shrav-k/conduit/core#trust-domain.v1
         required:
@@ -1109,6 +1113,10 @@ spec:
   outputSchema:
     type: object
     properties:
+      pending:
+        type: array
+        items:
+          $ref: github.com/shrav-k/conduit/core#pending-action.v1
       objects:
         type: array
         items:
@@ -1239,3 +1247,96 @@ spec:
   effect: >-
     Retires the Fleet once the shutdown of every Agent it owns is confirmed. Each Agent retirement
     has its own invocation and effects.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: answer.v1
+  description: Answer a setup with dismissed or a notice with acknowledged (PND-009). Only an Interface
+    on its own behalf, through the target authorizing inspection of the subject (ACC-033). No hook
+    or model work runs. Other kinds name their own answering operation; answered, expired or void
+    actions conflict.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      action:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+      answer:
+        type: string
+    required:
+    - action
+    - answer
+  effect: Record the answer to the pending action.
+  deduplicates: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: sign-in.v1
+  description: Sign in an instance for the configured expected account (PND-010, PND-011, IFC-049).
+    Only an Interface on its own behalf, through the owning Fleet for an Agent or owning Pool for
+    a Resource; Resources are root-only, and other Interfaces sign in Agents of scoped Fleets only.
+    account-hook runs first; the expected account succeeds; no account or another account proceeds
+    to sign-in-hook, which relays a URL action. Retries poll for the account; a wrong account found
+    then is undone and the invocation fails with the action still pending. Failed undo holds model
+    work. Missing URL capability returns
+    -32021. No held request resumes and no later hook runs after DL18.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      instance:
+        anyOf:
+        - {$ref: github.com/shrav-k/conduit/core#agent-reference.v1}
+        - {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+      expectedId:
+        $ref: github.com/shrav-k/conduit/core#id.v1
+    required:
+    - instance
+  outputSchema:
+    type: object
+    properties:
+      account:
+        type: string
+    required:
+    - account
+  effect: Sign in the instance and answer its sign-in action when the expected account is verified.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: sign-in-hook.v1
+  description: Begin the client login and return URL-mode elicitation to the engine inside sign-in.v1
+    or setup (CTR-013, PND-011). No consumer calls it and no model work starts. Codes go only to
+    the engine panel (PND-004). It does not prove completion; account-hook checks that.
+spec:
+  effect: Begin the instance client login.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: account-hook.v1
+  description: Report the account the instance client is signed in to, or null when none, without
+    reading it through the engine (CTR-013, PND-011). A part of sign-in.v1 or setup only, dispatched
+    through no Conduit, starting no model work and changing nothing outside itself.
+spec:
+  outputSchema:
+    type: object
+    properties:
+      account:
+        type:
+        - string
+        - 'null'
+    required:
+    - account
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: sign-out-hook.v1
+  description: Remove the instance client login from where its client keeps it (CTR-013, PND-011).
+    Only a part of sign-in.v1 or setup through no Conduit; no consumer calls it and no model work
+    starts.
+spec:
+  effect: Remove the instance client sign-in.

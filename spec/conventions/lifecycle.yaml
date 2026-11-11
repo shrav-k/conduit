@@ -256,6 +256,9 @@
     Fleet only. No separate scope is stored. Inspecting a Pool shows every administrator, the
     consumers of open Conduits to that Pool listing operations that administer its Resources
     (ACC-033), with their Conduits. An inspection of a Conduit shows its provenance (ACC-044).
+    For an Interface at which an action is raised, inspecting its subject also holds
+    status.pending in pending-action.v1 form, with PND-002 disclosure and PND-004 evidence
+    withholding. An Agent's inspection carries no pending actions.
   vectors: []
 
 # --- Retirement and unregistration.
@@ -690,6 +693,8 @@
     and the objects that held its ID report it missing, under LIF-019. An instance whose
     shutdown is pending or unknown is not removed: it stays, retired, until its shutdown is
     confirmed or a request to unregister it removes it, under LIF-017.
+    Removing or unregistering an instance removes its state directory and contents under
+    PRV-029. Retirement makes a pending sign-in void (PND-003).
   vectors: []
 
 
@@ -764,6 +769,10 @@
     For `open.v1` and `close.v1` the reference is the input `conduit`. A missing Conduit is
     checked through `access` under OPS-029, with the access decision made before the expected-ID
     comparison.
+    The preceding statements that a refusal carries no diagnostic or says nothing of an
+    object are subject to ACC-056: it carries that rule's explanation, with IDs and
+    existence disclosed only at tier 2. expectedId is also accepted by sign-in.v1 under
+    PND-010.
   vectors: []
 
 - id: LIF-040

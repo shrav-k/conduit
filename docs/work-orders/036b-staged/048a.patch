@@ -1,0 +1,22 @@
+--- a/tools/check_schemas.py
++++ b/tools/check_schemas.py
+@@ -1611,7 +1611,9 @@
+     submission, and the rule for FST-006 is then not applied."""
+     found = []
+     items = items or {}
+-    identity_variables = [v.upper() for v in identity_names()[0]]
++    state_variable = re.search(r"(?m)^stateDirVariable: *(\S+)",
++                               (ROOT / "spec" / "names.yaml").read_text()).group(1)
++    identity_variables = [v.upper() for v in identity_names()[0]] + [state_variable.upper()]
+     docs = [d for d in docs if isinstance(d, dict)]
+     templates = {(d.get("kind"), named(d)): d for d in docs
+                  if d.get("kind") in FAMILIES and "from" not in d}
+@@ -1929,7 +1931,7 @@
+                 if isinstance(var, str) and var.upper() in identity_variables:
+                     found.append(("identity-name",
+                                   f"the template {name} selects {key[1]}, whose `environment` "
+-                                  f"binds {var}, a variable that `identity` carries, to the "
++                                  f"binds {var}, a variable reserved for the run, to the "
+                                   f"place {place}"))
+ 
+         # secret-header-https (SEC-024): a selected `remote` item whose `headers` gives a header

@@ -51,12 +51,13 @@ metadata:
   description: >-
     One diagnostic, in the shape of a `result` of SARIF 2.1.0 reduced to four members.
     `ruleId` is the ID of the promise the diagnostic is about; `level` is SARIF's, and a
-    diagnostic that is why a request reported invalid or conflict has the level `error`;
+    diagnostic that is why a request reported any reason has the level `error`;
     `message.text` says what is wrong; and each logical location of `locations` gives in
     `fullyQualifiedName` the JSON Pointer of the place it is about. An engine may add what
     else SARIF's `result` holds. For a rejection by a schema, `properties` carries
     `keywordLocation`, and `absoluteKeywordLocation` where known, as JSON Schema 2020-12's
-    output format names them (SUB-005).
+    output format names them (SUB-005). A refusal carries properties.refusal in the form
+    refusal.v1 (ACC-056); every reason names its deciding rule (IFC-050).
 spec:
   type: object
   properties:
@@ -146,7 +147,10 @@ metadata:
     Each field is present where it applies, and the inputs and outputs of the operation are
     present where the type's `records` keeps them, apart from what the `secrets` and the
     `identity` of `run.v1` hold, which no record holds. An engine names the event's `source`
-    and `type`, and may add members.
+    and `type`, and may add members. A reason records ruleId; a refusal records refusalTier
+    without its tier-2 list (ACC-056). pendingAction holds action IDs, and answer holds the
+    recorded action and its full evidence (PND-012). Wire reads withhold code and fingerprint
+    values even from answer records (PND-004).
 spec:
   type: object
   properties:
@@ -170,6 +174,13 @@ spec:
         idempotencyKey: {type: string, minLength: 1}
         outcome: {enum: [succeeded, failed, unknown]}
         reason: {enum: [refused, invalid, conflict, unavailable]}
+        ruleId: {type: string, pattern: '^[A-Z]+-[0-9]{3}$'}
+        refusalTier: {enum: [1, 2]}
+        pendingAction:
+          type: array
+          items: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        answer:
+          $ref: github.com/shrav-k/conduit/core#pending-action.v1
         inputs: {type: object}
         outputs: {type: object}
   required: [specversion, id, source, type, time, data]
@@ -450,3 +461,155 @@ spec:
   minLength: 1
   maxLength: 255
   pattern: ^[a-z0-9._-]+$
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: evidence-item.v1
+  description: 'Engine evidence (PND-004): all fields required. Codes and fingerprints appear only
+    in its own panel and recorded answer, never a wire message, result, notification or request
+    record.'
+spec:
+  type: object
+  properties:
+    kind:
+      enum: [code, fingerprint, attestation, fact]
+    value: {}
+    where:
+      type: string
+    proves:
+      type: string
+  required:
+  - kind
+  - value
+  - where
+  - proves
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: pending-action.v1
+  description: An action waiting on a person (PND-001 to PND-004). Answer values and kind are extensible
+    strings. Wire views remove code and fingerprint evidence, and disclose no omitted count; complete
+    evidence is retained for the panel and answer.
+spec:
+  type: object
+  properties:
+    id:
+      $ref: github.com/shrav-k/conduit/core#id.v1
+    kind:
+      type: string
+    subject:
+      type: array
+      items:
+        $ref: github.com/shrav-k/conduit/core#object.v1
+      minItems: 1
+    evidence:
+      type: array
+      items:
+        $ref: github.com/shrav-k/conduit/core#evidence-item.v1
+    expiry:
+      type: string
+      format: date-time
+    answer:
+      type: object
+      properties:
+        value:
+          type: string
+        actor:
+          $ref: github.com/shrav-k/conduit/core#id.v1
+        invocation:
+          $ref: github.com/shrav-k/conduit/core#id.v1
+        at:
+          type: string
+          format: date-time
+      required:
+      - value
+      - at
+      additionalProperties: false
+  required:
+  - id
+  - kind
+  - subject
+  - evidence
+  - expiry
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: refusal.v1
+  description: The two tiers of ACC-056. named echoes only the request, cause states the refusing
+    rule. target, exists and conduits are tier-2-only. An unknown tool need not be decomposable
+    into an operation; its spelling is preserved in named.tool.
+spec:
+  type: object
+  properties:
+    tier:
+      enum:
+      - 1
+      - 2
+    operation:
+      type: string
+    named:
+      type: object
+      properties:
+        tool:
+          type: string
+        conduit:
+          type: string
+        objects:
+          type: array
+          items: {}
+      additionalProperties: false
+    cause:
+      type: string
+    target:
+      $ref: github.com/shrav-k/conduit/core#object.v1
+    exists:
+      type: boolean
+    conduits:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            $ref: github.com/shrav-k/conduit/core#name.v1
+          as:
+            $ref: github.com/shrav-k/conduit/core#name.v1
+          state:
+            enum:
+            - open
+            - registered
+            - closed
+          operations:
+            type: array
+            items:
+              $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+        required:
+        - name
+        - as
+        - state
+        - operations
+        additionalProperties: false
+  required:
+  - tier
+  - operation
+  - named
+  - cause
+  additionalProperties: false
+  allOf:
+  - if:
+      properties:
+        tier:
+          const: 1
+    then:
+      not:
+        anyOf:
+        - required:
+          - target
+        - required:
+          - exists
+        - required:
+          - conduits

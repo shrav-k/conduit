@@ -171,7 +171,9 @@
     attempt. A purge under REC-004 does not change what a repeat or a reconciliation finds. How
     the digest is computed is DL2 of the implementation-defined list, and the outputs of an
     invocation that succeeded are kept for a repeat for as long as DL10 says, under OPS-009,
-    after which a repeat reports conflict, under OPS-034, unless OPS-024 dispatches it.
+    after which a repeat reports conflict, under OPS-034, unless OPS-024 dispatches it. The kept
+    state explicitly includes the instance that sent the request. For a hook, the sender used by
+    ACC-055 is the sending instance of the setup or retirement within which the hook ran.
   vectors: []
 
 - id: OPS-009
@@ -299,9 +301,9 @@
     was dispatched to or names, under LIF-013, which lists it until it is reconciled: so an
     actor finds there a hook, which no actor sends, and an invocation whose result was lost and
     whose records were purged. The target is the one that authorized the request being
-    reconciled where the invocation is of a management verb, and otherwise the Pool that owns
-    the instance the invocation was dispatched to, or `management` where that instance is not a
-    Resource or the Pool that owns it is retired, as ACC-033 states. Where the instance that the
+    reconciled where the invocation is of a management verb, and otherwise the Pool that owns a
+    Resource or the Fleet that owns an Agent the invocation was dispatched to, or `management`
+    for other families or a retired owner, as ACC-033 states. Where the instance that the
     invocation was dispatched to, or that an invocation of a management verb named, no longer
     exists, the target is `management`, and the reconciliation records the outcome and stores
     nothing, as ACC-033 states. A request that names an invocation whose outcome is not unknown
@@ -319,7 +321,8 @@
     its end there, under OPS-027, and a gate closes a server's stream only where the server
     answers with one, under PRV-025, so an effect may land after the actor has recorded that it
     did not occur. OPS-031 says which input of `reconcile.v1` makes a request invalid where it
-    does not belong.
+    does not belong. ACC-055 further limits reconciliation through bounded access and through
+    Pools or Fleets for holders other than root.
   vectors: []
 
 - id: OPS-018
@@ -345,16 +348,17 @@
     An actor asks for a management verb, such as register, replace, set up, retire, open, close,
     reconcile, declare lost, unregister or install a package.
   then: >-
-    The request is an operation of a capability that `management`, `access` or a Pool offers,
+    The request is an operation of a capability that `management`, `access`, a Pool or a Fleet offers,
     and every promise about operations and about access applies to it as to any other.
   observable: >-
     Such a request needs an open Conduit that lists it, may carry an idempotency key, ends in
-    one of the ways the definitions list, and leaves a record. Without an idempotency key it
-    is a new invocation each time, under OPS-011. The capabilities are those of the core
-    package: `object-management.v1`, which `management` offers, `access-control.v1`, which
-    `access` offers, and `pool-management.v1`, which every Pool offers, under CTR-004. Each verb
-    is an Operation contract of the core package, such as `register.v1`, `set-up.v1`, `open.v1`
-    and `install.v1`.
+    one of the ways the definitions list, and leaves a record. Without an idempotency key it is
+    a new invocation each time, under OPS-011. The capabilities are those of the core package:
+    `object-management.v1`, which `management` offers, `access-control.v1`, which `access`
+    offers, and `pool-management.v1`, which every Pool offers, under CTR-004. Each verb is an
+    Operation contract of the core package, such as `register.v1`, `set-up.v1`, `open.v1` and
+    `install.v1`. Every Fleet offers `fleet-management.v1`, which is a management capability
+    too; listing, lifting and retiring with Agents are management verbs.
   vectors: []
 
 - id: OPS-020
@@ -629,23 +633,26 @@
     `reconcile.v1` for an invocation. An object that has been unregistered or removed no longer
     exists. Refused means that no open Conduit permits the request. For a thing that exists,
     ACC-033 fixes the target whose Conduit permits it; a thing that does not exist has no owning
-    Pool, so only a Conduit to `management` can reach it. So a request for `inspect.v1` that
-    names nothing reports invalid when it is made through a Conduit to `management`, and refused
-    when it is made through a Conduit to a Pool alone, under OPS-023, so that a caller with only
-    a Pool's authority learns nothing of whether a name exists outside that Pool; and one that
-    names a Resource through a Conduit to `management` reports refused while the Pool that owns
-    the Resource is not retired. A bound
-    is judged against what exists, and does not make such a request report refused: a request
-    for `open.v1` that names no Conduit reports invalid whatever the bound of the actor's
-    Conduit to `access`. A request from an actor with no open Conduit that lists the operation
-    reports refused under ACC-001, and says nothing of whether the thing exists, as OPS-023
-    states. A request for `set-up.v1` or for `retire.v1` that names a template or a Conduit
-    reports invalid too, under LIF-032: the thing exists, and is not one the operation
-    addresses. So does a request for `register-replacement.v1` whose `nested` names no nested
-    instantiation that the instance holds, under LIF-033. A request that an actor makes on its
-    own behalf names an object by a reference, and one that holds the resolved form `{kind, id}`
-    in its place reports invalid under LIF-031, whether or not an object has that ID. What the
-    result says of the thing that was named, it says in a diagnostic, as IFC-025 states.
+    Pool or Fleet, so only a Conduit to `management` can reach it. So a request for `inspect.v1`
+    that names nothing reports invalid when it is made through a Conduit to `management`, and
+    refused when it is made through a Conduit to a Pool alone, under OPS-023, so that a caller
+    with only a Pool's authority learns nothing of whether a name exists outside that Pool; and
+    one that names a Resource through a Conduit to `management` reports refused while the Pool
+    that owns the Resource is not retired. A bound is judged against what exists, and does not
+    make such a request report refused: a request for `open.v1` that names no Conduit reports
+    invalid whatever the bound of the actor's Conduit to `access`. A request from an actor with
+    no open Conduit that lists the operation reports refused under ACC-001, and says nothing of
+    whether the thing exists, as OPS-023 states. A request for `set-up.v1` or for `retire.v1`
+    that names a template or a Conduit reports invalid too, under LIF-032: the thing exists, and
+    is not one the operation addresses. So does a request for `register-replacement.v1` whose
+    `nested` names no nested instantiation that the instance holds, under LIF-033. A request
+    that an actor makes on its own behalf names an object by a reference, and one that holds the
+    resolved form `{kind, id}` in its place reports invalid under LIF-031, whether or not an
+    object has that ID. What the result says of the thing that was named, it says in a
+    diagnostic, as IFC-025 states. A Fleet-only holder learns nothing of a missing Agent, as a
+    Pool-only holder learns nothing of a missing Resource. `lift.v1` names a tombstone in `id`:
+    where none has that ID, an unbounded holder reports invalid and a bounded holder reports
+    refused under ACC-053.
   vectors: []
 
 
@@ -774,4 +781,28 @@
     OPS-009, or dispatched as a new attempt under OPS-024. A repeat is decided like any other
     request, under ACC-036: one sent through a Conduit that has been closed reports refused
     under ACC-011, which OPS-023 puts first.
+  vectors: []
+
+- id: OPS-036
+  layer: convention
+  level: must
+  when: >-
+    An actor asks for `list.v1` through an open Conduit to `management`, a Pool or a Fleet that
+    lists it.
+  then: >-
+    The engine lists only items that the actor may inspect through any open Conduit it holds,
+    under ACC-033 for objects and the authority below for installed packages and tombstones.
+    Through `management`, candidates are objects of every kind, templates included, installed
+    packages and tombstones. Through a Pool they are its Resources; through a Fleet they are its
+    Agents. Optional input `kind` narrows the list. No result contains a count, total, cursor,
+    position or anything from which a hidden count could be read.
+  observable: >-
+    The container authorizes listing (ACC-033 row 15), and listing adds no inspection authority.
+    Object items have kind, name, ID, whether they are templates, and state for instances;
+    templates have no lifecycle state (LIF-012). A holder of an open Conduit to `management`
+    that lists `inspect.v1` may list installed packages. Tombstones are visible under LIF-040
+    and shown in full. An Agent of a live Fleet appears through `management` only to a holder
+    that may inspect it through that Fleet. A retired owner's Conduits are closed; its remaining
+    members are listed through `management` according to inspection authority there. Nothing is
+    disclosed or counted about omitted items.
   vectors: []

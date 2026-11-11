@@ -76,7 +76,7 @@
   layer: language
   level: must
   when: >-
-    An instance document for an Interface, a Pool or a Conduit gives a placement.
+    An instance document for an Interface, a Pool, a Fleet or a Conduit gives a placement.
   then: >-
     The document is rejected.
   observable: >-

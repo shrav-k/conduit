@@ -22,25 +22,27 @@
   layer: language
   level: must
   when: >-
-    The `spec` of an Interface, Agent, Resource or Pool template is read.
+    The `spec` of an Interface, Agent, Resource, Pool or Fleet template is read.
   then: >-
-    It may hold `type`, `inputs`, `config`, `implementation` and `controls`; for an Interface,
-    Agent or Resource also `conduits`; and for a Pool `entries`. There are no other keys, and no
-    family has keys of its own beyond these. `inputs`, `conduits` and `entries` are maps keyed
-    by name, as OBJ-022 states.
+    For a Fleet it holds `type` alone (FLEET-001). For any other such family it may hold `type`,
+    `inputs`, `config`, `implementation` and `controls`; for an Interface, Agent or Resource
+    also `conduits`; and for a Pool `entries`. There are no other keys, and no family has keys
+    of its own beyond these. `inputs`, `conduits` and `entries` are maps keyed by name, as
+    OBJ-022 states.
   observable: >-
-    An account, a model or a frontend is written inside `config`, where the type's schema
-    checks it. A Pool template that declares Conduits is rejected, because a Pool is never the
-    consumer of a Conduit. A template that writes `runtimes`, `setup` or `retire` is rejected
-    by `template.v1`, under SUB-005, as OBJ-019 requires: an instance's run is PRV-007, and
-    its own work at setup and at retirement is a hook, under TPL-017 and TPL-018.
+    An account, a model or a frontend is written inside `config`, where the type's schema checks
+    it. A Pool template that declares Conduits is rejected, because a Pool is never the consumer
+    of a Conduit. A template that writes `runtimes`, `setup` or `retire` is rejected by
+    `template.v1`, under SUB-005, as OBJ-019 requires: an instance's run is PRV-007, and its own
+    work at setup and at retirement is a hook, under TPL-017 and TPL-018. A Fleet template
+    instead holds `type` alone; only the core `fleet` template is accepted (FLEET-001).
   vectors: []
 
 - id: TPL-002
   layer: language
   level: must
   when: >-
-    An Interface, Agent, Resource or Pool template is registered.
+    An Interface, Agent, Resource, Pool or Fleet template is registered.
   then: >-
     Its `type` is the selection of a Type contract of the same family, written as NAM-018 gives
     a selection. A Conduit template has no `type`.

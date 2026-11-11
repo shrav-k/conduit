@@ -92,7 +92,9 @@
     to set up was, by the Conduits of the instance that sent it. A declared Conduit that lists
     `get-secret.v1` is opened only where the root Interface sent the request to set up on its
     own behalf, under SEC-008: for any other instance, and for an onward request of the root
-    Interface, the part reports refused.
+    Interface, the part reports refused. ACC-054 also applies where the declared consumer is
+    root. A tombstone match gives conflict under LIF-041; the part opens nothing and OPS-022
+    determines the setup outcome.
   vectors: []
 
 - id: ACC-006
@@ -123,6 +125,8 @@
     Conduit names one that no longer exists, under LIF-035, and reports invalid under OPS-029,
     and a request to open a Conduit that is not open and whose consumer is retired reports
     conflict, under CON-031: one whose target is retired is closed already, under CON-008.
+    ACC-054 adds the condition where the consumer is root. LIF-041 gives conflict where a
+    tombstone matches a Conduit that is not already open.
   vectors: []
 
 - id: ACC-008
@@ -202,15 +206,16 @@
     the consumer of an open Conduit to `access` that lists the operation and whose bound covers
     the target of the Conduit to be closed and every operation that Conduit lists. Where the
     Conduit to be closed is itself one to `access`, ACC-030 states the condition in place of
-    this one. A Conduit whose consumer is the root Interface is never closed at an actor's
-    request, as ACC-024 states: such a request is not dispatched, and reports refused, whoever
-    makes it. CON-008 still closes one whose target is retired.
+    this one. ACC-024 adds the condition for a Conduit whose consumer is root: root may close
+    its own other Conduits on its own behalf, but no request closes its first-start or default
+    ones. CON-008 still closes one whose target is retired.
   observable: >-
     An actor with such a Conduit to `access` can close a Conduit it did not open. Any other
     actor reports refused, and the Conduit is as it was. A closed Conduit no longer exists,
     under LIF-035, so a request to close it reports invalid under OPS-029, and a repeat of the
     request that closed it is answered as OPS-009 and OPS-032 state: `close.v1` declares no
-    outputs, so OPS-034 does not apply to it.
+    outputs, so OPS-034 does not apply to it. Closing leaves a tombstone under LIF-040, except
+    for an engine-made Conduit.
   vectors: []
 
 - id: ACC-014
@@ -390,7 +395,8 @@
     the target offers, apart from what ACC-032, PRV-004 and SEC-009 rule out, and every bound is
     within its own. A Conduit whose consumer is retired is not opened either, under CON-031. A
     Conduit to `access` that has no bound is unlimited, under ACC-029, and ACC-030 says who may
-    open or close another one.
+    open or close another one. Its Conduit lists `lift.v1`, so root can lift any tombstone under
+    ACC-053.
   vectors: []
 
 - id: ACC-023
@@ -409,12 +415,16 @@
   layer: convention
   level: must not
   when: >-
-    An actor asks to close a Conduit whose consumer is the root Interface.
+    An actor asks to close a Conduit whose consumer is root, unless root sent the request on its
+    own behalf and the Conduit is neither one of root's declared `management`, `access` and
+    `system` Conduits nor a default under FLEET-005.
   then: >-
     The Conduit is closed.
   observable: >-
-    The request reports refused under ACC-012, whoever makes it, and the root Interface's
-    Conduit stays open.
+    The request is not dispatched, reports refused under ACC-012, and the Conduit stays open.
+    Root may close its own other Conduits on its own behalf. CON-008 still closes a Conduit
+    whose target is retired. Root's unbounded Conduit to `access` stays open (ACC-022), so
+    closing its own other Conduit cannot remove its ability to open another.
   vectors: []
 
 - id: ACC-027
@@ -485,7 +495,11 @@
     filter, and a Conduit opened within it applies only the filters that its own template
     applies. So a consumer whose own Conduit to a target applies a filter may open, for itself
     or for another consumer, a Conduit to that target that applies none, as ACC-030 states.
-    CON-028 says where a bound may be applied.
+    CON-028 says where a bound may be applied. Each item naming a Pool or individual target
+    keeps the ID it resolved to under OBJ-021. It covers no later object under that name. A
+    single Resource item therefore stops covering it after replacement under its name; naming
+    its Pool covers the replacement while that same Pool owns it. A Fleet named in `targets`
+    covers that Fleet alone and none of its Agents.
   vectors: []
 
 - id: ACC-030
@@ -561,100 +575,85 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to register, replace, inspect, set up or retire an object, to unregister a
-    template or a retired instance, to retire a Pool together with the Resources it owns, to
-    install a package, for an operation reserved to the root Interface, to reconcile an
-    invocation, to open or close a Conduit, or for a control.
+    An actor asks to register, replace, inspect, set up or retire an object; unregister a
+    template or retired instance; retire a Pool with its Resources or a Fleet with its Agents;
+    install a package; perform an operation reserved to root; reconcile an invocation; open or
+    close a Conduit; lift a tombstone; list objects; or use a control.
   then: >-
-    The request is authorized by an open Conduit from the actor that lists the operation, to the
-    target that the first of these rows that fits it names. Each row gives the request, the
-    family and state of the object, and the target.
-    (1) Registering, with `register.v1`, a Resource whose owner is a Pool that already exists
-    and is not retired: `management` and that Pool, each of the two Conduits listing
-    `register.v1`.
-    (2) Registering any other object with `register.v1`, such as a Resource whose owner is
-    retired or is registered in the same submission, the Resources of a Pool's own entries among
-    them, and replacing any object with `replace.v1` or unregistering one with `unregister.v1`:
+    The request is authorized by an open Conduit from the actor listing the operation to the
+    target named by the first fitting row. Each row gives the request, the object's family and
+    state, and the authorizing target.
+    (1) Registering a Resource whose owner is a live existing Pool, with `register.v1`:
+    `management` and that Pool, each listing `register.v1`.
+    (1A) Registering an Agent whose owner is a live existing Fleet, with `register.v1`:
+    `management` and that Fleet, each listing `register.v1`; ACC-057 also applies.
+    (2) Registering any other object, including a Resource or Agent whose owner is retired or is
+    in the same submission, and a Pool's own entries; replacing with `replace.v1`; or
+    unregistering with `unregister.v1`: `management`.
+    (3) A new instance for a nested instantiation under LIF-009, with `register-replacement.v1`:
+    the targets given by row 1 or 2 for registering that instance, each listing
+    `register-replacement.v1` instead of `register.v1`.
+    (4) Setting up or retiring a Resource, naming it in `instance`: its owning Pool, and none
+    where that Pool is retired.
+    (4A) Setting up or retiring an Agent, naming it in `instance`: its owning Fleet, and none
+    where that Fleet is retired.
+    (5) Setting up or retiring an Interface, Pool or Fleet: `management`.
+    (6) Inspecting a Resource: its owning Pool, or `management` where that Pool is retired.
+    (6A) Inspecting an Agent: its owning Fleet, or `management` where that Fleet is retired.
+    (7) Inspecting any other object, an Interface, Pool, Fleet, Conduit or template:
     `management`.
-    (3) A request under LIF-009 for a new instance for a nested instantiation,
-    `register-replacement.v1`: the targets that row 1 or row 2 gives for registering the
-    instance it makes, each Conduit listing `register-replacement.v1` in place of `register.v1`.
-    (4) Setting up or retiring a Resource, with `set-up.v1` or `retire.v1`, which name the
-    instance in the input `instance`: the Pool that owns it, and none where that Pool is
-    retired.
-    (5) Setting up or retiring an Agent, an Interface or a Pool, with `set-up.v1` or
-    `retire.v1`: `management`.
-    (6) Inspecting a Resource with `inspect.v1`: the Pool that owns it, or `management` where
-    that Pool is retired.
-    (7) Inspecting any other object with `inspect.v1`, an Agent, an Interface, a Pool, a
-    Conduit or a template: `management`.
-    (8) Retiring a Pool together with the Resources it owns, with `retire-with-resources.v1`,
-    the one operation of LIF-021: that Pool.
-    (9) Installing a package, and every operation reserved to the root Interface under ACC-032,
-    which are operations of `management`: `management`.
-    (10) Opening or closing a Conduit: `access`, under ACC-006 and ACC-012.
+    (8) Retiring a Pool with its Resources, with `retire-with-resources.v1`: that Pool.
+    (8A) Retiring a Fleet with its Agents, with `retire-with-agents.v1`: that Fleet.
+    (9) Installing a package or an operation reserved to root under ACC-032: `management`.
+    (10) Opening or closing a Conduit, or lifting a tombstone: `access` (ACC-006, ACC-012,
+    ACC-053).
     (11) A control: the instance itself.
-    (12) Reconciling an invocation where the instance that it was dispatched to, or, for an
-    invocation of a management verb, the instance that it named, no longer exists: `management`,
-    and the reconciliation records the outcome and stores nothing.
-    (13) Reconciling any other invocation of a management verb: the target that authorized the
-    request being reconciled, or `management` where that target is a retired Pool.
-    (14) Reconciling any other invocation, of a control or of any other operation: the Pool that
-    owns the instance it was dispatched to, where that instance is a Resource and the Pool is
-    not retired, and `management` where it is a Resource whose Pool is retired, an Agent, an
-    Interface or a Pool.
-    No request is authorized against a retired Pool.
+    (12) Reconciling an invocation whose dispatched-to instance, or the instance a management
+    verb named, no longer exists: `management`; it records the outcome and stores nothing.
+    (13) Reconciling any other management verb: the target that authorized it, or `management`
+    where that target is a retired Pool or Fleet. ACC-055 adds a condition for a holder other
+    than root.
+    (14) Reconciling any other invocation dispatched to a Resource: its owning Pool, or
+    `management` where that Pool is retired. For one dispatched to an Interface, Pool or Fleet:
+    `management`. ACC-055 adds a condition for a holder other than root.
+    (14A) Reconciling any other invocation dispatched to an Agent: its owning Fleet, or
+    `management` where that Fleet is retired. ACC-055 adds a condition for a holder other than
+    root.
+    (15) Listing with `list.v1`: the container, `management`, a Pool or a Fleet (OPS-036).
+    No request is authorized against a retired Pool or Fleet.
   observable: >-
-    An actor with an open Conduit to that target listing the operation is permitted, and any
-    other actor reports refused. Except for a control, a Conduit to the object itself, or to any
-    other target, does not permit the request. An actor that registers a Resource into a Pool
-    that exists and is not retired, or asks for a new Resource for one of its entries, with a
-    Conduit to `management` that lists the operation and none to the Pool that lists it, reports
-    refused. The Conduit to a Pool that authorizes retiring it together with its Resources need
-    list only `retire-with-resources.v1`, as LIF-021 states. The setup or the retirement of a
-    Resource is reconciled through a Conduit to the Pool that owns it, that of an Agent, an
-    Interface or a Pool through a Conduit to `management`, and the opening or the closing of a
-    Conduit through a Conduit to `access`, whose capability `access-control.v1` includes
-    `reconcile.v1`. A registration is authorized against `management` and is reconciled through
-    a Conduit to it, whether or not it also needed a Conduit to a Pool. A management verb is an
-    operation of `object-management.v1`, `access-control.v1` or `pool-management.v1`, under
-    CON-024: an invocation of `install.v1` or of `purge.v1` is reconciled through a Conduit to
-    `management`, which authorized it, like that of any other verb of `object-management.v1`. An
-    invocation that is not of a management verb is never reconciled through a Conduit to the
-    instance it was dispatched to: an operation of a Resource, a control among them, is
-    reconciled through a Conduit to the Pool that owns that Resource, and an operation of an
-    Agent, an Interface or a Pool through a Conduit to `management`. A setup hook or a retire
-    hook is dispatched to its own instance, under ACC-018, and is reconciled in the same way. No
-    capability has to include `reconcile.v1` beside `object-management.v1`,
-    `pool-management.v1`, which every Pool offers, and `access-control.v1`. Where a request
-    named here is an onward request, the Conduit that authorizes it is one of the instance that
-    sent it, under ACC-016, and not one of the caller it serves. Every Conduit to a retired Pool
-    is closed, under CON-008, so no request is made through one. A Resource of a retired Pool is
-    inspected, and an invocation that was dispatched to it, its setup or its retirement is
-    reconciled, through a Conduit to `management` that lists the operation, as the Pool itself
-    is inspected. An invocation of `retire-with-resources.v1`, and the Pool's own retirement
-    that it dispatched, are reconciled through such a Conduit too: the Pool authorized them, and
-    it is retired from the moment its retirement is dispatched. While the Pool is not retired, a
-    Conduit to `management` does not permit those requests: at any moment one target authorizes
-    a request. Every other request that this promise authorizes against a Pool reports refused
-    once the Pool is retired, because every Conduit to it is closed and a request through a
-    closed Conduit reports refused under ACC-011, and one made through a Conduit to `management`
-    reports refused too: setting up or retiring a Resource that the Pool owns, and
-    `retire-with-resources.v1`, which has no input that could name the Pool. A retired Pool
-    whose shutdown is not confirmed is retired again with `retire.v1`, which names the Pool and
-    is authorized against `management`, under LIF-026. Registering a Resource whose owner is a
-    retired Pool, and asking under LIF-009 for a new Resource for an entry of one, need the
-    Conduit to `management` alone, and a permitted request for either reports invalid: POOL-004
-    rejects the document, and POOL-017 gives the reason for the entry. An invocation whose
-    instance no longer exists is reconciled through a Conduit to `management` that lists
-    `reconcile.v1`, whichever target would have authorized the reconciliation while the instance
-    existed: its outcome becomes succeeded or failed under OPS-014, and nothing else changes,
-    because nothing is left to change. For a control, REV-010 says what such a reconciliation
-    names. An object that does not exist has no owning Pool. Authority to inspect it, or to
-    act on it by a stale reference, is `management`'s alone. With that authority the request
-    reports invalid under OPS-029. A caller with only a Pool's authority reports refused before
-    any diagnostic, under OPS-023, and learns nothing of whether the object existed. Where the
-    object exists, the applicable target is the one the rows above name.
+    An actor with the listed Conduits is permitted, subject to further conditions such as
+    ACC-024, ACC-054, ACC-055 and ACC-057; any other actor reports refused. Except for a
+    control, a Conduit to the object itself or another target permits nothing. Registration into
+    a live existing owner needs both Conduits: one to `management` alone is insufficient.
+    Registration into a retired owner needs only `management` and reports invalid under POOL-004
+    or FLEET-003; a replacement for an entry of a retired Pool reports invalid under POOL-017. A
+    registration is reconciled through `management`, whether or not registering also needed an
+    owning Pool or Fleet. A cascade needs only its own operation listed, under LIF-021. Setup,
+    retirement and ordinary invocations of a Resource are reconciled through its Pool, and those
+    of an Agent through its Fleet; those of Interfaces, Pools and Fleets through `management`.
+    Opening, closing and lifting are reconciled through `access`. Hooks are dispatched to their
+    own instance under ACC-018 and reconciled as ordinary invocations of that instance. Only the
+    management capabilities `object-management.v1`, `pool-management.v1`, `fleet-management.v1`
+    and `access-control.v1` need list `reconcile.v1` (OPS-019). An onward request uses the
+    sending instance's Conduit, not that of the caller it serves (ACC-016).
+    Every Conduit to a retired Pool or Fleet is closed under CON-008. Inspection of its
+    remaining members and reconciliation of their invocations, their setups and retirements
+    included, go through `management`. The cascade and the retirement it dispatched for its
+    container are reconciled there too, because the container is retired when its retirement is
+    dispatched. Before then `management` permits none of those reconciliations; exactly one
+    target authorizes a request at any moment. Other requests assigned to that owner, including
+    setup or retirement of a member and the cascade, report refused through its closed Conduit,
+    and through `management` too. A retired container with shutdown unconfirmed is retired again
+    through `management` (LIF-026). A reconciliation whose instance no longer exists records
+    succeeded or failed under OPS-014 and stores nothing; for a control REV-010 fixes its
+    inputs. An object that does not exist has no owning Pool or Fleet. Authority to inspect it
+    or act on it by a stale reference is `management`'s alone. With that authority the request
+    reports invalid under OPS-029. A caller with only an owner's authority reports refused
+    before any diagnostic under OPS-023 and learns nothing of whether the object existed. An
+    object's inventory is part of its inspection: no separate Conduit authorizes inspecting each
+    Conduit shown there (LIF-013). Tombstone inspection follows LIF-040; listing never supplies
+    additional inspection authority (OPS-036).
   vectors: []
 
 
@@ -786,4 +785,109 @@
     own retirement apart. The invocation itself runs to its end. A hook is not an onward
     request, and the stop of the consumer's run is a provider call, under PRV-005 and PRV-008,
     which is not a request and which no Conduit permits, under PRV-004.
+  vectors: []
+
+- id: ACC-044
+  layer: convention
+  level: must
+  when: >-
+    A Conduit is opened.
+  then: >-
+    It keeps the provenance of that opening as its own state from then on, and in its tombstone
+    after removal. For a request, this is `actor`, the caller; `sentBy`, the sending instance;
+    `invocation`, the open invocation or the setup whose part opened it; and `openedThrough`,
+    the authorizing Conduit. For a setup part under ACC-005, `openedThrough` holds every open
+    Conduit to `access` of the sender that would have permitted that part independently when
+    decided, in ID order. For an engine-made Conduit it is `cause`, `first-start` or `default`.
+  observable: >-
+    Inspection and inventory show the provenance. Reconciling an open as having occurred gives
+    that invocation's provenance. Repeating an open of an already open Conduit preserves its
+    original provenance. Nothing changes it afterwards, and a purge touches none of it
+    (REC-004). It is state apart from records, with the form `provenance.v1`; this adds no
+    record field. A Conduit with no `openedThrough` has no opening authority to name as closed.
+    A snapshot is a fixture, and supplies no opening event from which provenance can be
+    inferred.
+  vectors: []
+
+- id: ACC-053
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to lift a tombstone.
+  then: >-
+    The request is `lift.v1` of `access`, with the tombstone's ID in the input `id`. It is
+    dispatched only through an open Conduit to `access` listing `lift.v1` whose bound covers
+    what that tombstone holds. For a Conduit, it covers the target and every listed operation as
+    for closing (ACC-012), or meets ACC-030 for a Conduit to `access`. For another instance, it
+    covers that instance as a target under ACC-029; a Resource is also covered through its
+    owning Pool. Coverage is checked against the kept IDs, not any later objects under the
+    names. The lift removes the named tombstone and each tombstone it caused for which that same
+    authorizing Conduit would independently permit a lift. The rest remain.
+  observable: >-
+    The result lists caused tombstones left in place, in full only where the caller may see them
+    under LIF-040, with no hidden counts. An actor lacking the operation or coverage reports
+    refused. There is no root-only reservation for lifting root's tombstones; ACC-054 separately
+    governs root's Conduits. ACC-030 permits passing `lift.v1` only where the actor's own
+    authority lists it, so a bound can withhold it. An ID naming no tombstone reports invalid
+    under OPS-029 to an unbounded holder, and refused to a bounded holder, which learns nothing.
+    A lift registers and opens nothing and names no revision (REV-012); it is recorded with its
+    input and reconciled through `access` (ACC-033, ACC-055). ACC-056 states the disclosure
+    tiers for the result.
+  vectors: []
+
+- id: ACC-054
+  layer: convention
+  level: must
+  when: >-
+    A request would open a Conduit whose consumer is root, or register such a Conduit.
+  then: >-
+    It is dispatched only where root sent it on its own behalf, in SEC-008's form. Otherwise it
+    is not dispatched and reports refused.
+  observable: >-
+    A delegate is refused whatever its bound, as is an onward request serving root. A refused
+    opening leaves the Conduit registered; a refused registration makes nothing. This also
+    applies to a declared Conduit or nested replacement in a submission and a setup part under
+    ACC-005. With ACC-024, every requested opening, registration and closing of root's Conduits
+    is root's own act. Engine-made first-start and default Conduits follow FST-002 and
+    FLEET-005.
+  vectors: []
+
+- id: ACC-055
+  layer: convention
+  level: must
+  when: >-
+    The consumer of the authorizing Conduit, other than root, asks to reconcile an invocation
+    through a bounded Conduit to `access`, or through a Conduit to a Pool or Fleet. That
+    consumer may be an Interface, an Agent or a Resource.
+  then: >-
+    Through `access`, the bound must cover what the reconciled request needed it to cover: the
+    target and every operation of the Conduit opened or closed, ACC-030's condition for a
+    Conduit to `access`, or the tombstone lifted under ACC-053. Through a Pool, the invocation
+    must have been sent by that consumer. Through a Fleet, it must have been sent by that
+    consumer, that Fleet or an Agent the Fleet owns. Otherwise the reconciliation is not
+    dispatched and reports refused.
+  observable: >-
+    The invocation's sending instance is kept under OPS-008 and compared with that consumer.
+    A hook counts as sent by the instance that sent the setup or retirement within which it was
+    dispatched. This check is part of the access decision and
+    precedes OPS-030's conflict for an outcome that is not unknown: refusal reveals no outcome.
+    Root is exempt only as the consumer of the authorizing Conduit; a Resource serving root
+    remains subject to these conditions. An unbounded Conduit to `access` and reconciliation
+    through `management` have no additional condition under this promise. A Fleet is never a
+    sender in this version (FLEET-004).
+  vectors: []
+
+- id: ACC-057
+  layer: convention
+  level: must
+  when: >-
+    A registration or `register-replacement.v1` would make an Agent.
+  then: >-
+    It is dispatched only where root sends it on its own behalf, in SEC-008's form; otherwise it
+    is not dispatched and reports refused.
+  observable: >-
+    This applies to every Agent in a submission, including one whose Fleet is in that
+    submission. Having both Conduits in ACC-033 row 1A is insufficient for another actor or an
+    onward request serving root. A refused submission registers nothing. Root still needs the
+    authorizing Conduits in ACC-033.
   vectors: []

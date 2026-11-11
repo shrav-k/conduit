@@ -1,6 +1,6 @@
 # Conduit specification
 
-Status on 2026-11-10: draft, begun 2026-11-05. Incomplete, and not a release. Every area has
+Status on 2026-11-11: draft, begun 2026-11-05. Incomplete, and not a release. Every area has
 been written as promises, and the core package, the JSON Schemas of documents and the
 manifest's format have been written as documents. The first build has a strict loader, a pure
 core on S1 and a runnable engine shell in [engine/](../engine/README.md).
@@ -13,24 +13,8 @@ core, vectors and promises, and no unsafe finding in the latest round of readers
 This page describes the specification as it stands now. The decision records are listed under
 [Where the reasons are](#where-the-reasons-are).
 
-As of 2026-11-10, rulings 49 to 59 are accepted. Their specification changes are not yet
-written here; rulings 57 and 58 also govern documentation upkeep:
-
-- [Ruling 49](../docs/proposals/ruling-49/README.md): sign-in prompts to the root Interface and checks of the expected account.
-- [Ruling 50](../docs/proposals/ruling-50/README.md): enrollment's direction, confirmation before admission and the Interface as a control panel for pending actions.
-- [Ruling 51](../docs/proposals/ruling-51/README.md): managed machines and peer engines, with separate identity and authority.
-- [Ruling 52](../docs/proposals/ruling-52/README.md): explicit refusals and enrollment's decisions, with verification later settled by ruling 56; submissions retain SUB-010's rule.
-- [Ruling 53](../docs/proposals/ruling-53/README.md): five core additions and simplification decisions, followed by rulings 55 and 59 on the short form, approval and defaults.
-- [Ruling 54](../docs/proposals/ruling-54/README.md): Agents stay in one Project for life, with individual revocation of grants made under a closed authority.
-- [Ruling 55](../docs/proposals/ruling-55/README.md): the short form is language, canonical documents remain legal, names stay stable and commands with named flags approve dangerous acts.
-- [Ruling 56](../docs/proposals/ruling-56/README.md): provider-defined enrollment verification, evidence shown by the engine at root and recorded exceptions for weaker checks.
-- [Ruling 57](../docs/proposals/ruling-57/README.md): nonbinding documents may be edited, condensed or removed once their relevant Conduit information is preserved elsewhere.
-- [Ruling 58](../docs/proposals/ruling-58/README.md): earlier logged choices accepted with stated exceptions, fixed ruling records and condensation at close; documentation work is pending.
-- [Ruling 59](../docs/proposals/ruling-59/README.md): the Agent-owning family's structure, root's default Conduits, discovery and replacement bounds; the family's name and later authority decisions remain open.
-
-The [language's shape](../docs/proposals/language-shape/README.md) and the
-[Project model](../docs/proposals/owner-direction/2026-11-10-projects.md) are being settled
-first, so that each change is written once. These records do not supply promises missing here.
+Accepted decisions still waiting to be written are listed in [IN_FORCE.md](../IN_FORCE.md).
+The promises here determine the language; those decisions supply no missing promise.
 
 The specification alone binds. Nothing under [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) binds:
 it is the design as it stood before the specification, superseded, and kept as source material
@@ -127,7 +111,7 @@ through Conduits.
    The JSON Schema of each document is in [schemas/](schemas/README.md), and the
    [example project](schemas/examples/valid/project/) shows each shape.
 2. Templates and instances: `promises/instantiation.yaml` and `promises/templates.yaml`.
-3. Ownership, placement and the Conduits: `promises/pools.yaml`, `promises/placement.yaml` and
+3. Ownership, placement and the Conduits: `promises/pools.yaml`, `promises/fleets.yaml`, `promises/placement.yaml` and
    `promises/conduits.yaml`.
 4. Who may reach what: `conventions/access.yaml`, whose ACC-033 lists the target that
    authorizes each management request; then
@@ -176,7 +160,7 @@ in the order of the Contents table, which is an order a reader of the Language l
    `promises/templates.yaml` and `promises/contracts.yaml`.
 3. Packages and submissions: `promises/naming.yaml`, `promises/packages.yaml`,
    `promises/manifest.yaml` and `promises/submissions.yaml`.
-4. The families and how they relate: `promises/pools.yaml`, `promises/placement.yaml`,
+4. The families and how they relate: `promises/pools.yaml`, `promises/fleets.yaml`, `promises/placement.yaml`,
    `promises/conduits.yaml` and `promises/first-start.yaml`.
 5. What the engine reaches behind contracts: `promises/providers.yaml`, then
    `promises/secrets.yaml`.
@@ -193,7 +177,7 @@ says what the promises leave open.
 
 ## Contents
 
-Counts and vector status below are as of 2026-11-10. A vector tag tests a slice of a promise,
+Counts below are current; vector coverage is the recorded S1 coverage as of 2026-11-10. A vector tag tests a slice of a promise,
 not necessarily its whole obligation; the [coverage manifest](../conformance/manifest.yaml)
 lists the cases and the reasons for missing S1 coverage.
 
@@ -212,9 +196,10 @@ lists the cases and the reasons for missing S1 coverage.
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, `conduit.yml` or `conduit.json`, its keys, implementation items, which variables of a run they may not bind, which files of a project are its documents, and the layout of a package's archive | Draft; 17 promises; vectors test slices of 9 promises |
 | [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, that every engine takes a directory, and documents, files, submissions or archives beyond a limit that the engine states | Draft; 11 promises; vectors test slices of 10 promises |
 | [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 15 promises; vectors test slices of 10 promises |
+| [promises/fleets.yaml](promises/fleets.yaml) | The Fleet family, fixed Agent ownership, names and root defaults | Draft; 6 promises; no vectors yet |
 | [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: nodes, machines, labels and placement by the provider, and values tied to a node | Draft; 21 promises; vectors test slices of 7 promises |
 | [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 22 promises; vectors test slices of 12 promises |
-| [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 5 promises; vectors test slices of 5 promises |
+| [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 6 promises; vectors test slices of 5 promises |
 | [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself, other than a `plain` server reached by `remote`, and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a provider's run made again after the engine restarts | Draft; 28 promises; vectors test slices of 7 promises |
 | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; vectors test slices of 1 promise |
 | [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 102 documents exported and 1 implementation, which is also an export |
@@ -225,7 +210,7 @@ lists the cases and the reasons for missing S1 coverage.
 | [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1`, which the engine applies itself | Draft; 2 contracts |
 | [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference, `secret-reference.v1` among them | Draft; 12 contracts |
 | [core/results.yaml](core/results.yaml) | The Schema contracts `object.v1`, `diagnostic.v1`, `handle.v1`, `condition.v1` and `record.v1`: an object as a result names it, a diagnostic, a handle, a condition and a record | Draft; 5 contracts |
-| [core/templates.yaml](core/templates.yaml) | The templates that first start instantiates: those of the five first-start objects and of the two Conduits of `root` | Draft; 7 templates |
+| [core/templates.yaml](core/templates.yaml) | The core templates, including those of the five first-start objects and root's declared Conduits | Draft; 7 templates |
 | [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 41 contracts in 8 files |
 | [schemas/document.yaml](schemas/document.yaml) | `document.v1`: any template, instance or contract document | Draft; 1 contract |
 | [schemas/envelope.yaml](schemas/envelope.yaml) | `apiVersion`, what every document carries, and `metadata` | Draft; 5 contracts |
@@ -238,9 +223,9 @@ lists the cases and the reasons for missing S1 coverage.
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: submitted projects, a package, and the instance documents of the first-start objects | Draft; 10 files in 4 directories, and one file whose name begins with a dot, which is not read |
 | [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 62 files |
 | [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 41 files |
-| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes, and the expected ID that a lifecycle action may carry | Draft; 36 promises; vectors test slices of 17 promises |
-| [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 29 promises; vectors test slices of 20 promises |
-| [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 31 promises; vectors test slices of 29 promises |
+| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes, and the expected ID that a lifecycle action may carry | Draft; 38 promises; vectors test slices of 17 promises |
+| [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 34 promises; vectors test slices of 20 promises |
+| [conventions/operations.yaml](conventions/operations.yaml) | The convention on idempotency keys and outcomes | Draft; 32 promises; vectors test slices of 29 promises |
 | [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 14 promises; vectors test slices of 3 promises |
 | [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 5 promises; vectors test slices of 2 promises |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; vectors test slices of 6 promises |
@@ -248,7 +233,7 @@ lists the cases and the reasons for missing S1 coverage.
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 44 promises; vectors test slices of 23 promises |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 15 items |
 
-Every area has been written as promises, 455 in all: 203 of the layer `language`, 208 of the
+Every area has been written as promises, 470 in all: 207 of the layer `language`, 219 of the
 layer `convention` and 44 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
 `schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the core exist on
@@ -328,16 +313,44 @@ read, in a diagnostic that does not reject (CTR-004, TPL-004).
 
 ## Limits of this version
 
-The two sections below state what the promises leave open. They are statements, not promises,
+The sections below state what the promises leave open. They are statements, not promises,
 and nothing tests them; each point cites the promises that state its parts. The first is what
 [ruling 44](../docs/proposals/ruling-44/README.md) accepted on delegation and on access to
 `management` (D03 and D04 of round 6). The second is section 4 of the principles review. Work
 that outlasts its invocation is left out, as [What this is](#what-this-is) says.
 
+### Fleets, discovery and tombstones
+
+A Fleet organizes administration and supplies no confinement (FLEET-004, IFC-022).
+A Conduit to a Fleet permits administering its Agents as ACC-033 states; running a turn
+requires a Conduit to the Agent. Registering an Agent needs `management` as well as its live
+existing Fleet, and in this version root alone sends that registration on its own behalf
+(ACC-057). A Fleet is never a caller and receives no credential or presented server.
+
+Two named exceptions to the [preservation tests](../docs/AUDIT.md#preservation-tests) apply.
+For test 2, root's defaults can be revoked only by retiring their targets; no request closes
+them (FLEET-005, ACC-024). For test 5, sign-in and answering pending actions are for Interfaces
+only; an Agent's own-Fleet management scope carries neither operation. The operation lists of
+root's defaults include both, as FLEET-005 states. Those contracts and the restrictions on
+answering them belong with the pending-action and sign-in promises.
+
+Discovery lists only what the holder may inspect and gives no hidden counts (OPS-036).
+An object's inventory shows its Conduits in full to whoever may inspect the object, including
+their provenance (LIF-013, ACC-044). A scope is computed from open inspection Conduits; no
+separate set is stored. A Pool's inspection shows its administrators (LIF-013).
+
+Tombstones accumulate until an actor lifts them through `access` (LIF-040, ACC-053).
+Recreating an instance under a stable name needs a lift wherever a tombstone matches; replacing
+a declared Conduit also needs one when its local name or target and capability match
+(LIF-041). A bound on an individual target keeps that target's ID and covers no replacement;
+a bound on its Pool covers a replacement owned by that same Pool (ACC-029).
+Reconciliation through bounded `access`, a Pool or a Fleet has the additional limits of
+ACC-055. Reconciliation through `management` has no sender limit under that promise.
+
 ### What access does not narrow
 
 - A bound limits a right to open by Pools, targets and operations, and never by filters
-  (ACC-029, ACC-030). Its consumer may open, for any consumer, a Conduit that lists any
+  (ACC-029, ACC-030). Subject to ACC-054 for root, its consumer may open, for any consumer, a Conduit that lists any
   operation that the bound names, to any target that the bound covers, with no filter but those
   that the Conduit's own template applies. A filter limits only the requests through its own
   Conduit, and the onward requests and hooks that carry it (ACC-009, ACC-017, ACC-018). So an
@@ -532,4 +545,8 @@ These records hold the decisions and their reasons. The specification governs wh
 - [The vocabulary audit](../docs/proposals/vocabulary-audit/README.md): the terms and names in force.
 - [Work across machines](../docs/proposals/multi-machine/README.md): identity, proof and enforcement.
 - [The first build's register](../docs/proposals/first-build/README.md): the increments and their findings and settlements.
-- [The ruling log](../docs/AUDIT.md#ruling-log): the owner's rulings and their records.
+- [The ruling log](../docs/proposals/ruling-log.md): the owner's rulings and their records.
+- [The Fleet structure](../docs/proposals/ruling-59/README.md) and [its name](../docs/proposals/ruling-60/README.md): ownership, defaults and discovery.
+- [The core additions](../docs/proposals/ruling-53/README.md) and [lifting](../docs/proposals/ruling-55/README.md): local names, preconditions, inventory and tombstones.
+- [Provenance](../docs/proposals/ruling-54/README.md), [access limits](../docs/proposals/ruling-62/README.md) and [scoped Interfaces](../docs/proposals/ruling-66/README.md): the authority behind an opening and the limits of reconciliation.
+- [The trust domain](../docs/proposals/ruling-51/README.md): the engine's SPIFFE namespace.

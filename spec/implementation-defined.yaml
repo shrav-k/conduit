@@ -10,10 +10,11 @@
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 - id: DL1
-  subject: Order of a Pool's Resources
+  subject: Order of a Pool's Resources or a Fleet's Agents
   document: >-
-    The order in which `retire-with-resources.v1` retires Resources that depend on each other
-    in a cycle, or not at all, under LIF-021.
+    The order in which `retire-with-resources.v1` retires a Pool's Resources, or
+    `retire-with-agents.v1` a Fleet's Agents, that depend on each other in a cycle, or not at all,
+    under LIF-021.
 - id: DL2
   subject: Dispatch records
   document: >-
@@ -47,7 +48,9 @@
 - id: DL6
   subject: First start
   document: >-
-    What triggers it, what an interrupted or repeated one does, and how repair works.
+    What triggers it, what an interrupted or repeated one does, and how repair works. How the
+    unique SPIFFE trust domain is configured or generated and kept under FST-007, including
+    across restarts and moves; its value is fixed after first start.
 - id: DL7
   subject: Packages
   document: >-
@@ -96,65 +99,63 @@
   document: >-
     The mechanism by which the engine establishes, under IFC-022, which instance a request comes
     from, and by which it proves itself, as an enforcement point, to a gate, under PRV-025 and
-    IFC-017: one root of trust that issues every credential, for both directions. What a request
-    presents, and how the engine establishes from it exactly one instance or none, or neither
-    where whether that instance still exists cannot be read, under ACC-037, by a cryptographic
-    proof of the instance that sent it wherever the request crosses machines. Its two forms of
-    proof: a signed token in the form of a JWT-SVID, whose `sub` names the sender and whose
-    `aud` names the receiver, which the engine's address always accepts, over TLS at an `https`
-    URL and, without TLS, at an `http` URL on loopback that it gives a run, under
-    IFC-042, and which toward a run names as its audience the instance's ID exactly as the `sub`
-    of that run's own `token` names it, so that a gate finds in `identity` the audience to
-    admit; and mutual TLS, with X.509 certificates that name their holder in exactly one URI and
-    serve both as client and as server, as an X509-SVID does, which the engine's address may
-    accept beside the token. To a run's gate the engine presents both: its certificate, to a
-    gate that asks for one in the TLS handshake, and its token, in the `Authorization` header,
-    so that a gate written once to check either works under every engine, under PRV-025. Which
-    of the two, one or both, it presents to an item reached by `remote`, under IFC-041, and
-    which a run presents to the engine beside the token that IFC-042 has it accept. The ID by
-    which a credential names the engine's role, and that by which it names each instance, which
-    is by the instance's ID, and how an ID fits the characters that its form allows. SPIFFE's
-    form is recommended and not required: `spiffe://<trust domain>/conduit/engine` for the
-    engine's role, and `spiffe://<trust domain>/conduit/instance/<id>` for an instance. A
-    credential whose IDs are in another form has the shape of an SVID without being one, so a
-    gate that admits only SPIFFE IDs works only with an engine that uses that form, and one that
-    admits the ID that `engine-id` holds works under every engine, under PRV-025. The mechanism
-    issues a credential that names the engine's credential ID, a certificate that names the host
-    of the engine's address, and a token whose audience is anything but the engine's address, to
-    the engine alone. Where the signing keys are held, such as with an issuer outside the
-    engine, in a key management service or in the store of the engine's own state, each of
-    which, with its backups and operators, is then inside the domain of trust; where the keys
-    that check a credential are published, so that a credential can be checked without the
-    engine; the authorization server that the protected resource metadata at the engine's
-    address names, under IFC-042, the grants of the protocol's authorization that it supports
-    for a consumer, and how it decides which instance a token that it issues names; and how the
-    user configures, for the URL of an item reached by `remote`, an authorization server that
-    the user runs, and the key and the client identifier of the JWT assertion under RFC 7523
-    with which the engine authenticates to it with its own credential, under IFC-041. The
-    issuer that the `iss` of every token that the mechanism signs names is an
-    authorization server that the protected resource metadata at the engine's address lists, and
-    is the one that an item reached by `remote` names where the engine sends it such a token,
-    under IFC-041, since the protocol has a client send a server only tokens that the server's
-    authorization server issued. The roots from which the certificate at the engine's address is
-    issued: the mechanism's own, or others, such as those of a public certification authority.
-    The roots against which the engine checks the certificate of an item reached by `remote`,
-    under IFC-017, such as the operating system's store or roots that the user configures. What
-    the mechanism puts in the input `identity` of `run.v1`, under PRV-007, for every run, on the
-    engine's own runner as under any runtime provider, under the names and in the files that
-    PRV-022 fixes: the content of each; the engine's address that it gives a run, which is an
-    `https` URL, or an `http` URL on loopback only for a run on the engine's own runner whose
-    process ends when the engine stops, on an engine that, as configured, can neither restart on
-    another machine nor run as several parts, under DL17, since a run that sends its `token` to
-    that address while the engine does not hold it, as during a restart, gives the token to
-    whatever program has taken it; and where it gives `tls.crt` and `tls.key`, which it gives
-    for every run whose server stands behind a gate. A run's credential, and the certificate
-    that its gate serves, last as long as its instance: none is renewed during a run in this
-    version, the time at which it lapses, its `exp` or its `notAfter`, is set so far ahead that
-    it does not lapse while the instance exists, and the engine's check on every request that
-    the instance still exists is the only revocation. Each root, and each key in `jwks.json`, is
-    kept for as long as a run that holds it lasts. On an engine of several parts, under DL17,
-    the engine's own credential is short-lived, and the conformance document states its
-    lifetime; on any other engine it may be.
+    IFC-017: in this version one root of trust that issues every credential, for both
+    directions. What a request presents, and how the engine establishes from it exactly one
+    instance or none, or neither where whether that instance still exists cannot be read, under
+    ACC-037, by a cryptographic proof of the instance that sent it wherever the request crosses
+    machines. Its two forms of proof: a signed token in the form of a JWT-SVID, whose `sub`
+    names the sender and whose `aud` names the receiver, which the engine's address always
+    accepts, over TLS at an `https` URL and, without TLS, at an `http` URL on loopback that it
+    gives a run, under IFC-042, and which toward a run names as its audience the instance's ID
+    exactly as the `sub` of that run's own `token` names it, so that a gate finds in `identity`
+    the audience to admit; and mutual TLS, with X.509 certificates that name their holder in
+    exactly one URI and serve both as client and as server, as an X509-SVID does, which the
+    engine's address may accept beside the token. To a run's gate the engine presents both: its
+    certificate, to a gate that asks for one in the TLS handshake, and its token, in the
+    `Authorization` header, so that a gate written once to check either works under every
+    engine, under PRV-025. Which of the two, one or both, it presents to an item reached by
+    `remote`, under IFC-041, and which a run presents to the engine beside the token that
+    IFC-042 has it accept. Every credential names its holder by the SPIFFE IDs fixed by FST-007
+    in the engine's unique trust domain: `spiffe://<trust-domain>/conduit/engine` and
+    `spiffe://<trust-domain>/conduit/instance/<id>`. How an instance's ID fits the characters
+    that the SPIFFE path allows. `/conduit/node/<id>` is reserved. A gate admits the engine's ID
+    in `engine-id`, under PRV-025. The mechanism issues a credential that names the engine's
+    credential ID, a certificate that names the host of the engine's address, and a token whose
+    audience is anything but the engine's address, to the engine alone. Where the signing keys
+    are held, such as with an issuer outside the engine, in a key management service or in the
+    store of the engine's own state, each of which, with its backups and operators, is then
+    inside the domain of trust; where the keys that check a credential are published, so that a
+    credential can be checked without the engine; the authorization server that the protected
+    resource metadata at the engine's address names, under IFC-042, the grants of the protocol's
+    authorization that it supports for a consumer, and how it decides which instance a token
+    that it issues names; and how the user configures, for the URL of an item reached by
+    `remote`, an authorization server that the user runs, and the key and the client identifier
+    of the JWT assertion under RFC 7523 with which the engine authenticates to it with its own
+    credential, under IFC-041. The issuer that the `iss` of every token that the mechanism signs
+    names is an authorization server that the protected resource metadata at the engine's
+    address lists, and is the one that an item reached by `remote` names where the engine sends
+    it such a token, under IFC-041, since the protocol has a client send a server only tokens
+    that the server's authorization server issued. The roots from which the certificate at the
+    engine's address is issued: the mechanism's own, or others, such as those of a public
+    certification authority. The roots against which the engine checks the certificate of an
+    item reached by `remote`, under IFC-017, such as the operating system's store or roots that
+    the user configures. What the mechanism puts in the input `identity` of `run.v1`, under
+    PRV-007, for every run, on the engine's own runner as under any runtime provider, under the
+    names and in the files that PRV-022 fixes: the content of each; the engine's address that it
+    gives a run, which is an `https` URL, or an `http` URL on loopback only for a run on the
+    engine's own runner whose process ends when the engine stops, on an engine that, as
+    configured, can neither restart on another machine nor run as several parts, under DL17,
+    since a run that sends its `token` to that address while the engine does not hold it, as
+    during a restart, gives the token to whatever program has taken it; and where it gives
+    `tls.crt` and `tls.key`, which it gives for every run whose server stands behind a gate. A
+    run's credential, and the certificate that its gate serves, last as long as its instance:
+    none is renewed during a run in this version, the time at which it lapses, its `exp` or its
+    `notAfter`, is set so far ahead that it does not lapse while the instance exists, and the
+    engine's check on every request that the instance still exists is the only revocation. Each
+    root, and each key in `jwks.json`, is kept for as long as a run that holds it lasts. On an
+    engine of several parts, under DL17, the engine's own credential is short-lived, and the
+    conformance document states its lifetime; on any other engine it may be.
+
 - id: DL15
   subject: Generated names
   document: >-

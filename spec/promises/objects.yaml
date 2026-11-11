@@ -15,7 +15,7 @@
   layer: language
   level: must
   when: >-
-    A template or an instance of one of the five families gives a name that is not made only of
+    A template or an instance of one of the six families gives a name that is not made only of
     lowercase letters, digits and hyphens, or does not start with a letter, or is longer than 63
     characters.
   then: >-
@@ -36,7 +36,9 @@
   observable: >-
     Resolving returns a diagnostic naming both objects. The existing object, its definition and
     its revision are unchanged. The names of the first-start objects are taken in this way from
-    first start. Which reason the registration reports is OBJ-025.
+    first start. Which reason the registration reports is OBJ-025. A name held by no existing
+    object may still be held by a tombstone; LIF-041 then gives conflict. FLEET-006 also forbids
+    a Pool and a Fleet from sharing a name.
   vectors: []
 
 - id: OBJ-003
@@ -190,26 +192,27 @@
   layer: language
   level: must
   when: >-
-    An instance document is read.
+    A framed instance document is read.
   then: >-
     It has `apiVersion`, `kind` and `from` as top-level keys and, beside them, the standard
-    arguments of its family: `owner` for a Resource, `placement` and `runtime` for an Agent and
-    a Resource, and `consumer` and `target` for a Conduit. `owner`, `consumer` and `target` are
-    required. `placement` may be left out, and PLC-002 then chooses it. `runtime` may be left
-    out, and PRV-006 says what it names and what runs an instance that gives none. The document
-    may have `metadata` and, under `arguments`, the values for its template's inputs. A
-    Conduit's `consumer` is a reference to an instance of the kind Interface, Agent or Resource,
-    and its `target` is a reference to an instance of the kind Interface, Agent, Resource or
-    Pool.
+    arguments of its family: `owner` for a Resource or an Agent, `placement` and `runtime` for
+    an Agent or a Resource, and `consumer`, `target` and optional `as` for a Conduit. `owner`,
+    `consumer` and `target` are required for those families. A Resource's owner is a Pool, and
+    an Agent's owner is a Fleet, each written as a bare name because its kind is fixed
+    (OBJ-006). `placement` may be left out and PLC-002 chooses it; `runtime` may be left out
+    under PRV-006. The document may have `metadata` and, under `arguments`, values for its
+    template's inputs. A Fleet has neither standard arguments nor `arguments` (FLEET-001). A
+    Conduit's consumer is an Interface, Agent or Resource; its target is an Interface, Agent,
+    Resource, Pool or Fleet. `as` is its local name, a name under OBJ-022.
   observable: >-
-    An instance document that leaves out `arguments` supplies no arguments, exactly as one that
-    writes an empty map. One that leaves out `metadata` gives no name, and the instance is named
-    under OBJ-003. A standard argument is accepted whatever inputs the template declares. An
-    `owner`, a `placement`, a `runtime`, a `consumer` or a `target` written under `arguments`, a
-    standard argument of another family, such as `runtime` on a Pool, a value for an input
-    written at the top level, or values written under `inputs`, are each rejected with a
-    diagnostic naming the key. `consumer` and `target` each accept more than one kind, so each
-    is written with its kind, as OBJ-006 requires. What `from` may be is INS-025.
+    Leaving out `arguments` supplies no arguments, as an empty map does. Leaving out `metadata`
+    gives no name and OBJ-003 names the instance. A standard argument is accepted whatever
+    inputs the template declares. A standard argument under `arguments`, a standard argument of
+    another family, such as `as` on a Resource or `runtime` on a Fleet, a template input at top
+    level, or values under `inputs`, are each rejected with a diagnostic naming the key.
+    `consumer` and `target` each state their kind under OBJ-006. A declared Conduit's local name
+    stays its key; `as` is for a Conduit instantiated on its own. Without `as` its local name is
+    its own name (IFC-012). What `from` may be is INS-025.
   vectors: []
 
 - id: OBJ-014
@@ -342,13 +345,13 @@
   layer: language
   level: must
   when: >-
-    A template, an instance or a contract document is read.
+    A framed template, instance or contract document is read.
   then: >-
-    It carries `kind`, which is one of ten: the five families `Interface`, `Agent`,
-    `Resource`, `Pool` and `Conduit`, and the five kinds of contract `Type`, `Capability`,
-    `Operation`, `Requirement` and `Schema`.
+    It carries `kind`, one of eleven: the six families `Interface`, `Agent`, `Resource`, `Pool`,
+    `Fleet` and `Conduit`, and the five contract kinds `Type`, `Capability`, `Operation`,
+    `Requirement` and `Schema`.
   observable: >-
-    A document with no `kind`, or with one outside the ten, is rejected with a diagnostic
+    A framed document with no `kind`, or one outside the eleven, is rejected with a diagnostic
     naming it.
   vectors: []
 

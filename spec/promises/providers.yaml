@@ -673,7 +673,10 @@
     record holds a value of `identity`, and no inspection result shows one, under PRV-024. The
     place where the provider keeps them, and the run's machine, hold a credential that presents
     as the instance while the instance exists. The engine's own runner delivers them to the
-    process it starts in the same way, under PRV-003.
+    process it starts in the same way, under PRV-003. The engine and instance credential IDs are
+    SPIFFE IDs in the domain that FST-007 fixes. `engine-id` holds
+    `spiffe://<trust-domain>/conduit/engine`; `token` and `tls.crt` name the instance as
+    `spiffe://<trust-domain>/conduit/instance/<id>`.
   vectors: []
 
 - id: PRV-023

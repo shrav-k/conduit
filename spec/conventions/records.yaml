@@ -118,7 +118,8 @@
     the same digest, so a request with that idempotency key and different contents still reports
     conflict under OPS-010. How the digest is computed is DL2 of the implementation-defined
     list. The outputs that the engine keeps for repeats under OPS-009 are not records either,
-    and a purge does not touch them.
+    and a purge does not touch them. Tombstones and Conduit provenance are also engine state
+    apart from records (LIF-040, ACC-044); a purge removes neither.
   vectors: []
 
 - id: REC-005

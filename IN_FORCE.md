@@ -53,7 +53,7 @@ How to read a line:
 - `python3 tools/set_names.py --check` verifies the names, and the same tool rewrites them. No domain is needed before an engine is built (34, 38 point 5).
 - The public name is ConduitLang, spelled `conduitlang` everywhere: the GitHub organization `conduitlang`, with `conduit-lang` reserved, the domain `conduitlang.dev` once it is bought, the npm scope `@conduitlang` and the crate prefix `conduitlang-`. The language stays Conduit (65).
 - Identifiers stay `github.com/shrav-k/conduit/...` until the organization exists. Then one command moves them, under ruling 35's rule, before any outside user adopts them. A project-controlled domain is preferred (47, 64 point 2, 65).
-- *Spec pending, batch 1*: definitions.md gains Fleet, with what a Fleet is not, and owner, default Conduit and provenance. "Project" keeps its meaning: the documents and the one manifest handed over in one registration. "Fleet" is taken for Agents, and prose avoids "fleet operator". Where ruling 54, ruling 59 or the brief says "Project", read "Fleet" (59 A5, 60).
+- **In spec/**: Fleet and what it is not, owner, default Conduit, provenance, scope, frame, local name, inventory, tombstone, lift and trust domain: spec/definitions.md (53 point 3, 54 point 3, 59 A5, 60, 66). "Project" keeps its meaning; "Fleet" names the Agent-owning family.
 - *Spec pending, with pending actions*: a pending action ends with an answer, never an outcome (56 point 8).
 
 ## 4. Documents, templates, instantiation and submission
@@ -67,9 +67,9 @@ How to read a line:
   - Submission as a set, which only registers: SUB-001 to SUB-011 (21 DR9 and DR10, 22, 27, 44 D11, 52 point 3).
 - *Open*: whether relative values in a submission go altogether is decided with the simplification of findings 4-01 and 4-11. Until then SUB-010 stands, and relative values are resolved only where an engine is handed a directory (52 point 3).
 - *Spec pending, batch 1*:
-  - An Agent's `owner` is required and fixed for life: its Fleet (59 A1, 60).
-  - A Pool and a Fleet may not share a name, and `management`, `access` and `system` are reserved as their names (59 A3).
-  - `as` gives a standalone Conduit a local name, and `open.v1` and `close.v1` take the optional `expectedId`, which changes LIF-037 (53 point 3).
+  - **In spec/**: the Agent's required, fixed Fleet owner: OBJ-013, FLEET-002, FLEET-003 (54 point 1, 59 A1, 60).
+  - **In spec/**: Pool and Fleet names and the reserved names: FLEET-006 (59 A3).
+  - **In spec/**: standalone Conduit local names and `expectedId` on opening and closing: OBJ-013, IFC-012, IFC-014, LIF-037 (53 point 3). Schemas and core inputs remain for order 036b, staged there for build 039.
   - The short form is part of the language. It is a sectioned document that `spec/` defines by numbered translation rules into the canonical documents. These stay unchanged and legal, and they remain the kernel, the wire and the stored form (55 A1).
   - An inline definition in the short form makes a template and its instance together, which amends rulings 8 and 18 and changes INS-002. The frame is optional, with the version taken from the manifest, which amends the wording of rulings 31, 35 and 37 and changes OBJ-017. A reference still names its kind, and ruling 19 is kept: the name alone stays allowed where the field accepts exactly one kind (55 A6).
   - `fleet: <name>` at the top of a file makes the Fleet, which owns every Agent in the file. An Agent written elsewhere states `owner:` (59 A6, 60).
@@ -114,19 +114,19 @@ How to read a line:
 - Policies are not in v0, and v0 has no outside policy decision point. A limit placed on an open Conduit is a candidate for a later version (A66) (41 items 3a and 3b).
 - Narrow provisioning goes through a trusted operation of a Resource, a broker. S1 and S2 measure whether that is good enough; if it is clumsy, a focused constraint, such as a list of allowed templates on access to `management`, comes back to the owner (44 point 2, D03 and D04). Until then, a bound that names the templates it covers is for teams, later (41 item 28).
 - Consent on the receiving side is v1, as a new version of `bound.v1` with a consumers item (62 C3).
-- *Spec pending, batch 1*:
-  - One authority over an object's whole life: its owning Pool for a Resource, its owning Fleet for an Agent, and `management` for everything else. Opening and closing stay on `access`. Setting up, retiring, inspecting and reconciling an Agent go through its Fleet, and registering an Agent needs `management` and its Fleet. This changes ACC-033 (30 OL2, 59 A1, 60).
-  - Root has standing Conduits. With each Pool, `system` included, and each Fleet, the engine makes a Conduit from root that lists every operation except the cascades and acting for a Fleet. Its name is generated, with `as` equal to the target's name. Root may close its own Conduits except its first-start and default ones. This changes FST-002, ACC-012 and ACC-024 (59 A3).
-  - The engine enforces tombstones of what was closed or retired, at open and at register. A tombstone is lifted only by a separate operation of `access` that a bound can withhold (53 point 3, 55 A7).
-  - Every Conduit records who opened it and through which Conduit (54 point 3, 61 B9).
-  - A bound's items keep the ID they resolved to. The plan of a replacement prints every bound that stops covering the Resource, and guidance puts bounds on Pools, which cover a replacement (59 A7).
+- **In spec/**:
+  - One lifecycle authority for each family, including the owning Fleet for an Agent: ACC-033, CON-024, OPS-014, REV-010 (30 OL2, 59 A1, 60).
+  - **In spec/**: root's default Conduits and the closing exception: FLEET-005, FST-002, FST-005, ACC-012, ACC-024 (59 A3). Core templates remain for order 036b, staged there for build 040.
+  - **In spec/**: tombstones at register and open, and lifting through bounded access: LIF-040, LIF-041, ACC-053, LIF-009, LIF-035 (53 point 3, 55 A7). Core contracts remain for order 036b.
+  - **In spec/**: opening provenance, retained in inventory and tombstones: ACC-044, LIF-013, LIF-040, REC-004 (54 point 3). The list on close, review and marks remain in batch 2; provenance contracts remain for order 036b.
+  - **In spec/**: bound items retain resolved IDs: ACC-029 (59 A7). Printing affected bounds in replacement plans remains for CLI order 052b; the guidance is in spec/README.md.
 - *Spec pending, batch 2*:
   - An actor other than root creates a Conduit with `make.v1`, an operation of `access`. It makes the Conduit from a registered template, within the actor's bound, and every condition on opening applies to making. This amends 44 point 2 for Conduits only (61 B8).
   - Grant review, as 61 B9 and B10 replace 54 points 2 to 4. Closing a Conduit through which grants were made closes none of those grants. The close lists them, and each is marked, by computation, as granted under a closed authority; later grants under a closed authority are marked too. One pending action asks about each grant, with the answer "closed" or "kept" and no expiry. Keeping is an operation of `access` that a bound can withhold. The grant's own actor never uses it, nor does the holder of the authority the grant was made under, nor anyone acting through a Fleet.
   - `conduit close <grant> --withhold` also refuses that Fleet re-making the same consumer and target until the lift removes it. A Fleet never holds withhold or lift. A withhold only refuses, and permits nothing (61 B11).
-- *Spec pending*, in no batch yet:
-  - Only root opens or makes a Conduit whose consumer is root. This changes ACC-006, once the vectors it would change are checked (61 B8, 62 C1).
-  - A bound limits `reconcile` for every delegate. A holder other than root reconciles, through a Conduit to a Pool or a Fleet, only the invocations it sent, or, through a Fleet, those the Fleet or its Agents sent. This changes ACC-033's reconcile rows (62 C2, 66 point 4).
+- Access limits:
+  - **In spec/**: only root opens or registers root-consumed Conduits on its own behalf: ACC-054, ACC-006 (62 C1). `make.v1` remains for batch 2 (61 B8).
+  - **In spec/**: bounded reconciliation through `access` and sender-limited reconciliation through Pools and Fleets: ACC-055, ACC-033, OPS-008, OPS-014 (62 C2, 66 point 4).
 
 ## 7. Operations, outcomes, revisions, records and observation
 
@@ -142,7 +142,7 @@ How to read a line:
 - *Spec pending, with batch 1*:
   - Refusals come in two tiers, for any caller, an Agent's model among them. Every refusal names the operation and the target, as the caller named them, and says that no open Conduit from the caller to that target lists the operation; a target that does not exist gets the same answer where the caller has no authority over it. A caller that may inspect the target is also shown which Conduits from it to the target exist, open or closed, and what each lists, or that the target does not exist; root is always shown them. This changes OPS-023 (52 point 1, 59 A4).
   - Every result, refusal, diagnostic and notice says what happened and why, in full, unless saying it would disclose what the caller may not learn (52 point 2).
-  - `inspect.v1` gains an inventory of the Conduits an object consumes and is the target of. It is shown in full to whoever may inspect the object, and it gives no count of the rest. `list.v1` is added on `management`, on every Pool and on every Fleet. It lists only what the caller may inspect, with no counts (53 point 3, 59 A4).
+  - **In spec/**: full inventory under object inspection and filtered discovery without counts: LIF-013, OPS-036 (53 point 3, 59 A4). Result contracts remain for order 036b.
 - *Spec pending, with the vectors*: a portable field for the cause of a machine's loss (44, open point 3).
 
 ## 8. Lifecycle, Pools and first start
@@ -153,26 +153,27 @@ How to read a line:
   - Replacement only by an explicit `register-replacement.v1`, and a further setup that leaves finished parts as they are: LIF-009, LIF-029, CON-011, OPS-021, OPS-022 (29, 32 A3, 37 C37, 41 item 1c and P9).
   - Pools, their entries and their retirement: POOL-001 to POOL-017, LIF-020, LIF-021 (21 DD3 and DR12, 27, 28 CS5, 29, 30 OL4, 31 D9, 32 G3 and G12, 37 C14, 41 P14, 42 R5).
   - First start, a fixed set of permanent objects: FST-001 to FST-006, LIF-022, LIF-034 (24 PD4 and PR8, 28 CS10, 30 OL5, 37 C28).
-- *Spec pending, batch 1*: root's standing Conduits, under topic 6 (59 A3).
-- *Spec pending*: the engine names its unique trust domain at first start, in SPIFFE form, and records it in status. This changes DL13, which today only recommends SPIFFE (51 point 2).
+- **In spec/**: root's default Conduits: FLEET-005, FST-002, ACC-024, under topic 6 (59 A3).
+- **In spec/**: the unique, fixed SPIFFE trust domain at first start and in status: FST-007, PRV-022, DL6, DL13 (51 point 2). Status contracts remain for order 036b.
 - *Coordinator's, not yet accepted*: where the run's state is unknown, a retire hook's part is unavailable, not unknown (review list, item 19; work order 027).
 
 ## 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach
 
-- *Spec pending, batch 1*: the Fleet family (59, 60).
-  - It is written as `kind: Fleet`, with `core#fleet`, `core#fleet.v1`, `core#fleet-management.v1` beside `pool-management.v1`, promise IDs `FLEET-`, and `conduit fleet ...` in the CLI. Adding Fleet changes OBJ-020's ten kinds to eleven.
-  - A Fleet owns Agents as a Pool owns Resources. The owner is required and fixed, and an Agent never changes Fleet; an Agent wanted elsewhere is declared anew (54 point 1, 59 A1).
-  - Owning a Fleet permits nothing, and running an Agent's turns takes a Conduit to the Agent. A Fleet applies nothing to its Agents together and runs nothing. It is engine-local, with no placement, no Pool inside it and no machines (60).
-  - A Fleet retires as a Pool does. Retiring one is refused while it owns an Agent whose shutdown is unconfirmed. `retire-with-agents` retires its Agents and then the Fleet, and every cascade takes an explicit flag that opens, uses and closes a one-time Conduit, printed in the plan (59 A2, A3).
-  - In v0 only root registers Agents (59 A1).
+- **In spec/**: the Fleet family: FLEET-001 to FLEET-006, OBJ-001, OBJ-013, OBJ-020, CTR-004, TPL-001, TPL-002, PLC-006 (59, 60). Core contracts and schemas remain for order 036b.
+  - **In spec/**: family and kind, core template, Type and capability: FLEET-001, OBJ-020 (60). The CLI spelling `conduit fleet ...` remains for order 051a.
+  - **In spec/**: fixed Agent ownership: FLEET-002, FLEET-003 (54 point 1, 59 A1).
+  - **In spec/**: ownership permits nothing; a Fleet runs nothing, has no placement, contains no Pool and is no machine group: FLEET-004, FLEET-001, spec/definitions.md (60).
+  - **In spec/**: retirement conflicts and cascades: LIF-020, LIF-021, REV-014, IFC-025 (59 A2). The flag opening, using and closing a one-time cascade Conduit remains for CLI order 051a (59 A3).
+  - **In spec/**: only root registers Agents on its own behalf: ACC-057 (59 A1).
 - *Spec pending, batch 2*: a Fleet's authority (61 B1 to B7 and B13). Fleet authority ships in v0, as the second specification batch, after the S1 rerun; batch 1, written before the rerun, holds the Fleet's structure (59, 61 B1).
   - A Fleet may administer a Pool other than `system`, never listing `register`, `register-replacement` or `retire-with-resources`. It may hold a bounded right to grant, never unbounded, never listing lift, keep or withhold, and its bound naming none of the excluded operations nor acting for a Fleet nor `get-secret`. Root, or any actor whose own right covers them, gives these (B2).
   - An actor uses what a Fleet holds by forwarding. It asks the Fleet through its own act-for Conduit, and the engine, as the Fleet, makes one onward request through the Conduit named. Two linked records result (B3).
   - Any Interface that root appoints may act for a Fleet, with its own token, and may bridge several Fleets, marked as bridging them. A Fleet's own Agents act only for their own Fleet. Only root opens or makes an act-for Conduit, and closing one follows the ordinary rule; and only root drives, sets up or retires an Agent that acts for a Fleet. Appointing an Agent that others already hold Conduits to is refused, and the refusal names them (B4 to B6).
   - A grant made through a Fleet goes to the Fleet itself, to one of its Agents that acts for no Fleet, or to an instance it sets up. It targets a Pool other than `system`, or a Resource. It never lists what starts model work, `get-secret`, an operation reserved to root, `register`, `register-replacement` or `retire-with-resources`. A Fleet closes only the grants it sent, and reconciles only its own invocations and its Agents' (B7).
-- *Spec pending*: Pools shared by several Fleets are handled by guidance, with every administrator shown in inspection. A pending action is raised when a sender other than root retires a Resource that another Fleet's Agents hold Conduits to. There is no rule of one administrator (62 C5).
+- **In spec/**: tool descriptions name the target and its Type and carry the Type's description: IFC-033 (53 point 3).
+- **In spec/** in part: Pool inspection shows every administrator (LIF-013; 62 C5). The notice pending action on another Fleet's Resource retirement and shared-Pool guidance remain for order 038a; no rule of one administrator is added.
 - *Open, after the S1 rerun*: 62 C6 to C12. These are people other than the owner acting for Fleets, registration through a Fleet, names per Fleet, a Fleet setting what an Interface may use, records filtered by Fleet, root's tool count, and reach beyond one hop.
-- *Spec pending*: scoped Interfaces (66).
+- **In spec/** in part: scope is computed from open inspection Conduits and shown in inspection (spec/definitions.md, LIF-013; 66). The `manages:` notation remains for order 037, the standard contracts for 036b and sign-in and pending actions for 038a; Fleet-held Pools remain for batch 2.
   - An Interface, or a Fleet's own Agent for its own Fleet, or a Fleet for Pools, writes `manages: {fleets: [...], pools: [...]}` with the role manage or view. It expands at apply into ordinary Conduits, made from standard templates and opened by root, and inspection shows them back as a scope. There is no wildcard, and `system`, `management` and `access` are never members.
   - Manage covers listing, inspecting, setting up and reconciling the scope's Agents and Resources, administering the Pools its Fleets hold, and acting for its Fleets within ruling 61. It never covers creating anything, retiring members, the cascades, `system`, use or grants of its own, turns, appointing, keeping or withholding, or secrets. Root may write explicit turns for the owner's own consoles.
   - There is no Scope object and no grouping shorthand. An Interface is the named set. Scopes do not replace what a Fleet holds.

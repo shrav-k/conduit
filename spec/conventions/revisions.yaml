@@ -150,16 +150,17 @@
     names a revision all the same reports invalid, under OPS-031. In `reconcile.v1` the revision
     is the input `revision`. The values are not stated in the request: the engine stores those
     it sent. The request is authorized under ACC-033 against the target that manages the
-    instance: the Pool that owns it where it is a Resource, and `management` otherwise, or where
-    that Pool is retired. It is not authorized by a Conduit to the instance itself, as the
-    control was. A retired instance takes no change, under LIF-015, so a reconciliation of a
-    control dispatched to it records the outcome alone, whichever way it records the effect, as
-    REV-007 stores nothing for a control that succeeds after its instance was retired, and the
-    settings the control addressed are no longer reported as unknown. Once the instance no
-    longer exists there is no current revision to name and no configuration to store values in:
-    the reconciliation is authorized against `management`, under ACC-033, and records that the
-    effect occurred or that it did not, and nothing else. One that names a revision all the same
-    reports invalid, under OPS-031.
+    instance: the Pool that owns a Resource or the Fleet that owns an Agent, and `management`
+    for other families, a retired owner or an instance that no longer exists. It is not
+    authorized by a Conduit to the instance itself, as the control was. A retired instance takes
+    no change, under LIF-015, so a reconciliation of a control dispatched to it records the
+    outcome alone, whichever way it records the effect, as REV-007 stores nothing for a control
+    that succeeds after its instance was retired, and the settings the control addressed are no
+    longer reported as unknown. Once the instance no longer exists there is no current revision
+    to name and no configuration to store values in: the reconciliation is authorized against
+    `management`, under ACC-033, and records that the effect occurred or that it did not, and
+    nothing else. One that names a revision all the same reports invalid, under OPS-031. ACC-055
+    also limits which invocations a holder other than root may reconcile.
   vectors: []
 
 - id: REV-011
@@ -252,6 +253,9 @@
     retirement or change of the instance has not ended. Where the actor is not permitted,
     OPS-023 gives refused first, and a request that is also invalid reports invalid. This is how
     setups, retirements and changes of one instance are kept one at a time, under REV-012.
+    `retire-with-agents.v1` similarly retires its Fleet and holds back other setups, retirements
+    and changes of the Fleet until it ends; the Fleet retirement it dispatches under LIF-021 is
+    part of it and is not held back by it.
   vectors: []
 
 - id: REV-015

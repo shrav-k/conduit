@@ -222,11 +222,13 @@
     A template is instantiated.
   then: >-
     The only objects made are the instance and its nested instances, which are the Conduits its
-    template declares and, for a Pool, the Resources of its entries. Nothing is set up or
+    template declares and, for a Pool, the Resources of its entries, together with root's
+    default Conduits under FLEET-005. Nothing is set up, and only those default Conduits are
     opened.
   observable: >-
-    After instantiation no setup has run, no Conduit is open, and no implementation has received
-    a call.
+    After instantiation no setup has run, no Conduit other than a default made under FLEET-005
+    has been opened, and no implementation has received a call. The registration result lists
+    those defaults.
   vectors: []
 
 - id: INS-017

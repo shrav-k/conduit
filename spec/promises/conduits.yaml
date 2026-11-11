@@ -119,21 +119,22 @@
     reports invalid under OPS-029, and its records are kept as LIF-019 states. The record of its
     closing names, under REC-002, the invocation within which it was closed and that
     invocation's caller: the close itself, the target's retirement, the invocation of
-    `declare-lost.v1` for the node of an end, the invocation of `retire.v1` or
-    `reconcile.v1` that confirmed the consumer's shutdown, or that of `unregister.v1`
-    that removed the consumer; where it was closed within no invocation, as under
-    PLC-024, the record states the cause. A request to a retired target has
-    no open Conduit to be made through, which is the case ACC-001 and ACC-011 state. A
-    consumer's shutdown is confirmed as LIF-024 states: when an invocation of `retire.v1` for it
-    succeeds, at once where no setup of it was ever dispatched, or when a reconciliation records
-    that its retirement occurred, under LIF-028. From the moment the consumer is retired until
-    then, the Conduit's state is as it was, and the Conduit permits only the requests of the
-    consumer's retirement, as ACC-039 states: the consumer's retire hook can make an onward
-    request through the consumer's own Conduit, and the engine can read a secret through it for
-    a run that the retirement asks for, or a connection that it makes, in a further retirement
-    under LIF-026 as in the first. Where the consumer's shutdown stays pending or unknown, the
-    Conduit stays so until the shutdown is confirmed, the consumer is declared lost or
-    unregistered, or an actor closes the Conduit under ACC-012.
+    `declare-lost.v1` for the node of an end, the invocation of `retire.v1` or `reconcile.v1`
+    that confirmed the consumer's shutdown, or that of `unregister.v1` that removed the
+    consumer; where it was closed within no invocation, as under PLC-024, the record states the
+    cause. A request to a retired target has no open Conduit to be made through, which is the
+    case ACC-001 and ACC-011 state. A consumer's shutdown is confirmed as LIF-024 states: when
+    an invocation of `retire.v1` for it succeeds, at once where no setup of it was ever
+    dispatched, or when a reconciliation records that its retirement occurred, under LIF-028.
+    From the moment the consumer is retired until then, the Conduit's state is as it was, and
+    the Conduit permits only the requests of the consumer's retirement, as ACC-039 states: the
+    consumer's retire hook can make an onward request through the consumer's own Conduit, and
+    the engine can read a secret through it for a run that the retirement asks for, or a
+    connection that it makes, in a further retirement under LIF-026 as in the first. Where the
+    consumer's shutdown stays pending or unknown, the Conduit stays so until the shutdown is
+    confirmed, the consumer is declared lost or unregistered, or an actor closes the Conduit
+    under ACC-012. Each closing leaves a tombstone under LIF-040 except where the engine made
+    the Conduit. That tombstone survives removal and purging; only a permitted lift removes it.
   vectors: []
 
 - id: CON-011
@@ -329,7 +330,9 @@
     `inspect.v1` and `purge.v1` among them, under OPS-019. The ones that ACC-033 authorizes
     against a Pool, such as setting up a Resource the Pool owns, are dispatched while the Pool's
     state is registered, so that a Pool's own setup can set up its entries. A control is not a
-    management verb.
+    management verb. The same holds for requests authorized against a Fleet, and
+    `fleet-management.v1` is also a management capability. Setting up an Agent through its Fleet
+    is dispatched while the Fleet is registered.
   vectors: []
 
 - id: CON-025
@@ -355,7 +358,7 @@
   then: >-
     The document is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the end and the kind that was given. A Pool given as a
+    Resolving returns a diagnostic naming the end and the kind that was given. A Pool or Fleet given as a
     consumer, and a Conduit given as either end, are each rejected in this way.
   vectors: []
 

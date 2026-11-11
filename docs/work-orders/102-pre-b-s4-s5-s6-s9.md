@@ -181,3 +181,40 @@ grep -rn -E "[[:space:]]+$" experiments/015-s4-partial-setup experiments/016-s5-
 
 Report each gap as a finding, and each proposed criterion, measure and vector as one of your own
 choices. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 beside orders 100, 101, 103 and 104: the worker in 15 minutes (920 s), then a
+fresh verifier in 5 minutes (317 s). That verifier found one should: S9's repair task covered a
+failed setup but not the recovery of an unknown one. A second round of 2 minutes (136 s) added
+an unknown-hook branch. A fresh verifier in 4 minutes (246 s) then found one must: the new task
+asked for no hook call at restart in both branches, but the engine's startup asks again for
+outstanding setup, and a failed hook may be dispatched as a new attempt. Only an unknown hook is
+held back until it is reconciled (OPS-021). Neither verifier could rerun the tools' unit tests in
+its read-only sandbox.
+
+The lane coordinator then finished the work, as the order's process allows after a second round:
+
+- **S9.** In branch (a), the failed hook, S9-T4 now records each attempt at restart. In branch
+  (b), the unknown hook, it keeps the requirement of no hook call before reconciliation. M2 and
+  V4 say the same.
+- **A6.** Under the admin's decision of 2026-11-11 (A6 option b, logged for the owner to
+  strike), S4 records A6's lost-response trace. S5, S6 and S9 no longer offer A6 as where a
+  real-client case goes; their option is now "none (scripted clients only)".
+
+A fresh reader then checked these edits. It found one must: S4's Q3 had lost its option of no
+real-client replay. That option is restored, and A6's trace comes from the replay if one is
+chosen, and otherwise from S4's scripted runs. It also found smaller faults in S9's wording, all
+fixed: the restart's attempt in branch (a) is now certain rather than possible, and V4 is split
+by branch.
+
+The worker's findings, all of class gap, are carried in section 10 of each pre-registration:
+
+- G1: no general form records that only part of an effect was done. This overlaps finding 4-12
+  of increment 4.
+- G2: E18's Resource surviving under a retired Pool has no public way to be prepared.
+- G3: the field that names a vector's safety promise is still spec pending.
+- A gap in S9's unknown-hook recovery, fixed in round 2.
+
+All four pre-registrations await the owner's acceptance. The coordinator ran check_docs,
+check_rulings, set_names, check_schemas and check_roadmap, and the private-path grep, all clean.

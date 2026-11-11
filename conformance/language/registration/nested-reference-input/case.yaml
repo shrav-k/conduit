@@ -41,11 +41,6 @@
             "00000000-0000-4000-8000-000000000109",
             "00000000-0000-4000-8000-000000000110",
             "00000000-0000-4000-8000-000000000111",
-            "2a58de4c-c17a-504f-b92b-f182eaef2c60",
-            "bfc75128-e5b3-5245-9a7f-948ba409f70a",
-            "a70d24ee-f336-54ab-b731-3abeb142eae5",
-            "6015edc7-a383-551a-a5f1-f50935dc767d",
-            "771a450f-c877-5aea-8452-2a4f58a2bcfc",
             "00000000-0000-4000-8000-000000000112",
             "00000000-0000-4000-8000-000000000113",
             "00000000-0000-4000-8000-000000000114",
@@ -54,6 +49,11 @@
             "00000000-0000-4000-8000-000000000117",
             "00000000-0000-4000-8000-000000000118",
             "00000000-0000-4000-8000-000000000119",
+            "2a58de4c-c17a-504f-b92b-f182eaef2c60",
+            "bfc75128-e5b3-5245-9a7f-948ba409f70a",
+            "a70d24ee-f336-54ab-b731-3abeb142eae5",
+            "6015edc7-a383-551a-a5f1-f50935dc767d",
+            "771a450f-c877-5aea-8452-2a4f58a2bcfc",
             "00000000-0000-4000-8000-000000000120",
             "00000000-0000-4000-8000-000000000121",
             "00000000-0000-4000-8000-000000000122",
@@ -141,9 +141,13 @@
                 "admin": {
                   "target": {
                     "kind": "Pool",
-                    "id": "00000000-0000-4000-8000-000000000105"
+                    "id": "00000000-0000-4000-8000-000000000106"
                   }
                 }
+              },
+              "owner": {
+                "kind": "Fleet",
+                "id": "00000000-0000-4000-8000-000000000105"
               }
             },
             {
@@ -154,12 +158,68 @@
               },
               "target": {
                 "kind": "Pool",
-                "id": "00000000-0000-4000-8000-000000000105"
+                "id": "00000000-0000-4000-8000-000000000106"
               },
               "open": false
             },
             {
+              "kind": "Fleet",
+              "name": "s1",
+              "id": "00000000-0000-4000-8000-000000000105",
+              "from": "@core#fleet",
+              "state": "registered"
+            },
+            {
               "name": "p"
+            },
+            {
+              "kind": "Conduit",
+              "name": "root-fleet-a0001",
+              "id": "00000000-0000-4000-8000-000000000114",
+              "from": "@core#root-fleet",
+              "state": "ready",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000105",
+              "local_name": "s1",
+              "open": true,
+              "provenance": {
+                "cause": "default"
+              },
+              "operations": [
+                "@core#register.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
+              ]
+            },
+            {
+              "kind": "Conduit",
+              "name": "root-pool-a0002",
+              "id": "00000000-0000-4000-8000-000000000117",
+              "from": "@core#root-pool",
+              "state": "ready",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000106",
+              "local_name": "p",
+              "open": true,
+              "provenance": {
+                "cause": "default"
+              },
+              "operations": [
+                "@core#register.v1",
+                "@core#register-replacement.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
+              ]
             }
           ]
         },
@@ -196,7 +256,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000106",
+            "id": "00000000-0000-4000-8000-000000000107",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -208,7 +268,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000107",
+            "id": "00000000-0000-4000-8000-000000000108",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -220,7 +280,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000108",
+            "id": "00000000-0000-4000-8000-000000000109",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -232,7 +292,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000109",
+            "id": "00000000-0000-4000-8000-000000000110",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -244,7 +304,7 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000110",
+            "id": "00000000-0000-4000-8000-000000000111",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
@@ -256,14 +316,82 @@
             }
           },
           {
-            "id": "00000000-0000-4000-8000-000000000111",
+            "id": "00000000-0000-4000-8000-000000000112",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000105",
+              "action": "registered",
+              "invocation": "2a58de4c-c17a-504f-b92b-f182eaef2c60"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000113",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "type": "object-change",
             "time": "2026-11-09T12:00:00Z",
             "data": {
-              "target": "00000000-0000-4000-8000-000000000105",
+              "target": "00000000-0000-4000-8000-000000000106",
               "action": "registered",
+              "invocation": "2a58de4c-c17a-504f-b92b-f182eaef2c60"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000115",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000114",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "2a58de4c-c17a-504f-b92b-f182eaef2c60"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000116",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000114",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
+              "invocation": "2a58de4c-c17a-504f-b92b-f182eaef2c60"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000118",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000117",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "2a58de4c-c17a-504f-b92b-f182eaef2c60"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000119",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000117",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
               "invocation": "2a58de4c-c17a-504f-b92b-f182eaef2c60"
             }
           },

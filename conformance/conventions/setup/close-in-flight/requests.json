@@ -8,8 +8,8 @@
             "kind": "Conduit",
             "name": "onward",
             "local_name": "onward",
-            "consumer": "00000000-0000-4000-8000-000000000118",
-            "target": "00000000-0000-4000-8000-000000000117",
+            "consumer": "00000000-0000-4000-8000-000000000119",
+            "target": "00000000-0000-4000-8000-000000000118",
             "capability": "example.org/s1/filesystem#directory.v1",
             "operations": [
               "example.org/s1/filesystem#file.read.v1"
@@ -101,7 +101,7 @@
         "request": {
           "identity": {
             "kind": "instance",
-            "id": "00000000-0000-4000-8000-000000000118"
+            "id": "00000000-0000-4000-8000-000000000119"
           },
           "tool": "onward.file.read.v1",
           "arguments": {

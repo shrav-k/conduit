@@ -222,16 +222,16 @@
           "ids": [
             "00000000-0000-4000-8000-000000000500",
             "00000000-0000-4000-8000-000000000501",
-            "b9cb77d7-206e-5501-b3b9-7c08e51265dc",
-            "d03a3b0d-6ce5-5ac7-90bf-8292f696bdb0",
-            "5bf97654-b853-58eb-8dfc-f4e5ec11c482",
-            "52e9419a-99ea-5031-9c05-061b813175f0",
-            "6bc88491-25cb-54dd-8ec8-5fad8b388339",
             "00000000-0000-4000-8000-000000000502",
             "00000000-0000-4000-8000-000000000503",
             "00000000-0000-4000-8000-000000000504",
             "00000000-0000-4000-8000-000000000505",
             "00000000-0000-4000-8000-000000000506",
+            "b9cb77d7-206e-5501-b3b9-7c08e51265dc",
+            "d03a3b0d-6ce5-5ac7-90bf-8292f696bdb0",
+            "5bf97654-b853-58eb-8dfc-f4e5ec11c482",
+            "52e9419a-99ea-5031-9c05-061b813175f0",
+            "6bc88491-25cb-54dd-8ec8-5fad8b388339",
             "00000000-0000-4000-8000-000000000507",
             "00000000-0000-4000-8000-000000000508",
             "00000000-0000-4000-8000-000000000509",
@@ -324,13 +324,53 @@
           },
           {
             "type": "object-change",
-            "id": "00000000-0000-4000-8000-000000000501",
+            "id": "00000000-0000-4000-8000-000000000502",
             "specversion": "1.0",
             "source": "urn:conduit:first-build",
             "time": "2026-11-09T12:00:00Z",
             "data": {
               "target": "00000000-0000-4000-8000-000000000500",
               "action": "registered",
+              "invocation": "b9cb77d7-206e-5501-b3b9-7c08e51265dc"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000503",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000501",
+              "action": "registered",
+              "invocation": "b9cb77d7-206e-5501-b3b9-7c08e51265dc"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000505",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000504",
+              "cause": "default",
+              "action": "registered",
+              "state": "registered",
+              "invocation": "b9cb77d7-206e-5501-b3b9-7c08e51265dc"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000506",
+            "type": "object-change",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000504",
+              "cause": "default",
+              "action": "lifecycle-changed",
+              "state": "ready",
               "invocation": "b9cb77d7-206e-5501-b3b9-7c08e51265dc"
             }
           },
@@ -409,6 +449,41 @@
                   "version": "1.0.0",
                   "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                 }
+              ],
+              "owner": {
+                "kind": "Fleet",
+                "id": "00000000-0000-4000-8000-000000000501"
+              }
+            },
+            {
+              "kind": "Fleet",
+              "name": "s1",
+              "id": "00000000-0000-4000-8000-000000000501",
+              "from": "@core#fleet",
+              "state": "registered"
+            },
+            {
+              "kind": "Conduit",
+              "name": "root-fleet-a0000",
+              "id": "00000000-0000-4000-8000-000000000504",
+              "from": "@core#root-fleet",
+              "state": "ready",
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000501",
+              "local_name": "s1",
+              "open": true,
+              "provenance": {
+                "cause": "default"
+              },
+              "operations": [
+                "@core#register.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
               ]
             }
           ]

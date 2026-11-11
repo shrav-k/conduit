@@ -152,6 +152,7 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
             return Err("duplicate coverage index ID".into());
         }
     }
+    let mut failures = vec![];
     for path in cases {
         let value = read_value(&path)?;
         validator
@@ -181,8 +182,17 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
         if !case.id.starts_with(prefix) {
             continue;
         }
-        let storage = run_case(&path, &case, &spec, &context, &known_promises)
-            .map_err(|e| format!("{} [{}]: {e}", case.id, case.promises.join(", ")))?;
+        let storage = match run_case(&path, &case, &spec, &context, &known_promises) {
+            Ok(storage) => storage,
+            Err(error) => {
+                failures.push(format!(
+                    "{} [{}]: {error}",
+                    case.id,
+                    case.promises.join(", ")
+                ));
+                continue;
+            }
+        };
         reports.push(CaseReport {
             id: case.id,
             promises: case.promises,
@@ -192,6 +202,14 @@ pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> 
     }
     if ids != inventory_ids {
         return Err("coverage index lists missing cases".into());
+    }
+    if !failures.is_empty() {
+        return Err(format!(
+            "{} cases passed; {} failed\n{}",
+            reports.len(),
+            failures.len(),
+            failures.join("\n")
+        ));
     }
     if reports.is_empty() {
         return Err("no cases matched the requested prefix".into());

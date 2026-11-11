@@ -53,6 +53,15 @@
     "metadata": {
       "name": "a"
     },
-    "from": "agent"
+    "from": "agent",
+    "owner": "s1"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "metadata": {
+      "name": "s1"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet"
   }
 ]

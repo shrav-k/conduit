@@ -390,7 +390,8 @@
                 "metadata": {
                   "name": "new-consumer"
                 },
-                "from": "upgraded-agent"
+                "from": "upgraded-agent",
+                "owner": "s1"
               },
               {
                 "apiVersion": "@apiVersion",

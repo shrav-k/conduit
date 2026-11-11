@@ -56,3 +56,17 @@ and `git diff --check` pass; in `engine/`, `cargo fmt --check`,
 `experiments/011-short-form-spike/`, `cargo test --release`. Report the totals passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so, and the admin reruns them. Do not
 stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 138 minutes, then a fresh verifier in 9, which found nothing to fix
+in the build. The engine gives root a default Conduit to every registered Pool and Fleet
+(FLEET-005), allocated after the submission's own objects and records; an Agent's owner is
+required and is its Fleet (FLEET-002 to 004); only root registers Agents (ACC-057). The staged
+patch of 036b landed. `tools/migrate_041a.py`, with its test, moved 167 vector cases to the new
+shapes (Fleet `s1`, the Agents' owners, the defaults' objects and records, renumbered IDs, grown
+evidence lists); `tools/vector_delta.py` showed 29,517 changes, every one of a declared shape and
+none a flip, and the verifier reproduced the migration exactly. Eight vectors were added.
+Experiment 011's translation names S1's Fleet; its fourteen states translate exactly. The admin
+repointed two lines of IN_FORCE.md and the vector count. Tests: the engine's suite, 172, with 413
+vectors; experiment 011, 9.

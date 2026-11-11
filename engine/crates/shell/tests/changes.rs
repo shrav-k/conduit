@@ -561,7 +561,7 @@ fn t5_public_install_is_live_and_existing_instances_keep_versions() {
     let api = spec.names().api_version.clone();
     let documents = json!([resource,path,agent,
         {"apiVersion":api,"kind":"Resource","metadata":{"name":"shared-new"},"from":"upgraded-directory","owner":"workspace","arguments":{"root":"/another/shared"}},
-        {"apiVersion":api,"kind":"Agent","metadata":{"name":"new-consumer"},"from":"upgraded-agent"},
+        {"apiVersion":api,"kind":"Agent","metadata":{"name":"new-consumer"},"from":"upgraded-agent","owner":"s1"},
         {"apiVersion":api,"kind":"Conduit","metadata":{"name":"upgraded"},"from":"upgraded-access","consumer":{"kind":"Agent","name":"new-consumer"},"target":{"kind":"Resource","name":"shared-new"}}]);
     success(invoke(
         &shell,

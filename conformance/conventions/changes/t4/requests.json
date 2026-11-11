@@ -86,7 +86,8 @@
                 "metadata": {
                   "name": "agent-c"
                 },
-                "from": "reader-agent"
+                "from": "reader-agent",
+                "owner": "s1"
               }
             ]
           }

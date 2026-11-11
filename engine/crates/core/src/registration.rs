@@ -1020,13 +1020,31 @@ fn resolve_instance(
     if kind == "Resource" {
         standards.push(("owner", Some("Pool")));
     }
+    // FLEET-002 / OBJ-013: the Agent's fixed owner is a Fleet, never a Pool.
+    if kind == "Agent" {
+        if o.get("owner").is_none() {
+            return Err(fault(
+                "FLEET-002",
+                "owner is required and must name a Fleet",
+            ));
+        }
+        standards.push(("owner", Some("Fleet")));
+    }
     if kind == "Conduit" {
         standards.extend([("consumer", None), ("target", None)]);
     }
     for (key, k) in standards {
         let implicit =
             (key == "owner" && slot == "entries") || (key == "consumer" && slot == "conduits");
-        o[key] = refs.resolve(&o[key], k, entry_pool, !implicit && !trusted)?;
+        o[key] = refs
+            .resolve(&o[key], k, entry_pool, !implicit && !trusted)
+            .map_err(|f| {
+                if kind == "Agent" && key == "owner" {
+                    fault("FLEET-002", format!("owner must name a Fleet: {}", f.text))
+                } else {
+                    f
+                }
+            })?;
         let target = all
             .iter()
             .find(|v| v["id"] == o[key]["id"])
@@ -1034,17 +1052,24 @@ fn resolve_instance(
         if key == "consumer" && target["kind"] == "Fleet" {
             return Err(fault("FLEET-004", "a Fleet is never a consumer or caller"));
         }
+        if key == "owner" && kind == "Agent" && target["kind"] != "Fleet" {
+            return Err(fault("FLEET-002", "owner is not a Fleet"));
+        }
         if target["state"] == "retired" {
             return Err(fault(
                 if key == "owner" {
-                    "POOL-004"
+                    if kind == "Agent" {
+                        "FLEET-003"
+                    } else {
+                        "POOL-004"
+                    }
                 } else {
                     "CON-025"
                 },
-                format!("{key} is retired"),
+                format!("{key} {} is retired", target["name"]),
             ));
         }
-        if key == "owner" && target["kind"] != "Pool" {
+        if key == "owner" && kind == "Resource" && target["kind"] != "Pool" {
             return Err(fault("POOL-001", "owner is not a Pool"));
         }
     }
@@ -1547,6 +1572,24 @@ pub(crate) fn prepare(
         .find(|o| o["from"] == context.qualified("root"))
         .ok_or("root absent")?;
     let root_own = root["id"] == request.sender && root["id"] == request.caller;
+    // ACC-057 / SEC-008: authority precedes validation, including replacement.
+    if !root_own
+        && project
+            .documents
+            .iter()
+            .any(|d| d["kind"] == "Agent" && d.get("from").is_some())
+    {
+        t.decisions.push(decision(
+            "refuse-agent-registration",
+            &["ACC-057", "OPS-023"],
+            &[],
+            json!({}),
+            vec![],
+        ));
+        end_request(t, evidence, request, None, "refused", context)?;
+        t.reply = json!({"accepted":false,"reason":"refused"});
+        return Ok(());
+    }
     // ACC-054 precedes every validation or conflict, even if catalog resolution fails.
     if !root_own
         && project
@@ -1823,6 +1866,43 @@ pub(crate) fn prepare(
     }
     let mut all_resolved = b.state.objects.clone();
     all_resolved.extend(resolved.iter().cloned());
+    // FLEET-005 / IFC-014: defaults are open within registration, so a local-name
+    // collision rejects the entire submission before publishing anything.
+    for target in resolved
+        .iter()
+        .filter(|o| ["Pool", "Fleet"].iter().any(|k| o["kind"] == *k))
+    {
+        if let Some(other) = all_resolved.iter().find(|o| {
+            o["kind"] == "Conduit"
+                && crate::access::id(&o["consumer"]) == &root["id"]
+                && o["state"] != "closed"
+                && o["state"] != "retired"
+                && o["local_name"] == target["name"]
+        }) {
+            let visible = b.state.objects.iter().any(|p| {
+                permits(
+                    p,
+                    &request.sender,
+                    &json!(request.target),
+                    &context.qualified("inspect.v1"),
+                )
+            });
+            let text = if visible || root_own {
+                format!(
+                    "default local name {} collides with Conduit {}",
+                    target["name"], other["name"]
+                )
+            } else {
+                format!("default local name {} is already in use", target["name"])
+            };
+            b.diagnostics.push(diagnostic(
+                "IFC-014",
+                target["name"].as_str().unwrap(),
+                &text,
+                "error",
+            ));
+        }
+    }
     for path in resolved.iter().filter(|o| o["kind"] == "Conduit") {
         if let Some((rule, text)) = check_conduit(path, &all_resolved, context)? {
             b.diagnostics.push(diagnostic(
@@ -1837,7 +1917,7 @@ pub(crate) fn prepare(
         return reject(t, b.diagnostics, evidence, request, context);
     }
     // Nothing has been published before this point. The caller receives only this commit.
-    let registered = b
+    let mut registered = b
         .templates
         .iter()
         .chain(&resolved)
@@ -1858,11 +1938,70 @@ pub(crate) fn prepare(
             b.state.preinstalled_snapshots.push(snapshot.clone());
         }
     }
-    b.state.objects.extend(b.templates);
+    b.state.objects.append(&mut b.templates);
     b.state.objects.extend(resolved);
     for object in &registered {
         let record=b.allocation.record(&mut b.state,context,"object-change",json!({"target":object["id"],"caller":request.caller,"consumer":request.sender,"conduit":request.conduit,"operation":request.operation,"action":"registered","state":"registered"}))?;
         t.records.push(record);
+    }
+    // FLEET-005: allocate every default object and its records AFTER all authored
+    // objects and records. Generated names use OBJ-003 and DL15, as other instances do.
+    let targets = b
+        .state
+        .objects
+        .iter()
+        .filter(|o| {
+            registered.iter().any(|r| r["id"] == o["id"])
+                && ["Pool", "Fleet"].iter().any(|k| o["kind"] == *k)
+                && o.get("spec").is_none()
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    let authored_count = registered.len();
+    for (i, target) in targets.iter().enumerate() {
+        let template_name = if target["kind"] == "Pool" {
+            "root-pool"
+        } else {
+            "root-fleet"
+        };
+        let template = context.template(template_name)?;
+        let name = b.name("Conduit", template_name)?;
+        let id = b.allocation.next(&mut b.state)?;
+        let revision = evidence
+            .revisions
+            .get(authored_count + i)
+            .ok_or("exhausted default revisions")?;
+        let object = json!({"kind":"Conduit","name":name,"id":id,"revision":revision,
+            "from":context.qualified(template_name),"state":"ready","config":{},
+            "consumer":root["id"],"target":target["id"],"local_name":target["name"],
+            "capability":template["spec"]["capability"],"operations":template["spec"]["operations"],
+            "open":true,"provenance":{"cause":"default"}});
+        b.state.objects.push(object);
+        registered.push(json!({"kind":"Conduit","name":name,"id":id}));
+        for (action, previous, state) in [
+            ("registered", Value::Null, "registered"),
+            ("lifecycle-changed", json!("registered"), "ready"),
+        ] {
+            let record = b.allocation.record(&mut b.state, context, "object-change", json!({"target":id,
+                "caller":request.caller,"consumer":request.sender,"conduit":request.conduit,"operation":request.operation,
+                "cause":"default","action":action,"previous":previous,"state":state}))?;
+            t.records.push(record);
+        }
+        t.decisions.push(decision(
+            "open-root-default",
+            &[
+                "FLEET-005",
+                "OBJ-003",
+                "ACC-044",
+                "CON-002",
+                "REC-001",
+                "REC-002",
+                "REC-003",
+            ],
+            &["DL15"],
+            json!({"target":target["id"]}),
+            vec![id],
+        ));
     }
     t.state = b.state;
     t.decisions.push(decision(
@@ -1937,6 +2076,11 @@ pub(crate) fn prepare(
             "ACC-054",
             "FLEET-001",
             "FLEET-006",
+            "FLEET-002",
+            "FLEET-003",
+            "FLEET-004",
+            "FLEET-005",
+            "ACC-057",
         ],
         &["DL15"],
         json!({"objects":registered.len(),"generated_suffixes_consumed":b.suffix}),

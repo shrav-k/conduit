@@ -16,7 +16,7 @@ No live client, provider, directory or network service is run.
 The translator follows the [grammar's translation table](../../docs/proposals/language-shape/short-form/synthesis.md#grammar)
 with ruling 55's amendments: kind-bearing references, reusable Conduit templates,
 fully qualified operations, optional frame, and the manifest's version.
-The core's canonical documents remain unchanged.
+The loader and core continue to consume canonical documents.
 
 ## Counting fixed before execution
 
@@ -40,25 +40,25 @@ a real run. They include package installation and named replacement/prune/reopen
 approvals. Harness commands (translation, checking, counting) are excluded.
 Show file-only and file-plus-command totals, baseline 33/16/0/8/3/2/2 and
 coordinator 154/73/0/2/62/29/12. The coordinator figures sum to 332.
-One `fleet: s1` line would add one at T1 in either style; this spike emits none.
+The 2026-11-11 run includes `fleet: s1-agents` at T1 in both styles. Its Agents name that Fleet (FLEET-002).
 
 ## Scope and limits
 
 This is a translation spike, not a reference implementation or new promises.
 It expands all rows of the table: reusable templates, inline and referenced
-definitions, consumes, operators, the Pool operator default, standalone Conduits
+definitions, consumes, explicit operators, standalone Conduits
 and metadata. It uses the existing strict YAML reader and checks closed shorthand
 fields and generated names, then delegates canonical schemas and resolution to
 the loader and core. It does not implement source maps, SCT diagnostic attribution,
 package authoring restrictions, mixed framed/sectioned projects, JSON array inputs,
-cross-file shorthand name validation, a planner, tombstones or Fleet.
+cross-file shorthand name validation, a planner, tombstones or Fleet authority. A per-file Fleet supplies the Agents' owners.
 
 Use the registration-only Agent types shipped in
 [the S1 fixtures](../../conformance/fixtures/s1/README.md), with explicit
 `accountServices: false` and `peerMessaging: false`. They offer no conversation
 capability; no Agent operator can therefore be authored against them. The proposed
 v2 types and runnable wrappers in the synthesis are not these fixtures.
-The Pool's default root operator is included. History remains pinned to filesystem
+Root's Pool and Fleet defaults come from registration (FLEET-005); translation emits no implicit Pool operator Conduit. History remains pinned to filesystem
 0.1.0 through its own package manifest after the project's T5 upgrade to 0.2.0.
 
 T5 changes the project manifest, not a Type's spelling: translation alone cannot
@@ -87,15 +87,17 @@ cargo fmt --check
 ```
 
 The binary checks all states, prints diagnostics on failure, reports totals, and
-prints the counts. It exits 1 when exact translations fail. Tests assert the
-observed rejection as a regression, so passing tests do not mean accepted states.
-It accepts no network input. The library exposes `translate`
-for rendering canonical JSON documents. Static author files live in `states/`.
-The [dated results](results-2026-11-10.md) record the outcome: every exact translation
-is rejected because today's canonical Conduit schema has no `as` field. A separate
-`without_as` diagnostic probe removes only that field from submitted documents,
-then uses the same loader and core. Its registration, access-list and resolved
-replacement checks do not establish the exact translation's semantics: the
-current kernel would use the full Conduit name as the tool prefix.
+prints the counts. It exits 1 when exact translations fail. It accepts no network
+input. The library exposes `translate` for rendering canonical JSON documents.
+Static author files live in `states/`.
+
+The [2026-11-11 run](evidence/run-2026-11-11.txt), after orders 039 to 041a, passed
+14 exact translation states and 14 `without_as` comparison probes, with zero failures;
+all nine tests passed. Translation now emits `s1-agents` and its Agents' owners,
+and root's Pool and Fleet defaults come from registration. The probe removes `as`
+only from submitted documents and remains separate from the exact translation.
+The [2026-11-10 results](results-2026-11-10.md) preserve the earlier rejection before
+canonical schemas accepted `as`.
+
 The four checked archive snapshots, including filesystem 0.2.0, are supplied as
 preinstalled snapshots for this offline experiment. No installation is claimed.

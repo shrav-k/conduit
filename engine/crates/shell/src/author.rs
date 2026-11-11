@@ -320,6 +320,8 @@ pub async fn run(
             for o in objects.iter().filter(|o| {
                 o["kind"] == "Conduit"
                     && o.get("spec").is_none()
+                    // FLEET-005 has already opened defaults within registration.
+                    && o["open"] != true
                     && reference(&o["consumer"]) == &root["id"]
                     && created.iter().any(|n| n["id"] == o["id"])
             }) {

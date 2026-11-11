@@ -4621,6 +4621,95 @@
         "IFC-025"
       ],
       "safety_rows": []
+    },
+    {
+      "id": "defaults-pool",
+      "case": "conventions/fleets/e3a/defaults-pool/case.yaml",
+      "promises": [
+        "FLEET-005",
+        "ACC-044"
+      ],
+      "safety_rows": [
+        "defaults-pool"
+      ]
+    },
+    {
+      "id": "defaults-fleet",
+      "case": "conventions/fleets/e3a/defaults-fleet/case.yaml",
+      "promises": [
+        "FLEET-005",
+        "ACC-044"
+      ],
+      "safety_rows": [
+        "defaults-fleet"
+      ]
+    },
+    {
+      "id": "close-refused",
+      "case": "conventions/fleets/e3a/close-refused/case.yaml",
+      "promises": [
+        "FLEET-005",
+        "ACC-024"
+      ],
+      "safety_rows": [
+        "close-refused"
+      ]
+    },
+    {
+      "id": "root-closes-own",
+      "case": "conventions/fleets/e3a/root-closes-own/case.yaml",
+      "promises": [
+        "ACC-024",
+        "CON-002"
+      ],
+      "safety_rows": [
+        "root-closes-own"
+      ]
+    },
+    {
+      "id": "agent-owner",
+      "case": "conventions/fleets/e3a/agent-owner/case.yaml",
+      "promises": [
+        "FLEET-002",
+        "FLEET-003",
+        "OBJ-013"
+      ],
+      "safety_rows": [
+        "agent-owner"
+      ]
+    },
+    {
+      "id": "agent-owner-retired",
+      "case": "conventions/fleets/e3a/agent-owner-retired/case.yaml",
+      "promises": [
+        "FLEET-003"
+      ],
+      "safety_rows": [
+        "agent-owner-retired"
+      ]
+    },
+    {
+      "id": "register-agent-non-root",
+      "case": "conventions/fleets/e3a/register-agent-non-root/case.yaml",
+      "promises": [
+        "ACC-057",
+        "OPS-023"
+      ],
+      "safety_rows": [
+        "register-agent-non-root"
+      ]
+    },
+    {
+      "id": "defaults-ids-last",
+      "case": "conventions/fleets/e3a/defaults-ids-last/case.yaml",
+      "promises": [
+        "FLEET-005",
+        "OBJ-003",
+        "REC-001"
+      ],
+      "safety_rows": [
+        "defaults-ids-last"
+      ]
     }
   ],
   "s1_coverage": [

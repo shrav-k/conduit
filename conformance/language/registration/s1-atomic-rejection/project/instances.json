@@ -34,7 +34,8 @@
     "metadata": {
       "name": "agent-a"
     },
-    "from": "reader-agent"
+    "from": "reader-agent",
+    "owner": "s1"
   },
   {
     "apiVersion": "github.com/shrav-k/conduit/v0",
@@ -42,7 +43,8 @@
     "metadata": {
       "name": "agent-b"
     },
-    "from": "writer-agent"
+    "from": "writer-agent",
+    "owner": "s1"
   },
   {
     "apiVersion": "github.com/shrav-k/conduit/v0",
@@ -59,5 +61,13 @@
       "kind": "Pool",
       "name": "workspace"
     }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "metadata": {
+      "name": "s1"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet"
   }
 ]

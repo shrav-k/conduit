@@ -4,6 +4,12 @@
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
 
 apiVersion: github.com/shrav-k/conduit/v0
+kind: Fleet
+metadata:
+  name: reviewers
+from: github.com/shrav-k/conduit/core#fleet
+---
+apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool
 metadata:
   name: team
@@ -43,6 +49,7 @@ kind: Agent
 metadata:
   name: reviewer-1
 from: reviewer
+owner: reviewers
 placement: {kind: Resource, name: local}
 runtime: docker
 arguments:

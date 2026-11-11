@@ -79,7 +79,7 @@ in the configuration that every request to it carries (IFC-006), and `inspect.v1
 under `declared`. A document never writes it, and nor does a request that an actor makes on
 its own behalf: the engine rejects a submitted document that does (OBJ-009), and such a request
 reports invalid (LIF-031). An onward request may hold it, because the engine handed it to the
-instance that sends it. `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take the
+instance that sends it. `set-up.v1`, `retire.v1`, `inspect.v1`, `unregister.v1`, `open.v1` and `close.v1` take the
 optional input `expectedId`, an `id.v1` and not a reference: it names nothing, and where the
 reference resolves to an object with another ID the request reports conflict (LIF-037).
 

@@ -8,6 +8,28 @@ pub(super) fn run(
 ) -> Result<conduit_core::Transition> {
     let mut snapshot = state.clone();
     patch(&mut snapshot, &fixture["patches"])?;
+    // Older access observations supply only Operation/Capability contracts. Complete
+    // their synthetic targets for IFC-033; registered instances already hold a Type.
+    for target in &mut snapshot.objects {
+        if target.get("type").is_none()
+            && target["schema_environment"]["scopes"]
+                .as_object()
+                .into_iter()
+                .flat_map(|m| m.values())
+                .flat_map(|scope| {
+                    scope["contracts"]
+                        .as_object()
+                        .into_iter()
+                        .flat_map(|m| m.values())
+                })
+                .any(|doc| doc["kind"] == "Operation")
+        {
+            target["type"] = json!(format!("{}#interface.v1", context.core_package));
+            target["schema_environment"]["scopes"]["core"] =
+                serde_json::to_value(&context.core_environment.scopes["core"])
+                    .map_err(|e| e.to_string())?;
+        }
+    }
     if let Some(invocations) = fixture.get("invocations") {
         snapshot.invocations =
             serde_json::from_value(invocations.clone()).map_err(|e| e.to_string())?;

@@ -515,7 +515,14 @@ pub(crate) fn reject(
     }
     if rule == "LIF-037" {
         let args = &route["arguments"];
-        if let Some(o) = access::object(&t.state, args.get("object").unwrap_or(&args["instance"])) {
+        let reference = args
+            .get("object")
+            .or_else(|| args.get("instance"))
+            .unwrap_or(&args["conduit"]);
+        let conduit = reference
+            .as_str()
+            .map(|name| json!({"kind":"Conduit","name":name}));
+        if let Some(o) = access::object(&t.state, conduit.as_ref().unwrap_or(reference)) {
             t.reply["structuredContent"]["diagnostics"] = json!([{"ruleId":rule,"level":"error","message":{"text":format!("expected ID {}, resolved ID {}", args["expectedId"],o["id"])},"properties":{"expectedId":args["expectedId"],"actualId":o["id"]}}]);
         }
     }

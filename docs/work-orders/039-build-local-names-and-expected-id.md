@@ -55,3 +55,17 @@ and `git diff --check` pass; in `engine/`, `cargo fmt --check`,
 `experiments/011-short-form-spike/`, `cargo test --release`. Report the totals passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so, and the admin reruns them. Do not
 stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 46 minutes, then a fresh verifier in 7, then a second round. The
+first build order of spec batch 1. The engine gained ruling 53's `as` with local names unique per
+consumer, `expectedId` on open.v1 and close.v1, tool descriptions that name the target and its Type,
+and ACC-054 (only root opens, or registers, a Conduit whose consumer is root); the staged patch of
+036b landed. Fourteen vectors were added and six re-expected, every flip declared and listed by
+`tools/vector_delta.py`. Experiment 011 now registers S1's short-form states with `as` kept (finding
+031-01 closed). The verifier found that a delegate's registration could report invalid before
+ACC-054 refused it, against OPS-023's "refused whatever else is wrong"; the second round decides
+ACC-054 first, for onward registration too, with two regression vectors. The admin repointed two
+links to the consumed staged file and the published vector count. Tests: the engine's suite passes,
+163, and all 381 vectors; experiment 011, 8.

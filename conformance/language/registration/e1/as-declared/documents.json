@@ -1,0 +1,59 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "link"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#inspect.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "person"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1",
+      "conduits": {
+        "local": {
+          "from": "link",
+          "target": {
+            "kind": "Resource",
+            "name": "management"
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "person-instance"
+    },
+    "from": "person"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "long-link"
+    },
+    "from": "link",
+    "consumer": {
+      "kind": "Interface",
+      "name": "person-instance"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "management"
+    },
+    "as": "local"
+  }
+]

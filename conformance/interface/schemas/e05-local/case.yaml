@@ -27,7 +27,7 @@
         "reply": {
           "tool": {
             "name": "use.test.v1",
-            "description": "Local path tool",
+            "description": "Local path tool\n\nTarget: Resource target, of Type github.com/shrav-k/conduit/core#interface.v1.\n\nThe basic Interface type. It has no settings and offers nothing.",
             "annotations": {
               "readOnlyHint": true,
               "idempotentHint": false,

@@ -1,0 +1,68 @@
+{
+  "id": "root-consumer-onward",
+  "title": "root-consumer-onward; work order 039",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "ACC-054",
+    "SEC-008",
+    "IFC-028"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../root-initial.json",
+    "requests": "requests.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-054"
+        ],
+        "stateUnchanged": true,
+        "absent": [
+          "/reply/structuredContent"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 1
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-054"
+        ],
+        "stateUnchanged": true,
+        "absent": [
+          "/reply/structuredContent"
+        ]
+      }
+    }
+  ]
+}

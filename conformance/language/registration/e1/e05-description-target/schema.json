@@ -1,0 +1,150 @@
+{
+  "environment": {
+    "scopes": {
+      "main": {
+        "address": "example.org/e05/main",
+        "version": "1.0.0",
+        "manifest": {},
+        "contracts": {
+          "path.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Schema",
+            "metadata": {
+              "name": "path.v1"
+            },
+            "spec": {
+              "$defs": {
+                "part": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "$ref": "#/$defs/part"
+            }
+          },
+          "test.v1": {
+            "apiVersion": "@apiVersion",
+            "kind": "Operation",
+            "metadata": {
+              "name": "test.v1",
+              "description": "Local path tool"
+            },
+            "spec": {
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "$ref": "#path.v1"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "$ref": "#path.v1"
+                  }
+                },
+                "required": [
+                  "path"
+                ]
+              },
+              "idempotentHint": false,
+              "destructiveHint": false,
+              "openWorldHint": false
+            }
+          },
+          "target.v1": {
+            "apiVersion": "github.com/shrav-k/conduit/v0",
+            "kind": "Type",
+            "metadata": {
+              "name": "target.v1",
+              "description": "The held target type."
+            },
+            "spec": {
+              "family": "Resource",
+              "offers": []
+            }
+          }
+        }
+      }
+    }
+  },
+  "state": {
+    "started": true,
+    "objects": [
+      {
+        "kind": "Resource",
+        "id": "target",
+        "contract_scope": "main",
+        "name": "named-target",
+        "type": "example.org/e05/main#target.v1"
+      },
+      {
+        "kind": "Conduit",
+        "id": "connection",
+        "consumer": "actor",
+        "target": "target",
+        "local_name": "use",
+        "open": true,
+        "state": "ready",
+        "operations": [
+          "example.org/e05/main#test.v1"
+        ]
+      }
+    ],
+    "records": [],
+    "allocated_ids": []
+  },
+  "target": "target",
+  "consumer": "actor",
+  "conduit": "connection",
+  "operation": "example.org/e05/main#test.v1",
+  "authored_scope": "main",
+  "samples": {
+    "inputSchema": [
+      {
+        "value": {
+          "path": "x"
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "path": ""
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "path": 3
+        },
+        "valid": false
+      }
+    ],
+    "outputSchema": [
+      {
+        "value": {
+          "path": "x"
+        },
+        "valid": true
+      },
+      {
+        "value": {
+          "path": ""
+        },
+        "valid": false
+      },
+      {
+        "value": {
+          "path": 3
+        },
+        "valid": false
+      }
+    ]
+  },
+  "copy_count": 1
+}

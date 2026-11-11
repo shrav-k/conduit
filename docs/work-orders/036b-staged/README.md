@@ -2,7 +2,7 @@
 
 C25 of the [batch plan](../../proposals/spec-batch-1/README.md#the-order-of-the-edits)
 keeps edits that require a later build out of the active core. The patches contain exact
-target paths and final text. Apply [039](039.md), [040](040.md), then [041a](041a.md).
+target paths and final text. Order 039 applied its patch; apply [040](040.md), then [041a](041a.md).
 Do not copy a whole old file over a later order's changes: apply the relevant hunks after
 rebasing. Order 038a adds answer and sign-in to the live capabilities and scope templates and the
 staged root lists before 040 lands them. [048a](048a.md) adds the state-directory

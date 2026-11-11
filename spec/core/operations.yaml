@@ -62,7 +62,8 @@
 #     the engine gave it. A request made through a Conduit that lists the operation, and that
 #     names an object or an invocation that does not exist, reports invalid (OPS-029): an
 #     instance that has been unregistered or removed no longer exists (LIF-035).
-#   - `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` may carry `expectedId`, the ID
+#   - `set-up.v1`, `retire.v1`, `inspect.v1`, `unregister.v1`, `open.v1` and `close.v1`
+#     may carry `expectedId`, the ID
 #     that the actor expects the object it names to have, as Kubernetes's `preconditions.uid`
 #     is: it names nothing and grants nothing, and where the reference resolves to an object
 #     with another ID, as when a name was given to another object after the first was removed,
@@ -708,12 +709,17 @@ metadata:
     Only root acting on its own behalf opens a root-consumed Conduit (ACC-054). A matching tombstone
     prevents dispatch with conflict (LIF-041); engine-made defaults are exempt. An already open Conduit
     preserves its original provenance (ACC-044).
+
+    Where expectedId is given and the resolved Conduit has another ID, the request reports conflict
+    and changes nothing, after the access decision (LIF-037).
 spec:
   inputSchema:
     type: object
     properties:
       conduit:
         $ref: github.com/shrav-k/conduit/core#conduit-reference.v1
+      expectedId:
+        $ref: github.com/shrav-k/conduit/core#id.v1
     required:
     - conduit
   effect: Sets the Conduit's state to ready, so that its consumer may request the operations it lists
@@ -740,12 +746,17 @@ metadata:
 
     Closing leaves a tombstone unless the object was engine-made (LIF-040), retaining the opening
     provenance (ACC-044).
+
+    Where expectedId is given and the resolved Conduit has another ID, the request reports conflict
+    and changes nothing, after the access decision (LIF-037).
 spec:
   inputSchema:
     type: object
     properties:
       conduit:
         $ref: github.com/shrav-k/conduit/core#conduit-reference.v1
+      expectedId:
+        $ref: github.com/shrav-k/conduit/core#id.v1
     required:
     - conduit
   effect: Closes the Conduit, which ends the access it carried and removes it.

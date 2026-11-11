@@ -54,68 +54,120 @@ metadata:
   description: An instance document of any of the five families.
 spec:
   anyOf:
-    - $ref: '#/$defs/interface'
-    - $ref: '#/$defs/agent'
-    - $ref: '#/$defs/resource'
-    - $ref: '#/$defs/pool'
-    - $ref: '#/$defs/conduit'
+  - $ref: '#/$defs/interface'
+  - $ref: '#/$defs/agent'
+  - $ref: '#/$defs/resource'
+  - $ref: '#/$defs/pool'
+  - $ref: '#/$defs/conduit'
   $defs:
     interface:
       type: object
       properties:
-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
-        kind: {const: Interface}
-        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
-        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
-        arguments: {type: object}
-      required: [apiVersion, kind, from]
+        apiVersion:
+          $ref: github.com/shrav-k/conduit/core#api-version.v1
+        kind:
+          const: Interface
+        metadata:
+          $ref: github.com/shrav-k/conduit/core#instance-metadata.v1
+        from:
+          $ref: github.com/shrav-k/conduit/core#template-reference.v1
+        arguments:
+          type: object
+      required:
+      - apiVersion
+      - kind
+      - from
       additionalProperties: false
     agent:
       type: object
       properties:
-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
-        kind: {const: Agent}
-        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
-        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
-        placement: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
-        runtime: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
-        arguments: {type: object}
-      required: [apiVersion, kind, from]
+        apiVersion:
+          $ref: github.com/shrav-k/conduit/core#api-version.v1
+        kind:
+          const: Agent
+        metadata:
+          $ref: github.com/shrav-k/conduit/core#instance-metadata.v1
+        from:
+          $ref: github.com/shrav-k/conduit/core#template-reference.v1
+        placement:
+          $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+        runtime:
+          $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+        arguments:
+          type: object
+      required:
+      - apiVersion
+      - kind
+      - from
       additionalProperties: false
     resource:
       type: object
       properties:
-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
-        kind: {const: Resource}
-        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
-        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
-        owner: {$ref: github.com/shrav-k/conduit/core#pool-reference.v1}
-        placement: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
-        runtime: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
-        arguments: {type: object}
-      required: [apiVersion, kind, from, owner]
+        apiVersion:
+          $ref: github.com/shrav-k/conduit/core#api-version.v1
+        kind:
+          const: Resource
+        metadata:
+          $ref: github.com/shrav-k/conduit/core#instance-metadata.v1
+        from:
+          $ref: github.com/shrav-k/conduit/core#template-reference.v1
+        owner:
+          $ref: github.com/shrav-k/conduit/core#pool-reference.v1
+        placement:
+          $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+        runtime:
+          $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+        arguments:
+          type: object
+      required:
+      - apiVersion
+      - kind
+      - from
+      - owner
       additionalProperties: false
     pool:
       type: object
       properties:
-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
-        kind: {const: Pool}
-        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
-        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
-        arguments: {type: object}
-      required: [apiVersion, kind, from]
+        apiVersion:
+          $ref: github.com/shrav-k/conduit/core#api-version.v1
+        kind:
+          const: Pool
+        metadata:
+          $ref: github.com/shrav-k/conduit/core#instance-metadata.v1
+        from:
+          $ref: github.com/shrav-k/conduit/core#template-reference.v1
+        arguments:
+          type: object
+      required:
+      - apiVersion
+      - kind
+      - from
       additionalProperties: false
     conduit:
       type: object
       properties:
-        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
-        kind: {const: Conduit}
-        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
-        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
-        consumer: {$ref: github.com/shrav-k/conduit/core#consumer-reference.v1}
-        target: {$ref: github.com/shrav-k/conduit/core#target-reference.v1}
-        arguments: {type: object}
-      required: [apiVersion, kind, from, consumer, target]
+        apiVersion:
+          $ref: github.com/shrav-k/conduit/core#api-version.v1
+        kind:
+          const: Conduit
+        metadata:
+          $ref: github.com/shrav-k/conduit/core#instance-metadata.v1
+        from:
+          $ref: github.com/shrav-k/conduit/core#template-reference.v1
+        consumer:
+          $ref: github.com/shrav-k/conduit/core#consumer-reference.v1
+        target:
+          $ref: github.com/shrav-k/conduit/core#target-reference.v1
+        arguments:
+          type: object
+        as:
+          $ref: github.com/shrav-k/conduit/core#name.v1
+      required:
+      - apiVersion
+      - kind
+      - from
+      - consumer
+      - target
       additionalProperties: false
 ---
 apiVersion: github.com/shrav-k/conduit/v0

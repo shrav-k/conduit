@@ -1109,9 +1109,24 @@ pub fn publish(
     if let Some(output) = spec.get("outputSchema") {
         tool["outputSchema"] = env.publish_schema(&contract.0, output, &context.core_package)?;
     }
-    if let Some(description) = doc["metadata"].get("description") {
-        tool["description"] = description.clone();
+    // IFC-033: the held Operation and Type describe the actual target, in this order.
+    let ty = target["type"].as_str().ok_or("missing target Type")?;
+    let type_contract = env.resolve(scope, ty, &context.core_package)?;
+    let type_doc = &env.scope(&type_contract.0)?.contracts[&type_contract.1];
+    let mut descriptions = vec![];
+    if let Some(description) = doc["metadata"]["description"].as_str() {
+        descriptions.push(description.to_owned());
     }
+    descriptions.push(format!(
+        "Target: {} {}, of Type {}.",
+        target["kind"].as_str().ok_or("missing target kind")?,
+        target["name"].as_str().ok_or("missing target name")?,
+        ty
+    ));
+    if let Some(description) = type_doc["metadata"]["description"].as_str() {
+        descriptions.push(description.to_owned());
+    }
+    tool["description"] = json!(descriptions.join("\n\n"));
     if spec.get("effect").is_none() && !control && spec["startsModelWork"] != true {
         tool["annotations"]["readOnlyHint"] = json!(true);
     }

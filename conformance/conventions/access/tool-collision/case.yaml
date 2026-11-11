@@ -127,13 +127,13 @@
             {
               "ruleId": "IFC-014",
               "message": {
-                "text": "directory-read-a0001: tool name project.directory.list.v1 collides with Conduit project (00000000-0000-4000-8000-000000000115)"
+                "text": "directory-read-a0001: local name project collides with Conduit project (00000000-0000-4000-8000-000000000115)"
               }
             },
             {
               "ruleId": "IFC-014",
               "message": {
-                "text": "project: tool name project.directory.list.v1 collides with Conduit directory-read-a0001 (00000000-0000-4000-8000-000000000111)"
+                "text": "project: local name project collides with Conduit directory-read-a0001 (00000000-0000-4000-8000-000000000111)"
               }
             }
           ]

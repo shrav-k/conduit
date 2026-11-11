@@ -193,3 +193,32 @@ grep -rn -E "[[:space:]]+$" experiments/013-s2-shared-login experiments/014-s3-t
 
 Report each gap as a finding, and each proposed criterion, measure and vector as one of your own
 choices. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 beside orders 100 and 102 to 104: the worker in 12 minutes (721 s), then a
+fresh verifier in 4 minutes (253 s). The verifier found one should: S3's tasks could finish
+without making a pending stop, which left the recovery of an owed stop untested. A second round
+of 2 minutes (134 s) added a step for it, and a fresh verifier in 4 minutes (252 s) found
+nothing. Neither verifier could rerun the tools' unit tests in its read-only sandbox.
+
+The worker replaced the two placeholders with pre-registrations in the form of decision 2,
+every proposed item labelled. S3's proposed enrollment vector names no safety promise, because
+enrollment's promises are not yet written; that was the worker's nearest reading of decision 2.
+Its findings, all of class gap, are carried in section 10 of each:
+
+- G1: SEC-008 lets an Agent read a secret even when others drive it. The rule against that is
+  spec pending, batch 2.
+- G2: the issue-scope and deadline restriction, the keychain store's locator and session, and
+  the clients' own-tool controls belong to package contracts.
+- G3: the field that names a vector's safety promise is still spec pending.
+- G4: managed enrollment has no promises yet. IN_FORCE.md topic 10 says they are needed before
+  S3.
+- G5: PLC-024 asks for the cause of a machine's loss in records, with no portable field for it.
+
+After the review, the lane coordinator made one change. Under the admin's decision of
+2026-11-11 (A6 option b, logged for the owner to strike), S2's pre-registration now says which
+of its tasks yield A6's traces: discovery and invocation, and the refresh, read as S2-T5's
+rotation. The lost response comes from S4. Both pre-registrations await the owner's acceptance.
+The coordinator ran check_docs, check_rulings, set_names, check_schemas and check_roadmap, and
+the private-path grep, all clean.

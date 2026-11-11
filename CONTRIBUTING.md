@@ -5,8 +5,11 @@ things they share. As of 2026-11-10, this repository holds its draft specificati
 behind it, and the first build: a strict loader, a pure core, the reference model, conformance
 vectors and a runnable engine shell. The shell ran real Claude Code and Codex as Agents on S1
 through T1, T2 and T7 ([dated results](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)).
-The [roadmap](ROADMAP.md#the-order-of-the-work) puts increment 4, S1 complete with author
-measurements, next. This is not a release or a claim of whole-language conformance.
+Increment 4 is in progress: on 2026-11-10 both author runs completed T1 to T7 with real clients
+but failed the owner's bar for authoring work. The [build log](docs/proposals/first-build/log-increment-4.md)
+records the findings and fixes from orders 025 to 028; the
+[roadmap](ROADMAP.md#the-order-of-the-work) puts simplification and a rerun next.
+This is not a release or a claim of whole-language conformance.
 
 Read in this order: the [README](README.md), [spec/README.md](spec/README.md),
 [spec/definitions.md](spec/definitions.md), then the [plan audit](docs/AUDIT.md) for the state
@@ -27,6 +30,20 @@ specification was removed from the tree by ruling 39; the
 [archive's index](docs/archive/README.md#removed-from-the-tree) links its last version, as
 source material for the type contracts still to be written. A behavior that is missing from
 `spec/` is a gap in `spec/`.
+
+As of 2026-11-10, rulings 49 to 59 are accepted; their specification changes remain pending,
+while rulings 57 and 58 also govern documentation upkeep. Its [status](spec/README.md) links each:
+
+- [Ruling 55](docs/proposals/ruling-55/README.md): the short form is language, names stay stable and commands with named flags approve dangerous acts.
+- [Ruling 56](docs/proposals/ruling-56/README.md): provider-defined enrollment verification, evidence shown by the engine at root and recorded exceptions for weaker checks.
+- [Ruling 57](docs/proposals/ruling-57/README.md): historical documents may be edited, condensed or removed once their relevant Conduit information is preserved elsewhere.
+- [Ruling 58](docs/proposals/ruling-58/README.md): earlier logged choices accepted with stated exceptions, fixed ruling records and condensation at close.
+- [Ruling 59](docs/proposals/ruling-59/README.md): the Agent-owning family's structure, root's default Conduits, discovery and replacement bounds; its name and later authority decisions remain open.
+
+The [language's shape](docs/proposals/language-shape/README.md) and the owner's
+[Project direction](docs/proposals/owner-direction/2026-11-10-projects.md) are being investigated
+and settled first, so each change is written once. Read those records as decisions or
+proposals as marked, rather than as promises already implemented.
 
 ## Where work belongs
 
@@ -53,7 +70,7 @@ source material for the type contracts still to be written. A behavior that is m
   builder receives are in [docs/implementation/](docs/implementation/INDEPENDENT_BUILDS.md).
 - **Research**, meaning sourced comparisons and the analysis of probe results, goes in
   [docs/research/](docs/research/README.md). Attribute source versions and distinguish inference
-  from observed behavior. The content of existing research packets is not edited.
+  from observed behavior.
 - **Evidence** goes in its own directory under [experiments/](experiments/README.md), with its
   scope, instructions and dated results. An expected outcome is never presented as a result.
   Before proposing an experiment or a probe, check the roadmap's
@@ -67,7 +84,9 @@ source material for the type contracts still to be written. A behavior that is m
   [reference-model/](reference-model/README.md) (ruling 46). The only exception is the Python
   checkers in `tools/`.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
-  dissent. What it holds is not edited; new material may be added, with a line in its index.
+  dissent.
+
+Under [ruling 57](docs/proposals/ruling-57/README.md), a document that does not bind may be edited, condensed or removed once every piece of relevant Conduit information in it is preserved in `spec/` or a live document, git keeping every version.
 
 ## Review discipline
 

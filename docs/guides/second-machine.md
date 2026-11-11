@@ -6,8 +6,13 @@ WSL2: the engine stops the programs it runs by process group, which Linux has an
 not. A native Windows build can come later.
 
 **For testing only** ([ruling 50](../proposals/ruling-50/README.md)): adding a machine is to be
-done through Conduit, by an enrollment still to be designed. This manual setup serves A74, the
-probe that needs no engine, and S3 until enrollment exists.
+done through Conduit. As of 2026-11-10, [ruling 51](../proposals/ruling-51/README.md) accepts
+two modes for a machine the owner controls: managed, enrolled as a node, or peer, running its
+own engine. Another party's machine is only ever a peer. Network membership grants no access;
+root reaches remote Agents through Conduits. [Ruling 52](../proposals/ruling-52/README.md)
+accepts enrollment's decisions except how a person verifies the machine, which remains open.
+These changes are not yet in the specification or implemented. This manual setup serves
+A74, the probe that needs no engine, and S3 until enrollment exists.
 
 This is a plan, written before any of it has been tried on this computer. Tell the coordinator
 where a step differs.

@@ -6,8 +6,7 @@ it ran, as [work orders](../implementation/WORK_ORDERS.md) describes under
 report. An order's results are its pull request and the record in
 [work orders](../implementation/WORK_ORDERS.md#the-record).
 
-As of 2026-11-10, orders 001 to 024 have admin records; orders 025 and 026 have been issued
-and have no admin record yet.
+As of 2026-11-10, orders 001 to 028 have admin records; order 029's record is pending.
 
 | Order | What |
 | --- | --- |
@@ -37,6 +36,9 @@ and have no admin record yet.
 | [024](024-i3-05-closeout-fixes.md) | I3-05: the fixes from the first run with the real clients |
 | [025](025-i4-01-change-operations.md) | I4-01: the operations and author commands S1's tasks of change need |
 | [026](026-docs-entry-refresh.md) | The entry documents brought up to date, and instructions for cold readers |
+| [027](027-i4-02-engine-fixes.md) | I4-02: retirement hooks, startup repair, inspection and Codex's collaboration tools |
+| [028](028-i4-03-commands.md) | I4-03: reliable author commands, help, ended conditions and explicit package installation |
+| [029](029-docs-after-rulings.md) | The documents after rulings 49 to 54, the settled Codex route and the two S1 author runs |
 
 [The standing order of a verifier](verify.md), with its schema, is given to the fresh Codex
 session that checks each order's result before the admin session reviews it.

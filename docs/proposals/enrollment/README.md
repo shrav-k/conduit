@@ -4,7 +4,8 @@ Not binding. The [specification](../../../spec/README.md) alone binds. Research 
 2026-11-10, for the review that [ruling 50](../ruling-50/README.md) asks for before any promise is
 written. [Ruling 51](../ruling-51/README.md) accepted the decisions of the
 [networking paradigms](networking-paradigms.md) beside it, and added a managed and a peer mode
-for machines the owner controls; the seven decisions below await the detailed review.
+for machines the owner controls; [ruling 52](../ruling-52/README.md) accepted decisions 1 to 4,
+6 and 7, and [ruling 56](../ruling-56/README.md) settled decision 5, so all seven are decided.
 
 ## 1. The question, and what ruling 50 already settled
 

@@ -182,9 +182,9 @@ argument. Apps false/true uses explicit disable/enable apps, requiring real-clie
 No claim of account-source exclusion, peer refusal or intended subscription use follows from
 the scripted tests. The owner's subscription is shared, as ruling 48 requires for increment 3.
 
-The client's own tools that reach the machine, a shell, code execution, a browser, another
-Agent, hooks and plugins are off by default, alongside account services and messaging
-(order 024, findings 3-04 and 3-05). Claude uses --setting-sources "" and --tools ""; only
+The launch disables the client's shell, browser, hooks and plugins, alongside account services
+and messaging (order 024, findings 3-04 and 3-05). Codex's collaboration tools remain available,
+as finding 4-06 below states. Claude uses --setting-sources "" and --tools ""; only
 explicit --mcp-config/--settings supply the engine, header helper and allow rule. Codex uses
 project_doc_max_bytes=0 and --disable for shell_tool, unified_exec, browser_use,
 browser_use_external, in_app_browser, computer_use, multi_agent, hooks, plugins, view_image,
@@ -289,8 +289,10 @@ semantics for relative values. Before sending registration, it checks the manife
 for relative `fetch` values and relative programs (a first `command` entry containing `/` that
 is not absolute). It refuses them with a nonzero exit and explains that a submission through
 the serving engine takes absolute values only. Bare program names still use PATH, under
-MAN-010. The gap between SUB-010 and the operation's input awaits the admin's finding log;
-the specification is unchanged.
+MAN-010. [Ruling 52, point 3](../docs/proposals/ruling-52/README.md#the-points-and-the-answers)
+settled finding 4-03 under SUB-010's existing rule: relative values are resolved only when the
+engine is handed a directory; a request carrying values rejects them. Uploading a directory
+waits until remote clients exist; the specification is unchanged.
 Resource inspection/setup/retirement choose the root's open route to its owning Pool from a
 read-only store snapshot; every server request rechecks authority. There is no automatic
 repointing of frozen references or migration of existing Agent sessions.
@@ -346,8 +348,23 @@ the reach inputs. The local bundled binary rejects --ignore-user-config, so its 
 was instead read with an empty temporary CODEX_HOME. It lists both features, and lists all
 three multi_agent switches false when explicitly disabled. Its strings also contain the
 collaboration tools. This metadata and the argument tests do not establish their absence in
-a real client; the admin's check is pending. No native Agent client or model work ran here.
-Findings 4-01, 4-03, 4-08 and 4-11 remain open.
+a real client; no native Agent client or model work ran in order 027's tests.
+
+Finding 4-06 was settled by the admin on 2026-11-10 in the
+[increment 4 log](../docs/proposals/first-build/log-increment-4.md). Codex 0.167.0 keeps all six
+tools, `collaboration.spawn_agent`, `collaboration.send_message`, `collaboration.list_agents`,
+`collaboration.wait_agent`, `collaboration.interrupt_agent` and `collaboration.followup_task`,
+under every switch tried: `multi_agent`, `multi_agent_v2`, `multi_agent_v2_dynamic_tools`,
+`collaboration_modes`, `in_app_local_automation` and `agents.max_depth=0`. In the admin's trial
+with the wrapper's flags, a spawned sub-agent had no shell, could not read outside its sandbox
+and had an `apply_patch` write refused by the read-only sandbox. Its requests of the engine
+carry the parent Agent's credential, so it reaches only what that Agent may. This is a route
+to more parallel model work within the Agent's own access, not around it. What offers the
+tools is still not found. Finding 3-07's statement above remains in force.
+
+As of 2026-11-10, ruling 52 settles 4-03 as SUB-010 already states and settles 4-08 in direction,
+with its promises still to be written. Findings 4-01 and 4-11 are being settled with the owner
+through the language-shape and Project investigations.
 
 
 ## Author commands (work order 028)

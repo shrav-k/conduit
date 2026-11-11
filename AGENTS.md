@@ -5,8 +5,11 @@ things they share. As of 2026-11-10, this repository holds the draft language an
 build: a strict loader, a pure core on S1, the reference model, and a runnable engine shell.
 The shell ran real Claude Code and Codex as Agents through S1's T1, T2 and T7; the
 [closeout](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md) states the
-results and limits. Increment 4, S1 complete with author measurements, is next in the
-[roadmap](ROADMAP.md#the-order-of-the-work).
+results and limits. Increment 4 is in progress as of 2026-11-10: both author runs completed
+T1 to T7 with real clients but failed the owner's bar for authoring work. The
+[log](docs/proposals/first-build/log-increment-4.md) records the findings and fixes from
+orders 025 to 028. The language's shape and Projects are being settled with the owner before
+the simplification is built and S1 rerun, as the [roadmap](ROADMAP.md#the-order-of-the-work) states.
 
 **If you were asked to build an engine, stop.** Engine builders work only from the `build-base`
 branch and must not read this branch. As of 2026-11-10, that branch is not yet published, and
@@ -47,6 +50,18 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   the shared conventions and the implementation interface, as numbered promises. It is a draft:
   every area is written; as of 2026-11-10, [vectors](conformance/README.md) test slices of its
   promises on S1, with missing coverage recorded in the [manifest](conformance/manifest.yaml).
+  As of 2026-11-10, rulings 49 to 59 are accepted; their specification changes remain pending,
+  while rulings 57 and 58 also govern documentation upkeep. Its [status](spec/README.md) lists
+  them. The language's shape is being settled first so
+  each change is written once. The owner's [Project direction](docs/proposals/owner-direction/2026-11-10-projects.md)
+  guides that investigation; it supplies no missing promise.
+
+  - [Ruling 55](docs/proposals/ruling-55/README.md): the short form is language, names stay stable and commands with named flags approve dangerous acts.
+  - [Ruling 56](docs/proposals/ruling-56/README.md): provider-defined enrollment verification, evidence shown by the engine at root and recorded exceptions for weaker checks.
+  - [Ruling 57](docs/proposals/ruling-57/README.md): the prohibition on editing historical documents is revoked; relevant Conduit information must be preserved.
+  - [Ruling 58](docs/proposals/ruling-58/README.md): earlier logged choices accepted with stated exceptions, fixed ruling records and condensation at close.
+  - [Ruling 59](docs/proposals/ruling-59/README.md): the Agent-owning family's structure, root's default Conduits, discovery and replacement bounds; its name and later authority decisions remain open.
+
 - A behavior that is missing from `spec/` is a gap in `spec/`. No older document supplies it.
 - The design as it stood before the specification, under `docs/protocol/`, and the other
   documents that the specification superseded were removed from the tree by ruling 39. The
@@ -55,9 +70,10 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   bind nothing.
 - The records under `docs/proposals/` say what was decided, by whom and why: the owner's
   rulings, and for the documents audit and the rounds of the re-audit the decisions of the
-  coordinating session under ruling 37. Ruling 39 accepted those made before it. Those made
-  after it, the coordinator's decisions and the editors' choices since the rewrite under ruling
-  41, can each be struck by the owner; [who decides what](docs/AUDIT.md#who-decides-what) lists
+  coordinating session under ruling 37. Ruling 58 accepted logged coordinator decisions, editor
+  choices and work-order decisions made before ruling 57, except review-list items 15 to 19 and
+  increment 4's open decisions; those exceptions and later choices remain open to the owner.
+  [Who decides what](docs/AUDIT.md#who-decides-what) lists
   where they are logged. Where a record and the specification differ, the specification
   governs.
 - If you were asked to read or audit this repository cold, start at
@@ -107,9 +123,7 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   is the Python checkers in `tools/`.
 - The owner makes the rulings. When a choice changes behavior, present the options with a
   recommendation and wait; do not record your recommendation as accepted.
-- Do not edit what `docs/archive/` holds or the content of `docs/research/`: they are records
-  of their time. New material may be added to the archive, with a line in its index. Ruling 39
-  made one exception, to remove the names of two private repositories.
+- Under [ruling 57](docs/proposals/ruling-57/README.md), a document that does not bind may be edited, condensed or removed once every piece of relevant Conduit information in it is preserved in `spec/` or a live document, git keeping every version.
 - Do not edit the sibling directories of this repository that hold reference clones, if
   present. They are on the owner's machine, to consult only. Nothing in this repository
   needs them.

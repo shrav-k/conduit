@@ -59,3 +59,12 @@ The four items are done. From the repository root: `python3 tools/check_docs.py`
 `python3 tools/set_names.py --check`, `python3 tools/check_schemas.py`,
 `python3 tools/check_roadmap.py` and `git diff --check` pass. Check the files you change for
 trailing white space yourself; do not stage anything.
+
+## Record
+
+Run on 2026-11-10: the worker in 14 minutes, then a fresh verifier in 4, which found three stale
+statements. The admin widened the scope for a second round to those, three outside-scope findings
+of the worker's own, the removal of the rule that ruling 57 revoked, and the mention of rulings 55
+to 59. The worker's links to the newest ruling records failed in its tree, which predated them, and
+resolved after the rebase; its Rust run could not bind loopback ports in its sandbox, and no code
+changed.

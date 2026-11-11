@@ -20,8 +20,15 @@ State on 2026-11-10: increment 1, the loader, was done on 2026-11-09; increment 
 the pure core by vectors, and increment 3, the shell, were done on 2026-11-10. The shell ran
 real Claude Code and Codex as Agents through T1, T2 and T7; the
 [closeout results](../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md)
-separate what was shown from what was not. Increment 4, S1 complete with author measurements,
-is next. The sections below describe the implemented slice as of 2026-11-10, distinguishing
+separate what was shown from what was not. Increment 4 is in progress: both the
+[coordinator](../docs/proposals/first-build/increment-4/coordinator-run-2026-11-10.md) and
+[fresh author](../docs/proposals/first-build/increment-4/fresh-author-run-2026-11-10.md)
+completed T1 to T7 with real clients, writing 332 and 646 lines against the baseline's 64.
+Both failed the owner's bar for authoring work. Orders 025 to 028 supplied change operations and
+command fixes; the [log](../docs/proposals/first-build/log-increment-4.md) records their limits.
+Rulings 49 to 54 await specification changes while the language's shape and Projects are
+settled, before simplification is built and S1 rerun. The sections below describe the
+implemented slice as of 2026-11-10, distinguishing
 each order's tests from that later closeout; they do not claim whole-language conformance.
 
 ## Running it
@@ -41,8 +48,8 @@ specification from `../spec/`, so they run inside a checkout of this repository.
 
 For real Agents, follow [live S1](examples/s1/README.md): build and pack both Agent packages,
 set their host archive digests in a copy of the project, prepare the shared and history
-directories, and register and serve it. Claude Code and Codex must be installed, on the
-runner's PATH and signed in. As of the 2026-11-10 closeout they use the owner's shared logins;
+directories, start `serve`, then explicitly install the dependencies and submit the project.
+Claude Code and Codex must be installed, on the runner's PATH and signed in. As of the 2026-11-10 closeout they use the owner's shared logins;
 setup starts wrappers only, and each `conduit call` to a turn tool starts model work explicitly.
 The owner's [setup guides](../docs/guides/README.md) prepare later experiments. The separate
 homes and engine-mediated sign-in of [ruling 49](../docs/proposals/ruling-49/README.md) are
@@ -386,8 +393,10 @@ document the exact dialect and reproduction command. The S1 vector compares all 
 context fields before and after installing its three archives. Failed installs leave objects
 and installed entries unchanged. Repeats and conflicting digests use the existing catalog,
 even with an unavailable completion. The input represents archive admission; general
-management request authorization, dispatch records and physical package storage remain work
-for the convention and shell inputs. No vector fetches a package or runs a provider.
+management request authorization, dispatch records and physical package storage belong to
+the convention and shell inputs. As of 2026-11-10, public `install.v1` is implemented as
+[Change a serving project](#change-a-serving-project) describes. No vector fetches a package
+or runs a provider.
 
 I2-05 adds the pure `access` and `list-tools` inputs and `access::tool_list_changes`.
 Identity and whether authority can be read are supplied boundary facts. Each access reply
@@ -403,7 +412,7 @@ states and returns notifications addressed to consumers; the shell delivers them
 streams. Supplied serving invocations retain `id`, `target`, `caller`, `conduit`, `state`,
 optional `serving` and carried `filters`; `retirement_of` identifies retirement work for
 ACC-039. They are trusted state, never caller-supplied trace metadata. The invocation stage
-will produce that state itself. These observations exercise access without claiming lifecycle
+produces that state itself. These observations exercise access without claiming lifecycle
 transitions or provider execution.
 
 
@@ -445,8 +454,10 @@ invocation; later requests check access again. An explicit nested replacement re
 registration resolver with trusted frozen references and the referenced template's current
 definition. Preinstalled catalog snapshots are retained in state for that validation;
 actor-authored resolved references remain invalid. Replacement registers a new identity
-and opens nothing. Full inspection is described under I2-08 below; general retirement and
-lifecycle reconciliation remain beyond the implemented setup/open/close transitions.
+and opens nothing. Full inspection is described under I2-08 below. General retirement and
+lifecycle reconciliation were outside I2-07's setup/open/close slice; as of 2026-11-10,
+[Change a serving project](#change-a-serving-project) describes the public retirement paths
+added by order 025. Lifecycle reconciliation remains unfinished.
 
 Order 016's return review adds reference dependency scheduling for Pool entries, propagation
 of hook reasons and cancelled entry outcomes, and collection of every dispatched setup part
@@ -502,11 +513,13 @@ records. The [manifest](../conformance/manifest.yaml) inventories every study-se
 promise with vector IDs or an explicit reason for missing coverage, validated by the runner.
 
 [CONFORMANCE.md](CONFORMANCE.md) documents implemented and pending DL choices. The
-[increment 3 handoff](../docs/proposals/first-build/increment-3-handoff.md) lists every current
-input, intent and completion, the consumer tool contract and shell work items. In particular,
-archive admission is not the complete install.v1 request workflow, and complete public
-retirement/stop-run paths still need core work before the shell exposes the full management
-interface. These limits and the increment's done-when are recorded in
+[increment 3 handoff](../docs/proposals/first-build/increment-3-handoff.md) lists the inputs,
+intents, completions, consumer tool contract and shell work items as increment 2 left them.
+At that handoff, archive admission lacked the complete `install.v1` request workflow, and
+public retirement/stop-run paths still needed core work. Orders 025 and 027 supplied those
+paths on 2026-11-10; [Change a serving project](#change-a-serving-project) gives the commands,
+and CONFORMANCE.md states what remains unfinished. The handoff's limits and the increment's
+done-when are recorded in
 [the log](../docs/proposals/first-build/log-increment-2.md#i2-09-s1-whole-and-the-increment-3-handoff-work-order-019).
 
 ## Consumer HTTP adapter (I3-03)
@@ -532,7 +545,9 @@ exactly the core's private tools and forwards current-authority invokes. Pending
 for committed completion; cancellation reaches the core. Management operations still missing
 from the core answer internal error naming the unfinished operation and commit nothing.
 
-`serve` starts the built-in runner and completes S1's outstanding setup before listening.
+`serve` starts the built-in runner and attempts outstanding setup before listening. Since
+order 027 on 2026-11-10, a failed setup is reported as the instance's state and leaves the
+server listening, so the author can repair it through `submit` and `call`.
 It inspects ready instances with runnable implementations too, so runs stopped after registration
 are started again through explicit setup. On shutdown it ends every run. The default scripted
 HTTP tests cover A/B tools and calls, durable records, cancellation and T7's close and explicit
@@ -568,10 +583,21 @@ record T1, T2 and T7, project-instruction exclusion, refused outside-file reads,
 records and shutdown observations. Access remains mediated, with both Agents and the engine
 running as one operating-system user. Codex still reads its home's `AGENTS.md` (finding 3-07).
 Account-service refusal, incoming peer-message refusal, reach inputs set true, Codex's own
-tool list and independent proof of conversation continuity were not shown. Those limits
-carry forward to increment 4; the closeout did not pass them by inference from flags.
+tool list and independent proof of conversation continuity were not shown in that closeout.
+On 2026-11-10, the admin settled finding 4-06: Codex's six `collaboration.*` tools remain,
+but a spawned sub-agent in its trial had no shell, could not read outside its sandbox and
+was refused a write by the read-only sandbox. Engine requests carry the parent Agent's
+credential. This permits parallel model work within that Agent's access; see
+[CONFORMANCE.md](CONFORMANCE.md#i4-02-startup-repair-retirement-parts-and-inspection).
+The other unshown checks carry forward.
 
 ## Change a serving project
+
+As of 2026-11-10, orders 025 to 028 supply the commands below, help for every command and
+nonzero exit status for any unsuccessful result. Registration preinstalls no S1 package;
+install every dependency explicitly, as in the example above. `submit` requires absolute
+fetch and program values: a request carrying documents has no submitted directory against
+which to resolve them (SUB-010, finding 4-03, ruling 52).
 
 These commands are requests of `conduit serve`, as the root Interface. Keep it running in
 another terminal. `register` remains the command for first registration; `submit` adds a

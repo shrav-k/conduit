@@ -224,6 +224,25 @@ impl Shell {
             .map(|s| s.state)
     }
 
+    /// PRV-029: stable, private storage, separate from each run's working directory.
+    pub(crate) fn state_directory(&self, instance: &str) -> Result<std::path::PathBuf> {
+        let writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
+        let state = writer.store.read()?.state;
+        if !state
+            .objects
+            .iter()
+            .any(|o| o["id"] == instance && o.get("spec").is_none())
+            || Uuid::parse_str(instance).is_err()
+        {
+            return Err("state directory needs an existing instance ID".into());
+        }
+        let root = writer.store.directory.join("instances");
+        store::private_directory(&root)?;
+        let path = root.join(instance);
+        store::private_directory(&path)?;
+        Ok(path)
+    }
+
     /// Inputs here are trusted embedding values, never raw consumer wire messages.
     /// Supplied evidence is replaced with shell evidence.
     pub fn begin(&self, input: Value, executor: &dyn Executor) -> Result<Ticket> {
@@ -460,6 +479,9 @@ impl Shell {
         let before = stored.state.clone();
         let t = self.transition(&before, input)?;
         self.persist(&writer, &mut stored, &t)?;
+        // PRV-029/LIF-035: reconcile only after removal is durable. A directory
+        // whose delete fails remains the retry marker, including across restart.
+        writer.store.clean_state_directories(&stored.state)?;
         #[cfg(test)]
         self.trace
             .lock()

@@ -1,0 +1,23 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/test/p",
+  "version": "1.0.0",
+  "exports": [
+    "public.v1",
+    "op.v1",
+    "type.v1"
+  ],
+  "implementations": {
+    "server": {
+      "implements": [
+        "#op.v1"
+      ],
+      "command": [
+        "server"
+      ],
+      "environment": {
+        "CONDUIT_STATE_DIR": "/root"
+      }
+    }
+  }
+}

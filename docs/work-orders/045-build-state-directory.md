@@ -41,3 +41,16 @@ and `git diff --check` pass; in `engine/`, `cargo fmt --check`,
 `experiments/011-short-form-spike/`, `cargo test --release`. Report the totals passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so, and the admin reruns them. Do not
 stage anything.
+
+## Record
+
+Run on 2026-11-11, beside orders 040 and 044 on a shared machine: the worker in 72 minutes, then a
+fresh verifier in 9, then a second round. The engine gained each instance's private state
+directory: made with mode 0700, keyed by the instance's ID, passed as the variable
+`spec/names.yaml` names, removed with the instance and retried when a delete fails; and MAN-018's
+check that no item binds that variable. The verifier found that the check also rejected Type
+defaults TPL-004 never selects, which five rejection fixtures had encoded, and that the test of a
+retry on reopening could not tell a retry from none; the second round checks only the defaults
+selected, corrected the fixtures with an acceptance case for an unused default, and added the test.
+Under load, timing-sensitive shell tests failed and passed with two test threads (finding 4-18).
+Tests: the engine's suite, 166, with all vectors; experiment 011, 8.

@@ -18,6 +18,33 @@ use std::collections::{BTreeMap, BTreeSet};
 
 type Result<T> = std::result::Result<T, String>;
 
+/// Assigned runner variables, embedded from the single names source at build time.
+/// This keeps resolution pure and lets the shell use the very same names (MAN-018).
+pub fn run_variables() -> &'static BTreeMap<String, String> {
+    static NAMES: std::sync::OnceLock<BTreeMap<String, String>> = std::sync::OnceLock::new();
+    NAMES.get_or_init(|| {
+        let names = conduit_loader::read_bytes(
+            conduit_loader::Syntax::Yaml,
+            include_bytes!("../../../../spec/names.yaml"),
+        )
+        .expect("built-in names must be valid")[0]
+            .to_json();
+        [
+            "engineUrlVariable",
+            "identityDirVariable",
+            "stateDirVariable",
+        ]
+        .into_iter()
+        .map(|key| {
+            (
+                key.into(),
+                names[key].as_str().expect("assigned variable").into(),
+            )
+        })
+        .collect()
+    })
+}
+
 /// Values read at the edge from the specification, not a second copy of its assigned names.
 #[derive(Clone, Debug)]
 pub struct Context {

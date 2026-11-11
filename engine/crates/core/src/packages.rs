@@ -444,7 +444,8 @@ impl Catalog {
         decisions.push(decision(
             "check-implementation-context",
             &[
-                "PKG-019", "PKG-020", "PKG-030", "MAN-010", "MAN-017", "NAM-022", "TPL-004",
+                "PKG-019", "PKG-020", "PKG-030", "MAN-010", "MAN-017", "MAN-018", "NAM-022",
+                "TPL-004",
             ],
             &[],
             json!({}),
@@ -763,20 +764,40 @@ fn check_items(
                     ),
                 ));
             }
+            // TPL-004: only required, offered or control operations use Type defaults.
+            let mut needed = BTreeSet::new();
+            for op in strings(&t["spec"], "requires").chain(strings(&t["spec"], "controls")) {
+                if let Ok(operation) = resolve_name(env, indexes, &ts, op, "Operation", core) {
+                    needed.insert(operation);
+                }
+            }
+            for cap in strings(&t["spec"], "offers") {
+                if let Ok((cs, cn)) = resolve_name(env, indexes, &ts, cap, "Capability", core) {
+                    for op in strings(&indexes[&cs][&cn]["spec"], "operations") {
+                        if let Ok(operation) =
+                            resolve_name(env, indexes, &cs, op, "Operation", core)
+                        {
+                            needed.insert(operation);
+                        }
+                    }
+                }
+            }
             let mut selected = BTreeMap::new();
             // NAM-022/TPL-004: compare the operations selected by each key in
             // its own scope, retaining that scope for the implementation value.
-            for (selection_scope, spec) in [(ts.as_str(), &t["spec"]), (scope.as_str(), &d["spec"])]
-            {
+            for (is_default, selection_scope, spec) in [
+                (true, ts.as_str(), &t["spec"]),
+                (false, scope.as_str(), &d["spec"]),
+            ] {
                 for (op, item) in items(spec, "implementation") {
                     if let Ok(operation) =
                         resolve_name(env, indexes, selection_scope, op, "Operation", core)
                     {
-                        selected.insert(operation, (selection_scope, item));
+                        selected.insert(operation, (selection_scope, item, is_default));
                     }
                 }
             }
-            for (_, (selection_scope, item)) in selected {
+            for (operation, (selection_scope, item, is_default)) in selected {
                 let Some(r) = item.as_str() else {
                     continue;
                 };
@@ -786,6 +807,25 @@ fn check_items(
                     continue;
                 };
                 let implementation = &indexes[&is][&iname]["spec"];
+                // MAN-018/TPL-004: only effective selections reserve variables.
+                // Secret-reference bindings use this same environment map;
+                // run materialization later moves their values under secrets.
+                if !is_default || needed.contains(&operation) {
+                    for (name, pointer) in items(implementation, "environment") {
+                        if crate::run_variables()
+                            .values()
+                            .any(|reserved| name.eq_ignore_ascii_case(reserved))
+                        {
+                            diagnostics.push(diag(
+                                "MAN-018",
+                                format!(
+                                    "template {} selects {r}: reserved variable {name} -> {pointer}",
+                                    d["metadata"]["name"]
+                                ),
+                            ));
+                        }
+                    }
+                }
                 for (bindings, source, declared) in [
                     ("packageArguments", "package", "packageArguments"),
                     ("environment", "package", "environmentVariables"),

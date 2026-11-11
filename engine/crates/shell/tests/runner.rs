@@ -493,7 +493,8 @@ fn plain_wire_environment_workdir_records_and_restart() {
                 "USER",
                 "TEST_ROOT",
                 "CONDUIT_URL",
-                "CONDUIT_IDENTITY_DIR"
+                "CONDUIT_IDENTITY_DIR",
+                &conduit_core::run_variables()["stateDirVariable"]
             ]
             .contains(&key.as_str()),
             "unexpected environment name: {key}"
@@ -501,6 +502,25 @@ fn plain_wire_environment_workdir_records_and_restart() {
     }
     assert!(environment.get("GITHUB_TOKEN").is_none());
     assert_eq!(environment["CONDUIT_URL"], shell.config.engine_url);
+    let state_variable = &conduit_core::run_variables()["stateDirVariable"];
+    let state_dir = PathBuf::from(environment[state_variable].as_str().unwrap());
+    assert_eq!(
+        state_dir,
+        parent
+            .path()
+            .join("store/instances")
+            .join(id(&shell, "shared"))
+    );
+    assert_eq!(
+        fs::metadata(&state_dir).unwrap().permissions().mode() & 0o777,
+        0o700
+    );
+    assert_eq!(fs::read_dir(&state_dir).unwrap().count(), 0);
+    let history_env: Value =
+        serde_json::from_slice(&fs::read(parent.path().join("history/environment.json")).unwrap())
+            .unwrap();
+    assert_ne!(environment[state_variable], history_env[state_variable]);
+    fs::write(state_dir.join("synthetic-state"), "persists").unwrap();
     let cwd: Value =
         serde_json::from_slice(&fs::read(parent.path().join("shared/cwd.json")).unwrap()).unwrap();
     assert_eq!(cwd["mode"], 0o700);
@@ -542,6 +562,27 @@ fn plain_wire_environment_workdir_records_and_restart() {
     assert!(
         matches!(runner.builtin_runner(&inspect,None).unwrap(),Execution::SetupReport(v) if v["state"]=="stopped")
     );
+    assert_eq!(
+        outcome(&shell, &setup(&shell, &runner, "shared")),
+        "succeeded"
+    );
+    let restarted_env: Value =
+        serde_json::from_slice(&fs::read(parent.path().join("shared/environment.json")).unwrap())
+            .unwrap();
+    assert_eq!(restarted_env[state_variable], environment[state_variable]);
+    assert_eq!(
+        fs::read_to_string(state_dir.join("synthetic-state")).unwrap(),
+        "persists"
+    );
+    let retired = invoke(
+        &shell,
+        &runner,
+        "root",
+        "root-workspace.retire.v1",
+        json!({"instance":{"kind":"Resource","name":"shared"}}),
+    );
+    assert_eq!(outcome(&shell, &retired), "succeeded", "{retired}");
+    assert!(!state_dir.exists());
 }
 
 #[test]

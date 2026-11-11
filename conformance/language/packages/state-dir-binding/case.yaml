@@ -1,0 +1,236 @@
+{
+  "id": "state-dir-binding",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "MAN-018",
+    "TPL-004"
+  ],
+  "title": "Reserved state and identity variables, including secret bindings and Type defaults",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "exact-manifest": "exact/conduit.json",
+    "exact-documents": "exact/documents.json",
+    "exact": "exact/fixture.json",
+    "case-manifest": "case/conduit.json",
+    "case-documents": "case/documents.json",
+    "case": "case/fixture.json",
+    "secret-manifest": "secret/conduit.json",
+    "secret-documents": "secret/documents.json",
+    "secret": "secret/fixture.json",
+    "explicit-manifest": "explicit/conduit.json",
+    "explicit-documents": "explicit/documents.json",
+    "explicit": "explicit/fixture.json",
+    "identity-manifest": "identity/conduit.json",
+    "identity-documents": "identity/documents.json",
+    "identity": "identity/fixture.json",
+    "url-manifest": "url/conduit.json",
+    "url-documents": "url/documents.json",
+    "url": "url/fixture.json",
+    "unselected-manifest": "unselected/conduit.json",
+    "unselected-documents": "unselected/documents.json",
+    "unselected": "unselected/fixture.json",
+    "default-manifest": "default/conduit.json",
+    "default-documents": "default/documents.json",
+    "default": "default/fixture.json",
+    "unused-default-manifest": "unused-default/conduit.json",
+    "unused-default-documents": "unused-default/documents.json",
+    "unused-default": "unused-default/fixture.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "exact"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-018"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "case"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-018"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "secret"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-018"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "explicit"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-018"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "identity"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-018"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "url"
+      },
+      "expect": {
+        "reply": {
+          "accepted": false,
+          "reason": "invalid",
+          "diagnostics": [
+            {
+              "ruleId": "MAN-018"
+            }
+          ]
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "unselected"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "default"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "resolve-project",
+        "file": "unused-default"
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "records": [],
+        "external_intents": [],
+        "stateUnchanged": true,
+        "required_promises": [
+          "MAN-018",
+          "TPL-004"
+        ]
+      }
+    }
+  ]
+}

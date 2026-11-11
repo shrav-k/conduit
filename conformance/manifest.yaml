@@ -4349,6 +4349,17 @@
         "IFC-028"
       ],
       "safety_rows": []
+    },
+    {
+      "id": "state-dir-binding",
+      "case": "language/packages/state-dir-binding/case.yaml",
+      "promises": [
+        "MAN-018",
+        "TPL-004"
+      ],
+      "safety_rows": [
+        "state-dir-binding"
+      ]
     }
   ],
   "s1_coverage": [

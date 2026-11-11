@@ -307,6 +307,15 @@ fn unregister_run_templates_removes_them_without_stopping_instances() {
 }
 #[test]
 fn retirement_closes_targets_immediately_and_unregister_keeps_records() {
+    unregister_retries_state_directory_deletion(false);
+}
+
+#[test]
+fn reopen_retries_failed_state_directory_deletion_before_returning() {
+    unregister_retries_state_directory_deletion(true);
+}
+
+fn unregister_retries_state_directory_deletion(retry_on_reopen: bool) {
     let temp = tempfile::tempdir().unwrap();
     let shell = Shell::open(
         &temp.path().join("store"),
@@ -331,6 +340,13 @@ fn retirement_closes_targets_immediately_and_unregister_keeps_records() {
         .unwrap();
     assert!(message.contains("Resource/shared") && message.contains("Resource/history"));
     let before = object(&shell, "Resource", "shared", false);
+    // PRV-029/LIF-035: state survives retirement while shutdown is unconfirmed.
+    let state_dir = temp
+        .path()
+        .join("store/instances")
+        .join(before["id"].as_str().unwrap());
+    std::fs::create_dir(&state_dir).unwrap();
+    std::fs::write(state_dir.join("synthetic-state"), "test").unwrap();
     let conflict = invoke(
         &shell,
         &observer,
@@ -363,6 +379,7 @@ fn retirement_closes_targets_immediately_and_unregister_keeps_records() {
         object(&shell, "Resource", "shared", false)["state"],
         "retired"
     );
+    assert!(state_dir.exists());
     assert!(
         !tools(&shell, "agent-a")
             .iter()
@@ -383,6 +400,9 @@ fn retirement_closes_targets_immediately_and_unregister_keeps_records() {
         "CON-025"
     );
     let count = shell.state().unwrap().records.len();
+    use std::os::unix::fs::PermissionsExt;
+    // Fail a real recursive delete without relying on a fault-only implementation.
+    std::fs::set_permissions(&state_dir, std::fs::Permissions::from_mode(0o500)).unwrap();
     success(invoke(
         &shell,
         &observer,
@@ -398,6 +418,37 @@ fn retirement_closes_targets_immediately_and_unregister_keeps_records() {
             .all(|o| o["id"] != before["id"])
     );
     assert!(shell.state().unwrap().records.len() > count);
+    assert!(
+        state_dir.exists(),
+        "failed deletion must leave a retry marker"
+    );
+    drop(shell);
+    if retry_on_reopen {
+        std::fs::set_permissions(&state_dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+    }
+    let shell = Shell::open(
+        &temp.path().join("store"),
+        boundary::context(&repo()).unwrap(),
+        Config::default(),
+    )
+    .unwrap();
+    if retry_on_reopen {
+        // PRV-029/LIF-035 and DL16: reopening itself must retry cleanup.
+        assert!(
+            !state_dir.exists(),
+            "reopen must delete the directory before returning"
+        );
+    } else {
+        assert!(state_dir.exists());
+        std::fs::set_permissions(&state_dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+        shell
+            .submit(json!({"kind":"export-records"}), &MissingExecutor)
+            .unwrap();
+        assert!(
+            !state_dir.exists(),
+            "a later commit retries the failed deletion"
+        );
+    }
     assert_eq!(observer.stops.lock().unwrap().len(), 2);
     // No setup was dispatched for history: retirement removes it with no stop.
     success(invoke(

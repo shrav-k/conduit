@@ -440,6 +440,20 @@ impl Inner {
         for name in identity.keys() {
             helper_env.remove(name);
         }
+        // PRV-023/029: never give helpers an inherited state directory. Only the
+        // instance process receives the engine's value, after all item defaults.
+        let state_variable = &conduit_core::run_variables()["stateDirVariable"];
+        helper_env.retain(|name, _| !name.eq_ignore_ascii_case(state_variable));
+        let mut identity = identity;
+        let state_directory = self
+            .shell
+            .upgrade()
+            .ok_or("shell stopped")?
+            .state_directory(subject)?;
+        identity.insert(
+            state_variable.clone(),
+            state_directory.to_string_lossy().into(),
+        );
         let env = run_environment(
             helper_env.clone().into_iter(),
             &config.pass_environment,
@@ -831,6 +845,9 @@ fn run_environment(
         .flatten()
     {
         let name = string(declaration, "name")?;
+        if identity.keys().any(|key| name.eq_ignore_ascii_case(key)) {
+            continue;
+        }
         let supplied = inputs["secrets"]["environment"]
             .get(name)
             .or_else(|| inputs["environment"].get(name));
@@ -1377,6 +1394,33 @@ mod tests {
                 ),
             ])
         );
+    }
+
+    #[test]
+    fn state_directory_wins_at_exec_over_pass_list_and_package_defaults() {
+        let parent = tempfile::tempdir().unwrap();
+        let (_shell, runner) = test_runner(parent.path());
+        let name = &conduit_core::run_variables()["stateDirVariable"];
+        let engine_value = parent
+            .path()
+            .join("instance-state")
+            .to_string_lossy()
+            .into_owned();
+        for declaration in [
+            json!({"name":name,"default":"wrong-package-directory"}),
+            json!({"name":name.to_lowercase(),"isRequired":true}),
+        ] {
+            let env = run_environment(
+                BTreeMap::from([(name.clone(), "wrong-inherited-directory".into())]).into_iter(),
+                std::slice::from_ref(name),
+                &json!({"package":{"environmentVariables":[declaration]}}),
+                &json!({}),
+                &BTreeMap::from([(name.clone(), engine_value.clone())]),
+            )
+            .unwrap();
+            let output = exec_output(&runner, Path::new("/usr/bin/env"), &[], parent.path(), &env);
+            assert_eq!(output, format!("{name}={engine_value}\n"));
+        }
     }
 
     #[test]

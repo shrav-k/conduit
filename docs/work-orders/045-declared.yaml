@@ -1,0 +1,40 @@
+- name: reserved state directory binding vectors
+  kind: added
+  cases: [state-dir-binding]
+- name: rejection fixtures select their reserved-variable Type defaults under TPL-004
+  kind: fixture
+  cases: [state-dir-binding]
+  operation: replace
+  paths:
+    - conformance/language/packages/state-dir-binding/exact/documents.json
+    - conformance/language/packages/state-dir-binding/case/documents.json
+    - conformance/language/packages/state-dir-binding/secret/documents.json
+    - conformance/language/packages/state-dir-binding/identity/documents.json
+    - conformance/language/packages/state-dir-binding/url/documents.json
+- name: unused Type default acceptance fixture files
+  kind: fixture
+  cases: [state-dir-binding]
+  operation: add
+  paths: ['conformance/language/packages/state-dir-binding/unused-default/*']
+- name: unused Type default acceptance inputs and file aliases
+  kind: input
+  cases: [state-dir-binding]
+  operation: add
+  paths: ['/files/unused-default*', '/steps/8/input/*']
+- name: cite TPL-004 for default selection
+  kind: metadata
+  cases: [state-dir-binding]
+  operation: add
+  paths: ['/promises/1']
+  after: TPL-004
+- name: unused Type default acceptance records and promise citations
+  kind: expectation
+  cases: [state-dir-binding]
+  operation: add
+  paths: ['/steps/8/expect/external_intents', '/steps/8/expect/records', '/steps/8/expect/required_promises/*']
+- name: added unused Type default step accepts without changing state
+  kind: flip
+  cases: [state-dir-binding]
+  operation: add
+  paths: ['/steps/8/expect/reply/accepted', '/steps/8/expect/stateUnchanged']
+  after: true

@@ -23,6 +23,50 @@ fn context() -> Context {
 fn open(path: &Path) -> Shell {
     Shell::open(path, context(), Config::default()).unwrap()
 }
+
+#[test]
+fn private_state_directory_is_empty_distinct_and_stable_after_restart() {
+    // PRV-029: instance IDs, rather than names or run IDs, select the directory.
+    let temp = temporary();
+    let shell = open(temp.path());
+    shell
+        .submit(
+            json!({"kind":"first-start","machine":local_machine(BTreeMap::new()).unwrap()}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    let ids: Vec<String> = shell
+        .state()
+        .unwrap()
+        .objects
+        .iter()
+        .filter(|o| o.get("spec").is_none())
+        .take(2)
+        .map(|o| o["id"].as_str().unwrap().into())
+        .collect();
+    let path = shell.state_directory(&ids[0]).unwrap();
+    assert_eq!(path.file_name().unwrap(), ids[0].as_str());
+    assert_eq!(
+        fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+        0o700
+    );
+    assert_eq!(fs::read_dir(&path).unwrap().count(), 0);
+    let other = shell.state_directory(&ids[1]).unwrap();
+    assert_ne!(path, other);
+    fs::write(path.join("sentinel"), "synthetic state").unwrap();
+    assert_eq!(shell.state_directory(&ids[0]).unwrap(), path);
+    assert_eq!(fs::read_dir(&other).unwrap().count(), 0);
+    assert!(shell.state_directory("../escape").is_err());
+    drop(shell);
+    let shell = open(temp.path());
+    assert_eq!(shell.state_directory(&ids[0]).unwrap(), path);
+    assert_eq!(
+        fs::read_to_string(path.join("sentinel")).unwrap(),
+        "synthetic state"
+    );
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).unwrap();
+    assert!(shell.state_directory(&ids[0]).is_err());
+}
 fn case() -> Value {
     boundary::value(&repository().join("conformance/conventions/s1/whole/case.yaml")).unwrap()
 }

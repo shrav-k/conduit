@@ -85,6 +85,27 @@ pub(crate) struct Store {
     _lease: File,
 }
 impl Store {
+    pub fn clean_state_directories(&self, state: &State) -> Result<()> {
+        let root = self.directory.join("instances");
+        private_directory(&root)?;
+        for entry in fs::read_dir(&root).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let name = entry.file_name();
+            let Some(id) = name.to_str() else { continue };
+            if Uuid::parse_str(id).is_ok()
+                && !state
+                    .objects
+                    .iter()
+                    .any(|o| o["id"] == id && o.get("spec").is_none())
+            {
+                // Never inspect contents. remove_dir_all does not follow symlinks.
+                // Failed deletes are retried on every commit and store reopen.
+                let _ = fs::remove_dir_all(entry.path());
+            }
+        }
+        Ok(())
+    }
+
     pub fn open(directory: &Path) -> Result<Self> {
         let directory = std::path::absolute(directory).map_err(|e| e.to_string())?;
         private_directory(&directory)?;

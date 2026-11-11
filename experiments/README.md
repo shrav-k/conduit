@@ -34,10 +34,10 @@ expected outcomes and validation record together.
 | [015 — S4: a setup that fails partway](015-s4-partial-setup/README.md) | S4: a setup that fails partway, is retried and loses a response. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
 | [016 — S5: a control change under contention](016-s5-control-contention/README.md) | S5: a control change under contention. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
 | [017 — S6: access revoked while requests are in flight](017-s6-revoke-in-flight/README.md) | S6: access revoked and a Resource retired while requests are in flight. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
-| [018 — S7: an outside author's package](018-s7-outside-package/README.md) | S7: an outside author packages an existing MCP server and a small code plugin. | Pre-registration being written by work order 103; it awaits the owner's acceptance. |
-| [019 — S8: search that returns only what the caller may see](019-s8-filtered-search/README.md) | S8: search over storage returning only what the caller may see. | Pre-registration being written by work order 103; it awaits the owner's acceptance. |
+| [018 — S7: an outside author's package](018-s7-outside-package/README.md) | S7: an outside author packages an existing MCP server and a small code plugin. | [Pre-registered](018-s7-outside-package/README.md) on 2026-11-11 by work order 103; awaits the owner's acceptance. |
+| [019 — S8: search that returns only what the caller may see](019-s8-filtered-search/README.md) | S8: search over storage returning only what the caller may see. | [Pre-registered](019-s8-filtered-search/README.md) on 2026-11-11 by work order 103; awaits the owner's acceptance. |
 | [020 — S9: first start, later start and repair](020-s9-start-and-repair/README.md) | S9: first initialization, later start and explicit repair. | Pre-registration being written by work order 102; it awaits the owner's acceptance. |
-| [021 — S10: every provider swapped](021-s10-swapped-providers/README.md) | S10: S1 and S2 again with every provider swapped. | Pre-registration being written by work order 103; it awaits the owner's acceptance. |
+| [021 — S10: every provider swapped](021-s10-swapped-providers/README.md) | S10: S1 and S2 again with every provider swapped. | [Pre-registered](021-s10-swapped-providers/README.md) on 2026-11-11 by work order 103; awaits the owner's acceptance. |
 
 Keep draft syntax, static checks, synthetic tests and tests against live providers distinct.
 Never present an expected outcome as a result. A result that contradicts a promise is raised

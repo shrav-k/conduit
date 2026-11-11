@@ -48,6 +48,16 @@ the comparison by either set. A decision made after this date goes below as a ne
 On 2026-11-10 the coordinator walked the owner through items 11 to 14, recommending each be
 kept, and the owner answered that everything stands. Items 11 to 14 stand as decided.
 
+## Since items 11 to 14 were confirmed
+
+| # | Decision | Why it matters | Where |
+| --- | --- | --- | --- |
+| 15 | **A Codex Agent's sub-agents are a stated route, not a bypass** (finding 4-06). Codex keeps its `collaboration.*` tools under every switch tried; a sub-agent it spawns had no shell, could not read outside its sandbox and was refused a write | A Codex Agent can run more model work in parallel than one conversation, within its own access; what offers the tools is still unknown | [log of increment 4](log-increment-4.md), 4-06 |
+| 16 | **The Codex package also disables `multi_agent_v2` and `multi_agent_v2_dynamic_tools`** (work order 027), though the trial did not show them to be the cause | Harmless if useless; the package's arguments grow | work order 027's record |
+| 17 | **The engine preinstalls no package of S1** (work order 028): S1's filesystem and history packages are installed like any other | The engine knows nothing of a scenario; tests and the live project install them | work order 028 |
+| 18 | **An ended condition is shown apart, with when it ended, in the CLI's output only** (finding 4-17), since the specification has no form for it | Inspection through the core still shows conditions as the specification has them | [log of increment 4](log-increment-4.md), 4-17 |
+| 19 | **A retire hook's part is unavailable, not unknown, where the run's state is unknown** (work order 027, TPL-018, OPS-022) | Decides how such a retirement ends | work order 027 |
+
 ## What the owner ruled, for reference
 
 Ruling 48 settled four points with the owner: an Agent's own reach off by default, the shared

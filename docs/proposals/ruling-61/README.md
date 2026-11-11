@@ -1,6 +1,6 @@
 # Ruling 61: the authority of a Fleet
 
-Status: in force; amended by 66 (point 3: B9 pending action also at scoped Interfaces) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed) (spec pending except where a promise is cited). This record says why.
+Status: in force; amended by 66 (point 3: B9 pending action also at scoped Interfaces); amended by 71 (B1: batch 2 on a branch) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 6. Conduits and access](../../../IN_FORCE.md#6-conduits-and-access), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed) (spec pending except where a promise is cited). This record says why.
 
 This is the record of a
 ruling. Where it and the specification differ, the specification governs.

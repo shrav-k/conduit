@@ -95,6 +95,12 @@ its choices separately and commits nothing. [Work orders](implementation/WORK_OR
 the process. Sessions writing the language commit and push at milestones to their pull-request
 branch, as ruling 38 confirmed; work-order workers do not.
 
+Ruling 71 adds one or two lane coordinators beside the admin session, which stays the merge
+authority for the core, the conformance runner and manifest, `spec/`, IN_FORCE.md and the ledger.
+A lane coordinator merges only pull requests confined to its lane's paths. Any coordinator may
+settle a small finding that adds a feature, logged for the owner to strike, except, until the S1
+rerun, one that could move S1's author counts.
+
 Ruling 58 point 1 accepts every coordinator decision, editor choice and work-order decision
 logged before ruling 57, except review-list items 15 to 19 and increment 4's open decisions.
 Those exceptions and choices logged after the cutoff stay open to the owner to strike. Ruling
@@ -111,7 +117,7 @@ The records distinguish owner rulings, coordinator decisions on findings, and ed
 
 | Word | Who it is |
 | --- | --- |
-| The coordinator | The Claude session that the owner asked to write the language, and that keeps this tracker. It decides a finding where ruling 37 lets it, starts the readers and editors, checks their work and commits it. Since ruling 48 it is the admin session, which writes the work orders that Codex workers carry out. It is not the owner. |
+| The coordinator | The Claude session that the owner asked to write the language, and that keeps this tracker. It decides a finding where ruling 37 lets it, starts the readers and editors, checks their work and commits it. Since ruling 48 it is the admin session, which writes the work orders that Codex workers carry out, and since ruling 71 the merge authority beside one or two lane coordinators. It is not the owner. |
 | A worker | A Codex session that carries out one work order (ruling 48). It changes only what the order allows, and commits nothing. |
 | A cold reader | A separate session that the coordinator starts with no context. It is given only `spec/`, or the whole repository, and writes a report, which is kept. It changes nothing. The counts of findings for a round are the counts of these reports. In round 2 the editors of the closing pass and of the last pass also started three readers of their own, whose findings are rows of [the closing log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/log-closing.md) and of [the log of the last pass](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/reaudit/round-2/log-tail.md), outside the 125. |
 | An editor | A separate session that the coordinator starts to apply decisions to named files. "Editor P" and "Editor S" in round 2 were the editors of the promises and of the core package and schemas. An editor logs each choice it makes, and lists what needs a new decision without deciding it. |

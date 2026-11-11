@@ -5,7 +5,7 @@ Not binding. The log of what increment 1 of the first build found, under
 who settles it. The specification governs where this log and it differ.
 
 Increment 1 is the strict loader (A43), the crate `conduit-loader` in
-[reference-model/](../../../reference-model/README.md), written on the branch `build/loader` from
+[reference-model/](../../../engine/README.md), written on the branch `build/loader` from
 `main` at `cdf3236`, on 2026-11-09. It reads a document in YAML or JSON as the schema profile
 and SCH-005, SCH-006, SCH-012, SCH-013, SCH-017, SCH-018, SCH-020 and SCH-021 say, reads a
 project's directory as MAN-001, MAN-002, MAN-011 and SUB-010 say, and validates each document

@@ -1175,7 +1175,7 @@ rewritten here.** A later order can:
 
 ### Conformance choices, handoff and validation
 
-[CONFORMANCE.md](../../../reference-model/CONFORMANCE.md) consolidates the profile and
+[CONFORMANCE.md](../../../engine/CONFORMANCE.md) consolidates the profile and
 orders 004-017: implemented portions of DL2-10/12/13/15, their sources/evidence, and the
 remaining DL1/3/5/7/8/10/12/13/16/17 choices. Removed DL11/14 are not reused. It makes no
 claim of a persistent shell or cryptographic identity implementation.

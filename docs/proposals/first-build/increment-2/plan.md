@@ -112,7 +112,7 @@ trace explicitly says repeat. `root` sends the management requests on its own be
    tools to post, list and read. In a core vector the external server replies are supplied
    values; in increment 3/4 they must be actual calls and content observations.
 
-The test [s1_drafts.rs](../../../../reference-model/crates/loader/tests/s1_drafts.rs) reads all
+The test [s1_drafts.rs](../../../../engine/crates/loader/tests/s1_drafts.rs) reads all
 four directories separately and asserts a manifest and documents were read, as well as loader
 acceptance. It proves no package is installed, no reference resolves, no config meets its
 Type, no declared Conduit is well typed, and no access is permitted. These all require the
@@ -158,7 +158,7 @@ The inventory is for the paths above and their safety boundaries. `Yes` means th
 loader already checks the stated syntax or shape. `Part` means it checks only that part; the
 row states the core work. `No` means the loader supplies no such semantic check. A schema
 rejection cites SUB-005, even when its encoded promise is listed here. No row is a claim of
-whole-language conformance. The loader's [README](../../../../reference-model/README.md) and
+whole-language conformance. The loader's [README](../../../../engine/README.md) and
 [increment 1 log](../log-increment-1.md#what-increment-1-did-not-do) delimit its coverage.
 
 ### First start

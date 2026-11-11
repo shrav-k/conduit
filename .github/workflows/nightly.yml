@@ -1,4 +1,4 @@
-# The reference model's tests that fetch the pinned @modelcontextprotocol/server-filesystem from
+# The engine's tests that fetch the pinned @modelcontextprotocol/server-filesystem from
 # npm, once a day and on request. They need the network, so they stay out of the checks on each
 # pull request. The job runs on `ubuntu-latest`, a standard GitHub-hosted runner, which is free
 # for a public repository; it uses no larger runner, paid service or secret.
@@ -23,12 +23,12 @@ env:
 
 jobs:
   npm:
-    name: reference-model with npm
+    name: engine with npm
     runs-on: ubuntu-latest
     timeout-minutes: 60
     defaults:
       run:
-        working-directory: reference-model
+        working-directory: engine
     steps:
       - uses: actions/checkout@v7
         with:
@@ -43,7 +43,7 @@ jobs:
           cargo --version
           node --version
           npm --version
-      # The cache the checks workflow saves for reference-model/ on main; this job only reads it.
+      # The cache the checks workflow saves for engine/ on main; this job only reads it.
       - name: Restore the cargo cache
         uses: actions/cache/restore@v6
         with:
@@ -51,9 +51,9 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            reference-model/target/
-          key: cargo-${{ runner.os }}-reference-model-${{ hashFiles('reference-model/Cargo.lock', 'reference-model/rust-toolchain.toml') }}
-          restore-keys: cargo-${{ runner.os }}-reference-model-
+            engine/target/
+          key: cargo-${{ runner.os }}-engine-${{ hashFiles('engine/Cargo.lock', 'engine/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-engine-
       - name: CONDUIT_TEST_NPM=1 cargo test --release
         env:
           CONDUIT_TEST_NPM: "1"

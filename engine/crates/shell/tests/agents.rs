@@ -176,7 +176,7 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
         .unwrap();
     }
     let spec = conduit_loader::Specification::read(&root.join("spec")).unwrap();
-    let mut project = boundary::project(&root.join("reference-model/examples/s1"), &spec).unwrap();
+    let mut project = boundary::project(&root.join("engine/examples/s1"), &spec).unwrap();
     for installed in &shell.state().unwrap().installed_packages {
         project.manifest.as_mut().unwrap()["packages"][&installed.package.address]["digest"] =
             json!(installed.package.digest);

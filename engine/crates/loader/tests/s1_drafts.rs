@@ -8,7 +8,7 @@ use conduit_loader::read_project;
 
 #[test]
 fn maintained_s1_example_is_accepted() {
-    let directory = repository().join("reference-model/examples/s1");
+    let directory = repository().join("engine/examples/s1");
     let project = read_project(&directory, specification())
         .unwrap_or_else(|faults| panic!("{}: {faults}", directory.display()));
     assert!(project.manifest.is_some(), "{}", directory.display());

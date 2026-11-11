@@ -4,7 +4,7 @@ Not binding. These are preinstalled package snapshots and a submitted project's 
 for [the context vector](../../language/packages/s1/case.yaml). That context vector does not install, register,
 start or qualify an implementation. The [archive vector](../../language/archives/s1/case.yaml)
 also uses these repository-authored archives as installation inputs, then resolves the same
-project against the resulting installed catalog. The [maintained S1 example](../../../reference-model/examples/s1/)
+project against the resulting installed catalog. The [maintained S1 example](../../../engine/examples/s1/)
 is the live project for shell runs.
 
 The filesystem package exports its three Operations, Capability and Resource Type. The history
@@ -68,7 +68,7 @@ Computed on 2026-11-10 from the fetched npm archive:
 From the repository root, rebuild that Conduit archive and print its digest:
 
 ```sh
-(cd reference-model && cargo run --release --bin s1-archive -- \
+(cd engine && cargo run --release --bin s1-archive -- \
   ../conformance/fixtures/s1/packages/filesystem-0.2.0 \
   ../conformance/fixtures/s1/archives/filesystem-0.2.0.tar.gz)
 ```

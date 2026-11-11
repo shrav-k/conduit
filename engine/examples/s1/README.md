@@ -19,23 +19,23 @@ can run on any host. Those archives contain no executable. Before a live run:
    history fixture archives, then both host Agent archives, and submit the copy:
 
 ```sh
-reference-model/target/release/conduit init --store /tmp/conduit-live-store
-reference-model/target/release/conduit serve --store /tmp/conduit-live-store
+engine/target/release/conduit init --store /tmp/conduit-live-store
+engine/target/release/conduit serve --store /tmp/conduit-live-store
 # In another terminal; use the SHA-256 pins of the matching archives:
-reference-model/target/release/conduit install --store /tmp/conduit-live-store conformance/fixtures/s1/archives/filesystem.tar.gz#SHA256
-reference-model/target/release/conduit install --store /tmp/conduit-live-store conformance/fixtures/s1/archives/history.tar.gz#SHA256
-reference-model/target/release/conduit install --store /tmp/conduit-live-store /absolute/agent-claude-code.tar.gz#HOST_SHA256
-reference-model/target/release/conduit install --store /tmp/conduit-live-store /absolute/agent-codex.tar.gz#HOST_SHA256
-reference-model/target/release/conduit submit --store /tmp/conduit-live-store /absolute/live-project
+engine/target/release/conduit install --store /tmp/conduit-live-store conformance/fixtures/s1/archives/filesystem.tar.gz#SHA256
+engine/target/release/conduit install --store /tmp/conduit-live-store conformance/fixtures/s1/archives/history.tar.gz#SHA256
+engine/target/release/conduit install --store /tmp/conduit-live-store /absolute/agent-claude-code.tar.gz#HOST_SHA256
+engine/target/release/conduit install --store /tmp/conduit-live-store /absolute/agent-codex.tar.gz#HOST_SHA256
+engine/target/release/conduit submit --store /tmp/conduit-live-store /absolute/live-project
 ```
 
 In another terminal, request turns explicitly:
 
 ```sh
-reference-model/target/release/conduit tools --store /tmp/conduit-live-store --as agent-a
-reference-model/target/release/conduit call --store /tmp/conduit-live-store \
+engine/target/release/conduit tools --store /tmp/conduit-live-store --as agent-a
+engine/target/release/conduit call --store /tmp/conduit-live-store \
   turn-a.turn.v1 '{"message":"List the project directory using its engine tool and report the result."}'
-reference-model/target/release/conduit call --store /tmp/conduit-live-store \
+engine/target/release/conduit call --store /tmp/conduit-live-store \
   turn-b.turn.v1 '{"message":"List the project directory using its engine tool and report the result."}'
 ```
 

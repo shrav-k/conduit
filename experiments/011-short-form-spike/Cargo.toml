@@ -6,6 +6,6 @@ rust-version = "1.97"
 publish = false
 
 [dependencies]
-conduit-loader = { path = "../../reference-model/crates/loader" }
-conduit-core = { path = "../../reference-model/crates/core" }
+conduit-loader = { path = "../../engine/crates/loader" }
+conduit-core = { path = "../../engine/crates/core" }
 serde_json = "1"

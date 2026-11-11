@@ -2,7 +2,7 @@
 
 Conduit is a configuration language for the relationships between independent agents and the
 things they share. As of 2026-11-10, this repository holds the draft language and the first
-build: a strict loader, a pure core on S1, the reference model, and a runnable engine shell.
+build: a strict loader, a pure core on S1, and a runnable engine shell.
 The shell ran real Claude Code and Codex as Agents through S1's T1, T2 and T7; the
 [closeout](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md) states the
 results and limits. Increment 4 is in progress as of 2026-11-10: both author runs completed
@@ -16,7 +16,7 @@ branch and must not read this branch. As of 2026-11-10, that branch is not yet p
 the independent builds have not started. See
 [independent builds](docs/implementation/INDEPENDENT_BUILDS.md). The first build in step 3 of the
 [roadmap](ROADMAP.md#the-order-of-the-work) is not one of those builds: it is written beside the
-language, as ruling 46 shaped it, one codebase with a pure core, the reference model, and a thin
+language, as ruling 46 shaped it, one codebase with a pure core and a thin
 shell that makes it runnable. Its increments and what each must show are in
 [the first build](docs/implementation/FIRST_BUILD.md).
 
@@ -119,7 +119,7 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
 - Any code is Rust, with a `Cargo.lock`, a pinned toolchain and ignored build output: a probe or
   an evaluation in its own directory under `experiments/`, a provider package, one crate per
   provider, under `packages/` (ruling 40), and the first build, its core and its shell, in the
-  workspace under [reference-model/](reference-model/README.md) (ruling 46). The only exception
+  workspace under [engine/](engine/README.md) (ruling 46). The only exception
   is the Python checkers in `tools/`.
 - The owner makes the rulings. When a choice changes behavior, present the options with a
   recommendation and wait; do not record your recommendation as accepted.
@@ -175,11 +175,11 @@ Run these from the repository root before each commit:
 
 ```sh
 python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
-python3 tools/set_names.py --check   # the names under spec/, reference-model/, conformance/ and packages/ agree with spec/names.yaml
+python3 tools/set_names.py --check   # the names under spec/, engine/, conformance/ and packages/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
-(cd reference-model && cargo test --release)   # the first build: loader, core, vectors and shell
+(cd engine && cargo test --release)   # the first build: loader, core, vectors and shell
 ```
 
 What each check needs:
@@ -203,8 +203,8 @@ What each check needs:
   ran", and it exits with status 3 when N is 0. It never reports a check it did not run. Its
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
-- `cargo test --release` in `reference-model/` needs Rust through rustup, which installs on
-  first use the toolchain that `reference-model/rust-toolchain.toml` pins. Run it from inside
+- `cargo test --release` in `engine/` needs Rust through rustup, which installs on
+  first use the toolchain that `engine/rust-toolchain.toml` pins. Run it from inside
   the directory, so that the pin applies. For a change to its code, run
   `cargo clippy --all-targets -- -D warnings` there too. The tests read `spec/`, and check the
   loader's verdict on every example against the verdicts of `check_schemas.py`, which a
@@ -214,11 +214,11 @@ The names the specification assigns (the core package's address, `apiVersion`, t
 its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,
 in `spec/names.yaml`. Never edit one by hand. Run
 `python3 tools/set_names.py` with the new values to see what would change, and add `--write` to
-rewrite every occurrence under `spec/` together, and under `reference-model/`, `conformance/`
-and `packages/`. The code under `reference-model/` reads the names from
+rewrite every occurrence under `spec/` together, and under `engine/`, `conformance/`
+and `packages/`. The code under `engine/` reads the names from
 `spec/names.yaml` and writes none of them, so the tool finds nothing to rewrite there. The tool
 does not change a document outside them that quotes a name, such as the example in
 `docs/OVERVIEW.md`: update it once the tool has run.
 
 Run `cargo test --release` in each Rust directory you change, under `experiments/`,
-`packages/` or `reference-model/`, and in `reference-model/` after any change to `spec/`.
+`packages/` or `engine/`, and in `engine/` after any change to `spec/`.

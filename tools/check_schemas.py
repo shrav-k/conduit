@@ -82,7 +82,7 @@ document was validated against a schema, and exits with status 3. It never repor
 did not run.
 
 Where it reads otherwise than the specification, and why no verdict here depends on it. The
-strict loader in reference-model/ follows the specification in each, and the first build's log
+strict loader in engine/ follows the specification in each, and the first build's log
 of increment 1 (docs/proposals/first-build/log-increment-1.md) lists them. Where the two
 differ, this tool is not the reference, and no example may rely on a difference listed here.
 

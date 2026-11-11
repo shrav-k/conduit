@@ -62,9 +62,9 @@ jobs:
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         run: git diff --check HEAD^1 HEAD
 
-  # Every directory with a Cargo.toml: the workspace in reference-model/, each package and each
+  # Every directory with a Cargo.toml: the workspace in engine/, each package and each
   # experiment. An experiment is evidence, kept as it ran: its tests run, but formatting and
-  # clippy, whose rules change with the toolchain, are checked only in reference-model/ and
+  # clippy, whose rules change with the toolchain, are checked only in engine/ and
   # packages/. A directory listed in macos_only is a probe of macOS itself that cannot compile on
   # Linux, and is listed without being built.
   rust-dirs:
@@ -81,7 +81,7 @@ jobs:
         run: |
           macos_only=" experiments/005-macos-keychain "
           entries=()
-          for manifest in reference-model/Cargo.toml packages/*/Cargo.toml experiments/*/Cargo.toml; do
+          for manifest in engine/Cargo.toml packages/*/Cargo.toml experiments/*/Cargo.toml; do
             [ -f "$manifest" ] || continue
             dir=${manifest%/Cargo.toml}
             build=true
@@ -98,7 +98,7 @@ jobs:
     name: rust (${{ matrix.dir }})
     needs: rust-dirs
     runs-on: ubuntu-latest
-    # The reference model's release build and tests run for tens of minutes on a standard runner.
+    # The engine's release build and tests run for tens of minutes on a standard runner.
     timeout-minutes: 90
     strategy:
       fail-fast: false

@@ -33,6 +33,7 @@ today), next or later. Each item keeps its own row and state, in the
 | 7 | The readiness gate, then the two engine builds. | [G1 to G11](docs/implementation/INDEPENDENT_BUILDS.md#readiness-gate), A45, A34 | The owner's sign-off (G11) | later |
 | 8 | Prune. | A18 | The owner rules on each candidate | later |
 | After | The acceptance scenario on a built engine, used for a week. | A14 | A built engine | later |
+| Publication | The owner reviews v0 against the full adopted experiment program and judges whether Conduit is worth publishing. A positive decision starts the organization transfer, official package releases and the [public preview plan](docs/proposals/ruling-47/README.md). | A75, A76 | A v0 engine and complete experiment evidence for A75, then the owner's decision to proceed for A76 | later |
 | Later versions | Proposals for the owner, each before the version that would carry it: local enforcement for v1, policies again, and three candidate features. | A65, A66, A67 | The owner | later |
 
 ### Open in the order
@@ -69,9 +70,6 @@ documents, is the strict loader A43, the first piece of the first build in
 | A74 | Across two machines, with no engine: do the mechanisms under S3 hold on real machines? Among hypotheses H1 to H10 of [section 11 of the multi-machine proposal](docs/proposals/multi-machine/README.md#11-an-experiment-across-two-machines): a call without the engine's proof refused at a gate, a removed instance's credential refused, a stream after a silent cut, an OCI digest kept, dispatch at most once between two stand-ins and a gate behind NAT | Two real machines on one network and, for H10, a third behind NAT | S3 (step 5), which needs an engine; A64; A40 | Dated results in `experiments/006-across-machines/`, stating for each hypothesis what was measured | open: no one has started it | Ruling 43, which accepted the multi-machine proposal |
 | A77 | Work orders: when Codex workers carry out the work under the admin session's orders, is the work as good, and does the admin session spend less? | Codex signed in | How the rest of the program is run (ruling 48) | Each order's record in [work orders](docs/implementation/WORK_ORDERS.md#the-record): the order, the verifier's findings, the admin's corrections, and the time each side spent; reviewed after five orders | in progress as of 2026-11-10: orders 001 to 028 have admin records, in the [initial table](docs/implementation/WORK_ORDERS.md#the-record) for 001 to 004 and in each [order](docs/work-orders/README.md) from 005 on; order 029's record is pending | Ruling 48 |
 | A78 | The work orders through Conduit: once increment 3 runs, does each order go through Conduit itself, each worker an Agent with a Conduit to its own working tree and one to `main`, and the queue of orders its message history? | Increment 3 | S1 in daily use; findings of the first build | Five orders run through Conduit, each friction logged as a finding of the first build | open: not started as of 2026-11-10; increment 3 runs, but no work order has yet run through Conduit | Ruling 48 |
-
-Held for an open pull request: A75, A76. The owner's pull request 14 registers them; this
-line goes when it merges.
 
 ### Done, removed, dropped or not adopted
 
@@ -113,6 +111,10 @@ ruling 40. The language fully determines what a set of documents means; the shar
 hold as invariants, on one machine and across several; everything else is a type contract, a
 provider or the conformance document. And every provider can be swapped: each provider contract
 has at least two implementations, built on different existing tools, that pass the same vectors.
+
+**What v0 must pass.** Ruling 47 lists the experiments that v0, the reference engine, must pass
+before the owner judges whether to publish it (A75): [the required experiments](docs/proposals/ruling-47/README.md#when-to-publish).
+The other probes are observational and do not block publication.
 
 | Method | What it shows | Action |
 | --- | --- | --- |

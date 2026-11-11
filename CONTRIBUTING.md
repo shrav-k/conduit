@@ -239,3 +239,9 @@ Public support/security contact details and any additional contribution procedur
 when distribution needs them. The earlier
 [review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md#owner-decisions-before-public-distribution) records these boundaries.
 This guide adds no promise about releases.
+
+The [organization and publication plan](docs/proposals/ruling-47/README.md) records the
+owner's decision for the transition after a v0 engine passes the full experiment program and
+the owner judges it worth publishing. The in-tree Rust convention above applies to prototype
+providers. Official integrations will then have their own maintainers and release repositories.
+Outside authors can build packages in any language that implements the published contracts.

@@ -1,4 +1,5 @@
 //! Bounded reference models of promises, independent of engine code.
+pub mod access;
 pub mod harness;
 pub mod mc2;
 pub mod operations;

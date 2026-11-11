@@ -35,7 +35,8 @@ The owner: "I agree with all your recommendations".
    a Fleet holds and acting for it by forwarding, is declined: it would amend ruling 61's B2, B3, B7,
    B8, B11 and B12 and reverse the owner's "give conduits to projects".
 
-## Open
-
-Whether a separate Scope object, a named group of Pools and Fleets, would help organization: put to
-the owner in discussion.
+6. **No Scope object and no grouping shorthand.** The coordinator advised against a Scope object (a
+   named group whose new members silently widen every holder) and suggested a grouping shorthand
+   might come with v1's other managers. The owner: "Understood, and I'm not sure we even need a
+   grouping shorthand, declaring a new interface should be sufficient". An Interface is the named
+   set: a group of Pools and Fleets is an Interface that manages them.

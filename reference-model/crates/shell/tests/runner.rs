@@ -1,3 +1,4 @@
+mod common;
 use conduit_shell::{
     Config, Execution, Executor, MissingExecutor, Shell, boundary, runner::Runner,
 };
@@ -78,7 +79,7 @@ fn register(shell: &Shell, parent: &Path, real: bool, mode: &str) {
                 json!(parent.join(doc["metadata"]["name"].as_str().unwrap()));
         }
     }
-    let mut snapshots = boundary::s1_snapshots(&repo).unwrap();
+    let mut snapshots = common::snapshots(&repo).unwrap();
     if !real {
         let implementation = &mut snapshots
             .iter_mut()
@@ -124,7 +125,8 @@ fn register(shell: &Shell, parent: &Path, real: bool, mode: &str) {
         .iter()
         .find(|v| v["local_name"] == "management" && v["consumer"] == root)
         .unwrap();
-    let reply = shell.submit(json!({"kind":"register-project","snapshots":snapshots,"builtin":shell.context.builtin,"project":project,"request":{"sender":root,"caller":root,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}), &MissingExecutor).unwrap();
+    common::install(shell, &repo, snapshots, &mut project);
+    let reply = shell.submit(json!({"kind":"register-project","snapshots":[],"builtin":shell.context.builtin,"project":project,"request":{"sender":root,"caller":root,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}), &MissingExecutor).unwrap();
     assert_eq!(reply["accepted"], true, "{reply}");
     let reply = invoke(
         shell,
@@ -309,6 +311,51 @@ fn deferred_setup_and_dispatch_reenter_the_completion_executor() {
 }
 
 #[test]
+fn runner_exit_observes_owned_runs_as_stopped() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(parent.path(), Config::default());
+    register(&shell, parent.path(), false, "normal");
+    let runner = new_runner(&shell);
+    establish(&shell, &runner);
+    assert_eq!(runner.running_count(), 2);
+    drop(runner);
+    for name in ["shared", "history"] {
+        let reply = invoke(
+            &shell,
+            &MissingExecutor,
+            "root",
+            "root-workspace.inspect.v1",
+            json!({"object":{"kind":"Resource","name":name}}),
+        );
+        assert_eq!(outcome(&shell, &reply), "succeeded");
+        let current = reply["structuredContent"]["status"]["conditions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["type"] == "Running")
+            .unwrap();
+        assert_eq!(current["reason"], "RunStopped");
+        assert_eq!(current["status"], "False");
+        assert_eq!(reply["structuredContent"]["status"]["state"], "ready");
+        let state = shell.state().unwrap();
+        let object = state
+            .objects
+            .iter()
+            .find(|o| o["name"] == name && o.get("spec").is_none())
+            .unwrap();
+        let row = conduit_shell::author::inspection_row(&state.objects, object, reply.clone());
+        let ended = row["pastConditions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|p| p["condition"]["reason"] == "RunRunning")
+            .unwrap();
+        assert_eq!(ended["endedAt"], current["lastTransitionTime"]);
+        assert!(ended["endedAt"].is_string());
+    }
+}
+
+#[test]
 fn serve_signal_during_setup_ends_run_and_starts_no_later_part() {
     let parent = tempfile::tempdir().unwrap();
     let shell = open(parent.path(), Config::default());
@@ -394,6 +441,23 @@ fn plain_wire_environment_workdir_records_and_restart() {
     let runner = new_runner(&shell);
     establish(&shell, &runner);
     assert_eq!(runner.running_count(), 2);
+    let inspection = invoke(
+        &shell,
+        &runner,
+        "root",
+        "root-workspace.inspect.v1",
+        json!({"object":{"kind":"Resource","name":"shared"}}),
+    );
+    assert_eq!(outcome(&shell, &inspection), "succeeded");
+    assert!(
+        inspection["structuredContent"]["declared"]
+            .get("past_conditions")
+            .is_none()
+    );
+    assert_eq!(
+        inspection["structuredContent"]["status"]["conditions"][0]["reason"],
+        "RunRunning"
+    );
     let reply = invoke(
         &shell,
         &runner,

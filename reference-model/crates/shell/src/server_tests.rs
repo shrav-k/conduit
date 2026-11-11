@@ -1233,3 +1233,209 @@ async fn retired_agent_consumer_stream_ends_and_other_consumer_remains() {
         task.await.unwrap().unwrap();
     }
 }
+
+#[tokio::test]
+async fn initialization_failures_retry_only_handshake_and_name_step_and_wait() {
+    use axum::{Json, Router, http::StatusCode, routing::post};
+    let temp = temporary();
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}/mcp", listener.local_addr().unwrap());
+    let shell = Shell::open(
+        temp.path(),
+        context(),
+        Config {
+            engine_url: url,
+            ..Config::default()
+        },
+    )
+    .unwrap();
+    shell
+        .submit(
+            json!({"kind":"first-start","machine":crate::local_machine(BTreeMap::new()).unwrap()}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    shell.issue_client_token(&actor(&shell, "root")).unwrap();
+    let methods = Arc::new(Mutex::new(Vec::new()));
+    let seen = methods.clone();
+    let router = Router::new().route(
+        "/mcp",
+        post(move |Json(value): Json<Value>| {
+            let seen = seen.clone();
+            async move {
+                seen.lock().unwrap().push(value["method"].clone());
+                (
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    "initialization unavailable",
+                )
+            }
+        }),
+    );
+    let server = tokio::spawn(async move {
+        axum::serve(listener, router).await.unwrap();
+    });
+    let error = server::client(temp.path(), None, Some("management.retire.v1"), json!({}))
+        .await
+        .unwrap_err();
+    assert!(error.contains("session initialization"), "{error}");
+    assert!(error.contains("seconds (attempt 3/3)"), "{error}");
+    assert_eq!(*methods.lock().unwrap(), vec![json!("initialize"); 3]);
+    server.abort();
+}
+
+#[tokio::test]
+async fn request_failure_after_initialization_keeps_tool_identity_cause_and_remedy() {
+    let temp = temporary();
+    let shell = Arc::new(fixed_shell(temp.path()));
+    shell.issue_client_token(&actor(&shell, "agent-a")).unwrap();
+    let stop = CancellationToken::new();
+    let serving = tokio::spawn(server::serve(
+        shell.clone(),
+        Arc::new(ServingExecutor::new(Arc::new(MissingExecutor))),
+        stop.clone(),
+    ));
+    ready(&shell.config.engine_url).await;
+    let error = server::client(
+        temp.path(),
+        Some("Agent/agent-a"),
+        Some("project.file.write.v1"),
+        json!({"path":"hello.txt","content":"refused"}),
+    )
+    .await
+    .unwrap_err();
+    for expected in [
+        "project.file.write.v1",
+        "Agent/agent-a",
+        "refused",
+        "check conduit tools",
+        "serving engine's diagnostics",
+        "request was not retried",
+    ] {
+        assert!(error.contains(expected), "missing {expected}: {error}");
+    }
+    stop.cancel();
+    serving.await.unwrap().unwrap();
+}
+
+#[tokio::test]
+async fn transport_failure_after_initialization_keeps_context_without_retry() {
+    use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::post};
+    for tool in [Some("management.retire.v1"), None] {
+        let temp = temporary();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let shell = Shell::open(
+            temp.path(),
+            context(),
+            Config {
+                engine_url: format!("http://{}/mcp", listener.local_addr().unwrap()),
+                ..Config::default()
+            },
+        )
+        .unwrap();
+        shell.submit(json!({"kind":"first-start","machine":crate::local_machine(BTreeMap::new()).unwrap()}), &MissingExecutor).unwrap();
+        shell.issue_client_token(&actor(&shell, "root")).unwrap();
+        let methods = Arc::new(Mutex::new(Vec::new()));
+        let seen = methods.clone();
+        let router = Router::new().route("/mcp", post(move |Json(value): Json<Value>| {
+            let seen = seen.clone();
+            async move {
+                seen.lock().unwrap().push(value["method"].clone());
+                match value["method"].as_str() {
+                    Some("initialize") => Json(json!({"jsonrpc":"2.0","id":value["id"],"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"request-failure","version":"1"}}})).into_response(),
+                    Some("notifications/initialized") => StatusCode::ACCEPTED.into_response(),
+                    _ => StatusCode::SERVICE_UNAVAILABLE.into_response(),
+                }
+            }
+        }));
+        let serving = tokio::spawn(async move { axum::serve(listener, router).await.unwrap() });
+        let error = server::client(temp.path(), Some("Interface/root"), tool, json!({}))
+            .await
+            .unwrap_err();
+        for expected in [
+            tool.unwrap_or("tools/list"),
+            "Interface/root",
+            "503",
+            "check conduit tools",
+            "serving engine's diagnostics",
+            "request was not retried",
+        ] {
+            assert!(error.contains(expected), "missing {expected}: {error}");
+        }
+        let methods = methods.lock().unwrap();
+        for method in [
+            "initialize",
+            if tool.is_some() {
+                "tools/call"
+            } else {
+                "tools/list"
+            },
+        ] {
+            assert_eq!(methods.iter().filter(|m| **m == method).count(), 1);
+        }
+        serving.abort();
+    }
+}
+
+#[tokio::test]
+async fn authentication_waiting_for_commit_does_not_block_async_worker() {
+    let temp = temporary();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let url = format!("http://{}/mcp", listener.local_addr().unwrap());
+    drop(listener);
+    let shell = Arc::new(
+        Shell::open(
+            temp.path(),
+            context(),
+            Config {
+                engine_url: url.clone(),
+                ..Config::default()
+            },
+        )
+        .unwrap(),
+    );
+    shell
+        .submit(
+            json!({"kind":"first-start","machine":crate::local_machine(BTreeMap::new()).unwrap()}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    let stop = CancellationToken::new();
+    let serving = tokio::spawn(server::serve(
+        shell.clone(),
+        Arc::new(ServingExecutor::new(Arc::new(MissingExecutor))),
+        stop.clone(),
+    ));
+    ready(&url).await;
+    let (locked, acquired) = tokio::sync::oneshot::channel();
+    let (release, released) = std::sync::mpsc::channel();
+    let locked_shell = shell.clone();
+    let holder = std::thread::spawn(move || {
+        let _guard = locked_shell.writer.lock().unwrap();
+        locked.send(()).unwrap();
+        let _ = released.recv_timeout(Duration::from_secs(4));
+    });
+    acquired.await.unwrap();
+    let started = Instant::now();
+    let request = tokio::spawn(async move {
+        reqwest::Client::new()
+            .post(url)
+            .json(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}))
+            .send()
+            .await
+            .unwrap()
+    });
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    let elapsed = started.elapsed();
+    let _ = release.send(());
+    holder.join().unwrap();
+    assert!(
+        elapsed < Duration::from_secs(2),
+        "authentication blocked async worker for {elapsed:?}"
+    );
+    assert_eq!(
+        request.await.unwrap().status(),
+        reqwest::StatusCode::UNAUTHORIZED
+    );
+    stop.cancel();
+    serving.await.unwrap().unwrap();
+}

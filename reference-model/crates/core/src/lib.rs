@@ -112,6 +112,10 @@ pub enum Input {
     Recover {
         evidence: Evidence,
     },
+    BuiltinRunStopped {
+        evidence: Evidence,
+        object: String,
+    },
     ExpireOutputs {
         invocation: String,
     },
@@ -327,6 +331,26 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
             lifecycle::report(&mut transition, &evidence, &invocation, report, context)?;
         }
         Input::Recover { evidence } => requests::recover(&mut transition, &evidence, context)?,
+        Input::BuiltinRunStopped { evidence, object } => {
+            if let Some(subject) = transition
+                .state
+                .objects
+                .iter_mut()
+                .find(|o| o["id"] == object)
+            {
+                if subject.get("runtime").is_some() {
+                    return Err("builtin runner cannot observe a provider-owned run".into());
+                }
+                lifecycle::observe_run(subject, "stopped", &evidence.time)?;
+                transition.decisions.push(decision(
+                    "observe-builtin-run-stopped",
+                    &["OBS-002", "LIF-011"],
+                    &[],
+                    json!({"object":object,"state":"stopped"}),
+                    vec![object],
+                ));
+            }
+        }
         Input::ExpireOutputs { invocation } => requests::expire(&mut transition, &invocation)?,
         Input::Access { evidence, request } => {
             access::decide(&mut transition, &evidence, &request, context)?

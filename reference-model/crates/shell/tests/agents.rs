@@ -1,4 +1,5 @@
 //! Live S1 packages with scripted native clients and a scripted filesystem (no npm).
+mod common;
 use conduit_shell::{
     Config, MissingExecutor, Shell, boundary,
     runner::Runner,
@@ -187,7 +188,7 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
             d["arguments"]["root"] = json!(path);
         }
     }
-    let mut snapshots = boundary::s1_snapshots(&root).unwrap();
+    let mut snapshots = common::snapshots(&root).unwrap();
     let item = &mut snapshots
         .iter_mut()
         .find(|s| s.address.ends_with("/filesystem"))
@@ -212,7 +213,8 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
         .iter()
         .find(|o| o["local_name"] == "management" && o["consumer"] == root_id)
         .unwrap();
-    let registered=shell.submit(json!({"kind":"register-project","snapshots":snapshots,"builtin":shell.context.builtin,"project":project,"request":{"sender":root_id,"caller":root_id,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}),&MissingExecutor).unwrap();
+    common::install(&shell, &root, snapshots, &mut project);
+    let registered=shell.submit(json!({"kind":"register-project","snapshots":[],"builtin":shell.context.builtin,"project":project,"request":{"sender":root_id,"caller":root_id,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}),&MissingExecutor).unwrap();
     assert_eq!(registered["accepted"], true, "{registered}");
     for name in ["root-workspace", "turn-a", "turn-b"] {
         invoke(

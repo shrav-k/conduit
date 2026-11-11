@@ -876,39 +876,7 @@ pub(crate) fn report(
                 .iter_mut()
                 .find(|o| o["id"] == v["object"])
                 .ok_or("run subject missing")?;
-            let status = match state.as_str() {
-                "running" => "True",
-                "stopped" => "False",
-                _ => "Unknown",
-            };
-            let source = o
-                .get("runtime")
-                .map(|r| format!("urn:uuid:{}", access::id(r).as_str().unwrap()))
-                .unwrap_or_else(|| "urn:conduit:builtin-runner".into());
-            if !o["status"]["conditions"].is_array() {
-                o["status"]["conditions"] = json!([]);
-            }
-            let conditions = o["status"]["conditions"].as_array_mut().unwrap();
-            let previous = conditions.iter().position(|p| p["type"] == "Running");
-            let old = previous
-                .map(|p| conditions[p].clone())
-                .unwrap_or(Value::Null);
-            let transition = if old["status"] == status {
-                old["lastTransitionTime"].clone()
-            } else {
-                json!(evidence.time)
-            };
-            let mut condition = json!({"type":"Running","status":status,"reason":match state.as_str(){"running"=>"RunRunning","stopped"=>"RunStopped",_=>"RunUnknown"},"message":format!("The run is {state}."),"lastTransitionTime":transition,"source":source});
-            if state != "unknown" {
-                condition["lastHeartbeatTime"] = json!(evidence.time);
-            } else if let Some(time) = old.get("lastHeartbeatTime") {
-                condition["lastHeartbeatTime"] = time.clone();
-            }
-            if let Some(p) = previous {
-                conditions[p] = condition;
-            } else {
-                conditions.push(condition);
-            }
+            observe_run(o, &state, &evidence.time)?;
             cite(
                 t,
                 "observe-run",
@@ -973,6 +941,23 @@ pub(crate) fn report(
             } else {
                 outcome.as_str()
             };
+            if outcome != "failed" {
+                let object = t
+                    .state
+                    .objects
+                    .iter_mut()
+                    .find(|o| o["id"] == v["object"])
+                    .ok_or("run subject missing")?;
+                observe_run(
+                    object,
+                    if outcome == "succeeded" {
+                        "running"
+                    } else {
+                        "unknown"
+                    },
+                    &evidence.time,
+                )?;
+            }
             part(t, i, "run", outcome, true, false, Value::Null);
             t.state.invocations[i]["setup"]["run_phase"] = json!("ended");
         }
@@ -1130,4 +1115,90 @@ pub(crate) fn cancel(
         &v["object"],
     );
     settle(t, a, c, i)
+}
+
+// Keep ended observations internally; CLI inspection can describe their history
+// separately without extending the specification's current-condition schema.
+pub(crate) fn observe_run(object: &mut Value, state: &str, time: &str) -> Result<()> {
+    let status = match state {
+        "running" => "True",
+        "stopped" => "False",
+        _ => "Unknown",
+    };
+    let source = object
+        .get("runtime")
+        .map(|r| format!("urn:uuid:{}", access::id(r).as_str().unwrap()))
+        .unwrap_or_else(|| "urn:conduit:builtin-runner".into());
+    if !object["status"]["conditions"].is_array() {
+        object["status"]["conditions"] = json!([]);
+    }
+    let previous = object["status"]["conditions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .position(|p| p["type"] == "Running");
+    let old = previous
+        .map(|p| object["status"]["conditions"][p].clone())
+        .unwrap_or(Value::Null);
+    let changed = old["status"] != status;
+    if changed && !old.is_null() {
+        if !object["past_conditions"].is_array() {
+            object["past_conditions"] = json!([]);
+        }
+        object["past_conditions"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"condition":old,"endedAt":time}));
+    }
+    let transition = if changed {
+        json!(time)
+    } else {
+        old["lastTransitionTime"].clone()
+    };
+    let mut condition = json!({"type":"Running","status":status,"reason":match state {"running"=>"RunRunning","stopped"=>"RunStopped",_=>"RunUnknown"},"message":format!("The run is {state}."),"lastTransitionTime":transition,"source":source});
+    if state != "unknown" {
+        condition["lastHeartbeatTime"] = json!(time);
+    } else if let Some(time) = old.get("lastHeartbeatTime") {
+        condition["lastHeartbeatTime"] = time.clone();
+    }
+    let conditions = object["status"]["conditions"].as_array_mut().unwrap();
+    if let Some(p) = previous {
+        conditions[p] = condition;
+    } else {
+        conditions.push(condition);
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod observation_tests {
+    use super::*;
+    #[test]
+    fn ended_run_condition_is_past_and_running_is_current() {
+        let mut object = json!({"status":{},"state":"ready"});
+        observe_run(&mut object, "stopped", "2026-11-10T00:00:00Z").unwrap();
+        observe_run(&mut object, "running", "2026-11-10T00:00:01Z").unwrap();
+        assert_eq!(object["status"]["conditions"][0]["reason"], "RunRunning");
+        assert_eq!(
+            object["past_conditions"][0]["condition"]["reason"],
+            "RunStopped"
+        );
+        assert_eq!(
+            object["past_conditions"][0]["endedAt"],
+            "2026-11-10T00:00:01Z"
+        );
+        observe_run(&mut object, "running", "2026-11-10T00:00:02Z").unwrap();
+        assert_eq!(
+            object["status"]["conditions"][0]["lastTransitionTime"],
+            "2026-11-10T00:00:01Z"
+        );
+        assert_eq!(object["past_conditions"].as_array().unwrap().len(), 1);
+        observe_run(&mut object, "unknown", "2026-11-10T00:00:03Z").unwrap();
+        assert_eq!(object["status"]["conditions"][0]["status"], "Unknown");
+        assert_eq!(
+            object["status"]["conditions"][0]["lastHeartbeatTime"],
+            "2026-11-10T00:00:02Z"
+        );
+        assert_eq!(object["state"], "ready");
+    }
 }

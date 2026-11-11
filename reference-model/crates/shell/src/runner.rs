@@ -211,8 +211,20 @@ impl Drop for Runner {
         // cannot register a fresh group just after shutdown's group scan.
         let _spawns = self.inner.cancelled_setups.lock().unwrap();
         self.inner.stopping.store(true, Ordering::SeqCst);
-        for run in self.inner.runs.lock().unwrap().values() {
+        for (subject, run) in self.inner.runs.lock().unwrap().iter() {
             run.group.stop();
+            if let Some(shell) = self.inner.shell.upgrade()
+                && shell
+                    .submit(
+                        json!({"kind":"builtin-run-stopped","object":subject}),
+                        &crate::MissingExecutor,
+                    )
+                    .is_err()
+            {
+                eprintln!(
+                    "runner: stopped run observation could not be persisted; inspect and set up the instance again to refresh its status"
+                );
+            }
         }
         for groups in self.inner.pending_groups.lock().unwrap().values() {
             for group in groups {

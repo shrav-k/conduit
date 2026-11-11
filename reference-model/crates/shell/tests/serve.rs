@@ -1,4 +1,5 @@
 //! Process coverage for the joined HTTP adapter and unchanged npm filesystem runner.
+mod common;
 use conduit_shell::{Config, MissingExecutor, Shell, boundary};
 use rmcp::{
     ClientHandler, RoleClient, ServiceExt,
@@ -170,7 +171,13 @@ fn real_npm_serve_s1_tokens_access_t7_and_shutdown() {
         .iter()
         .find(|o| o["consumer"] == root && o["local_name"] == "management")
         .unwrap();
-    let registered = shell.submit(json!({"kind":"register-project","snapshots":boundary::s1_snapshots(&repo).unwrap(),"builtin":shell.context.builtin,"project":project,"request":{"sender":root,"caller":root,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}), &MissingExecutor).unwrap();
+    common::install(
+        &shell,
+        &repo,
+        common::snapshots(&repo).unwrap(),
+        &mut project,
+    );
+    let registered = shell.submit(json!({"kind":"register-project","snapshots":[],"builtin":shell.context.builtin,"project":project,"request":{"sender":root,"caller":root,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}), &MissingExecutor).unwrap();
     assert_eq!(registered["accepted"], true, "{registered}");
     let opened = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":"access.open.v1","arguments":{"conduit":"root-workspace"}}}), &MissingExecutor).unwrap();
     assert_eq!(opened["isError"], false, "{opened}");
@@ -413,6 +420,37 @@ fn stop_server(server: &mut Server, store: &Path, groups: &[i32]) {
             .iter()
             .all(|i| i["state"] != "in-progress")
     );
+    let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .args(["inspect", "--store"])
+        .arg(store)
+        .output()
+        .unwrap();
+    let mut stopped = 0;
+    for line in String::from_utf8(output.stdout).unwrap().lines() {
+        let row: Value = serde_json::from_str(line).unwrap();
+        let Some(past) = row["pastConditions"].as_array() else {
+            continue;
+        };
+        let Some(ended) = past
+            .iter()
+            .rev()
+            .find(|p| p["condition"]["reason"] == "RunRunning")
+        else {
+            continue;
+        };
+        let current = row["result"]["structuredContent"]["status"]["conditions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["type"] == "Running")
+            .unwrap();
+        assert_eq!(current["reason"], "RunStopped");
+        assert_eq!(current["status"], "False");
+        assert_eq!(ended["endedAt"], current["lastTransitionTime"]);
+        assert!(ended["endedAt"].is_string());
+        stopped += 1;
+    }
+    assert_eq!(stopped, groups.len());
 }
 
 #[test]

@@ -313,6 +313,7 @@ impl Shell {
                 | "cancel"
                 | "setup-report"
                 | "recover"
+                | "builtin-run-stopped"
                 | "access"
                 | "submit"
                 | "request"

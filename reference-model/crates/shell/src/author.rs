@@ -15,6 +15,42 @@ fn reference(value: &Value) -> &Value {
     value.get("id").unwrap_or(value)
 }
 
+/// A printed result succeeds only if every explicit result marker succeeds.
+/// Do not scan content or inspection history: those are data, not this call's outcome.
+pub fn succeeded(reply: &Value) -> bool {
+    reply["isError"] != true
+        && reply.get("accepted").is_none_or(|v| v == true)
+        && reply.get("outcome").is_none_or(|v| v == "succeeded")
+        && reply["_meta"].as_object().is_none_or(|meta| {
+            meta.iter()
+                .all(|(key, value)| !key.ends_with("/outcome") || value == "succeeded")
+        })
+}
+
+pub fn ensure_success(reply: &Value, asked: &str) -> Result<()> {
+    if succeeded(reply) {
+        Ok(())
+    } else {
+        Err(format!(
+            "{asked} did not succeed; see the printed result for outcome and diagnostics"
+        ))
+    }
+}
+
+fn outcome(reply: &Value) -> Value {
+    reply["_meta"]
+        .as_object()
+        .and_then(|m| m.iter().find(|(k, _)| k.ends_with("/outcome")))
+        .map(|(_, v)| v.clone())
+        .unwrap_or_else(|| {
+            json!(if succeeded(reply) {
+                "succeeded"
+            } else {
+                "failed"
+            })
+        })
+}
+
 /// CLI-only supplement: inspect.v1 has no defined consumer-Conduit inventory.
 pub fn inspection_row(objects: &[Value], object: &Value, reply: Value) -> Value {
     let mut row = json!({"object":{"kind":object["kind"],"name":object["name"]},"result":reply});
@@ -30,15 +66,26 @@ pub fn inspection_row(objects: &[Value], object: &Value, reply: Value) -> Value 
             json!({"name":p["name"],"target":target.map(|o| json!({"kind":o["kind"],"name":o["name"],"id":o["id"]})).unwrap_or_else(|| p["target"].clone()),"open":p["open"] == true})
         }).collect::<Vec<_>>());
     }
+    if row["result"]["isError"] == false
+        && let Some(past) = object.get("past_conditions")
+    {
+        row["pastConditions"] = past.clone();
+    }
     row
 }
 fn named(argument: &str) -> Result<Value> {
-    let (kind, name) = argument.split_once('/').ok_or("expected KIND/NAME")?;
+    let (kind, name) = argument.split_once('/').ok_or_else(|| {
+        format!(
+            "object {argument:?}: expected KIND/NAME; use conduit inspect to find its kind and name"
+        )
+    })?;
     if !["Agent", "Interface", "Resource", "Pool", "Conduit"].contains(&kind)
         || name.is_empty()
         || name.contains('/')
     {
-        return Err("expected KIND/NAME with a document kind".into());
+        return Err(format!(
+            "object {argument:?}: expected KIND/NAME with kind Agent, Interface, Resource, Pool or Conduit"
+        ));
     }
     Ok(json!({"kind":kind,"name":name}))
 }
@@ -99,7 +146,7 @@ fn route(directory: &Path, object: &Value, operation: &str) -> Result<String> {
                         })
                     })
             })
-            .ok_or("no root management route to owning Pool")?;
+            .ok_or_else(|| format!("{operation} for {}/{}: no root management route to owning Pool {}; open a root Conduit to that Pool offering {operation}", object["kind"].as_str().unwrap_or("?"), object["name"].as_str().unwrap_or("?"), owner["name"].as_str().unwrap_or("?")))?;
         let local = path["local_name"]
             .as_str()
             .or_else(|| path["nested"]["name"].as_str())
@@ -112,9 +159,7 @@ fn route(directory: &Path, object: &Value, operation: &str) -> Result<String> {
 async fn call(directory: &Path, tool: &str, args: Value) -> Result<Value> {
     let reply = server::client(directory, None, Some(tool), args).await?;
     println!("{reply}");
-    if reply["isError"] == true {
-        return Err("management request did not succeed".into());
-    }
+    ensure_success(&reply, &format!("request to {tool}"))?;
     Ok(reply)
 }
 async fn revision(directory: &Path, object: &Value) -> Result<Value> {
@@ -132,6 +177,17 @@ pub async fn run(
     args: &[String],
     repository: &Path,
 ) -> Result<()> {
+    let expected = match command {
+        "inspect" => 0,
+        "replace" => 2,
+        _ => 1,
+    };
+    if args.len() != expected {
+        return Err(format!(
+            "{command}: expected {expected} positional argument(s), received {}; run conduit {command} --help for usage and an example",
+            args.len()
+        ));
+    }
     // Establish the serving path before doing any local workflow work. This never
     // opens the live store for writing or recovery.
     let endpoint = url::Url::parse(&crate::Config::for_store(directory)?.engine_url)
@@ -160,6 +216,7 @@ pub async fn run(
         "inspect" => {
             let current = state(directory)?;
             let objects = current["objects"].as_array().ok_or("missing objects")?;
+            let mut success = true;
             for object in objects {
                 let reference = json!({"kind":object["kind"],"name":object["name"]});
                 let tool = route(directory, &reference, "inspect.v1")
@@ -167,7 +224,11 @@ pub async fn run(
                 let reply =
                     server::client(directory, None, Some(&tool), json!({"object":reference}))
                         .await?;
+                success &= succeeded(&reply);
                 println!("{}", inspection_row(objects, object, reply));
+            }
+            if !success {
+                return Err("inspect: one or more objects could not be inspected; see their results and check root's management Conduits".into());
             }
         }
         "install" => {
@@ -188,7 +249,7 @@ pub async fn run(
             let object = named(&args[1])?;
             let spec = conduit_loader::Specification::read(&repository.join("spec"))
                 .map_err(|e| e.to_string())?;
-            let project = boundary::project(Path::new(&args[0]), &spec)?;
+            let project = boundary::project(Path::new(&args[0]), &spec).map_err(|error| format!("{command}: cannot load project {}: {error}; correct its documents and manifest before retrying", args[0]))?;
             let templates: Vec<_> = project
                 .documents
                 .iter()
@@ -236,7 +297,7 @@ pub async fn run(
             }
             let spec = conduit_loader::Specification::read(&repository.join("spec"))
                 .map_err(|e| e.to_string())?;
-            let project = boundary::project(Path::new(&args[0]), &spec)?;
+            let project = boundary::project(Path::new(&args[0]), &spec).map_err(|error| format!("{command}: cannot load project {}: {error}; correct its documents and manifest before retrying", args[0]))?;
             let mut input = json!({"documents":project.documents});
             if let Some(manifest) = project.manifest {
                 input["manifest"] = manifest;
@@ -244,7 +305,9 @@ pub async fn run(
             if requires_directory(&input) {
                 return Err("a submission through the serving engine takes absolute values only: relative fetch or program needs a directory".into());
             }
-            let reply = call(directory, "management.register.v1", input).await?;
+            let mut steps = Vec::new();
+            let result: Result<()> = async {
+            let reply = submit_step(directory, "management.register.v1", input, "registration".into(), &mut steps).await?;
             let created = reply["structuredContent"]["objects"]
                 .as_array()
                 .ok_or("registration omitted objects")?;
@@ -260,7 +323,7 @@ pub async fn run(
                     && reference(&o["consumer"]) == &root["id"]
                     && created.iter().any(|n| n["id"] == o["id"])
             }) {
-                call(directory, "access.open.v1", json!({"conduit":o["name"]})).await?;
+                submit_step(directory, "access.open.v1", json!({"conduit":o["name"]}), format!("open Conduit/{}", o["name"].as_str().unwrap_or("?")), &mut steps).await?;
             }
             for kind in ["Pool", "Resource", "Agent", "Interface"] {
                 for o in objects.iter().filter(|o| {
@@ -269,16 +332,90 @@ pub async fn run(
                         && created.iter().any(|n| n["id"] == o["id"])
                 }) {
                     let object = json!({"kind":kind,"name":o["name"]});
-                    call(
+                    let step = format!("setup {kind}/{}", o["name"].as_str().unwrap_or("?"));
+                    let tool = match route(directory, &object, "set-up.v1") {
+                        Ok(tool) => tool,
+                        Err(error) => {
+                            steps.push(json!({"step":step,"outcome":"failed","error":error}));
+                            return Err(format!("{step}: {error}; open a root management Conduit to the owning Pool and resume setup with conduit call"));
+                        }
+                    };
+                    submit_step(
                         directory,
-                        &route(directory, &object, "set-up.v1")?,
+                        &tool,
                         json!({"instance":object}),
+                        step,
+                        &mut steps,
                     )
                     .await?;
                 }
             }
+            Ok(())
+            }.await;
+            for step in steps {
+                println!("{step}");
+            }
+            result?;
         }
         _ => return Err("unknown author command".into()),
     }
     Ok(())
+}
+
+async fn submit_step(
+    directory: &Path,
+    tool: &str,
+    args: Value,
+    step: String,
+    steps: &mut Vec<Value>,
+) -> Result<Value> {
+    match server::client(directory, None, Some(tool), args).await {
+        Ok(reply) => {
+            println!("{reply}");
+            steps.push(json!({"step":step,"outcome":outcome(&reply)}));
+            ensure_success(&reply, &step)?;
+            Ok(reply)
+        }
+        Err(error) => {
+            steps.push(json!({"step":step,"outcome":"unknown","error":error}));
+            Err(format!(
+                "{step}: {error}; inspect before resuming, because a sent request is never retried automatically"
+            ))
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn inspection_history_is_separate_and_requires_successful_inspection() {
+        let object = json!({"kind":"Agent","name":"a","id":"a","past_conditions":[{"condition":{"reason":"RunStopped"},"endedAt":"2026-11-10T00:00:01Z"}]});
+        let row = inspection_row(
+            &[],
+            &object,
+            json!({"isError":false,"structuredContent":{"status":{"conditions":[{"reason":"RunRunning"}]}}}),
+        );
+        assert_eq!(row["pastConditions"], object["past_conditions"]);
+        assert_eq!(
+            row["result"]["structuredContent"]["status"]["conditions"][0]["reason"],
+            "RunRunning"
+        );
+        let refused = inspection_row(&[], &object, json!({"isError":true}));
+        assert!(refused.get("pastConditions").is_none());
+    }
+    #[test]
+    fn printed_result_outcomes_determine_success() {
+        for result in [
+            json!({"isError":true}),
+            json!({"accepted":false}),
+            json!({"_meta":{"example/outcome":"unknown"}}),
+            json!({"isError":false,"_meta":{"example/outcome":"failed"}}),
+        ] {
+            assert!(!succeeded(&result));
+        }
+        assert!(succeeded(
+            &json!({"isError":false,"_meta":{"example/outcome":"succeeded"},"structuredContent":{"status":{"setup":{"outcome":"failed"}}}})
+        ));
+    }
 }

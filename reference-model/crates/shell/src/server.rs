@@ -56,6 +56,15 @@ fn instance(id: &str) -> Value {
 fn reference(value: &Value) -> &Value {
     value.get("id").unwrap_or(value)
 }
+async fn instance_exists(shell: Arc<Shell>, identity: String) -> Result<bool> {
+    tokio::task::spawn_blocking(move || {
+        shell
+            .state()
+            .map(|s| s.objects.iter().any(|o| o["id"] == identity))
+    })
+    .await
+    .map_err(|_| "instance observation task failed".to_string())?
+}
 fn internal(message: impl Into<String>) -> ErrorData {
     ErrorData::internal_error(message.into(), None)
 }
@@ -289,7 +298,7 @@ impl ServerHandler for Handler {
                         _=shutdown.cancelled()=>break,
                         event=changes.recv()=>match event {
                             Ok(id) if id == identity => {
-                                let exists = shell.state().is_ok_and(|s| s.objects.iter().any(|o| o["id"]==identity));
+                                let exists = instance_exists(shell.clone(), identity.clone()).await.unwrap_or(false);
                                 if !exists {
                                     let session = binding.wait_for(Option::is_some).await.ok().and_then(|value| value.clone());
                                     if let Some(session) = session { let _ = manager.close_session(&session).await; sessions.lock().unwrap().remove(session.as_ref()); }
@@ -359,7 +368,7 @@ impl ServerHandler for Handler {
                 _=self.shutdown.cancelled()=>return Ok(()),
                 event=changes.recv()=>match event {
                     Ok(id) if id == identity=> {
-                        if !self.shell.state().map_err(internal)?.objects.iter().any(|o| o["id"]==identity) { return Ok(()); }
+                        if !instance_exists(self.shell.clone(), identity.clone()).await.map_err(internal)? { return Ok(()); }
                         context.sink().notify_tool_list_changed().await.map_err(|_|internal("subscription closed"))?;
                     },
                     Err(_)=>return Ok(()),
@@ -381,10 +390,13 @@ impl ServerHandler for Handler {
             .ok_or_else(|| internal("missing response lifetime"))?
             .0
             .clone();
-        if let Some(op) = unfinished(&self.shell, &identity)
-            .map_err(internal)?
-            .get(request.name.as_ref())
-        {
+        let shell = self.shell.clone();
+        let consumer = identity.clone();
+        let inventory = tokio::task::spawn_blocking(move || unfinished(&shell, &consumer))
+            .await
+            .map_err(|_| internal("tool inventory task failed"))?
+            .map_err(internal)?;
+        if let Some(op) = inventory.get(request.name.as_ref()) {
             self.handled(&context);
             return Err(internal(format!("operation {op} is unfinished")));
         }
@@ -490,10 +502,15 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
         .get("authorization")
         .and_then(|v| v.to_str().ok())
         .and_then(|s| s.strip_prefix("Bearer "));
-    let identity = match handler.shell.verify_token(token) {
-        Ok(Identity::Instance { id }) => Some(id),
-        Ok(_) => None,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    // Verification reads the committed state under the writer mutex. Waiting for
+    // an in-flight commit must not block an async worker (including initialize).
+    let token = token.map(str::to_owned);
+    let shell = handler.shell.clone();
+    let verified = tokio::task::spawn_blocking(move || shell.verify_token(token.as_deref())).await;
+    let identity = match verified {
+        Ok(Ok(Identity::Instance { id })) => Some(id),
+        Ok(Ok(_)) => None,
+        _ => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
     let bytes = match to_bytes(body, 4 * 1024 * 1024).await {
         Ok(b) => b,
@@ -775,43 +792,92 @@ pub async fn client(
     decoder.disable_recursion_limit();
     let state: Value =
         serde::Deserialize::deserialize(&mut decoder).map_err(|_| "invalid store")?;
-    let name = as_instance.unwrap_or("root");
+    let asked = as_instance.unwrap_or("root");
+    let (kind, name) = asked
+        .split_once('/')
+        .map_or((None, asked), |(k, n)| (Some(k), n));
     let id = state["state"]["objects"]
         .as_array()
         .ok_or("missing objects")?
         .iter()
-        .find(|o| o.get("spec").is_none() && (o["name"] == name || o["id"] == name))
+        .find(|o| o.get("spec").is_none()
+            && ["Agent", "Interface", "Resource", "Pool"].iter().any(|k| o["kind"] == *k)
+            && kind.is_none_or(|k| o["kind"] == k)
+            && (o["name"] == name || o["id"] == name))
         .and_then(|o| o["id"].as_str())
-        .ok_or("unknown client instance")?;
+        .ok_or_else(|| format!("tools for {asked}: instance does not exist; submit its instance document first (use conduit inspect to see registered objects)"))?;
     let token = String::from_utf8(crate::store::private_read(
         &directory.join("client-tokens").join(id),
-    )?)
+    ).map_err(|_| format!("tools for {asked}: instance exists but has no presented tools yet (client identity is unavailable); set it up with conduit call through its management Conduit, then open its access Conduits"))?)
     .map_err(|_| "invalid client token file")?;
-    let transport = StreamableHttpClientTransport::with_client(
-        reqwest::Client::new(),
-        StreamableHttpClientTransportConfig::with_uri(config.engine_url).auth_header(token),
-    );
-    let service = tokio::time::timeout(std::time::Duration::from_secs(10), ().serve(transport))
-        .await
-        .map_err(|_| "cannot connect to engine: initialization timed out")?
-        .map_err(|_| "cannot connect to engine")?;
-    let response = if let Some(tool) = tool {
-        let request = serde_json::from_value(json!({"name":tool,"arguments":arguments}))
-            .map_err(|_| "arguments must be a JSON object")?;
-        serde_json::to_value(
-            service
-                .call_tool(request)
-                .await
+    let mut initialized = None;
+    for attempt in 1..=3 {
+        let transport = StreamableHttpClientTransport::with_client(
+            reqwest::Client::builder()
+                .retry(reqwest::retry::never())
+                .build()
                 .map_err(|e| e.to_string())?,
-        )
-        .map_err(|e| e.to_string())
-    } else {
-        serde_json::to_value(service.list_tools(None).await.map_err(|e| e.to_string())?)
+            StreamableHttpClientTransportConfig::with_uri(config.engine_url.clone())
+                .auth_header(token.clone())
+                .reinit_on_expired_session(false),
+        );
+        let started = std::time::Instant::now();
+        let error =
+            match tokio::time::timeout(std::time::Duration::from_secs(10), ().serve(transport))
+                .await
+            {
+                Ok(Ok(service)) => {
+                    initialized = Some(service);
+                    break;
+                }
+                Ok(Err(error)) => format!("{error}"),
+                Err(_) => "timed out".into(),
+            };
+        let message = format!(
+            "engine session initialization at {} failed after {:.3} seconds (attempt {attempt}/3): {error}; run conduit serve --store {} and check its diagnostics",
+            config.engine_url,
+            started.elapsed().as_secs_f64(),
+            directory.display()
+        );
+        if attempt == 3 {
+            return Err(message);
+        }
+        eprintln!("{message}; retrying initialization only");
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    }
+    let service = initialized.ok_or("engine initialization did not complete")?;
+    let response: Result<Value> = async {
+        if let Some(tool) = tool {
+            let request = serde_json::from_value(json!({"name":tool,"arguments":arguments}))
+                .map_err(|_| "arguments must be a JSON object")?;
+            serde_json::to_value(
+                service
+                    .call_tool(request)
+                    .await
+                    .map_err(|e| e.to_string())?,
+            )
             .map_err(|e| e.to_string())
-    };
-    service
+        } else {
+            serde_json::to_value(service.list_tools(None).await.map_err(|e| e.to_string())?)
+                .map_err(|e| e.to_string())
+        }
+    }
+    .await;
+    let shutdown = service
         .cancel()
         .await
-        .map_err(|_| "client shutdown failed")?;
-    response
+        .map_err(|_| "client shutdown failed".to_string());
+    // Preserve the request failure if cleanup also fails, and describe cleanup
+    // failures through the same context when the request succeeded.
+    let response = response.and_then(|value| shutdown.map(|_| value));
+    if tool.is_none()
+        && response
+            .as_ref()
+            .is_ok_and(|r| r["tools"].as_array().is_some_and(Vec::is_empty))
+    {
+        eprintln!(
+            "tools for {asked}: instance exists but has no presented tools yet; set up its targets and open its Conduits, then run tools again"
+        );
+    }
+    response.map_err(|error| format!("{} for {asked} failed: {error}; check conduit tools and the serving engine's diagnostics; this request was not retried", tool.unwrap_or("tools/list")))
 }

@@ -1,3 +1,4 @@
+mod help;
 use conduit_shell::{Config, MissingExecutor, Result, Shell, boundary, runner::Runner};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
@@ -5,7 +6,14 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 fn run() -> Result<()> {
-    let mut args = std::env::args().skip(1);
+    let raw: Vec<_> = std::env::args().skip(1).collect();
+    if raw.is_empty() || raw[0] == "--help" {
+        return help::print(None);
+    }
+    if raw.iter().any(|arg| arg == "--help") {
+        return help::print(Some(&raw[0]));
+    }
+    let mut args = raw.into_iter();
     let command = args.next().ok_or(
         "usage: conduit init|register|submit|replace|install|retire|unregister|inspect|records|serve|tools|call --store DIR [ARGUMENTS]",
     )?;
@@ -82,7 +90,11 @@ fn run() -> Result<()> {
             _ if command == "register" && !arg.starts_with('-') && project.is_none() => {
                 project = Some(PathBuf::from(arg))
             }
-            _ => return Err("unknown command argument".into()),
+            _ => {
+                return Err(format!(
+                    "{command}: unknown argument {arg:?}; run conduit {command} --help for arguments"
+                ));
+            }
         }
     }
     if ![
@@ -101,7 +113,9 @@ fn run() -> Result<()> {
     ]
     .contains(&command.as_str())
     {
-        return Err("unknown command".into());
+        return Err(format!(
+            "unknown command {command:?}; run conduit --help for commands"
+        ));
     }
     let store = store.ok_or("--store DIR is required")?;
     if command != "init" && !store.join("state.json").is_file() {
@@ -136,7 +150,14 @@ fn run() -> Result<()> {
             arguments,
         ))?;
         println!("{result}");
-        return Ok(());
+        let asked = format!(
+            "{command} {}",
+            positional
+                .first()
+                .map(String::as_str)
+                .unwrap_or(as_instance.as_deref().unwrap_or("Interface/root"))
+        );
+        return conduit_shell::author::ensure_success(&result, &asked);
     }
     let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let shell = match Shell::open(&store, boundary::context(&repository)?, config) {
@@ -178,7 +199,7 @@ fn run() -> Result<()> {
         let setup_executor = executor.clone();
         let setup_shutdown = shutdown.clone();
         let result = runtime.block_on(async {
-            tokio::task::spawn_blocking(move || {
+            let setup_succeeded = tokio::task::spawn_blocking(move || {
                 set_up_instances(
                     &setup_shell,
                     setup_executor.as_ref(),
@@ -188,10 +209,10 @@ fn run() -> Result<()> {
             })
             .await
             .map_err(|_| "startup setup failed")??;
-            if shutdown.is_cancelled() {
-                return Ok(());
+            if !shutdown.is_cancelled() {
+                conduit_shell::server::serve(shell.clone(), executor.clone(), shutdown).await?;
             }
-            conduit_shell::server::serve(shell.clone(), executor.clone(), shutdown).await
+            if setup_succeeded { Ok(()) } else { Err("serve: one or more startup setups failed; see setup diagnostics (the engine continued serving for repair)".into()) }
         });
         // Release startup tickets if a signal interrupted setup before listening.
         shell.submit(json!({"kind":"recover"}), executor.as_ref())?;
@@ -203,6 +224,7 @@ fn run() -> Result<()> {
         drop(runner);
         return result;
     }
+    let mut success = true;
     match command.as_str() {
         "init" => {
             let reply = shell.submit(
@@ -211,6 +233,7 @@ fn run() -> Result<()> {
             )?;
             shell.issue_client_token(&object_id(&shell.state()?, "root")?)?;
             println!("{reply}");
+            success &= conduit_shell::author::succeeded(&reply);
         }
         "records" => {
             let export = shell.submit(json!({"kind":"export-records"}), &MissingExecutor)?;
@@ -221,7 +244,11 @@ fn run() -> Result<()> {
                 println!("{record}");
             }
             if export["complete"] != true {
-                eprintln!("record export has gaps: {}", export["gaps"]);
+                success = false;
+                eprintln!(
+                    "records: export has gaps: {}; preserve the available records and check retention",
+                    export["gaps"]
+                );
             }
         }
         "inspect" => {
@@ -240,6 +267,7 @@ fn run() -> Result<()> {
                     .unwrap_or_else(|| "management.inspect.v1".into());
                 let reference = json!({"kind":object["kind"],"name":object["name"]});
                 let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":tool,"arguments":{"object":reference}}}), &MissingExecutor)?;
+                success &= conduit_shell::author::succeeded(&reply);
                 println!(
                     "{}",
                     conduit_shell::author::inspection_row(&state.objects, object, reply)
@@ -262,10 +290,10 @@ fn run() -> Result<()> {
                     reference_id(&v["consumer"]) == &json!(root) && v["local_name"] == "management"
                 })
                 .ok_or("root management route is absent")?;
-            let reply = shell.submit(json!({"kind":"register-project","snapshots":boundary::s1_snapshots(&repository)?,"builtin":shell.context.builtin,"project":boundary::project(&project,&spec)?,"request":{"sender":root,"caller":root,"conduit":conduit["id"],"target":conduit["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}), &MissingExecutor)?;
+            let reply = shell.submit(json!({"kind":"register-project","snapshots":[],"builtin":shell.context.builtin,"project":boundary::project(&project,&spec)?,"request":{"sender":root,"caller":root,"conduit":conduit["id"],"target":conduit["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}), &MissingExecutor)?;
             println!("{reply}");
             if reply["accepted"] != true {
-                return Ok(());
+                return Err("register: project was rejected; see printed diagnostics and correct the project before retrying".into());
             }
             let registered = reply["objects"]
                 .as_array()
@@ -282,23 +310,31 @@ fn run() -> Result<()> {
             }) {
                 let reply = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":"access.open.v1","arguments":{"conduit":conduit["name"]}}}), &MissingExecutor)?;
                 println!("{reply}");
+                success &= conduit_shell::author::succeeded(&reply);
             }
             let runner = Runner::new(&shell, std::env::current_exe().map_err(|e| e.to_string())?)?;
-            set_up_instances(&shell, &runner, Some(registered), None)?;
+            success &= set_up_instances(&shell, &runner, Some(registered), None)?;
             for diagnostic in runner.diagnostics() {
                 eprintln!("runner: {diagnostic}");
             }
         }
         _ => unreachable!(),
     }
-    Ok(())
+    if success {
+        Ok(())
+    } else {
+        Err(format!(
+            "{command}: one or more printed results did not succeed; see their diagnostics"
+        ))
+    }
 }
 fn set_up_instances(
     shell: &Shell,
     executor: &dyn conduit_shell::Executor,
     registered: Option<&[Value]>,
     shutdown: Option<&tokio_util::sync::CancellationToken>,
-) -> Result<()> {
+) -> Result<bool> {
+    let mut success = true;
     let state = shell.state()?;
     let root = object_id(&state, "root")?;
     for kind in ["Pool", "Resource", "Agent", "Interface"] {
@@ -320,7 +356,7 @@ fn set_up_instances(
                 && registered.is_none_or(|items| items.iter().any(|new| new["id"] == v["id"]))
         }) {
             if shutdown.is_some_and(|s| s.is_cancelled()) {
-                return Ok(());
+                return Ok(success);
             }
             let tool = if kind == "Resource" {
                 let route = state.objects.iter().find(|v| {
@@ -355,7 +391,7 @@ fn set_up_instances(
                                 executor,
                             )?;
                         }
-                        return Ok(());
+                        return Ok(success);
                     }
                     std::thread::sleep(std::time::Duration::from_millis(10));
                 }
@@ -365,16 +401,17 @@ fn set_up_instances(
             if registered.is_some() {
                 println!("{reply}");
             }
-            if reply["isError"] != false {
+            if !conduit_shell::author::succeeded(&reply) {
                 let message = format!("setup of {} failed: {reply}", object["name"]);
                 if registered.is_some() {
                     return Err(message);
                 }
+                success = false;
                 eprintln!("conduit: {message}");
             }
         }
     }
-    Ok(())
+    Ok(success)
 }
 fn reference_id(value: &Value) -> &Value {
     value.get("id").unwrap_or(value)
@@ -401,7 +438,8 @@ fn main() {
         run()
     };
     if let Err(error) = result {
-        eprintln!("conduit: {error}");
+        let asked: Vec<_> = std::env::args().skip(1).take(1).collect();
+        eprintln!("conduit {}: {error}", asked.join(" "));
         std::process::exit(1);
     }
 }

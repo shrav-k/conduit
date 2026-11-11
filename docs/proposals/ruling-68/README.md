@@ -1,6 +1,6 @@
 # Ruling 68: metrics, safety vectors, spec batch 1's questions, and four older rulings
 
-Status: in force; open (point 6: M4) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 7, 9, 13 and 15, and the promises the batches write. This record says why.
+Status: in force; amended by 69 (points 1 and 6: metrics as packages emit them) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 7, 9, 13 and 15, and the promises the batches write. This record says why.
 
 The coordinator put the questions that waited at the end of the night of 2026-11-10: the metrics
 proposal, what a safety vector is, the three questions of spec batch 1, and four earlier rulings
@@ -82,3 +82,9 @@ standards for that the same we do for agents?"
 Ruling 5 (option (b) replaced), ruling 7 (PL8 to type contracts), ruling 46 (point 2's fallback void
 for v0), ruling 47 (the safety vectors defined), ruling 62 (C4 placed in batch 2) and ruling 1 (the
 clones' end). It answers the metrics proposal and spec batch 1's R1 to R3, and confirms ruling 67.
+
+## Later answers
+
+2026-11-11: points 1 and 6 were settled the same day by [ruling 69](../ruling-69/README.md):
+metrics are emitted by packages, aggregated by Fleets and Pools with every attribute kept, and
+viewed from the Interfaces that may inspect them.

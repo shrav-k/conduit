@@ -10,6 +10,10 @@ lenses, a synthesis, a completeness critic and a revision. The surveys' quoted s
 under Sources; their raw notes are not kept in the tree. It may amend ruling 68's point 1 and
 supersedes [the earlier proposal](README.md) where they differ.
 
+Status: superseded by [ruling 69](../ruling-69/README.md), which kept a much smaller model (packages
+emit, Fleets and Pools aggregate with attributes kept, Interfaces view); the surveys and sources
+below remain the evidence.
+
 ## The answer
 
 WHAT THE FEATURE IS

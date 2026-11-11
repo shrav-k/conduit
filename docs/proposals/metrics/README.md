@@ -1,8 +1,8 @@
 # Metrics: what Fleets, Pools, Agents and Resources used, seen from an Interface
 
-Status: M1 to M3 and the defaults accepted by [ruling 68](../ruling-68/README.md), point 1, with each
-package answering for its own numbers; M4, attribution and aggregation by account and model, is
-being researched (point 6).
+Status: M1 to M3 and the defaults accepted by [ruling 68](../ruling-68/README.md), point 1, then
+amended by [ruling 69](../ruling-69/README.md), which settles M4: packages emit, Fleets and Pools
+aggregate with every attribute kept, and Interfaces view what they may inspect.
 
 Not binding. The specification alone binds. A proposal for the owner, written on 2026-11-10 from an
 investigation run as a workflow (two grounding reports, three designs, a skeptic for each, a

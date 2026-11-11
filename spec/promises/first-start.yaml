@@ -33,13 +33,15 @@
   when: >-
     The engine has been started for the first time.
   then: >-
-    The Interface `root` has one Conduit to `management` and one to `access`, each open, and
-    every first-start object is ready.
+    The Interface `root` has three declared open Conduits, to `management`, `access` and
+    `system`, and every first-start object is ready.
   observable: >-
-    Inspection lists those two Conduits, with `root` as consumer, and the five objects of
-    FST-001, each in the state ready. The two are the declared Conduits `management` and
-    `access` of the template `root`, instantiated with it under CON-002. They are not
-    first-start objects.
+    Inspection lists those three Conduits with root as consumer and the five ready objects of
+    FST-001. They are the declared Conduits `management`, `access` and `system` of the template
+    `root`, instantiated with it under CON-002, from `root-management`, `root-access` and
+    `root-pool`. They are not first-start objects. The `system` Conduit serves as root's default
+    to that Pool, with the root-pool operation list of FLEET-005. Their provenance cause is
+    `first-start` (ACC-044), and none may be closed by request (ACC-024).
   vectors: []
 
 - id: FST-003
@@ -48,7 +50,7 @@
   when: >-
     The engine has been started for the first time.
   then: >-
-    Any other Pool, Resource, Agent, Interface or Conduit exists, or any implementation other
+    Any other Pool, Fleet, Resource, Agent, Interface or Conduit exists, or any implementation other
     than those behind the first-start objects has received a call.
   observable: >-
     No object beyond those of FST-001 and FST-002 exists, and no record shows a call to any
@@ -65,8 +67,8 @@
   observable: >-
     Each of the objects of FST-001 and FST-002 reports a `from` that is a qualified reference
     into `github.com/shrav-k/conduit/core`. The templates are `system`, `node`,
-    `management`, `access` and `root`, and for the two Conduits `root-management` and
-    `root-access`.
+    `management`, `access` and `root`, and for the three Conduits `root-management`,
+    `root-access` and `root-pool`.
   vectors: []
 
 
@@ -87,4 +89,24 @@
     because their names are taken under OBJ-002: the engine makes those objects itself and is
     handed no document for them. A template of any other project or package whose `type` is
     `node.v1` is rejected under PLC-028, so no node is made from one either.
+  vectors: []
+
+- id: FST-007
+  layer: convention
+  level: must
+  when: >-
+    The engine starts for the first time.
+  then: >-
+    It names a unique SPIFFE trust domain and records it in `system`'s status as `trustDomain`.
+    It is a nonempty string of at most 255 lowercase letters, digits, dots, hyphens and
+    underscores, configured by the user as a unique namespace or generated from at least 128
+    random bits. It never changes.
+  observable: >-
+    A malformed domain is rejected. A generated domain is never a shared fixed name such as
+    `conduit.local`. Every credential of DL13 names its holder by a SPIFFE ID in that domain:
+    `spiffe://<trust-domain>/conduit/engine` for the engine and
+    `spiffe://<trust-domain>/conduit/instance/<id>` for an instance. `/conduit/node/<id>` is
+    reserved. The file `engine-id` holds the engine's SPIFFE ID (PRV-022). Restarts, moves under
+    DL17, and repeated first starts keep the same domain. Inspection of `system` shows it,
+    without showing credentials.
   vectors: []

@@ -279,7 +279,7 @@
     `get-secret.v1`, under SEC-007: for those no tool is presented. A tool for an operation is
     named by the Conduit's local name and the operation's export name, joined by a dot. The
     local name of a declared Conduit is the name its consumer's template gives it, and that of
-    a Conduit instantiated on its own is the Conduit's own name.
+    a Conduit instantiated on its own is its `as`, or its own name where it gives none.
   observable: >-
     The instance's tool list holds one tool for each operation of each of its open Conduits,
     apart from an operation whose contract the Conduit's target does not hold, under IFC-033, a
@@ -339,19 +339,20 @@
   layer: language
   level: must
   when: >-
-    A Conduit would be instantiated, and one of the tool names it would have under IFC-012
-    equals the name of another tool that the engine presents, or would present once its Conduit
-    is opened, to the same consumer.
+    A Conduit would be instantiated, and its local name equals that of another Conduit of the
+    same consumer that is not closed, or one of its tool names under IFC-012 would equal another
+    tool's name for that consumer.
   then: >-
     The Conduit is not instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the tool name and the Conduit that has the other. The
-    other tools are those of the consumer's other Conduits that are not closed, whether or not
-    they are open yet. A Conduit instantiated on its own under the local name of one of its
-    consumer's declared Conduits is not instantiated where the two would have a tool name in
-    common. No two tools presented to one consumer share a name, and none is longer than the 128
-    characters that the protocol recommends: a local name is at most 63 characters under
-    OBJ-001 and OBJ-022, and an export name at most 63 under NAM-004.
+    Resolving returns a diagnostic naming the duplicate local name or tool name and the other
+    Conduit, subject to FLEET-005's disclosure condition for root's defaults. The other Conduits
+    include declared and standalone Conduits, registered or open, whatever tools either would
+    present: local-name uniqueness is unconditional even where their operations differ or no
+    tool is presented. A closed Conduit no longer counts, but its tombstone may give conflict
+    under LIF-041. No tools of one consumer share a name. Each name is at most 128 characters:
+    its local name at most 63 under OBJ-001 and OBJ-022 and its export name at most 63 under
+    NAM-004, joined by a dot.
   vectors: []
 
 - id: IFC-015
@@ -655,55 +656,58 @@
     implementation marked `plain`, its `content` holds that result's `content`, unchanged, after
     that block where there is one.
   observable: >-
-    A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`, and
-    a result for one that ended with a reason never carries `io.github.shrav-k.conduit/outcome`. The
-    values are those of OPS-001 and OPS-005. `isError` keeps the protocol's meaning, the mark of a
-    call that ended in an error, and the keys beside it say why: `io.github.shrav-k.conduit/reason`,
-    or an outcome that is failed or unknown. A result whose `isError` is not true has the outcome
-    succeeded. Where the operation declares outputs, its `structuredContent` conforms to the
-    `outputSchema` of IFC-033, as the protocol requires of a tool that declares one. The protocol
-    makes `outputSchema` optional. A client that sees one may prefer `structuredContent`; an empty
-    map for an operation that declares no outputs would hide its `content`. Such a tool has no
-    `outputSchema` and its successful result no `structuredContent`, preserving a plain result's
-    content unchanged. The protocol's revision 2026-07-28 does not say whether a result whose
-    `isError` is true must conform to `outputSchema`. This specification takes it that it need not:
-    such a result carries no outputs, and may carry `diagnostics`. A result whose outcome is
-    succeeded holds its outputs even where the Conduit through which its invocation was dispatched
-    was closed before it ended, under ACC-034: the result of `retire-with-resources.v1`, whose
-    Conduit CON-008 closes before it ends, is one. A repeat of an invocation that has not ended
-    reports conflict under OPS-032, and one of an invocation that succeeded, of an operation that
-    declares outputs, where no filter applies and the engine no longer keeps its outputs, or where a
-    filter applies to the repeat and OPS-024 does not dispatch it, reports conflict under OPS-034;
-    the `ruleId` of its error diagnostic tells the two apart, and its `isError` is true. What a
-    request that is not dispatched says beyond its reason, and beyond the restriction it names, it
-    says there: `diagnostics` in the `structuredContent` of its result is a list of diagnostics in
-    the form of `diagnostic.v1`, whether or not the operation's contract declares an output of that
-    name, as that of `register.v1` does. A result that reports invalid or conflict carries there an
-    error diagnostic: one whose `level` is `error` and whose `ruleId` is the ID of the promise that
-    decided the reason. A result that reports refused carries none, and says nothing there of the
-    objects its request names, under OPS-023. The result of a rejected registration carries its
-    diagnostics under OBJ-023, and that of a request to retire a Pool whose Resources are in the way
-    names those Resources there, under LIF-020. A request that the engine does not dispatch because
-    a restriction forbids it, or cannot be evaluated or applied, names that restriction in
+    A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`,
+    and a result for one that ended with a reason never carries
+    `io.github.shrav-k.conduit/outcome`. The values are those of OPS-001 and OPS-005. `isError`
+    keeps the protocol's meaning, the mark of a call that ended in an error, and the keys beside
+    it say why: `io.github.shrav-k.conduit/reason`, or an outcome that is failed or unknown. A
+    result whose `isError` is not true has the outcome succeeded. Where the operation declares
+    outputs, its `structuredContent` conforms to the `outputSchema` of IFC-033, as the protocol
+    requires of a tool that declares one. The protocol makes `outputSchema` optional. A client
+    that sees one may prefer `structuredContent`; an empty map for an operation that declares no
+    outputs would hide its `content`. Such a tool has no `outputSchema` and its successful
+    result no `structuredContent`, preserving a plain result's content unchanged. The protocol's
+    revision 2026-07-28 does not say whether a result whose `isError` is true must conform to
+    `outputSchema`. This specification takes it that it need not: such a result carries no
+    outputs, and may carry `diagnostics`. A result whose outcome is succeeded holds its outputs
+    even where the Conduit through which its invocation was dispatched was closed before it
+    ended, under ACC-034: the result of `retire-with-resources.v1`, whose Conduit CON-008 closes
+    before it ends, is one. A repeat of an invocation that has not ended reports conflict under
+    OPS-032, and one of an invocation that succeeded, of an operation that declares outputs,
+    where no filter applies and the engine no longer keeps its outputs, or where a filter
+    applies to the repeat and OPS-024 does not dispatch it, reports conflict under OPS-034; the
+    `ruleId` of its error diagnostic tells the two apart, and its `isError` is true. What a
+    request that is not dispatched says beyond its reason, and beyond the restriction it names,
+    it says there: `diagnostics` in the `structuredContent` of its result is a list of
+    diagnostics in the form of `diagnostic.v1`, whether or not the operation's contract declares
+    an output of that name, as that of `register.v1` does. A result that reports invalid or
+    conflict carries there an error diagnostic: one whose `level` is `error` and whose `ruleId`
+    is the ID of the promise that decided the reason. A result that reports refused carries
+    none, and says nothing there of the objects its request names, under OPS-023. The result of
+    a rejected registration carries its diagnostics under OBJ-023, and that of a request to
+    retire a Pool or Fleet whose members are in the way names those Resources or Agents there,
+    under LIF-020. A request that the engine does not dispatch because a restriction forbids it,
+    or cannot be evaluated or applied, names that restriction in
     `io.github.shrav-k.conduit/restriction`, as ACC-008, ACC-014 and ACC-015 require. The ID in
-    `io.github.shrav-k.conduit/invocation` is the one by which `reconcile.v1` names the invocation,
-    under OPS-014, so a consumer learns it from the result, and a caller that lost a result repeats
-    its request under OPS-009. A call that names a tool the engine does not present is answered as
-    IFC-012 states: at the baseline revision with no tool result, its reason being in the `data` of
-    the protocol's error. IFC-032 names another, and IFC-036 the requests that the protocol has a
-    server reject with an error of its own. The `content` member is always present in a tool result,
-    as the protocol requires, and may be an empty list where the result is not an error and its
-    outcome did not come from a plain implementation. The text block of an error is there because
-    the protocol has a client give its model a tool result that is an error, and lets it keep
-    `_meta`, and a protocol error, from the model. The protocol recommends that a result with
-    `structuredContent` also carry it serialized in `content`; whether the engine does so, and what
-    else it puts there, is DL12 of the implementation-defined list. A plain implementation's
-    `content` is passed on because an existing server answers in text, which no contract can
-    describe, under CTR-012. The content of a succeeded plain invocation is kept and returned
-    unchanged on a repeat under OPS-009 for as long as DL10 keeps outputs, whether or not the
-    operation declares outputs; after its expiry a repeat reports conflict under OPS-034. It is
-    never dispatched again to recover that content. This specification gives `content` no other
-    meaning: an operation's outputs are in `structuredContent`.
+    `io.github.shrav-k.conduit/invocation` is the one by which `reconcile.v1` names the
+    invocation, under OPS-014, so a consumer learns it from the result, and a caller that lost a
+    result repeats its request under OPS-009. A call that names a tool the engine does not
+    present is answered as IFC-012 states: at the baseline revision with no tool result, its
+    reason being in the `data` of the protocol's error. IFC-032 names another, and IFC-036 the
+    requests that the protocol has a server reject with an error of its own. The `content`
+    member is always present in a tool result, as the protocol requires, and may be an empty
+    list where the result is not an error and its outcome did not come from a plain
+    implementation. The text block of an error is there because the protocol has a client give
+    its model a tool result that is an error, and lets it keep `_meta`, and a protocol error,
+    from the model. The protocol recommends that a result with `structuredContent` also carry it
+    serialized in `content`; whether the engine does so, and what else it puts there, is DL12 of
+    the implementation-defined list. A plain implementation's `content` is passed on because an
+    existing server answers in text, which no contract can describe, under CTR-012. The content
+    of a succeeded plain invocation is kept and returned unchanged on a repeat under OPS-009 for
+    as long as DL10 keeps outputs, whether or not the operation declares outputs; after its
+    expiry a repeat reports conflict under OPS-034. It is never dispatched again to recover that
+    content. This specification gives `content` no other meaning: an operation's outputs are in
+    `structuredContent`.
   vectors: []
 
 
@@ -863,71 +867,78 @@
   then: >-
     The tool's definition is derived from the Operation contract as the target holds it. Its
     `inputSchema` and `outputSchema` are the contract's own, except that, for a control, the
-    `required` of its `inputSchema` lists `revision` alone, under REV-006, and an input that
-    the target's definition narrows under TPL-010 has the schema `{allOf: [a, b]}`, where `a`
-    is the contract's schema for the input and `b` the schema that the template added. They
-    are made to hold every schema they refer to. Each Schema contract that a `$ref` in them
-    names, directly or through another such contract, has one copy of its schema under the
-    `$defs` of the root, keyed by the contract's qualified reference, with `@` and the version
-    of the package or the project that holds it put after the address where a version is
-    stated. Each `$ref` is rewritten to refer to what it referred to where it was written, as
-    SCH-015 resolves it there: a JSON Pointer to the same place, and a reference to a contract
-    to that contract's copy. Every keyword written beside a `$ref` is kept. A `$ref` to a
-    contract whose schema holds no `$ref`, and beside which no keyword is written, may instead
-    be replaced by that schema, and a copy to which no `$ref` then refers may be left out. Its
-    `description` is the contract's `metadata.description` where the contract states one. Its
-    `annotations` hold `readOnlyHint` true exactly where the contract states no `effect`, is not
-    a control and does not start model work, and hold `idempotentHint`, `destructiveHint` and
-    `openWorldHint` as the contract states them. Where the version of the operation's package
-    that the target holds has no contract of the operation, no definition can be derived, and no
-    tool is presented for the operation.
+    `required` of its `inputSchema` lists `revision` alone, under REV-006, and an input that the
+    target's definition narrows under TPL-010 has the schema `{allOf: [a, b]}`, where `a` is the
+    contract's schema for the input and `b` the schema that the template added. They are made to
+    hold every schema they refer to. Each Schema contract that a `$ref` in them names, directly
+    or through another such contract, has one copy of its schema under the `$defs` of the root,
+    keyed by the contract's qualified reference, with `@` and the version of the package or the
+    project that holds it put after the address where a version is stated. Each `$ref` is
+    rewritten to refer to what it referred to where it was written, as SCH-015 resolves it
+    there: a JSON Pointer to the same place, and a reference to a contract to that contract's
+    copy. Every keyword written beside a `$ref` is kept. A `$ref` to a contract whose schema
+    holds no `$ref`, and beside which no keyword is written, may instead be replaced by that
+    schema, and a copy to which no `$ref` then refers may be left out. Its `description` joins
+    with blank lines, in order: the contract's `metadata.description` where stated; `Target:
+    <Kind> <name>, of Type <qualified reference>.`, naming the target and the Type it holds; and
+    that Type's `metadata.description` where stated. Its `annotations` hold `readOnlyHint` true
+    exactly where the contract states no `effect`, is not a control and does not start model
+    work, and hold `idempotentHint`, `destructiveHint` and `openWorldHint` as the contract
+    states them. Where the version of the operation's package that the target holds has no
+    contract of the operation, no definition can be derived, and no tool is presented for the
+    operation.
   observable: >-
-    A handle, whose schema is `github.com/shrav-k/conduit/core#handle.v1`, is so given the schema of
-    a string, in place or as a copy, which is what IFC-011 makes it on the wire. JSON Schema
-    resolves a `$ref` that is a JSON Pointer against the root of the schema that holds it, so a
-    contract's schema written in the place of a `$ref` would send its own pointers, such as
-    `#/$defs/name`, to the tool's root, and a contract that refers to itself, directly or through
-    others, has no finite form written in place. With one copy of each contract and every `$ref`
-    rewritten, a value is valid against the definition exactly when it is valid against the
-    contract's own schemas under SCH-001 and SCH-015, and, for a control, against the template's
-    too, under TPL-011. The definition can be read with no package at hand, and every `$ref` in it
-    is local, as the protocol lets no implementation dereference on its own a `$ref` that resolves
-    to a network URI. Two contracts of one name, reached through two versions of one package under
-    NAM-014, have two copies, since the key holds the version. A key is not a reference, and no
-    document writes one. A `$ref` to a copy is `#/$defs/` and the key, with `~` written `~0` and `/`
-    written `~1`, as RFC 6901 escapes a reference token, and `#` written `%23`, as a URI fragment
-    needs: the copy of `example.org/acme/files#path.v1` from version 0.3.0 is under the key
-    `example.org/acme/files@0.3.0#path.v1`, and a `$ref` to it is
-    `#/$defs/example.org~1acme~1files@0.3.0%23path.v1`. Where the contract's own schema states
-    `$defs` at its root, as CTR-012 lets an operation that is not a control, its members keep their
-    keys beside the copies. A key of the form given above for a contract's copy, a qualified
-    reference with `@` and the version after the address where a version is stated, is reserved in
-    the root `$defs` of every schema an author writes. A document that uses one there is rejected
-    under IFC-033 when its package is installed or when it is submitted, with a diagnostic naming
-    the reserved key and its position in the document. This applies whether or not publication would
-    reach a contract with that key. The definition is the engine's, made for the wire: CTR-012 and
-    the profile govern the contract's schemas and not the definition, and the engine checks a
-    request and a result against the contract and the template, under NAM-023 and TPL-011, so the
-    definition changes nothing that the engine accepts. Which `$ref` the engine replaces where it
-    may is DL12. Where a control's contract gives the input `limit` the schema `{type: integer,
-    maximum: 100}` and the target's template adds `{maximum: 50}`, the tool gives `limit` the schema
-    `{allOf: [{type: integer, maximum: 100}, {maximum: 50}]}`, so a caller that follows it does not
-    send 75, which TPL-011 would report invalid. A control that the target does not have has no
-    tool, under IFC-012. Where the consumer, the Conduit and the target hold different versions of
-    the contract's package, the definition is that of the version the target holds, as NAM-023
-    states. A result of the tool that is not an error conforms to `outputSchema` where the operation
-    declares outputs, and IFC-025 says which results are errors. Where `readOnlyHint` is not true,
-    and where the contract does not state one of the other three hints, that hint is left out of
-    `annotations`, and the protocol's default for it holds. A Conduit may list an operation that a
-    later release of a package added to a capability, under NAM-024, while its target holds an
-    earlier version that has no contract of that name. No tool is presented for that operation, and
-    a call that names it is answered as IFC-012 answers a call to a tool that is not presented: it
-    reports refused. The tool of an operation that declares no outputs has no `outputSchema`, and a
-    result of it that is not an error has no `structuredContent`, under IFC-025. The protocol makes
-    the schema optional; a client that sees one may prefer the structured result, and an empty map
-    would hide the content, including a plain read's text. The tool of an operation whose contract
-    states no `inputSchema`, and so declares no inputs, has the `inputSchema` `{type: object}`,
-    since the protocol requires one of every tool, and its call carries no arguments, under IFC-001.
+    A handle, whose schema is `github.com/shrav-k/conduit/core#handle.v1`, is so given the
+    schema of a string, in place or as a copy, which is what IFC-011 makes it on the wire. JSON
+    Schema resolves a `$ref` that is a JSON Pointer against the root of the schema that holds
+    it, so a contract's schema written in the place of a `$ref` would send its own pointers,
+    such as `#/$defs/name`, to the tool's root, and a contract that refers to itself, directly
+    or through others, has no finite form written in place. With one copy of each contract and
+    every `$ref` rewritten, a value is valid against the definition exactly when it is valid
+    against the contract's own schemas under SCH-001 and SCH-015, and, for a control, against
+    the template's too, under TPL-011. The definition can be read with no package at hand, and
+    every `$ref` in it is local, as the protocol lets no implementation dereference on its own a
+    `$ref` that resolves to a network URI. Two contracts of one name, reached through two
+    versions of one package under NAM-014, have two copies, since the key holds the version. A
+    key is not a reference, and no document writes one. A `$ref` to a copy is `#/$defs/` and the
+    key, with `~` written `~0` and `/` written `~1`, as RFC 6901 escapes a reference token, and
+    `#` written `%23`, as a URI fragment needs: the copy of `example.org/acme/files#path.v1`
+    from version 0.3.0 is under the key `example.org/acme/files@0.3.0#path.v1`, and a `$ref` to
+    it is `#/$defs/example.org~1acme~1files@0.3.0%23path.v1`. Where the contract's own schema
+    states `$defs` at its root, as CTR-012 lets an operation that is not a control, its members
+    keep their keys beside the copies. A key of the form given above for a contract's copy, a
+    qualified reference with `@` and the version after the address where a version is stated, is
+    reserved in the root `$defs` of every schema an author writes. A document that uses one
+    there is rejected under IFC-033 when its package is installed or when it is submitted, with
+    a diagnostic naming the reserved key and its position in the document. This applies whether
+    or not publication would reach a contract with that key. The definition is the engine's,
+    made for the wire: CTR-012 and the profile govern the contract's schemas and not the
+    definition, and the engine checks a request and a result against the contract and the
+    template, under NAM-023 and TPL-011, so the definition changes nothing that the engine
+    accepts. Which `$ref` the engine replaces where it may is DL12. Where a control's contract
+    gives the input `limit` the schema `{type: integer, maximum: 100}` and the target's template
+    adds `{maximum: 50}`, the tool gives `limit` the schema `{allOf: [{type: integer, maximum:
+    100}, {maximum: 50}]}`, so a caller that follows it does not send 75, which TPL-011 would
+    report invalid. A control that the target does not have has no tool, under IFC-012. Where
+    the consumer, the Conduit and the target hold different versions of the contract's package,
+    the definition is that of the version the target holds, as NAM-023 states. A result of the
+    tool that is not an error conforms to `outputSchema` where the operation declares outputs,
+    and IFC-025 says which results are errors. Where `readOnlyHint` is not true, and where the
+    contract does not state one of the other three hints, that hint is left out of
+    `annotations`, and the protocol's default for it holds. A Conduit may list an operation that
+    a later release of a package added to a capability, under NAM-024, while its target holds an
+    earlier version that has no contract of that name. No tool is presented for that operation,
+    and a call that names it is answered as IFC-012 answers a call to a tool that is not
+    presented: it reports refused. The tool of an operation that declares no outputs has no
+    `outputSchema`, and a result of it that is not an error has no `structuredContent`, under
+    IFC-025. The protocol makes the schema optional; a client that sees one may prefer the
+    structured result, and an empty map would hide the content, including a plain read's text.
+    The tool of an operation whose contract states no `inputSchema`, and so declares no inputs,
+    has the `inputSchema` `{type: object}`, since the protocol requires one of every tool, and
+    its call carries no arguments, under IFC-001. The description discloses only the kind, name,
+    Type and Type description of the consumer's own target. It includes no configuration, owner
+    or placement. Kind, name and Type are fixed, so IFC-038's opening and closing notifications
+    cover changes to this description.
   vectors: []
 
 

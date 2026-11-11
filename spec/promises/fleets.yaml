@@ -1,0 +1,115 @@
+# Fleets: ownership of Agents and root's default Conduits.
+# Standing: draft specification; see spec/README.md for status and coverage.
+# Removed IDs (not reused): none.
+# This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
+
+- id: FLEET-001
+  layer: language
+  level: must
+  when: >-
+    A Fleet is instantiated, or a template or Type of family Fleet is read.
+  then: >-
+    A Fleet is an instance of the core template `fleet`, of Type `fleet.v1`. No other template
+    or Type of this family is accepted. Its document has `apiVersion`, `kind`, `from` and
+    optionally `metadata`, with no standard argument and no `arguments`.
+  observable: >-
+    It offers `fleet-management.v1`, implemented by the engine with no selection (TPL-004). It
+    has no config, placement, runtime, run, hooks, entries or declared Conduits. It owns Agents
+    and nothing else, and contains no Pool or machine. Its setup has no parts. Its shutdown is
+    confirmed when its retirement succeeds, or at once if never set up (LIF-024). Registration,
+    setup, retirement and inspection of the Fleet go through `management` (ACC-033). A Fleet
+    document with `owner`, `placement`, `runtime` or `arguments`, a Fleet template submitted in
+    a project or outside the core package, or a Type of family Fleet outside the core package is
+    rejected with a diagnostic naming it; registration reports invalid (OBJ-023).
+  vectors: []
+
+- id: FLEET-002
+  layer: language
+  level: must
+  when: >-
+    An Agent is instantiated.
+  then: >-
+    It has exactly one owner, a Fleet instance, fixed for its life; no operation changes it.
+  observable: >-
+    An Agent document with no `owner`, or an owner that is not a Fleet, is rejected with a
+    diagnostic naming the Agent and the field. `owner` is a bare name whose kind is fixed by
+    `fleet-reference.v1` (OBJ-006). Inspection always reports the same owner. An Agent wanted in
+    another Fleet is a new Agent with its own ID, under an unused name, or under the old name
+    only once the old Agent is retired and removed and its tombstone lifted (LIF-035, LIF-041,
+    ACC-053). No request moves an Agent.
+  vectors: []
+
+- id: FLEET-003
+  layer: language
+  level: must
+  when: >-
+    An Agent document names a Fleet as owner.
+  then: >-
+    Where the Fleet is retired, the document is rejected; otherwise the Agent is instantiated
+    and owned by that Fleet.
+  observable: >-
+    The diagnostic names the Agent and Fleet and says the Fleet is retired. Registration reports
+    invalid (OBJ-023), and the Fleet owns the same Agents as before. Registering into a live
+    existing Fleet needs both `management` and that Fleet (ACC-033 row 1A). With the Fleet in
+    the same submission, it needs `management` alone (row 2). ACC-057 also applies.
+  vectors: []
+
+- id: FLEET-004
+  layer: convention
+  level: must not
+  when: >-
+    A Fleet owns an Agent.
+  then: >-
+    That ownership permits any request.
+  observable: >-
+    A Fleet is never a caller: no credential names one and no server is presented to one. An
+    actor whose only open Conduit is to the Fleet can use the Fleet's own operations and reports
+    refused for operations of its Agents. Running turns takes a Conduit to the Agent. A Fleet
+    runs nothing and applies nothing to its Agents together; each request names one Agent, and a
+    cascade dispatches one retirement per Agent (LIF-021). A bound naming a Fleet covers that
+    Fleet alone (ACC-029).
+  vectors: []
+
+- id: FLEET-005
+  layer: convention
+  level: must
+  when: >-
+    A Pool or Fleet is registered.
+  then: >-
+    Within that registration the engine instantiates and opens one default Conduit from root to
+    the new Pool or Fleet. From `root-pool` it lists exactly `register.v1`,
+    `register-replacement.v1`, `inspect.v1`, `list.v1`, `set-up.v1`, `retire.v1`,
+    `reconcile.v1`, `sign-in.v1` and `answer.v1`. From `root-fleet` it lists exactly
+    `register.v1`, `inspect.v1`, `list.v1`, `set-up.v1`, `retire.v1`, `reconcile.v1`,
+    `sign-in.v1` and `answer.v1`. Its name is generated under OBJ-003, and its local name, `as`,
+    is the target's name. `system` instead has root's declared `system` Conduit from first start
+    (FST-002).
+  observable: >-
+    The registration result lists the default's name and ID. Its making and opening are recorded
+    within that registration; inspection shows it open with provenance cause `default`
+    (ACC-044). No request closes it (ACC-024); retirement of its target does (CON-008). Making
+    it is exempt from tombstones (LIF-041), and its closure leaves none (LIF-040). If root
+    already has a Conduit that is not closed with that local name, IFC-014 rejects the
+    registration: nothing is registered and it reports invalid. The diagnostic names the local
+    name and names the other Conduit only to a caller permitted to inspect it under ACC-033.
+    ACC-054 prevents another actor from registering root's Conduits. The listed operations
+    exclude both cascades and acting for a Fleet. Later capability additions never widen these
+    lists.
+  vectors: []
+
+- id: FLEET-006
+  layer: language
+  level: must
+  when: >-
+    A document would make a Pool or Fleet instance.
+  then: >-
+    Its name is none of `management`, `access` and `system`, and no Pool instance and Fleet
+    share a name.
+  observable: >-
+    A reserved name is rejected and registration reports invalid (OBJ-023). Where also a clash,
+    OPS-023 orders the reasons. A Fleet named like an existing Pool instance, or the reverse,
+    reports conflict under OBJ-025, with a diagnostic naming both objects. Within one project
+    NAM-027 already rejects duplicate names. Names otherwise stay engine-wide per kind: a Pool
+    or Fleet may share a name with an Agent, Interface or Resource, subject to FLEET-005. The
+    engine-made `system` Pool of FST-001 is the reserved first-start instance.
+  vectors: []

@@ -93,10 +93,12 @@
     A submission is accepted.
   then: >-
     Its templates and instances are registered, and its contracts are made available under
-    SUB-008. Nothing else happens.
+    SUB-008. The engine also makes and opens root's default Conduits under FLEET-005. Nothing
+    else happens.
   observable: >-
-    After an accepted submission the new objects are those its documents make, and each new
-    instance is as INS-016 leaves it.
+    After an accepted submission the new objects are those its documents make and the default
+    Conduits of FLEET-005, which the result lists. Each new instance is as INS-016 leaves it,
+    with those default Conduits open.
   vectors: []
 
 - id: SUB-007

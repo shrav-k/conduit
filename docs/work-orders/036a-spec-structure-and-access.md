@@ -64,3 +64,17 @@ the repository root: `python3 tools/check_docs.py`, `python3 tools/set_names.py 
 `git diff --check` pass; in `engine/`, `cargo test --release` (report the total passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so). Report the promises added and
 amended, by ID, and the lines of `spec/` before and after. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker in 22 minutes, then a fresh verifier in 10, then a second round. The
+worker added 15 promises (FLEET-001 to 006, ACC-044, ACC-053 to 055, ACC-057, LIF-040, LIF-041,
+OPS-036, FST-007; the plan's "16" counted one twice, finding 036a-01) and amended 44, with DL1, DL6
+and DL13, the definitions, `spec/README.md`'s contents and limits, and IN_FORCE.md's lines. It
+listed the vector cases the new text contradicts, about 144, for the build orders (findings 036a-02
+and 036a-03): ownerless Agents, registrations without root's defaults, and Agents routed through
+`management`. The verifier found that root's default Conduits, opened at registration, contradicted
+SUB-006, INS-016 and the definition of registration; that `list.v1`'s package visibility cited a
+retired promise; that ACC-055 limited an actor where ruling 66 limits the holder, which may be a
+Resource; and that the definition of inspect missed the inventory. The second round fixed all four.
+The admin reran the engine's suite outside the sandbox: 163 tests pass, 3 ignored.

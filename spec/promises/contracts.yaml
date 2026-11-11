@@ -118,7 +118,9 @@
     the type and the hook. One that states no `nodeSelector`, or an empty one, puts no rule on
     where its instances are placed. `records` and each of its two members may be left out, and
     one that is left out is false. What a record holds is REC-002, and what a Type that offers a
-    provider capability must be is PRV-001.
+    provider capability must be is PRV-001. The only Type of family Fleet is the core
+    `fleet.v1`, which offers `fleet-management.v1` (FLEET-001); a Type of that family outside
+    the core package is rejected.
   vectors: []
 
 - id: CTR-005

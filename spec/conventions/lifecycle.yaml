@@ -25,7 +25,7 @@
   then: >-
     It reports exactly one lifecycle state: registered, ready or retired.
   observable: >-
-    The status of an Interface, Agent, Resource, Pool or Conduit instance holds one of those
+    The status of an Interface, Agent, Resource, Pool, Fleet or Conduit instance holds one of those
     three values and never any other, including unknown. No instance, a Conduit included, has a
     suspended state: to narrow access, its Conduit is closed and a narrower one opened, under
     ACC-011.
@@ -168,14 +168,18 @@
     with its references already resolved, and as the objects stand when the request is made. So
     a request for a new declared Conduit whose target is retired, under CON-025, or no longer
     exists, under OBJ-009, reports invalid, and so does one for a new Resource for an entry
-    whose stored placement is a retired node, under PLC-018, for which no node matches,
-    under PRV-015, or whose stored `runtime` names a retired runtime provider, under PRV-006.
-    One for which the machine provider cannot place the Resource now, as where the provider is
-    not ready, or names no machine while the machine of a matching node is reported
-    unreachable or omitted, reports unavailable, under PRV-015, and can be made again. The
-    result carries the diagnostic that resolving returned, as IFC-025 states. A request made
-    while the instance is not retired is LIF-029 for a declared Conduit and POOL-003 for an
-    entry, and a request for a new Resource for an entry of a retired Pool is POOL-017.
+    whose stored placement is a retired node, under PLC-018, for which no node matches, under
+    PRV-015, or whose stored `runtime` names a retired runtime provider, under PRV-006. One for
+    which the machine provider cannot place the Resource now, as where the provider is not
+    ready, or names no machine while the machine of a matching node is reported unreachable or
+    omitted, reports unavailable, under PRV-015, and can be made again. The result carries the
+    diagnostic that resolving returned, as IFC-025 states. A request made while the instance is
+    not retired is LIF-029 for a declared Conduit and POOL-003 for an entry, and a request for a
+    new Resource for an entry of a retired Pool is POOL-017. LIF-041 also applies: a tombstone
+    matching the new instance gives conflict after checks giving invalid. Registering a
+    replacement never lifts a tombstone. A declared Conduit whose local name or target and
+    capability match a tombstone needs an explicit lift first, even though OBJ-003 would
+    generate a new object name.
   vectors: []
 
 - id: LIF-010
@@ -226,21 +230,32 @@
   when: >-
     An instance is inspected.
   then: >-
-    The result has three parts: what was declared, the instance's status, and the records
-    about it.
+    The result holds what was declared, the instance's status and its records, and, for an
+    instance other than a Conduit, its inventory.
   observable: >-
     The declared part is the resolved definition and configuration, in which a reference is
     shown in the resolved form of OBJ-009. The status holds the lifecycle state and what has
     been observed, with its conditions in `conditions`, under LIF-011. It also lists, in
     `unreconciled`, the engine's ID for each invocation whose outcome is unknown, that was
-    dispatched to the instance, its setup hook and its retire hook among them, or that
-    names it in an input or as its target, its setups and retirements among them. The list is
-    read from the state that OPS-008 keeps, so a purge under REC-004 does not shorten it, and an
-    actor finds there an invocation to reconcile under OPS-014 whose ID it never held or has
-    lost. The records are those that name the instance. In the result of `inspect.v1` the three
-    parts are the outputs `declared`, `status` and `records`, `records` being a list in the form
+    dispatched to the instance, its setup hook and its retire hook among them, or that names it
+    in an input or as its target, its setups and retirements among them. The list is read from
+    the state that OPS-008 keeps, so a purge under REC-004 does not shorten it, and an actor
+    finds there an invocation to reconcile under OPS-014 whose ID it never held or has lost. The
+    records are those that name the instance. In the result of `inspect.v1` the three parts are
+    the outputs `declared`, `status` and `records`, `records` being a list in the form
     `record.v1`, under REC-002, and they stand beside the object's `id`, its `revision` and
-    `packages`, the list of the packages it holds in the form NAM-009 gives.
+    `packages`, the list of the packages it holds in the form NAM-009 gives. The output
+    `inventory`, in the form `inventory.v1`, holds the Conduits the instance consumes and those
+    whose target it is, each in full: the Conduit as `object.v1`, consumer, target, local name,
+    capability, operations, state and provenance (ACC-044). It also holds the tombstones of
+    Conduits at either end under LIF-040. Whoever may inspect the instance under ACC-033 sees
+    this inventory in full, without separate authority to inspect its Conduits, with no count of
+    anything omitted. Templates and Conduits have no inventory. Inspecting an Interface also
+    shows its scope, computed from its open Conduits listing `inspect.v1` to Pools and Fleets
+    other than `system`, whatever template made them. For an Agent the scope includes its own
+    Fleet only. No separate scope is stored. Inspecting a Pool shows every administrator, the
+    consumers of open Conduits to that Pool listing operations that administer its Resources
+    (ACC-033), with their Conduits. An inspection of a Conduit shows its provenance (ACC-044).
   vectors: []
 
 # --- Retirement and unregistration.
@@ -355,76 +370,57 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to retire a Pool that owns a Resource whose shutdown is not confirmed.
+    An actor asks to retire a Pool owning a Resource, or a Fleet owning an Agent, whose shutdown
+    is not confirmed.
   then: >-
-    The request is not dispatched, and reports conflict.
+    The request is not dispatched and reports conflict.
   observable: >-
-    The Pool and its Resources are as they were, and a diagnostic in the result names each
-    Resource in the way, as IFC-025 states for what a request that is not dispatched says beyond
-    its reason. A Resource that is registered or ready, or that is retired with its shutdown
-    pending or unknown, is in the way of retiring the Pool.
+    The container and its members are as they were. A diagnostic names every Resource or Agent
+    in the way under IFC-025. A member that is registered or ready, or retired with shutdown
+    pending or unknown, prevents retirement of its owning Pool or Fleet.
   vectors: []
 
 - id: LIF-021
   layer: convention
   level: must
   when: >-
-    An actor asks, in one explicit operation, to retire a Pool together with the Resources it
-    owns.
+    An actor explicitly asks to retire a Pool with its Resources or a Fleet with its Agents.
   then: >-
-    The Resources are retired in the reverse of the order of setup: the retirement of a Resource
-    is dispatched only once the shutdown of every Resource that the order puts before it is
-    confirmed. The order puts a Resource before each Resource that it refers to, names in
-    `runtime`, or to which it is the consumer of a Conduit, among the Resources the Pool owns,
-    and so before every Resource that those are before in turn. Among Resources that depend on
-    each other in a cycle, the order is the engine's. The request dispatches a retirement for
-    each Resource that the Pool owns and whose shutdown is not confirmed. For one that is
-    already retired it is a further retirement, decided as LIF-026 decides one. It dispatches
-    none for a Resource whose shutdown is confirmed. A retirement that ends without the shutdown
-    of its Resource confirmed, or that reports a reason in place of being dispatched, holds back
-    only the Resources that the order puts after that Resource: the retirement of every other
-    Resource is dispatched. The request to retire the Pool is dispatched only once the shutdown
-    of every one of those Resources is confirmed.
+    The members are retired in dependency order, and the container's retirement is dispatched
+    only once every member's shutdown is confirmed. The order puts a member before each other
+    member of that container it refers to or is the consumer of a Conduit to, and, for a
+    Resource, before any member it names in `runtime`, transitively. Among cycles the order is
+    the engine's (DL1). A member's retirement is dispatched only once the shutdown of every
+    member the order puts before it is confirmed. The request dispatches a retirement for each
+    member whose shutdown is not confirmed: a further retirement under LIF-026 if already
+    retired, and none where shutdown is confirmed. A retirement that does not confirm shutdown,
+    or a reason in place of dispatch, holds back only the members ordered after it; every other
+    retirement proceeds.
   observable: >-
-    If the shutdown of any Resource is not confirmed, no request to retire the Pool has been
-    dispatched, so its state is as it was under LIF-005. The outcome of the request is then
-    failed, and its result lists what remains, in diagnostics that name every Resource whose
-    shutdown is not confirmed, those whose retirement the request did not dispatch among them:
-    the effect of the operation is the Pool's retirement, which has not occurred, and a result
-    whose outcome is failed holds no outputs, under IFC-025. Where the shutdown of every
-    Resource is confirmed, the Pool's retirement is dispatched as an invocation of `retire.v1`
-    of its own, to which LIF-024 applies, and the outcome of the request is the outcome of that
-    retirement. Retirements that did succeed are not undone. A Resource that cannot be retired,
-    as where its machine is reported unreachable, keeps back only the Resources that the order
-    puts after it, which it may still be using: every other Resource is retired. A Resource that
-    an earlier request left retired with its shutdown pending or unknown is retired again by
-    this one, as a further invocation of `retire.v1` under LIF-026, so a request made again
-    after the cause was removed finishes what the first could not. What holds back a Resource is
-    a retirement that this request dispatched or would dispatch: one that ended before the
-    request was made, with its shutdown not confirmed, does not, since the request retires that
-    Resource again. A Resource whose shutdown is confirmed has been removed, under LIF-035, and
-    gets no invocation of `retire.v1`. Where a setup, retirement or change of a Resource has
-    been dispatched and has not ended, the retirement of it that the request would dispatch is
-    not dispatched and reports conflict, under REV-014: it has not ended, so it holds back the
-    Resources that the order puts after that Resource, and the Pool is not retired by the
-    request. The retirement of a runtime provider that an instance which exists still names,
-    inside the Pool or outside it, is not dispatched and reports conflict in the same way, under
-    PRV-020. The order extends the reverse of the one POOL-013 gives a Pool's setup, which comes
-    from the references among the entries alone, and it holds for every Resource the Pool owns,
-    whether or not an entry made it: an onward request of a Resource's retire hook through a
-    Conduit to another Resource of the Pool finds that Conduit open, because CON-008 closes it
-    only when its target is retired. Two Resources can each be the consumer of a Conduit to the
-    other, or refer to each other in their configuration, and no order then satisfies the rule:
-    the order among them, like the sequence in which Resources that neither relation joins are
-    retired, is DL1 of the implementation-defined list. A Resource that neither relation joins
-    to another holds back none. The retirement of each Resource is an invocation of `retire.v1`
-    of its own, with its own outcome, and one whose outcome is unknown is reconciled as that
-    invocation, under OPS-014. A cancellation of the request under OPS-027 is passed on to the
-    retirements in progress, and no further retirement is dispatched; each retirement in
-    progress still asks for its stop, under TPL-009. The operation is
-    `retire-with-resources.v1`, requested of the Pool, and the retirements it dispatches are
-    part of it: the actor's Conduit to the Pool need list only `retire-with-resources.v1`, and
-    need not list `retire.v1` as well.
+    If any member's shutdown is unconfirmed, the container's retirement is not dispatched and
+    its state is unchanged. The cascade outcome is failed, with diagnostics naming every
+    remaining member, including those whose retirement it did not dispatch, and no outputs
+    (IFC-025). Once every member's shutdown is confirmed, the request dispatches a distinct
+    `retire.v1` for the container under LIF-024 and takes that invocation's outcome. Successful
+    retirements are never undone. An unreachable member holds back only those it may still use.
+    A member left retired with shutdown pending or unknown by an earlier request is retired
+    again; the earlier incomplete retirement does not itself hold back its successors because
+    this request retries it. A member whose shutdown is confirmed has been removed (LIF-035) and
+    gets no retirement invocation. A setup, retirement or change still in progress makes the
+    member's retirement report conflict under REV-014 and holds back its successors and the
+    container. Retiring a runtime provider still named by an instance inside or outside the Pool
+    reports conflict under PRV-020. For a Pool this extends the reverse of POOL-013's setup
+    order from entries to all owned Resources. For a Fleet it orders all owned Agents by their
+    references and Conduits; the runtime dependency applies only to Resources. Retire hooks may
+    still reach successors because CON-008 closes a Conduit only when its target retires. The
+    order within cycles and between unrelated members is DL1; an unrelated member holds back
+    none. Each retirement has its own invocation and outcome, reconciled under OPS-014 if
+    unknown. Cancellation under OPS-027 passes to retirements in progress and dispatches no
+    further retirement; each retirement in progress still asks for its stop (TPL-009). The
+    operation is `retire-with-resources.v1`, requested of the Pool, or `retire-with-agents.v1`,
+    requested of the Fleet. The actor's Conduit need list only that cascade operation, not
+    `retire.v1`: the retirements it dispatches are parts of it. Here the container is the Pool
+    or Fleet, and its members are its owned Resources or Agents respectively.
   vectors: []
 
 - id: LIF-022
@@ -438,7 +434,7 @@
     The object is retired or unregistered.
   observable: >-
     The request reports refused under LIF-034, whoever makes it, and the object is as it was.
-    Closing a Conduit of `root` is refused under ACC-024.
+    Closing one of root's declared first-start Conduits or a default is refused under ACC-024.
   vectors: []
 
 - id: LIF-023
@@ -448,7 +444,7 @@
     No actor has asked for the retirement of an instance, and the instance is none of these: a
     Conduit whose consumer or target is retired or declared lost, under CON-008; a node declared
     lost, or an instance placed on one, under PLC-017 or PLC-024; a Resource that a Pool owns,
-    retired with the Pool under LIF-021.
+    retired with the Pool under LIF-021; an Agent retired with its Fleet under LIF-021.
   then: >-
     The instance is retired.
   observable: >-
@@ -569,15 +565,17 @@
     retired in the meantime stays retired, under LIF-006. After one that records an open as
     having occurred, a Conduit whose consumer was retired in the meantime stays registered,
     under CON-031, until CON-008 closes it. After one that records a retirement as having
-    occurred, the shutdown is confirmed, and the instance is removed under LIF-035. After
-    one that records that a setup did not occur, the state is as LIF-004 leaves it. After one
-    that records that a retirement did not occur, the shutdown is as LIF-024 gives it after a
+    occurred, the shutdown is confirmed, and the instance is removed under LIF-035. After one
+    that records that a setup did not occur, the state is as LIF-004 leaves it. After one that
+    records that a retirement did not occur, the shutdown is as LIF-024 gives it after a
     retirement that failed, and LIF-026 lets the instance be retired again. A Conduit's shutdown
     is confirmed already, under LIF-024. Once a reconciliation confirms the shutdown of an
     instance, the Conduits of which it is the consumer are closed, under CON-008, as they are
     when a retirement succeeds. Each of the four is a management verb, so the reconciliation is
     authorized against the target that authorized the request being reconciled, as ACC-033
-    states.
+    states. ACC-055 further limits reconciliation. Reconciliation of an open records its
+    original invocation provenance under ACC-044; confirming a close or retirement preserves its
+    tombstone under LIF-040.
   vectors: []
 
 - id: LIF-029
@@ -670,8 +668,8 @@
     of the actor lists the operation: refused means that the request is not permitted, whoever
     asks. LIF-022 is why. It reports refused even where the object's state, or what it owns or
     has placed on it, would make the request report conflict under LIF-017, LIF-020 or PLC-011,
-    as OPS-023 orders the reasons. A request to close one of the two Conduits of `root` reports
-    refused under ACC-012.
+    as OPS-023 orders the reasons. A request to close one of root's declared first-start Conduits or a default reports
+    refused under ACC-024; root may close its own other Conduits on its own behalf.
   vectors: []
 
 
@@ -687,7 +685,8 @@
   observable: >-
     No request is needed to remove it, and its removal is not a retirement, under LIF-023. The
     removal is recorded, under REC-001. Afterwards a request that names the instance reports
-    invalid under OPS-029, its name can be given to another object of its kind, under OBJ-002,
+    invalid under OPS-029, its name can be given to another object of its kind only once no tombstone holds it
+    (OBJ-002, LIF-041),
     and the objects that held its ID report it missing, under LIF-019. An instance whose
     shutdown is pending or unknown is not removed: it stays, retired, until its shutdown is
     confirmed or a request to unregister it removes it, under LIF-017.
@@ -742,7 +741,7 @@
   layer: convention
   level: must
   when: >-
-    A request for `set-up.v1`, `retire.v1`, `inspect.v1` or `unregister.v1` carries the input
+    A request for `set-up.v1`, `retire.v1`, `inspect.v1`, `unregister.v1`, `open.v1` or `close.v1` carries the input
     `expectedId`, and the object that its reference resolves to has another ID.
   then: >-
     The request is not dispatched, and reports conflict, with an error diagnostic that names the
@@ -753,14 +752,68 @@
     existence and access applies to it as to a request without it. It is compared only after the
     access decision, and after every check that gives invalid, as OPS-023 orders the reasons: a
     request that is not permitted reports refused and says nothing of the object or its ID, and
-    one whose reference resolves to nothing needs `management`'s authority alone, because it
-    has no owning Pool, under ACC-033. With that authority it reports invalid under OPS-029,
-    whatever ID it expected; a caller with only a Pool's authority reports refused, before any
-    diagnostic, and learns nothing of whether the object existed. Kubernetes answers a
-    precondition on an object that does not exist with Not
-    Found. So the ID it reveals is that of an object the request was permitted to act on. Where
-    the name was given to another object after the first was removed, under LIF-035 and OBJ-002,
-    a request that expects the first object's ID reaches neither, as Kubernetes's
-    `preconditions.uid` fails with 409 Conflict. Where the IDs agree, the request is decided as
-    one without `expectedId`.
+    one whose reference resolves to nothing needs `management`'s authority alone, because it has
+    no owning Pool or Fleet, under ACC-033. With that authority it reports invalid under
+    OPS-029, whatever ID it expected; a caller with only a Pool's or Fleet's authority reports
+    refused, before any diagnostic, and learns nothing of whether the object existed. Kubernetes
+    answers a precondition on an object that does not exist with Not Found. So the ID it reveals
+    is that of an object the request was permitted to act on. Where the name was given to
+    another object after the first was removed, under LIF-035 and OBJ-002, a request that
+    expects the first object's ID reaches neither, as Kubernetes's `preconditions.uid` fails
+    with 409 Conflict. Where the IDs agree, the request is decided as one without `expectedId`.
+    For `open.v1` and `close.v1` the reference is the input `conduit`. A missing Conduit is
+    checked through `access` under OPS-029, with the access decision made before the expected-ID
+    comparison.
+  vectors: []
+
+- id: LIF-040
+  layer: convention
+  level: must
+  when: >-
+    A Conduit is closed, by request or under CON-008, or another instance is retired.
+  then: >-
+    Unless the object was made by the engine, the engine makes a tombstone and keeps it as state
+    apart from records until lifted under ACC-053. It retains the object's kind, name and ID;
+    the time; the tombstone's own ID; the cause; `by`, who closed or retired it; its provenance;
+    and its owning Pool or Fleet by kind, name and ID at closing or retirement, where it had one. A Conduit's
+    tombstone also retains both ends by kind, name and ID, its local name, capability and
+    operations. Optional `within` is absent in this version and means the engine.
+  observable: >-
+    The cause is the invocation that closed or retired the object. For a Conduit closed because
+    an end was retired it names that end's tombstone; for loss it keeps the cause under PLC-024,
+    and a tombstone is made only once for an object's retirement. Matching uses names, so
+    replacing either end under a stable name does not escape it (LIF-041); visibility and bound
+    coverage use the kept IDs (ACC-053). A retired instance's tombstone is shown in full to
+    whoever may inspect through its kept owning Pool or Fleet, or through `management` where
+    that owner is retired or removed, or it had none. A Conduit's tombstone is shown in full to whoever may
+    inspect either end as it stood, or through `management`. This includes provenance and `by`.
+    Inventory and `list.v1` use this same visibility and give no hidden counts (LIF-013,
+    OPS-036). A tombstone is not a record and no purge removes it. Engine-made nodes, defaults
+    and first-start objects, including first-start Conduits, get none. Removal or unregistering
+    does not lift one.
+  vectors: []
+
+- id: LIF-041
+  layer: convention
+  level: must
+  when: >-
+    A request would instantiate an instance, including a nested instantiation during
+    registration or under LIF-009, or open a Conduit by `open.v1` or a setup part under ACC-005,
+    and a tombstone matches it.
+  then: >-
+    After the access decision and every check giving invalid (OPS-023), the request is not
+    dispatched and reports conflict; nothing changes. A Conduit matches where the tombstone has
+    the same consumer and either the same local name or the same target and capability. Another
+    instance matches the kind and name the tombstone holds. Names are compared engine-wide, as
+    `within` absent means the engine.
+  observable: >-
+    An error diagnostic names LIF-041. To a caller permitted to see the tombstone under LIF-040
+    it also names the tombstone's ID, what it holds and its cause, and says `lift.v1` removes
+    it. Other callers learn no tombstone detail. A caller lacking access reports refused first
+    and learns nothing. Giving a Conduit another name or local name does not escape its
+    consumer-target-capability match. Opening an already open Conduit succeeds under ACC-006 and
+    is not blocked. Making or opening engine-made first-start and default Conduits is exempt.
+    `register-replacement.v1` lifts nothing and reports this conflict when matched (LIF-009).
+    Every client is subject to this check. ACC-056 states the disclosure tiers for the
+    diagnostic.
   vectors: []

@@ -1,0 +1,160 @@
+# The repository's checks, as AGENTS.md lists them, on every pull request and every push to main.
+# Every job runs on `ubuntu-latest`, a standard GitHub-hosted runner, which is free for a public
+# repository. Nothing here uses a larger runner, a paid service or a secret.
+
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to a pull request cancels the run still going for it. Each push to main runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # full history: a check may read older commits
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      # The versions AGENTS.md names. The format extras give jsonschema a checker for each
+      # format the schema profile names; check_schemas.py's second line says whether it has them.
+      - name: Install PyYAML and jsonschema
+        run: python3 -m pip install "pyyaml==6.0.1" "jsonschema[format-nongpl]==4.20.0"
+      # Each check runs even if one before it failed, so that one run reports every failure.
+      - name: python3 tools/check_docs.py
+        run: python3 tools/check_docs.py
+      - name: python3 tools/set_names.py --check
+        if: ${{ !cancelled() }}
+        run: python3 tools/set_names.py --check
+      - name: python3 tools/check_schemas.py
+        if: ${{ !cancelled() }}
+        run: python3 tools/check_schemas.py
+      - name: python3 tools/check_roadmap.py
+        if: ${{ !cancelled() }}
+        run: python3 tools/check_roadmap.py
+      - name: python3 -m unittest discover -s tools/tests
+        if: ${{ !cancelled() && hashFiles('tools/tests/**/*.py') != '' }}
+        run: python3 -m unittest discover -s tools/tests
+      # On a pull request the checkout is a merge commit whose first parent is the base branch.
+      - name: git diff --check (whitespace errors the pull request adds)
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        run: git diff --check HEAD^1 HEAD
+
+  # Every directory with a Cargo.toml: the workspace in reference-model/, each package and each
+  # experiment. A directory listed in macos_only is a probe of macOS itself that cannot compile on
+  # Linux; it is only checked for formatting here.
+  rust-dirs:
+    name: rust directories
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.find.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - id: find
+        run: |
+          macos_only=" experiments/005-macos-keychain "
+          entries=()
+          for manifest in reference-model/Cargo.toml packages/*/Cargo.toml experiments/*/Cargo.toml; do
+            [ -f "$manifest" ] || continue
+            dir=${manifest%/Cargo.toml}
+            build=true
+            case "$macos_only" in *" $dir "*) build=false ;; esac
+            entries+=("$(jq -cn --arg dir "$dir" --argjson build "$build" '{dir: $dir, build: $build}')")
+          done
+          matrix=$(printf '%s\n' "${entries[@]}" | jq -cs .)
+          echo "$matrix" | jq .
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  rust-dir:
+    name: rust (${{ matrix.dir }})
+    needs: rust-dirs
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.rust-dirs.outputs.matrix) }}
+    # From inside each directory, so that its rust-toolchain.toml applies and its tests find the
+    # repository's paths, such as ../spec, where they expect them.
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the toolchain that rust-toolchain.toml pins
+        run: |
+          rustup toolchain install --no-self-update --profile minimal
+          rustup component add rustfmt clippy
+          rustup show active-toolchain
+          cargo --version
+      - name: Restore the cargo cache
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ${{ matrix.dir }}/target/
+          key: cargo-${{ runner.os }}-${{ matrix.dir }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.dir), format('{0}/rust-toolchain.toml', matrix.dir)) }}
+          restore-keys: cargo-${{ runner.os }}-${{ matrix.dir }}-
+      # Each step runs even if one before it failed, so that one run reports every failure.
+      - name: cargo fmt --check
+        run: cargo fmt --check
+      - name: cargo clippy --all-targets -- -D warnings
+        if: ${{ !cancelled() && matrix.build }}
+        run: cargo clippy --all-targets -- -D warnings
+      - name: cargo test --release
+        if: ${{ !cancelled() && matrix.build }}
+        run: cargo test --release
+      # Saved even when a check failed, so that the next run need not rebuild the dependencies.
+      - name: Save the cargo cache
+        if: ${{ !cancelled() && matrix.build && steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ${{ matrix.dir }}/target/
+          key: ${{ steps.cache.outputs.cache-primary-key }}
+
+  # One result for every Rust directory, under one name that does not change as directories are
+  # added.
+  rust:
+    name: rust
+    needs: [rust-dirs, rust-dir]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every Rust directory passed
+        env:
+          DIRS: ${{ needs.rust-dirs.result }}
+          CHECKS: ${{ needs.rust-dir.result }}
+        run: |
+          echo "rust directories: $DIRS; rust checks: $CHECKS"
+          test "$DIRS" = success && test "$CHECKS" = success

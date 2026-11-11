@@ -1,0 +1,60 @@
+# The reference model's tests that fetch the pinned @modelcontextprotocol/server-filesystem from
+# npm, once a day and on request. They need the network, so they stay out of the checks on each
+# pull request. The job runs on `ubuntu-latest`, a standard GitHub-hosted runner, which is free
+# for a public repository; it uses no larger runner, paid service or secret.
+
+name: nightly
+
+on:
+  schedule:
+    - cron: "17 6 * * *" # once a day, at 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  npm:
+    name: reference-model with npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: reference-model
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Install the toolchain that rust-toolchain.toml pins
+        run: |
+          rustup toolchain install --no-self-update --profile minimal
+          rustup show active-toolchain
+          cargo --version
+          node --version
+          npm --version
+      # The cache the checks workflow saves for reference-model/ on main; this job only reads it.
+      - name: Restore the cargo cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            reference-model/target/
+          key: cargo-${{ runner.os }}-reference-model-${{ hashFiles('reference-model/Cargo.lock', 'reference-model/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-reference-model-
+      - name: CONDUIT_TEST_NPM=1 cargo test --release
+        env:
+          CONDUIT_TEST_NPM: "1"
+        run: cargo test --release

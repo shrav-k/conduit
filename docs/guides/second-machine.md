@@ -12,15 +12,17 @@ machine the owner controls: managed, enrolled as a node, or peer, running its ow
 Another party's machine is only ever a peer. Network membership grants no access; root reaches
 remote Agents through Conduits. How a person checks a joining machine is
 [ruling 56](../proposals/ruling-56/README.md)'s, amended by ruling 68 (point 9). Enrollment is in
-`spec/` ([enrollment.yaml](../../spec/promises/enrollment.yaml), order 038b); its core is being built
-on the side branch `s3/m2` (order 049a1, in progress), not yet on `main`. Until the computer is a node, this
-manual setup serves A74 and S3's preparation, and work-order workers run on it over SSH, as on
-the Mac ([ruling 76](../proposals/ruling-76/README.md), point 6).
+`spec/` ([enrollment.yaml](../../spec/promises/enrollment.yaml), order 038b); its core, order
+049a1, for the side branch `s3/m2`, is checkpointed unmerged after five rounds on 2026-11-12,
+not yet on `main`. Until the computer is a node, this manual setup serves A74 and
+S3's preparation, and work-order workers run on it over SSH, as on the Mac
+([ruling 76](../proposals/ruling-76/README.md), point 6).
 
 The first setup below ran on 2026-11-11, and workers have run there since. Ruling 77's setup is
-the owner's. On 2026-11-12 its steps 1 to 5 were done, but for three parts that wait until the
-orders running there finish: bubblewrap if it is missing (step 3), the restart that applies the
-lockdown (step 4), and taking the coordinator's key out of the owner's account (step 2). Tell the
+the owner's. On 2026-11-12 its steps 1 to 5 were done, but for three parts, which can
+run now (at the handover of 2026-11-12, orders 071 and 080 are checkpointed and the computer is
+idle): bubblewrap if it is missing (step 3), the restart that applies the lockdown
+(step 4), and taking the coordinator's key out of the owner's account (step 2). Tell the
 coordinator where a step differs.
 
 ## How the computer joins
@@ -30,9 +32,9 @@ coordinator where a step differs.
 the owner may revisit any point.
 
 - **An SSH provider:** a machine provider, SSH-M, not yet built, and a runtime provider, SSH-R
-  ([its README](../../packages/provider-ssh-runtime/README.md); orders 137, 140, 145 to 147, 149
-  and 150). Tailscale stays the network and a candidate machine provider for later, but is not a
-  Resource for this computer: Windows stays online in Tailscale while Ubuntu is stopped, and an
+  ([its README](../../packages/provider-ssh-runtime/README.md); merged by orders 137, 140, 145,
+  146, 149 and 150; its key sweep, order 147, is written and not dispatched). Tailscale stays
+  the network and a candidate machine provider for later, but is not a Resource for this computer: Windows stays online in Tailscale while Ubuntu is stopped, and an
   SSH probe reaches Ubuntu itself. This departs from ruling 50's words.
 - **One run user, `conduit-run`, with no sudo,** for Conduit's runs, the work-order workers and
   the coordinator's key, in place of the owner's own user, which has sudo. Until each Agent has a

@@ -3,8 +3,9 @@
 For A5 and for Agents that each have a home of their own ([ruling 49](../proposals/ruling-49/README.md)).
 Nothing here is done in a terminal the coordinator runs: you do each step yourself.
 
-State on 2026-11-10: ruling 49's separate homes, sign-in prompts and account checks are
-pending specification and implementation work. The first build's
+State on 2026-11-12: ruling 49's sign-in is in `spec/` (orders 038a and 038c), but neither it
+nor each Agent's separate home is built: their orders, 050, 048a, 048b and 051b, are not yet
+written. The first build's
 [closeout](../proposals/first-build/increment-3/closeout-results-2026-11-10.md) used shared
 logins. The engine behavior described below is the ruled flow to come, not a flow available
 in the current shell.

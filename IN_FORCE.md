@@ -242,8 +242,7 @@ How to read a line:
   - Implementation items: MAN-009, MAN-010, MAN-017, IFC-041 to IFC-044, SEC-024 (37 C51, 41 items 25a to 25d and P15, 42 N6 and N7, 43 D5).
 - Identity, isolation, record storage and the engine's state may become swappable providers, under topic 1's rule of swappability; v0's provider contracts are runtime, machines, package source and secrets (40 point 2). In v1, fetching a package by digest is a feature that a runtime provider declares (43 D20).
 - Every runtime provider that Conduit ships carries out a stop it still owes on a machine before it starts any run there, as the kubelet does, and its contract says so, as PRV-021 allows (42 D11 and its later answer; experiment 012, MC4-002).
-- *Spec pending, order 081*: a run whose stop did not succeed may run beside a later instance, a stated limit (42 D11 and its later answer; experiment 012, MC4-002).
-- *Spec pending, batch 1*: a tool's description names its target and the target Type's description (53 point 3).
+- **In spec/**: a run whose stop did not succeed may run beside a later instance, a stated limit: LIF-009, LIF-036, PRV-021 (42 D11 and its later answer; experiment 012, MC4-002).
 - *Open*: binding one occurrence of a repeated argument waits for a real package that needs it (44, open point 2).
 - *Open*: the error rule for a call to an unknown tool is revisited when MCP settles SEP-2145 (38 point 11; 41 item 6b settled the other half).
 

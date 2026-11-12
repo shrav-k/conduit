@@ -86,7 +86,8 @@ and [the lessons](WORK_ORDERS.md#what-this-round-taught). As practised on 2026-1
    push to `main`: the docs job (the six Python checks, the tools' unit tests, `git diff --check`);
    fmt, clippy and tests per Rust directory; the engine's tests as a nextest archive in four
    partitions; doctests. A nightly job runs the engine with npm. Order 068 built it (#198); since
-   070 (#240) an engine shard takes 1 to 8 minutes, from 12 to 38.
+   070 (#240) an engine shard takes 1 to 8 minutes, from 12 to 38. When the `rust` job fails, the
+   engine shards are skipped ([the queue](#the-queue) gives the failure open since #260).
 9. **Small findings (71 point 4).** Instead of another round, a coordinator may fix a small last
    finding and log it in the Record: the last race of 122 and 124 (#207), 128's mips byte order,
    136's redaction of a library-built error, 137 and 140's macOS fixes (#241), 141's extension
@@ -110,8 +111,10 @@ its worktree, its logs and the machines.
 - **Each merge** needs CI green and a clean fresh verifier; for an order built on Windows, the
   changed crates' tests, fmt and clippy run on the Mac (item 7 above); and the guarded squash
   ([the squash guard](#standing-rules-learned-this-session)).
-- **Its queue** is row 14 of [the queue](#the-queue). Tell it when 071 merges (SV1 unblocked) and
-  when the checkpoint ends.
+- **Its queue** is row 14 of [the queue](#the-queue): Lane SP checkpointed in #262, and
+  [PROVIDERS.md's status](PROVIDERS.md#status) lists its queue in order. Tell it when 071 merges
+  (SV1 unblocked) and when the checkpoint ends. If no admin order has taken it, its first order is
+  the CI fix at the head of [the queue](#the-queue): the SSH-R test is in its paths.
 
 ## Dogfooding: Conduit runs its own orders (A78)
 
@@ -132,7 +135,8 @@ What worked (log):
   deadline names itself; a background job does not hold the turn.
 - 042 is the first order run by Conduit itself: four rounds, every completed turn a valid report,
   no guard tripped except once, in the outage's failed turn, when GitHub's refs could not be read.
-  Its first worker turn took 11966 s, inside the deadline; round 4 was clean.
+  Its first worker turn took 11966 s, inside the deadline; round 4 was clean. It merged on
+  2026-11-12 (#264), after a fix round on the plain runner for its rebase.
 
 What failed or cost (log):
 
@@ -146,10 +150,11 @@ What failed or cost (log):
   harness lists and stops what a turn leaves behind.
 
 None is yet a finding in [increment 4's log](../proposals/first-build/log-increment-4.md); ruling
-70 asks that each be. Next: rebuild the dogfood engine on `main` (070 is in), then run 046 and 047
-through it; orders 4 and 5 need appointment (batch 2). The plan's follow-ups: a fresh conversation
-without a restart (`newConversation` on `turn.v1`, on 050a's branch), and cancelling the provider
-call when a dispatch deadline fires, a fault fix before the rerun. After 050, the store is
+70 asks that each be. Next: re-pin the dogfood engine to `main` (it is still pinned at `38c0b4f`,
+before 070), then run 046 and 047 through it; orders 4 and 5 need appointment (batch 2). The
+plan's follow-ups: a fresh conversation without a restart (`newConversation` on `turn.v1`, on
+050a's branch), and cancelling the provider call when a dispatch deadline fires, a fault fix
+before the rerun. After 050, the store is
 initialized again and the owner signs each slot Agent in once.
 
 ## The second machine
@@ -174,8 +179,8 @@ point 3; 76 point 6; 77).
   Part 1 is done: `conduit-run` has its tools, the owner signed its Codex in with the primary
   account, and the coordinator reaches it over SSH. Part 2, bubblewrap if it is missing, the
   distro's restart that applies the lockdown, and taking the coordinator's key out of the owner's
-  account, waits until 080 and 071 finish; orders then run as `conduit-run` only. Ask the owner
-  before part 2 (log).
+  account, can run now: 071 and 080 are checkpointed and the computer is idle; orders then run as
+  `conduit-run` only. Ask the owner before part 2 (log).
 - **Capacity**: WSL keeps its default 15 GB (M2-7). Five orders reached 12 GB; before 070, shell
   test binaries took 5 to 8 GB each and ran it out of memory once (log).
 - [The second-machine guide](../guides/second-machine.md) gives ruling 77's setup and S3-OF's
@@ -186,32 +191,41 @@ point 3; 76 point 6; 77).
 ## The queue
 
 The order is the roadmap's step 3: batch 1, then the S1 rerun, then the bar; the lanes of steps 4 to
-6 run beside it. State at the handover, `main` at `7e963b1a`; the tracker's
-[at the handover](../AUDIT.md#at-the-handover-of-2026-11-12) gives it in short. Once the running
-items finish, the work stops for the checkpoint.
+6 run beside it. State at the end of the outgoing session, `main` at `57813f06`; the tracker's
+[at the handover](../AUDIT.md#at-the-handover-of-2026-11-12) gives it in short. The work has
+stopped for the checkpoint; nothing runs, and the Windows computer is idle.
+
+**The first fix is `main`'s CI.** Since #260 it is red at times: `packages/provider-ssh-runtime`'s
+test `persistent_part_owner_lock_and_short_socket_fallback_without_network` fails on CI's Linux
+runner when the second backend is built right after the first is dropped, because the drainer
+the first started takes the owner lock first: a race in the drainer's handoff (146, 149 and 150),
+or a test that does not wait for the drainer to yield. It fails the `rust` job, so the engine shards
+are skipped; it passes on the Mac, and passed on 042's run. Fix the race or the test, and show it
+stable over three CI runs. Until then, run the engine's suite locally before merging an engine
+change, as for 077.
 
 | # | Item | State | Next step |
 | --- | --- | --- | --- |
-| 1 | 042 (E4): tombstones, lift, inventory, provenance | Four rounds through Conduit, round 4 clean. The admin rebased it onto `main` with 070 and 081, resolving conflicts in the core's `access.rs` and `lib.rs`; one vector then fails, `e4-tombstone-register-replacement` step 6 (LIF-041 in register-replacement). A fix round runs (`ROUNDS=2`) | Once clean: guarded squash, every check and the engine's tests, pull request, merge, Record with A78's measures |
-| 2 | 077: fenced reconciliation, and the catalogue's fixes (75 A1) | Continued on the Mac from its Windows checkpoint. Round 2's one must: an existing Fleet vector outside the order's scope expects a reconciliation to succeed without the fence's evidence (443 of 444 vectors pass). Round 3, the last, runs | Review; recount `spec/README.md`'s totals (519 promises and 443 vectors since 081); merge |
-| 3 | 049a1: enrollment in the core, on the side branch `s3/m2` | Round 5 runs. Every round finds new musts: request attribution, keyed repeats, stale reports, overlapping admissions; in round 4, setup refused for a mere external implementation, and provider outputs through the generic tool path. Its rounds run from `main`'s `c8e9aa20`, not from `s3/m2`: rebasing onto `s3/m2` conflicts in `conformance/manifest.yaml` and the shell's `server.rs`, left for the merge | Read round 5's findings before any finishing order (rules below); merge into `s3/m2`; then SSH-M |
-| 4 | 080 (DSP): the shell's runtime-provider calls | Runs on Windows, stacked on 079's branch, with the gate's session rules as `EXTRA` | At merge, rebase onto `s3/m2` (079 drops out); Mac tests |
-| 5 | 071 (S0a): the conformance manifest in pieces | Runs on Windows | Once merged, tell the lane that SV1 is unblocked. Once 080 and 071 finish, part 2 of ruling 77's setup ([the second machine](#the-second-machine)) |
-| 6 | Lane: 144 (S4-SRV2, S4's hook server) | The lane coordinator's. Queued, not started: its dispatch waits for the Mac's load to fall under 8, so it may start after the checkpoint | Merged in the lane |
-| 7 | The admin's next spec order | Not written. PRV-021's owed stop in three cases, matching kit order 141; PRV-015 names a machine by ID where `place.v1` gives a hostname; "labels last reported" (PRV-027, LIF-036, `stop.v1`); one live node per machine (049a1); what an engine owes when it cannot store its state, and races across addresses ([082](../AUDIT.md#known-to-be-open)); 081's Record's leftovers | Write after 077 merges |
+| 1 | 042 (E4): tombstones, lift, inventory, provenance | Merged (#264, `57813f06`): the first order whose four rounds ran entirely through Conduit's own Agents (the fix round after its rebase ran on the plain runner), round 4 clean. Rebased onto `main` with 070, 081 and 077; a Codex round fixed the one vector the rebase broke (`e4-tombstone-register-replacement`, LIF-041), and the admin made Fleet reconciliation match a sender by ID only. 494 vectors pass on the normal and differential builds; the differential vector run takes about 2.4 hours on the Mac | Two vector coverage gaps, kept for later in [its Record](../work-orders/042-build-tombstones-and-inventory.md#record): the inventory-reading vector holds no Fleet holder; node-requests' readmission injects the expected node |
+| 2 | 077: fenced reconciliation, and the catalogue's fixes (75 A1) | Merged (#263, `575a1bcd`) on local evidence: the engine's suite and 446 vectors passed on the Mac, and CI's engine shards were skipped (the CI fix above). An admin-side fix fenced 041b's vector `fleets/e3b/reconcile-control` before its reconcile ([its Record](../work-orders/077-spec-reconcile-fenced.md#record)) | The lane's MC2 rerun and MC4's re-registration, now unblocked |
+| 3 | 049a1: enrollment in the core, on the side branch `s3/m2` | Checkpointed after five rounds, not merged; `wo/049a1-build-enrollment-core` pushed (`cdf146d5`). Left: one must, `conformance/manifest.yaml`'s PRV-014 coverage lists only the old cases and misses the new enrollment cases; one should, `enrollment/admit-accept-failed` does not assert the failing step's diagnostic. Its rounds ran from `main`'s `c8e9aa20`, not from `s3/m2`: rebasing onto `s3/m2` conflicts in `conformance/manifest.yaml` and the shell's `server.rs` | Fix both (71 point 4) with a fresh verifier; rebase and merge into `s3/m2`; its one live node per machine needs ENR text (row 7); then SSH-M |
+| 4 | 080 (DSP): the shell's runtime-provider calls | Checkpointed after two rounds on Windows, not merged; `wo/080-shell-runtime-provider-calls` pushed (`80841bc7`), stacked on 079's branch. Three musts in the shell's `http_bridge.rs`: an empty SSE priming event ends the bridge before initialization; EOF after the initialization line, while its response is pending, can hang the bridge; mandatory baseline HTTP headers are omitted | Round 3 from round 2's verifier report, with the same `EXTRA` (the gate's session rules), on the Mac or on Windows as `conduit-run`; Mac tests; rebase onto `s3/m2` (079 drops out); merge into `s3/m2` |
+| 5 | 071 (S0a): the conformance manifest in pieces | Checkpointed after two rounds on Windows, not merged; `wo/071-conformance-manifest-pieces` pushed (`0edadab5`). One must: in `engine/crates/conformance/src/pieces.rs` (line 578 on its branch), removing every inline expectation property bypasses removal detection, so a merge can silently keep retired expectations | Round 3 from round 2's verifier report; Mac tests; merge into `main`; then tell the lane that SV1 is unblocked |
+| 6 | Lane: 144 (S4-SRV2, S4's hook server) | Stopped unmerged at Lane SP's checkpoint (#262); `wo/144-s4-srv2-hook` pushed, with two musts named in its Record | A finishing order stacked on it, in the lane |
+| 7 | The admin's next spec order | Not written. PRV-021's owed stop in three cases, matching kit order 141; PRV-015 names a machine by ID where `place.v1` gives a hostname; "labels last reported" (PRV-027, LIF-036, `stop.v1`); one live node per machine (049a1); what an engine owes when it cannot store its state, and races across addresses ([082](../AUDIT.md#known-to-be-open)); 081's Record's leftovers | Write next (077 is in) |
 | 8 | The admin's small engine order | Not written. The first-start report maps Rust's architecture to Go's `GOARCH` wrongly (`loongarch64`, little-endian `mips` and `mips64`, `armbe`, `arm64be`, `riscv32`, `wasm`); mirror order 128's mapping (PRV-014) (log) | A small order, or a fix under 71 point 4 |
-| 9 | Batch 1's rest, on the rerun path | Not written: 046, 047, 048a, 048b, 050, 053; joining them, 043a, 043b, 052a, 052b, 051a, 051b ([the plan](../proposals/spec-batch-1/README.md#the-work-orders)) | 046 after 042, through Conduit |
+| 9 | Batch 1's rest, on the rerun path | Not written: 046, 047, 048a, 048b, 050, 053; joining them, 043a, 043b, 052a, 052b, 051a, 051b ([the plan](../proposals/spec-batch-1/README.md#the-work-orders)) | 046 next, through Conduit, once the dogfood engine is re-pinned to `main` |
 | 10 | The sign-in chain | Not written: 050 (each Agent's own home, the hooks, the account check; merges with 050a, 076 and 078 as one 0.2.0), 048a, 048b, 051b; then A81 (a carried Codex login) and [A82](../../ROADMAP.md#experiments-and-probes) (Linear's OAuth through the Interface) | The second accounts wait for this: each Agent signed in through the Interface, as the test of its own subscription and of the model ([72's later answers](../proposals/ruling-72/README.md#later-answers)) |
 | 11 | Off the rerun path | 049b, 051c, SSH-M; `s3/m2` merges after the rerun's pin | After 049a1 |
 | 12 | The S1 rerun and the bar | 053, a pinned tag, the rerun with the owner present, the owner's judgment (71 points 2 and 3) | After batch 1 |
 | 13 | Batch 2 | Not begun. On its own branch, merged after the bar (71 point 2). Holds appointment (A78's orders 4 and 5), MC9 ([G5](../../experiments/012-model-checking/G5.md#what-g5-still-needs)), and apply calling the control a Type offers for a changed control value (OPS-020; from 069b's reference, for S4's T1) | After the rerun's pin |
-| 14 | The lane's queue | Merged: S2 to S10's plans (117 to 121, 133, 134); A63's kit, contract harness and local providers ([PROVIDERS.md](PROVIDERS.md)); S2's stub, Conduit-aware implementation and adapter; S4-SRV1; SCR1; SSH-R's drainer (146, 149 and 150, #260). Open: SSH-R's key sweep (147), S4-SRV2 (144) | The lane coordinator; S2-PL after the owner's choice, S3-H after S3-OF |
+| 14 | The lane's queue | Merged: S2 to S10's plans (117 to 121, 133, 134); A63's kit, contract harness and local providers ([PROVIDERS.md](PROVIDERS.md)); S2's stub, Conduit-aware implementation and adapter; S4-SRV1; SCR1; SSH-R's drainer (146, 149 and 150, #260). Open: SSH-R's key sweep (147), S4-SRV2 (144). Checkpointed in #262; the queue in order is in [PROVIDERS.md's status](PROVIDERS.md#status) | A restarted lane coordinator; S2-PL after the owner's choice, S3-H after S3-OF |
 | 15 | Records owed | Orders 037 to 045, 049a1, 050a and 067 onward into the record (A80); review-list items 30 onward (below); A78's findings in increment 4's log | A docs pass |
 
 ## The owner's open items
 
 - **Ruling 77's setup** ([what follows](../proposals/ruling-77/README.md#what-follows)). Part 1 is
-  done: `conduit-run`, its tools, and its Codex signed in by the owner. Part 2, after 080 and 071:
+  done: `conduit-run`, its tools, and its Codex signed in by the owner. Part 2, which can run now:
   bubblewrap if missing, the restart that applies the lockdown, and the coordinator's key taken out
   of the owner's account. Before the end-to-end run: the Mac renamed in the tailnet, then HTTPS
   certificates turned on.
@@ -245,6 +259,10 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
   narrowed for removal (MC6-002).
 - Order 082: concurrent first installs of one address and version decided one at a time.
 - Order 070: lazy publication is right; the differential reference was fixed, not the lazy path.
+- Order 077: 041b's vector `fleets/e3b/reconcile-control` keeps its purpose, with the fence
+  established before its reconcile; 077 merged on local evidence while CI's engine shards were
+  skipped.
+- Order 042: Fleet reconciliation matches a sender by ID only, not through a reused name.
 - 049a1: one live node per machine; acceptances decided one at a time; a second refused with a
   conflict naming the node (log).
 - Order 145: SSH-R's drainer keeps its state in an operator-set `durableDir` outside

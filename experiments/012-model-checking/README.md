@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b), 111 and 114 (MC6), and 112 (MC7a), ruling 71's proof lane.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b), 111 and 114 (MC6), 112 (MC7a), and 113 and 115 (MC7b), ruling 71's proof lane.
 The expected verdicts below were registered before execution; later orders extend this harness.
 
 ## Question and scope
@@ -5605,3 +5605,1047 @@ Final first-refutation lengths (single-thread BFS):
 | CurrentTemplateHook | K | 84 |
 | UnknownAtDispatch | D | 82 |
 | KeepLatestUnknown | D | 227 |
+
+## MC7b — records, observation and installing packages: pre-registration
+
+Registered 2026-11-11 before the first run. Work order 113 extends only this experiment;
+`records.rs` contains three separate protocols using the existing harness, never engine code.
+All safety and protocol reachability predicates read only the external emission ledger.
+Snapshots are logged when a record, read result, observation, fetch, decision or use is emitted;
+transport delivery is distinct. No predicate infers history from a node's current storage.
+
+### MC7b nodes, scripts and bounds
+
+Each part has three nodes: engine E, second source/runtime/fetch service S, and actor/reader A.
+E's records, invocation index, declarations, observation cache, provider registry, pending
+installs and installed packages are saved state. S keeps its records at their source in saved
+state too. Crash/recovery pauses E and erases no saved state. The network and ledger survive.
+
+**Records.** E and S independently emit batches covering all fourteen event categories in
+REC-001 (provider call start/end, object register/unregister/remove and enrollment open/close/
+expire are separate categories). Batch emission is atomic within each source, with no order
+between sources. A makes one plain keyed effect request, then sends a non-root and a root
+purge together, then a second root purge, repeats the original key, and reads both sources.
+The first purge uses `before=3`, exercising equality and later records; the second uses
+`before=30`, exercising preservation of earlier purge records. Root purge broadcasts to the
+two sources; it is not a distributed atomic deletion. Purge records themselves never expire.
+An explicit storage-check step exercises alteration separately from purging. Unknown starts
+with an effect whose reply is unknown; that plain repeat must not dispatch. Other parts start
+with a known succeeded invocation, with no expiring output. Purging does not change either.
+Each source sends two frames with the expected surviving record IDs and disjoint records.
+The reader assembles and orders each source separately; it imposes no order across sources.
+Unreadable nondeterministically withholds one record from S's frames, without deleting it.
+Read loss can withhold a frame. At transport quiescence the reader completes the read, reporting
+exact missing IDs. An intentionally purged record is absent from the expected IDs and is no gap.
+This is a bounded completion step, not a claim about eventual delivery or failure detection.
+
+**Observation.** E observes one remote instance successfully, another remote instance has never
+been observed, and a local instance has a previous successful observation. The runtime changes
+its actual run state; E receives drift, A inspects, then the remote machine may be reported
+unreachable. Both remote instances then report unknown, retaining respectively a last-success
+time and no time; the local condition stays as before. The runtime may restart its own run,
+or the machine returns; a later observation may remove drift without any engine repair call.
+A final inspection closes the script. Declarations carry independent definition, configuration
+and revision values; effect, access and lifecycle snapshots are separate from observed conditions.
+Observing may update conditions; it changes no declared value, lifecycle state or Conduit.
+Crash is enabled after drift and before the unreachable report, so saved last-success time is
+used after recovery. No setup, control, open or retirement is requested by this script.
+
+**Installs.** A submits two system-owned claimants of one fixed scheme, and a non-system Resource
+claiming a different scheme. Scheme lists do not change. Two requests for one address/version
+then race, with different digests (or the same digest in Same). Decide and fetch completion are
+separate transitions: each first request can see no installed package and start fetching. A
+completion uses its previously made decision, with no invented commit-time arbitration. Both
+first installs may succeed with different digests; the last completion then occupies the slot.
+After quiescence A reads that slot to construct same-digest authorized, refused and invalid
+requests, plus a different-digest request. A separate address exercises a fetch that may fail
+or return bytes with a different digest. Fetch service actions choose good/bad/failed results;
+bad and failed choices each have a one-use local budget in their own configurations. Package
+bytes and digests are finite symbols, not a cryptographic implementation. Provider mode claims
+`https`, testing that it overrides built-in fetching; Https and File have only an unrelated
+provider, so E fetches itself, represented by S's archive-service abstraction. All fetch messages
+carry the request's address, version, digest and fetch scheme. A check event must precede use.
+An install is judged against the installed slot at decision time; failed-fetch noninterference
+compares immediately before/after that failure, not against a request-start snapshot that another
+install may legitimately change. A timer in FetchLoss can end a stranded fetch unavailable only
+at transport quiescence, with no archive work remaining at S. No eventual response is asserted.
+
+The maximum is 190,000 unique states and 9 seconds per full/refutation run, with two checker
+threads for full runs and one for first refutations. Queues hold at most 16 messages, including
+the initial competing requests and both record frames. There are two sources, fourteen initial
+record events, one keyed effect, three purge requests, one repeat and one read per source;
+observation has two remote instances and one local instance; installs have two addresses,
+one version, four digest symbols (three requested and one mismatched), three provider
+registrations and seven requests.
+Scripts and local choice budgets are finite; no retries, wire copies or unbounded clocks occur.
+
+### MC7b catalogue accounting (20 promises)
+
+Each target promise occurs once in this accounting. “Modelled” denotes the stated bounded
+projection and property, not every static field or all possible invocations of the promise.
+Supporting promises are excluded from these counts.
+
+| Promise | Account | Property / reason |
+| --- | --- | --- |
+| REC-001 | modelled | R1: every listed event category emits a corresponding retained record at creation. |
+| REC-002 | not modelled | A static decision, to be shown by vectors: fields and exclusion of credentials. |
+| REC-003 | modelled | R3: every existing record is unchanged except during purge. |
+| REC-004 | modelled | R4: root-only strict-before purge, permanent purge evidence, saved keyed outcome/effect unaffected. |
+| REC-005 | modelled | R5: per-source read order, with no inter-source order requirement. |
+| REC-006 | modelled | R6: a completed incomplete read identifies the exact gap. |
+| OBS-001 | modelled | O1: definition, configuration and revision unchanged by observations. |
+| OBS-002 | not modelled | A static decision, to be shown by vectors: observation fields. |
+| OBS-003 | modelled | O3: all remote conditions unknown with last-success time or none; other node unchanged. |
+| OBS-004 | modelled | O4: drift dispatches no setup, control, open or retirement. |
+| OBS-006 | modelled | O6: inspection/observation changes no effect, access or lifecycle state. |
+| PKG-023 | not modelled | A static decision, to be shown by vectors: invalid request/archive forms. Invalid-before-repeat is supporting input to I27. |
+| PKG-024 | modelled | I24: failed fetch returns unavailable, dispatches no install, changes no installed package. |
+| PKG-025 | modelled | I25: valid authorized different-digest installed decision conflicts with no fetch/change. |
+| PKG-027 | modelled | I27: same-digest decision observes refusal/invalid priority, otherwise succeeds with no fetch/change. |
+| PKG-029 | not modelled | A static decision, to be shown by vectors: submitted-project address collision. |
+| PRV-013 | modelled | I13: package-source uniqueness by scheme and system ownership; machine-provider half outside this model. |
+| PRV-017 | modelled | I17: selected source and fetch arguments, digest checked before archive use on provider/https/file paths. |
+| NAM-023 | not modelled | A static decision, to be shown by vectors: target contract version. |
+| NAM-026 | not modelled | A static decision, to be shown by vectors: operation absent from target capability. |
+
+Totals: **14 modelled; 6 not modelled, all static decisions to be shown by vectors**.
+Supporting: PKG-026 (digest), PRV-010 (runtime restart), PRV-016 (fixed schemes), PLC-023
+(unreachable node), ACC-032/ACC-033 (root and install authority), OPS-008/OPS-012 (saved
+index and plain unknown repeat), IFC-025 (diagnostic identity), and OPS-023 (decision priority).
+Pending actions are outside MC7b and remain MC9's work after batch 2.
+
+### MC7b property text and preconditions
+
+The following quotes retain `must not` polarity. Each applies to the stated finite script;
+its named witness below reaches its precondition independently of the implementation's verdict.
+
+**R1 (REC-001, must).** When: “Any of these happens: an access decision; a request ends without being dispatched; an invocation is dispatched; an invocation ends; a provider call is made, or ends; an instance's lifecycle state changes; an object is registered, unregistered or removed; an object's revision changes; an enrollment opens, closes or expires (ENR-001, ENR-007 to ENR-009, PRV-013).” Then: “A record of it is kept.”
+
+**R3 (REC-003, must not).** When: “A record exists.” Then: “It is removed or altered by anything other than a purge.”
+
+**R4 (REC-004, must).** When: “An actor asks to purge records.” Then: “The request is dispatched only if the actor is the root Interface. A purge removes the records made before a time that the request names, and a record is kept stating which records were purged and when.”
+
+**R5 (REC-005, must).** When: “Records made at one source are read.” Then: “They are in the order in which they were made at that source. No order is promised between records from different sources.”
+
+**R6 (REC-006, must).** When: “Records that should exist cannot be read, or were lost.” Then: “The result of reading them says that there is a gap, and where.”
+
+**O1 (OBS-001, must not).** When: “Something is observed about an instance.” Then: “The instance's declared definition, configuration or revision changes because of it.”
+
+**O3 (OBS-003, must).** When: “Something about an instance cannot be observed now, for example because the machine provider reports its machine unreachable, under PLC-023.” Then: “It is reported as unknown, as a condition whose `status` is `Unknown`, with the time of the last successful observation of it in `lastHeartbeatTime`.”
+
+**O4 (OBS-004, must not).** When: “What is observed of an instance differs from what is declared for it.” Then: “Anything acts to remove the difference without an explicit request.”
+
+**O6 (OBS-006, must not).** When: “An instance is inspected or observed.” Then: “An effect occurs, or the actor that inspects it gains access to anything.”
+
+**I24 (PKG-024, must).** When: “An actor asks to install a package, and its archive cannot be fetched now.” Then: “The request is not dispatched, and reports unavailable.”
+
+**I25 (PKG-025, must).** When: “An actor asks to install a package, and a package is already installed at that address and version with another digest.” Then: “The request is not dispatched, and reports conflict. It is decided from what is installed: nothing is fetched for an address and version that is already installed.”
+
+**I27 (PKG-027, must).** When: “An actor asks to install a package that is already installed at that address and version with the same digest.” Then: “The request is decided like any other, changes nothing and has the outcome succeeded. It is decided from what is installed: nothing is fetched for an address and version that is already installed.”
+
+**I13 (PRV-013, must).** When: “A Resource would be instantiated whose type offers `machine-provider.v1` or `package-source.v1`, and its owner is not `system`; or, for a machine provider, another machine provider exists that is not retired; or, for a package-source provider, another that is not retired claims one of the schemes that its configuration lists under `schemes`.” Then: “It is not instantiated: at any time at most one machine provider, and for each URI scheme at most one package-source provider, is not retired, and each is owned by `system`.”
+
+**I17 (PRV-017, must).** When: “An actor asks to install a package that is not installed, and the archive is to be fetched from the request's `fetch`.” Then: “Where a package-source provider that is not retired claims the scheme of the `fetch`, the engine fetches the archive with that provider's `fetch-package.v1`, giving the package's `address`, `version`, `digest` and `fetch`, and takes the archive from its output `archive`. Where none claims it and the scheme is `https` or `file`, the engine fetches the archive itself. Either way the archive is checked against the digest under PKG-026.”
+
+
+R1's witness `events` covers all fourteen categories. R3 uses `existing`; R4 uses `purges`
+(root and non-root), `repeat`, and `unknown` in Unknown. R5 uses `reads`. R6 uses `missing`,
+where the model or transport withholds a record that was not purged. O1/O6 use `observed` and
+`inspected`; O3 uses `unreachable` (both prior-success and never-observed instances); O4 uses
+`drift`. `returned` reaches removal of drift by the environment. I24 uses `failed`; I25 uses
+`conflict`; I27 uses `same`, `denied-same` and `invalid-same`; I13 uses `claimants` (including
+the foreign owner); I17 uses `fetch`, `used` and `bad`. `race` reaches both first decisions
+before either installs; `different-firsts` reaches both succeeding with different digests.
+`done` is a quiescent script endpoint, not liveness. Ledger facts describing stimuli, including
+bad archives and absent records, are independent of whether the correct response was produced.
+
+### MC7b configurations and fault windows
+
+Every enabled harness budget is one, split across configurations; every positive budget has
+its harness witness checked in that run. Reorder witnesses require two real frames/requests
+on the same directed link. `fault_allowed` opts in with `gate_remaining_faults=true`, including
+recovery and timers. `fault_enabled` restricts state windows; `timer_enabled` restricts timers.
+
+| Records configuration | Enabled fault / model choice | R witnesses expected |
+| --- | --- | --- |
+| Base | none | events existing purges repeat reads |
+| Unknown | first keyed outcome unknown | Base + unknown |
+| RequestLoss | loss A→E during first purge pair | Base |
+| RequestReorder | reorder A→E during first purge pair | Base |
+| ReadLoss | loss S→A while reading | Base + missing |
+| ReadReorder | reorder S→A while reading | Base |
+| Crash | E crash/recovery after first invocation, before repeat | Base |
+| Unreadable | withhold one record from S, at most once | Base + missing |
+
+| Observation configuration | Enabled fault / model choice | O witnesses expected |
+| --- | --- | --- |
+| Base | machine may be unreachable; provider restart/return | observed inspected drift unreachable returned |
+| Crash | E crash/recovery after drift, before unreachable report | all Base witnesses |
+
+| Install configuration | Enabled fault / model choice | I witnesses expected |
+| --- | --- | --- |
+| Provider | provider claims https | race conflict same denied-same invalid-same claimants fetch used different-firsts done |
+| Https | E fetches unclaimed https | Provider witnesses |
+| File | E fetches unclaimed file | Provider witnesses |
+| Same | same-digest race, provider path | Provider except different-firsts |
+| FailProvider | provider may fail probe fetch once | Provider + failed |
+| FailHttps | E https may fail probe fetch once | Provider + failed |
+| FailFile | E file may fail probe fetch once | Provider + failed |
+| BadProvider | provider may return mismatched probe digest once | Provider + bad |
+| BadHttps | E https may return mismatched probe digest once | Provider + bad |
+| BadFile | E file may return mismatched probe digest once | Provider + bad |
+| RequestLoss | loss A→E on initial install pair | Provider witnesses |
+| RequestReorder | reorder A→E on initial install pair | Provider witnesses |
+| FetchLoss | loss E↔S on racing fetches; quiescent E timer | Provider + failed |
+| FetchReorder | reorder E↔S on racing fetches | Provider witnesses |
+| Crash | E crash/recovery with first fetch pending | Provider witnesses |
+
+All other budgets are zero: duplication is outside this order; cut/heal and permanent lost
+machines are outside its faults; timers are unnecessary except FetchLoss's stranded-fetch
+completion; non-Crash parts isolate other faults. Record read failure and machine unreachability
+are local choices rather than saved-record loss or permanent node loss. Zero local bad/fail/read
+budgets isolate the corresponding choice in its own part. Recovery is unrestricted once E is
+crashed; request/reading/fetch windows never gate it out.
+
+### MC7b expected verdicts, fixed before execution
+
+H means holds; F means refuted. Safety order for records is R1 R3 R4 R5 R6, for observation
+O1 O3 O4 O6, and for installs I24 I25 I27 I13 I17. Only that part's properties are registered.
+Every row's reachability is exactly its configuration's row above; witnesses absent there are
+expected not reached. Enabled harness witnesses are always expected reached. This rule specifies
+every safety and reach verdict, including the mutants, without assuming mutant reach is safety.
+
+| Variant/configuration | Expected safety |
+| --- | --- |
+| Correct / every Records configuration | HHHHH |
+| OmitRecord / Base | FHHHH |
+| AlterRecord / Base | HFHHH |
+| PurgeIndex / Base | HHFHH |
+| RootBypass / Base | HHFHH |
+| PurgeInclusive / Base | HHFHH |
+| ForgetIndex / Crash | HHFHH |
+| ReverseRead / Base | HHHFH |
+| HideGap / Unreadable | HHHHF |
+| Correct / every Observation configuration | HHHH |
+| AdoptObserved / Base | FHHH |
+| StaleCurrent / Base | HFHH |
+| NoLastTime / Base | HFHH |
+| ForgetTime / Crash | HFHH |
+| AutoRepair / Base | HHFH |
+| InspectEffect / Base | HHHF |
+| InspectAccess / Base | HHHF |
+| Correct / every Install configuration | HHHHH |
+| FailedAsSuccess / FailProvider | FHHHH |
+| FetchConflict / Provider | HFHHH |
+| FetchSame / Provider | HHFHH |
+| SkipAuthorization / Provider | HHFHH |
+| DoubleClaim / Provider | HHHFH |
+| ForeignOwner / Provider | HHHFH |
+| WrongRoute / Provider | HHHHF |
+| Unchecked / BadProvider | HHHHF |
+| Unchecked / BadHttps | HHHHF |
+| Unchecked / BadFile | HHHHF |
+
+Every full run is tested against this table. One additional single-thread BFS per variant
+prints its first target refutation (Unchecked is exercised on all three paths). Traces are
+replayed after replacing all node data to demonstrate that their failing predicate uses only
+the ledger. Any observed mismatch will be added beside this unchanged table.
+
+### MC7b findings registered before execution
+
+**MC7b-001 — ambiguity, REC-003/REC-006.** Nothing except a purge may remove/alter a record,
+yet the gap promise includes records that were lost. Projection: record at S → unreadable
+storage → read with a gap. This model retains that record and faults only reading it, which
+satisfies both. Whether actual storage loss is an admitted fault or violates REC-003 is not
+settled by these words. The ambiguity is reported, not resolved by adding a loss permission.
+
+**MC7b-002 — possible gap, PKG-025/PKG-027, with PKG-024/PRV-017.** Two first installs of one
+address/version can both decide before either installs. No promise orders them or states a
+commit-time recheck. The registered model retains both decisions and permits different digests
+to complete successfully. `different-firsts` searches for that witness; no extra aggregate
+"one first digest wins" safety promise is invented. Results will state whether it was reached.
+
+### MC7b review additions, before their first run
+
+The initial 50 full runs matched the original table; the seven MC7b tests took 0.13 seconds.
+Before the next run R4's purge evidence is made explicit: it records the cutoff and exact IDs
+removed, not just a purge flag. R3 also checks continuity between successive source snapshots,
+so a silent storage change across a crash cannot disappear between logged mutations. These
+strengthen the written projections without changing any expected verdict or scenario window.
+A separate first-witness BFS for `different-firsts` is registered to print the shortest race
+witness; it adds no safety claim. Its expected verdict is reached in Correct/Provider. The
+harness receives only a new `assert_reached` helper, using its existing bounds and lock.
+
+
+### MC7b dated results — 2026-11-11
+
+All **50 full runs matched the original expected table**, including every positive fault
+budget's witness and every registered property precondition. There are **no differences**
+from the table, no truncation, and no correct-model safety refutation. All 25 seeded runs
+refuted exactly their named property; each has a separate first-refutation trace below.
+There are 23 distinct broken variants, with Unchecked run on three fetch paths.
+
+The full crate passed **47 tests (39 existing, 8 MC7b)** plus zero doc-tests. Release took
+**50.89 seconds wall**, including compilation, with 41.31 seconds reported for tests.
+The required single-thread test-runner count pass took **39.32 seconds wall**, with 39.06
+seconds reported for tests. Model-checker full runs still use two threads; first traces use
+one. These times include all earlier models, not just this order. Every MC7b full run was
+well below its 190,000-state/9-second limits. Elapsed entries below are rounded to milliseconds;
+0.000 is a measured value rounded down, not an unrun check. The initial seven-test MC7b-only
+pass (before the added race-witness test) took 0.13 seconds of test time.
+
+Safety/reach orders are the registered orders above; `+` is reached, `-` not reached. The
+harness witnesses are all reached in every row with their positive budgets, and are omitted
+from the reach strings. Static decisions are not safety columns. Counts remain **14 modelled,
+6 static decisions for vectors**, with supporting promises excluded and no new vectors.
+
+**Records.**
+
+| Variant/configuration | Unique states | Depth | Seconds | Safety | Reach |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Base | 63 | 24 | 0.002 | HHHHH | +++++-- |
+| Correct/Unknown | 63 | 24 | 0.002 | HHHHH | +++++-+ |
+| Correct/RequestLoss | 161 | 24 | 0.004 | HHHHH | +++++-- |
+| Correct/RequestReorder | 161 | 24 | 0.004 | HHHHH | +++++-- |
+| Correct/ReadLoss | 91 | 24 | 0.003 | HHHHH | ++++++- |
+| Correct/ReadReorder | 77 | 24 | 0.002 | HHHHH | +++++-- |
+| Correct/Crash | 121 | 26 | 0.004 | HHHHH | +++++-- |
+| Correct/Unreadable | 83 | 24 | 0.003 | HHHHH | ++++++- |
+| OmitRecord/Base | 63 | 24 | 0.002 | FHHHH | +++++-- |
+| AlterRecord/Base | 63 | 24 | 0.002 | HFHHH | +++++-- |
+| PurgeIndex/Base | 63 | 24 | 0.002 | HHFHH | +++++-- |
+| RootBypass/Base | 115 | 25 | 0.003 | HHFHH | +++++-- |
+| PurgeInclusive/Base | 63 | 24 | 0.002 | HHFHH | +++++-- |
+| ForgetIndex/Crash | 121 | 26 | 0.004 | HHFHH | +++++-- |
+| ReverseRead/Base | 63 | 24 | 0.002 | HHHFH | +++++-- |
+| HideGap/Unreadable | 83 | 24 | 0.003 | HHHHF | ++++++- |
+
+**Observation.**
+
+| Variant/configuration | Unique states | Depth | Seconds | Safety | Reach |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Base | 26 | 12 | 0.000 | HHHH | +++++ |
+| Correct/Crash | 51 | 14 | 0.000 | HHHH | +++++ |
+| AdoptObserved/Base | 26 | 12 | 0.000 | FHHH | +++++ |
+| StaleCurrent/Base | 26 | 12 | 0.000 | HFHH | +++++ |
+| NoLastTime/Base | 26 | 12 | 0.000 | HFHH | +++++ |
+| ForgetTime/Crash | 51 | 14 | 0.000 | HFHH | +++++ |
+| AutoRepair/Base | 26 | 12 | 0.000 | HHFH | +++++ |
+| InspectEffect/Base | 26 | 12 | 0.000 | HHHF | +++++ |
+| InspectAccess/Base | 26 | 12 | 0.000 | HHHF | +++++ |
+
+**Installs.**
+
+| Variant/configuration | Unique states | Depth | Seconds | Safety | Reach |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Provider | 55 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/Https | 55 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/File | 55 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/Same | 55 | 23 | 0.001 | HHHHH | ++++++++-+-- |
+| Correct/FailProvider | 64 | 23 | 0.001 | HHHHH | +++++++++++- |
+| Correct/FailHttps | 64 | 23 | 0.001 | HHHHH | +++++++++++- |
+| Correct/FailFile | 64 | 23 | 0.001 | HHHHH | +++++++++++- |
+| Correct/BadProvider | 64 | 23 | 0.001 | HHHHH | ++++++++++-+ |
+| Correct/BadHttps | 64 | 23 | 0.001 | HHHHH | ++++++++++-+ |
+| Correct/BadFile | 64 | 23 | 0.001 | HHHHH | ++++++++++-+ |
+| Correct/RequestLoss | 85 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/RequestReorder | 105 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/FetchLoss | 142 | 24 | 0.001 | HHHHH | +++++++++++- |
+| Correct/FetchReorder | 113 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/Crash | 121 | 25 | 0.001 | HHHHH | ++++++++++-- |
+| FailedAsSuccess/FailProvider | 64 | 23 | 0.001 | FHHHH | +++++++++++- |
+| FetchConflict/Provider | 68 | 24 | 0.001 | HFHHH | ++++++++++-- |
+| FetchSame/Provider | 70 | 24 | 0.001 | HHFHH | ++++++++++-- |
+| SkipAuthorization/Provider | 55 | 23 | 0.001 | HHFHH | ++++++++++-- |
+| DoubleClaim/Provider | 55 | 23 | 0.001 | HHHFH | ++++++++++-- |
+| ForeignOwner/Provider | 55 | 23 | 0.001 | HHHFH | ++++++++++-- |
+| WrongRoute/Provider | 55 | 23 | 0.001 | HHHHF | ++++++++++-- |
+| Unchecked/BadProvider | 64 | 23 | 0.001 | HHHHF | ++++++++++-+ |
+| Unchecked/BadHttps | 64 | 23 | 0.001 | HHHHF | ++++++++++-+ |
+| Unchecked/BadFile | 64 | 23 | 0.001 | HHHHF | ++++++++++-+ |
+
+
+### MC7b findings and shortest race witness
+
+**MC7b-001 remains an ambiguity**, not a discovered correct-model violation. The concrete
+Unreadable script keeps S's purge record, withholds it from the read, and returns its ID as
+a gap. The record remains saved. If “were lost” instead admits deleting that saved record
+without a purge, it directly violates the other promise's prohibition. The model applies
+the registered read-failure reading and makes no ruling about actual storage loss.
+
+**MC7b-002 is reached.** This is a gap in ordering simultaneous first installs, not a refutation
+of the individual decision-time properties. The first BFS witness has 12 actions: register
+one system claimant and reject the other two Resources; send the two installs; decide both
+while the slot is empty; fetch and verify both; complete each succeeded, with different
+digests. The second completion replaces the first slot. Neither a commit-time recheck nor a
+winner is supplied by these promises. All correct safety predicates still hold. The shortest
+concrete trace is:
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+6. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+7. source-S/runtime/archive-service Fetch(0, Good)
+8. delivered actor/reader -> engine/source-E [position 0]
+9. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+10. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+11. source-S/runtime/archive-service Fetch(1, Good)
+12. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+### MC7b first single-thread refutations
+
+These are first BFS traces from separate bounded runs, never full-run discovery replacements.
+`Next` follows the registered actor script; numbered delivery positions distinguish frames
+and requests. Each trace was replayed with every node's data erased and its target predicate
+remained false, demonstrating that the check reads only the retained ledger.
+
+**installs FailedAsSuccess/FailProvider: MC7b I24 (18 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+6. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+7. source-S/runtime/archive-service Fetch(0, Good)
+8. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+9. delivered actor/reader -> engine/source-E [position 0]
+10. actor/reader Next
+11. delivered actor/reader -> engine/source-E [position 0]
+12. delivered actor/reader -> engine/source-E [position 0]
+13. delivered actor/reader -> engine/source-E [position 0]
+14. delivered actor/reader -> engine/source-E [position 0]
+15. delivered actor/reader -> engine/source-E [position 0]
+16. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+17. source-S/runtime/archive-service Fetch(6, Failed)
+18. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**installs FetchConflict/Provider: MC7b I25 (9 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+6. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+7. source-S/runtime/archive-service Fetch(0, Good)
+8. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+9. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**installs FetchSame/Provider: MC7b I27 (11 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+6. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+7. source-S/runtime/archive-service Fetch(0, Good)
+8. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+9. delivered actor/reader -> engine/source-E [position 0]
+10. actor/reader Next
+11. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**installs SkipAuthorization/Provider: MC7b I27 (13 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+6. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+7. source-S/runtime/archive-service Fetch(0, Good)
+8. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+9. delivered actor/reader -> engine/source-E [position 0]
+10. actor/reader Next
+11. delivered actor/reader -> engine/source-E [position 0]
+12. delivered actor/reader -> engine/source-E [position 0]
+13. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**installs DoubleClaim/Provider: MC7b I13 (2 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**installs ForeignOwner/Provider: MC7b I13 (3 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**installs WrongRoute/Provider: MC7b I17 (5 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**installs Unchecked/BadProvider: MC7b I17 (8 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+6. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+7. source-S/runtime/archive-service Fetch(0, Good)
+8. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**installs Unchecked/BadHttps: MC7b I17 (8 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+6. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+7. source-S/runtime/archive-service Fetch(0, Good)
+8. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**installs Unchecked/BadFile: MC7b I17 (8 actions).**
+
+```text
+1. delivered actor/reader -> engine/source-E [position 0]
+2. delivered actor/reader -> engine/source-E [position 0]
+3. delivered actor/reader -> engine/source-E [position 0]
+4. actor/reader Next
+5. delivered actor/reader -> engine/source-E [position 0]
+6. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+7. source-S/runtime/archive-service Fetch(0, Good)
+8. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**observation AdoptObserved: MC7b O1 (3 actions).**
+
+```text
+1. engine/source-E Initial
+2. source-S/runtime/archive-service Drift
+3. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**observation StaleCurrent: MC7b O3 (7 actions).**
+
+```text
+1. engine/source-E Initial
+2. source-S/runtime/archive-service Drift
+3. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+4. actor/reader Inspect
+5. delivered actor/reader -> engine/source-E [position 0]
+6. source-S/runtime/archive-service Unreachable(true)
+7. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**observation NoLastTime: MC7b O3 (7 actions).**
+
+```text
+1. engine/source-E Initial
+2. source-S/runtime/archive-service Drift
+3. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+4. actor/reader Inspect
+5. delivered actor/reader -> engine/source-E [position 0]
+6. source-S/runtime/archive-service Unreachable(true)
+7. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**observation ForgetTime: MC7b O3 (9 actions).**
+
+```text
+1. engine/source-E Initial
+2. source-S/runtime/archive-service Drift
+3. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+4. crashed engine/source-E
+5. recovered engine/source-E
+6. actor/reader Inspect
+7. delivered actor/reader -> engine/source-E [position 0]
+8. source-S/runtime/archive-service Unreachable(true)
+9. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**observation AutoRepair: MC7b O4 (3 actions).**
+
+```text
+1. engine/source-E Initial
+2. source-S/runtime/archive-service Drift
+3. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+```
+
+**observation InspectEffect: MC7b O6 (5 actions).**
+
+```text
+1. engine/source-E Initial
+2. source-S/runtime/archive-service Drift
+3. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+4. actor/reader Inspect
+5. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**observation InspectAccess: MC7b O6 (5 actions).**
+
+```text
+1. engine/source-E Initial
+2. source-S/runtime/archive-service Drift
+3. delivered source-S/runtime/archive-service -> engine/source-E [position 0]
+4. actor/reader Inspect
+5. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**records OmitRecord: MC7b R1 (1 actions).**
+
+```text
+1. source-S/runtime/archive-service Events
+```
+
+**records AlterRecord: MC7b R3 (5 actions).**
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+```
+
+**records PurgeIndex: MC7b R4 (8 actions).**
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. actor/reader Next
+7. delivered actor/reader -> engine/source-E [position 0]
+8. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**records RootBypass: MC7b R4 (7 actions).**
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. actor/reader Next
+7. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**records PurgeInclusive: MC7b R4 (8 actions).**
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. actor/reader Next
+7. delivered actor/reader -> engine/source-E [position 0]
+8. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**records ForgetIndex: MC7b R4 (16 actions).**
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. crashed engine/source-E
+7. recovered engine/source-E
+8. actor/reader Next
+9. delivered actor/reader -> engine/source-E [position 0]
+10. delivered actor/reader -> engine/source-E [position 0]
+11. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+12. actor/reader Next
+13. delivered actor/reader -> engine/source-E [position 0]
+14. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+15. actor/reader Next
+16. delivered actor/reader -> engine/source-E [position 0]
+```
+
+**records ReverseRead: MC7b R5 (23 actions).**
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. actor/reader Next
+7. delivered actor/reader -> engine/source-E [position 0]
+8. delivered actor/reader -> engine/source-E [position 0]
+9. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+10. actor/reader Next
+11. delivered actor/reader -> engine/source-E [position 0]
+12. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+13. actor/reader Next
+14. delivered actor/reader -> engine/source-E [position 0]
+15. actor/reader Next
+16. delivered actor/reader -> engine/source-E [position 0]
+17. delivered engine/source-E -> actor/reader [position 0]
+18. delivered engine/source-E -> actor/reader [position 0]
+19. delivered actor/reader -> engine/source-E [position 0]
+20. source-S/runtime/archive-service Read(false)
+21. delivered source-S/runtime/archive-service -> actor/reader [position 0]
+22. delivered source-S/runtime/archive-service -> actor/reader [position 0]
+23. actor/reader Finish
+```
+
+**records HideGap: MC7b R6 (23 actions).**
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. actor/reader Next
+7. delivered actor/reader -> engine/source-E [position 0]
+8. delivered actor/reader -> engine/source-E [position 0]
+9. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+10. actor/reader Next
+11. delivered actor/reader -> engine/source-E [position 0]
+12. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+13. actor/reader Next
+14. delivered actor/reader -> engine/source-E [position 0]
+15. actor/reader Next
+16. delivered actor/reader -> engine/source-E [position 0]
+17. delivered engine/source-E -> actor/reader [position 0]
+18. delivered engine/source-E -> actor/reader [position 0]
+19. delivered actor/reader -> engine/source-E [position 0]
+20. source-S/runtime/archive-service Read(true)
+21. delivered source-S/runtime/archive-service -> actor/reader [position 0]
+22. delivered source-S/runtime/archive-service -> actor/reader [position 0]
+23. actor/reader Finish
+```
+
+
+### What MC7b establishes and leaves open
+
+These finite projections can keep the registered record, observation and install rules
+together, and their seeded violations are detected. This is evidence about independent
+reference models, not about the engine, cryptography, archive parsing, schema validation or
+unbounded executions. No fairness, eventual recovery, or eventual completion is asserted.
+Fault configurations do not combine different non-recovery harness faults. Record request
+faults cover the first purge pair, record transport faults the two source-S frames; purge
+broadcast loss, lost read commands and simultaneous source crashes are outside these bounds.
+Observation crashes cover the drift-to-unreachable interval. Install request/fetch faults
+cover the racing pair, with the suffix performed after quiescence. No stale-output lifetime,
+full invocation-state schema, provider retirement, machine-provider uniqueness or arbitrary
+multi-version installation is claimed. Field/version/schema decisions remain for vectors.
+The coordinator must disposition the two findings and feed the promise accounting to MC8;
+those documents, the specification and rulings are outside this order's scope.
+
+### MC7b admin-review correction: pre-registration
+
+Registered 2026-11-11 **before any run of this correction**. The verifier found that R1
+only checked booleans emitted by `keep`, so a missing call to `keep` was invisible. The
+correct model's non-root purge refusal already omitted that call. The earlier results
+above describe that implementation and do not establish occurrence coverage for REC-001.
+
+Required occurrences now enter `ledger.events` independently of record creation. Each is
+assigned a source-local ID, time and category before the record-writing helper is called;
+an omitted call still consumes its ID. R1 correlates every occurrence with the exact record
+in a saved-storage snapshot in the emission ledger, including source and ID. It checks
+every state prefix, so an earlier record of the same category cannot stand in for a later
+occurrence. Historical snapshots allow intentional later purges without erasing evidence
+that the record was kept. Purge evidence (category 14) remains checked by R4, separately
+from REC-001's fourteen categories. R4's permanent-evidence check reads the same storage
+snapshots directly. No property reads node state.
+
+A refused non-root purge now logs its request-end occurrence (category 1) and saves its
+record. It is a refusal record, separate from the evidence of a dispatched root purge.
+`OmitRefusalRecord` logs that occurrence but skips `keep` entirely; the existing `OmitRecord`
+likewise skips `keep` for its synthetic occurrence. A concrete regression exercises the
+non-root refusal both before any synthetic batch and after both batches. It checks R1 with
+all node data erased, so neither category witnesses nor current storage can hide the omission.
+
+Nodes, scripts, fault windows and budgets, properties and reachability orders, bounds and
+promise counts remain as registered above. The existing expected table stays unchanged;
+the new variant has this additional registered row, with the Base reach order unchanged:
+
+| Added variant/configuration | Expected R1 R3 R4 R5 R6 | Expected reach |
+| --- | --- | --- |
+| OmitRefusalRecord/Base | FHHHH | +++++-- |
+
+All 51 full runs must match their registered safety, reachability and fault witnesses.
+The added variant also gets its own first-refutation BFS and ledger-only replay. Any
+disagreement will be recorded beside these unchanged expectations.
+
+
+### MC7b admin-review results — 2026-11-11
+
+The must finding is fixed: required occurrences and saved records are separate ledger
+entries, and a non-root refusal is recorded. The new `OmitRefusalRecord` skips the writing
+helper and refutes R1 in seven actions even though the synthetic batch already includes a
+request-end category. The direct regression covers both empty storage and completed batches;
+it checks the predicate again with all node data erased.
+
+All **51 full runs match the unchanged original expectations plus the new registered row**.
+There are no safety, reachability or fault-witness differences and no correct-model safety
+refutation. All 26 seeded runs refute exactly their named property (24 distinct variants,
+with Unchecked on three paths). Every positive fault budget is reached. The previous two
+specification findings, MC7b-001 and MC7b-002, remain unchanged; this correction is a model
+and verifier defect, not a new finding in the specification.
+
+The crate passed **48 tests (39 existing, 9 MC7b)** and zero doc-tests in both required runs.
+`cargo test --release` took **51.10 seconds wall**, including 9.14 seconds compilation and
+41.74 seconds test time. The single-thread test-runner count pass took **41.43 seconds wall**,
+with 41.18 seconds test time. No timing-sensitive test failed or needed a reduced-thread
+rerun. Full model checks use two checker threads, first refutations one. All other required
+checks passed; both grep scans found no matches (grep status 1).
+
+The tables below supersede the historical measurements above. Safety and reach orders are
+unchanged; every positive harness fault witness is reached. Seconds are measured and rounded
+to milliseconds, including 0.000. Counts remain **14 modelled, 6 not modelled as static
+decisions for vectors**, with supporting promises excluded. No vector was written.
+
+**Records.**
+
+| Variant/configuration | Unique states | Depth | Seconds | Safety | Reach |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Base | 63 | 24 | 0.002 | HHHHH | +++++-- |
+| Correct/Unknown | 63 | 24 | 0.002 | HHHHH | +++++-+ |
+| Correct/RequestLoss | 161 | 24 | 0.004 | HHHHH | +++++-- |
+| Correct/RequestReorder | 161 | 24 | 0.006 | HHHHH | +++++-- |
+| Correct/ReadLoss | 91 | 24 | 0.003 | HHHHH | ++++++- |
+| Correct/ReadReorder | 77 | 24 | 0.003 | HHHHH | +++++-- |
+| Correct/Crash | 121 | 26 | 0.004 | HHHHH | +++++-- |
+| Correct/Unreadable | 83 | 24 | 0.003 | HHHHH | ++++++- |
+| OmitRecord/Base | 63 | 24 | 0.002 | FHHHH | +++++-- |
+| OmitRefusalRecord/Base | 63 | 24 | 0.002 | FHHHH | +++++-- |
+| AlterRecord/Base | 63 | 24 | 0.002 | HFHHH | +++++-- |
+| PurgeIndex/Base | 63 | 24 | 0.002 | HHFHH | +++++-- |
+| RootBypass/Base | 115 | 25 | 0.004 | HHFHH | +++++-- |
+| PurgeInclusive/Base | 63 | 24 | 0.002 | HHFHH | +++++-- |
+| ForgetIndex/Crash | 121 | 26 | 0.004 | HHFHH | +++++-- |
+| ReverseRead/Base | 63 | 24 | 0.003 | HHHFH | +++++-- |
+| HideGap/Unreadable | 83 | 24 | 0.002 | HHHHF | ++++++- |
+
+**Observation.**
+
+| Variant/configuration | Unique states | Depth | Seconds | Safety | Reach |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Base | 26 | 12 | 0.000 | HHHH | +++++ |
+| Correct/Crash | 51 | 14 | 0.000 | HHHH | +++++ |
+| AdoptObserved/Base | 26 | 12 | 0.000 | FHHH | +++++ |
+| StaleCurrent/Base | 26 | 12 | 0.000 | HFHH | +++++ |
+| NoLastTime/Base | 26 | 12 | 0.000 | HFHH | +++++ |
+| ForgetTime/Crash | 51 | 14 | 0.000 | HFHH | +++++ |
+| AutoRepair/Base | 26 | 12 | 0.000 | HHFH | +++++ |
+| InspectEffect/Base | 26 | 12 | 0.000 | HHHF | +++++ |
+| InspectAccess/Base | 26 | 12 | 0.000 | HHHF | +++++ |
+
+**Installs.**
+
+| Variant/configuration | Unique states | Depth | Seconds | Safety | Reach |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Provider | 55 | 23 | 0.000 | HHHHH | ++++++++++-- |
+| Correct/Https | 55 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/File | 55 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/Same | 55 | 23 | 0.001 | HHHHH | ++++++++-+-- |
+| Correct/FailProvider | 64 | 23 | 0.001 | HHHHH | +++++++++++- |
+| Correct/FailHttps | 64 | 23 | 0.001 | HHHHH | +++++++++++- |
+| Correct/FailFile | 64 | 23 | 0.001 | HHHHH | +++++++++++- |
+| Correct/BadProvider | 64 | 23 | 0.001 | HHHHH | ++++++++++-+ |
+| Correct/BadHttps | 64 | 23 | 0.001 | HHHHH | ++++++++++-+ |
+| Correct/BadFile | 64 | 23 | 0.001 | HHHHH | ++++++++++-+ |
+| Correct/RequestLoss | 85 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/RequestReorder | 105 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/FetchLoss | 142 | 24 | 0.001 | HHHHH | +++++++++++- |
+| Correct/FetchReorder | 113 | 23 | 0.001 | HHHHH | ++++++++++-- |
+| Correct/Crash | 121 | 25 | 0.001 | HHHHH | ++++++++++-- |
+| FailedAsSuccess/FailProvider | 64 | 23 | 0.001 | FHHHH | +++++++++++- |
+| FetchConflict/Provider | 68 | 24 | 0.001 | HFHHH | ++++++++++-- |
+| FetchSame/Provider | 70 | 24 | 0.001 | HHFHH | ++++++++++-- |
+| SkipAuthorization/Provider | 55 | 23 | 0.001 | HHFHH | ++++++++++-- |
+| DoubleClaim/Provider | 55 | 23 | 0.001 | HHHFH | ++++++++++-- |
+| ForeignOwner/Provider | 55 | 23 | 0.001 | HHHFH | ++++++++++-- |
+| WrongRoute/Provider | 55 | 23 | 0.001 | HHHHF | ++++++++++-- |
+| Unchecked/BadProvider | 64 | 23 | 0.001 | HHHHF | ++++++++++-+ |
+| Unchecked/BadHttps | 64 | 23 | 0.001 | HHHHF | ++++++++++-+ |
+| Unchecked/BadFile | 64 | 23 | 0.001 | HHHHF | ++++++++++-+ |
+
+**Added first single-thread BFS refutation: OmitRefusalRecord/Base, R1 (7 actions).**
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. actor/reader Next
+7. delivered actor/reader -> engine/source-E [position 0]
+```
+
+Projection: both synthetic event batches are recorded → initial keyed request is recorded →
+non-root purge is refused → its required request-end occurrence is logged, but `keep` is
+omitted. The earlier source-E record of category 1 has a different source-local ID and cannot
+satisfy R1 for the refusal. Correct saves that refusal record. Later legitimate purges may
+remove it without changing its historical saved-record evidence or the invocation index.
+
+Only this README and `src/records.rs` changed in the correction. Existing models, the harness,
+the specification and the promise accounting are unchanged. The coordinator's disposition
+of MC7b-001/002 and MC8's catalogue work remain outside this order's scope.
+
+### MC7b final-verifier fixes: pre-registration — 2026-11-11
+
+Work order 115 registers these changes **before their first run**. The earlier claim,
+"R4's permanent-evidence check reads the same storage snapshots directly", was not true
+until this order: R4 checked preservation of evidence already in snapshots, but never
+checked that a purge's evidence had been saved in the first place.
+
+Each purge now names its source. R4 requires its exact evidence record in a `Change.after`
+snapshot at that source, in addition to its existing content and preservation checks.
+It reads only the ledger. Readability remains with R5/R6: an unreadable or lost record
+can be reported as a gap under REC-006. `OmitPurgeRecord` creates the evidence but omits
+the record write, independently of REC-001's event categories.
+
+An invocation answered from its saved key now logs its own request-end occurrence
+(category 1) and saves that record, with no dispatch or invocation-end occurrence.
+This applies both to a succeeded repeat (OPS-009) and an unknown repeat on the plain
+implementation (OPS-012). The branch uses whether the key answered, rather than the
+message's repeat flag. When ForgetIndex or PurgeIndex has erased the key, dispatch and
+invocation-end occurrences are still logged and saved. `OmitRepeatRecord` logs the
+cached answer's required occurrence but omits its record write. Focused regressions
+cover both outcomes, both message flags, lost keys and predicates with node data erased.
+
+Both new variants belong to `BROKEN`, have explicit R4/R1 targets respectively, and
+receive full table runs and first-refutation runs with ledger-only replay:
+
+| Added variant/configuration | Expected R1 R3 R4 R5 R6 | Expected reach |
+| --- | --- | --- |
+| OmitPurgeRecord/Base | HHFHH | +++++-- |
+| OmitRepeatRecord/Base | FHHHH | +++++-- |
+
+The existing registered tables, fault windows, bounds and MC7b-001/002 are unchanged.
+All 53 full runs must match the original tables plus the registered additions. Results
+and every difference will be recorded below; no conformance vector is added.
+
+### MC7b final-verifier results — 2026-11-11
+
+Both must findings in the model are fixed. R4 now verifies saved purge evidence at the
+purge's source, using only `Change` snapshots. Cached answers record a request ending
+without dispatch; fresh dispatches still record their dispatch and invocation end.
+The direct regressions cover succeeded and plain unknown answers, both repeat flags,
+ForgetIndex/PurgeIndex redispatch, source attribution, and predicates with node data erased.
+
+All **53 full runs match the unchanged registered tables plus the additions**. There
+are no MC7b safety, reachability or fault-witness differences, and no correct-model
+refutation. All 28 seeded runs (26 distinct variants, Unchecked on three paths) refute
+exactly their named property. Every positive fault budget is reached. MC7b-001 and
+MC7b-002 remain unchanged; neither correction is a specification finding. Accounting
+remains 14 modelled and 6 static decisions for vectors, with supporting promises excluded.
+
+The crate passed **50 tests (39 existing, 11 MC7b)** and zero doc-tests in both runs.
+`cargo test --release` took **57.49 seconds wall**, including 17.24 seconds compilation
+and 39.98 seconds test time. The count pass with `--nocapture --test-threads=1` took
+**42.05 seconds wall**, with 41.77 seconds test time. Full checks use two checker threads;
+first refutations use one. Formatting, Clippy, the five repository Python checks, all
+41 Python checker unit tests, whitespace checking and both grep scans passed. The scans
+printed nothing and returned grep status 1 (no matches). No rerun was needed for a test failure.
+
+These measurements supersede the previous records results. All existing unique-state
+counts, depths, safety and reach verdicts are unchanged. Seconds are measured and rounded
+to milliseconds. Compared with the latest results above, timing changed for records
+Correct/RequestLoss (0.004 to 0.005), Correct/RequestReorder (0.006 to 0.005),
+Correct/ReadLoss (0.003 to 0.004), OmitRefusalRecord/Base (0.002 to 0.003),
+ReverseRead/Base (0.003 to 0.002), HideGap/Unreadable (0.002 to 0.003), and installs
+Correct/Provider (0.000 to 0.001). All observation measurements and other install
+measurements are unchanged at the printed precision. The two new rows have no prior
+measurement. There are no other differences from the registered verdict tables.
+
+| Records variant/configuration | Unique states | Depth | Seconds | R1 R3 R4 R5 R6 | Reach |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correct/Base | 63 | 24 | 0.002 | HHHHH | +++++-- |
+| Correct/Unknown | 63 | 24 | 0.002 | HHHHH | +++++-+ |
+| Correct/RequestLoss | 161 | 24 | 0.005 | HHHHH | +++++-- |
+| Correct/RequestReorder | 161 | 24 | 0.005 | HHHHH | +++++-- |
+| Correct/ReadLoss | 91 | 24 | 0.004 | HHHHH | ++++++- |
+| Correct/ReadReorder | 77 | 24 | 0.003 | HHHHH | +++++-- |
+| Correct/Crash | 121 | 26 | 0.004 | HHHHH | +++++-- |
+| Correct/Unreadable | 83 | 24 | 0.003 | HHHHH | ++++++- |
+| OmitRecord/Base | 63 | 24 | 0.002 | FHHHH | +++++-- |
+| OmitRefusalRecord/Base | 63 | 24 | 0.003 | FHHHH | +++++-- |
+| OmitPurgeRecord/Base | 63 | 24 | 0.002 | HHFHH | +++++-- |
+| OmitRepeatRecord/Base | 63 | 24 | 0.002 | FHHHH | +++++-- |
+| AlterRecord/Base | 63 | 24 | 0.002 | HFHHH | +++++-- |
+| PurgeIndex/Base | 63 | 24 | 0.002 | HHFHH | +++++-- |
+| RootBypass/Base | 115 | 25 | 0.004 | HHFHH | +++++-- |
+| PurgeInclusive/Base | 63 | 24 | 0.002 | HHFHH | +++++-- |
+| ForgetIndex/Crash | 121 | 26 | 0.004 | HHFHH | +++++-- |
+| ReverseRead/Base | 63 | 24 | 0.002 | HHHFH | +++++-- |
+| HideGap/Unreadable | 83 | 24 | 0.003 | HHHHF | ++++++- |
+
+| Other changed measurement | Unique states | Depth | Seconds | I24 I25 I27 I13 I17 | Reach |
+| --- | ---: | ---: | ---: | --- | --- |
+| Installs Correct/Provider | 55 | 23 | 0.001 | HHHHH | ++++++++++-- |
+
+**New first single-thread BFS refutations.** Both predicates still fail after all node
+data is replaced with defaults, confirming that only ledger evidence determines the failure.
+
+`OmitPurgeRecord/Base`, R4, **8 actions**:
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. actor/reader Next
+7. delivered actor/reader -> engine/source-E [position 0]
+8. delivered actor/reader -> engine/source-E [position 0]
+```
+
+The non-root purge is refused and recorded, then root purges. Evidence is constructed
+with the right cutoff and removed IDs, but no source-E snapshot contains its record.
+
+`OmitRepeatRecord/Base`, R1, **14 actions**:
+
+```text
+1. engine/source-E Events
+2. source-S/runtime/archive-service Events
+3. actor/reader Next
+4. delivered actor/reader -> engine/source-E [position 0]
+5. actor/reader Next
+6. actor/reader Next
+7. delivered actor/reader -> engine/source-E [position 0]
+8. delivered actor/reader -> engine/source-E [position 0]
+9. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+10. actor/reader Next
+11. delivered actor/reader -> engine/source-E [position 0]
+12. delivered engine/source-E -> source-S/runtime/archive-service [position 0]
+13. actor/reader Next
+14. delivered actor/reader -> engine/source-E [position 0]
+```
+
+The original invocation succeeds, both root purges preserve its saved key, and the repeat
+is answered from that key. Its distinct request-end occurrence has no saved record.
+The regression separately exercises the same omission for a plain unknown invocation.
+
+Only this README's MC7b sections and `src/records.rs` changed. No vector was written,
+and no file outside this work order's scope needs a change for these two fixes.

@@ -192,3 +192,27 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer, from a fixed base, with the worker designing the model
+under this order's checklist and readings. The first verifier found one must: R1 checked only
+calls to the helper that writes records, so a record left out escaped it. The second round
+correlated each event with its saved record. A fresh verifier then found two more musts, both in
+the model's own ledger logic:
+- R4 accepted purge evidence that was never saved;
+- a cached repeat logged a dispatch and an end that never happened.
+
+Order 115 closed both, stacked on this order's last commit.
+
+The order added `records.rs`. Of the 20 promises, 14 are modelled and 6 are static decisions left
+to vectors.
+
+**What it found in the promises:**
+- **MC7b-001, an ambiguity.** REC-003 forbids removing or altering a record except by a purge,
+  while REC-006 speaks of records that "were lost". Is storage loss a fault the promises allow, or
+  a breach?
+- **MC7b-002, a gap.** No promise orders two first installs of one address and version. Two
+  installs with different digests can both be decided against an empty slot, and both succeed.
+
+Both go to the admin's order 082. Otherwise no property broke on the correct model.

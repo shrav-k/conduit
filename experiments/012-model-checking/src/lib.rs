@@ -7,6 +7,7 @@ pub mod lifecycle;
 pub mod mc2;
 pub mod operations;
 pub mod placement;
+pub mod records;
 pub mod retry;
 pub mod revisions;
 pub mod secrets;

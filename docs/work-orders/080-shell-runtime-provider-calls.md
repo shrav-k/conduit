@@ -444,7 +444,7 @@ From the repository root, these give the result stated:
   `Vector delta: 0 changes; 0 flips; 0 undeclared; 0 errors.`
 - These print nothing:
   - `grep -nE 'Runtime provider calls and remote connections are unserved|Runtime providers, remote connections and secrets still have|remote transport or runtime providers, which remain unfinished|Runtime providers and remote connections remain unserved' engine/CONFORMANCE.md engine/README.md`
-  - `grep -rnE '/(Users|home)/[^/ ]+/|/privat[e]/tmp/|/tmp/claude' --exclude-dir=target engine/crates/shell engine/CONFORMANCE.md engine/README.md`
+  - `grep -rnE '/(Users|home)/[^/ ]+/|/privat[e]/tmp/|/tmp/claud[e]' --exclude-dir=target engine/crates/shell engine/CONFORMANCE.md engine/README.md`
 
 In `engine/`:
 

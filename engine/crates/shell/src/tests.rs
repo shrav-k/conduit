@@ -1194,7 +1194,8 @@ fn crash_test(after_dispatch: bool) {
         command.env_remove("SHELL_TEST_AFTER_SEND");
     }
     let mut child = command.spawn().unwrap();
-    let deadline = Instant::now() + Duration::from_secs(30);
+    // Reaching the crash barrier checks progress, not startup speed.
+    let deadline = Instant::now() + Duration::from_secs(600);
     while !temp.path().join("ready").exists() {
         if let Some(status) = child.try_wait().unwrap() {
             panic!("child exited {status}");

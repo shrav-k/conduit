@@ -108,8 +108,9 @@ fn durable(store: &Path, reply: &CallToolResult, prefix: &str) {
     assert!(position("access-decision") < position("invocation-dispatched"));
     assert!(position("invocation-dispatched") < position("invocation-ended"));
 }
+// Notification delivery, startup and shutdown waits bound hangs, not speed.
 async fn changed(changes: &AtomicUsize, target: usize) {
-    tokio::time::timeout(Duration::from_secs(60), async {
+    tokio::time::timeout(Duration::from_secs(600), async {
         while changes.load(Ordering::SeqCst) < target {
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
@@ -305,7 +306,7 @@ fn real_npm_serve_s1_tokens_access_t7_and_shutdown() {
         assert_eq!(upgraded_group.len(),1);
         cli(&store,"retire",&["Resource/shared-upgraded"]);
         let start=Instant::now();
-        while unsafe { libc::kill(-upgraded_group[0],0) } == 0 { assert!(start.elapsed()<Duration::from_secs(30)); std::thread::sleep(Duration::from_millis(10)); }
+        while unsafe { libc::kill(-upgraded_group[0],0) } == 0 { assert!(start.elapsed()<Duration::from_secs(600)); std::thread::sleep(Duration::from_millis(10)); }
         assert!(state(&store)["objects"].as_array().unwrap().iter().all(|o| o["name"]!="shared-upgraded" && o["name"]!="upgraded"));
         a.cancel().await.unwrap(); b.cancel().await.unwrap();
     });
@@ -352,7 +353,7 @@ fn start_server(store: &Path, port: u16) -> Server {
             fs::read_to_string(store.join("serve.stderr")).unwrap()
         );
         assert!(
-            start.elapsed() < Duration::from_secs(180),
+            start.elapsed() < Duration::from_secs(600),
             "server startup timed out"
         );
         std::thread::sleep(Duration::from_millis(20));
@@ -396,14 +397,14 @@ fn stop_server(server: &mut Server, store: &Path, groups: &[i32]) {
             assert!(status.success());
             break;
         }
-        assert!(start.elapsed() < Duration::from_secs(60));
+        assert!(start.elapsed() < Duration::from_secs(600));
         std::thread::sleep(Duration::from_millis(20));
     }
     for &group in groups {
         let start = Instant::now();
         while unsafe { libc::kill(-group, 0) } == 0 {
             assert!(
-                start.elapsed() < Duration::from_secs(30),
+                start.elapsed() < Duration::from_secs(600),
                 "run group survived serve"
             );
             std::thread::sleep(Duration::from_millis(20));

@@ -232,7 +232,7 @@ fn serve_management_commands_and_fixed_audience() {
             break;
         }
         assert!(server.0.try_wait().unwrap().is_none(), "server exited");
-        assert!(start.elapsed() < Duration::from_secs(30));
+        assert!(start.elapsed() < Duration::from_secs(600));
         std::thread::sleep(Duration::from_millis(20));
     }
     let tools = command(&store, "tools", &[]);
@@ -389,7 +389,7 @@ fn serve_management_commands_and_fixed_audience() {
             assert!(status.success());
             break;
         }
-        assert!(start.elapsed() < Duration::from_secs(10));
+        assert!(start.elapsed() < Duration::from_secs(600));
         std::thread::sleep(Duration::from_millis(20));
     }
     let records = command(&store, "records", &[]);
@@ -534,7 +534,7 @@ fn root_defaults_allow_startup_setup_and_inspection_while_serving() {
             "{}",
             fs::read_to_string(&stderr).unwrap()
         );
-        assert!(start.elapsed() < Duration::from_secs(30));
+        assert!(start.elapsed() < Duration::from_secs(600));
         std::thread::sleep(Duration::from_millis(10));
     }
     let before: Value =

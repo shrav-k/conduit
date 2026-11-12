@@ -44,7 +44,7 @@ how tests are run and what they wait for, never what they check.
 4. **A check for private paths.** Add `tools/check_private_paths.py` with a unittest in
    `tools/tests/`. It fails on any file Git tracks that contains:
    - a home-directory path, such as `/Users/<name>/` or `/home/<name>/`;
-   - a session scratch path under `/private/tmp/` or `/tmp/claude`;
+   - a session scratch path under `/privat[e]/tmp/` or `/tmp/claud[e]`;
    - `.codex/auth.json`;
    - any name in the comma-separated environment variable `CONDUIT_PRIVATE_NAMES`.
 
@@ -95,3 +95,25 @@ In `engine/`:
 Report the wall time of each full run, and the totals passed and failed. Tests that bind loopback
 ports may fail in your sandbox; if they do, say so, and the admin reruns them. Validate the edited
 workflow's YAML by parsing it. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on a heavily loaded Mac: the worker in 4 hours 46 minutes, then a second round
+of 2.6 hours; the admin fixed the last two findings by hand.
+- The test gate: `engine/.config/nextest.toml` runs the shell's crash and timing tests one at a
+  time, reports a slow test without killing it, and retries nothing. Waits that bound progress,
+  not speed, were raised; assertions on timing promises were left alone.
+- CI builds a nextest archive once and runs it in shards on `ubuntu-latest`, with doctests apart
+  and one summary result named `rust`; it uses no secret and no paid runner.
+- `tools/check_private_paths.py` fails on any tracked file holding a home-directory or session
+  scratch path, the Codex login file outside documentation, or a name from
+  `CONDUIT_PRIVATE_NAMES`; it never prints the value. It runs in CI's docs job.
+- The admin's fixes. First, the check had false positives on search patterns that look for private
+  paths, on the made-up user `test` and on documentation naming the Codex login file: it now
+  matches only real user-name characters, allows conventional placeholder names and checks the
+  login file only outside Markdown, with a unit test for each. The literal scratch paths in
+  this order and in order 080 were written with brackets so that they match nothing. Second, a
+  retirement test whose waits had been raised to 600 seconds could have passed on a session's
+  idle expiry rather than on retirement; its two waits are now 150 seconds, below the idle limit.
+- Checks: fmt, clippy, the Python checks and the checker's nine unit tests; nextest twice and
+  `cargo test --release` once in the worker's runs; the admin reran the retirement test (254 s).

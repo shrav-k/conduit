@@ -120,3 +120,28 @@ git status --porcelain --ignored $D | grep -E "target/|dist/" | grep -v '^!!'
 
 `target/` and `dist/` stay ignored and unstaged. Report the size bound as your own choice. Do not
 stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), from base 9f55b1e: the worker (690 s) and a fresh
+verifier (136 s), which found nothing to change, in one round. The worker reports 10 tests passing
+and the same archive digest from two builds
+(`sha256:f4a14ab5351baa0ecd3cf075b790230ce52f88f9d04b7b2b508d7db66bee1759` on Linux).
+
+On the Mac, the lane coordinator found the tests would not compile: `rustix::fs::mkfifoat` is
+not in rustix on macOS, as `mknodat` was not for order 131. **Admin-side fix (a small finding,
+ruling 71):** the test's FIFO is made with `mkfifo(1)`, as order 131's is; a fresh reader checked
+it. Then, with two test threads at the admin's word: `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` clean, all 10 tests pass, the access-time checks
+included, and two archive builds give the same digest on the Mac
+(`sha256:1871f95ee9838c098413d0945f990f14fa1a83606068d85c85e09ee1c9b6ed26`; no cross-host digest is
+claimed).
+
+The lane coordinator's review found nothing to change. The worker's own choices: a size bound of
+65,536 bytes, read as at most 65,537 so that a file grown after `fstat` is caught; `O_NONBLOCK`,
+so that opening a FIFO never waits before the descriptor is checked; fixed failure messages that
+name the reason and never the path or the decoding error; and checks of access time as further
+evidence that a refused call reads nothing, which depend on the file system.
+
+The worker's finding: the crate copies its MCP, packaging and schema scaffolding from
+`provider-local-machine`, as order 131's did; a shared library could hold it later.

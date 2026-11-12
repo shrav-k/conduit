@@ -117,6 +117,44 @@ pub fn receive(path: &Path, package: &str, call: &mut Call) -> io::Result<()> {
         + 1;
     commit(&mut file, &[call.line(package, "received", json!({}))])
 }
+fn valid_event(v: &Value) -> bool {
+    if v["version"] != 1
+        || !v["package"].is_string()
+        || v.get("key").is_none()
+        || !v["attempt"].as_u64().is_some_and(|n| n > 0)
+        || serde_json::from_value::<Call>(v.clone()).is_err()
+    {
+        return false;
+    }
+    let barrier = matches!(v["barrier"].as_str(), Some("before-apply" | "before-reply"));
+    match v["kind"].as_str() {
+        Some("received") => true,
+        Some("effect") => v["effect"].is_string(),
+        Some("ended") => {
+            v["diagnostic"].is_string()
+                && if v["effect"].is_string() {
+                    v.get("cause").is_some_and(Value::is_null)
+                } else {
+                    v.get("effect").is_some_and(Value::is_null)
+                        && matches!(
+                            v["cause"].as_str(),
+                            Some("blockedBy" | "controller" | "gate")
+                        )
+                }
+        }
+        Some("reply") => matches!(
+            v["outcome"].as_str(),
+            Some("released" | "dropped" | "cancelled")
+        ),
+        Some("released") => {
+            barrier
+                && (matches!(v["outcome"].as_str(), Some("proceed" | "drop"))
+                    || v["outcome"] == "fail" && v["barrier"] == "before-apply")
+        }
+        Some("control-lost") => barrier && v["outcome"] == "drop" && v["diagnostic"].is_string(),
+        _ => false,
+    }
+}
 /// Read only the ledger under a shared flock. Missing files are errors, never evidence of no effect.
 pub fn readback(path: &Path, instance: Option<&str>) -> io::Result<Value> {
     let mut file = File::open(path)?;
@@ -126,24 +164,9 @@ pub fn readback(path: &Path, instance: Option<&str>) -> io::Result<Value> {
     let mut attempts: Vec<Value> = Vec::new();
     let mut invalid = Vec::new();
     for (index, raw) in bytes.split_inclusive(|b| *b == b'\n').enumerate() {
-        let parsed = serde_json::from_slice::<Value>(raw).ok().filter(|v| {
-            v["version"] == 1
-                && v["package"].is_string()
-                && serde_json::from_value::<Call>(v.clone()).is_ok()
-                && matches!(
-                    v["kind"].as_str(),
-                    Some(
-                        "received"
-                            | "effect"
-                            | "ended"
-                            | "reply"
-                            | "released"
-                            | "dropped"
-                            | "cancelled"
-                            | "control-lost"
-                    )
-                )
-        });
+        let parsed = serde_json::from_slice::<Value>(raw)
+            .ok()
+            .filter(valid_event);
         let Some(v) = parsed.filter(|_| raw.ends_with(b"\n")) else {
             invalid.push(index + 1);
             continue;
@@ -152,9 +175,11 @@ pub fn readback(path: &Path, instance: Option<&str>) -> io::Result<Value> {
             continue;
         }
         if v["kind"] == "received" {
-            let mut a = v.clone();
+            // Project common fields so event extensions cannot escape the output schema.
+            let mut a = serde_json::to_value(serde_json::from_value::<Call>(v.clone())?).unwrap();
             let m = a.as_object_mut().unwrap();
-            m.remove("kind");
+            m.insert("version".into(), json!(1));
+            m.insert("package".into(), v["package"].clone());
             m.insert("work".into(), json!("open"));
             m.insert("effect".into(), json!({"state":"not-known"}));
             m.insert("reply".into(), json!("none"));

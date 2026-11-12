@@ -1,7 +1,7 @@
 # Full review: a brief for the next coordinator
 
 Not binding. The [specification](../../spec/README.md) alone binds. Written on 2026-11-12, at
-`main` `7e963b1a` or later at the handover, when the admin session (Claude Opus) handed the
+`main` `57813f06` or later at the handover, when the admin session (Claude Opus) handed the
 coordinator's work to a new session (Claude Fable). The owner asked that session for a full
 review of the repository and of the progress so far, and expects it to decide on faults in the
 language, change the approach where it is wrong, and alter future experiments to test both. This
@@ -15,23 +15,24 @@ coordinator settle, and put the rest to the owner.
 
 ## The state you inherit
 
-- **In flight**, after which the work stops for this checkpoint: 042 (tombstones, lift and
-  inventory; the first order run through Conduit's own Agents, four rounds, the last clean; after
-  its rebase onto 070, the vector `e4-tombstone-register-replacement` fails at step 6, LIF-041,
-  and a fix round runs on the plain runner); 077 (fenced reconciliation, ruling 75 A1; its last
-  round); 049a1 (enrollment in the core, on the side branch `s3/m2`; round 5, with new musts each
-  round); 080 and 071 on the Windows computer; and the lane's 144 (S4-SRV2), queued on the Mac's
-  load, which may start after the checkpoint. Their files move until each Record lands.
+- **In flight at the checkpoint**: nothing. Checkpointed, not merged, their branches pushed: 071
+  (the conformance manifest in pieces; one must after two rounds), 049a1 (enrollment in the core,
+  for the side branch `s3/m2`; five rounds, new musts in each, one must and one should left), 080
+  (the shell's runtime-provider calls, for `s3/m2`; three musts in its HTTP bridge after two
+  rounds) and the lane's 144 (S4-SRV2; two musts). `main`'s CI is red at times: an SSH-R test fails
+  on CI's Linux runner, and the engine shards are then skipped; it is the first fix. The dogfood
+  engine is still pinned before 070.
   [The handover](../implementation/HANDOVER.md) gives the queue, the pipeline and the second
   machine.
-- **Merged this session**, among others: 070 (the engine 20 to 40 times faster; CI shards 1 to 8
-  minutes), 074, 081 and 082; ruling 77 and later answers to rulings 42, 52, 71, 72 and 75; the
-  runtime-provider kit, the local-process, local machine, local-directory and file-store
-  providers, and SSH-R with its drainer (146, 149 and 150, #260); the provider-contract harness
+- **Merged this session**, among others: 042 (the first order whose four rounds ran through
+  Conduit's own Agents; 494 vectors), 077 (fenced reconciliation), 070 (the engine 20 to 40 times faster; CI
+  shards 1 to 8 minutes), 074, 081 and 082; ruling 77 and later answers to rulings 42, 52, 71, 72
+  and 75; the runtime-provider kit, the local-process, local machine, local-directory and
+  file-store providers, and SSH-R with its drainer (146, 149 and 150, #260); the provider-contract harness
   (experiment 022); S2's contracts, stub, Conduit-aware implementation and adapter; SCR1;
   S4-SRV1.
 - **Waiting for the owner**: [the tracker's list](../AUDIT.md#waiting-for-the-owner); part 2 of
-  [ruling 77](../proposals/ruling-77/README.md)'s Windows setup, after 080 and 071 (part 1 is done:
+  [ruling 77](../proposals/ruling-77/README.md)'s Windows setup, which can run now (part 1 is done:
   `conduit-run` has its tools and its Codex, signed in by the owner; the coordinator signs nothing
   in); S3's fault means (S3-OF in [S3's plan](../../experiments/014-s3-two-machines/plan.md), A
   recommended); S2's plain server
@@ -117,7 +118,7 @@ coordinator settle, and put the rest to the owner.
 | Model checking | G5 accounts for 217 convention-layer safety promises: 114 hold in bounded projections, 7 only under ruling 75 A1, then contradictions MC6-001 and MC6-002, gaps MC4-002, MC4-009 and MC7b-002, ambiguities MC4-001 and MC7b-001, over-broad properties MC3-001 and MC3-002; 53 static, 11 excluded, 10 left to MC9. Did 081 and 082 close what they claimed? Are the 11 exclusions acceptable? 17 promises are not in the catalogue: CTR-014, ENR-001 to ENR-012, PKG-032, PND-008, PND-013 and PRV-030 | [G5's findings](../../experiments/012-model-checking/G5.md#findings), [what G5 still needs](../../experiments/012-model-checking/G5.md#what-g5-still-needs), [catalogue](../implementation/SAFETY_CATALOGUE.md), Records of [081](../work-orders/081-spec-one-run-per-instance.md) and [082](../work-orders/082-spec-records-and-installs.md) |
 | Stated limits | Is each limit right for v0, or a fault renamed a limit? A bound does not limit filters; `management` cannot be narrowed below whole operations; the engine's OS user reaches every token and state directory; every restriction reported as mediated (preservation test 9); own tools neither enforced nor mediated; a run beside a later instance | [limits of this version](../../spec/README.md#limits-of-this-version) and its sections |
 | Short form and canonical | Is the translation total, and its meaning the canonical one (SCT-003, SCT-015)? `sections.yaml` has 15 promises and no vectors; experiment 011's 2026-11-11 run passed 14 of 14 exact states (the 2026-11-10 run, 0 of 14, predates `as` in the schemas) | [what the short form covers](../../spec/README.md#what-the-short-forms-meaning-covers), [011](../../experiments/011-short-form-spike/README.md), [023](../../experiments/023-paper-count/README.md) |
-| Authority and access | Bounds (ACC-029, ACC-030, ACC-054, ACC-055), tombstones and lift (LIF-040, LIF-041, ACC-053), ACC-033's table, two-tier refusals (ACC-056, OPS-023), the Fleet papers' unverified gaps; whether 042's failing vector is a language case | `access.yaml`, `lifecycle.yaml`, [042](../work-orders/042-build-tombstones-and-inventory.md) |
+| Authority and access | Bounds (ACC-029, ACC-030, ACC-054, ACC-055), tombstones and lift (LIF-040, LIF-041, ACC-053), ACC-033's table, two-tier refusals (ACC-056, OPS-023), the Fleet papers' unverified gaps; whether the vector that failed after 042's rebase was a language case | `access.yaml`, `lifecycle.yaml`, [042](../work-orders/042-build-tombstones-and-inventory.md) |
 | Retries and the fence | OPS-014's record of an absent effect only once the attempt is fenced, against OPS-024 and OPS-018 (MC2-001); OPS-030; ruling 75 A1's two limits (a server's onward call; a remote server that never answers). Does 077's text close MC2-001 without new machinery? | `operations.yaml`, [ruling 75](../proposals/ruling-75/README.md), [077](../work-orders/077-spec-reconcile-fenced.md) |
 | One run per instance | PRV-019, PRV-021, PRV-030, LIF-036, TPL-018: MC4-009's restart race; MC4-002's overlap, a stated limit, with the owner's answer that a shipped runtime provider carries out an owed stop before any start (MC4) | `providers.yaml`, [ruling 42's later answers](../proposals/ruling-42/README.md#later-answers), [PROVIDERS.md](../implementation/PROVIDERS.md) |
 | Records and loss | REC-003, REC-006 and DL8 after 082: is a loss the engine cannot tell a limit or a broken promise? What does an engine owe when it cannot store state? | `records.yaml`, [what records cover](../../spec/README.md#what-the-promises-on-records-cover) |

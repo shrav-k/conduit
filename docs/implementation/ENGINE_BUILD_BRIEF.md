@@ -3,8 +3,10 @@
 Status: draft, 2026-11-05, revised for layer decision LD4, and on 2026-11-06 for the provider
 contracts of rulings 40 and 41. **Not issued.** This is the text a
 builder receives as `BUILD.md` on the build base once the
-[readiness gate](INDEPENDENT_BUILDS.md#readiness-gate) passes. Of the paths it names, `spec/` and
-`tools/` exist; `conformance/` does not exist yet, and the build base is not yet published.
+[readiness gate](INDEPENDENT_BUILDS.md#readiness-gate) passes. Of the paths it names, `spec/`,
+`tools/` and `conformance/` exist, but `conformance/` holds neither the shared test
+implementations nor the order of milestones this brief names (G9 and G10), and the build base is
+not yet published.
 Everything from the next heading down is written to stand alone, because the builder sees
 nothing else.
 

@@ -57,8 +57,8 @@ probes) stopped here; nothing of the lane runs, and every unfinished branch is o
   6. S2-LOG, Linear's OAuth login through the Interface (A82), after the core lane's 048a, 048b and
      051b;
   7. model checking: MC4's P1 registered again, and the models of orders 109, 110, 112 and 113
-     reviewed against order 081's promises, after 077 lands; the MC2 rerun, after 077; MC9 after
-     batch 2; SV1 after 071; MX0 at the admin's word.
+     reviewed against order 081's promises, now that 077 has merged (#263); the MC2 rerun,
+     likewise unblocked; MC9 after batch 2; SV1 after 071; MX0 at the admin's word.
 - **Open for the owner:** S3's cut, heal and loss method (S3-OF, options A to C in
   [S3's plan](../../experiments/014-s3-two-machines/plan.md)); and the plain Linear server for
   S2's runs, chosen with the owner before them, to the requirements in

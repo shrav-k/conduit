@@ -17,20 +17,23 @@
     Any of these happens: an access decision; a request ends without being dispatched; an
     invocation is dispatched; an invocation ends; a provider call is made, or ends; an
     instance's lifecycle state changes; an object is registered, unregistered or removed; an
-    object's revision changes.
+    object's revision changes; an enrollment opens, closes or expires (ENR-001, ENR-007 to
+    ENR-009, PRV-013).
   then: >-
     A record of it is kept.
   observable: >-
     Each such occurrence can be found by inspecting the objects it names. Every request can be
     found with how it ended: its outcome, or its reason where it has no outcome under OPS-005.
     The record of an access decision states that the request was permitted, or that it was not
-    dispatched and the reason. A provider call is not a request, under PRV-005, and is recorded
-    all the same, with how it ended. A read of a secret is a request, under SEC-010, and is
-    recorded as one, without its value, under SEC-015. One request is not recorded: one that
-    cannot be read and from which no instance can be established, under IFC-036. Nothing else is
-    required to be recorded.
-    A request ending with a reason records the deciding promise's ID and, for a refusal, its
-    tier (ACC-056). Raising and answering actions are recorded as PND-012 states.
+    dispatched and the reason. A provider call is not a request, under PRV-005, and is
+    recorded all the same, with how it ended. A read of a secret is a request, under SEC-010,
+    and is recorded as one, without its value, under SEC-015. One request is not recorded: one
+    that cannot be read and from which no instance can be established, under IFC-036. Nothing
+    else is required to be recorded. A request ending with a reason records the deciding
+    promise's ID and, for a refusal, its tier (ACC-056). Raising and answering actions are
+    recorded as PND-012 states. An enrollment record names its provider, enrollment ID and
+    transition; its answer holds the evidence shown and weaker-check flag (PND-008, PND-012).
+    Neither a join action nor the typed fingerprint is recorded (ENR-003, ENR-007).
   vectors: []
 
 - id: REC-002

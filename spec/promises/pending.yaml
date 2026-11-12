@@ -1,6 +1,6 @@
 # Pending actions: one mechanism for what waits on a person.
 # Standing: draft specification; see spec/README.md for status and coverage.
-# PND-008 is reserved for enrollment; review and keep wait for batch 2.
+# Enrollment kinds are PND-008; review and keep wait for batch 2.
 
 - id: PND-001
   layer: convention
@@ -13,12 +13,13 @@
     there is one, invocation where there is one and time. Its form is pending-action.v1.
     Raising one permits nothing.
   observable: >-
-    The documented kinds in this batch are sign-in, setup and notice; enrollment, machine
-    and machine-removal are reserved for enrollment. kind and answer values are strings, so
+    The documented kinds are sign-in, setup, notice, enrollment, machine and machine-removal
+    (PND-008). kind and answer values are strings, so
     adding values needs no new schema version. An answer is never a request's outcome. An
     instance has at most one unanswered sign-in and one unanswered setup action. A setup
-    action uses its setup invocation's ID; stored kinds receive an engine ID within the
-    invocation that raises them.
+    action uses its setup invocation's ID; stored kinds receive an engine ID when raised,
+    whether or not that happens within an invocation. Where there is a raising invocation,
+    the action retains its attribution to that invocation.
   vectors: []
 
 - id: PND-002
@@ -32,13 +33,14 @@
     computed from the Interface's open inspection Conduits (definitions.md). It is never
     raised at an Agent.
   observable: >-
-    Raised means listed in list.v1's pending output and in inspect.v1's status.pending for
-    the subject, for such an Interface. Each result of that Interface's own request carries
-    io.github.shrav-k.conduit/unanswered, the number raised there, only when nonzero.
-    Another Interface sees only subjects and evidence about objects it may inspect, with no
-    count of the rest. Root sees all subject objects. Codes and fingerprints remain withheld
-    under PND-004 even from root's tool results. Agents' list and inspect results carry no
-    pending actions. Peer delivery waits on R3 and is not defined here.
+    Raised means listed in list.v1's pending output and in inspect.v1's status.pending for the
+    subject, for such an Interface. Each result of that Interface's own request carries
+    io.github.shrav-k.conduit/unanswered, the number raised there, only when nonzero. Another
+    Interface sees only subjects and evidence about objects it may inspect, with no count of
+    the rest. Root sees all subject objects. Codes and fingerprints remain withheld under
+    PND-004 even from root's tool results. Agents' list and inspect results carry no pending
+    actions. Peer delivery is written in batch 2 with appointment, keep and withhold (ruling
+    68, point 3).
   vectors: []
 
 - id: PND-003
@@ -47,13 +49,15 @@
   when: >-
     An operation answers a pending action, or its expiry passes.
   then: >-
-    The answer is decided under ordinary access using the Conduits the actor holds. Sign-in
-    is answered signed-in by sign-in.v1; setup is answered retried, ready, retired or
-    dismissed (PND-006); notice is answered acknowledged by answer.v1. Enrollment and
-    anything touching a secret remain root's. A scoped Interface completes sign-ins only for
-    Agents of its scoped Fleets. A retired sign-in subject answers void.
+    The answer is decided under ordinary access using the Conduits the actor holds. Sign-in is
+    answered signed-in by sign-in.v1; setup is answered retried, ready, retired or dismissed
+    (PND-006); notice is answered acknowledged by answer.v1. Enrollment, machine and
+    machine-removal are answered under PND-008 at root alone; anything touching a secret
+    remains root's. A scoped Interface completes sign-ins only for Agents of its scoped
+    Fleets. A retired sign-in subject answers void.
   observable: >-
-    Every action has an expiry, whose duration is DL19. Once it passes the answer is
+    Every action has an expiry, whose duration is DL19; enrollment shares the expiry
+    bounded by ENR-001 and DL5. Once it passes the answer is
     expired, with no actor, and nothing is dispatched. An operation answering an answered,
     expired or void action reports conflict after the access decision. Expiry starts no
     hook, setup or model work. Answers add no authority and do not resume any request that
@@ -75,14 +79,16 @@
     recorded with the answer.
   observable: >-
     Other evidence is disclosed only to Interfaces at which the action is raised, limited by
-    inspection under PND-002. A URL to open is a prompt, not evidence: only IFC-049 relays
-    it, never tool content, structuredContent or records. It is held only until its expiry
-    or the action's answer. An enrollment command action likewise appears only in the panel.
-    Evidence with an answer follows its disclosure; a record of that answer is distinct from
-    a record of a request. Inspection or export of answer records through a tool also
-    withholds code and fingerprint values; storing them with the answer never authorizes
-    returning them on the wire. The panel can display the full recorded evidence to a person
-    permitted to inspect the answer.
+    inspection under PND-002. A URL to open is a prompt, not evidence: only IFC-049 relays it,
+    never tool content, structuredContent or records. It is held only until its expiry or the
+    action's answer. An enrollment join action follows ENR-003: only a secret-free URL may be
+    relayed under IFC-049, and every command and secret-bearing action appears only at root's
+    panel. Pending machine evidence follows PND-008, including attestation and fact values.
+    Evidence with an answer follows its disclosure; a record of that answer is distinct from a
+    record of a request. Inspection or export of answer records through a tool also withholds
+    code and fingerprint values; storing them with the answer never authorizes returning them
+    on the wire. The panel can display the full recorded evidence to a person permitted to
+    inspect the answer.
   vectors: []
 
 - id: PND-009
@@ -99,16 +105,17 @@
   observable: >-
     An action not raised at the caller reports refused before invalid, revealing nothing of
     whether it exists. An answer not accepted by the kind reports invalid and names the
-    answering operation: sign-in.v1 for sign-in, and the enrollment verbs for enrollment.
-    answer.v1 accepts dismissed for setup and acknowledged for notice. It has no outputs and
-    dispatches no hook or model work. Already answered actions report conflict (PND-003).
-    Where subjects have different inspection targets, authorization follows the subject the
-    kind defines for answering: the notice's Fleet under PND-007. A setup action touches a
-    secret only through its setup operation; dismissing it dispatches nothing. Root alone
-    answers an action whose answer itself touches a secret.
-    For an action already answered, the raised-at test uses its retained subjects and the
-    Interface's current scope; it is no longer listed, but an authorized further answer
-    reports conflict under PND-003.
+    answering operation: sign-in.v1 for sign-in, admit-machine.v1 and refuse-machine.v1
+    for enrollment, and refuse-machine.v1 for machine. answer.v1 accepts
+    dismissed for setup, acknowledged for notice and kept for machine-removal (PND-008). It
+    has no outputs and dispatches no hook or model work. Already answered actions report
+    conflict (PND-003). Where subjects have different inspection targets, authorization
+    follows the subject the kind defines for answering: the notice's Fleet under PND-007. A
+    setup action touches a secret only through its setup operation; dismissing it dispatches
+    nothing. Root alone answers an action whose answer itself touches a secret. For an action
+    already answered, the raised-at test uses its retained subjects and the Interface's
+    current scope; it is no longer listed, but an authorized further answer reports conflict
+    under PND-003.
   vectors: []
 
 - id: PND-012
@@ -233,4 +240,32 @@
     acknowledged. The retirement result names each notice in
     io.github.shrav-k.conduit/pendingAction. Raising a notice closes nothing beyond CON-008
     and confers no permission. Evidence is disclosed under PND-002 and PND-004.
+  vectors: []
+
+- id: PND-008
+  layer: convention
+  level: must
+  when: >-
+    An enrollment opens, a pending machine is reported without an open enrollment to attach
+    to, or a retired node's machine remains reported (ENR-001, ENR-004, ENR-012).
+  then: >-
+    The kind is enrollment, machine or machine-removal respectively. The sole subject of
+    enrollment and machine is the machine provider Resource, owned by system (PRV-013).
+    The sole subject of machine-removal is the node, also owned by system (PLC-026). A
+    pending machine is not an object and is no subject. These actions are raised at root
+    alone: system belongs to no scope (PND-001, PND-002). Only root's own panel shows their
+    machine evidence, code, fingerprint or join action (ENR-003, ENR-004, PND-004).
+  observable: >-
+    enrollment is answered admitted by admit-machine.v1, refused by refuse-machine.v1, or
+    expired on expiry. machine is answered refused on removal by refuse-machine.v1, or
+    expired. machine-removal is answered removed by refuse-machine.v1, kept by answer.v1
+    without removal, or expired. A retired provider closes its open enrollments refused
+    (PRV-013). DL19 governs the machine and machine-removal durations; an enrollment action
+    shares ENR-001's expiry, bounded by DL5. Other answers report invalid under PND-009,
+    naming the operation for that kind; already answered actions report conflict under
+    PND-003, after access. Tools list only ID, kind, subject, expiry and state, never a
+    pending machine's evidence, even at root: evidence is an empty list in these kinds'
+    pending-action.v1 wire views. Answer records hold the evidence shown, the
+    weaker-check flag and whether a fingerprint was compared or the weaker check accepted;
+    tool inspection and export withhold this evidence as well (PND-004, ENR-007).
   vectors: []

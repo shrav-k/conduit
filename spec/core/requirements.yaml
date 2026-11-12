@@ -1,6 +1,7 @@
 # The two Requirement contracts of the core package.
 #
 # Promises encoded:
+#   shared-host.v1  ENR-010 (fixed labels), PLC-013 (the comparison)
 #   bound.v1        ACC-029 (a bound names Pools, individual targets and operations, and is a
 #                   restriction that the engine applies itself), ACC-006, ACC-012, ACC-030
 #                   (what a bound must cover), ACC-022 (the root Interface's Conduit to
@@ -80,7 +81,7 @@ metadata:
   name: shared-host.v1
   description: >-
     The consumer and the target of the Conduit run on one machine: the
-    `kubernetes.io/hostname` labels reported for their two nodes are equal. Decided once,
+    kubernetes.io/hostname labels fixed for their two nodes under ENR-010 are equal. Decided once,
     when the Conduit is instantiated: a Conduit for which they differ, or either is absent, is
     not instantiated, and neither is one an end of which has no placement or is one for which
     no item that is run is selected, since such an end runs on no machine.

@@ -7,8 +7,8 @@
 #                   ACC-028, ACC-033 (a Pool's own operations); CTR-004 (a Type of the family
 #                   Pool offers `pool-management.v1`)
 #   node.v1         the type of every node (PLC-008): a node has an empty configuration,
-#                   offers no capability and lists no control; its labels are reported status
-#                   (PLC-026), and the engine alone makes one (FST-006)
+#                   offers no capability and lists no control; its labels are fixed at admission
+#                   (ENR-010, PLC-026), and the engine alone makes one (FST-006)
 #   management.v1   the type of `management` (FST-001, ACC-033, OPS-019)
 #   access.v1       the type of `access` (FST-001, ACC-006, ACC-012); it requires
 #                   `reconcile.v1`, which its capability includes (ACC-033)
@@ -65,12 +65,12 @@ kind: Type
 metadata:
   name: node.v1
   description: >-
-    The type of every node. A node is where an Agent or a Resource runs, and represents one
-    machine that the machine provider reports: for its hostname, trimmed and lowercased,
-    whichever machine provider reports it, so retiring or replacing that provider retires no
-    node. It is a Resource owned by the `system` Pool, it is its own placement, and its
-    configuration is empty: its labels are what the provider last reported for its machine, held
-    in its status. It offers no capability and lists no control, and the engine alone makes one.
+    The type of every node: one machine the person controls. The engine makes local at first
+    start and other nodes only on admission (ENR-007). An admitted node represents the triple
+    of provider Resource, opaque machine id and hostname (PLC-026). Retiring or replacing the
+    provider retires no node but leaves it omitted. It is a Resource owned by system, its own
+    placement, with empty configuration and labels fixed under ENR-010. It offers no capability
+    and lists no control.
 spec:
   family: Resource
   schema:

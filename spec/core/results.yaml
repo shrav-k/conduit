@@ -4,6 +4,8 @@
 # for a condition and CloudEvents for a record.
 #
 # Promises relied on:
+#   evidence-item.v1  PND-004, ENR-005 (all fields required; fingerprint is 6 to 8 characters)
+#   pending-action.v1 PND-008 (enrollment subjects and root-only machine evidence)
 #   object.v1      OBJ-003 (a generated name is learned from the result), INS-016 (the nested
 #                  instances are made with the instance), LIF-009 (`nested` names the
 #                  nested instantiation that made a nested instance, by the instance that
@@ -519,6 +521,13 @@ spec:
   - where
   - proves
   additionalProperties: false
+  oneOf:
+  - properties:
+      kind: {const: fingerprint}
+      value: {type: string, minLength: 6, maxLength: 8}
+  - properties:
+      kind: {enum: [code, attestation, fact]}
+
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -526,7 +535,8 @@ metadata:
   name: pending-action.v1
   description: An action waiting on a person (PND-001 to PND-004). Answer values and kind are extensible
     strings. Wire views remove code and fingerprint evidence, and disclose no omitted count; complete
-    evidence is retained for the panel and answer.
+    evidence is retained for the panel and answer. Enrollment machine evidence is withheld
+    entirely from wire views, even at root (PND-008).
 spec:
   type: object
   properties:

@@ -1,0 +1,288 @@
+# Enrollment: a machine joins pending and becomes a node only on root's admission.
+# Evidence is provider-reported; the engine enforces the minimum and renders the panel.
+# Standing: draft specification; see spec/README.md for status and coverage.
+
+- id: ENR-001
+  layer: convention
+  level: must
+  when: >-
+    The root Interface asks enroll-machine.v1 to open an enrollment.
+  then: >-
+    Within that invocation the engine allocates an enrollment ID and calls enroll.v1 of the
+    machine provider in force, with that ID, labels, expires, require and headless. Once the
+    call succeeds and its declared evidence kinds meet the checks below, one enrollment is
+    open and one pending action of kind enrollment is raised at root (PND-008). The enrollment
+    holds its ID, provider Resource's ID, labels, expiry, require, headless and
+    acceptWeakerCheck. Omitted labels and require mean empty collections, and omitted
+    headless and acceptWeakerCheck mean false; these are no schema defaults. Its expiry
+    is no later than the provider's action's expiry or the
+    requested expires. The result gives only enrollment and pendingAction, their two IDs.
+  observable: >-
+    ACC-032 refuses any other actor first. A reserved label key, an expires that is past or
+    beyond DL5's maximum, or acceptWeakerCheck without headless reports invalid, naming the
+    input under this rule. Reserved keys are os, arch and kubernetes.io/hostname, and every
+    key under kubernetes.io/ or k8s.io/. require accepts only attestation. With no registered
+    machine provider that is not retired, or one that is not ready, the request reports
+    unavailable, naming the missing or unready provider (PRV-003). The declared kinds must
+    include fingerprint for an enrollment that is not headless; fingerprint and attestation
+    for headless without acceptWeakerCheck; and at least one of fingerprint or attestation
+    for headless with acceptWeakerCheck. require: [attestation] adds attestation in every
+    case. If these checks fail, the invocation ends failed with a diagnostic naming this rule
+    and the missing kinds, including the alternatives where neither minimum kind is declared.
+    No action is shown, no pending action is raised and no enrollment stays open. A provider
+    call that does not succeed likewise leaves no open enrollment. No input lowers ENR-005's
+    minimum. The weaker-check flag is recorded on the enrollment and with its answer; the
+    person's named flag is --accept-weaker-check. IFC-049 governs returning the two IDs when
+    a secret-free URL is relayed; no subsequent client answer opens or closes the enrollment.
+  vectors: []
+
+- id: ENR-002
+  layer: convention
+  level: must
+  when: >-
+    A machine provider serves enroll.v1.
+  then: >-
+    It returns one action, a url to open or a command to run on the new machine, or an action
+    for each operating system keyed by the value of kubernetes.io/os. It returns message,
+    carriesSecret, expires no later than the requested expiry, and evidence, the kinds it
+    will report for a machine that joins. Any secret is single-use and lapses at that expiry.
+    A machine joining by it is pending; where the provider's network supports approval, it
+    cannot send or receive traffic until accept-machine.v1. The provider binds the
+    enrollment's labels to the machine so the machine cannot change them. Where it can give
+    an action that carries no secret it gives that one.
+  observable: >-
+    The provider's contract states its means, such as tags; the form of the secret; how it
+    pins its coordination server; how it attributes a joined machine to an enrollment; the
+    evidence items and where on the machine each is shown; and the fingerprint's alphabet.
+    Each machine has a required, opaque id, stable and scoped to that provider, derived from
+    the machine's key where the provider offers one; the contract states how it derives it.
+    The provider reports that id, enrollment and evidence under PRV-014. An action does not
+    authorize any request, and joining makes no node (ENR-004, ENR-011).
+  vectors: []
+
+- id: ENR-003
+  layer: interface
+  level: must not
+  when: >-
+    The engine holds the action returned by enroll.v1.
+  then: >-
+    Any part of it appears in a record, result, inspection, observation, diagnostic or _meta,
+    whatever the provider's type states under records; or an elicitation message holds any
+    part of the join action.
+  observable: >-
+    A command action, and any action that carries a secret, is shown only in the engine's
+    own rendering at root's panel. Only a secret-free url satisfying IFC-049 may be relayed
+    as URL elicitation, outside tool content and structuredContent. The panel shows the join
+    action only while the enrollment is open, unexpired and no
+    machine has joined. A join replaces it with ENR-004's machine evidence. An action listed
+    through a tool gives its ID, kind, subject, expiry and state, never its join action or
+    pending machine's evidence (PND-008). A request without URL elicitation capability gets
+    the two IDs at once, with no -32021; its action is shown only at the panel. Actions are
+    held only until that join, answer or expiry (PND-004).
+  vectors: []
+
+- id: ENR-004
+  layer: convention
+  level: must
+  when: >-
+    list-machines.v1 reports a machine pending.
+  then: >-
+    No node represents it and the provider places no instance on it. If its enrollment names
+    an open, unexpired enrollment of this provider, the engine attaches the machine to that
+    enrollment's pending action. At root's panel the action shows hostname, id, labels,
+    evidence and each admission check that does not hold (ENR-006), and no longer shows the
+    join action. Otherwise one action of kind machine is raised at root for that machine,
+    saying why it cannot be admitted. A pending machine is not an object or a subject.
+  observable: >-
+    Two machines attributed to one enrollment are both shown and neither is admissible. A
+    repeated report of the same pending machine raises no duplicate unanswered action.
+    Evidence is rendered only by the engine at root's panel, never in tool results or
+    notifications (PND-008). Nothing is granted by the join (ENR-011). Only a new enrollment
+    and admission may make a node after refusal, expiry or retirement of its earlier node.
+  vectors: []
+
+- id: ENR-005
+  layer: language
+  level: must
+  when: >-
+    A machine provider reports evidence for enrollment.
+  then: >-
+    It is a list of evidence-item.v1 items, each with kind, value, where and proves, all
+    required (PND-004). fingerprint is derived from the machine's key and has a string value
+    of 6 to 8 characters, the same on the machine and in the panel. The panel shows the value
+    exactly as the provider reported it. attestation is a platform or hardware statement that
+    the provider verified. code is for one transaction, such as a device-flow user code, and
+    is not derived from a key. fact is something the machine reports about itself.
+  observable: >-
+    At least one item must be fingerprint or attestation for admission; code and fact alone
+    never meet the minimum. where says where on the machine the person finds the item, for
+    example a command to read it. Every answer to an action showing evidence records that
+    evidence under PND-012, with disclosure limited by PND-004 and PND-008. No model's turn
+    supplies evidence. Attestation never replaces ENR-006's fingerprint comparison outside
+    the recorded headless exception.
+  vectors: []
+
+- id: ENR-006
+  layer: convention
+  level: must
+  when: >-
+    The root Interface asks admit-machine.v1 with enrollment and machine, the provider's id.
+  then: >-
+    The request is dispatched only if all applicable checks hold.
+    (1) The provider in force reports that id pending and attributed to this enrollment.
+    (2) Root opened the enrollment through that provider, its enroll.v1 succeeded, it is
+    open and unexpired, and no other machine has joined by it.
+    (3) The hostname is neither local's, a non-retired node's, nor another pending machine's.
+    (4) The labels are exactly kubernetes.io/hostname, kubernetes.io/os and kubernetes.io/arch
+    plus the enrollment's labels, with their values.
+    (5) The evidence holds at least one fingerprint or attestation.
+    (6) If require includes attestation, or headless is set without acceptWeakerCheck, the
+    evidence holds attestation.
+    (7) Except for headless with acceptWeakerCheck, the provider reports exactly one
+    fingerprint item for this machine.
+    (8) Except for that same exception, the request carries fingerprint. When check 7 holds,
+    it equals that item's value character for character. The engine folds no case and trims
+    nothing. If check 7 fails no comparison is attempted; a supplied, schema-valid input
+    then fails no part of check 8, while a missing input still fails it.
+  observable: >-
+    Any other actor reports refused first (ACC-032). A failed check 8, including a missing
+    fingerprint input, reports invalid; every other failed check reports conflict, including
+    an unknown enrollment or machine in checks 1 and 2, and none or several
+    fingerprint items in check 7. If several checks fail, OPS-023 selects exactly one reason,
+    with invalid before conflict. Each failed check has one diagnostic naming this rule, its
+    check and cause. Diagnostics hold neither fingerprint value, code nor part of a join
+    action. With headless and acceptWeakerCheck, checks 7 and 8 do not apply: an optional
+    fingerprint input is schema-validated but ignored, never compared or recorded. Check 5
+    still applies, and require: [attestation] still requires attestation. Headless without
+    the flag requires both attestation and a typed fingerprint, read where the item's where
+    says, such as over a remote shell. A machine on which the person can read no fingerprint
+    at all is admitted only with --accept-weaker-check, recorded. A failed check dispatches
+    no accept-machine.v1. Where all checks pass but the provider is not ready, the request
+    reports unavailable with a diagnostic naming that cause under this rule. A machine
+    that cannot be admitted can still be refused (ENR-008).
+  vectors: []
+
+- id: ENR-007
+  layer: convention
+  level: must
+  when: >-
+    admit-machine.v1 is dispatched after ENR-006's checks pass.
+  then: >-
+    The engine calls accept-machine.v1 within that invocation. Once it succeeds, the engine
+    registers a node from core node, owned by system, names it under PLC-026 and sets it up.
+    The node represents the triple of provider Resource, machine id and hostname; its labels
+    follow ENR-010. The action is answered admitted and the enrollment closes. The answer's
+    record holds enrollment, machine id, evidence shown, the weaker-check flag and whether
+    the fingerprint was compared or the weaker check accepted. The output node is object.v1.
+  observable: >-
+    Registration is part of root's invocation and needs no Conduit to system. No actor
+    registers a node (PLC-028, FST-006). Admission asserts that the person controls the
+    machine; another party's machine is never a node. No Conduit or credential is made
+    (ENR-011); credentials still follow FST-007, DL6, DL13 and PRV-022. A failed accept call
+    makes no node, ends the invocation failed and leaves the action answerable. An unknown
+    accept call likewise makes no node and ends unknown; repeats follow OPS-012, not an
+    implicit retry. A repeat after success follows OPS-009. A refused, closed or expired
+    enrollment reports conflict under ENR-006. No record of a request, result, diagnostic or
+    _meta holds the typed fingerprint. Only the digest of the request's contents that
+    OPS-008 keeps as the invocation's own state, apart from records, covers it for matching
+    repeats under OPS-009 and OPS-010; that digest is the only thing derived from the typed
+    input the engine keeps. Recorded evidence is what the provider reported, not that input.
+  vectors: []
+
+- id: ENR-008
+  layer: convention
+  level: must
+  when: >-
+    The root Interface asks refuse-machine.v1 naming an enrollment, a machine id, or both.
+  then: >-
+    For each named machine, and each machine that joined by a named enrollment, that no node
+    represents, the engine calls remove-machine.v1 within this invocation. An open named
+    enrollment closes refused, so a later join by it cannot be admitted. On successful
+    removal the pending machine action is answered refused, or the machine-removal action
+    removed. A named enrollment's action is answered refused when the enrollment closes,
+    regardless of the removal's outcome. No removal happens implicitly.
+  observable: >-
+    Any other actor reports refused (ACC-032). Neither input, or a named enrollment or
+    machine that does not exist, reports invalid under this rule. A machine that a node
+    represents reports conflict naming the node, before any removal is asked for. A provider that is no
+    longer in force, is retired or is not ready reports unavailable; no replacement provider
+    is asked to remove an earlier provider's machine id. Each reason has a diagnostic naming
+    its deciding rule and cause (ACC-056, IFC-050); OPS-023 orders competing reasons. A failed
+    or unknown removal is reported as such, with its cause, never as a successful removal.
+    For each machine attached to the named enrollment that was not successfully removed,
+    the engine raises or retains one unanswered action of kind machine at root; the
+    enrollment's answered action stays answered. An existing machine or machine-removal
+    action stays answerable after failed or unknown removal. Nothing is retried without a
+    request (OPS-007, OPS-012).
+    Closing an enrollment removes no machine that has not joined; expiry removes none
+    (ENR-009). Answer records hold the evidence shown and any weaker-check flag (PND-012),
+    never a join action or the typed fingerprint (ENR-003, ENR-007).
+  vectors: []
+
+- id: ENR-009
+  layer: convention
+  level: must
+  when: >-
+    An unanswered enrollment's expiry passes.
+  then: >-
+    It closes expired and its action is answered expired without an actor. The join action
+    is no longer shown. Each machine that joined and was not admitted is raised as kind
+    machine; a later join by that enrollment is likewise raised as machine (ENR-004).
+  observable: >-
+    The engine asks the provider for nothing. No expiry dispatches removal, admission or any
+    other later work (ACC-019). Expiry before a join and expiry after a join both close the
+    enrollment, grant nothing and permit no admission. Removal always needs root's request.
+    Retiring or replacing the provider closes its open enrollments under PRV-013; a later
+    report cannot reopen them. Expiry changes no invocation's outcome (PND-012).
+  vectors: []
+
+- id: ENR-010
+  layer: convention
+  level: must
+  when: >-
+    The engine makes a node.
+  then: >-
+    Its labels are fixed at admission: kubernetes.io/hostname, kubernetes.io/os and
+    kubernetes.io/arch as then last reported, plus only the enrollment's labels. For local
+    the same three descriptive labels and any labels configured at first start are fixed at
+    first start (DL6). No later report adds, changes or removes a node's labels; a report
+    that differs leaves them as they are and adds a condition naming the difference.
+  observable: >-
+    Labels are held in status, but are not freely mutable reported status. The enrollment's
+    labels are the narrow exception to no document or operation setting one; no operation
+    changes a node's labels after it is made. Selectors read these fixed labels (PLC-007,
+    PLC-013). A Linux environment inside another operating system, such as WSL2 on Windows,
+    is a machine of its own and reports linux for kubernetes.io/os (PRV-014).
+  vectors: []
+
+- id: ENR-011
+  layer: convention
+  level: must not
+  when: >-
+    A machine joins a provider's network, is accepted there or is admitted as a node.
+  then: >-
+    This establishes which instance sent a request or permits any request.
+  observable: >-
+    Admission makes only the node, no Conduit and no credential. Only what a request presents
+    establishes who sent it (IFC-022, PRV-018). Only an open
+    Conduit permits it (ACC-001). Sharing a network or a node gives no access (PLC-012).
+  vectors: []
+
+- id: ENR-012
+  layer: convention
+  level: must
+  when: >-
+    A node is retired, either declared lost by root under PLC-017 or retired by a request
+    under PLC-011, and the provider still reports its machine other than gone.
+  then: >-
+    The engine raises one pending action of kind machine-removal at root, with the retired
+    node as subject, retaining its provider and machine id. Nothing is removed until root
+    asks refuse-machine.v1, which answers removed on success. answer.v1 with kept dismisses
+    the question without a provider call (PND-008).
+  observable: >-
+    A report of gone raises no removal question. Repeated retirement or declaration raises
+    no duplicate unanswered action. Expiry answers expired and removes nothing (PND-003).
+    A retired or replaced provider is never called and a new provider is never given the old
+    id (ENR-008, PRV-013). A node that the engine made gets no tombstone (LIF-040), so a new
+    admission can take its hostname again, under PLC-026.
+  vectors: []

@@ -1,7 +1,7 @@
 # Placement: where an Agent or Resource runs.
-# A node represents a machine that the machine provider reports (spec/promises/providers.yaml),
-# and what a type or an implementation needs of a node is a label selector, matched against the
-# labels reported for it, as a Kubernetes `nodeSelector` is.
+# A node represents an admitted machine (ENR-007), or local at first start. A type or an
+# implementation selects a node by the labels fixed when the node is made (ENR-010),
+# as a Kubernetes `nodeSelector` does.
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # Removed IDs (not reused):
@@ -87,19 +87,19 @@
   layer: language
   level: must
   when: >-
-    An Agent or a Resource would be instantiated with a placement, and the labels reported for
-    that node do not hold each label of the instance's label selector with the value it gives.
-    Where an item that is run is selected for the instance, that selector is the union of the
-    `nodeSelector` that the instance's type and each implementation item selected for it state
-    and, where the instance names no `runtime`, the label `kubernetes.io/hostname` with the
-    value that `local`'s status holds. Where no item that is run is selected for it, the
-    selector is empty, since nothing of the instance runs.
+    An Agent or a Resource would be instantiated with a placement, and the labels fixed for
+    that node under ENR-010 do not hold each label of the instance's label selector with the
+    value it gives. Where an item that is run is selected for the instance, that selector is
+    the union of the `nodeSelector` that the instance's type and each implementation item
+    selected for it state and, where the instance names no `runtime`, the label
+    `kubernetes.io/hostname` with the value that `local`'s status holds. Where no item that is
+    run is selected for it, the selector is empty, since nothing of the instance runs.
   then: >-
     The instance is not instantiated.
   observable: >-
     Resolving returns a diagnostic naming the label, the node and which of the type, the item
     or the engine's own runner gives the label, before any effect. A label that is
-    absent from the node's reported labels does not match. PLC-025 keeps the type and the
+    absent from the node's fixed labels does not match. PLC-025 keeps the type and the
     items from naming one label with two values; where the type or an item names
     `kubernetes.io/hostname` with another value for an instance that runs on the engine's own
     runner, no node matches. The label of the engine's own runner is added as Kubernetes
@@ -109,7 +109,8 @@
     and its type's and items' `nodeSelector` are not checked, as round 5's V6 settled.
     The selector is decided from the documents and the labels that the node's status holds
     under PLC-026, without reaching the machine, when the instance is instantiated and not
-    again: a later report of other labels changes no instance placed on the node. A
+    again: a later report of other labels changes neither the node's labels nor an instance
+    placed on it (ENR-010). A
     placement that the machine provider chose under PRV-015 is checked in the same way, and the
     provider is given this selector.
   vectors: []
@@ -120,15 +121,16 @@
   when: >-
     A node exists.
   then: >-
-    It is a Resource of the core type `node.v1`, owned by `system`, and it is its own
-    placement. Its configuration is empty. The engine makes it, `local` at first start and every
-    other node under PLC-026, and no instance document makes one, under FST-006 and PLC-028.
+    It is a Resource of the core type node.v1, owned by system, and is its own placement. Its
+    configuration is empty. The engine makes local at first start and every other node on
+    admission (ENR-007, PLC-026); no instance document makes one (FST-006, PLC-028).
   observable: >-
-    Inspecting a node shows the kind Resource, the type `node.v1`, `system` as owner,
-    its own ID as placement, an empty configuration, and in its status the labels last reported
-    for the machine it represents, under PLC-026. The type `node.v1` offers no capability
-    and lists no control, so nothing changes a node once it is made apart from its lifecycle
-    state and the labels reported for it.
+    Inspecting a node shows kind Resource, type node.v1, system as owner, its own ID as
+    placement and empty configuration. Status holds its labels fixed under ENR-010, and for an
+    admitted node machine {provider, id, hostname} and enrollment, identifying the provider
+    Resource, its machine and the enrollment that admitted it. local represents the engine's
+    hostname alone. node.v1 offers no capability and lists no control; no operation changes
+    its binding or labels after it is made.
   vectors: []
 
 - id: PLC-009
@@ -179,7 +181,7 @@
   level: must
   when: >-
     A Conduit is instantiated that applies `shared-host.v1`, and the `kubernetes.io/hostname`
-    labels reported for its consumer's node and for its target's node are not equal, or
+    labels fixed for its consumer's node and for its target's node are not equal, or
     either is absent.
   then: >-
     The Conduit is not instantiated.
@@ -224,17 +226,19 @@
     One of them whose shutdown is unknown is removed by a request to unregister it, under
     LIF-017, with no reconciliation, and that request asks its runtime provider for the stop
     once more, under LIF-036; one whose shutdown is confirmed is removed under LIF-035. The
-    Conduits of which any of them was an end are closed under CON-008. The declaration asks for
-    no stop: a run left on a machine that comes back is asked to stop only by a further
+    Conduits of which any of them was an end are closed under CON-008. The declaration asks
+    for no stop: a run left on a machine that comes back is asked to stop only by a further
     retirement, under PLC-027 and PRV-008, or by the request to unregister, under LIF-036. The
     declaration takes effect at once and dispatches nothing, so REV-012 does not hold it back
     where a setup, a retirement or a change of an instance placed there is in progress: the
     parts already dispatched end as they end, and no later part begins, under TPL-012. LIF-015
-    lists the request among those that a retired instance takes: a node that a request retired,
-    and whose own shutdown is not confirmed, is declared lost and can then be unregistered. A
-    second request for one node succeeds because the effect that `declare-lost.v1` describes
-    has occurred. The engine declares a node lost in the same way where the machine provider
-    reports its machine gone, under PLC-024.
+    lists the request among those that a retired instance takes: a node that a request
+    retired, and whose own shutdown is not confirmed, is declared lost and can then be
+    unregistered. A second request for one node succeeds because the effect that
+    `declare-lost.v1` describes has occurred. The engine declares a node lost in the same way
+    where the machine provider reports its machine gone, under PLC-024. If the provider still
+    reports its machine other than gone, ENR-012 raises a machine-removal question at root;
+    declaring lost removes nothing at the provider.
   vectors: []
 
 - id: PLC-018
@@ -302,28 +306,32 @@
     run that is not asked for. Nothing is retired because a machine is unreachable or omitted.
   observable: >-
     In a setup or a retirement, the part that would ask for the run or the stop reports
-    unavailable, as PRV-007 and PRV-008 have it report where the runtime provider is not ready.
-    The instance keeps its lifecycle state, under LIF-010, and what cannot be observed of it is
-    reported as unknown, under OBS-003. Its Conduits stay open, under CON-007. Once the provider
-    reports the machine reachable again, a request to the instance is decided as any other. A
-    machine that sleeps, or whose network is cut, so loses no instance: only a machine reported
-    gone retires, under PLC-024. A machine that a report omits counts as reported unreachable
-    until a report gives it a state, as Kubernetes sets a Node's condition `Ready` to `Unknown`
-    once its kubelet stops reporting; where no report arrives within the time that DL5 of the
-    implementation-defined list gives, every machine but the one that `local` represents counts
-    as omitted. How often the engine asks the machine provider is DL5 too; after the engine
-    restarts, it runs the machine provider again to ask for its next report, under PRV-026,
-    rather than wait for an actor to set it up; a report received before the engine last started
-    counts for nothing, so until the first report after it every machine but the one that
-    `local` represents counts as omitted. A read of a secret that the machine provider's run
-    needs is dispatched all the same, wherever its secret Resource is placed: that provider's
-    report is what gives a machine a state again, so holding the read back would keep every
-    machine but that one omitted after every restart. Where the read cannot reach its machine,
-    it does not succeed, and the report counts as not received, under PRV-026. A report that
-    the machine that `local` represents is unreachable, or that omits it, makes nothing
-    unavailable: the engine runs on that machine, and `management` and `access` are placed there
-    at first start, and every provider other than a secret Resource under PRV-002. Where the
-    actor is not permitted, OPS-023 gives refused first.
+    unavailable, as PRV-007 and PRV-008 have it report where the runtime provider is not
+    ready. The instance keeps its lifecycle state, under LIF-010, and what cannot be observed
+    of it is reported as unknown, under OBS-003. Its Conduits stay open, under CON-007. Once
+    the provider reports the machine reachable again, a request to the instance is decided as
+    any other. A machine that sleeps, or whose network is cut, so loses no instance: only a
+    machine reported gone retires, under PLC-024. A machine that a report omits counts as
+    reported unreachable until a report gives it a state, as Kubernetes sets a Node's
+    condition `Ready` to `Unknown` once its kubelet stops reporting; where no report arrives
+    within the time that DL5 of the implementation-defined list gives, every machine but the
+    one that `local` represents counts as omitted. How often the engine asks the machine
+    provider is DL5 too; after the engine restarts, it runs the machine provider again to ask
+    for its next report, under PRV-026, rather than wait for an actor to set it up; a report
+    received before the engine last started counts for nothing, so until the first report
+    after it every machine but the one that `local` represents counts as omitted. A read of a
+    secret that the machine provider's run needs is dispatched all the same, wherever its
+    secret Resource is placed: that provider's report is what gives a machine a state again,
+    so holding the read back would keep every machine but that one omitted after every
+    restart. Where the read cannot reach its machine, it does not succeed, and the report
+    counts as not received, under PRV-026. A report that the machine that `local` represents
+    is unreachable, or that omits it, makes nothing unavailable: the engine runs on that
+    machine, and `management` and `access` are placed there at first start, and every provider
+    other than a secret Resource under PRV-002. Where the actor is not permitted, OPS-023
+    gives refused first. A report that gives a node's hostname under another machine id, its
+    id under another hostname, or comes from another provider Resource does not represent that
+    node: it counts as omitted and gets a condition naming the mismatch (PLC-026). Only a
+    matching triple can report that node reachable again.
   vectors: []
 
 - id: PLC-024
@@ -338,17 +346,19 @@
     provider reported the machine gone.
   observable: >-
     No actor asks for it, and no request is made. It takes effect at once and dispatches
-    nothing, as the root Interface's declaration does under PLC-017, so REV-012 does not hold it
-    back. The Conduits of which any of them is an end are closed under CON-008, and an instance
-    whose shutdown is unknown is removed by a request to unregister it, under LIF-017, as where
-    the root Interface declares a node lost. Where no node represents the machine, nothing is
-    retired. A machine that the provider later reports again under the same hostname is given a
-    new node under PLC-026, because a retired node is never brought back, under LIF-006. A
-    machine reported unreachable retires nothing, under PLC-023. A report that the machine that
-    `local` represents is gone retires nothing: the engine runs on that machine, so no
-    first-start object and no provider other than a secret Resource is retired by a report. A
-    further retirement of an instance left on the node dispatches no retire hook and asks for no
-    run, under PLC-027.
+    nothing, as the root Interface's declaration does under PLC-017, so REV-012 does not hold
+    it back. The Conduits of which any of them is an end are closed under CON-008, and an
+    instance whose shutdown is unknown is removed by a request to unregister it, under
+    LIF-017, as where the root Interface declares a node lost. Where no node represents the
+    machine, nothing is retired. A machine that the provider later reports again needs a new
+    enrollment and admission under ENR-006 and ENR-007 before a new node represents it: a
+    retired node is never brought back (LIF-006). A node made by the engine gets no tombstone
+    (LIF-040), so the new node may take its hostname again. A report of gone raises no
+    machine-removal question (ENR-012). A machine reported unreachable retires nothing, under
+    PLC-023. A report that the machine that `local` represents is gone retires nothing: the
+    engine runs on that machine, so no first-start object and no provider other than a secret
+    Resource is retired by a report. A further retirement of an instance left on the node
+    dispatches no retire hook and asks for no run, under PLC-027.
   vectors: []
 
 - id: PLC-025
@@ -372,36 +382,29 @@
   layer: convention
   level: must
   when: >-
-    The machine provider reports a machine, reachable or unreachable, that no node
-    represents.
+    The engine makes a node, local at first start or another node on admission under ENR-007.
   then: >-
-    The engine registers a node for it from the core package's template `node`, owned by
-    `system`, and sets it up. The node is named by the part of the machine's hostname before
-    the first dot, where that is a valid name under OBJ-001 that no Resource that exists has
-    under OBJ-002, and otherwise under OBJ-003. A hostname is compared in its canonical form,
-    trimmed and lowercased, and a node represents a hostname, whichever machine provider
-    reports it. The machine the engine runs on is the one whose hostname is the engine's own:
-    the operating system's, unless the engine is configured with another, under DL5. `local`,
-    which first start makes, represents it, and no other node does. A node's labels are
-    those the provider last reported for its machine, held in its status.
+    It registers the node from core node, owned by system, and sets it up. An admitted node
+    represents the triple of provider Resource, machine id and hostname until it is retired.
+    Its status holds machine {provider, id, hostname}, enrollment and the labels fixed under
+    ENR-010. It is named by the part of the hostname before the first dot if that is valid
+    under OBJ-001 and unused by any existing Resource under OBJ-002, otherwise under OBJ-003.
+    Hostnames are compared in canonical form, trimmed and lowercased. local represents only
+    the engine's hostname, the operating system's unless configured otherwise (DL5); no other
+    node represents it, and local is never pending.
   observable: >-
-    A node represents the machine it was registered for, which its status names by its
-    `kubernetes.io/hostname` label, until it is retired: a retired node represents none. The
-    engine makes the node itself, as it makes the first-start objects: no actor asks for it, and
-    its registration and its lifecycle states are recorded under REC-001. Its setup dispatches
-    nothing and succeeds at once. A machine reported gone is given no node. Labels are reported
-    status and never configuration: a report of other labels changes the node's status and
-    nothing else, under PLC-007. Retiring or replacing the machine provider, under PRV-013,
-    retires no node, as Kubernetes takes a Node of the same name to be the same object: a later
-    provider that reports the hostname reports the same node, and one that does not leaves it
-    omitted, under PLC-023. An actor may retire the node of a machine that is still reported
-    once no other instance is placed on it, under PLC-011, and the next report registers a new
-    one. With no machine provider, the engine's own machine provider reports the one machine the
-    engine runs on, under PRV-003, and `local` represents it. An engine that restarts on another
-    machine, or runs as several parts, runs only on machines that take its hostname, under DL17,
-    so `local` represents one hostname whichever of them runs the engine, and an instance placed
-    on `local`, with each value of it that is tied to that node, under PLC-020, keeps its
-    meaning.
+    A report alone never makes a node. A retired node represents no machine; a new admission
+    is required to make another, which may take the hostname again because engine-made nodes
+    get no tombstone (LIF-040). A report of a hostname under another id, an id under another
+    hostname or by another provider Resource leaves the node omitted and adds a condition
+    (PLC-023). Retiring or replacing the provider retires no node, but closes open enrollments
+    and leaves every non-local node omitted until its machine is enrolled again (PRV-013). The
+    engine makes the node itself, with no instance document; registration and lifecycle states
+    are recorded (REC-001). Its setup dispatches nothing and succeeds at once. With no
+    registered provider the engine's own provider reports only local's machine (PRV-003). An
+    engine that restarts on another machine or runs as several parts runs only on machines
+    taking its hostname (DL17), so local and its node-tied values keep their meaning
+    (PLC-020).
   vectors: []
 
 
@@ -443,9 +446,10 @@
   then: >-
     The template is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the template and the type. Every node is made by
-    the engine from the core package's template `node`, under PLC-008 and PLC-026, and no
-    instance document is made from that template, under FST-006, so no actor registers a
-    node, through that template or through one of its own. A Pool's entry is made from a
-    template too, so no entry makes a node either.
+    Resolving returns a diagnostic naming the template and the type. Every node is made by the
+    engine from the core package's template `node`, under PLC-008 and PLC-026, and no instance
+    document is made from that template, under FST-006, so no actor registers a node, through
+    that template or through one of its own. A Pool's entry is made from a template too, so no
+    entry makes a node either. The engine makes local at first start and every other node only
+    on admission (ENR-007).
   vectors: []

@@ -13,8 +13,8 @@
 #                    `access`, and every machine provider and package-source provider,
 #                    PRV-013)
 #   node             FST-001, FST-005, PLC-008, PLC-026. The engine instantiates it
-#                    for `local` at first start and for every other machine that the machine
-#                    provider reports, and nothing else does (FST-006)
+#                    for local at first start and on admission (ENR-007), never by a report
+#                    alone; labels are fixed under ENR-010, and nothing else makes one (FST-006)
 #   management       FST-001, FST-005
 #   access           FST-001, FST-005
 #   root             FST-001, FST-002 (one Conduit each to `management`, `access` and `system`),
@@ -40,7 +40,8 @@ metadata:
   name: system
   description: >-
     The template of the `system` Pool, which owns nodes, the `management` and `access`
-    Resources, and the machine provider and the package-source providers.
+    Resources, and the machine provider and the package-source providers (PRV-013).
+    Its nodes are made at first start or on enrollment admission (ENR-007, PLC-026).
 spec:
   type: github.com/shrav-k/conduit/core#pool.v1
   config: {}
@@ -50,9 +51,9 @@ kind: Resource
 metadata:
   name: node
   description: >-
-    The template of a node. The engine instantiates it for each machine that the machine
-    provider reports and that no node represents. It has no input and no configuration:
-    a node's labels are reported status.
+    The template of a node. The engine instantiates local at first start and every other
+    node only on admission (ENR-007, PLC-026). It has no input and no configuration; labels
+    are fixed when it is made (ENR-010). An admitted node binds provider, machine id and hostname.
 spec:
   type: github.com/shrav-k/conduit/core#node.v1
 ---

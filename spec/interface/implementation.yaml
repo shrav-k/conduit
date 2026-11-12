@@ -1349,18 +1349,21 @@
   layer: interface
   level: must
   when: >-
-    A person's Interface requests sign-in.v1 or another URL action defined by the
-    specification.
+    A person's Interface requests sign-in.v1 or enroll-machine.v1 with a secret-free URL
+    action that can be relayed under this rule.
   then: >-
-    The request must declare elicitation URL mode as {"url": {}} in
-    _meta.io.modelcontextprotocol/clientCapabilities. If it does not, the engine answers
-    -32021 with data.requiredCapabilities naming URL elicitation, without sending an
-    elicitation. Otherwise tools/call may return InputRequiredResult with resultType
-    input_required and exactly one inputRequests entry: elicitation/create with mode url,
-    message and url. The message names the instance, expected account where applicable and
-    what follows, but holds no code or fingerprint. The URL is HTTPS only, contains no
-    credential or personal data and is not pre-authenticated. No tool content,
-    structuredContent or record holds it.
+    For sign-in.v1 the request must declare {"elicitation": {"url": {}}} in
+    _meta.io.modelcontextprotocol/clientCapabilities; without it the engine answers -32021
+    with data.requiredCapabilities naming URL elicitation, sending no elicitation. An
+    enroll-machine.v1 request without it succeeds with enrollment and pendingAction IDs at
+    once and shows the action only at root's panel (ENR-003). With that capability tools/call
+    may return InputRequiredResult with resultType input_required and exactly one
+    inputRequests entry: elicitation/create with mode url, message and url. The message
+    names the instance or enrollment, expected account where applicable and what follows,
+    but holds no code, fingerprint or part of an enrollment action. The URL is HTTPS only,
+    contains no credential or personal data and is not pre-authenticated. No tool content,
+    structuredContent or record holds it. Every command action and any enrollment action
+    carrying a secret is shown only in the engine's own panel, never relayed (ENR-003).
   observable: >-
     There is no elicitationId or completion notification. The engine correlates retries
     through its own integrity-protected requestState, an opaque handle bound to the
@@ -1368,13 +1371,20 @@
     client echoes it exactly; the engine treats it as attacker-controlled and rejects
     tampering, replay of a consumed state or another principal. Each retry consumes its
     state; another input-required response issues a fresh state for that same invocation.
-    Accept means consent, not completion: retries poll under PND-010, blocking or returning
-    another InputRequiredResult until the account appears or the wait ends. A client need
-    never retry; no later hook runs on its behalf. Task input requests are surfaced by
-    tasks/get and fulfilled by tasks/update, with no requestState, subject to IFC-016's
-    access checks and the same expiry and account polling. Only tools/call, resources/read
-    and prompts/get support the protocol's InputRequiredResult; this specification exposes
-    the URL action by tools/call. The engine binds the flow to the requesting Interface and
-    checks the expected account under PND-011. Codes and fingerprints go only to its panel
-    and recorded answer (PND-004).
+    For sign-in, accept means consent, not completion: retries poll under PND-010, blocking
+    or returning another InputRequiredResult until the account appears or the wait ends.
+    The engine checks the expected account under PND-011. A client need never retry; no
+    later hook runs on its behalf. Enrollment differs: once enroll.v1 succeeds and ENR-001's
+    evidence-kind checks pass, the enrollment opens and its pending action is raised once.
+    No subsequent client action changes either. A retry, accepting, declining or cancelling,
+    gets the two IDs immediately with no polling, and the invocation succeeds; the person
+    sees the join at the panel (ENR-004). If no retry arrives within DL18, the invocation
+    ends succeeded with those same outputs, returned on a repeat under OPS-009. This is the
+    enrollment exception to DL18's unknown ending. Task input
+    requests are surfaced by tasks/get and fulfilled by tasks/update with no requestState,
+    subject to IFC-016's access checks and the same expiry: sign-in polls the account;
+    enrollment returns its IDs on any answer or at DL18. Only tools/call, resources/read and
+    prompts/get support the protocol's InputRequiredResult; this specification exposes the
+    URL action by tools/call. Codes and fingerprints go only to the engine's panel and
+    recorded answer (PND-004); no pending machine evidence is relayed (PND-008).
   vectors: []

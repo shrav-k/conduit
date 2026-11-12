@@ -18,7 +18,7 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 31 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
+| [operations.yaml](operations.yaml) | The 37 Operation contracts: every management verb, the setup, retire and sign-in hooks, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
 | [capabilities.yaml](capabilities.yaml) | The 8 Capability contracts: what `management`, `access`, Pools and Fleets offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
 | [types.yaml](types.yaml) | The 6 Type contracts: the basic Interface, Pool and Fleet types, and the types of a node, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
@@ -29,7 +29,7 @@ everything the promises say it exports, and everything first start needs.
 The package also exports the 51 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 140 documents, 76 of them Schema contracts,
+its inputs with them. In all the package exports 146 documents, 76 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -40,8 +40,12 @@ Every document here validates against those schemas, and `python3 tools/check_sc
 checks it.
 
 The unreleased core remains version 0.1.0. Runtime-sensitive contract edits are staged for
-build orders 039, 040 and 041a under [036b-staged](../../docs/work-orders/036b-staged/).
-Those files contain exact patches; only the contracts present here are active. Sign-in and pending-action contracts are present; 038b supplies enrollment.
+build order 048a under [036b-staged](../../docs/work-orders/036b-staged/), and enrollment
+bindings for 049a and provider contract edits for 049b under
+[038b-staged](../../docs/work-orders/038b-staged/). Those directories contain exact patches.
+The six enrollment Operation contracts are live. The operation tables below distinguish
+active capability bindings from the bindings staged for 049a and 049b.
+Only the contracts and lists present under spec/ are active.
 
 ## Names
 
@@ -71,8 +75,8 @@ holds `type: object`. The root of an operation that is not a control may hold an
 of the profile, as the protocol lets a tool's `inputSchema` do, such as a `oneOf` whose branches
 say which inputs are present; that of a control may hold beside `type` only `properties`,
 `required` and `additionalProperties`, so that every input but `revision` may be left out
-(CTR-012, REV-006). The root of every core operation holds no keyword but `type`, `properties`
-and `required`. An operation with no inputs or no outputs states no `inputSchema` or no
+(CTR-012, REV-006). Core operations use `type`, `properties` and `required` at their roots;
+refuse-machine.v1 also uses `anyOf` to require at least one of enrollment or machine. An operation with no inputs or no outputs states no `inputSchema` or no
 `outputSchema`.
 
 The engine derives a tool's definition from the contract as the target holds it (IFC-033). The
@@ -125,6 +129,9 @@ set up by `open.v1` and retired by `close.v1`.
 | `lift.v1` | `access-control.v1` | — | yes | — | ACC-053 |
 | `answer.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | yes | — | PND-009, ACC-033 |
 | `sign-in.v1` | `pool-management.v1`, `fleet-management.v1` | — | no | — | PND-010, PND-011, IFC-049 |
+| `enroll-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-001, ACC-032, IFC-049 |
+| `admit-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-006, ENR-007, ACC-032 |
+| `refuse-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-008, ENR-012, ACC-032 |
 
 ### The hooks, and the operations of providers
 
@@ -140,18 +147,22 @@ set up by `open.v1` and retired by `close.v1`.
 | `inspect-run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-009, PRV-027, PRV-028, IFC-017 |
 | `list-machines.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-014 |
 | `place.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-015 |
+| `enroll.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's enrollment | ENR-002, PRV-005 |
+| `accept-machine.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's admission | ENR-007, PRV-005 |
+| `remove-machine.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's refusal | ENR-008, ENR-012, PRV-005 |
 | `fetch-package.v1` | `package-source.v1` | The engine, by a provider call | PRV-017 |
 | `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023, PRV-026 |
 
 No Operation contract states a default implementation (CTR-002), and `engine` implements none
-of these nine (MAN-012, SEC-020): a template selects an implementation for each that it needs,
+of these fifteen (MAN-012, SEC-020): a template selects an implementation for each that it needs,
 or its type's default does (TPL-004). A provider call is not a request: no Conduit permits it, no access
 decision is made for it, and it is recorded (PRV-005). So no Conduit lists an operation of
 `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PRV-004). A Conduit may
 list `get-secret.v1`, and only the root Interface opens one, for a Resource or an Agent
 (SEC-008); no actor's request for it is dispatched and no tool is presented for it (SEC-007,
 IFC-012). None of the provider operations, nor `get-secret.v1`, states an `effect`, apart
-from `run.v1` and `stop.v1`.
+from run.v1, stop.v1 and the three enrollment provider operations (ENR-002, ENR-007,
+ENR-008).
 
 ### How to read the columns
 
@@ -360,8 +371,8 @@ shutdown of a retired instance (LIF-014, LIF-024) and `conditions`, each in the 
 Kubernetes `metav1.Condition`, `condition.v1` (LIF-011, OBS-002, OBS-003), among them the
 condition `Running` of an instance whose item is run (PRV-009), and `unreconciled`, the engine's
 ID for each invocation whose outcome is unknown and that was dispatched to the instance or names
-it (LIF-013). The status of a node holds the labels last reported for
-its machine (PLC-026). `records` is a list of `record.v1`, each a CloudEvent whose `data` holds
+it (LIF-013). The status of a node holds its fixed labels and, for an admitted node, the
+provider/machine/hostname triple and enrollment (PLC-008, PLC-026, ENR-010). `records` is a list of `record.v1`, each a CloudEvent whose `data` holds
 the fields of a record (REC-002).
 
 ## Providers
@@ -470,7 +481,7 @@ submission that held them would be rejected (FST-006, OBJ-002):
 | Object | Kind | `from` | Notes |
 | --- | --- | --- | --- |
 | `system` | Pool | `github.com/shrav-k/conduit/core#system` | Of the basic Pool type; owns the nodes, `management`, `access`, and the machine provider and package-source providers |
-| `local` | Resource | `github.com/shrav-k/conduit/core#node` | Owned by `system`; its own placement; the node that represents the machine the engine runs on, with an empty configuration and the labels reported for that machine (PLC-008, PLC-026) |
+| `local` | Resource | `github.com/shrav-k/conduit/core#node` | Owned by `system`; its own placement; the node that represents the machine the engine runs on, with an empty configuration and labels fixed at first start (PLC-008, ENR-010, PLC-026) |
 | `management` | Resource | `github.com/shrav-k/conduit/core#management` | Owned by `system`, placed on `local` |
 | `access` | Resource | `github.com/shrav-k/conduit/core#access` | Owned by `system`, placed on `local` |
 | `root` | Interface | `github.com/shrav-k/conduit/core#root` | Declares three Conduits, which are instantiated with it |
@@ -484,10 +495,9 @@ gets a generated name (OBJ-003), and FST-001 fixes these two names.
 The first-start objects are identified by their IDs, and a name is fixed once its object is
 made (OBJ-011). No instance document is made from the templates `system`, `node`,
 `management`, `access` and `root` (FST-006). The engine alone instantiates `node`: for
-`local` at first start, and for every other machine that the machine provider reports and no
-node represents, naming the node from the machine's hostname (PLC-026). A node
-offers no capability and lists no control, so nothing changes it once it is made apart from its
-lifecycle state and the labels reported for it (PLC-008).
+local at first start, and every other node only on admission, naming it from the
+machine's hostname (ENR-007, PLC-026). A node offers no capability and lists no control;
+its binding and labels are fixed when made (PLC-008, ENR-010).
 
 ## Every export
 
@@ -552,13 +562,13 @@ lifecycle state and the labels reported for it (PLC-008).
 | `pool-entry-reference.v1` | Schema, a reference schema | OBJ-021, POOL-014 |
 | `secret-reference.v1` | Schema, a reference schema | OBJ-021, SEC-001, SEC-002 |
 | `object.v1` | Schema | OBJ-003, LIF-009: a result names each instance made, and says which nested instantiation made a nested one. Its shape is a choice |
-| `answer.v1` | Operation | PND-009, ACC-033: answer a setup or notice, as an Interface |
+| `answer.v1` | Operation | PND-009, PND-008, ACC-033: dismiss setup, acknowledge notice or keep a machine, as an Interface |
 | `sign-in.v1` | Operation | PND-010, PND-011, IFC-049: sign in and check the expected account |
 | `sign-in-hook.v1` | Operation | CTR-013: begin login, as a part only |
 | `account-hook.v1` | Operation | CTR-013, PND-011: report the client account, as a part only |
 | `sign-out-hook.v1` | Operation | CTR-013, PND-011: undo the client sign-in, as a part only |
 | `pending-action.v1` | Schema | PND-001 to PND-004: action, evidence, expiry and answer |
-| `evidence-item.v1` | Schema | PND-004: kind, value, where and proves |
+| `evidence-item.v1` | Schema | PND-004, ENR-005: kind, value, where and proves; fingerprint has 6 to 8 characters |
 | `refusal.v1` | Schema | ACC-056: the two disclosure tiers |
 | `diagnostic.v1` | Schema | IFC-025, OBJ-008, PKG-006: SARIF 2.1.0's `result`, reduced |
 | `handle.v1` | Schema | CTR-002, IFC-011 |
@@ -635,6 +645,12 @@ lifecycle state and the labels reported for it (PLC-008).
 | `root-fleet` | Conduit template | FLEET-005, ACC-024 |
 | `retire-fleet` | Conduit template | LIF-021 |
 | `fleet-reference.v1` | Schema, a reference schema | FLEET-002, OBJ-006, OBJ-021 |
+| `enroll-machine.v1` | Operation | ENR-001, IFC-049: open enrollment and return its two IDs |
+| `admit-machine.v1` | Operation | ENR-006, ENR-007: compare the fingerprint and admit |
+| `refuse-machine.v1` | Operation | ENR-008, ENR-012: refuse or remove a machine |
+| `enroll.v1` | Operation | ENR-002: provider join action and declared evidence kinds |
+| `accept-machine.v1` | Operation | ENR-007: accept the pending machine at its provider |
+| `remove-machine.v1` | Operation | ENR-008: remove the machine at its provider |
 | `engine` | Implementation | TPL-004 (the engine implements every operation it lists, with no selection), TPL-003 (no template or type selects one of them), MAN-012 (it states none of `command`, `package` and `remote` and no `supports`) |
 
 ## What this package does not settle

@@ -88,14 +88,15 @@
     engine's own environment is PRV-023. That process runs as the operating-system user that
     DL16 states, which is usually the engine's own and can then read what the engine makes its
     proof with, so an Agent that is not to be trusted that far names a runtime provider that
-    runs it apart, under PRV-006. Asked to run an instance whose placement is a node other than
-    `local`, it ends the run failed and runs nothing, under PRV-019, and PLC-007 keeps an
-    instance that has an item that is run and names no `runtime` from being placed there, so an
-    instance placed on another machine runs only where it names, under PRV-006, a runtime
+    runs it apart, under PRV-006. Asked to run an instance whose placement is a node other
+    than `local`, it ends the run failed and runs nothing, under PRV-019, and PLC-007 keeps an
+    instance that has an item that is run and names no `runtime` from being placed there, so
+    an instance placed on another machine runs only where it names, under PRV-006, a runtime
     provider that runs items there. The engine's own machine provider reports the machine the
     engine runs on, reachable, under the engine's own hostname, under PLC-026, with the labels
     of PRV-014, and places every instance on `local`. A `fetch` with any other scheme that no
-    provider claims is PKG-023.
+    provider claims is PKG-023. Its own machine provider enrolls no machine; enroll-machine.v1
+    reports unavailable under ENR-001 until a registered machine provider is ready.
   vectors: []
 
 - id: PRV-004
@@ -141,25 +142,28 @@
   observable: >-
     `run.v1`, `stop.v1` and `inspect-run.v1` are made within the invocation of a setup or a
     retirement that they serve, and the outcome of such a call counts in the part it serves,
-    under OPS-022; the stop that a request to unregister asks for once more is made within that
-    request's invocation, under LIF-036. `place.v1` and `fetch-package.v1` are made while the
-    engine decides a request to register or to install, before it is dispatched, and so carry
-    its `caller` and no `invocation`. A call that the engine makes of its own accord, such as
-    `list-machines.v1` to learn the machines or `inspect-run.v1` to learn the state of a run, is
-    made for no request and carries neither. A provider call carries no `filters`, no
-    `conduit` and no `idempotencyKey`. `_meta`'s `instance` names the provider, and the input
-    `instance` of `run.v1`, `stop.v1` or `inspect-run.v1` names the instance whose run is meant,
-    which the call's record names in its `subject`; the record holds in `invocation` the
-    invocation within which the call is made, and no `serving`, under REC-002. A provider learns
-    its own configuration from `config`, as any implementation does under IFC-006, and `config`
-    is current on each call, while a run keeps the variables it started with, under PRV-007.
-    Where the provider's result of `server/discover` does not list the extension at `v0`, the
-    call is not dispatched, and its record names the missing extension: the part of a setup or a
-    retirement that needed it reports unavailable, under PRV-007 and PRV-008, and so does a
-    request to install, under PKG-024, or one that needed `place.v1`, under PRV-015; a call that
-    the engine would make of its own accord is not made, and counts as a report not received,
-    under DL5 and PRV-009. The read of a secret is a request, and not a provider call, under
-    SEC-011.
+    under OPS-022; the stop that a request to unregister asks for once more is made within
+    that request's invocation, under LIF-036. `place.v1` and `fetch-package.v1` are made while
+    the engine decides a request to register or to install, before it is dispatched, and so
+    carry its `caller` and no `invocation`. A call that the engine makes of its own accord,
+    such as `list-machines.v1` to learn the machines or `inspect-run.v1` to learn the state of
+    a run, is made for no request and carries neither. A provider call carries no `filters`,
+    no `conduit` and no `idempotencyKey`. `_meta`'s `instance` names the provider, and the
+    input `instance` of `run.v1`, `stop.v1` or `inspect-run.v1` names the instance whose run
+    is meant, which the call's record names in its `subject`; the record holds in `invocation`
+    the invocation within which the call is made, and no `serving`, under REC-002. A provider
+    learns its own configuration from `config`, as any implementation does under IFC-006, and
+    `config` is current on each call, while a run keeps the variables it started with, under
+    PRV-007. Where the provider's result of `server/discover` does not list the extension at
+    `v0`, the call is not dispatched, and its record names the missing extension: the part of
+    a setup or a retirement that needed it reports unavailable, under PRV-007 and PRV-008, and
+    so does a request to install, under PKG-024, or one that needed `place.v1`, under PRV-015;
+    a call that the engine would make of its own accord is not made, and counts as a report
+    not received, under DL5 and PRV-009. The read of a secret is a request, and not a provider
+    call, under SEC-011. enroll.v1, accept-machine.v1 and remove-machine.v1 are made within
+    root's enrollment, admission or refusal invocation (ENR-001, ENR-007, ENR-008). No part of
+    enroll.v1's action appears in its call's record, whatever the provider's records policy
+    (ENR-003).
   vectors: []
 
 - id: PRV-006
@@ -376,19 +380,22 @@
     It is not instantiated: at any time at most one machine provider, and for each URI scheme
     at most one package-source provider, is not retired, and each is owned by `system`.
   observable: >-
-    Resolving returns a diagnostic naming the Resource and, where another provider stands in the
-    way, that provider, and the registration reports invalid under OBJ-023. To change machine
-    provider, an actor retires the one in force and registers another. Retiring it retires no
-    node, under PLC-026. While none is in force, the engine's own machine provider reports only
-    the machine the engine runs on, under PRV-003, so every other node counts as omitted, under
-    PLC-023, until a provider reports its machine. A provider that reports another form of a
-    hostname, short where the earlier one reported it fully qualified, leaves the earlier nodes
-    omitted and registers new ones: an earlier node is retired by an actor once no other
-    instance is placed on it, under PLC-011, or declared lost by the root Interface, under
-    PLC-017. The schemes that a package-source provider claims never change, under PRV-016, so
-    the check made when it is instantiated keeps one provider to a scheme at any time. A runtime
-    provider is not limited in this way: several may exist, owned by any Pool, and each instance
-    names its own under PRV-006.
+    Resolving returns a diagnostic naming the Resource and, where another provider stands in
+    the way, that provider, and the registration reports invalid under OBJ-023. To change
+    machine provider, an actor retires the one in force and registers another. Retiring it
+    retires no node, under PLC-026. While none is in force, the engine's own machine provider
+    reports only the machine the engine runs on, under PRV-003, so every other node counts as
+    omitted, under PLC-023. Retiring or replacing the provider closes its open enrollments
+    refused, answers their actions refused and hides their join actions; answer records retain
+    the evidence shown and flag under PND-008. No provider call is made by that closure. A
+    later provider does not inherit the earlier provider's ids or nodes: each non-local node
+    stays omitted until its machine is enrolled again, and a new admission makes a new node,
+    not a rebinding of the old one (PLC-026). An earlier node is retired by an actor once no
+    other instance is placed on it (PLC-011), or declared lost by root (PLC-017). The schemes
+    that a package-source provider claims never change, under PRV-016, so the check made when
+    it is instantiated keeps one provider to a scheme at any time. A runtime provider is not
+    limited in this way: several may exist, owned by any Pool, and each instance names its own
+    under PRV-006.
   vectors: []
 
 - id: PRV-014
@@ -397,32 +404,39 @@
   when: >-
     The engine asks the machine provider for its machines with `list-machines.v1`.
   then: >-
-    The result gives, for each machine, its `hostname`, in canonical form, trimmed and
-    lowercased; its `labels`, which hold `kubernetes.io/hostname`, whose value is the hostname,
-    and `kubernetes.io/os` and `kubernetes.io/arch`, whose values are those that Go gives `GOOS`
-    and `GOARCH`; and its `state`, which is `reachable`, `unreachable` or `gone`, and `gone`
-    only where the provider knows that the machine no longer exists. It gives no hostname twice
-    and none longer than 63 characters, the most that a label's value holds, and the provider's
-    contract states which name of a machine it reports.
+    The result gives, for each machine, its required, opaque, provider-scoped, stable id under
+    ENR-002; its enrollment where attributed and evidence under ENR-005; its `hostname`, in
+    canonical form, trimmed and lowercased; its `labels`, which hold `kubernetes.io/hostname`,
+    whose value is the hostname, and `kubernetes.io/os` and `kubernetes.io/arch`, whose values
+    are those that Go gives `GOOS` and `GOARCH`; and its `state`, which is `pending`,
+    `reachable`, `unreachable` or `gone`, and `gone` only where the provider knows that the
+    machine no longer exists. It gives no hostname twice and none longer than 63 characters,
+    the most that a label's value holds, and the provider's contract states which name of a
+    machine it reports.
   observable: >-
     These are the well-known labels of Kubernetes, so `kubernetes.io/os: linux` and
     `kubernetes.io/arch: arm64` mean on every machine provider what they mean on a Kubernetes
-    Node. A provider may report other labels too. Labels are reported status and never
-    configuration: no document and no operation sets one. A cloud's API that reports a server
-    deleted is such knowledge, and silence is not: a machine that is only cut off may come back
-    with its runs, as Kubernetes warns that deleting a Pod by force on silence can duplicate a
-    Pod that is still running, and what a machine reported gone retires is PLC-024. One that the
-    provider cannot reach is `unreachable`, and one that a report omits counts as unreachable,
-    under PLC-023. A report that gives one hostname twice is not used, and counts as a report
-    not received, under DL5. The engine's own machine provider reports the machine the engine
-    runs on, reachable, under the engine's own hostname, under PLC-026. How often the engine
-    asks is DL5 of the implementation-defined list; what a machine reported unreachable means is
-    PLC-023, and what one reported gone retires is PLC-024. A machine whose canonical name is
-    longer is reported under a name that fits, as its provider's contract states, such as the
-    part before the first dot, which RFC 1035 keeps to 63 characters as a DNS label. The
-    engine's own machine provider reports the engine's own hostname, under PRV-003, so an engine
-    whose operating system's hostname is longer is configured with another, under PLC-026 and
-    DL5.
+    Node. For a pending machine its labels are exactly the three descriptive ones plus those
+    its enrollment named, bound by the provider (ENR-002, ENR-006). A node's labels are fixed
+    at admission, or first start for local; a later report changes none and adds a condition
+    where they differ (ENR-010). A Linux environment inside another operating system, such as
+    WSL2 on Windows, reports linux for kubernetes.io/os. A cloud's API that reports a server
+    deleted is such knowledge, and silence is not: a machine that is only cut off may come
+    back with its runs, as Kubernetes warns that deleting a Pod by force on silence can
+    duplicate a Pod that is still running, and what a machine reported gone retires is
+    PLC-024. One that the provider cannot reach is `unreachable`, and one that a report omits
+    counts as unreachable, under PLC-023. A report that gives one hostname or one id twice is
+    not used, and counts as a report not received, under DL5. The engine's own machine
+    provider reports the machine the engine runs on, reachable, under the engine's own
+    hostname, under PLC-026. How often the engine asks is DL5 of the implementation-defined
+    list; what a machine reported unreachable means is PLC-023, and what one reported gone
+    retires is PLC-024. A machine whose canonical name is longer is reported under a name that
+    fits, as its provider's contract states, such as the part before the first dot, which RFC
+    1035 keeps to 63 characters as a DNS label. The engine's own machine provider reports the
+    engine's own hostname, under PRV-003, so an engine whose operating system's hostname is
+    longer is configured with another, under PLC-026 and DL5. A machine joins pending, gets no
+    node until admission, and is never a placement while pending (ENR-004). The provider's
+    evidence reaches only root's panel and answer record (PND-008).
   vectors: []
 
 - id: PRV-015
@@ -434,8 +448,10 @@
     none or, for the Resource of a Pool's entry, no input supplies one.
   then: >-
     The engine asks the machine provider with `place.v1`, giving the instance's ID and the label
-    selector of PLC-007, and the provider names one machine that it reports reachable and whose
-    labels match the selector. The instance's placement is the node that represents that machine
+    selector of PLC-007, and the provider names by id one machine already represented by a
+    node that it reports reachable and whose node's fixed labels match the selector.
+    A pending machine is never
+    selected (ENR-004). The instance's placement is the node that represents that machine
     under PLC-026. Where the provider names none, the instance is not instantiated, unless a
     node that is not retired, other than `local`, has labels that match the selector and its
     machine is reported unreachable or omitted. In that case, and where the machine provider is
@@ -445,18 +461,21 @@
   observable: >-
     The call is a provider call under PRV-005, made while the engine decides the request that
     would instantiate the instance, before it is dispatched. Where the instance is not
-    instantiated, the document that would make it is rejected, and a request under LIF-009 for a
-    replacement reports invalid. Unavailable is reported as PKG-024 has a request to install
+    instantiated, the document that would make it is rejected, and a request under LIF-009 for
+    a replacement reports invalid. Unavailable is reported as PKG-024 has a request to install
     report it where a package-source provider is not ready, and as the Kubernetes scheduler
     keeps a Pod pending until it can place it: the same request made later is decided as any
     other. The provider places only on a machine it has reported, as the Kubernetes scheduler
-    places a Pod only on a Node that has registered. The placement is then checked under PLC-007
-    as any other is, and is fixed for life, under PLC-009. For an instance that has an item that
-    is run and names no `runtime`, the selector holds the hostname of the machine that `local`
-    represents, so the provider names that machine or none; where the type or an item names
-    `kubernetes.io/hostname` with another value, no node matches, under PLC-007, so the provider
-    is not asked, and the instance is not instantiated, as where it names none. A provider of
-    one machine, and the engine's own machine provider, name that machine or none.
+    places a Pod only on a Node that has registered. The placement is then checked under
+    PLC-007 as any other is, and is fixed for life, under PLC-009. For an instance that has an
+    item that is run and names no `runtime`, the selector holds the hostname of the machine
+    that `local` represents, so the provider names that machine or none; where the type or an
+    item names `kubernetes.io/hostname` with another value, no node matches, under PLC-007, so
+    the provider is not asked, and the instance is not instantiated, as where it names none. A
+    provider of one machine, and the engine's own machine provider, name that machine or none.
+    The returned id identifies a machine only within the provider Resource in force (ENR-002,
+    PLC-026). Naming a pending or otherwise unrepresented id reports unavailable under this
+    rule, with a diagnostic naming that cause.
   vectors: []
 
 - id: PRV-016
@@ -515,16 +534,17 @@
     It takes the address, the machine, the network, the runtime provider or the run that a
     request came from as establishing which instance sent it.
   observable: >-
-    Only what the request presents establishes the instance, by the mechanism of IFC-022, and a
-    request that crosses machines carries cryptographic proof of the instance that sent it.
-    Every run, on the engine's own runner as under any other runtime provider, is given what it
-    presents, and the engine's address, in `identity`, under PRV-022 and PRV-003. A connection
-    from the server at the `url` that a run returned, or from the address of a machine,
-    attributes the request to no instance, and neither does a VPN or a network policy, which
-    names a machine and never a run. A certificate that mutual TLS presents once for a
-    connection is part of what each request on it presents, under IFC-022, and not where the
-    request came from. A runtime provider or a machine provider can so be swapped without
-    changing who may reach what.
+    Only what the request presents establishes the instance, by the mechanism of IFC-022, and
+    a request that crosses machines carries cryptographic proof of the instance that sent it.
+    Every run, on the engine's own runner as under any other runtime provider, is given what
+    it presents, and the engine's address, in `identity`, under PRV-022 and PRV-003. A
+    connection from the server at the `url` that a run returned, or from the address of a
+    machine, attributes the request to no instance, and neither does a VPN or a network
+    policy, which names a machine and never a run. A certificate that mutual TLS presents once
+    for a connection is part of what each request on it presents, under IFC-022, and not where
+    the request came from. A runtime provider or a machine provider can so be swapped without
+    changing who may reach what. Joining a network, acceptance there and node admission grant
+    no access (ENR-011).
   vectors: []
 
 

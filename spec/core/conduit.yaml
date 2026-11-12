@@ -11,6 +11,7 @@
 # The version is the version of the package, not of any contract: each contract carries its
 # own compatibility version in its name (NAM-015). A template or an instance that uses the
 # core package holds this address and this version, and no digest.
+# Enrollment Operation exports encode ENR-001, ENR-002, ENR-006 to ENR-008 and PND-008.
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
@@ -20,6 +21,12 @@ address: github.com/shrav-k/conduit/core
 version: 0.1.0
 
 exports:
+  - enroll-machine.v1
+  - admit-machine.v1
+  - refuse-machine.v1
+  - enroll.v1
+  - accept-machine.v1
+  - remove-machine.v1
   - answer.v1
   - sign-in.v1
   - sign-in-hook.v1

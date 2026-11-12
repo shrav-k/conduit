@@ -383,3 +383,24 @@ Report:
 - each check's last line.
 
 Do not `git add` or commit anything.
+
+## Record
+
+Run on 2026-11-11 on a heavily loaded Mac: the worker in 86 minutes, then three rounds, each fixing
+what a fresh verifier found. The enrollment promises ENR-001 to ENR-012 landed in
+`spec/promises/enrollment.yaml`, with PND-008, the edits to PLC-023, PLC-026, PRV-014, PRV-015 and
+ACC-032, the six operation contracts, and staged patches for orders 049a and 049b. They follow
+ruling 68's R2: admission requires the fingerprint the person read on the machine, compared
+character for character, and a machine with no screen is admitted only with
+`--accept-weaker-check`, recorded.
+- Round 2 fixed an action-ID rule that required an invocation when a machine action is raised
+  without one, and an enrollment URL flow that contradicted IFC-016's relay rule.
+- Round 3's verifier found one more: two definitions in `spec/definitions.md` still said the engine
+  makes a node from a provider's report. The admin fixed both: a node is made only at first start
+  or on admission, and a report makes none.
+- The coordinator's readings applied: a headless machine without the flag is admitted with
+  attestation and a fingerprint read remotely; the provider reports one `fingerprint` item; a
+  decline under IFC-049's retry is the worker's reading as reported. Ruling 68's amendment of ruling
+  56 point 9 was recorded separately.
+- Checks: the documentation, rulings, names and schemas checks passed; in round 3 the engine's full
+  `cargo test --release` passed in the worker's sandbox.

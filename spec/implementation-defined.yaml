@@ -44,7 +44,9 @@
     PLC-026, and which it keeps across a move to another machine, under DL17; and how often it
     asks a runtime provider for the state of a run with `inspect-run.v1` of its own accord,
     under PRV-009. What a request reports meanwhile, to an instance placed on a machine reported
-    unreachable or omitted, is PLC-023.
+    unreachable or omitted, is PLC-023. The longest an enrollment may last (ENR-001), beside
+    how reports are timed; every enrollment has an expiry, and exceeding that maximum is
+    invalid. Expiry dispatches nothing (ENR-009).
 - id: DL6
   subject: First start
   document: >-

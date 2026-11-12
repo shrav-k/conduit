@@ -1,0 +1,55 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: local-process.v1
+  description: >-
+    Unix local processes behind the runtime-provider kit's per-run TLS gate, proving the
+    instance URI and accepting the engine's token. Silent-cut detection is keepaliveIdle
+    plus keepaliveInterval times keepaliveCount seconds (45 by default); macOS lacks
+    TCP_USER_TIMEOUT, so outstanding unacknowledged data can exceed that bound.
+    Only command items with absolute programs on the OS hostname run; no registry types
+    or package transports are supported. Runs use the provider's OS user until RP2 adds
+    separate users. Secrets live in launch memory and the run's environment; identity
+    also lives in private 0600 files, including tls.key, in a 0700 run directory and in
+    the gate's memory. Confirmed stop removes that directory. Run stderr is a private
+    file there; a program may itself print credentials into it. No remote channel is used.
+    CONDUIT_STATE_DIR must name the provider's private state directory at startup. Each
+    run receives CONDUIT_STATE_DIR pointing to instances/<SHA-256(instance-ID)> there,
+    mode 0700, reused across starts and never removed. Configuration changes take effect
+    at the provider's next start. Runs never restart automatically; provider loss and
+    maxLifetime end their process groups. Descendants calling setsid escape this reach.
+    Marker locks inventory runs; the guard durably records its group before launch. A free
+    lock confirms stopped only before launch or once that group is absent. Recorded IDs
+    are used only to prove absence, never to signal. Guard death with surviving members
+    reports unknown, retains identity and owes a stop across restarts; operators must end
+    survivors independently before the group can be confirmed absent. Unreaped group
+    zombies can delay confirmation; legacy markers without a witness remain unknown.
+    ledger.json durably keeps
+    run records and owed stops. Startup, calls and a one-second drain retry owed stops.
+    Under the owner's 2026-11-12 rule MC4-002, every held stop on this machine is carried
+    out before any new run starts; a refused start names the owed instance and machine.
+    One owed stop therefore blocks all new runs. RP1 has no external drainer after
+    retirement, separate OS users or registry packages. Stopped-run recovery is present;
+    live sessions do not survive provider restart. README.md inventories D15's four fields.
+spec:
+  family: Resource
+  offers: [github.com/shrav-k/conduit/core#runtime-provider.v1]
+  requires: []
+  implementation:
+    github.com/shrav-k/conduit/core#run.v1: '#provider'
+    github.com/shrav-k/conduit/core#stop.v1: '#provider'
+    github.com/shrav-k/conduit/core#inspect-run.v1: '#provider'
+  records:
+    inputs: false
+    outputs: false
+  schema:
+    type: object
+    required: [bindAddress, advertisedHost, keepaliveIdle, keepaliveInterval, keepaliveCount, maxLifetime]
+    properties:
+      bindAddress: {type: string, default: '127.0.0.1'}
+      advertisedHost: {type: string, default: '127.0.0.1'}
+      keepaliveIdle: {type: integer, minimum: 1, maximum: 2147483647, default: 30}
+      keepaliveInterval: {type: integer, minimum: 1, maximum: 2147483647, default: 5}
+      keepaliveCount: {type: integer, minimum: 1, maximum: 2147483647, default: 3}
+      maxLifetime: {type: integer, minimum: 1, maximum: 2147483647, default: 3600}
+    additionalProperties: false

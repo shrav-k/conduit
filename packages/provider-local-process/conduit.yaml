@@ -1,0 +1,19 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/provider-local-process
+version: 0.1.0
+exports: [local-process.v1]
+implementations:
+  provider:
+    implements:
+    - github.com/shrav-k/conduit/core#run.v1
+    - github.com/shrav-k/conduit/core#stop.v1
+    - github.com/shrav-k/conduit/core#inspect-run.v1
+    command: [bin/provider-local-process]
+    plain: false
+    environment:
+      LOCAL_PROCESS_BIND_ADDRESS: /bindAddress
+      LOCAL_PROCESS_ADVERTISED_HOST: /advertisedHost
+      LOCAL_PROCESS_KEEPALIVE_IDLE: /keepaliveIdle
+      LOCAL_PROCESS_KEEPALIVE_INTERVAL: /keepaliveInterval
+      LOCAL_PROCESS_KEEPALIVE_COUNT: /keepaliveCount
+      LOCAL_PROCESS_MAX_LIFETIME: /maxLifetime

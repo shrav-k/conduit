@@ -188,3 +188,24 @@ never committed, and no real hostname goes into a README or a snapshot. Report e
 the configuration, the stop's grace, the kit's drain interval and the variable names as your own
 choices; and as findings, each thing the kit lacks, and that an engine whose hostname is set by
 configuration (DL5) would not match this provider's OS hostname. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base cd192e1: the worker and a fresh verifier (522 s), then a
+second worker round (661 s) and a fresh verifier (292 s), which found nothing to change. The
+result is `packages/provider-local-process/`: the Type `local-process.v1` on the runtime-provider
+kit, absolute `command` items on this machine, configuration read once at startup through the
+item's environment, a guard that leads each run's process group and holds a lock on its marker,
+private run directories named by a hash of the instance's ID, PRV-023's environment, the kit's
+TLS gate, the owner's rule on owed stops (MC4-002) in its contract and a test of it, and the
+package builder.
+
+Round one's two musts were fixed in round two: the six configuration values that the item binds
+to the provider's environment are now required in the Type's schema, keeping their defaults
+(MAN-017 rejects a binding to configuration the schema does not require); and a guard that dies
+unexpectedly no longer lets the backend report a still-living group stopped. The lane coordinator
+ran the crate's tests on the result: 11 passed, and no key or certificate is committed.
+
+The worker's findings: an engine whose hostname is set by configuration (DL5) would not match the
+OS hostname this provider runs on; registry packages wait for A63-RPN; and the kit does not
+export its TLS test helpers, so this crate copies them.

@@ -1,0 +1,38 @@
+[package]
+name = "provider-local-process"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+[[bin]]
+name = "test-run"
+path = "tests/fixtures/run.rs"
+
+[dependencies]
+runtime-provider-kit = { path = "../runtime-provider-kit" }
+async-trait = "0.1"
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tokio = { version = "1", features = ["full"] }
+tokio-util = "0.7"
+flate2 = "1"
+tar = "0.4"
+
+[dev-dependencies]
+tempfile = "3"
+rmcp = { version = "=3.9.0", features = ["client", "transport-io"] }
+base64 = "0.22"
+p256 = { version = "0.13", features = ["ecdsa"] }
+rcgen = { version = "0.14", default-features = false, features = ["ring", "pem"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring"] }
+x509-parser = { version = "0.18", default-features = false }
+hyper = { version = "1", features = ["client", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+http-body-util = "0.1"
+bytes = "1"
+serde_yaml = "0.9"
+jsonschema = { version = "=0.61.0", default-features = false }

@@ -152,6 +152,9 @@ timeout until its terminal reply or observed run/channel end (no elapsed-time ev
 on engine shutdown and let S6-END establish restart fences. Use internal scripted ordinary/hook
 servers, not S4-SRV1/2 dependencies. Retain invocation/attempt correlation and forward late ordinary and setup/retire-hook
 terminal replies through 077's core completion input. No automatic outcome change, retry or reconciliation.
+A finding from order 144's drafting, kept here: a late answer is lost when the engine cancels the
+hook call, since rmcp drops an answer after its cancellation and S4-SRV2's ledger then shows
+`cancelled`; the runner's cancel path cancels, while a call it only stops waiting for is not.
 Real timeout/barrier regressions for ordinary calls and hooks first observe unknown and failed-reconcile
 conflict, then release the terminal reply: the fence is established, unknown and its record remain,
 and only explicit reconciliation with independent no-effect evidence records failed. Nonterminal replies
@@ -192,7 +195,17 @@ an author can diagnose and repair a failed setup through Conduit, so the repair 
 the author's is a change to the instance's configuration through Conduit, calling that control to
 set `blockedBy` to null or a corrected path (an instance's configuration changes only through a
 control, OPS-020). Removing the file outside Conduit is allowed, but M2 records it as a manual
-environment step, not the author's repair. The orders split: S4-SRV1b takes the plain partial task
+environment step, not the author's repair.
+
+**How M2 counts T1's repair (the admin's decision, 2026-11-12, logged for the owner to strike).**
+Since ruling 76 an author changes configuration by editing the project and running `apply`. So
+the counted repair is: edit `blockedBy` in the project, then `apply`, whose plan uses
+`set-blocked-by.v1` because the Type offers it. The plan-and-apply reference does not yet do that:
+it shows a changed control value as a difference and infers no control call from a file edit
+([its README](../../docs/implementation/plan-and-apply/README.md), near lines 214 and 215, where
+069b's reference stops). Until plan and apply turn a changed value into a call of the control the
+Type offers, M2 counts the author's direct call of the control through Conduit, and the gap is a
+finding for plan and apply. Removing the file outside Conduit stays an environment step. The orders split: S4-SRV1b takes the plain partial task
 and S4-SRV2b the onward request and E20's test, so that each order stays buildable; neither can be
 reached before S4-TASK2 or S4-LATE.
 

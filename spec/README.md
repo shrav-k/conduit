@@ -4,7 +4,7 @@ Status on 2026-11-11: draft, begun 2026-11-05. Incomplete, and not a release. Ev
 been written as promises, and the core package, the JSON Schemas of documents and the
 manifest's format have been written as documents. The first build has a strict loader, a pure
 core on S1 and a runnable engine shell in [engine/](../engine/README.md).
-There are 441 portable vectors under [conformance/](../conformance/README.md), testing slices
+There are 443 portable vectors under [conformance/](../conformance/README.md), testing slices
 of promises; the [manifest](../conformance/manifest.yaml) records the coverage and its gaps.
 This remains a draft: the model and vectors do not yet cover the whole specification, and the
 next cold read follows the first build. Ruling 38, point 4, asks for agreement between the
@@ -202,7 +202,7 @@ lists the cases and the reasons for missing S1 coverage.
 | [promises/schemas.yaml](promises/schemas.yaml) | Schemas, document syntax and numbers | Draft; 21 promises; vectors test slices of 10 promises |
 | [schema-profile.md](schema-profile.md) | The standards relied on, the YAML features not accepted, the schema keywords in the profile and the formats that are checked | Draft |
 | [promises/instantiation.yaml](promises/instantiation.yaml) | How a template and its arguments become an instance, and what `from` may be | Draft; 23 promises; vectors test slices of 20 promises |
-| [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, hooks, retirement and controls | Draft; 14 promises; vectors test slices of 9 promises |
+| [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, hooks, retirement and controls | Draft; 14 promises; vectors test slices of 10 promises |
 | [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 12 promises; vectors test slices of 4 promises |
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; vectors test slices of 17 promises |
 | [promises/sections.yaml](promises/sections.yaml) | Sectioned documents, their translation into canonical documents, per-file Fleet ownership, consumes, operator, manages and authored diagnostics | Draft; 15 promises; no vectors yet |
@@ -214,7 +214,7 @@ lists the cases and the reasons for missing S1 coverage.
 | [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: nodes, machines, labels and placement by the provider, and values tied to a node | Draft; 21 promises; vectors test slices of 7 promises |
 | [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 22 promises; vectors test slices of 12 promises |
 | [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 6 promises; vectors test slices of 6 promises |
-| [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself, other than a `plain` server reached by `remote`, and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a provider's run made again after the engine restarts | Draft; 29 promises; vectors test slices of 7 promises |
+| [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself, other than a `plain` server reached by `remote`, and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a provider's run made again after the engine restarts | Draft; 30 promises; vectors test slices of 9 promises |
 | [promises/enrollment.yaml](promises/enrollment.yaml) | Managed machine enrollment, provider evidence, root admission and refusal, expiry, fixed labels and removal questions (rulings 50, 51, 52, 56 and 68); six contracts live, capability and engine bindings staged for 049a and 049b | Draft; 12 promises; no vectors yet |
 | [promises/pending.yaml](promises/pending.yaml) | Pending actions, scope delivery, evidence, answers, sign-in, setup, notices and enrollment | Draft; 13 promises; no vectors yet |
 | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; vectors test slices of 2 promises |
@@ -250,7 +250,7 @@ lists the cases and the reasons for missing S1 coverage.
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 46 promises; vectors test slices of 23 promises |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 17 items |
 
-Every area has been written as promises, 518 in all: 226 of the layer `language`, 244 of the
+Every area has been written as promises, 519 in all: 226 of the layer `language`, 245 of the
 layer `convention` and 48 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
 `schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the core exist on
@@ -579,10 +579,12 @@ it. Each point cites the promises that state its parts; the reasons are in the
 - A gate keeps out everything on a run's machine but root and the operating-system user or
   group that the runtime provider uses there for its own means, which its contract names and
   as which, or in which, no run runs (PRV-025).
-- A run left on a machine whose node was declared lost, or that was reported gone, keeps
-  the values it was given until something stops it. The declaration of loss asks for no stop
-  (PLC-017). The engine asks its runtime provider for the stop in each later retirement of the
-  instance and once more when the instance is unregistered (PRV-008, LIF-036), and what the
+- A run left on a machine whose node was declared lost, or that was reported gone, or whose
+  instance was unregistered while the machine was cut off, keeps the values it was given,
+  secrets included, until something stops it, and can act outside Conduit with them. The
+  declaration of loss asks for no stop (PLC-017). The engine asks its runtime provider for
+  the stop in each later retirement of the instance and once more when the instance is
+  unregistered (PRV-008, LIF-036), and what the
   provider does with a stop that it cannot carry out then, such as carry it out once the
   machine comes back, is what its contract states, with where it keeps that stop, in a place
   that neither a restart of the engine nor the provider's own retirement loses (PRV-021,
@@ -592,6 +594,15 @@ it. Each point cites the promises that state its parts; the reasons are in the
   restarts while no call needs that provider, and is never carried out once the provider is
   retired; a contract that keeps its stops through both has something that runs without that
   server carry them out, such as the provider's own part on the run's machine (PRV-021).
+  Any later instance may be set up and run beside the earlier run, a replacement under
+  LIF-009 included, both before removal while the earlier instance is retired with shutdown
+  pending or unknown, and after an unregister whose stop ended unknown, failed or was not
+  dispatched (LIF-036). Nothing ties the two runs together. While the earlier instance exists,
+  requests it makes through its Conduits other than its retire hook's are refused (ACC-039);
+  after removal its credential reaches nothing, since every request checks that its instance
+  still exists (IFC-022, PRV-022). Unregistering asserts that shutdown is settled in another way
+  (LIF-017), as force deletion of a Kubernetes StatefulSet Pod does, with the same risk to
+  at-most-one semantics.
 
 ### What the promises on records cover
 

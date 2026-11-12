@@ -605,3 +605,23 @@ Report:
 - each check's last line.
 
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 and 12. The first worker, on the Windows computer, was stopped after about 20
+minutes when the owner paused that computer; its partial work was checkpointed, rebased onto main
+and continued on the Mac with the owner's answer on MC4-002 of 2026-11-12 (ruling 42's later
+answer): the specification states as a limit that a run whose stop did not succeed may run beside
+a later instance, and runtime providers Conduit ships carry out a stop they owe before starting
+any run on that machine. The continuing worker finished every step in about 2.9 hours, and a fresh
+verifier found no fault. MC4-009 is settled in PRV-019 and the new provider-side promise PRV-030;
+MC4-001 and the retire hook's contradiction with OPS-022 and LIF-024 (MC6-001) are settled, and
+LIF-019 is narrowed for removal's closing of a consumer's Conduits (MC6-002). Two vectors were
+added; the totals are 519 promises (226 language, 245 convention, 48 interface) and 443 vectors.
+
+The worker's findings, kept for later work: the MC4 model's P1 must be registered again, since it
+counts the permitted overlap with any later instance, and the models of orders 109, 110, 112 and
+113 need review against the changed promises; a declaration case for declare-lost.v1 waits for
+the build to finish that path; the shell's own runner implements neither new provider guarantee;
+PRV-030 is one more convention-layer safety promise for G5 (219 with order 082's PKG-032); and
+PRV-027, LIF-036 and stop.v1 still speak of labels last reported, which 038b already logged.

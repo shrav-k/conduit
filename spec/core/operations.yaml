@@ -849,10 +849,12 @@ metadata:
     through no Conduit, for the caller of the retirement, with an idempotency key scoped to the
     instance alone. Its onward requests go through the Conduits of which the instance is the
     consumer, which stay open until its shutdown is confirmed. The stop is asked for whatever
-    came of the hook. A hook that did not succeed keeps the shutdown pending, and a further
-    retirement dispatches it again, against a new run, so it must not depend on the run that was
-    stopped. It is in no capability, so no Conduit lists it. It has no inputs: the
-    implementation learns its instance's configuration from its call, under IFC-006.
+    came of the hook. A hook that did not succeed keeps the shutdown from being confirmed:
+    the shutdown reports unknown or pending under OPS-022 and LIF-024. A further retirement
+    dispatches it again as OPS-021 and OPS-028 allow, against a run asked for anew under
+    TPL-018, so it must not depend on the run that was stopped. It is in no capability, so no
+    Conduit lists it. It has no inputs: the implementation learns its instance's configuration
+    from its call, under IFC-006.
 spec:
   effect: >-
     The instance's own retirement work, as the implementation that the template selects
@@ -867,8 +869,17 @@ metadata:
   description: >-
     Run an instance's implementation item: the run is named by the instance's ID, so one run
     serves one instance. A provider starts no run for an instance's ID while a run that it
-    started for that ID may still be running. `item` is the implementation item, reached by
-    `command` or `package`, and never a `command` item whose program is a relative path, which
+    started for that ID may still be running. This includes a run still being started under
+    an earlier `run.v1`, or restarted after the provider last reported it `stopped`. Where
+    that run is running, the call succeeds with its current `url`; where the provider cannot
+    tell whether it is running, the call ends unknown and starts none (PRV-019). Values of
+    `secrets` and `identity` in a call that starts no run reach no run and are kept nowhere;
+    an existing run keeps the identity and certificate it received when it started. Where a
+    provider's contract promises to carry out every stop it still owes on a machine before
+    starting any run there, a start that finds an owed stop fails, naming it, and may be
+    retried once that stop is carried out (PRV-019, PRV-021). `item` is the implementation
+    item, reached by `command` or `package`, and never a `command` item whose program is a
+    relative path, which
     only the engine's own runner runs. `packageArguments` and `environment` hold, under the
     names the item gives, the values that its `packageArguments` and `environment` take from the
     instance's configuration, each as a string: a string as it is, a number in the form RFC 8785
@@ -966,7 +977,7 @@ spec:
     required: [url]
   effect: >-
     Starts the run of the item for the instance on the machine given in `machine`, under its
-    runtime provider's own means.
+    runtime provider's own means, or answers with its existing run under PRV-019.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -976,9 +987,14 @@ metadata:
     Stop the run that the instance's ID names, on the machine given in `machine`: the hostname
     and the labels of the machine that the instance's node represents, as `run.v1` gives them,
     those last reported where the node is retired, so that a provider that keeps no state of
-    its own finds the run. Stopping a run that is not running succeeds. Where the provider
-    cannot tell whether the run stopped, the outcome is unknown. What the provider does with a
-    stop that it cannot carry out now, as on a machine it cannot reach, its contract states,
+    its own finds the run. Stopping a run that is not running succeeds. A stop succeeds only
+    once no run of the ID is running, including a run still being started under an earlier
+    `run.v1`, which the provider ends or cancels. After it succeeds, no run starts for that ID
+    until `run.v1` next asks, under PRV-030. A stop held under PRV-021 ends, once carried out,
+    whatever run of the ID is running then, a run restarted meanwhile included. Where the
+    provider cannot tell whether the run stopped, the outcome is unknown. What the provider
+    does with a stop that it cannot carry out now, as on a machine it cannot reach, its
+    contract states,
     such as carry it out once it can, and where it keeps that stop meanwhile, in a place that
     neither a restart of the engine, on its machine or on another, nor the provider's own
     retirement loses. The engine invokes it by a provider call, within a retirement, and once
@@ -995,7 +1011,7 @@ spec:
           labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
         required: [hostname, labels]
     required: [instance, machine]
-  effect: Stops the run, where one is running.
+  effect: Stops every run of the ID, cancelling any still being started, under PRV-030.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -1004,9 +1020,9 @@ metadata:
   description: >-
     Report the state of the run that the instance's ID names, on the machine given in
     `machine`, as `stop.v1` gives it: `running`, `stopped` or `unknown`. It reports `stopped`
-    only where it knows that no run that it started for the ID is running, and `unknown` where
-    it cannot tell, as where it cannot reach the run's machine; the engine asks for a run only
-    where the state is `stopped`. The engine reports the latest answer as the instance's
+    only where it knows that no run that it started for the ID is running or still being
+    started under an earlier `run.v1`, and `unknown` where it cannot tell, as where it cannot
+    reach the run's machine; the engine asks for a run only where the state is `stopped`. The engine reports the latest answer as the instance's
     condition `Running`. `url`, which a provider may give, is the Streamable HTTP URL at which
     the run's server is reached now, where it has moved since `run.v1` returned one, as after
     the provider restarted the run; the engine reaches the server at the latest URL that the

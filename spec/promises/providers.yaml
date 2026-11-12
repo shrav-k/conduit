@@ -262,7 +262,12 @@
     unavailable. A result of a runtime provider that holds no `url` fails
     validation, and is read under PRV-005: the part ends unknown, since the run may have
     started, and a retirement's stop ends it, under PRV-008. The run is named by the instance's
-    ID alone, and is asked for only where the provider reports it `stopped`, so one run serves
+    ID alone, and is asked for only where the provider reports it `stopped`. A run still being
+    started under an earlier `run.v1` may still be running, under PRV-019: a later call may
+    succeed with the `url` of that run, or of one the provider restarted after reporting
+    `stopped`, rather than start another. Where the provider cannot tell whether that run is
+    running, the call ends unknown under PRV-019 and PRV-005, and the part ends unknown under
+    OPS-022. Under PRV-019 one run serves
     one instance; TPL-019 keeps a template to one item that is run. Each call is a provider call
     under PRV-005.
   vectors: []
@@ -286,7 +291,10 @@
     and so it is where the instance's machine is reported unreachable or omitted, under PLC-023.
     The runtime provider that the instance names is not retired while the instance exists, under
     PRV-020, so there is one to ask while the instance exists. A further retirement under
-    LIF-026 asks for the stop again, and it succeeds where nothing runs. A request to unregister
+    LIF-026 asks for the stop again, and it succeeds where nothing runs. A stop succeeds only
+    once no run of the ID is running, including one still being started: the provider ends or
+    cancels that start, and starts none until `run.v1` next asks, under PRV-030. A request to
+    unregister
     a retired instance asks for the stop once more, under LIF-036, and what a runtime provider
     does with a stop that it cannot carry out now is PRV-021. For an instance for which no setup
     was ever dispatched, no stop is asked for, under LIF-025. The call is a provider call under
@@ -322,11 +330,14 @@
     A run stops without the engine asking for it to stop.
   then: >-
     Its runtime provider may restart it under its own restart policy, with the values it
-    was given for that run.
+    was given for that run, subject to PRV-030.
   observable: >-
     Whether and when a run is restarted is the runtime provider's own restart policy, as
     `Restart=` is systemd's, `restart:` Compose's and `restartPolicy` Kubernetes', and the
-    language states none. The engine makes no read of a secret because of a restart, under
+    language states none beyond PRV-030: no restart starts a run while another for the ID may
+    still be running, or after a stop succeeded until `run.v1` next asks for a run. A stop
+    merely held under PRV-021 does not prevent a restart before it is carried out. The engine
+    makes no read of a secret because of a restart, under
     SEC-014, and dispatches nothing because of it. Inspecting the instance shows the run's state
     as the provider last gave it, under PRV-009.
   vectors: []
@@ -337,11 +348,12 @@
   when: >-
     A runtime provider is given values in the `secrets` of a provider call to `run.v1`.
   then: >-
-    It delivers each value, by its own means, as the variable or the argument under whose name
-    it is given, and carries it to a machine other than the one that its own server runs on
-    only over a channel that authenticates that machine and keeps the value confidential; it
-    puts the value nowhere else; and its contract states where it keeps the value, and that
-    channel.
+    Where the call starts a run, it delivers each value, by its own means, as the variable or
+    the argument under whose name it is given, and carries it to a machine other than the one
+    that its own server runs on only over a channel that authenticates that machine and keeps
+    the value confidential; it puts the value nowhere else; and its contract states where it
+    keeps the value, and that channel. Where the call starts no run under PRV-019, its values
+    reach no run and are kept nowhere.
   observable: >-
     Docker keeps such a value in the container's configuration, containerd in the OCI
     `config.json`, and systemd in the unit. A runtime provider may instead hand the value over
@@ -561,12 +573,21 @@
   when: >-
     A runtime provider is asked with `run.v1` to run an item for an instance.
   then: >-
-    It runs the item on the machine given in `machine`, and on no other. Where it cannot run the
-    item on that machine, the run ends failed, and nothing is run.
+    Where a run that it started for the ID may still be running, including one it is still
+    starting under an earlier `run.v1`, it starts no other run. One it restarted under PRV-010
+    after last reporting `stopped` counts as such a run. Where that run is running, the call
+    succeeds and its result gives the `url` at which that run's server is reached now. Where it
+    cannot tell whether that run is running, it starts none and the call ends unknown, read
+    under PRV-005 and counted in the part under PRV-007 and OPS-022. Where no such run remains,
+    it runs the item on the machine given in `machine`, and on no other. Where it cannot run the
+    item on that machine, the run ends failed, and nothing is run. Values of `secrets` and
+    `identity` in a call that starts no run reach no run and are kept nowhere, under PRV-011 and
+    PRV-022.
   observable: >-
     An instance runs on the machine of its placement, so an absolute path in its configuration
     is a path on that machine, under PLC-020, and two instances whose nodes report one
-    `kubernetes.io/hostname` label run on one machine, as PLC-013 decides. The part of the setup
+    `kubernetes.io/hostname` label run on one machine, as PLC-013 decides. Where the item cannot
+    run there, the part of the setup
     that asked for the run has the outcome failed, under OPS-022. The engine's own runner runs
     only on the machine the engine runs on, under PRV-003: asked to run an instance placed on
     any other node, it ends the run failed. On which machines a runtime provider can run items
@@ -622,17 +643,25 @@
     no memory of a run once its instance is removed: the last stop it asks for is the one that a
     request to unregister the instance asks for, under LIF-036, so what becomes of a run left on
     a machine that comes back after its node was declared lost is what the runtime
-    provider's contract states under this promise. The provider's own server runs on the
-    engine's own runner, under PRV-002: it ends when the engine stops, runs again only when the
-    engine next has a call to make of it, under PRV-026, which for a provider that no instance
-    names may be never, and does not run again once the provider is retired, once no instance
-    names it, under PRV-020 and PRV-008. A stop that only that server carries out so waits while
-    the server does not run, and is never carried out once the provider is retired; a contract
-    under which the provider does what it states through both keeps the stop where something
-    that runs without that server carries it out, such as the provider's own part on the run's
-    machine, which stops the run itself once it is cut off for long enough, as a disconnected
-    Nomad client stops its allocations after `stop_on_client_after`, and then keeps nothing on
-    the engine's side. The engine asks no other provider for the stop.
+    provider's contract states under this promise. A later instance, a replacement under LIF-009
+    included, may be set up and run beside the earlier run, before or after removal: nothing
+    ties its run to this stop or to the earlier run, under LIF-036. The provider's own server
+    runs on the engine's own runner, under PRV-002: it ends when the engine stops, runs again
+    only when the engine next has a call to make of it, under PRV-026, which for a provider that
+    no instance names may be never, and does not run again once the provider is retired, once no
+    instance names it, under PRV-020 and PRV-008. A stop that only that server carries out so
+    waits while the server does not run, and is never carried out once the provider is retired;
+    a contract under which the provider does what it states through both keeps the stop where
+    something that runs without that server carries it out, such as the provider's own part on
+    the run's machine, which stops the run itself once it is cut off for long enough, as a
+    disconnected Nomad client stops its allocations after `stop_on_client_after`, and then keeps
+    nothing on the engine's side. The engine asks no other provider for the stop. A stop carried
+    out later ends whatever run of that ID is running then, one restarted meanwhile included,
+    under PRV-030; this obliges no provider to carry it out beyond what its contract states. A
+    provider's contract may promise to carry out every stop it still owes on a machine before
+    starting any run there. Under such a contract, a start under `run.v1` that finds a stop
+    still owed fails, naming that stop, and may be retried once the stop is carried out
+    (PRV-019). This is the provider's obligation under its contract, not an engine rule.
   vectors: []
 
 - id: PRV-022
@@ -641,18 +670,20 @@
   when: >-
     A runtime provider is given `identity` in a provider call to `run.v1`.
   then: >-
-    It delivers what `identity` holds, which is under these names and no other: under
-    `environment`, `CONDUIT_URL`, the engine's address, and `CONDUIT_IDENTITY_DIR`, a directory,
-    each to the run as that variable, in place of any value that the variable would take from
-    elsewhere, such as a default that the item's Package declares; and under `files`, keyed by
-    their paths in that directory, `ca.crt` and `jwks.json`, the trust bundle, `engine-id`, the
-    ID by which a credential names the engine, `token`, a signed token in the form of a
-    JWT-SVID, and, where `identity` holds them, `tls.crt` and `tls.key`, a certificate in the
-    form of an X509-SVID and its private key, each as a file at that path, as the run sees it.
-    It puts them nowhere else, apart from the run's gate, which uses them only for its means
-    under PRV-025, and it carries and keeps them as PRV-011 has it carry and keep the value of a
-    secret. Where it gives `CONDUIT_URL` as the run sees it, the value keeps the engine's
-    address whole: its scheme, host, port and path.
+    Where the call starts a run, it delivers what `identity` holds, which is under these names
+    and no other: under `environment`, `CONDUIT_URL`, the engine's address, and
+    `CONDUIT_IDENTITY_DIR`, a directory, each to the run as that variable, in place of any value
+    that the variable would take from elsewhere, such as a default that the item's Package
+    declares; and under `files`, keyed by their paths in that directory, `ca.crt` and
+    `jwks.json`, the trust bundle, `engine-id`, the ID by which a credential names the engine,
+    `token`, a signed token in the form of a JWT-SVID, and, where `identity` holds them,
+    `tls.crt` and `tls.key`, a certificate in the form of an X509-SVID and its private key, each
+    as a file at that path, as the run sees it. It puts them nowhere else, apart from the run's
+    gate, which uses them only for its means under PRV-025, and it carries and keeps them as
+    PRV-011 has it carry and keep the value of a secret. Where it gives `CONDUIT_URL` as the run
+    sees it, the value keeps the engine's address whole: its scheme, host, port and path. Where
+    the call starts no run under PRV-019, its `identity` reaches no run or gate and is kept
+    nowhere; a run that answers keeps the identity it was given when it started.
   observable: >-
     `identity` is what the mechanism of DL13 gives the run so that it reaches the engine's
     server, presents itself as the instance and, behind a gate, checks the engine's proof and
@@ -911,7 +942,8 @@
     result of `run.v1` or of `inspect-run.v1`.
   then: >-
     What answers at that `url` proves by TLS, before it is sent anything, that it serves the
-    instance, with the certificate that `identity` holds in `tls.crt` for that run, which
+    instance, with the certificate that `identity` held in `tls.crt` when that run started,
+    including where `run.v1` answers with an existing run under PRV-019. That certificate
     names the instance's ID, whether it is the run's gate or the runtime provider's own end
     of its channel to the run's machine.
   observable: >-
@@ -949,4 +981,25 @@
     setup under a runner that gives none fails with an explicit diagnostic. Agent packages
     use it for the Agent's own home; their client-specific subdirectories and credential
     storage belong to their contracts.
+  vectors: []
+
+- id: PRV-030
+  layer: convention
+  level: must not
+  when: >-
+    A runtime provider is asked with `stop.v1` to stop an instance's run.
+  then: >-
+    It reports succeeded while any run that it started for that ID is running, or is still being
+    started under an earlier `run.v1`; or it starts any run for that ID after the stop
+    succeeded, by a restart under PRV-010 or otherwise, until `run.v1` next asks for one.
+  observable: >-
+    Before reporting succeeded, it ends or cancels every run it is still starting for the ID, so
+    no earlier `run.v1` can start a run afterwards. A stop of a run that exited on its own also
+    ends any pending restart: succeeded stays true until a later `run.v1` asks for a run. A run
+    still being started counts as one that may still be running, and a restart under PRV-010
+    starts none while another run that the provider started for the ID may still be running, as
+    PRV-019 requires of `run.v1`. A stop held under PRV-021 ends, once carried out, whatever run
+    of the ID is running then, one restarted meanwhile included; whether it is carried out
+    remains what the provider's contract states. A stop that cannot yet be carried out does not
+    prevent the machine's restart policy from restarting the run meanwhile.
   vectors: []

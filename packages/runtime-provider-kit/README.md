@@ -1,6 +1,6 @@
 # Runtime provider kit
 
-A63-RK1's standalone library, `runtime_provider_kit`, implements the MCP server for
+A63-RK1/RK2's standalone library, `runtime_provider_kit`, implements the MCP server for
 `runtime-provider.v1`. A runtime package depends on this crate by path and supplies the
 mechanisms below. The kit has no Type, package manifest or archive and depends on no other
 repository crate. Its lockfile and Rust 1.97.1 toolchain travel with it.
@@ -15,7 +15,7 @@ mutually exclusive reason key. Inspection succeeds with the state, including unk
 
 ## Embedding
 
-Implement `RuntimeBackend`, `StateStore` and `Gate`, then call `RuntimeServer::new` with shared
+Implement `RuntimeBackend` and `StateStore`, use `gate::TlsGate` (or supply another `Gate`), then call `RuntimeServer::new` with shared
 instances and `Options`. Construction performs recovery before serving. Use `serve_stdio` for
 the engine's process runner, or `serve_transport` for an owned duplex byte transport; both wait
 for MCP transport termination and then close gates and stop held trees. Call `shutdown` for an
@@ -46,7 +46,7 @@ rule to their own logging.
 | `RuntimeBackend::stop` | Stop the entire tree on the context's machine. Return success only when no run for that ID there can remain or restart, including queued launches and backend restart jobs. An unavailable machine returns `Unavailable`. |
 | `RuntimeBackend::state` | Return running, stopped or unknown for all runs this provider started for that ID on the machine. Stopped proves none may remain. Errors become unknown. |
 | `StateStore` | Place and durably retain the run ledger and owed stops. Atomically upsert a `RunRecord` by instance and machine hostname; success acknowledges durable commit. The store remains reachable after provider retirement and instance removal. |
-| `Gate` / `GateHandle` | Consume the byte channel and receive the run's identity; return its current URL, close the listener/channel on stop and signal termination. Opening must cooperate with cancellation; closing is idempotent and completes only after the channel closes. RK2 supplies the real gate. |
+| `Gate` / `GateHandle` | Consume the byte channel and receive the run's identity; return its current URL, close the listener/channel on stop and signal termination. Opening must cooperate with cancellation; closing is idempotent and completes only after the channel closes. `gate::TlsGate` supplies the shared per-run TLS gate. |
 
 `CallContext` carries `config`, `revision` and `machine` to staging, start, stop and state. For a
 live provider call, config and revision come only from that call's metadata, including when it
@@ -70,9 +70,71 @@ material must clean up when dropped; staging that fails or is cancelled cleans i
 material before returning. A cancelled start must quiesce: it cannot launch anything after
 returning. Start failure is treated as potentially having started a tree, so the kit stops it.
 The gate must not put secrets or identity material into its URL. The kit also rejects a new URL
-containing a supplied sensitive value. No actual file staging, runtime, TLS, certificate parsing
-or production gate is implemented here. A runtime and gate remain trusted implementations of
+containing a supplied sensitive value. The kit implements TLS, certificate identity parsing and the shared gate; actual file staging
+and the runtime remain caller responsibilities. A runtime remains a trusted implementation of
 these contracts; the kit cannot prove remote cleanup or backend file permissions.
+
+## Shared TLS gate
+
+`gate::TlsGate::new(gate::GateConfig::default())` implements the existing `Gate` interface.
+Each `open` consumes one stdio `Channel` and binds a new port for that run. It serves the run's
+PEM certificate and key from `identity` in memory, with TLS 1.3 and ALPN `http/1.1` only. The
+certificate must have exactly one SAN, the URI named by the run token's `sub`. No client
+certificate is requested. Missing or mismatched identity fails opening and drops the channel.
+Nothing is logged or persisted by the gate.
+
+The default bind IP and advertised host are both `127.0.0.1`. Set them separately for a routed
+provider: the bind IP must be a specific interface, never `0.0.0.0` or `::`; the advertised host
+is a bare DNS name or IP, with IPv6 bracketed in the resulting `https://<host>:<port>/mcp` URL.
+A provider must still put its runtime and runs under separate OS principals (PRV-025).
+
+Every POST, GET and DELETE requires the engine's ES256 bearer JWT: its `kid` selects a P-256
+key in the run's JWKS, its `sub` equals the trimmed engine ID, its sole audience equals the
+run token's `sub`, and its integer expiry is in the future. Critical JWT headers are refused.
+A failed proof returns an empty 401 with `WWW-Authenticate: Bearer` before the channel is used.
+Host, Origin, MCP protocol version and GET Accept are not checked.
+
+`GateConfig` defaults to a 30-second keepalive idle time, 5-second interval and 3 probes;
+`silent_cut_bound()` reports 45 seconds. Every accepted TCP socket gets these settings. Linux
+also gets `TCP_USER_TIMEOUT` at that bound. macOS has no equivalent, so outstanding
+unacknowledged data can exceed this bound there; the TCP keepalive bound applies when probes
+can run. A silent packet-drop test needs privileged network controls and is not part of these
+tests. The configuration requires positive whole seconds and positive counts.
+
+One session is live at a time. An initialize assigns a fresh random 256-bit session ID; another
+initialize cancels open work and closes the old GET stream before forwarding the new initialize.
+Thus a persistent stdio server sees a second initialize when the engine bridge restarts; the
+runtime must use a server that tolerates this. Session IDs are required on later messages.
+DELETE ends the session and cancels its open requests, leaving the channel alive.
+
+POST bytes are forwarded as one stdio line. Notifications and client responses return empty
+202s. Requests receive the matching response bytes in one SSE event if Accept allows
+`text/event-stream`, otherwise as JSON. Only messages with a `method` enter GET, including
+server requests whose IDs equal engine request IDs. Unmatched responses are discarded. A lost
+response connection, DELETE, session replacement or close writes `notifications/cancelled` for
+pending requests. `close` waits for listener, connections and channel to close, and is idempotent;
+`ended` also resolves on channel EOF/error. A stalled channel gets at most one second to drain
+queued cancellations at shutdown, then its writer is dropped.
+
+The following are kit choices and limits of this bridge, rather than additions to the language:
+
+- The GET buffer defaults to 256 messages; an active GET has the same queue capacity. Overflow
+  ends the session and cancels pending requests, leaving the channel alive. Before initialization
+  run-originated messages are discarded. A new GET replaces the old one; no replay is promised.
+- The message limit defaults to 8 MiB per POST or stdio line. Oversize POSTs return empty 413s;
+  malformed, oversized or unfinished stdio messages close the gate. CRLF stdio delimiters are
+  accepted. POSTs must be single-line JSON-RPC objects; malformed objects, batches, raw CR/LF
+  and null request IDs return empty 400s, rather than being rewritten for stdio.
+- Active duplicate request IDs and IDs cancelled earlier on this channel return empty 409s.
+  The latter remain reserved for the channel's lifetime: stdio carries no session discriminator
+  that could distinguish an old cancelled reply from a new reply with that ID.
+- GET carries no SSE event IDs, resumption, replay or `Last-Event-ID` handling. The bridge does
+  not implement `Mcp-Param`, protocol-version negotiation, task-specific behavior or heartbeat
+  events. MCP content and capabilities, including initialization's negotiated version, pass
+  through to the server. It inspects only JSON envelope fields needed for framing/correlation.
+- Content-Type and JSON Accept negotiation are not enforced; POST Accept only selects SSE or
+  JSON. Other methods return empty 405s, and other paths or query strings return empty 404s.
+  A refusal carries no JSON-RPC body, since the engine bridge would forward one.
 
 ## Recovery and lifecycle choices
 
@@ -158,8 +220,10 @@ cargo test --release
 The tests use an rmcp client, a fake backend/gate and a file-backed fake store with durable
 writes. They cover lifecycle races, provider transport loss, startup orphans, restart recovery,
 external draining, schema drift and synthetic sensitive markers in answers, records and
-trace-level server logs. They make no claim to production gate, remote-machine or OS-isolation
-qualification.
+trace-level server logs. The gate tests additionally use test-time authorities, signed ES256 tokens and real loopback
+TLS clients that check the certificate chain and SPIFFE URI. They cover authentication, sessions,
+byte preservation, GET buffering, connection resets, cancellation, keepalive socket readback and
+shutdown. They make no claim to remote-machine or OS-isolation qualification.
 
 Regression tests also pause a run's initial ledger read until a later stop succeeds, lose the
 provider transport with ledger reads failing, stop active and pending runs with unreadable

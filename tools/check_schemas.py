@@ -166,7 +166,7 @@ PROVIDER_CAPABILITIES = ("runtime-provider.v1", "machine-provider.v1", "package-
                          "secret-provider.v1")
 CALLED_CAPABILITIES = ("runtime-provider.v1", "machine-provider.v1", "package-source.v1")
 CALLED_OPERATIONS = ("run.v1", "stop.v1", "inspect-run.v1", "list-machines.v1", "place.v1",
-                     "fetch-package.v1")
+                     "fetch-package.v1", "enroll.v1", "accept-machine.v1", "remove-machine.v1")
 
 # The core templates from which first start alone makes instances (FST-001, FST-006), and the
 # directory under examples/valid/ that writes those instances out to show what first start

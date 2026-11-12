@@ -1,0 +1,10 @@
+{
+  "snapshots": [],
+  "project": {
+    "directory": "file:///fixtures/machines/",
+    "files": {
+      "conduit.json": "manifest",
+      "documents.json": "documents"
+    }
+  }
+}

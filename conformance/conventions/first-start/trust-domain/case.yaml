@@ -179,7 +179,10 @@
                 "@core#declare-lost.v1",
                 "@core#purge.v1",
                 "@core#list.v1",
-                "@core#answer.v1"
+                "@core#answer.v1",
+                "@core#enroll-machine.v1",
+                "@core#admit-machine.v1",
+                "@core#refuse-machine.v1"
               ],
               "open": true,
               "provenance": {
@@ -877,7 +880,10 @@
                 "@core#declare-lost.v1",
                 "@core#purge.v1",
                 "@core#list.v1",
-                "@core#answer.v1"
+                "@core#answer.v1",
+                "@core#enroll-machine.v1",
+                "@core#admit-machine.v1",
+                "@core#refuse-machine.v1"
               ],
               "open": true,
               "provenance": {

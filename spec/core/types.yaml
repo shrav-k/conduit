@@ -102,6 +102,10 @@ spec:
   - github.com/shrav-k/conduit/core#declare-lost.v1
   - github.com/shrav-k/conduit/core#purge.v1
   - github.com/shrav-k/conduit/core#list.v1
+  - github.com/shrav-k/conduit/core#enroll-machine.v1
+  - github.com/shrav-k/conduit/core#admit-machine.v1
+  - github.com/shrav-k/conduit/core#refuse-machine.v1
+
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type

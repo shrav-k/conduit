@@ -8,6 +8,18 @@ use std::collections::{BTreeMap, BTreeSet};
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Report {
+    Enroll {
+        outcome: String,
+        #[serde(default)]
+        outputs: Option<Value>,
+    },
+    AcceptMachine {
+        outcome: String,
+    },
+    RemoveMachine {
+        id: String,
+        outcome: String,
+    },
     InspectRun {
         state: String,
     },
@@ -622,6 +634,29 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
         }
         t.state.invocations[i]["setup"]["phase"] = json!("implementations");
     }
+    if let Some(node) = crate::machines::unavailable_node(&t.state, &o)
+        && o["resolved_implementations"]
+            .as_object()
+            .is_some_and(|items| items.values().any(|v| v["source"] != "engine"))
+    {
+        let cause = format!(
+            "PLC-023: node {} ({}) Ready is not True",
+            node["name"], node["id"]
+        );
+        part(
+            t,
+            i,
+            "machine-ready",
+            "unavailable",
+            false,
+            false,
+            Value::Null,
+        );
+        t.state.invocations[i]["setup"]["machine_unavailable"] = json!(cause);
+        settle(t, a, c, i)?;
+        crate::machines::unavailable_diagnostic(t, &cause);
+        return Ok(());
+    }
     if t.state.invocations[i]["setup"]["phase"] == "implementations" {
         let items = o["resolved_implementations"].as_object();
         let run = items
@@ -712,9 +747,37 @@ pub(crate) fn emit(
     let o = access::object(&t.state, &v["object"])
         .ok_or("run subject missing")?
         .clone();
-    let machine = access::object(&t.state, &o["placement"])
-        .map(|n| n["status"].clone())
-        .ok_or("run node missing")?;
+    if let Some(node) = crate::machines::unavailable_node(&t.state, &o)
+        && !(operation == "stop.v1" && v["retirement"]["unregister"] == true)
+    {
+        let cause = format!(
+            "PLC-023: node {} ({}) Ready is not True",
+            node["name"], node["id"]
+        );
+        if v.get("retirement").is_some() {
+            return crate::retirement::unavailable(t, a, c, i, &o, &cause);
+        }
+        part(
+            t,
+            i,
+            "machine-ready",
+            "unavailable",
+            false,
+            false,
+            Value::Null,
+        );
+        settle(t, a, c, i)?;
+        crate::machines::unavailable_diagnostic(t, &cause);
+        return Ok(());
+    }
+    let node = access::object(&t.state, &o["placement"]).ok_or("run node missing")?;
+    let mut machine = node["status"].clone();
+    if node["name"] != "local" {
+        machine = json!({"hostname":node["status"]["hostname"],"labels":node["status"]["labels"]});
+        if let Some(id) = node["status"]["machine"].get("id") {
+            machine["id"] = id.clone();
+        }
+    }
     let mut inputs = json!({"instance":o["id"],"machine":machine});
     inputs
         .as_object_mut()
@@ -811,6 +874,9 @@ pub(crate) fn report(
         evidence,
         cursor: 0,
     };
+    if crate::machines::handles(v["operation"].as_str().unwrap_or(""), c) {
+        return crate::machines::report(t, &mut a, c, i, report);
+    }
     if v.get("retirement").is_some() {
         return crate::retirement::report(t, &mut a, c, i, report);
     }
@@ -820,7 +886,10 @@ pub(crate) fn report(
             json!({"operation":c.qualified("inspect-run.v1"),"runState":state})
         }
         Report::Run { outcome, .. } => json!({"operation":c.qualified("run.v1"),"outcome":outcome}),
-        Report::Stop { .. } => return Err("stop report for setup".into()),
+        Report::Stop { .. }
+        | Report::Enroll { .. }
+        | Report::AcceptMachine { .. }
+        | Report::RemoveMachine { .. } => return Err("unmatched report for setup".into()),
         Report::Connected { part, outcome } => json!({"part":part,"outcome":outcome}),
     };
     if (phase == "inspect-run" && matches!(&report, Report::InspectRun { .. })

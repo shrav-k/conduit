@@ -789,6 +789,53 @@
                 "required": [
                   "kind"
                 ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "clock"
+                  },
+                  "evidence": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "machine-report"
+                  },
+                  "evidence": {
+                    "type": "object"
+                  },
+                  "provider": {
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "enum": [
+                      "succeeded",
+                      "failed",
+                      "unknown"
+                    ]
+                  },
+                  "outputs": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "provider",
+                  "outcome"
+                ]
               }
             ]
           },
@@ -930,6 +977,28 @@
               },
               "stored_record_facts": {
                 "type": "array"
+              },
+              "panel": {
+                "type": "object"
+              },
+              "undisclosed": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "whole_state": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "text"
+                  ]
+                }
               }
             },
             "required": []
@@ -1109,7 +1178,9 @@
                           "invoke",
                           "request-fixture",
                           "lifecycle-fixture",
-                          "setup-report"
+                          "setup-report",
+                          "clock",
+                          "machine-report"
                         ]
                       }
                     }
@@ -1123,11 +1194,22 @@
                   "properties": {
                     "records": {
                       "items": {
-                        "properties": {
-                          "data": {
-                            "required": [
-                              "target"
-                            ]
+                        "if": {
+                          "properties": {
+                            "type": {
+                              "not": {
+                                "const": "enrollment-change"
+                              }
+                            }
+                          }
+                        },
+                        "then": {
+                          "properties": {
+                            "data": {
+                              "required": [
+                                "target"
+                              ]
+                            }
                           }
                         }
                       }

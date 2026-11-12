@@ -1,0 +1,126 @@
+[
+  {
+    "name": "root enrollment operations first-start",
+    "kind": "expectation",
+    "cases": [
+      "first-start"
+    ],
+    "operation": "add",
+    "paths": [
+      "/steps/0/expect/state/objects/5/operations/*"
+    ]
+  },
+  {
+    "name": "root enrollment operations first-start-repeat",
+    "kind": "expectation",
+    "cases": [
+      "first-start-repeat"
+    ],
+    "operation": "add",
+    "paths": [
+      "/steps/0/expect/state/objects/5/operations/*",
+      "/steps/1/expect/state/objects/5/operations/*"
+    ]
+  },
+  {
+    "name": "root enrollment operations first-start-lifecycle-protected",
+    "kind": "expectation",
+    "cases": [
+      "first-start-lifecycle-protected"
+    ],
+    "operation": "add",
+    "paths": [
+      "/steps/0/expect/state/objects/5/operations/*"
+    ]
+  },
+  {
+    "name": "root enrollment operations first-start-protected",
+    "kind": "expectation",
+    "cases": [
+      "first-start-protected"
+    ],
+    "operation": "add",
+    "paths": [
+      "/steps/0/expect/state/objects/5/operations/*"
+    ]
+  },
+  {
+    "name": "root enrollment operations s1-whole",
+    "kind": "expectation",
+    "cases": [
+      "s1-whole"
+    ],
+    "operation": "add",
+    "paths": [
+      "/steps/0/expect/state/objects/5/operations/*"
+    ]
+  },
+  {
+    "name": "root enrollment operations first-start-root-system",
+    "kind": "expectation",
+    "cases": [
+      "first-start-root-system"
+    ],
+    "operation": "add",
+    "paths": [
+      "/steps/0/expect/state/objects/5/operations/*"
+    ]
+  },
+  {
+    "name": "root enrollment operations first-start-trust-domain",
+    "kind": "expectation",
+    "cases": [
+      "first-start-trust-domain"
+    ],
+    "operation": "add",
+    "paths": [
+      "/steps/0/expect/state/objects/5/operations/*",
+      "/steps/1/expect/state/objects/5/operations/*"
+    ]
+  },
+  {
+    "name": "root enrollment operations list-from-first-start",
+    "kind": "expectation",
+    "cases": [
+      "list-from-first-start"
+    ],
+    "operation": "add",
+    "paths": [
+      "/steps/0/expect/state/objects/5/operations/*"
+    ]
+  },
+  {
+    "name": "root-management snapshot enrollment operations",
+    "kind": "fixture",
+    "cases": [
+      "*"
+    ],
+    "paths": [
+      "conformance/fixtures/root-system-state.json"
+    ],
+    "operation": "replace"
+  },
+  {
+    "name": "seventeen enrollment and node cases",
+    "kind": "added",
+    "cases": [
+      "enrollment-enroll-own-provider",
+      "enrollment-enroll-reserved",
+      "enrollment-enroll-opens",
+      "enrollment-enroll-invalid-inputs",
+      "enrollment-enroll-evidence-unmet",
+      "enrollment-join-attaches",
+      "enrollment-admit",
+      "enrollment-admit-fingerprint",
+      "enrollment-admit-not-admissible",
+      "enrollment-admit-accept-failed",
+      "enrollment-admit-accept-unknown",
+      "enrollment-refuse-pending",
+      "enrollment-expiry-before-join",
+      "enrollment-expiry-after-join",
+      "nodes-no-node-without-admission",
+      "nodes-id-mismatch",
+      "nodes-labels-drift"
+    ]
+  }
+]

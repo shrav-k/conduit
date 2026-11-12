@@ -31,11 +31,17 @@
         "setup-part-reported",
         "template-replaced",
         "records-purged"
+      ],
+      "enrollment-change": [
+        "opened",
+        "admitted",
+        "refused",
+        "expired"
       ]
     },
     "purge": "strictly before the RFC 3339 instant; permanent purge certificates; invocation state and retained outputs unchanged",
     "gaps": "export: gaps/complete; inspection: recordGaps/recordsComplete; all known source gaps shown conservatively",
-    "provider_calls": "made and ended; CloudEvent subject is the run instance; no request route or serving",
+    "provider_calls": "made and ended; subject is the run instance or machine provider Resource; autonomous list-machines calls have no invocation/caller and no outputs; enroll endings omit action and message; no request route or serving",
     "inspection": "required id/revision/packages/declared/status/records; exact ordered records and unreconciled IDs; requirement implementation references and mediated mode"
   },
   "DL10": {
@@ -55,7 +61,8 @@
     "invocation-dispatched",
     "invocation-ended",
     "provider-call",
-    "object-change"
+    "object-change",
+    "enrollment-change"
   ],
   "implemented_here": [
     "DL6",

@@ -92,7 +92,7 @@ are absent where no document was established. Schema-invalid documents and manif
 SUB-005, identified file/document, instance pointer, named contract and keyword location.
 
 The first-build record vocabulary is `access-decision`, `request-ended`, `invocation-dispatched`,
-`invocation-ended`, `provider-call` and `object-change`. First start emits two `object-change`
+`invocation-ended`, `provider-call`, `object-change` and `enrollment-change`. First start emits two `object-change`
 records per instance: registration and registered-to-ready, with `cause: first-start` and no
 invented caller or invocation. LIF-034 and protected-template requests emit an access decision
 and an undispatched request end. This vocabulary and the additional event data are runner
@@ -725,3 +725,27 @@ failed at the affected step's `/records` expectation with one fewer record than 
 The runner source was restored; no fault injection remains. The release
 workspace tests passed on the restored source, including all 362 portable cases; clippy
 with warnings denied and formatting passed too.
+
+### Enrollment inputs and assertions
+
+`machine-report` carries evidence (including time and allocation IDs), provider, outcome and,
+for succeeded, list-machines.v1 outputs. `clock` carries evidence and closes expired
+enrollments. The shell does not yet commit either autonomously (order 051c).
+`setup-report` additionally accepts `{kind: enroll, outcome, outputs}` (outputs only for
+succeeded), `{kind: accept-machine, outcome}` and `{kind: remove-machine, id, outcome}`.
+Each case supplies every provider ending; no fixture provider program runs.
+
+`expect.panel` is a required-field projection of the pure root panel view at the input's time.
+`expect.undisclosed` is an array of `{text, whole_state?}` assertions: each string must occur
+nowhere in the reply, decisions, intents, new or retained records, invocations, objects or
+exported records. By default it excludes the private enrollment and latest-report fields;
+whole_state true also searches those. It searches decoded strings and keys. Arrays in panel
+projections retain the ordinary exact sequence semantics. A fixture input may supply its time
+inside its call. These assertions expose no command or MCP tool.
+
+The seventh CloudEvent record type, enrollment-change, records an enrollment transition with
+the provider Resource as subject. Machine provider calls also use that Resource as subject.
+Autonomous list-machines.v1 reports record made and ended without invocation/caller and
+without outputs. Enroll endings never record the join action or its message. See DL8 in
+[engine conformance](../engine/CONFORMANCE.md#enrollment) for the two omissions beyond the
+type's records policy and the work left to orders 049a2, 049b and 051c.

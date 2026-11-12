@@ -343,6 +343,8 @@ impl Shell {
                 | "complete"
                 | "cancel"
                 | "setup-report"
+                | "machine-report"
+                | "clock"
                 | "recover"
                 | "builtin-run-stopped"
                 | "access"
@@ -648,6 +650,24 @@ fn missing(intent: &Value, context: &Context) -> Result<Execution> {
             if intent["operation"] == format!("{}#stop.v1", context.core_package) =>
         {
             Execution::SetupReport(json!({"kind":"stop","outcome":"unknown"}))
+        }
+        Some("provider-call")
+            if ["enroll", "accept-machine", "remove-machine"]
+                .iter()
+                .any(|op| intent["operation"] == format!("{}#{op}.v1", context.core_package)) =>
+        {
+            let op = intent["operation"]
+                .as_str()
+                .unwrap()
+                .rsplit('#')
+                .next()
+                .unwrap()
+                .trim_end_matches(".v1");
+            let mut report = json!({"kind":op,"outcome":"failed"});
+            if op == "remove-machine" {
+                report["id"] = intent["inputs"]["id"].clone();
+            }
+            Execution::SetupReport(report)
         }
         Some("cancel" | "cancel-setup-parts") => Execution::Done,
         _ => return Err("embedding error: no missing-executor report for intent".into()),

@@ -374,6 +374,16 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
             continue;
         }
         if let Some(mut value) = value {
+            if op == c.qualified("admit-machine.v1") && setting == "inputs" {
+                value.as_object_mut().unwrap().remove("fingerprint");
+            }
+            if op == c.qualified("enroll.v1") && setting == "outputs" {
+                value.as_object_mut().unwrap().remove("action");
+                value.as_object_mut().unwrap().remove("message");
+            }
+            if op == c.qualified("list-machines.v1") && setting == "outputs" {
+                continue;
+            }
             if op == c.qualified("run.v1") && setting == "inputs" {
                 value
                     .as_object_mut()
@@ -504,6 +514,9 @@ pub(crate) fn reject(
         json!([]),
         restriction,
     );
+    if rule == "ACC-032" {
+        t.reply["structuredContent"] = json!({"diagnostics":[{"ruleId":"ACC-032","level":"error","message":{"text":"ACC-032: the operation is reserved to root, including a Conduit opened for another consumer"}}]});
+    }
     if rule == "OPS-029"
         && let Some(named) = missing_reference(route, c)
     {
@@ -857,6 +870,9 @@ fn invoke_inner(
         }
         return Ok(());
     }
+    if (previous.is_none() || redispatch) && crate::machines::preflight(t, a, c, &route)? {
+        return Ok(());
+    }
     // OPS-023 puts ordinary unavailability after conflicts, including the repeat index.
     let available = access::evaluate(&t.state, request, c, false)?;
     if let Some(reason) = available.reason {
@@ -870,6 +886,42 @@ fn invoke_inner(
             None,
             available.restriction.as_ref(),
         );
+    }
+    // PLC-023: lifecycle implementations also run on the named instance's node.
+    if ["set-up.v1", "retire.v1"]
+        .iter()
+        .any(|n| op == c.qualified(n))
+        && let Some(subject) = access::object(&t.state, &route["arguments"]["instance"])
+        && subject["resolved_implementations"]
+            .as_object()
+            .is_some_and(|items| items.values().any(|v| v["source"] != "engine"))
+        && let Some(node) = crate::machines::unavailable_node(&t.state, subject)
+    {
+        let cause = format!(
+            "PLC-023: node {} ({}) Ready is not True",
+            node["name"], node["id"]
+        );
+        reject(t, a, c, &route, "unavailable", "PLC-023", None, None)?;
+        t.reply["structuredContent"] =
+            json!({"diagnostics":[{"ruleId":"PLC-023","level":"error","message":{"text":cause}}]});
+        return Ok(());
+    }
+    if target["resolved_implementations"][op]["source"] != "engine"
+        && !(op == c.qualified("get-secret.v1")
+            && request.serving.as_ref().is_some_and(|id| {
+                t.state.invocations.iter().any(|v| {
+                    v["id"] == *id
+                        && v["provider_recovery"] == true
+                        && crate::machines::provider(&t.state, c)
+                            .is_some_and(|p| v["object"] == p["id"])
+                })
+            }))
+        && let Some(node) = crate::machines::unavailable_node(&t.state, &target)
+    {
+        let cause = format!("node {} ({}) Ready is not True", node["name"], node["id"]);
+        reject(t, a, c, &route, "unavailable", "PLC-023", None, None)?;
+        t.reply["structuredContent"] = json!({"diagnostics":[{"ruleId":"PLC-023","level":"error","message":{"text":format!("PLC-023: {cause}")}}]});
+        return Ok(());
     }
     if let Some(old) = &previous
         && !redispatch
@@ -1048,12 +1100,20 @@ fn invoke_inner(
         && !reconcile
         && !crate::lifecycle::handles(op, c)
         && !crate::records::handles(op, c)
+        && !crate::machines::handles(op, c)
         && op != c.qualified("install.v1")
     {
         return Err("engine operation belongs to its lifecycle or records transition".into());
     }
     let plain = implementation["item"]["plain"] == true;
     let mut invocation = json!({"id":id,"key":key,"sender":route["consumer"],"caller":route["caller"],"target":route["target"],"conduit":route["conduit"],"operation":op,"arguments":route["arguments"],"digest":digest,"filters":route["filters"],"state":"in-progress","plain":plain,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":plain || contract["spec"].get("outputSchema").is_some(),"attempt":previous.as_ref().and_then(|v|v["attempt"].as_u64()).unwrap_or(0)+1,"wire_retried":false,"config":target["config"],"revision":target["revision"]});
+    // ENR-007: only the full-request digest retains the typed input's derivative.
+    if op == c.qualified("admit-machine.v1") {
+        invocation["arguments"]
+            .as_object_mut()
+            .unwrap()
+            .remove("fingerprint");
+    }
     let related = referenced_objects(&t.state, &target, op, &route["arguments"], c)?;
     if !related.is_empty() {
         invocation["input_objects"] = json!(related);
@@ -1151,6 +1211,8 @@ fn invoke_inner(
             json!({"diagnostics":trial.reply["diagnostics"]}),
             json!([]),
         )?;
+    } else if crate::machines::handles(op, c) {
+        crate::machines::execute(t, a, c, i)?;
     } else if crate::records::handles(op, c) {
         crate::records::execute(t, a, c, i)?;
     } else if crate::lifecycle::handles(op, c) {
@@ -1497,6 +1559,18 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
             }
             finish(t, &mut a, c, i, "unknown", json!({}), json!([]))?;
         }
+    }
+    crate::machines::omit_nodes(
+        &mut t.state,
+        &evidence.time,
+        "AwaitingReportAfterRecovery",
+        "PLC-023: no machine report used since recovery",
+        c,
+    );
+    t.state.machine_report = None;
+    t.state.enrollments.retain(|e| e["state"] != "opening");
+    for e in &mut t.state.enrollments {
+        e.as_object_mut().unwrap().remove("accepting");
     }
     t.decisions.push(decision(
         "recover-interrupted-invocations",

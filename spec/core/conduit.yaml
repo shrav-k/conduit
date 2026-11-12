@@ -198,3 +198,6 @@ implementations:
       - github.com/shrav-k/conduit/core#retire-with-agents.v1
       - github.com/shrav-k/conduit/core#answer.v1
       - github.com/shrav-k/conduit/core#sign-in.v1
+      - github.com/shrav-k/conduit/core#enroll-machine.v1
+      - github.com/shrav-k/conduit/core#admit-machine.v1
+      - github.com/shrav-k/conduit/core#refuse-machine.v1

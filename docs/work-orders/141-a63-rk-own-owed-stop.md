@@ -35,6 +35,14 @@ naming the stop that holds it.
 
 ## The decisions it applies (the admin's, 2026-11-12)
 
+The admin also decided, on the same day, the two extensions in decisions 1 to 3 that a fresh review
+of this order raised: every drain cancels a start's flight without advancing its epoch, so only
+`stop.v1` and shutdown do; and where the start's own state cannot be read, the answer is
+`unknown`, naming every owed stop on that machine, `failed` for another instance's stop holding
+only where the start's own state is readable (OPS-014's honesty, applied alike; it settles order
+137's finding that such an answer named no stop). The admin's next spec order puts the same three
+cases into PRV-021's text.
+
 1. **A drain does not cancel a start.** A stop owed before this `run.v1` began, whichever drain
    carries it out, does not cancel this start: it proceeds. A `stop.v1` for the instance that
    arrives while the start is in flight still cancels it, as PRV-030 requires. `stop.v1` advances

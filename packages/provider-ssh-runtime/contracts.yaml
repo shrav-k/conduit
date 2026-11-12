@@ -1,0 +1,161 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: ssh-runtime.v1
+  description: |-
+    The kit supplies the per-run TLS gate on the engine's machine: it proves the instance URI,
+    requires the engine's signed token before forwarding bytes and owns the duplex stdio channel.
+    The gate's silent-cut bound is keepaliveIdle + keepaliveInterval × keepaliveCount seconds
+    (45 with the suggested 30/5/3 settings). Linux sets TCP_USER_TIMEOUT too. The kit's macOS
+    caveat applies: outstanding unacknowledged data can exceed this bound when keepalive probes
+    cannot run. Separately, SSH uses ConnectTimeout=5, ServerAliveInterval=10 and
+    ServerAliveCountMax=3: its own unresponsive-peer bound is 30 seconds after connecting,
+    following the connection attempt of up to five seconds. These are different connections.
+
+    Runs execute as `conduit-run`, without sudo, shared by every run and the work-order workers
+    (ruling 77). **PRV-025's isolation is unmet until each Agent has a user of its own.** Any run
+    can read every other run's identity files and environment (`/proc/<pid>/environ`); write into
+    another run's standard input and output through `/proc/<pid>/fd`; control the shared user
+    manager, including stopping units and `systemctl --user set-environment`; write a drop-in
+    under `~/.config/systemd/user/` for the prefix, or a file under `~/.config/environment.d/`,
+    which every later run's unit reads, and so read later runs' secrets; and start
+    `systemd-run --user` units of its own, which escape the provider's stop and RuntimeMaxSec.
+    The remote's lockdown and setup close none of these openings. Modes 0700/0600 protect files
+    from other users, not this shared user. The kit gate also needs a separate OS principal
+    from untrusted runs; SSH keeps those runs on the remote, but does not isolate them from each other.
+
+    Only configured machines and `command` items run. A command's program must be absolute or a
+    bare name resolving to an absolute executable through the effective run PATH on the remote.
+    Relative paths containing `/`, package items and all package_arguments end failed. Remote
+    commands contain POSIX single-quoted words. Environment values, secrets and identity file
+    contents travel only through `/bin/sh -s` stdin, never in local or remote arguments. SSH is
+    resolved on the provider's PATH once at startup, then invoked by absolute path with an empty
+    environment and all configuration files disabled. Its ed25519 host keys are pinned.
+
+    The first start durably makes a random 64-bit part in the provider's state directory. Units
+    are `<prefix><part>-<SHA-256(instance-ID)>.service`; remote directories are
+    `<base>/<part>/runs/<hash>/<generation>/` and `<base>/<part>/state/<hash>/`. Another provider's
+    part is never swept. Each staging reserves a random 16-character hex generation in the local state,
+    never reused while that state is retained; reservations persist across provider restarts.
+    The remote run directory is 0700, identity files and EnvironmentFile are 0600, under
+    umask 077. Environment precedence is configured PATH, item environment supplied by the engine,
+    secrets, identity variables, then CONDUIT_IDENTITY_DIR and CONDUIT_STATE_DIR. The last points
+    to the per-instance remote state directory, kept across starts and never removed (PRV-029).
+    A supplied PATH binding follows that precedence, so the same effective PATH is used in the
+    pre-check and the service. No provider environment is inherited.
+
+    Secrets and identity (PRV-011, PRV-022) rest in the remote EnvironmentFile from staging until
+    the unit is confirmed active, when that file is removed; in the run's environment for its
+    life; and in remote identity files until the unit stops for any cause. ExecStopPost removes
+    the generation's entire directory. EnvironmentFile uses the optional `-` prefix so its removal
+    cannot prevent systemd from spawning ExecStopPost. A start-only `ExecStartPre=:/bin/test -f <file>`
+    still requires that file before the command can launch; WorkingDirectory must also exist.
+    For a run that never starts these files remain until removal or the next sweep.
+    The gate holds identity in memory. The provider's state holds no copy of
+    these values: it holds a private key path, the operator-installed private key, pinned public
+    host keys, markers, generation reservations, the ledger and diagnostics. Run stderr goes continuously into a private
+    0600 local `stderr/<marker>-<generation>.log` file and persists until the operator removes it;
+    a run can itself print credentials there. Diagnostics never include values or subprocess output.
+
+    Every run has the lifetime the kit supplies (at most maxLifetime), enforced remotely by
+    RuntimeMaxSec, and TimeoutStopSec from stopTimeout. systemd stops the whole unit cgroup,
+    including setsid descendants that remain in it. Runs never restart automatically. Start
+    returns a channel only after `systemctl --user show` confirms active. Confirmation polls
+    for ten seconds, including waiting for the machine connection mutex, stalled show commands
+    and active environment-file removal. Cancellation closes stdin while waiting for that mutex.
+    Deadline cleanup gets at most five more seconds, including mutex acquisition,
+    to invalidate the directory, then requests local SSH termination and waits up to one
+    second for its exit; closing stdin itself is bounded by one second. A cancellation before send launches nothing. After send, stdin
+    closes and start waits for session exit or a loaded-unit acknowledgement. At the confirmation
+    deadline it attempts to invalidate the run directory and terminates the owned SSH session;
+    the kit then stops it, keeping an owed stop if unreachable. A partition cannot provide a
+    bounded remote acknowledgement; local session exit is distinct from a confirmed remote
+    stop, and this uncertainty is not reported as stopped. Stop sends systemctl stop, removes the run directory
+    (to defeat a queued launch), confirms inactive or absent, and only then removes the marker.
+
+    Staging and stop remove all of `runs/<hash>/`, including every generation. A stop for an
+    unacknowledged launch clears once it has removed that parent and confirmed the unit inactive
+    or absent; no loaded-unit acknowledgement is required. Later staging uses a new generation,
+    so a queued old launch cannot reach its files. The fence relies on systemd refusing to start
+    a unit whose WorkingDirectory is missing, together with the generation's start-only file check.
+    The owner's test host will confirm the systemd behavior; the fake remote only models it.
+
+    The backend sends a best-effort stop as soon as an SSH run session ends. After a network cut,
+    remote sshd closes the run's stdin when its ClientAliveInterval/ClientAliveCountMax notices
+    the cut, within 30 × 4 = 120 seconds under the owner's setup; RuntimeMaxSec is the backstop
+    even when SSH cannot deliver a stop. On each master
+    connection/reconnection, the provider checks id -u, user-manager running/degraded, Linger=yes
+    and systemd >=254, then sweeps its own unmarked units and orphan/unstarted run directories
+    before admitting runs. For a started marker it retains only that generation directory and
+    removes stale generations and every other name under the instance hash. Each sweep removal
+    is reported on stderr and in diagnostics. A dropped
+    staged run is removed over a live master; unreachable staging is retained for the next sweep.
+    A failed master backs off at 2, 4, 8, 16, then 32 seconds; calls during the backoff refuse at
+    once. Each machine has one owned foreground master, no ssh agent and no shared control socket.
+
+    A durable marker precedes staging. Inventory reads markers only and remains complete when
+    all machines are off. One owner.lock excludes a second provider in the same state directory.
+    ledger.json atomically retains the kit's records and owed stops. The kit drains at startup,
+    before well-formed calls and each drainInterval. Recovery stops every marker/ledger run because
+    old channels cannot survive provider restart; an incomplete inventory prevents serving.
+    Every held stop is carried out before any new run on its machine starts. A refused start
+    names the owed instance and machine. Stops owed only on other machines do not block admission.
+    The kit coordinates admission before staging and immediately before start with each machine's
+    read-write lock. Starts share its read side; a stop publishes its obligation under the write
+    side. Stops wait for backend starts already in progress on that machine, not staging, and
+    never acquire another instance's operation lock. Calls for one instance serialize across
+    machines. The kit cancels and waits for stage/start/gate opening, closes the gate, then stops;
+    no launch may follow a confirmed stop. Inspection is unknown while unreachable or stop is owed.
+
+    Decision D's external stop-drainer that outlives provider retirement is **not built**. A stop
+    still owed on retirement is carried out only if the provider starts again in the same state
+    directory. Until then RuntimeMaxSec is the only end of that run, and the run directory of a
+    run that never started stays on the remote. Failed staging and start attach the same named,
+    value-free reason written on stderr and in 0600 diagnostics.log through `Unavailable::because`.
+    The kit includes it after `staging failed:` or `start did not complete:`, with its existing
+    stop suffix for start, after checking for sensitive values and bounding it to one line.
+    Startup refusals stay on stderr; the kit discards startup reasons.
+    A remaining kit limitation: on an unreachable machine, its unknown-state repeated-run check
+    returns `run may still be running` before the owed-stop admission check, so that answer
+    does not name the held stop. It still starts nothing and keeps the debt. The admission check
+    reached after staging does name the owed instance and machine, as the race test confirms.
+
+
+    Under the owner's MaxSessions 64 setup, the master opens no session; serialized commands use
+    one and each staging/running instance uses one. Required runLimit defaults to 62 and may be
+    lowered, leaving one session spare alongside a command. Stage counts unstopped markers and
+    refuses past the per-machine limit before opening a session, naming the machine and runLimit.
+    This avoids sshd refusing a session, which can drop the master and all its runs.
+spec:
+  family: Resource
+  offers: [github.com/shrav-k/conduit/core#runtime-provider.v1]
+  requires: []
+  implementation:
+    github.com/shrav-k/conduit/core#run.v1: '#provider'
+    github.com/shrav-k/conduit/core#stop.v1: '#provider'
+    github.com/shrav-k/conduit/core#inspect-run.v1: '#provider'
+  records:
+    inputs: false
+    outputs: false
+  schema:
+    type: object
+    required: [machines, privateKey, base, path, runLimit, systemdRun, systemctl, loginctl, unitPrefix, maxLifetime, stopTimeout, drainInterval, bindAddress, advertisedHost, keepaliveIdle, keepaliveInterval, keepaliveCount]
+    properties:
+      machines: {type: string, minLength: 1, description: 'JSON array: hostname, host, port, user=conduit-run, host_key=ssh-ed25519 public key'}
+      privateKey: {type: string, pattern: '^/'}
+      base: {type: string, pattern: '^/[A-Za-z0-9/._-]+$'}
+      path: {type: string, minLength: 1}
+      runLimit: {type: integer, minimum: 1, maximum: 62, default: 62}
+      maxLifetime: {type: integer, minimum: 1, maximum: 2147483647, default: 3600}
+      stopTimeout: {type: integer, minimum: 1, maximum: 2147483647, default: 10}
+      drainInterval: {type: integer, minimum: 1, maximum: 2147483647, default: 5}
+      systemdRun: {type: string, pattern: '^/', default: /usr/bin/systemd-run}
+      systemctl: {type: string, pattern: '^/', default: /usr/bin/systemctl}
+      loginctl: {type: string, pattern: '^/', default: /usr/bin/loginctl}
+      unitPrefix: {type: string, pattern: '^[A-Za-z0-9-]+$', maxLength: 80, default: conduit-run-}
+      bindAddress: {type: string, default: '127.0.0.1'}
+      advertisedHost: {type: string, default: '127.0.0.1'}
+      keepaliveIdle: {type: integer, minimum: 1, maximum: 2147483647, default: 30}
+      keepaliveInterval: {type: integer, minimum: 1, maximum: 2147483647, default: 5}
+      keepaliveCount: {type: integer, minimum: 1, maximum: 2147483647, default: 3}
+    additionalProperties: false

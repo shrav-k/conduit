@@ -117,3 +117,33 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target --exclude-dir=dist
 
 `target/` and `dist/` stay ignored and unstaged. No real hostname, tailnet name or user's home path
 goes into the crate. Report each choice you make as your own. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), stacked on order 137's last commit rebased onto
+`main` (cd62eed): the worker (842 s) and a fresh verifier (247 s), which found nothing to change in
+one round. Each staging now has its own directory, `runs/<hash>/<generation>/`, with a 16-hex-digit
+generation reserved for good, so a late `systemd-run` for a removed generation fails at its missing
+working directory and start check; a stop that confirms the unit inactive or absent and removes
+`runs/<hash>/` clears the owed stop without an acknowledgement, and the sweep removes stale
+generations. Every place the item binds is required, keeping its default (MAN-017, SCH-009), with
+a package test. Each staging and start refusal carries its reason to `run.v1`'s answer through the
+kit's `Unavailable::because`. The README's setup is exactly the owner's ruling-77 setup as the
+admin gave it, with the 120 s bound for a silent cut and a run limit (`runLimit`, default 62 under
+`MaxSessions 64`) past which staging refuses before it opens a session.
+
+On the Mac, the lane coordinator found 20 of the runtime tests failing: their fake remote runs
+the provider's shell scripts on the test machine, and macOS's `chmod` read `chmod 700 -- PATH` as a
+file named `--`, and its `find` has no `-printf`. **Admin-side fix (a small finding, ruling 71):**
+`chmod -- MODE PATH`, which both read alike, and the sweep's run-directory listing written as a
+POSIX loop over the directory's entries, which also refuses an unreadable `runs` directory, as
+`find` did, and does not follow `runs` when it is a symbolic link. A fresh reader checked it,
+under dash and macOS's `sh`, and found the scripts unchanged in effect on the Linux remote. Then,
+with two test threads: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` clean,
+all 33 tests pass, and two archive builds give the same digest on the Mac
+(`sha256:94e32f55190e9286c5c2b7af965ae0054971722a96f64bfe89d1a7aa8b5cf051`; no cross-host digest
+is claimed).
+
+The worker's own choices: permanent empty reservation files for generations, created atomically,
+so that no generation is reused across restarts (one small file per staging stays in the state
+directory); the place `runLimit`, from 1 to 62; markers counted conservatively per machine.

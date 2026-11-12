@@ -1,0 +1,26 @@
+[package]
+name = "provider-ssh-runtime"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+[dependencies]
+runtime-provider-kit = { path = "../runtime-provider-kit" }
+async-trait = "0.1"
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tokio = { version = "1", features = ["full", "test-util"] }
+tokio-util = "0.7"
+base64 = "0.22"
+rand = "0.8"
+tempfile = "3"
+flate2 = "1"
+tar = "0.4"
+
+[dev-dependencies]
+rmcp = { version = "=3.9.0", features = ["client", "transport-io"] }
+serde_yaml = "0.9"
+jsonschema = { version = "=0.61.0", default-features = false }

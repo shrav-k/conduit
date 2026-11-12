@@ -259,6 +259,31 @@
     For an Interface at which an action is raised, inspecting its subject also holds
     status.pending in pending-action.v1 form, with PND-002 disclosure and PND-004 evidence
     withholding. An Agent's inspection carries no pending actions.
+    The inventory holds `ownTools` for every Agent and no other instance. Its required `stated`
+    says whether the Agent's Type states `toolsDirectory` under CTR-014. Where it is false the
+    Type declares nothing about such reach, and the member holds none of the following fields.
+    Where it is true, `pointer` is the Type's pointer, and `directoryNamed` is true exactly
+    where the value there in the resolved configuration, after SCH-009 has filled defaults,
+    is a string, and false where it is null. `directoryNamed` reports the value from which
+    the reach follows; it is not a configuration input. Exactly where it is true, `directory`
+    is that string, even an empty one, and `enforcement` is `neither`: this version reports
+    the reach as neither enforced nor mediated, whatever the Agent's runtime provider. It
+    passes through no enforcement point (ACC-027). Where `directoryNamed` is false, the Agent
+    has none of the own tools that a string turns on, and has only what its Type's contract
+    states for that case, which inspection does not list. That does not state that it reaches
+    nothing outside Conduit.
+    Each entry of `consumes` carries `targetOwnTools` exactly when its Conduit is open, its
+    target is an Agent and its Conduit lists an operation whose contract is marked
+    `startsModelWork: true`. It is the target's `ownTools` member in the same form. This
+    applies to every consumer, root included: through the target's model work the holder
+    reaches whatever the target's own tools reach. It shows one hop only, and does not show
+    what the target reaches through its own Conduits. Whoever may inspect the Agent or the
+    holder under ACC-033 sees these members with the rest of that instance's inventory. Thus
+    an inspector of the holder learns whether the target's Type states `toolsDirectory` and,
+    where it does, its pointer and whether the resolved value there is a string or null, and
+    the string where it is one. This discloses that one value of the target's configuration,
+    and no other part of it. The Agent's runtime is already shown in `declared` under PRV-006;
+    these members name no runtime provider.
   vectors: []
 
 # --- Retirement and unregistration.

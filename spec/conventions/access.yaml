@@ -446,7 +446,11 @@
     the target's implementation reaches, so the restriction is not enforced. Such confinement
     is opted into through the language, by giving the consumer, as its `runtime` under PRV-006,
     a runtime provider whose contract confines it. This version reports mediated for every
-    restriction, whatever the consumer's runtime provider is.
+    restriction, whatever the consumer's runtime provider is. An Agent's own tools are no
+    restriction on a Conduit: inspection reports their reach apart, as neither enforced nor
+    mediated (LIF-013, CTR-014). An Agent whose own tools are on and whose runtime provider
+    does not confine it, as the engine's own runner does not, is a consumer that is not
+    confined: it may reach by its own means what a target's implementation reaches.
   vectors: []
 
 

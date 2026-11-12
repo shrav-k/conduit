@@ -196,6 +196,12 @@
     the engine, is picked in the same way, and only it could make a restriction enforced,
     although this version reports every restriction as mediated, under ACC-027. While an
     instance that exists names a runtime provider, that provider is not retired, under PRV-020.
+    A runtime provider whose contract confines what it runs is also the route by which an
+    Agent's own tools are confined. The limits of that confinement, such as the hosts it
+    allows or a directory it mounts read-only, belong to that provider's contract and
+    configuration; CTR-014 declares none of them. This version reports the reach of an Agent's
+    own tools as neither enforced nor mediated, whatever its runtime provider (CTR-014,
+    LIF-013).
   vectors: []
 
 - id: PRV-007

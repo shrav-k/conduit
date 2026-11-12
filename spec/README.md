@@ -4,7 +4,7 @@ Status on 2026-11-11: draft, begun 2026-11-05. Incomplete, and not a release. Ev
 been written as promises, and the core package, the JSON Schemas of documents and the
 manifest's format have been written as documents. The first build has a strict loader, a pure
 core on S1 and a runnable engine shell in [engine/](../engine/README.md).
-There are 413 portable vectors under [conformance/](../conformance/README.md), testing slices
+There are 414 portable vectors under [conformance/](../conformance/README.md), testing slices
 of promises; the [manifest](../conformance/manifest.yaml) records the coverage and its gaps.
 This remains a draft: the model and vectors do not yet cover the whole specification, and the
 next cold read follows the first build. Ruling 38, point 4, asks for agreement between the
@@ -79,11 +79,13 @@ provider that does it, such as how a runtime provider starts a process or where 
 provider places an instance, which that provider's contract states; and what stays the engine's
 own, such as retries and the storage of its records, belongs to that engine's conformance
 document, which is its documented choice for every item of the [implementation-defined
-list](implementation-defined.yaml). Neither binds other engines. An Agent's own means, its
-built-in tools, its shell and sandbox, its network, and the services of the account it signs in
-with are outside the documents; inspecting an instance shows its reach through Conduit only.
+list](implementation-defined.yaml). Neither binds other engines. An Agent's own tools are
+declared by its Type under CTR-014, and inspection shows their reach apart from its reach
+through Conduit under LIF-013. The services of the account it signs in with stay outside the
+documents.
 Confining an Agent belongs to its runtime provider, under PRV-006, and every restriction in
-this version is reported as mediated, under ACC-027.
+this version is reported as mediated, under ACC-027. This version reports the reach of own
+tools as neither enforced nor mediated.
 
 One thing is left out of this version on purpose: work that outlasts its invocation. No
 operation arranges, through the engine, work that starts or runs after its own invocation has
@@ -201,7 +203,7 @@ lists the cases and the reasons for missing S1 coverage.
 | [schema-profile.md](schema-profile.md) | The standards relied on, the YAML features not accepted, the schema keywords in the profile and the formats that are checked | Draft |
 | [promises/instantiation.yaml](promises/instantiation.yaml) | How a template and its arguments become an instance, and what `from` may be | Draft; 23 promises; vectors test slices of 20 promises |
 | [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, hooks, retirement and controls | Draft; 14 promises; vectors test slices of 9 promises |
-| [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 11 promises; vectors test slices of 1 promise |
+| [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 12 promises; vectors test slices of 3 promises |
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; vectors test slices of 15 promises |
 | [promises/sections.yaml](promises/sections.yaml) | Sectioned documents, their translation into canonical documents, per-file Fleet ownership, consumes, operator, manages and authored diagnostics | Draft; 15 promises; no vectors yet |
 | [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 23 promises; vectors test slices of 19 promises |
@@ -248,7 +250,7 @@ lists the cases and the reasons for missing S1 coverage.
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 46 promises; vectors test slices of 23 promises |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 17 items |
 
-Every area has been written as promises, 515 in all: 225 of the layer `language`, 242 of the
+Every area has been written as promises, 516 in all: 226 of the layer `language`, 242 of the
 layer `convention` and 48 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
 `schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the core exist on
@@ -355,7 +357,10 @@ close the Conduit, then root lifts its own tombstone. The `--withhold` flag belo
 with the withhold behavior in batch 2. Narrowing never waits. A plan prints and counts every
 widening, including one caused by moving a package pin or changing a reusable template's
 operations (PKG-031). A package should keep a standard template's operations across releases;
-the plan still checks the operations that actually resolve.
+the plan still checks the operations that actually resolve. A plan prints, beside each Agent
+it registers or replaces, the `ownTools` member that inspection would show (CTR-014, LIF-013).
+Beside each Conduit it opens whose target is an Agent and that lists an operation marked
+`startsModelWork: true`, it prints the target's `ownTools` member.
 
 Replacement keeps names stable (SCT-004, SCT-013): retire and remove the old instance before
 making its replacement under the same name, lifting its tombstone wherever necessary
@@ -627,3 +632,4 @@ These records hold the decisions and their reasons. The specification governs wh
 - [The core additions](../docs/proposals/ruling-53/README.md) and [lifting](../docs/proposals/ruling-55/README.md): local names, preconditions, inventory and tombstones.
 - [Provenance](../docs/proposals/ruling-54/README.md), [access limits](../docs/proposals/ruling-62/README.md) and [scoped Interfaces](../docs/proposals/ruling-66/README.md): the authority behind an opening and the limits of reconciliation.
 - [The trust domain](../docs/proposals/ruling-51/README.md): the engine's SPIFFE namespace.
+- [Agents' own tools](../docs/proposals/ruling-70/README.md), [the temporary declaration](../docs/proposals/ruling-74/README.md) and [the directory and runtime provider](../docs/proposals/ruling-75/README.md), part B: CTR-014 and confinement; [ruling 61, B13](../docs/proposals/ruling-61/README.md) and [ruling 52, point 2](../docs/proposals/ruling-52/README.md): the inventory members and one-hop reach.

@@ -121,8 +121,8 @@
     provider capability must be is PRV-001. The only Type of family Fleet is the core
     `fleet.v1`, which offers `fleet-management.v1` (FLEET-001); a Type of that family outside
     the core package is rejected.
-    A Type may also state signIn, the expected-account declaration and three required hooks
-    of CTR-013.
+    A Type may also state `signIn`, the expected-account declaration and three required hooks
+    of CTR-013, and `toolsDirectory`, the own tools declaration of CTR-014.
   vectors: []
 
 - id: CTR-005
@@ -296,4 +296,42 @@
     selected as implementations under the Type's requires and template implementation rules
     (TPL-004), invoked only as parts of sign-in.v1 or setup, for their caller and filters
     (PND-011), and exposed through no consumer tool.
+  vectors: []
+
+
+- id: CTR-014
+  layer: language
+  level: must
+  when: >-
+    A Type contract states `toolsDirectory`.
+  then: >-
+    It holds exactly `{directory: <JSON Pointer into configuration>}`, and the Type is of
+    family Agent. The place and every member on its path are required by the Type's `schema`,
+    and the place is confined to string or null by MAN-017's test. The Type lists no control
+    whose `changes` holds the pointer, a pointer inside it or a pointer over it, compared by
+    reference tokens as CTR-006 compares pointers. The place is fixed for the Agent's life.
+    A Type that breaks any of these rules is rejected when its package is installed or its
+    project is submitted, with a diagnostic naming the Type and the cause, and the control
+    where one is the cause.
+  observable: >-
+    Where the value at the place is a string, the Agent has its client's own tools, as the
+    Type's contract states them, working in the directory that string names. Their reach does
+    not pass through Conduit: no Conduit grants it, no restriction limits it, and no record
+    shows its use. This version reports that reach as neither enforced nor mediated, whatever
+    the Agent's runtime provider (ACC-027, PRV-006). On the engine's own runner nothing
+    confines it. Every string counts, the empty string among them: what an implementation does
+    with a directory it cannot use belongs to the Type's contract, and inspection shows reach
+    even in that case. The member declares no limit on the reach; confinement and its limits
+    belong to the runtime provider under PRV-006.
+    Where the value is null, the Agent has none of the own tools that a string turns on, and
+    has only what its Type's contract states for that case. A template that writes nothing at
+    the place gets null where the Type's schema gives that default, under SCH-009.
+    The engine reads the value only to report it under LIF-013. It checks neither statement
+    about the tools, nor that the directory exists. The implementation receives the value as
+    any other configuration value, through its item's binding under MAN-017; a null gives it
+    no variable and no argument under PRV-007. The Type's description states what the tools
+    are and what they reach when they are on. IFC-033 carries that description into the
+    description of every tool whose target is the Agent. This wording is the package's duty;
+    the engine does not check it. A Type that states no `toolsDirectory` declares nothing
+    about such reach, and inspection says so under LIF-013.
   vectors: []

@@ -41,7 +41,7 @@ alone, and every `$ref` keeps its target, so the tools of `register.v1` and `rep
 | [envelope.yaml](envelope.yaml) | `api-version.v1`, `envelope.v1`, `template-metadata.v1`, `instance-metadata.v1`, `contract-metadata.v1` | `apiVersion`, what every document carries, and `metadata` |
 | [templates.yaml](templates.yaml) | `template.v1`, `template-spec.v1`, `pool-template-spec.v1`, `conduit-template-spec.v1`, `template-input.v1`, `implementation-map.v1`, `template-controls.v1` | A template document; the `spec` of an Interface, Agent or Resource template, of a Pool template, and of a Conduit template, and the type-only Fleet branch; each non-Fleet spec has the closed list of places an input's destination may reach; an input; the `implementation` map; a template's `controls` |
 | [instances.yaml](instances.yaml) | `instance.v1`, `template-reference.v1`, `declared-conduit.v1`, `pool-entry.v1` | An instance document of each family, with the standard argument `runtime` of an Agent and a Resource; the four forms of the value of `from`; the two nested instantiations |
-| [contracts.yaml](contracts.yaml) | `contract.v1`, `type-spec.v1`, `capability-spec.v1`, `operation-spec.v1`, `requirement-spec.v1`, `applied-requirement.v1` | A contract document of each of the five kinds, and a requirement applied to a Conduit. `operation-spec.v1` carries `inputSchema` and `outputSchema`, with the root CTR-012 allows, the three hints of CTR-002, and a control's `changes`; `type-spec.v1` states that a Pool type offers `pool-management.v1` |
+| [contracts.yaml](contracts.yaml) | `contract.v1`, `type-spec.v1`, `capability-spec.v1`, `operation-spec.v1`, `requirement-spec.v1`, `applied-requirement.v1` | A contract document of each of the five kinds, and a requirement applied to a Conduit. `operation-spec.v1` carries `inputSchema` and `outputSchema`, with the root CTR-012 allows, the three hints of CTR-002, and a control's `changes`; `type-spec.v1` holds `signIn` and `toolsDirectory`, and states that a Pool type offers `pool-management.v1` |
 | [schema.yaml](schema.yaml) | `schema.v1` | A schema under the profile, with the three forms of a `$ref`. It is the `spec` of a Schema contract and the value of every `schema` key |
 | [manifest.yaml](manifest.yaml) | `manifest.v1`, `implementation-item.v1`, `server-package.v1`, `server-remote.v1` | The manifest of a project and of a package; one implementation item; and the Package and the Remote of the Model Context Protocol Registry's server.json, schema 2025-12-11, the Remote limited to Streamable HTTP |
 | [values.yaml](values.yaml) | `name.v1`, `export-name.v1`, `contract-name.v1`, `address.v1`, `qualified-reference.v1`, `selection.v1`, `pointer.v1`, `destination.v1`, `version.v1`, `digest.v1`, `id.v1`, `revision.v1`, `labels.v1` | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions, digests, an opaque revision and a label selector |
@@ -201,6 +201,7 @@ documents in front of it show, in its step 6; an example under
 | That a plain implementation implements no operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` | PKG-020 | The profile could state it with `if` and `contains`; `implementation-item.v1` leaves the core package's operations to this tool's rule | Yes, for the manifests of the valid examples and those in `examples/invalid-by-rule` |
 | That an item reached by `remote` implements no operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` | PKG-030 | As for PKG-020 | Yes, for the manifests of the valid examples and those in `examples/invalid-by-rule` |
 | That a Type that offers `secret-provider.v1` lists no control, and that one that offers `package-source.v1` requires `schemes` and lists no control whose `changes` holds `/schemes`, a pointer inside it or the empty pointer | SEC-005, PRV-016 | The profile could state the first two with `if` and `contains`, and `type-spec.v1` does not yet; the third needs the contracts of the controls | For a control of a package-source provider's Type whose `changes` reaches `/schemes`, where the tool has the control's contract, compared as reference tokens |
+| That the place each pointer of `signIn` and `toolsDirectory` names and every member on its path are required by the Type's `schema`, and the place is confined to string or null; and that no control of a Type stating `toolsDirectory` has `changes` reaching its place | CTR-013, CTR-014 | The first two relate values in one document, the pointer and the Type's own `schema`; the third needs the contracts of the controls | — |
 | That no Conduit lists an operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, and that one that lists `get-secret.v1` has no Interface as its consumer | PRV-004, SEC-009 | Which capability is a provider capability is in the core package, and the consumer is in another document | PRV-004, for a Conduit template |
 | That a runtime provider, the machine provider and a package-source provider are given no placement but `local` and no `runtime`, and that `runtime` names a runtime provider that is not retired | PRV-002, PRV-006 | It needs the template's type and the object that `runtime` resolves to | — |
 | Placement, ownership and state | POOL-001 (the owner is a Pool instance), PLC-001, PLC-002, PLC-007, PLC-018, PRV-015, CON-006, CON-025 | They need the objects that exist, and the labels that the machine provider reported | — |
@@ -286,8 +287,17 @@ anything else the table leaves to an engine.
 
 ## Sign-in declarations
 
-The optional type-spec.v1 member signIn holds a required account pointer (CTR-013).
-The schema checks that closed shape; the required configuration path, confinement to string
-or null, and the three required hook selections are cross-document checks for the loader.
+The optional `type-spec.v1` member `signIn` holds a required `account` pointer (CTR-013).
+The schema checks that closed shape and the three core hooks under `requires`. The engine
+checks that the place and every member on its path are required by the Type's `schema` and
+that the place is confined to string or null. These rules relate values in one document,
+the pointer and the Type's own `schema`.
+
+The optional `toolsDirectory` member holds exactly a required `directory` pointer and is
+allowed only for family Agent (CTR-014); the schema checks both rules. The engine checks the
+same rules on its place and path as for `signIn`, and that no control's `changes` reaches the
+place, comparing pointers as CTR-006 compares them. That last rule needs the contracts of the
+controls. `tools/check_schemas.py` checks none of these rules that the schema cannot state.
+
 MAN-018 also reserves the state-directory variable from names.yaml. The current checker
 reservation change is [staged for 048a](../../docs/work-orders/036b-staged/048a.md).

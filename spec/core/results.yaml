@@ -374,10 +374,38 @@ metadata:
     scope is present for Interfaces and Agents and lists each scope target with the consumed Conduits
     that establish it. An Agent lists only its owning Fleet. administrators is present for a Pool
     and lists each administrator with its Conduits. Membership is computed from open Conduits under
-    LIF-013, never stored separately.
+    LIF-013, never stored separately. ownTools is present for every Agent and no other instance:
+    stated says whether its Type states toolsDirectory; pointer and directoryNamed are present
+    exactly when stated is true. directoryNamed says whether the resolved value is a string;
+    directory and enforcement are present exactly when directoryNamed is true, with enforcement
+    equal to neither: the reach is neither enforced nor mediated in this version, whatever the
+    runtime provider. A null value gives none of the own tools a string turns on; what remains
+    belongs to the Type's contract and is not listed. An open consumed Conduit targeting an Agent
+    and listing an operation marked startsModelWork: true carries targetOwnTools, the target's
+    ownTools, for every consumer including root. It shows one hop of own tools reach only and
+    discloses the pointer and that value of the target's configuration, no other part (CTR-014,
+    LIF-013).
 spec:
   type: object
+  $defs:
+    ownTools:
+      type: object
+      properties:
+        stated:
+          type: boolean
+        pointer:
+          $ref: github.com/shrav-k/conduit/core#pointer.v1
+        directoryNamed:
+          type: boolean
+        directory:
+          type: string
+        enforcement:
+          const: neither
+      required:
+      - stated
   properties:
+    ownTools:
+      $ref: '#/$defs/ownTools'
     consumes:
       type: array
       items:
@@ -402,6 +430,8 @@ spec:
             - registered
             - ready
             - retired
+          targetOwnTools:
+            $ref: '#/$defs/ownTools'
           provenance:
             $ref: github.com/shrav-k/conduit/core#provenance.v1
         required:

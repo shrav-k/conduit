@@ -289,7 +289,14 @@ metadata:
     to Pools and Fleets other than system, with those Conduits; an Agent includes only its own Fleet.
     inventory.administrators is present for a Pool: every consumer of an open Conduit listing an operation
     that administers its Resources, with those Conduits. system status holds trustDomain (FST-007).
-    These lists carry no counts of hidden items.
+    These lists carry no counts of hidden items. inventory.ownTools is present for every Agent:
+    it reports whether its Type states toolsDirectory and, where it does, its pointer and whether
+    a directory is named, with that directory and enforcement neither when it is. The reach is
+    neither enforced nor mediated in this version, whatever the runtime provider. Each consumes
+    entry for an open Conduit to an Agent listing an operation marked startsModelWork: true
+    carries targetOwnTools in the same form, for every consumer including root. It shows one hop
+    of own tools reach, disclosing that value and pointer in the target's configuration and no
+    other part (CTR-014, LIF-013).
 spec:
   inputSchema:
     type: object

@@ -623,3 +623,19 @@ Report:
 - each check's last line.
 
 Do not `git add` or commit anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer: the worker in 3.5 hours, then a fresh verifier, who found
+nothing to fix in one round. CTR-014 (language layer) lets an Agent Type state the reach of its
+client's own tools by naming the input whose non-null value turns it on (`toolsDirectory`), and
+CTR-004, LIF-013, ACC-027 and PRV-006 now say how inspection shows that reach, with "neither" for
+its enforcement in v0 (ruling 75, B1 and B2). The Type schema is fixed, and a six-step loader case
+is added. The names `toolsDirectory` and `directoryNamed` are the coordinator's, logged.
+- In the worker's sandbox on Windows, rustup could not write its own directory, so the worker built
+  with the stable toolchain, and two of the shell's timing-sensitive integration tests timed out.
+  The order changes no engine code. The admin then ran the loader, core and conformance suites on
+  the Mac, before and after rebasing onto `main` with orders 041b and 038b: all passed. The runner
+  now lets Windows workers write rustup's directory.
+- On the rebase, `spec/README.md`'s totals were recounted from the promise files: 516 in all, 226
+  of the layer `language`, 242 of `convention` and 48 of `interface`.

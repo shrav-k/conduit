@@ -1,0 +1,154 @@
+{
+  "id": "loader-own-tools",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "CTR-014",
+    "CTR-013",
+    "SUB-005"
+  ],
+  "title": "Agent tools directory and sign-in declarations have closed shapes and required hooks",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "agent.yaml": "agent.yaml",
+    "resource.yaml": "resource.yaml",
+    "empty.yaml": "empty.yaml",
+    "limits.yaml": "limits.yaml",
+    "sign-in.yaml": "sign-in.yaml",
+    "missing-hook.yaml": "missing-hook.yaml"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "agent.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "manifest": false,
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "resource.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/spec/family"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "empty.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/spec/toolsDirectory"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "limits.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/spec/toolsDirectory"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "sign-in.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "manifest": false,
+        "document_count": 1
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "missing-hook.yaml"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "locations": [
+              {
+                "logicalLocations": [
+                  {
+                    "fullyQualifiedName": "/spec/requires"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

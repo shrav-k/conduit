@@ -732,6 +732,17 @@ async fn authenticate(State(handler): State<Handler>, request: Request, next: Ne
     Response::from_parts(parts, Body::from_stream(output))
 }
 
+fn session_manager(config: &crate::Config) -> LocalSessionManager {
+    let mut manager = LocalSessionManager::default();
+    // rmcp counts messages and HTTP session events as activity, not a running
+    // handler. Leave time for the call's deadline and its reply before expiry.
+    // If no longer Duration is representable, disable the idle limit.
+    manager.session_config.keep_alive = config
+        .call_timeout
+        .checked_add(std::time::Duration::from_secs(60));
+    manager
+}
+
 /// Binds only the fixed loopback endpoint. The caller owns executor lifetime/setup.
 pub async fn serve(
     shell: Arc<Shell>,
@@ -761,7 +772,7 @@ pub async fn serve(
         executor: executor.clone(),
         shutdown: shutdown.clone(),
         sessions: Arc::default(),
-        session_manager: Arc::default(),
+        session_manager: Arc::new(session_manager(&shell.config)),
     };
     let mut config = StreamableHttpServerConfig::default();
     config.cancellation_token = shutdown.clone();
@@ -785,6 +796,9 @@ pub async fn serve(
         .map_err(|_| "shutdown recovery failed")??;
     Ok(())
 }
+
+#[cfg(test)]
+mod session_tests;
 
 /// Store owner helper: no lease, recovery, direct invoke or cached permit.
 pub async fn client(

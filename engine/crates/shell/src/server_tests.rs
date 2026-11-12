@@ -258,7 +258,11 @@ async fn root_reaches_list_and_the_lift_stub_over_mcp() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn s1_http_consumers_authority_records_and_private_t7_changes() {
     let temp = temporary();
-    let shell = Arc::new(fixed_shell(temp.path()));
+    let mut shell = fixed_shell(temp.path());
+    // Legacy consumers stay idle while other sessions exercise the protocol.
+    // Keep them for this long scenario rather than testing idle expiry here.
+    shell.config.call_timeout = Duration::from_secs(4 * 3600);
+    let shell = Arc::new(shell);
     server::preflight(&shell).unwrap();
     let a = token(&shell, "agent-a");
     let b = token(&shell, "agent-b");

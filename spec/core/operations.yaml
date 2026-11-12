@@ -613,8 +613,10 @@ metadata:
     one that the manifest of a submitted project states while a template or an instance holds
     that submission. Where it is already installed with the same digest the request is decided
     like any other, changes nothing and succeeds; nothing is fetched for an address and version
-    that is already installed. A package is installed only by this operation: registering a
-    project installs none of the packages its manifest lists, and `fetch` in an item of
+    that is already installed. Requests to install one address and version are decided one at
+    a time, each from what is installed once earlier requests have ended, under PKG-032.
+    A package is installed only by this operation: registering a project installs none of the
+    packages its manifest lists, and `fetch` in an item of
     `packages` is the value an installation of that item gives here.
     The optional output logins lists each package Type stating signIn by its qualified
     reference in type and its logins (CTR-013). Sharing a client ID with a Type held at

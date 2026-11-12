@@ -1,7 +1,7 @@
 # Operations: the shared convention on idempotency keys and outcomes.
-# A record is kept and never altered (conventions/records.yaml). What is kept for an idempotency
-# key is the invocation's state, which is in progress or its outcome; the engine keeps it as its
-# own state, apart from the records (OPS-008).
+# The engine keeps a record and never alters it (conventions/records.yaml). For an idempotency
+# key it keeps the invocation's state, which is in progress or its outcome, as its own state,
+# apart from the records (OPS-008).
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # Removed IDs (not reused):

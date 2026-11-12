@@ -278,8 +278,10 @@ ENR-008).
   engine fetches `https:` and `file:` URLs itself, and a package-source provider that claims
   another scheme fetches it with `fetch-package.v1` (NAM-012, PRV-017). A request for an address
   and version that is already installed is decided from what is installed, and fetches nothing
-  (PKG-025, PKG-027). One whose `fetch` is a relative reference reports invalid, because a
-  request has no directory (PKG-023).
+  (PKG-025, PKG-027); requests to install one address and version are decided one at a time,
+  each from what is installed once earlier requests have ended (PKG-032).
+  One whose `fetch` is a relative reference reports invalid, because a request has no directory
+  (PKG-023).
 - **Bounds.** Each item of the argument `operations` of `bound.v1` is a qualified reference,
   which reaches a contract of an installed package or of a submitted project, named
   `address#name` with the address its manifest states (ACC-029, SUB-008, MAN-015). It is

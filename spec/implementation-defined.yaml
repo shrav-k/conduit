@@ -68,6 +68,7 @@
     of `record.v1`, under REC-002. Also how the records that name no object that still exists
     are read, once every object they name has been unregistered or removed and no request for
     `inspect.v1` returns them, under LIF-019 and REC-003.
+    Also which losses of records outside the engine it can tell, under REC-006.
 - id: DL9
   subject: Order of failed checks
   document: >-

@@ -80,6 +80,9 @@ each changed Rust crate, a pinned toolchain, Cargo.lock, ignored output and pack
 | FLT-D3 | vectors | S8 V4/V5 with scripted completions | ACC-014/017 | FLT-D1, FLT-D2 | M, 300–450 lines | admin | after these engine orders only |
 | S2-H | harness | Clock, authorization mutations and restoration barriers | OPS-024, ACC-034, SEC-014 | S2-L, SCR | L, 600–850 lines | lane 10 | after S2-L and SCR |
 | S2-O | owner | Test keychain/item, narrow service key, account labels and runtime readiness | SEC-019, PRV-029 | — | about 1 hour presence | owner | after owner's availability |
+| S2-LOG-P | server | Linear's OAuth login as a provider package: declared login, token in its own state, account check, one read | ruling 75 C1, C6, C7; SEC-020 | the sign-in chain's Resource login (below) | L, about 900–1,300 lines with an OAuth stub | lane 8 | after the engine relays a package's declared login |
+| S2-LOG-O | owner | Register a Linear OAuth application on the primary account's test workspace; give its client ID | ruling 75 C6 | — | about 15 minutes | owner | before S2-LOG |
+| S2-LOG | probe | Sign Linear in through the Interface: return carried to the Interface, account checked, one read with the token | ruling 75 C1, C2, C7; ruling 72's later answer | S2-LOG-P, S2-LOG-O, the sign-in chain | S, 100–200 lines of harness plus about 30 minutes of owner presence | lane 10 | beside S2's runs; not in S2's run gate |
 | S2-R1 | run | Coordinator, local, T1–T7 | README P1–P6 | run gate below | about 1 hour; 45 min active owner proposed | lane 10 | after run gate |
 | S2-R2 | run | Fresh Codex author, local, T1–T7 | README P1–P6 | S2-R1 | about 1 hour; same owner allowance | lane 10 | after S2-R1 |
 | S2-R3 | run | Coordinator, isolated, T1–T7 | README P1–P6 | S2-R2, A63-DR, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77) | about 1 hour; same owner allowance | lane 10 | after isolated readiness and the ruling 77 TLS setup |
@@ -209,6 +212,36 @@ or a package over stdio. A server with Linear's address fixed in its code is acc
 since the runs use the real API. **S2-PL** then packages and admits it: an item marked `plain`
 with its `tools` map (PKG-020), its own Operation, Capability and Type contracts, and the key
 bound through `environment` (MAN-010, MAN-017).
+
+## Logins through the Interface (ruling 72's later answer)
+
+The owner asked that every login be tested through Conduit's Interface login flow (rulings 73 and
+75, C): "we should test the interface login flow with all of these logins". The accounts are named
+by label only; their addresses stay outside the repository. Each is signed in through the
+Interface at least once in testing, first where this table says:
+
+| Account (label) | First signed in through the Interface | Also |
+| --- | --- | --- |
+| Primary Claude | S2-R1, Agent A: Claude's browser callback on the Mac (75 C3) | S2-R2 to R4 |
+| Primary ChatGPT (Codex) | S2-R1, Agent B: Codex's browser login (75 C5) | S2-R2 to R4 |
+| Second Claude | S7-O, each Agent home signed in through Conduit | S10-O |
+| Second ChatGPT (Codex) | S7-O | S3-O2 and S3-A81b (carried across machines), S10-O |
+| Linear (primary address) | S2-LOG, below | — |
+
+**Linear's own login, a probe beside S2.** S2 keeps the narrow API key from the keychain (O4) for
+its runs, and none of its accepted pass conditions changes. Linear's login, which is OAuth, is
+tested apart: S2-LOG-P builds a provider package that declares Linear's login (75 C6: the
+authorization origin and path, the client ID, the redirect), keeps the token in its own state
+directory (75 C1; the engine holds none, SEC-020), and checks the account by Linear's `viewer`
+query (75 C7); its tests use a local OAuth stub, never the real service. S2-LOG signs the primary
+Linear account in through the Interface, the return carried to the Interface that received the
+sign-in (75 C2), checks the account, makes one read with the token, and records a dated trace with
+no code or token. It needs the engine to relay a package's declared login for a Resource through
+the Interface: the admin's sign-in chain (047, 048a-1/2, 048b-relay/join, 050, 051b), or the order
+that adds Resource logins to it. Its size: the package L, about 900 to 1,300 lines with tests; the
+probe S, about 100 to 200 lines of harness and about 30 minutes of the owner's presence for
+consent, after about 15 minutes to register the OAuth application. A register row for it is the
+admin's to add.
 
 ## Shared with other plans
 

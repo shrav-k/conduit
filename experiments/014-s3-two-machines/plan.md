@@ -100,7 +100,7 @@ moved to it, Codex signed in as it, and the distro locked down (ruling 77). Wind
 has the Windows path or mounts Windows drives. The owner supplies sudo for that setup.
 Include the second daemon/context and PRV-011 confidential channel with A63-DR2b; never copy logins.
 Before engine-facing runs, wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s
-tailnet rename (ruling 77); the owner renames the Mac before turning on HTTPS certificates.
+tailnet rename (ruling 77); the owner renames the Mac before turning on HTTPS certificates. Each account signs in through Conduit's Interface login flow, as ruling 72's later answer asks; [S2's plan](../013-s2-shared-login/plan.md#logins-through-the-interface-ruling-72s-later-answer) lists where each is first tested.
 
 **S3-CS.** Spec placement/records promises and core result schema, with examples as needed;
 no engine/runner edits and no guessed field in advance. Settle G5 through the admin's finding

@@ -405,7 +405,16 @@ any. The engine's own runner, its own machine provider and its own `https:` and
 `file:` fetching serve where no provider of a kind does (PRV-003); they are part of the engine
 and are not selected as an implementation, so `engine` states none of them. A runtime provider
 runs an item on the machine that `run.v1` gives in `machine`, or ends the run failed, so the
-engine's own runner runs only instances placed on `local` (PRV-019), and an instance that has
+engine's own runner runs only instances placed on `local` (PRV-019). A runtime provider asked
+for an ID whose run may still be running, including one being started or restarted, starts
+none: it succeeds with the running run's current `url`, or ends unknown where it cannot tell
+(PRV-019). A call that starts no run delivers and keeps none of its `secrets` or `identity`;
+the existing run keeps the identity and certificate it received when it started (PRV-011,
+PRV-022, PRV-028). A stop succeeds only once no run of the ID remains running or being started,
+and prevents any start or restart until `run.v1` next asks (PRV-030). A provider's contract
+may promise to carry out every stop it still owes on a machine before starting any run there:
+a start that finds an owed stop fails, naming it, and may be retried once that stop is carried
+out (PRV-019, PRV-021). An instance that has
 an item that is run and names no `runtime` is placed only on the machine the engine runs on,
 whose `kubernetes.io/hostname` its label selector then also holds (PLC-007). A runtime provider, the
 machine provider and a package-source provider run on the engine's own runner, on `local`

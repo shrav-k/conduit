@@ -1,0 +1,6 @@
+- name: change-retirement-hook-failed
+  kind: added
+  cases: [change-retirement-hook-failed]
+- name: change-retirement-hook-failed-remote
+  kind: added
+  cases: [change-retirement-hook-failed-remote]

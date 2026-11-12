@@ -219,7 +219,11 @@
     The node and every instance placed on it are retired. The status of each reports its
     shutdown as unknown, and states that it could not be confirmed because the node was
     declared lost. The shutdown of an instance for which no setup was ever dispatched is
-    confirmed, as LIF-025 states, and the instance is removed, under LIF-035. A node that a
+    confirmed, as LIF-025 states, and the instance is removed, under LIF-035. A node's setup
+    under PLC-026 counts as dispatched even though its parts dispatch nothing: a node set up
+    before the declaration is retired with shutdown unknown and its fixed labels in status,
+    and may be unregistered as PLC-011 permits; a node whose setup was never dispatched,
+    and every instance on it whose setup PLC-019 held back, is under LIF-025. A node that a
     request has already retired is declared lost in the same way. A request to declare lost a
     node that was already declared lost changes nothing and has the outcome succeeded.
   observable: >-

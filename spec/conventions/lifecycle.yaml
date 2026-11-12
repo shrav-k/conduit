@@ -151,7 +151,11 @@
     generated name, because the retired instance keeps its own until it is removed. The local
     name of a declared Conduit does not change, so the tool name of each operation that the new
     Conduit still lists is the one it had, under IFC-012. A replacement for the Resource of an
-    entry is owned by the same Pool. A replacement for a declared Conduit is opened by a
+    entry is owned by the same Pool. It may be set up and run beside the earlier entry's run,
+    while that instance remains retired with shutdown pending or unknown, or after it was
+    unregistered without a successful stop, under LIF-036 and PRV-021: PRV-007 asks for its run
+    as for any instance, and nothing ties the two runs together. A replacement for a declared
+    Conduit is opened by a
     separate request to `access`, or by a later setup of its consumer under CON-004. The
     instance holds the nested instantiation in its own resolved definition, so replacing or
     unregistering the template from which that instance was made changes none of this, under
@@ -385,13 +389,15 @@
     An object is unregistered or removed.
   then: >-
     Records, backing files or service data are erased, or any object that refers to it is
-    changed, retired or unregistered.
+    changed, retired or unregistered, apart from the Conduits of which the removed instance was
+    an end, which CON-008 closes.
   observable: >-
     The records about the object can still be read. A request for `inspect.v1` no longer names
     the object, under OPS-029, and returns those records only where it names another object that
     they name, under LIF-013. How the records that name no object that still exists are read is
     DL8 of the implementation-defined list. Objects that referred to it hold the same ID as
-    before and report it as missing.
+    before and report it as missing, except for those Conduits, which are closed and removed
+    under CON-008, LIF-017 and LIF-035.
   vectors: []
 
 - id: LIF-020
@@ -507,7 +513,8 @@
     lost reports unknown, as PLC-017 states for every instance placed on the node. What an
     invocation of `retire.v1` does is TPL-009: it stops the instance's run, under PRV-008,
     whether or not the run is reported running, so one that succeeds leaves no run of the
-    instance running. The shutdown of a Conduit that CON-008 closed without a request, and of
+    instance running, under PRV-030. The shutdown of a Conduit that CON-008 closed without a
+    request, and of
     one whose `close.v1` ended with whatever outcome, is confirmed when it is closed, and the
     Conduit is then removed, under LIF-035, so no inspection shows it. A Conduit whose consumer
     is retired is closed by that once the consumer's shutdown is confirmed, at once where the
@@ -530,6 +537,10 @@
     No implementation receives a call because of the retirement, and no runtime provider is
     asked to stop a run. The status reports the state retired and the shutdown confirmed, and
     the instance is then removed, under LIF-035.
+    The condition is that no invocation of `set-up.v1` for the instance was ever dispatched,
+    whatever its parts dispatched. A node's setup under PLC-026 counts even though it dispatches
+    nothing, so this exception does not cover a node that was set up. A setup that ended unknown
+    was dispatched too.
   vectors: []
 
 - id: LIF-026
@@ -754,7 +765,18 @@
     is settled in another way, and the outcome of the request is that of the removal. The engine
     asks for no further stop once the instance is removed, and keeps no state of the run, so a
     stop that the provider never received, as where its server was not running, is not asked for
-    again. A runtime provider that an instance names is not retired while the instance exists,
+    again. A stop that ended unknown or failed, or was not dispatched, does not prevent removal.
+    The earlier run may go on until the provider carries out the stop, if it ever does, under
+    PRV-021. Any later instance may meanwhile be set up and run beside it, a replacement under
+    LIF-009 included: nothing ties the later run to the earlier one. The same holds before
+    removal while the earlier instance remains retired with shutdown pending or unknown. While
+    it exists, requests it makes through its Conduits other than its retire hook's are refused
+    under ACC-039; after removal its credential reaches nothing, since IFC-022 and PRV-022 check
+    on every request that the instance it names still exists. The run keeps the values it was
+    given, secrets included, and can act outside Conduit with them. Unregistering asserts that
+    shutdown is settled in another way, under LIF-017, as force deletion of a Kubernetes
+    StatefulSet Pod does: it can break at-most-one semantics. A runtime provider that an
+    instance names is not retired while the instance exists,
     under PRV-020, so the engine has one to ask, and a stop that the provider owes outlives the
     engine's restart, on its machine or on another, and the provider's own retirement, kept
     where its contract states, under PRV-021. No retire hook is dispatched, no run of the

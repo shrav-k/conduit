@@ -4256,6 +4256,27 @@
       "safety_rows": []
     },
     {
+      "id": "change-retirement-hook-failed",
+      "case": "conventions/changes/retirement-hook-failed/case.yaml",
+      "promises": [
+        "TPL-009",
+        "OPS-022",
+        "LIF-024",
+        "PRV-008"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "change-retirement-hook-failed-remote",
+      "case": "conventions/changes/retirement-hook-failed-remote/case.yaml",
+      "promises": [
+        "TPL-009",
+        "OPS-022",
+        "LIF-024"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "conduit-as",
       "case": "language/registration/e1/conduit-as/case.yaml",
       "promises": [
@@ -6647,8 +6668,11 @@
     },
     {
       "promise": "TPL-009",
-      "vectors": [],
-      "reason": "The lifecycle interpreter handles setup, open, close and replacement; complete retirement with stop even after hook failure still needs core work and vectors, not a shell-side invented transition."
+      "vectors": [
+        "change-retirement-hook-failed",
+        "change-retirement-hook-failed-remote"
+      ],
+      "reason": ""
     },
     {
       "promise": "TPL-012",
@@ -6788,7 +6812,9 @@
         "change-retirement",
         "fleets-retire-overlap",
         "fleets-retire-with-agents",
-        "fleets-retire-with-resources"
+        "fleets-retire-with-resources",
+        "change-retirement-hook-failed",
+        "change-retirement-hook-failed-remote"
       ],
       "reason": ""
     },
@@ -6869,8 +6895,10 @@
     },
     {
       "promise": "PRV-008",
-      "vectors": [],
-      "reason": "No stop-run intent exists in the current lifecycle interpreter. Retirement/stop needs a core slice and completions before a shell order can execute it."
+      "vectors": [
+        "change-retirement-hook-failed"
+      ],
+      "reason": ""
     },
     {
       "promise": "PRV-009",
@@ -7465,7 +7493,9 @@
         "setup-review-retire-connection-succeeded",
         "setup-review-retire-connection-unknown",
         "setup-review-retire-run-succeeded",
-        "setup-review-retire-run-unknown"
+        "setup-review-retire-run-unknown",
+        "change-retirement-hook-failed",
+        "change-retirement-hook-failed-remote"
       ]
     },
     {

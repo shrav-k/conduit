@@ -1,0 +1,302 @@
+[
+  {
+    "name": "plain error answer fences the unknown write",
+    "kind": "input",
+    "cases": [
+      "requests-reconcile-false"
+    ],
+    "paths": [
+      "/steps/3/input/completion/kind"
+    ],
+    "operation": "replace",
+    "before": "missing",
+    "after": "result"
+  },
+  {
+    "name": "plain error answer payload",
+    "kind": "input",
+    "cases": [
+      "requests-reconcile-false"
+    ],
+    "paths": [
+      "/steps/3/input/completion/result/content"
+    ],
+    "operation": "add",
+    "after": []
+  },
+  {
+    "name": "plain error isError flag",
+    "kind": "input",
+    "cases": [
+      "requests-reconcile-false"
+    ],
+    "paths": [
+      "/steps/3/input/completion/result/isError"
+    ],
+    "operation": "add",
+    "after": true
+  },
+  {
+    "name": "S1-reconcile: failed waits for a fence; late answer permits actor retry",
+    "kind": "added",
+    "cases": [
+      "requests-reconcile-fenced"
+    ],
+    "paths": [
+      ""
+    ],
+    "operation": "add",
+    "after": "conformance/conventions/requests/reconcile-fenced/case.yaml"
+  },
+  {
+    "name": "S1-reconcile: unconfirmed cancellation fences nothing",
+    "kind": "added",
+    "cases": [
+      "requests-reconcile-unconfirmed-cancel"
+    ],
+    "paths": [
+      ""
+    ],
+    "operation": "add",
+    "after": "conformance/conventions/requests/reconcile-unconfirmed-cancel/case.yaml"
+  },
+  {
+    "name": "S1-reconcile: restoring interrupted work fences nothing",
+    "kind": "added",
+    "cases": [
+      "requests-reconcile-unfenced-restart"
+    ],
+    "paths": [
+      ""
+    ],
+    "operation": "add",
+    "after": "conformance/conventions/requests/reconcile-unfenced-restart/case.yaml"
+  },
+  {
+    "name": "fence conflict text names its operation and invocation",
+    "kind": "expectation",
+    "cases": [
+      "requests-reconcile-fenced",
+      "requests-reconcile-unconfirmed-cancel",
+      "requests-reconcile-unfenced-restart"
+    ],
+    "paths": [
+      "/steps/3/expect/reply/content/0/text"
+    ],
+    "operation": "replace",
+    "before": "conflict: The invocation is not yet fenced: every attempt needs an answer ending its call, an observed end of its run, or the implementation's confirmation that it can no longer act (OPS-014). Missing responses, unconfirmed cancellation and recovery establish no fence. Recording that the effect occurred needs no fence.",
+    "after": "conflict: reconcile.v1 cannot record invocation 00000000-0000-4000-8000-000000010001 as failed: it is not yet fenced (OPS-030). Every attempt needs an answer ending its call, an observed end of its run, or the implementation's confirmation that it can no longer act (OPS-014). Missing responses, unconfirmed cancellation and recovery establish no fence. Recording that the effect occurred needs no fence."
+  },
+  {
+    "name": "fence diagnostic names its operation and invocation",
+    "kind": "expectation",
+    "cases": [
+      "requests-reconcile-fenced",
+      "requests-reconcile-unconfirmed-cancel",
+      "requests-reconcile-unfenced-restart"
+    ],
+    "paths": [
+      "/steps/3/expect/reply/structuredContent/diagnostics/0/message/text"
+    ],
+    "operation": "replace",
+    "before": "The invocation is not yet fenced: every attempt needs an answer ending its call, an observed end of its run, or the implementation's confirmation that it can no longer act (OPS-014). Missing responses, unconfirmed cancellation and recovery establish no fence. Recording that the effect occurred needs no fence.",
+    "after": "reconcile.v1 cannot record invocation 00000000-0000-4000-8000-000000010001 as failed: it is not yet fenced (OPS-030). Every attempt needs an answer ending its call, an observed end of its run, or the implementation's confirmation that it can no longer act (OPS-014). Missing responses, unconfirmed cancellation and recovery establish no fence. Recording that the effect occurred needs no fence."
+  },
+  {
+    "name": "Fleet control: observe attempt 1 fenced with outcome unchanged",
+    "kind": "expectation",
+    "cases": [
+      "fleets-reconcile-control"
+    ],
+    "paths": [
+      "/steps/6/expect/invocation_facts/0/attempt",
+      "/steps/6/expect/invocation_facts/0/attempt_fences/1/fenced",
+      "/steps/6/expect/invocation_facts/0/id",
+      "/steps/6/expect/invocation_facts/0/state"
+    ],
+    "operation": "add"
+  },
+  {
+    "name": "Fleet control: /steps/6/expect/reply/_meta/io.github.shrav-k.conduit~1outcome",
+    "kind": "expectation",
+    "cases": [
+      "fleets-reconcile-control"
+    ],
+    "paths": [
+      "/steps/6/expect/reply/_meta/io.github.shrav-k.conduit~1outcome"
+    ],
+    "operation": "remove",
+    "before": "succeeded"
+  },
+  {
+    "name": "Fleet control: /steps/6/expect/reply/ignored",
+    "kind": "expectation",
+    "cases": [
+      "fleets-reconcile-control"
+    ],
+    "paths": [
+      "/steps/6/expect/reply/ignored"
+    ],
+    "operation": "add",
+    "after": true
+  },
+  {
+    "name": "Fleet control: cite the late-answer promises",
+    "kind": "expectation",
+    "cases": [
+      "fleets-reconcile-control"
+    ],
+    "paths": [
+      "/steps/6/expect/required_promises/0",
+      "/steps/6/expect/required_promises/1"
+    ],
+    "operation": "add"
+  },
+  {
+    "name": "Fleet control: keep the original success and no-dispatch assertions",
+    "kind": "expectation",
+    "cases": [
+      "fleets-reconcile-control"
+    ],
+    "paths": [
+      "/steps/7/expect/external_intents",
+      "/steps/7/expect/reply/_meta/io.github.shrav-k.conduit~1outcome"
+    ],
+    "operation": "add"
+  },
+  {
+    "name": "Fleet control: make the original reconciliation after the answer",
+    "kind": "input",
+    "cases": [
+      "fleets-reconcile-control"
+    ],
+    "paths": [
+      "/steps/7/input/evidence/ids/0",
+      "/steps/7/input/evidence/ids/1",
+      "/steps/7/input/evidence/ids/2",
+      "/steps/7/input/evidence/ids/3",
+      "/steps/7/input/evidence/ids/4",
+      "/steps/7/input/evidence/ids/5",
+      "/steps/7/input/evidence/ids/6",
+      "/steps/7/input/evidence/ids/7",
+      "/steps/7/input/evidence/ids/8",
+      "/steps/7/input/evidence/ids/9",
+      "/steps/7/input/evidence/ids/10",
+      "/steps/7/input/evidence/ids/11",
+      "/steps/7/input/evidence/ids/12",
+      "/steps/7/input/evidence/ids/13",
+      "/steps/7/input/evidence/ids/14",
+      "/steps/7/input/evidence/ids/15",
+      "/steps/7/input/evidence/ids/16",
+      "/steps/7/input/evidence/ids/17",
+      "/steps/7/input/evidence/ids/18",
+      "/steps/7/input/evidence/ids/19",
+      "/steps/7/input/evidence/ids/20",
+      "/steps/7/input/evidence/ids/21",
+      "/steps/7/input/evidence/ids/22",
+      "/steps/7/input/evidence/ids/23",
+      "/steps/7/input/evidence/ids/24",
+      "/steps/7/input/evidence/ids/25",
+      "/steps/7/input/evidence/ids/26",
+      "/steps/7/input/evidence/ids/27",
+      "/steps/7/input/evidence/ids/28",
+      "/steps/7/input/evidence/ids/29",
+      "/steps/7/input/evidence/ids/30",
+      "/steps/7/input/evidence/ids/31",
+      "/steps/7/input/evidence/ids/32",
+      "/steps/7/input/evidence/ids/33",
+      "/steps/7/input/evidence/ids/34",
+      "/steps/7/input/evidence/ids/35",
+      "/steps/7/input/evidence/ids/36",
+      "/steps/7/input/evidence/ids/37",
+      "/steps/7/input/evidence/ids/38",
+      "/steps/7/input/evidence/ids/39",
+      "/steps/7/input/evidence/ids/40",
+      "/steps/7/input/evidence/ids/41",
+      "/steps/7/input/evidence/ids/42",
+      "/steps/7/input/evidence/ids/43",
+      "/steps/7/input/evidence/ids/44",
+      "/steps/7/input/evidence/ids/45",
+      "/steps/7/input/evidence/ids/46",
+      "/steps/7/input/evidence/ids/47",
+      "/steps/7/input/evidence/ids/48",
+      "/steps/7/input/evidence/ids/49",
+      "/steps/7/input/evidence/ids/50",
+      "/steps/7/input/evidence/ids/51",
+      "/steps/7/input/evidence/ids/52",
+      "/steps/7/input/evidence/ids/53",
+      "/steps/7/input/evidence/ids/54",
+      "/steps/7/input/evidence/ids/55",
+      "/steps/7/input/evidence/ids/56",
+      "/steps/7/input/evidence/ids/57",
+      "/steps/7/input/evidence/ids/58",
+      "/steps/7/input/evidence/ids/59",
+      "/steps/7/input/evidence/ids/60",
+      "/steps/7/input/evidence/ids/61",
+      "/steps/7/input/evidence/ids/62",
+      "/steps/7/input/evidence/ids/63",
+      "/steps/7/input/evidence/ids/64",
+      "/steps/7/input/evidence/ids/65",
+      "/steps/7/input/evidence/ids/66",
+      "/steps/7/input/evidence/ids/67",
+      "/steps/7/input/evidence/ids/68",
+      "/steps/7/input/evidence/ids/69",
+      "/steps/7/input/evidence/ids/70",
+      "/steps/7/input/evidence/ids/71",
+      "/steps/7/input/evidence/ids/72",
+      "/steps/7/input/evidence/ids/73",
+      "/steps/7/input/evidence/ids/74",
+      "/steps/7/input/evidence/ids/75",
+      "/steps/7/input/evidence/ids/76",
+      "/steps/7/input/evidence/ids/77",
+      "/steps/7/input/evidence/ids/78",
+      "/steps/7/input/evidence/ids/79",
+      "/steps/7/input/evidence/revisions/0",
+      "/steps/7/input/evidence/revisions/1",
+      "/steps/7/input/evidence/revisions/2",
+      "/steps/7/input/evidence/revisions/3",
+      "/steps/7/input/evidence/revisions/4",
+      "/steps/7/input/evidence/revisions/5",
+      "/steps/7/input/evidence/revisions/6",
+      "/steps/7/input/evidence/revisions/7",
+      "/steps/7/input/evidence/revisions/8",
+      "/steps/7/input/evidence/revisions/9",
+      "/steps/7/input/evidence/revisions/10",
+      "/steps/7/input/evidence/revisions/11",
+      "/steps/7/input/evidence/revisions/12",
+      "/steps/7/input/evidence/revisions/13",
+      "/steps/7/input/evidence/revisions/14",
+      "/steps/7/input/evidence/suffixes/0",
+      "/steps/7/input/evidence/suffixes/1",
+      "/steps/7/input/evidence/suffixes/2",
+      "/steps/7/input/evidence/time",
+      "/steps/7/input/kind",
+      "/steps/7/input/request/arguments/checked",
+      "/steps/7/input/request/arguments/invocation",
+      "/steps/7/input/request/arguments/occurred",
+      "/steps/7/input/request/identity/id",
+      "/steps/7/input/request/identity/kind",
+      "/steps/7/input/request/tool"
+    ],
+    "operation": "add"
+  },
+  {
+    "name": "Fleet control: conformance/conventions/fleets/e3b/reconcile-control/requests.json",
+    "kind": "fixture",
+    "cases": [
+      "fleets-reconcile-control"
+    ],
+    "paths": [
+      "conformance/conventions/fleets/e3b/reconcile-control/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 37337,
+      "sha256": "eff83c582f180ff956e55b9888fcd6d9d7526acbef0a9c8d6e2a301e302227e2"
+    },
+    "after": {
+      "bytes": 37167,
+      "sha256": "29fa8d6dba428722da8a25595caded93eebe59209281d99b1051fbe77b289b70"
+    }
+  }
+]

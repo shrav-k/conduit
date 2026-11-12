@@ -406,7 +406,8 @@
     not. Where a filter applies to the repeat, it is dispatched as a new attempt under
     OPS-024 where the operation states no `effect`, is not a control and does not start
     model work, and otherwise reports conflict under OPS-034, or, for an operation that
-    declares no outputs, is answered with the outcome alone under OPS-009. A `tasks/get`
+    declares no outputs and is not implemented by a plain server, is answered with the
+    outcome alone under OPS-009. A `tasks/get`
     through a Conduit that is no longer open reports refused, as any request through it
     does: a result that the response to the call did not carry is then not delivered, and
     the caller learns the outcome from the records, under ACC-034. This is one invocation,
@@ -692,7 +693,8 @@
     before it ended, under ACC-034: the result of `retire-with-resources.v1`, whose Conduit
     CON-008 closes before it ends, is one. A repeat of an invocation that has not ended
     reports conflict under OPS-032, and one of an invocation that succeeded, of an operation
-    that declares outputs, where no filter applies and the engine no longer keeps its
+    that declares outputs or is implemented by a plain server, where no filter applies and
+    the engine no longer keeps its
     outputs, or where a filter applies to the repeat and OPS-024 does not dispatch it,
     reports conflict under OPS-034; the `ruleId` of its error diagnostic tells the two
     apart, and its `isError` is true. What a request that is not dispatched says beyond its

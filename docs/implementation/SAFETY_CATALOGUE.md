@@ -481,7 +481,7 @@ Read: 32 promises. Source: [spec/conventions/operations.yaml](../../spec/convent
 | OPS-011 | convention | must | effect | `then`: “It is not treated as a repeat of an earlier request because its contents match” — answering a new unkeyed request from an earlier success can lose the separately requested effect. | S1-key-scope |
 | OPS-012 | convention | must | effect | `then`: “only if the operation's contract declares `deduplicates: true` and the implementation is not marked `plain`” — retrying an unknown effect without deduplication can apply it twice. | S1-unknown-write |
 | OPS-013 | convention | must | effect | `then`: “The outcome stays unknown until it is reconciled” — changing uncertainty into failed or succeeded without reconciliation can lose or repeat an effect. | S1-unknown-write |
-| OPS-014 | convention | must | effect | `when`: “with what it checked” — settling an unknown invocation without evidence can falsely confirm or repeat its effect. | S1-reconcile |
+| OPS-014 | convention | must | effect | `then`: “only once the invocation is fenced” — recording failed before all attempts are fenced lets an earlier dispatch meet a retry and repeat its effect. | S1-reconcile |
 | OPS-018 | convention | must not | effect | `then`: “The effect is applied more than once” — duplicating a keyed effect under loss or restart is an unsafe repeat. | S1-unknown-write |
 | OPS-019 | convention | must | access | `then`: “every promise about operations and about access applies to it as to any other” — exempting management verbs from access checks permits unauthorized management. | — |
 | OPS-020 | convention | must | access | `then`: “authorized by an open Conduit to the instance whose configuration it changes” — using another target’s authority permits an unauthorized configuration change. | — |
@@ -493,7 +493,7 @@ Read: 32 promises. Source: [spec/conventions/operations.yaml](../../spec/convent
 | OPS-027 | convention | must | effect | `then`: “The invocation's outcome is unknown, unless its implementation confirms that nothing was done” — treating cancellation as failed without confirmation can repeat a partially applied effect. | — |
 | OPS-028 | convention | must | effect | `then`: “a hook that succeeded is not dispatched again” — changing the hook’s key across setups or callers can run a completed effect twice. | — |
 | OPS-029 | convention | must | access | `observable`: “a caller with only a Pool's authority learns nothing of whether a name exists outside that Pool” — reporting missing-object details before authority discloses names beyond the caller’s scope. | S1-close |
-| OPS-030 | convention | must | effect | `then`: “The request is not dispatched” — reconciling a known or in-progress invocation can overwrite its outcome and authorize an unsafe repeat. | S1-reconcile |
+| OPS-030 | convention | must | effect | `then`: “The request is not dispatched” — reconciling a known or in-progress invocation, or recording failed before its fence, can authorize an unsafe repeat. | S1-reconcile |
 | OPS-032 | convention | must | effect | `then`: “Nothing is dispatched” — dispatching an in-progress repeat creates a concurrent duplicate effect. | S1-key-scope |
 | OPS-033 | convention | must | secret | `observable`: “the result holds no part of it” — echoing an invalid literal secret input discloses the value in the request’s result. | S1-reason-order |
 | OPS-034 | convention | must | access | `observable`: “Where a filter applies to the repeat, the outputs are not given” — returning stored outputs can disclose content the current filter would forbid. | — |
@@ -781,15 +781,11 @@ slice under TPL-013; correct publication of the narrowing alone would not supply
 
 The three filtered replay variants of finding 6-1-02 are adjacent boundaries, not additional
 traces: read-only success is redispatched under OPS-024, success with an effect and outputs
-conflicts under OPS-034, and success with an effect and no outputs returns its recorded outcome
-under OPS-009. None is counted again here.
+conflicts under OPS-034, as does success with an effect and plain content even without declared
+outputs; a success with neither outputs nor plain content returns its recorded outcome under
+OPS-009. A plain implementation supports no filter: an onward request alone can carry one,
+and OPS-023 puts OPS-034 conflict before ACC-015 unavailability. None is counted again here.
 
-The source has stale expectations to reconcile before vectors are judged: `bootstrap` says
-two root Conduits, while FST-002 now requires three; `S1-plain-ends` says -32602 gives failed,
-while IFC-010 now gives unknown for an effectful, control or model-work operation. The source’s
-closing paragraph still calls that latter assumption open, and E05’s paragraph still calls
-the root `$defs` collision undecided although IFC-033 now reserves and rejects those keys.
-These discrepancies do not change the safety classification or supply alternative behavior.
 
 ## Not yet written
 

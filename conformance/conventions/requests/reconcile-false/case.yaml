@@ -1605,7 +1605,11 @@
         "invocation": "$i",
         "attempt": 1,
         "completion": {
-          "kind": "missing"
+          "kind": "result",
+          "result": {
+            "isError": true,
+            "content": []
+          }
         }
       },
       "expect": {

@@ -597,7 +597,8 @@
     Recording that a setup or an open occurred makes the instance ready or the Conduit open,
     unless the instance, or the Conduit's consumer, has been retired. Recording that a
     retirement or a close occurred confirms the shutdown. Recording that it did not occur gives
-    the outcome failed, and changes nothing else.
+    the outcome failed only once every dispatched part is fenced under OPS-014, and changes
+    nothing else.
   observable: >-
     After a reconciliation that records a setup as having occurred, inspecting the instance
     reports the state ready, as after a setup that succeeded under LIF-003; an instance that was

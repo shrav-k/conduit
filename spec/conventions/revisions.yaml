@@ -133,7 +133,8 @@
     and is not retired, is a request to change that instance: it names the instance's current
     revision, and the values the control was sent, which the engine keeps under OPS-008, are
     stored at the pointers of its `changes`. A reconciliation that records that the effect did
-    not occur names no revision and stores nothing. Where the instance is retired or no longer
+    not occur requires the invocation to be fenced under OPS-014, names no revision and
+    stores nothing. Where the instance is retired or no longer
     exists, a reconciliation of the control names no revision, whichever way it records the
     effect: it records the outcome and stores nothing.
   observable: >-
@@ -146,7 +147,8 @@
     names none reports invalid. One where those values, applied to the current configuration,
     would make it fail the type's schema is REV-013. A reconciliation that records that the
     effect did not occur changes no object and so names no revision: the control's outcome
-    becomes failed, and the settings it addressed are no longer reported as unknown. One that
+    becomes failed only once it is fenced under OPS-014, and the settings it addressed are
+    no longer reported as unknown. One that
     names a revision all the same reports invalid, under OPS-031. In `reconcile.v1` the revision
     is the input `revision`. The values are not stated in the request: the engine stores those
     it sent. The request is authorized under ACC-033 against the target that manages the

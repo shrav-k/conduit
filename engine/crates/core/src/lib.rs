@@ -396,9 +396,10 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                     &["OBS-002", "LIF-011"],
                     &[],
                     json!({"object":object,"state":"stopped"}),
-                    vec![object],
+                    vec![object.clone()],
                 ));
             }
+            requests::builtin_run_stopped(&mut transition, &object);
         }
         Input::ExpireOutputs { invocation } => requests::expire(&mut transition, &invocation)?,
         Input::Access { evidence, request } => {

@@ -602,6 +602,152 @@
       },
       "expect": {
         "reply": {
+          "ignored": true
+        },
+        "external_intents": [],
+        "invocation_facts": [
+          {
+            "id": "00000000-0000-4000-8000-000000008805",
+            "state": "unknown",
+            "attempt": 1,
+            "attempt_fences": {
+              "1": {
+                "fenced": true
+              }
+            }
+          }
+        ],
+        "required_promises": [
+          "OPS-013",
+          "OPS-014"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.reconcile.v1",
+          "arguments": {
+            "invocation": "00000000-0000-4000-8000-000000008805",
+            "occurred": false,
+            "checked": "owner retired"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "55b76c66-b68a-5e5e-bce9-5f05b24fbb56",
+            "10a741bb-e4c0-5c25-9642-06d0d749da43",
+            "575fa077-3fcc-555a-a094-22eddd497067",
+            "33f3fb03-4190-5db1-8f6f-bef3ab228ca6",
+            "25744ddc-bc3e-5bce-9771-85cb92f86bcb",
+            "ef2a75aa-f3cf-55d6-9ea4-6a7664aa6800",
+            "77f00971-634b-590f-8858-1435d9f0c9fb",
+            "3b3b66eb-b24d-5062-a836-3cd0058b33aa",
+            "c1d272ea-6400-5fe5-95d4-f5744cad101c",
+            "af19c744-e6db-5568-a9a6-9adda824cdb0",
+            "e374c583-62f1-5647-9030-5cb56c906e7a",
+            "445d06b0-95ba-51be-b1e7-1ae114adf8fc",
+            "b637f55c-9224-5708-8821-e3eafc8f2a0b",
+            "538408fd-9ea5-5b00-b65c-912cc2cb9aa7",
+            "cf63168f-5e2d-5d39-9096-7d231c93fe12",
+            "a9592c6f-c646-574a-b858-3de1cae90658",
+            "4c29ac0e-06b7-5274-8a15-14f020699ebd",
+            "12783af3-e082-5d9c-bb1b-58ad05183c2f",
+            "ea000e43-f795-5359-ac49-bb85b1a6cffd",
+            "3bc8e230-f660-5ae7-a2d8-93f77ebd9668",
+            "9108c725-4386-5824-8aef-8c18fda58210",
+            "b5362b32-4c10-5e1d-8359-1a7042dd36ae",
+            "89f15978-7dc4-559a-8304-28555dcc94c0",
+            "af4ecd4e-36f7-5b04-8b84-ab977a820bd0",
+            "a29206c7-f238-5657-99bf-47764fc46874",
+            "3982b15a-5276-5442-939c-9f6b8286e14a",
+            "c318f634-008c-5db8-a3b4-f9c235ea7a03",
+            "93191397-92ab-5527-847c-936ec0e7cdd8",
+            "efc95544-981a-52a2-9f0f-99b32f8f64ad",
+            "2649a684-391b-59e2-ab1f-e224a3308140",
+            "58741ae8-8204-5b9a-9948-aa4f257252d4",
+            "3b10ebdb-fe1b-5806-8606-e31724f2b2e4",
+            "de9c0758-1556-535d-9698-1c425d4464fa",
+            "99a69475-faf2-5ecb-8428-63e40eb62480",
+            "f1de052d-13ad-5984-90b5-7717742fd97a",
+            "d1ebd5cd-da48-5c9c-91ff-8bff492d46ca",
+            "0f1f4341-d9e6-579f-a672-913b940d6db5",
+            "0fc6726b-9346-56dd-ab7b-a48241ef558e",
+            "a4700f28-c328-5f86-b655-df35cd8e66ea",
+            "9f0a70d6-4bde-5e9a-99ae-e03e7e40af94",
+            "21fa3f9c-720e-5d9a-96de-0efab3a360f0",
+            "2789d57f-2482-5399-b12c-a73e2676299c",
+            "63aff8d4-42aa-587c-be7f-47f53c57d735",
+            "354f6194-81b1-5b54-942b-c6ec325073a2",
+            "7559d49f-759e-5d13-8ccb-c32806885074",
+            "fa93ee38-bf78-5025-a808-e1614b9fb91d",
+            "58b5d014-c007-5872-aaf4-496c0fc8f46b",
+            "2310b81a-8b49-51f8-ae6f-773672f0a6b0",
+            "118032ed-2ac0-5167-a10e-098bd6f46d83",
+            "58d4a624-d1fa-593a-9cc4-660e32415b36",
+            "578a7d3a-6019-5802-ad03-183722490215",
+            "7748c152-16dd-568d-a4dd-1b9d88711066",
+            "178c3947-4a68-5e3e-885a-46daf2f8a0d8",
+            "36b007db-126e-5627-8df3-983c6967b856",
+            "648f04ca-714d-576a-9f9b-9ff2e0631aa3",
+            "822549f6-719e-5243-95ce-bd0a34c3bd9e",
+            "bdc0fc0d-b37c-52e8-9f26-bd2297a162e6",
+            "4f96e931-2b91-5745-b930-b0e172645dad",
+            "0324108f-d3ae-540a-956d-1ccd190ee48a",
+            "3e3701bc-6215-5876-bd29-378f8b95ea2d",
+            "c8e0efe1-02f0-585a-9b26-7a6381b4743b",
+            "dbe37f15-e10b-51be-b800-7039a98552eb",
+            "b7e2c83b-6e00-591e-ac9e-dba1a2aa78cd",
+            "128d2912-dbde-5006-a195-80da5882593f",
+            "7fa72273-ffb8-5148-a8ca-253bbd3ac228",
+            "be986949-0f89-584d-a37e-4c864bdd2580",
+            "ee35b1b1-774f-57e1-bf7f-0108fb5ac8e6",
+            "2018494c-6554-5748-a8c2-ca41057bf1de",
+            "78d94363-e594-53dc-ac97-3f65dc63f693",
+            "b92a4959-da40-531f-bb03-e2068213410f",
+            "c3677c88-0439-5f1d-93cb-46958e53250f",
+            "cf9c8f76-f280-5dfc-bd70-490236bf4b70",
+            "6497f080-d3d7-57cb-9263-bc3fb46111e7",
+            "48848fd5-30d5-536d-9a49-063fa411df35",
+            "9a5f9cb6-acd5-5e6d-b5b2-f44d690bd5d4",
+            "033639cb-8056-5ae7-8abe-c5a32cedffc1",
+            "af2a070c-8586-5c93-b07a-13358e6fced9",
+            "ff3e32ab-cabd-50cc-8ac9-6201c1f2a194",
+            "74955694-cc66-5659-909e-5b868ad6aa03",
+            "460909a2-856b-580c-b146-1aadd708e65c"
+          ],
+          "revisions": [
+            "041b-reconcile-control-5-0",
+            "041b-reconcile-control-5-1",
+            "041b-reconcile-control-5-2",
+            "041b-reconcile-control-5-3",
+            "041b-reconcile-control-5-4",
+            "041b-reconcile-control-5-5",
+            "041b-reconcile-control-5-6",
+            "041b-reconcile-control-5-7",
+            "041b-reconcile-control-5-8",
+            "041b-reconcile-control-5-9",
+            "041b-reconcile-control-5-10",
+            "041b-reconcile-control-5-11",
+            "041b-reconcile-control-5-12",
+            "041b-reconcile-control-5-13",
+            "041b-reconcile-control-5-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "expect": {
+        "reply": {
           "_meta": {
             "io.github.shrav-k.conduit/outcome": "succeeded"
           }

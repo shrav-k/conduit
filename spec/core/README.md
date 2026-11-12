@@ -202,13 +202,15 @@ ENR-008).
   instance ready or the Conduit open, unless the instance or the Conduit's consumer has been
   retired. Recording that a retirement or a close occurred confirms the shutdown, and the
   instance is removed (LIF-028, LIF-035). Recording that the effect did not occur gives the
-  outcome failed and changes nothing else. An actor tells whether a run is running from the
-  instance's condition `Running` (PRV-009): no handle is held, and `reconcile.v1` takes none.
+  outcome failed only once the invocation is fenced (OPS-014), and changes nothing else. An
+  actor tells whether a run is running from the instance's condition `Running` (PRV-009): no
+  handle is held, and `reconcile.v1` takes none.
   For a control that took effect, on an instance that exists and is not retired, the request
   names `revision`, and the values the control was sent are stored (REV-010). A
   reconciliation that stores nothing names no `revision`, and one that does reports invalid
-  (OPS-031). A request that names an invocation whose outcome is not unknown reports conflict
-  (OPS-030). A consumer learns the ID that names the invocation from the
+  (OPS-031). A request that names an invocation whose outcome is not unknown, or records that
+  the effect did not occur before the invocation is fenced, reports conflict (OPS-030). A
+  consumer learns the ID that names the invocation from the
   `io.github.shrav-k.conduit/invocation` of its result, or of a repeat of its request (IFC-025,
   OPS-032, OPS-034), and finds each invocation whose outcome is unknown and that concerns an
   instance in `unreconciled` in its status, which no purge shortens (LIF-013).
@@ -313,8 +315,9 @@ the `ruleId` of the error diagnostic tells the two apart (OPS-034). A caller tha
 repeats its request with the same idempotency key (OPS-009). Where a filter applies to a repeat of
 an invocation that succeeded, the stored outputs are not given: an operation that states no
 `effect`, is not a control and starts no model work is dispatched again as a new attempt, so that
-its filters decide afresh; any other reports conflict where it declares outputs (OPS-034), and is
-answered from its outcome where it declares none (OPS-009). A repeat that is not dispatched is
+its filters decide afresh; any other reports conflict where it declares outputs or is plain
+(OPS-034), and is answered from its outcome where it declares none and is not plain (OPS-009).
+A repeat that is not dispatched is
 judged by no filter. A Conduit applies no filter where the engine implements an operation it lists
 (CON-022), and a request for an operation of the core package that carries one reports unavailable
 (MAN-012). A request through a Conduit that has been closed reports refused, and one that names the

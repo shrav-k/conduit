@@ -356,8 +356,8 @@ Run on 2026-11-11 and 12, first on the Windows computer, where the run script ex
 command it could not find) after Codex had finished, so the admin committed the work and ran the
 verifier on the Mac. Round 1 had findings. Round 2's worker took about 3.5 hours under load, and
 its fresh verifier found no fault, including in ADDR-R2's disclosed deviation, which IFC-036 and
-OPS-023 support. The admin squashed the order onto the side branch `s3/m2` with the squash guard,
-as pull request #213; fmt, clippy and the shell's 15 https tests pass on the Mac.
+OPS-023 support. The admin squashed the order onto the side branch `s3/m2` with the squash guard and
+opened pull request #213 to merge it there; fmt, clippy and the shell's 15 https tests pass on the Mac.
 
 It built the engine's second address: `serve --https-url` fixes a canonical `https` address, with
 the path `/mcp` and no loopback host, and `--https-listen` opens a second plain HTTP listener on

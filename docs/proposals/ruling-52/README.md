@@ -38,5 +38,5 @@ canonical method. Measurement: Agreed".
 2026-11-12: the coordinator recommended closing point 3's open question, whether relative values
 go. They stay as SUB-010 has them: resolved where an engine is handed a directory, and refused
 where documents are carried, so a project that uses them cannot be applied as written. The owner:
-"Agree with all decisions except need more info on 2", where 2 was another question. Point 3 is
+"Agree with all decisions except need more info on 2", and the whole answer is in [ruling 72's later answer](../ruling-72/README.md#later-answers). Point 3 is
 closed, and relative values stay.

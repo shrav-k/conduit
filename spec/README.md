@@ -602,7 +602,7 @@ it.
   record altered outside the engine where the engine does not find the change is read as it
   now holds. Which outside losses an engine can tell is its choice, which its conformance
   document states (REC-003, REC-006, DL8). A program that runs as the engine's operating-system
-  user is such an outside cause (IFC-022, PRV-025). Making such a loss or alteration evident,
+  user is such an outside cause (REC-003). Making such a loss or alteration evident,
   as a signed or chained log would, is not promised in this version.
 
 ## Checking

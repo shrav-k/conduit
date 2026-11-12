@@ -131,7 +131,7 @@ Only the owner settles these questions; later-stage questions below retain their
 | --- | --- |
 | A20: v0 authorization's cross-path, issuer-independence and provider-scope questions, after the bypass probe A7 | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings), [A7](../ROADMAP.md#experiments-and-probes) |
 | After the S1 rerun: S1's bar, with findings 4-01 and 4-11, and C6 to C12 | [Ruling 71](proposals/ruling-71/README.md), points 2 and 3; [increment 4](proposals/first-build/log-increment-4.md); [ruling 62](proposals/ruling-62/README.md) |
-| The Windows computer's decisions, on which the owner asked for more information on 2026-11-12: M2-1 the machine provider (SSH, or Tailscale as ruling 50's words name it), M2-2 the run user, M2-3 TLS at the engine's https address, M2-4's lockdown of the distro (the owner gave Ubuntu-24.04 as Conduit's distro), M2-5 when the computer is Conduit's (on demand, a schedule, or rented capacity) and M2-7 WSL's memory cap; and the labels of the second Claude and ChatGPT subscriptions, which the owner is to give | [The providers' plan](implementation/PROVIDERS.md), [ruling 76's later answers](proposals/ruling-76/README.md#later-answers); [ruling 75](proposals/ruling-75/README.md), D2, and [ruling 72](proposals/ruling-72/README.md), point 2 |
+| The Windows computer's decisions, on which the owner asked for more information on 2026-11-12: M2-1 the machine provider (SSH, or Tailscale as ruling 50's words name it), M2-2 the run user, M2-3 TLS at the engine's https address, M2-4's lockdown of the distro (Ubuntu-24.04 is Conduit's, by [ruling 72's later answer](proposals/ruling-72/README.md#later-answers)), M2-5 when the computer is Conduit's (on demand, a schedule, or rented capacity) and M2-7 WSL's memory cap; and the labels of the second Claude and ChatGPT subscriptions, which the owner is to give | [The providers' plan](implementation/PROVIDERS.md), [ruling 76's later answers](proposals/ruling-76/README.md#later-answers); [ruling 75](proposals/ruling-75/README.md), D2, and [ruling 72](proposals/ruling-72/README.md), point 2 |
 | Readiness G8: close open questions or put them outside builders' scope; G11: owner's sign-off | [Readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) |
 
 ## Known to be open
@@ -205,6 +205,14 @@ model and cannot make one do so, which is the protocol's limit, and SEP-2145 was
 2026-11-07. As of 2026-11-10, [experiment 008](../experiments/008-real-client/README.md)
 records what the real clients showed, including the later-turn follow-up, for E17 of round 6
 in S2.
+- Order 082's remaining questions, the coordinator's to settle as defects, logged for the owner
+  to strike: what an engine owes when it cannot store invocation state, tombstones, provenance or
+  installed packages (with existing outcomes, failing the request rather than acting unrecorded),
+  and races across addresses, between two Types claiming one client ID or an install and a
+  project's registration. Records restored from a copy older than a purge fall under the limit
+  the owner kept on 2026-11-12: they are read as found, and root purges them again
+  ([what the promises on records cover](../spec/README.md#what-the-promises-on-records-cover);
+  [order 082's Record](work-orders/082-spec-records-and-installs.md#record)).
 
 **To look at after round 6.** The text that round 6 and ruling 44 changed has not been read
 cold. [Round 6's decisions](proposals/reaudit/round-6/DECISIONS.md) say what changed, and the
@@ -216,14 +224,6 @@ The independent check read the published protocol on each of the three; the edit
 what they read. Round 5's own decisions that the owner may want to read first are in
 [its record](proposals/reaudit/round-5/README.md#known-after-the-round), where V2-15 is now
 reversed by ruling 44.
-- Order 082's remaining questions, the coordinator's to settle as defects, logged for the owner
-  to strike: what an engine owes when it cannot store invocation state, tombstones, provenance or
-  installed packages (with existing outcomes, failing the request rather than acting unrecorded);
-  whether records restored from a copy older than a purge may be returned (root runs the purge
-  again); and races across addresses, between two Types claiming one client ID or an install and a
-  project's registration. The limit on outside loss stands, as the owner kept it on 2026-11-12
-  ([what the promises on records cover](../spec/README.md#what-the-promises-on-records-cover);
-  [order 082's Record](work-orders/082-spec-records-and-installs.md#record)).
 
 ## Purpose
 

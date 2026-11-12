@@ -73,8 +73,9 @@ kept, and the owner answered that everything stands. Items 11 to 14 stand as dec
 
 On 2026-11-12 the coordinator put items 15 to 28 to the owner, recommending each be kept, and
 item 29 apart, recommending it be kept with the missing limit sentence added to `spec/README.md`.
-The owner answered "Agree with all decisions except need more info on 2", where 2 was a question
-not on this list. Items 15 to 29 stand as decided.
+The owner answered "Agree with all decisions except need more info on 2", where 2 was a question not on this list;
+the whole answer is in [ruling 72's later answer](../ruling-72/README.md#later-answers). Items 15
+to 29 stand as decided.
 
 ## What the owner ruled, for reference
 

@@ -281,5 +281,5 @@ machine before it starts any run there, as the kubelet does, and its contract sa
 already allows. The coordinator advised against refusing a replacement while the earlier instance
 exists, as a StatefulSet does, and against the engine keeping the stops it owes after the instance
 is removed, which would amend D11. The owner: "Agree with all decisions except need more info on
-2", where 2 was another question. Both stand: the stated limit, and the shipped providers'
+2", and the whole answer is in [ruling 72's later answer](../ruling-72/README.md#later-answers). Both stand: the stated limit, and the shipped providers'
 owed stop. D11 is unchanged.

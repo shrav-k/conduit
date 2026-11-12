@@ -58,8 +58,8 @@ without a new situation. Its status statements have not all caught up with the b
 - The [increment 4 log](../proposals/first-build/log-increment-4.md) distinguishes the fixes
   from orders 025 to 028 from open findings. In particular, 4-06 is settled as parallel model
   work within the parent Agent's access, 4-03 retains SUB-010's submission rule, and 4-08's
-  explicit refusals are ruled but await promises. Turn deadlines (4-12) and the form of ended
-  conditions (4-17) remain open; both measured author runs failed the bar for authoring work.
+  explicit refusals are ruled but await promises. Turn deadlines (4-12) closed on 2026-11-12; the form of ended
+  conditions (4-17) remains open; both measured author runs failed the bar for authoring work.
 
 The deliberate limits of v0, including the two delegation limits, remain in the
 [specification's limits](../../spec/README.md#limits-of-this-version). No round so far was

@@ -70,3 +70,14 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target
 
 `target/` stays ignored and unstaged. Report the GraphQL library, the field names and each
 difference from the real API as your own choices. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base eed053a: the worker and a fresh verifier, then a second
+worker round (135 s) and a fresh verifier (206 s), which found nothing to change. The result is
+`experiments/013-s2-shared-login/linear-stub/`: a GraphQL schema subset of Linear's API for one
+issue, a list and an update, with synthetic `SYN-` issues and an API key; a control endpoint with
+its own token for the service's own authorization, barriers with timeouts, request counts and key
+rotation; and its interface documented and frozen for S2-L2. Round one's one should (a negative
+timeout answered 422, not the documented 400) was fixed in round two. Neither verifier's sandbox
+could bind loopback; the lane coordinator ran the crate's tests on the result: 14 passed.

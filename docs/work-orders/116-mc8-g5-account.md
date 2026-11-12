@@ -149,3 +149,33 @@ diff <(awk '/^## Safety promises/{s=1} /^## For the coordinator/{s=0} s && /^\| 
 
 The third compares in order, so the table must follow the catalogue's order. Report the counts of
 decision 7. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer, from c9d3c4e, after every model through MC7b had
+merged: the worker, then a fresh verifier; one round, with no fault found. The order wrote
+`experiments/012-model-checking/G5.md`, linked from the experiment's README: one row for each of
+the 217 convention-layer safety promises, in the catalogue's order. The check in "Done when"
+passes.
+
+The account, by standing, for the 217, with the 125 of them in the seven files in brackets:
+
+| Standing | Count |
+| --- | --- |
+| holds | 114 (67) |
+| holds under ruling 75 A1, refuted as written (MC2-001) | 7 (7) |
+| contradiction: MC6-001 | 2 (2) |
+| contradiction: MC6-002 | 3 (2) |
+| gap: MC4-009 | 4 (0) |
+| gap: MC4-002 | 2 (1) |
+| gap: MC7b-002 | 4 (0) |
+| ambiguity: MC4-001 | 3 (1) |
+| ambiguity: MC7b-001 | 2 (2) |
+| property over-broad: MC3-001 and MC3-002 | 2 (1) |
+| static | 53 (34) |
+| not modelled | 11 (8) |
+| left to MC9 | 10 (0) |
+
+The three language-layer safety promises in the seven files (LIF-002, LIF-007 and IMP-003) are
+outside the 217. Orders 077, 081 and 082, which take the findings, had not run. The account
+decides nothing and does not declare G5 met.

@@ -122,8 +122,10 @@ These helpers are for the store owner, not additional consumer authority.
 
 H03 is bounded explicitly. Public engine execution currently supports set-up.v1, open.v1,
 close.v1, register-replacement.v1, register.v1, replace.v1, inspect.v1, purge.v1,
-reconcile.v1, install.v1, retire.v1, unregister.v1, retire-with-resources.v1 and
-retire-with-agents.v1, subject to the core's preflights.
+reconcile.v1, install.v1, retire.v1, unregister.v1, retire-with-resources.v1,
+retire-with-agents.v1 and list.v1, subject to the core's preflights.
+The shell also passes lift.v1, answer.v1 and sign-in.v1 to the core, which answers each
+unavailable, naming the order that builds it (042, 047 and 048a; OPS-005).
 Declare-lost.v1 and control dispatch remain unfinished public invocation paths.
 Control reconciliation applies the held input values to the current revision (REV-010);
 Agent reconciliation uses the owning Fleet, with management as the retired-owner fallback

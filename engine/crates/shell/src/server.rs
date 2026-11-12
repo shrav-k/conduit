@@ -36,7 +36,10 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 
 pub const REVISIONS: [&str; 3] = ["2025-06-18", "2025-11-25", "2026-07-28"];
-const EXECUTABLE_ENGINE_OPERATIONS: [&str; 14] = [
+// The list names the core package's operations that the shell passes to the core.
+// It includes temporary stubs that answer unavailable and name the order that
+// builds each operation (OPS-005).
+pub(crate) const EXECUTABLE_ENGINE_OPERATIONS: [&str; 18] = [
     "install.v1",
     "retire-with-resources.v1",
     "retire-with-agents.v1",
@@ -51,7 +54,16 @@ const EXECUTABLE_ENGINE_OPERATIONS: [&str; 14] = [
     "inspect.v1",
     "purge.v1",
     "reconcile.v1",
+    "list.v1",
+    "lift.v1",
+    "answer.v1",
+    "sign-in.v1",
 ];
+// An order that builds one of these moves it to EXECUTABLE_ENGINE_OPERATIONS.
+// A test in tests.rs checks both lists against the core package (MAN-012).
+#[cfg(test)]
+pub(crate) const UNFINISHED_ENGINE_OPERATIONS: [(&str, &str); 1] =
+    [("declare-lost.v1", "none yet: ROADMAP.md S3, AUDIT.md A35")];
 fn instance(id: &str) -> Value {
     json!({"kind":"instance","id":id})
 }

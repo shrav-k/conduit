@@ -20,6 +20,60 @@ fn repository() -> PathBuf {
 fn context() -> Context {
     boundary::context(&repository()).unwrap()
 }
+
+#[test]
+fn every_engine_operation_is_executable_or_unfinished_with_its_order() {
+    // MAN-012: the shell accounts for every operation implemented by the core's engine item.
+    let context = context();
+    let manifest = context.builtin.as_ref().unwrap().manifest.as_ref().unwrap();
+    let prefix = format!("{}#", context.core_package);
+    let engine: std::collections::BTreeSet<_> = manifest["implementations"]["engine"]["implements"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|entry| entry.as_str().unwrap().strip_prefix(&prefix).unwrap())
+        .collect();
+    let mut listed = BTreeMap::new();
+    let mut faults = Vec::new();
+    for (operation, list) in server::EXECUTABLE_ENGINE_OPERATIONS
+        .iter()
+        .map(|operation| (*operation, "EXECUTABLE_ENGINE_OPERATIONS"))
+        .chain(
+            server::UNFINISHED_ENGINE_OPERATIONS
+                .iter()
+                .map(|(operation, _)| (*operation, "UNFINISHED_ENGINE_OPERATIONS")),
+        )
+    {
+        if let Some(previous) = listed.insert(operation, list) {
+            faults.push(format!("{operation}: duplicate in {previous} and {list}"));
+        }
+        if !engine.contains(operation) {
+            faults.push(format!(
+                "{operation}: stale in {list}; absent from core engine"
+            ));
+        }
+    }
+    for operation in engine {
+        if !listed.contains_key(operation) {
+            faults.push(format!(
+                "{operation}: missing from EXECUTABLE_ENGINE_OPERATIONS and UNFINISHED_ENGINE_OPERATIONS"
+            ));
+        }
+    }
+    for (operation, order) in server::UNFINISHED_ENGINE_OPERATIONS {
+        let bytes = order.as_bytes();
+        let numbered = (bytes.len() == 3 || bytes.len() == 4)
+            && bytes[..3].iter().all(u8::is_ascii_digit)
+            && (bytes.len() == 3 || bytes[3].is_ascii_lowercase());
+        if !numbered && order != "none yet: ROADMAP.md S3, AUDIT.md A35" {
+            faults.push(format!(
+                "{operation}: invalid order {order:?} in UNFINISHED_ENGINE_OPERATIONS"
+            ));
+        }
+    }
+    assert!(faults.is_empty(), "{}", faults.join("\n"));
+}
+
 fn open(path: &Path) -> Shell {
     Shell::open(path, context(), Config::default()).unwrap()
 }

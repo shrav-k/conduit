@@ -170,6 +170,92 @@ async fn wait_changes(counter: &AtomicUsize, minimum: usize) {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn root_reaches_list_and_the_lift_stub_over_mcp() {
+    let temp = temporary();
+    let shell = Arc::new(fixed_shell(temp.path()));
+    server::preflight(&shell).unwrap();
+    let root = actor(&shell, "root");
+    shell.issue_client_token(&root).unwrap();
+    let executor = Arc::new(ServingExecutor::new(Arc::new(crate::MissingExecutor)));
+    let stop = CancellationToken::new();
+    let task = tokio::spawn(server::serve(shell.clone(), executor, stop.clone()));
+    ready(&shell.config.engine_url).await;
+
+    // OPS-036 and OPS-019: both listings reach the core and leave durable endings.
+    for arguments in [json!({}), json!({"kind":"Interface"})] {
+        let reply = server::client(
+            temp.path(),
+            None,
+            Some("management.list.v1"),
+            arguments.clone(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(reply["isError"], false);
+        let outputs = reply["structuredContent"].as_object().unwrap();
+        for key in ["objects", "packages", "tombstones"] {
+            assert!(outputs[key].is_array(), "{key} must be an array");
+        }
+        assert!(
+            outputs
+                .keys()
+                .all(|key| ["objects", "packages", "tombstones", "pending"].contains(&key.as_str()))
+        );
+        let objects = outputs["objects"].as_array().unwrap();
+        assert!(objects.iter().any(|item| item["id"] == root
+            && item["kind"] == "Interface"
+            && item["name"] == "root"
+            && item["template"] == false
+            && item.get("state").is_some()));
+        if arguments.get("kind").is_some() {
+            assert!(objects.iter().all(|item| item["kind"] == "Interface"));
+        }
+        assert_eq!(
+            reply["_meta"][format!("{}outcome", shell.context.meta_prefix)],
+            "succeeded"
+        );
+        assert!(reply["_meta"][format!("{}invocation", shell.context.meta_prefix)].is_string());
+        let reply: CallToolResult = serde_json::from_value(reply).unwrap();
+        durable_ending(&shell, &reply);
+    }
+
+    // OPS-005: the stub returns unavailable and records exactly one request ending.
+    let before = shell.state().unwrap().records.len();
+    let reply = server::client(
+        temp.path(),
+        None,
+        Some("access.lift.v1"),
+        json!({"id":"00000000-0000-4000-8000-000000009999"}),
+    )
+    .await
+    .unwrap();
+    assert_eq!(reply["isError"], true);
+    assert_eq!(
+        reply["_meta"][format!("{}reason", shell.context.meta_prefix)],
+        "unavailable"
+    );
+    assert!(reply["content"].as_array().unwrap().iter().any(|item| {
+        item["text"]
+            .as_str()
+            .is_some_and(|text| text.contains("not built yet, order 042"))
+    }));
+    let state = shell.state().unwrap();
+    let endings: Vec<_> = state.records[before..]
+        .iter()
+        .filter(|record| record["type"] == "request-ended")
+        .collect();
+    assert_eq!(endings.len(), 1);
+    assert_eq!(endings[0]["data"]["reason"], "unavailable");
+
+    stop.cancel();
+    tokio::time::timeout(Duration::from_secs(60), task)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn s1_http_consumers_authority_records_and_private_t7_changes() {
     let temp = temporary();
     let shell = Arc::new(fixed_shell(temp.path()));

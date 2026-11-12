@@ -289,3 +289,15 @@ Write no local path in the report. If a message holds one, such as the store dir
 
 Tests that bind loopback ports may fail in your sandbox. If they do, say so, and the admin reruns
 them. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11: the worker on the Windows computer, which stopped at step 3 as ordered when the S1
+HTTP test timed out in its sandbox; the admin ran that test on the Mac on the same tree, and it
+passed (586 s), so the timeout was the environment. A second round on the Mac finished steps 4 on.
+The shell now executes `list.v1` (OPS-036), which it had refused since order 040 though the core
+handled it, proved first by an MCP-level test that failed before the fix. A shell test now checks
+that every operation of the core package is either executable or listed as unfinished with the
+order that builds it. Finding 4-19 is logged. The final verifier found no fault. The full suite
+passed in the worker's run except one test that failed on a compile-cache permission error and
+passed on retry.

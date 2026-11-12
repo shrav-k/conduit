@@ -181,3 +181,21 @@ git status --porcelain --ignored $D | grep target/ | grep -v '^!!'
 `target/` stays ignored and unstaged. Report each protocol behavior decision 6 leaves out, and
 each choice of the keepalive's defaults and of the buffer's limit, as one of your own choices. Do
 not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, from base 8103ad3: the worker and a fresh verifier (386 s), then a
+second worker round (275 s) and a fresh verifier (348 s), which found nothing to change. Round
+one found no must and two shoulds, both in the tests, both fixed in round two: the keepalive test
+now reads back the settings of a socket the gate itself accepted; and the leakage test sends a
+valid engine token through an admitted request and checks that exact token against the logs,
+headers and bodies. The kit now has the gate in `src/gate`: a TLS listener per run with
+`rustls` and `ring`, the engine's proof checked on every request, one live session per run, the
+byte bridge with `notifications/cancelled` behind stdio, and TCP keepalive for PRV-025's bound.
+The lane coordinator ran the crate's tests on the result, 61 passed, and found no `aws-lc-rs`,
+OpenSSL or native-tls in its lockfile.
+
+The worker's findings: a replaced session forwards another `initialize` to the persistent stdio
+server (an ambiguity for order 080 and for the runtimes' contracts); and macOS has no
+`TCP_USER_TIMEOUT`, so with unacknowledged data outstanding a silent cut can take longer than the
+keepalive bound there (a gap a runtime's contract must state on macOS).

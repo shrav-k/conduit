@@ -105,3 +105,30 @@ git status --porcelain --ignored $D | grep target/ | grep -v '^!!'
 
 `target/` stays ignored and unstaged. Report, for each of the four, the test that shows it fixed.
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, stacked on order 122's last commit (c06b093): the worker in 7
+minutes (445 s) and a fresh verifier in 6 minutes (364 s); then a second worker round in 3
+minutes (187 s) and a fresh verifier in 6 minutes (359 s). It closed the four findings, with
+nine regression tests that fail on order 122's code. Round one's one should (a drain waited on
+unrelated instances' locks) was fixed in round two.
+
+Round two's verifier left one must: `Slot::refresh` read the held context, released the mutex
+and took it again to insert, so an interval drain could copy r1, a live call install r2, and the
+drain then write r1 back. **The lane coordinator fixed it, an admin-side fix at the admin's word
+(a small finding, ruling 71):** `refresh` holds the mutex once across the lookup, the update and
+the insert, and stays outside the operation lock. A fresh reader checked the fix and found two
+shoulds, which the coordinator also applied: `call_records` writes only this call's candidate
+again, not every record, so it cannot restore a context another call installed; and the stop that
+a run's lifetime triggers refreshes its record first, so it carries the newest context. Tests:
+`interval_refresh_never_writes_back_an_older_context` and the reader's
+`contended_interval_refreshes_never_regress_a_live_context` (which failed 30 of 30 runs on the
+old code), and `lifetime_stop_uses_the_newest_call_context` (which fails with the refresh line
+removed). The reader checked the follow-up too and found nothing to change. The crate's
+fmt, clippy and 47 tests pass.
+
+Left as found, a could: a failed start stops with its own call's record, not one refreshed by
+another call meanwhile; both come from live calls. For order 081, the worker's finding: a
+`run.v1` whose own drain clears an owed stop answers failed, "start cancelled by stop", because
+that drain advances the instance's epoch.

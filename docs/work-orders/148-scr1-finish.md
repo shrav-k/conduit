@@ -73,3 +73,14 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target
 
 `target/` stays ignored and unstaged. Report each choice you make as your own. Do not stage
 anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, stacked on order 142's last commit (d389c37): the worker (385 s) and
+a fresh verifier (279 s), which found nothing to change in one round. Trace and barrier file names
+are compared by file name with ASCII case folded, whatever their directories; an invalid script's
+report applies only well-formed redaction entries; and redaction works on JSON values, strings,
+numbers and keys, before serialization, with the stdout protocol lines written unredacted, so
+that no redaction entry can break a turn. Both release test runs pass on the Mac, 2 unit and 15
+integration tests each, the wrapper's launch turns included. The lane coordinator's review found
+nothing to change.

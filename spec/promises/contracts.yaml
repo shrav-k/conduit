@@ -231,8 +231,8 @@
     project that holds it is rejected when it is submitted.
   observable: >-
     Installation or resolving returns a diagnostic naming the contract. Only an Operation
-    contract of the core package carries the mark, as `declare-lost.v1` and `purge.v1` do, and
-    ACC-032 says what it means.
+    contract of the core package carries the mark: declare-lost.v1, purge.v1,
+    enroll-machine.v1, admit-machine.v1 and refuse-machine.v1. ACC-032 says what it means.
   vectors: []
 
 

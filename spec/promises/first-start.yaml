@@ -24,7 +24,8 @@
     the object made at first start. A name is fixed, under OBJ-011. `local` is the node of
     the machine the engine runs on, which a report names by the engine's own hostname, in
     canonical form, under PLC-026, and its labels are those reported for that machine under
-    PRV-014.
+    PRV-014, fixed at first start with any other labels configured under DL6 (ENR-010).
+    The trust domain is chosen and recorded under FST-007.
   vectors: []
 
 - id: FST-002
@@ -80,11 +81,12 @@
     An instance document's `from` resolves to the core package's template `system`, `node`,
     `management`, `access` or `root`.
   then: >-
-    The document is rejected. The instances that first start makes from those templates, and the
-    nodes that the engine makes under PLC-026, are the only ones: the engine alone makes nodes.
+    The document is rejected. The instances that first start makes from those templates, and
+    the nodes that the engine makes on admission under ENR-007 and PLC-026, are the only ones:
+    the engine alone makes nodes.
   observable: >-
     Resolving returns a diagnostic naming the template. Every node is an instance of `node`,
-    under PLC-008, made by the engine for a machine that the machine provider reports.
+    under PLC-008, made by the engine at first start or on admission, never by a report alone.
     Submitting the instance documents that first start makes is rejected for this reason, and
     because their names are taken under OBJ-002: the engine makes those objects itself and is
     handed no document for them. A template of any other project or package whose `type` is

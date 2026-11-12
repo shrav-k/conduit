@@ -1,0 +1,146 @@
+--- a/spec/core/capabilities.yaml
++++ b/spec/core/capabilities.yaml
+@@ -20,7 +20,8 @@
+ #   runtime-provider.v1   PRV-001, PRV-006 to PRV-012 (run, stop and the state of a run),
+ #                         PRV-025 (the gate in front of every run's server)
+ #   machine-provider.v1   PRV-001, PRV-013 to PRV-015 (the machines, their labels and their
+-#                         states, and placing an instance)
++#                         states, and placing an instance), ENR-002, ENR-007, ENR-008
++#                         (enrollment, acceptance and removal)
+ #   package-source.v1     PRV-001, PRV-013, PRV-016, PRV-017 (fetching an archive for the
+ #                         schemes the provider claims, which no control changes)
+ #   secret-provider.v1    SEC-002, SEC-005 (the shared contract of every secret Resource; a
+@@ -160,7 +161,9 @@
+   name: machine-provider.v1
+   description: >-
+     What the machine provider offers: reporting the machines, their labels and whether each
+-    is reachable, unreachable or gone, and placing an instance on one of them. At most one
++    is pending, reachable, unreachable or gone, and placing an instance by id on an admitted
++    machine. It also opens enrollment, accepts a pending machine and removes a machine
++    (ENR-002, ENR-007, ENR-008). At most one
+     machine provider, owned by `system`, is not retired; with none, the engine's own machine
+     provider reports one machine, the one the engine runs on. No Conduit lists these
+     operations: the engine alone invokes them.
+@@ -168,6 +171,10 @@
+   operations:
+     - github.com/shrav-k/conduit/core#list-machines.v1
+     - github.com/shrav-k/conduit/core#place.v1
++    - github.com/shrav-k/conduit/core#enroll.v1
++    - github.com/shrav-k/conduit/core#accept-machine.v1
++    - github.com/shrav-k/conduit/core#remove-machine.v1
++
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Capability
+--- a/spec/core/operations.yaml
++++ b/spec/core/operations.yaml
+@@ -990,14 +990,18 @@
+ metadata:
+   name: list-machines.v1
+   description: >-
+-    Report the machines: for each, its `hostname`, in canonical form, trimmed and lowercased, of
++    Report the machines: for each, its required, opaque stable id scoped to this provider, derived
++    from its key where available (ENR-002); enrollment where attributed; evidence under ENR-005;
++    its `hostname`, in canonical form, trimmed and lowercased, of
+     at most 63 characters, and at most once, the provider's contract stating which name of a
+     machine it reports; its `labels`, which hold `kubernetes.io/hostname`, whose value is the
+     hostname, and `kubernetes.io/os` and `kubernetes.io/arch`, whose values are those that Go
+-    gives `GOOS` and `GOARCH`; and its `state`, `reachable`, `unreachable` or `gone`, which is
++    gives `GOOS` and `GOARCH`; and its `state`, `pending`, `reachable`, `unreachable` or `gone`, which is
+     only for a machine that the provider knows no longer exists. A report that names one
+-    hostname twice is not used, and a machine that a report omits counts as unreachable until a
+-    report gives it a state. Labels are reported status and never configuration. The engine
++    hostname or id twice is not used, and a machine that a report omits counts as unreachable until a
++    report gives it a state. Pending machines get no node and are never placed on; only admission makes a node.
++    A node's labels are fixed under ENR-010; a differing report changes none and adds a condition.
++    Pending machine evidence is shown only in root's panel and recorded answer (PND-008). The engine
+     invokes it by a provider call, and no Conduit lists it.
+ spec:
+   outputSchema:
+@@ -1008,10 +1012,15 @@
+         items:
+           type: object
+           properties:
++            id: {type: string, minLength: 1}
++            enrollment: {$ref: github.com/shrav-k/conduit/core#id.v1}
++            evidence:
++              type: array
++              items: {$ref: github.com/shrav-k/conduit/core#evidence-item.v1}
+             hostname: {type: string, minLength: 1, maxLength: 63}
+             labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+-            state: {enum: [reachable, unreachable, gone]}
+-          required: [hostname, labels, state]
++            state: {enum: [pending, reachable, unreachable, gone]}
++          required: [id, hostname, labels, state]
+     required: [machines]
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+@@ -1019,11 +1028,11 @@
+ metadata:
+   name: place.v1
+   description: >-
+-    Choose the machine on which an instance is placed: one that the provider reports reachable
+-    and whose labels match `nodeSelector`, the label selector of the instance's type and of
++    Choose the machine on which an instance is placed: one machine represented by a node that the provider reports reachable
++    and whose node's fixed labels match `nodeSelector`, the label selector of the instance's type and of
+     the items selected for it, which for an instance that has an item that is run and names no
+-    `runtime` also holds the hostname of the machine the engine runs on. `hostname` names the
+-    machine, and is absent where the provider places the instance on none. The engine invokes
++    `runtime` also holds the hostname of the machine the engine runs on. id names the machine within this provider Resource, never a pending machine,
++    and is absent where the provider places the instance on none. The engine invokes
+     it by a provider call, while it decides a request that would instantiate the instance, and
+     no Conduit lists it.
+ spec:
+@@ -1036,7 +1045,7 @@
+   outputSchema:
+     type: object
+     properties:
+-      hostname: {type: string, minLength: 1, maxLength: 63}
++      id: {type: string, minLength: 1}
+ 
+ # --- The operation of a package-source provider.
+ ---
+--- a/spec/core/README.md
++++ b/spec/core/README.md
+@@ -39,7 +39,11 @@
+ Every document here validates against those schemas, and `python3 tools/check_schemas.py`
+ checks it.
+ 
+-The unreleased core remains version 0.1.0. Runtime-sensitive contract edits are staged for
++The unreleased core remains version 0.1.0.
++As an explicit exception, list-machines.v1 and place.v1 are edited in place at 0.1.0
++for enrollment (batch 1 reading 18): required machine id, pending state and placement by id.
++No shipped package implements a machine provider; compatible-version replacements would be .v2.
++ Runtime-sensitive contract edits are staged for
+ build order 048a under [036b-staged](../../docs/work-orders/036b-staged/), and enrollment
+ bindings for 049a and provider contract edits for 049b under
+ [038b-staged](../../docs/work-orders/038b-staged/). Those directories contain exact patches.
+@@ -147,11 +151,14 @@
+ | `inspect-run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-009, PRV-027, PRV-028, IFC-017 |
+ | `list-machines.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-014 |
+ | `place.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-015 |
+-| `enroll.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's enrollment | ENR-002, PRV-005 |
+-| `accept-machine.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's admission | ENR-007, PRV-005 |
+-| `remove-machine.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's refusal | ENR-008, ENR-012, PRV-005 |
++| `enroll.v1` | `machine-provider.v1` | The engine, by provider call within root's enrollment | ENR-002, PRV-005 |
++| `accept-machine.v1` | `machine-provider.v1` | The engine, by provider call within root's admission | ENR-007, PRV-005 |
++| `remove-machine.v1` | `machine-provider.v1` | The engine, by provider call within root's refusal | ENR-008, ENR-012, PRV-005 |
+ | `fetch-package.v1` | `package-source.v1` | The engine, by a provider call | PRV-017 |
+ | `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023, PRV-026 |
++
++The machine-provider enrollment bindings and the id-based report and placement contracts
++are active (ENR-002, ENR-007, ENR-008, PRV-014, PRV-015).
+ 
+ No Operation contract states a default implementation (CTR-002), and `engine` implements none
+ of these fifteen (MAN-012, SEC-020): a template selects an implementation for each that it needs,
+--- a/tools/check_schemas.py
++++ b/tools/check_schemas.py
+@@ -166,7 +166,7 @@
+                          "secret-provider.v1")
+ CALLED_CAPABILITIES = ("runtime-provider.v1", "machine-provider.v1", "package-source.v1")
+ CALLED_OPERATIONS = ("run.v1", "stop.v1", "inspect-run.v1", "list-machines.v1", "place.v1",
+-                     "fetch-package.v1")
++                     "fetch-package.v1", "enroll.v1", "accept-machine.v1", "remove-machine.v1")
+ 
+ # The core templates from which first start alone makes instances (FST-001, FST-006), and the
+ # directory under examples/valid/ that writes those instances out to show what first start

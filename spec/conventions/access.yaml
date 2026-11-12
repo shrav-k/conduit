@@ -569,7 +569,8 @@
     Both hold whoever asks: the root Interface itself reports refused where it asks to open, for
     another consumer, a Conduit that lists a reserved operation. An operation is reserved where
     its contract is marked `reservedToRoot: true`. Under CTR-009 only an operation of the core
-    package is so marked: `declare-lost.v1` and `purge.v1` are.
+    package is so marked. The five are declare-lost.v1, purge.v1, enroll-machine.v1,
+    admit-machine.v1 and refuse-machine.v1 (ENR-001, ENR-006, ENR-008).
   vectors: []
 
 - id: ACC-033

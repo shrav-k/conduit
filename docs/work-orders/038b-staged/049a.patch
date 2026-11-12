@@ -1,0 +1,91 @@
+--- a/spec/core/capabilities.yaml
++++ b/spec/core/capabilities.yaml
+@@ -5,7 +5,8 @@
+ # Promises encoded:
+ #   object-management.v1  ACC-033 (what is authorized against `management`, reconciling an
+ #                         invocation of an operation of an Agent, an Interface or a Pool
+-#                         among it), OPS-019, ACC-032 and CTR-003 (it lists the two
++#                         among it), OPS-019, ENR-001, ENR-006, ENR-008, ACC-032 and CTR-003
++#                         (it lists the five
+ #                         operations reserved to the root Interface, which only a capability
+ #                         of the core package may)
+ #   access-control.v1     ACC-006, ACC-012 (the operations of `access`), ACC-033 and OPS-014
+@@ -88,6 +89,10 @@
+   - github.com/shrav-k/conduit/core#purge.v1
+   - github.com/shrav-k/conduit/core#list.v1
+   - github.com/shrav-k/conduit/core#answer.v1
++  - github.com/shrav-k/conduit/core#enroll-machine.v1
++  - github.com/shrav-k/conduit/core#admit-machine.v1
++  - github.com/shrav-k/conduit/core#refuse-machine.v1
++
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Capability
+--- a/spec/core/types.yaml
++++ b/spec/core/types.yaml
+@@ -102,6 +102,10 @@
+   - github.com/shrav-k/conduit/core#declare-lost.v1
+   - github.com/shrav-k/conduit/core#purge.v1
+   - github.com/shrav-k/conduit/core#list.v1
++  - github.com/shrav-k/conduit/core#enroll-machine.v1
++  - github.com/shrav-k/conduit/core#admit-machine.v1
++  - github.com/shrav-k/conduit/core#refuse-machine.v1
++
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Type
+--- a/spec/core/templates.yaml
++++ b/spec/core/templates.yaml
+@@ -19,7 +19,7 @@
+ #   access           FST-001, FST-005
+ #   root             FST-001, FST-002 (one Conduit each to `management`, `access` and `system`),
+ #                    FST-005, CON-002 (they are its declared Conduits)
+-#   root-management  FST-002, ACC-032 (it lists the operations reserved to the root Interface)
++#   root-management  FST-002, ACC-032, ENR-001, ENR-006, ENR-008 (root enrollment verbs)
+ #   root-access      FST-002, ACC-022 (it applies no bound)
+ #
+ # No instance document is made from any of these five templates: `system`, `node`,
+@@ -106,7 +106,7 @@
+   name: root-management
+   description: >-
+     The root Interface's Conduit to `management`. It lists every operation of `object-management.v1`,
+-    the two reserved to the root Interface among them.
++    the five reserved to the root Interface among them.
+ spec:
+   capability: github.com/shrav-k/conduit/core#object-management.v1
+   operations:
+@@ -123,6 +123,10 @@
+   - github.com/shrav-k/conduit/core#purge.v1
+   - github.com/shrav-k/conduit/core#list.v1
+   - github.com/shrav-k/conduit/core#answer.v1
++  - github.com/shrav-k/conduit/core#enroll-machine.v1
++  - github.com/shrav-k/conduit/core#admit-machine.v1
++  - github.com/shrav-k/conduit/core#refuse-machine.v1
++
+ ---
+ apiVersion: github.com/shrav-k/conduit/v0
+ kind: Conduit
+--- a/spec/core/conduit.yaml
++++ b/spec/core/conduit.yaml
+@@ -198,3 +198,6 @@
+       - github.com/shrav-k/conduit/core#retire-with-agents.v1
+       - github.com/shrav-k/conduit/core#answer.v1
+       - github.com/shrav-k/conduit/core#sign-in.v1
++      - github.com/shrav-k/conduit/core#enroll-machine.v1
++      - github.com/shrav-k/conduit/core#admit-machine.v1
++      - github.com/shrav-k/conduit/core#refuse-machine.v1
+--- a/spec/core/README.md
++++ b/spec/core/README.md
+@@ -129,9 +129,9 @@
+ | `lift.v1` | `access-control.v1` | — | yes | — | ACC-053 |
+ | `answer.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | yes | — | PND-009, ACC-033 |
+ | `sign-in.v1` | `pool-management.v1`, `fleet-management.v1` | — | no | — | PND-010, PND-011, IFC-049 |
+-| `enroll-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-001, ACC-032, IFC-049 |
+-| `admit-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-006, ENR-007, ACC-032 |
+-| `refuse-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-008, ENR-012, ACC-032 |
++| `enroll-machine.v1` | `object-management.v1` | — | no | yes | ENR-001, ACC-032, IFC-049 |
++| `admit-machine.v1` | `object-management.v1` | — | no | yes | ENR-006, ENR-007, ACC-032 |
++| `refuse-machine.v1` | `object-management.v1` | — | no | yes | ENR-008, ENR-012, ACC-032 |
+ 
+ ### The hooks, and the operations of providers
+ 

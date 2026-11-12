@@ -46,9 +46,11 @@
 #   - No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
 #     operation, of this package or of any other, arranges through the engine work that
 #     outlasts its invocation, and no contract carries a mark for it (ACC-019, CTR-002).
-#   - Every management verb is implemented by the engine itself: the core package's
+#   - Every offered management verb is implemented by the engine itself: the core package's
 #     implementation `engine` lists it under `implements` in conduit.yaml, and no template or
-#     type selects it (TPL-003, TPL-004). No Operation contract states a default implementation
+#     type selects it (TPL-003, TPL-004). Enrollment bindings encode ENR-001, ENR-006 and
+#     ENR-008; their staged lists are described in core/README.md. No Operation contract
+#     states a default implementation
 #     (CTR-002). A template selects each of the two hooks, the operations of the provider
 #     capabilities and `get-secret.v1`, or its type's default does (TPL-004), and the engine
 #     implements none of them (MAN-012, SEC-020). No plain implementation implements an
@@ -96,6 +98,7 @@
 #     is dispatched (SEC-007).
 #
 # --- Operations of `management`, some of them also operations of a Pool.
+# Enrollment contracts encode ENR-001 to ENR-012, PND-008, ACC-032, IFC-049 and PRV-005.
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # This file carries no change narrative; the reasons are in the records listed in spec/README.md, 'Where the reasons are'.
@@ -273,7 +276,8 @@ metadata:
     the further conditions of the instance and what was observed of it, the state of its run among
     them, and, in `unreconciled`, the engine's ID for each invocation whose outcome is unknown and
     that was dispatched to the instance or names it in an input or as its target, which no purge shortens;
-    the status of a node also holds the labels last reported for its machine. `records` holds the
+    the status of a node holds fixed labels and, after admission, its machine binding and
+    enrollment (PLC-008, PLC-026, ENR-010). `records` holds the
     records that name the object, each as a CloudEvent. Where `expectedId` is given and the object
     named has another ID, the request reports conflict.
 
@@ -617,7 +621,8 @@ metadata:
     node that a request has already retired is declared lost in the same way, and a request for
     a node that was already declared lost changes nothing and succeeds. The engine declares a
     node lost in the same way, with no request, when the machine provider reports its machine
-    gone. Reserved to the root Interface, and authorized against `management`.
+    gone. If its machine is still reported other than gone, root gets a machine-removal
+    question (ENR-012); this operation removes nothing at the provider. Reserved to the root Interface, and authorized against `management`.
 spec:
   inputSchema:
     type: object
@@ -1266,9 +1271,10 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: answer.v1
-  description: Answer a setup with dismissed or a notice with acknowledged (PND-009). Only an Interface
+  description: Answer a setup with dismissed, a notice with acknowledged or a machine-removal with
+    kept (PND-008, PND-009). Only an Interface
     on its own behalf, through the target authorizing inspection of the subject (ACC-033). No hook
-    or model work runs. Other kinds name their own answering operation; answered, expired or void
+    or model work runs. All other kinds name their own answering operation; answered, expired or void
     actions conflict.
 spec:
   inputSchema:
@@ -1354,3 +1360,189 @@ metadata:
     starts.
 spec:
   effect: Remove the instance client sign-in.
+
+# --- Enrollment operations (ENR-001 to ENR-012, PND-008).
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: enroll-machine.v1
+  description: >-
+    Open an enrollment through the machine provider, and raise its pending action at root.
+    Reserved to the root Interface and authorized against management. labels names labels
+    beyond the three descriptive ones; expires is bounded by DL5. require accepts only
+    attestation. headless without acceptWeakerCheck needs both attestation and a fingerprint;
+    acceptWeakerCheck is valid only with headless and records --accept-weaker-check.
+    The result gives only enrollment and pendingAction IDs. A secret-free URL may be relayed
+    under IFC-049; command and secret-bearing actions appear only at root's own panel.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+      expires: {type: string, format: date-time}
+      require:
+        type: array
+        items: {enum: [attestation]}
+        uniqueItems: true
+      headless: {type: boolean}
+      acceptWeakerCheck: {type: boolean}
+    required: [expires]
+  outputSchema:
+    type: object
+    properties:
+      enrollment: {$ref: github.com/shrav-k/conduit/core#id.v1}
+      pendingAction: {$ref: github.com/shrav-k/conduit/core#id.v1}
+    required: [enrollment, pendingAction]
+  effect: Opens one enrollment and raises one enrollment pending action (ENR-001).
+  reservedToRoot: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: admit-machine.v1
+  description: >-
+    Admit the pending machine identified by machine, its provider's opaque id, through the
+    named enrollment, after ENR-006's checks. Reserved to root and authorized against management.
+    fingerprint is the 6 to 8 characters the person read on the machine, compared exactly,
+    even with attestation. Only headless with the recorded acceptWeakerCheck exception skips
+    comparison; a supplied fingerprint is then schema-validated and ignored. The typed value
+    is never recorded or returned. On acceptance by the provider the engine makes a node,
+    answers admitted and closes the enrollment; no Conduit or credential is made.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      enrollment: {$ref: github.com/shrav-k/conduit/core#id.v1}
+      machine: {type: string, minLength: 1}
+      fingerprint: {type: string, minLength: 6, maxLength: 8}
+    required: [enrollment, machine]
+  outputSchema:
+    type: object
+    properties:
+      node: {$ref: github.com/shrav-k/conduit/core#object.v1}
+    required: [node]
+  effect: Accepts the machine, makes its node and answers the enrollment admitted (ENR-007).
+  reservedToRoot: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: refuse-machine.v1
+  description: >-
+    Refuse an enrollment or remove pending machines at their provider, or answer a retired
+    node's machine-removal question. At least enrollment or machine, an opaque provider id,
+    is required; both selects their union. A represented machine reports conflict. Reserved
+    to root and authorized against management. Closing an enrollment prevents later admission;
+    successful removals answer refused, or removed for machine-removal (ENR-008, ENR-012).
+spec:
+  inputSchema:
+    type: object
+    properties:
+      enrollment: {$ref: github.com/shrav-k/conduit/core#id.v1}
+      machine: {type: string, minLength: 1}
+    anyOf:
+    - required: [enrollment]
+    - required: [machine]
+  effect: Closes a named open enrollment and removes its or named unrepresented machines.
+  reservedToRoot: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: enroll.v1
+  description: >-
+    Begin a machine enrollment at the provider (ENR-002). The engine calls it within root's
+    enroll-machine.v1 invocation, never through a Conduit. Return action as either {url} or
+    {command}, or {byOs: {<kubernetes.io/os value>: {url} or {command}}}, with message,
+    carriesSecret, expiry and the evidence kinds promised for a joining machine. Any secret
+    is single-use, lapses by expires and never reaches records or results (ENR-003).
+    A joined machine is pending and carries the enrollment's bound labels. The provider's
+    contract states verification, fingerprint alphabet and stable machine-id derivation.
+spec:
+  inputSchema:
+    type: object
+    properties:
+      enrollment: {$ref: github.com/shrav-k/conduit/core#id.v1}
+      labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+      expires: {type: string, format: date-time}
+      require:
+        type: array
+        items: {enum: [attestation]}
+        uniqueItems: true
+      headless: {type: boolean}
+    required: [enrollment, labels, expires, require, headless]
+  outputSchema:
+    type: object
+    properties:
+      action:
+        type: object
+        oneOf:
+        - properties:
+            url: {type: string, format: uri}
+          required: [url]
+          additionalProperties: false
+        - properties:
+            command: {type: string, minLength: 1}
+          required: [command]
+          additionalProperties: false
+        - properties:
+            byOs:
+              type: object
+              minProperties: 1
+              additionalProperties:
+                type: object
+                oneOf:
+                - properties:
+                    url: {type: string, format: uri}
+                  required: [url]
+                  additionalProperties: false
+                - properties:
+                    command: {type: string, minLength: 1}
+                  required: [command]
+                  additionalProperties: false
+          required: [byOs]
+          additionalProperties: false
+      message: {type: string}
+      carriesSecret: {type: boolean}
+      expires: {type: string, format: date-time}
+      evidence:
+        type: array
+        items: {enum: [fingerprint, attestation, code, fact]}
+        uniqueItems: true
+    required: [action, message, carriesSecret, expires, evidence]
+  effect: Opens the provider's enrollment for machines joining pending (ENR-002).
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: accept-machine.v1
+  description: >-
+    Accept the pending machine id attributed to enrollment at this provider (ENR-007).
+    The engine calls it within root's admit-machine.v1 invocation after its checks, never
+    through a Conduit. Where the network supports approval, this permits machine traffic;
+    it grants no Conduit, credential or request (ENR-011).
+spec:
+  inputSchema:
+    type: object
+    properties:
+      id: {type: string, minLength: 1}
+      enrollment: {$ref: github.com/shrav-k/conduit/core#id.v1}
+    required: [id, enrollment]
+  effect: Accepts that machine on the provider's network.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: remove-machine.v1
+  description: >-
+    Remove the machine named by id from this provider's network (ENR-008). The engine calls
+    it only within root's refuse-machine.v1 invocation, never through a Conduit or on expiry.
+    A retirement or declaration of loss asks root first (ENR-012).
+spec:
+  inputSchema:
+    type: object
+    properties:
+      id: {type: string, minLength: 1}
+    required: [id]
+  effect: Removes that machine from the provider's network.

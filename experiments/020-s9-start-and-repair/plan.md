@@ -157,7 +157,7 @@ or subscription run is added and no tokens/private keys are captured.
   file archive install. A63-H is provider qualification, not this repair Resource. PSD, secret
   stores, 050/sign-in and the remote-node orders are not S9 prerequisites.
 - B2-S/C/H need the owner's rerun judgment before merging; no batch-2 forwarding, appointment,
-  indirect secrets or withhold behavior is used here. No M2-1–M2-4 answer is selected.
+  indirect secrets or withhold behavior is used here. Ruling 77 answered M2-1 to M2-4.
 
 ## The order of the work
 

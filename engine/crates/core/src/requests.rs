@@ -517,6 +517,9 @@ pub(crate) fn reject(
     if rule == "ACC-032" {
         t.reply["structuredContent"] = json!({"diagnostics":[{"ruleId":"ACC-032","level":"error","message":{"text":"ACC-032: the operation is reserved to root, including a Conduit opened for another consumer"}}]});
     }
+    if rule == "PRV-004" {
+        t.reply["structuredContent"] = json!({"diagnostics":[{"ruleId":"PRV-004","level":"error","message":{"text":"PRV-004: a Conduit cannot expose provider-only capabilities or operations; the engine alone invokes them"}}]});
+    }
     if rule == "OPS-029"
         && let Some(named) = missing_reference(route, c)
     {
@@ -899,9 +902,7 @@ fn invoke_inner(
         && (if op == c.qualified("retire.v1") {
             crate::retirement::needs_dispatch(&t.state, subject, c)
         } else {
-            subject["resolved_implementations"]
-                .as_object()
-                .is_some_and(|items| items.values().any(|v| v["source"] != "engine"))
+            crate::lifecycle::needs_dispatch(&t.state, subject, c)
         })
         && let Some(node) = crate::machines::unavailable_node(&t.state, subject)
     {

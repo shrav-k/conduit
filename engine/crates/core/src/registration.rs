@@ -889,6 +889,34 @@ impl References<'_> {
     }
 }
 
+// PRV-004 is keyed on qualified core references, including operations listed
+// through another capability. Read membership from the core contracts.
+pub(crate) fn provider_only(reference: &str, core: &str, environment: &Environment) -> bool {
+    [
+        "runtime-provider.v1",
+        "machine-provider.v1",
+        "package-source.v1",
+    ]
+    .into_iter()
+    .any(|name| {
+        reference == format!("{core}#{name}")
+            || environment
+                .scopes
+                .values()
+                .filter(|s| s.address == core)
+                .any(|s| {
+                    s.contracts.get(name).is_some_and(|cap| {
+                        list(&cap["spec"], "operations").iter().any(|op| {
+                            reference == op
+                                || op
+                                    .strip_prefix('#')
+                                    .is_some_and(|n| reference == format!("{core}#{n}"))
+                        })
+                    })
+                })
+    })
+}
+
 fn implementations(h: &Held, spec: &Value, kind: &str, core: &str) -> Checked<Value> {
     if kind == "Conduit" {
         let bounds: Vec<_> = items(spec, "requirements")
@@ -906,17 +934,29 @@ fn implementations(h: &Held, spec: &Value, kind: &str, core: &str) -> Checked<Va
                 format!("bound applied more than once: {}", bounds.join(", ")),
             ));
         }
-        let (ch, cap, _) = h.select(
+        let (ch, cap, capability) = h.select(
             spec["capability"].as_str().unwrap_or(""),
             "Capability",
             core,
         )?;
+        if provider_only(&capability, core, &h.environment) {
+            return Err(fault(
+                "PRV-004",
+                format!("Conduit capability {capability} is provider-only"),
+            ));
+        }
         let members = list(&cap["spec"], "operations")
             .iter()
             .map(|op| ch.select(op, "Operation", core).map(|(_, _, q)| q))
             .collect::<Checked<BTreeSet<_>>>()?;
         for op in list(spec, "operations") {
             let (_, _, q) = h.select(&op, "Operation", core)?;
+            if provider_only(&q, core, &h.environment) {
+                return Err(fault(
+                    "PRV-004",
+                    format!("Conduit operation {q} is provider-only"),
+                ));
+            }
             if !members.contains(&q) {
                 return Err(fault(
                     "CON-017",
@@ -1282,6 +1322,15 @@ fn resolve_instance(
             .iter()
             .map(|op| h.select(op, "Operation", core).map(|(_, _, q)| q))
             .collect::<Checked<Vec<_>>>()?;
+        if let Some(reference) = std::iter::once(&q)
+            .chain(operations.iter())
+            .find(|r| provider_only(r, core, &h.environment))
+        {
+            return Err(fault(
+                "PRV-004",
+                format!("Conduit {} lists provider-only {reference}", o["name"]),
+            ));
+        }
         if let Some(op) = operations.iter().find(|op| !members.contains(*op)) {
             return Err(fault(
                 "INS-023",

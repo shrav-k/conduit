@@ -128,7 +128,12 @@ trusted evidence, not the caller’s assertion that an effect failed.
 A run intent’s identity is a descriptor, with materializeFor, environmentNames and fileNames
 read from the current run contract. The core creates no credential or directory. The shell’s
 [`materialize_identity`](crates/shell/src/lib.rs) constructs the actual identity environment
-and files through its authority, for the named instance, using the store and engine URL.
+and files through its authority, for the named instance. The address and token audience follow
+the runner: the loopback URL for the engine’s own runner, the fixed `https` URL for a runtime
+provider. `materialize_provider_identity` gives no identity without that second address, but
+still writes the store owner’s helper token with the loopback audience. For provider runs,
+`ca.crt` holds the store’s root followed by the additional stored roots; own-runner runs get
+the store’s root alone.
 Keep credentials out of Decisions/records; names come from the contract, not copied literals.
 
 The shell loads bytes, supplies time/IDs and provider/process observations, owns durable
@@ -226,7 +231,14 @@ completions through the shell. Runtime providers and remote connections remain u
 missing/failed reports go through the core. The base S1 fixture used above has no executable
 Agent; [live S1](examples/s1/README.md) supplies the real-client wrappers instead.
 
-Config sets the engine address and output retention. CLI equivalents are `--url`,
+Config sets the engine addresses and output retention. `serve` alone accepts
+`--https-url URL`, a canonical `https` address with path `/mcp` and no loopback host, fixed at
+first use in `engine-https-url.json`; `--https-listen ADDRESS`, a second plain HTTP listener
+at `127.0.0.1:PORT` or `[::1]:PORT`, required whenever that address is in effect; and
+`--https-roots FILE`, checked CERTIFICATE PEM roots copied to `engine-https-roots.pem` for
+provider identities materialized afterwards. The second listener serves `/mcp` only, with its
+own sessions. Config fields are `engine_https_url`, `https_listen` and `https_roots`.
+The first address and output retention use CLI options `--url`,
 `--output-cap-bytes` and `--output-age-seconds`; defaults are a loopback address at port 3000
 with path /mcp, 64 MiB and seven days. Runner settings are `initialize_timeout` (30 seconds),
 `call_timeout` (120 seconds) and `pass_environment` (empty); CLI equivalents are

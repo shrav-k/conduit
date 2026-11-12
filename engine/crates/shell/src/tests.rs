@@ -1312,6 +1312,8 @@ fn killed_after_send_before_completion_commit() {
 
 #[path = "server_tests.rs"]
 mod http;
+#[path = "https_tests.rs"]
+mod https_tests;
 
 #[test]
 fn configured_trust_domain_survives_restart_and_cannot_be_replaced() {

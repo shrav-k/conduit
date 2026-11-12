@@ -2,11 +2,13 @@
 
 > **In short**
 > - S6-ACCESS: propose in-flight/consumer-revocation qualification to the admin.
-> - S6-DUTY: propose hook/stop/cascade/notice qualification to the admin.
+> - S6-DUTY1: propose retirement-duty V4 qualification.
+> - S6-DUTY2: propose cascade/notice V5 qualification.
+> - S6-END: propose missing runtime/setup-part and shell run-end fences after 077.
 > - S6-WIRE: propose end-to-end retirement/task/provider wire qualification to the admin.
 > - Admin A: coordinate S4's task orders and DSP, or resplit; recommendation: reuse both once.
 > - Admin B: keep cycles in the complete run and preserve PIN; recommendation: qualify existing DL1 after PIN.
-> - Owner: no new question; Q4 includes unordered and cyclic cases.
+> - Owner: Q4 includes unordered and cyclic cases; M2-3 holds provider-facing engine runs.
 
 ## Status
 
@@ -14,6 +16,8 @@ Written on 2026-11-11 by work order 118, against `main` at `31acd73`.
 A plan for the lane coordinators and the admin: it binds nothing, and changes nothing the owner
 accepted in [README.md](README.md). Orders that change `engine/` or `spec/` are proposals to the
 admin. No order named here has been dispatched.
+
+Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
 ## What `main` has now
 
@@ -32,7 +36,7 @@ set the remaining work. See [CONFORMANCE.md](../../engine/CONFORMANCE.md).
 | G3 safety field | Gap: IN_FORCE topic 13 still marks it spec pending. Manifest `safety_rows` does not name the required safety promise field. 071 → SV1 precedes writing these cases; SV4 applies. |
 | DL1 opening / deadlines / late completions | DL1 is decided for this engine above; DL2 late results and DL10 deadlines stay implementation choices. No missing portable cancellation, rollback or shutdown-deadline rule is assumed. |
 
-Tree status: order files 042, 049a1, 050a, 070–072, 075–082 and 038c are present but their
+Tree status: order files 042, 049a1, 050a, 070–072, 076–082 and 038c are present but their
 requested changes are absent: State still clones (`core/src/lib.rs:305`), pending/tombstone
 maps and manifest pieces are missing, Agent Codex's manifest is 0.1.1, and OPS-014 is unfenced
 (`spec/conventions/operations.yaml:286`). 081/082's commit subjects are not their work.
@@ -45,7 +49,17 @@ run overlap is an explicit limit of 081, not permission to retain new post-remov
 MC7b-001/002 need 082; records lost outside the engine must not be confused with purge/crash.
 These are existing findings, not new rulings. No S6 core order may settle them differently.
 
+Order 075 is merged (`55cf747`): an Agent Type states the reach of its client’s own tools.
+
 ## The orders
+
+A scenario vector goes in the core or shell order that makes it pass if that order stays at most L;
+otherwise an admin vectors order immediately follows it and depends only on the core and shell orders
+its cases need, never on a lane package, owner step or run. A provider-contract case goes in lane 8’s
+A63-VR, A63-VM, A63-VP or A63-VS suite in [the provider plan](../../docs/implementation/PROVIDERS.md).
+Every package this plan places under `packages/` is a scenario server: its directory is named
+`scenario-s6-...`, and its README says that it serves S6 and is not a provider for general use
+(the admin's rule, 2026-11-11).
 
 Sizes before pipeline fixes: XS <45 min, S 1–1.5 h, M 2–2.5 h, L 2.5–3.5 h.
 Estimated lines include fixtures/tests. Dispatch waits for a fresh skeptic's review of the split.
@@ -58,12 +72,14 @@ use the pinned engine toolchain. Vector expectations are authored from promises,
 | ID | Kind | What it does | Promises | Depends on | Size | Who | Starts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | S6-SRV | server | Ledger-backed onward/task/retire-hook fixture | ACC-034/039, TPL-009 | — | L, 600–800 lines | lane 8 | now |
-| S6-STOP | provider | Controlled runtime stop/report fixture | PRV-007/008/009/021 | 081, A63-H | M, 400–600 lines | lane 8 | after dependencies |
-| S6-ACCESS | core | Qualify close/retire/task/consumer boundaries | ACC-011/017–019/034/036/039, IFC-016 | PIN, 042, S4-TASK1, SV1 | M, 450–650 lines | admin | after dependencies |
-| S6-DUTY | core | Qualify shutdown, removal, cascades and notice | TPL-009/018, PRV-008, LIF-016/019/020/021, PND-007 | S6-ACCESS, 081, 077, 047, 082 | L, 650–850 lines | admin | after dependencies |
-| S6-WIRE | shell | Exercise actual task, retirement and runtime provider paths | IFC-016, ACC-034/039, PRV-008 | S6-DUTY, S4-TASK2, DSP, S6-SRV, S6-STOP | M, 400–600 lines | admin | after dependencies |
-| S6-H | harness | Deterministic branch/cascade scheduling | README P2–P5, M0–M2 | SCR, S6-SRV | M, 400–550 lines | lane 10 | after dependencies |
-| S6-RUN | run | Coordinator and fresh-author scripted runs | README P1–P5 | S6-H, S6-WIRE, SV4 | two runs, about 1 h each | lane 10 | after dependencies |
+| S6-STOP | provider | Kit runtime with fault-injecting backend; no new suite cases | PRV-007/008/009/025 | A63-RK, 081; A63-VR if running runtime suite | M, 350–550 lines | lane 8 | after dependencies |
+| S6-ACCESS | core | Close/retire/task/consumer qualification | CON-008, LIF-024, ACC-011/017–019/034/036/039, IFC-016 | PIN, 042, 081, S4-TASK1, FLT-D1, SV1 | M, 450–600 lines | admin | after rewritten 081 text |
+| S6-DUTY1 | core | Hook/stop/removal duties; V4 | TPL-009/018, PRV-008, LIF-016/019 | S6-ACCESS, 081, 077 | M, 350–550 lines | admin | after dependencies |
+| S6-DUTY2 | core | Cascade ordering and PND-007 notice; V5 | LIF-020/021, PND-007 | S6-DUTY1, 047 | M, 350–550 lines | admin | after dependencies |
+| S6-END | core | Proposed run-end fences across core and shell | OPS-014, PRV-009 | PIN, 077, DSP | L, 550–850 lines | admin | after dependencies, before WIRE |
+| S6-WIRE | shell | Task/retirement/runtime wire qualification with scripted servers | IFC-016, ACC-034/039, PRV-008 | S6-DUTY1/2, S4-TASK2, DSP, S6-END, S4-LATE, S9-CUT2 for T4 restart | M, 400–600 lines | admin | after dependencies |
+| S6-H | harness | Deterministic branch/cascade scheduling | README P2–P5, M0–M2 | SCR, S6-SRV, S6-STOP | M, 400–550 lines | lane 10 | after dependencies |
+| S6-RUN | run | Coordinator and fresh-author scripted runs | README P1–P5 | S6-H, S6-WIRE, S6-STOP, SV4 | two runs, about 1 h each | lane 10 | after dependencies |
 
 **S6-SRV.** Propose Rust `packages/scenario-s6-retirement/` with Cargo.toml, Cargo.lock,
 pinned toolchain, conduit.yaml, contracts.yaml, README and tests, in the existing package form.
@@ -73,39 +89,59 @@ the original call in flight; another holds completion, and a third holds the ret
 Allow original completion before releasing shutdown; lose one completion in a reset branch.
 No provider/engine policy here. Checks: package release/fmt/clippy, schema and install tests.
 
-**S6-STOP.** Propose one Rust provider crate `packages/provider-s6-stop/`, the same package
-files and provider-contract tests through A63-H. Start/report/stop one local fixture run per
-instance ID; gates hold before stop confirmation and can report unknown without implying stopped.
-Keep owed stops under PRV-021 while the instance exists; use 081's same-ID and failed-hook rules,
-never promise old/new-ID exclusion after removal. No task or production remote runtime replacement.
-Run release/fmt/clippy, provider vectors and package admission tests; DSP serves its engine calls.
+**S6-STOP.** One Rust `packages/scenario-s6-stop/` crate with its own lockfile/toolchain,
+using A63-RK's server/gate and a fault-injecting backend, not another gate implementation.
+Reuse S3-L2's deterministic provider fixture where it overlaps: share its recorded completion/
+owed-stop witness scripts through the harness, but engine orders keep their own internal
+fixture and never import a lane package. Add stop confirmation holds and unknown reports.
+Do not claim PRV-021 or add cases to A63's suites; persistence belongs to actual runtimes.
+If qualifying against the runtime suite, wait A63-VR and report declared/unimplemented cells.
+No old/new-ID exclusion after removal. Checks package release/fmt/clippy, admission, own
+scripted MCP tests and optional unchanged runtime suite; DSP serves its engine calls.
 
 **S6-ACCESS.** Core request/access/lifecycle tests with only scoped fixes; hot
 `core/src/requests.rs`, `access.rs`, `lifecycle.rs`, runner `conformance/src/lib.rs` and own
 manifest piece; registration.rs unchanged. Preserve actual original outcome/outputs; deny fresh,
 repeat, nested onward, later task fetch and task notification after closure using current authority.
+FLT-D1 owns the onward-call-after-close fix; ACCESS cites it and adds only S6 cases.
+Use deterministic engine-owned completions/scripted servers, no S6-SRV or STOP dependency.
+081 rewrites V2’s CON-008/LIF-024 and V3’s ACC-039 text; qualify the merged text.
 Owns V1 `s6-close-in-flight` (safety ACC-034), V2 `s6-retire-in-flight` (safety CON-008),
 V3 `s6-retired-consumer-onward` (safety ACC-039). Keep retire-chain exception narrow.
 Checks: engine release/fmt/clippy, tools checks, vector_delta and experiments/011 release tests.
 
-**S6-DUTY.** Core retirement/cascade/pending tests, hot requests.rs/lifecycle.rs/access.rs,
-runner lib.rs and own manifest piece; registration.rs unchanged. Qualify hook then stop whatever
-hook outcome, stopped/unknown/no-setup-ever, explicit further retirement/reconciliation, removal,
-retained records/data and unaffected neighbour. 081's failed hook plus successful stop is unknown.
-Owns V4 `s6-retirement-duties` (safety LIF-016) and V5 `s6-cascade-order` (safety LIF-021),
-including dependency failure blocking only successors, independent progress, unordered members,
-cycles, container last and PND-007 notice. No new tie order or retention after removal.
-Same checks as S6-ACCESS; false reconciliation waits for 077, notice for 047, removal for 081.
+**S6-DUTY1 / DUTY2.** Core retirement/cascade/pending tests with internal scripted fixtures;
+hot requests.rs/lifecycle.rs/access.rs, runner lib.rs/own pieces, no registration.rs.
+DUTY1 owns V4 `s6-retirement-duties` (safety LIF-016): hook then stop regardless of hook
+outcome, stopped/unknown/no-setup, explicit further retirement/reconciliation, removal,
+records/data and neighbour. A failed hook plus successful stop stays unknown under 081.
+DUTY2 owns V5 `s6-cascade-order` (safety LIF-021), including dependency failures, independent
+progress, unordered members/cycles/container last and PND-007 closed-Conduit notice IDs.
+No new ordering or post-removal custody. Same checks as ACCESS; 077 fences false reconciliation,
+047 supplies notice, 081 settles removal. Keep both M with vectors.
+
+**S6-END (proposed admin order; spans core and shell).** After 077, implement the fences it
+leaves out: core fences attempts/setup parts when their run is known ended, including
+PRV-009's stopped report made after dispatch;
+shell reports built-in runs stopped on their own exit, after a stop part, and after restart
+for runs known to have ended. No fence from a partition, node loss or unknown report alone.
+Hot core requests.rs/lifecycle.rs; shell runner.rs/lib.rs, server.rs only if report routing
+needs it; runner lib.rs/own manifest pieces only for needed assertions. Update CONFORMANCE's
+DL2/DL16 account; internal scripted runtime reports/child processes test each path. At most L,
+split before dispatch if actual scope exceeds it; engine release/fmt/clippy, vector delta,
+experiment 011 and tools checks. S4-LATE covers replies, END covers stopped runs/parts.
 
 **S6-WIRE.** Shell tests and only scoped retirement transport fixes; hot
 `shell/src/server.rs`, `runner.rs`, `lib.rs`; identity.rs and CLI command tables unchanged.
-Use DSP's provider calls rather than a second dispatcher. Authenticate task operations through
+Use DSP's provider calls with scripted task/runtime servers inside engine tests, no S6-SRV
+or S6-STOP dependency; S6-H qualifies those lane packages. Wait S6-END and S4-LATE, and
+S9-CUT2 because T4’s restart case uses its acknowledged lab repair cut. Authenticate task operations through
 S4-TASK2, deliver the original result while retire hook/stop are held, then test task-result and
 notification refusal after close. Qualify failure/unknown stop and ACC-039 on actual MCP paths.
 No additional named vector; all V1–V5 belong to their core orders. Checks: engine
 release/fmt/clippy, tools checks and provider/task wire regressions with barrier acknowledgements.
 
-**S6-H.** Rust driver under this experiment calls SCR for independently authenticated Agents;
+**S6-H.** Rust driver under this experiment qualifies S6-SRV/S6-STOP and calls SCR for independently authenticated Agents;
 root or an authorized non-root actor sends management requests through its own identity, never
 through an Agent impersonating root. Build dependent pair, independent third member, two Fleets
 and legal cycle; verify order by acknowledged events, not sleeps. Drive T1–T6, failures/unknowns,
@@ -130,43 +166,47 @@ No native client replay, subscription, second machine or account sign-in is adde
   082 supplies records/install corrections. Pending order files do not satisfy dependencies.
 - SV1 after 071 supplies safety metadata before writing cases; SV2/SV3 tag old/S1 evidence,
   SV4 requires every new order to carry its safety promise. All five S6 vectors are safety.
-- A63-H qualifies S6-STOP's provider contract; A63-RP can later supply the packaged ordinary
+- A63-RK supplies S6-STOP’s server/gate; it adds no A63 suite case. If it runs A63-VR,
+  that suite is a qualification prerequisite; A63-RP can later supply the packaged ordinary
   local runtime but the built-in runner already handles ordinary local branches. A63-MP/PS are
   optional package choices; no secret store or PSD https fetch is required.
 - DSP is shared provider dispatch, after its own prerequisites on the node side branch and PIN.
-  ADDR/AGT/049a-1/SSH-R/SSH-M are not independently required by S6's one-machine run. Respect
+  ADDR is required for the HTTPS address of DSP’s provider runs; AGT/049a-1/SSH-R/SSH-M
+  are not independent S6 requirements. Respect
   DSP's own dependencies without choosing answers to M2-1–M2-4. No remote machine is substituted.
 - B2-S/C/H are not prerequisites for ordinary close/retire or the non-root notice fixture.
   Do not use act-for authority not yet written/built. 050 and sign-in are unnecessary here.
 
 ## The order of the work
 
-After skeptic review, S6-SRV starts now, following SCR in the combined dispatch queue; S6-H
-follows those two. S6-STOP waits for 081/A63-H. Scenario core/shell/vectors wait for 053 → PIN,
-including batch 1's 052a-1/2 and 052b join, unless the admin chooses a side branch.
-Critical path: max(PIN, 042, SV1, S4-TASK1) → S6-ACCESS →
-max(S6-ACCESS, 081, 077, 047, 082) → S6-DUTY →
-max(S6-DUTY, S4-TASK2, DSP, S6-STOP, S6-SRV) → S6-WIRE → S6-RUN.
-S6-H joins the last run. The provider branch is 081 + A63-H → S6-STOP; no owner sign-in or
-batch-2 prerequisite. Pending fixes/core hot files merge serially through the admin; servers
-and harnesses can run beside them in two or three lanes. DL1 does not need another policy order.
+After review S6-SRV starts now; SCR1/2 join S6-H. A63-RK/081 → S6-STOP (A63-VR too if
+running its suite), with S3-L2 fixture reuse where available. Core/shell/vectors wait batch 1
+through 053 → PIN, including 052a-1/2/052b, unless admin assigns a side branch.
+PIN/042/081/SV1/S4-TASK1/FLT-D1 → ACCESS → DUTY1 → 047/DUTY2.
+077/DSP → END joins S4-LATE/S4-TASK2/S9-CUT2/DSP/DUTY1/2 → WIRE → RUN;
+H/STOP join RUN, and M2-3 gates live provider-run reachability, not scripted engine tests.
+Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin): ACCESS follows S5-C1, DUTY1/2 follow
+S5-C2; END spans both lanes after 077 and before WIRE. WIRE follows S9-CUT2 and the other
+shared shell work. No owner sign-in or batch-2 gate; no new DL1 policy.
 
 ## For the admin
 
-- **A — shared transport:** options are reuse S4 tasks plus DSP, or duplicate a local subset.
-  **Recommendation:** reuse once; review task and DSP merge dates before dispatch and sequence
-  S6-WIRE after their hot server.rs/runner.rs/lib.rs changes. If provider qualification pushes
-  S6-WIRE above L, split before dispatch, not by omitting uncertain-stop evidence.
-- **B — placement/completion:** options are full S6 after PIN, or preliminary partial evidence
-  on an isolated branch. **Recommendation:** full qualification after PIN, including existing
-  DL1 cycles and 081's settled text. No partial run counts as the full gate. Admin owns runner
-  and shared manifest integration even if a lane authors cases. Preserve starting vectors and
-  root tools until PIN. D4 needs no additional replay in S6; sister account questions stay open.
+- **A — shared transport and run ends:** reuse S4 tasks/DSP and add S6-END, or assign the
+  missing run-end/setup-part fence scope elsewhere. **Recommendation:** END after 077 and
+  before WIRE, with internal scripted fixtures; no engine order waits a lane package.
+  S4-LATE delivers terminal replies only and cannot substitute for END's stopped-run reports.
+- **B — placement:** full qualification after PIN under S4's canonical merge sequence;
+  **recommendation:** preserve existing DL1 cycles and final 081 text, with DUTY1/DUTY2 split.
+  Runner/shared-manifest integration stays admin's; no partial run counts as the full gate.
+
+Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
 
 ## For the owner
 
-None. Q4 already includes unordered and cyclic retirement once DL1 is documented, which it is.
-No new shutdown deadline, cancellation guarantee or M2-1–M2-4 answer is proposed.
+Q4 already includes unordered/cyclic retirement. **M2-3 remains held** for S6-STOP's live
+runtime-provider runs to reach the engine's HTTPS address (079/DSP); no TLS answer here.
+Scripted engine tests and other preparation do not wait. No new shutdown deadline or
+cancellation guarantee is proposed.
 
 ## Limits
 

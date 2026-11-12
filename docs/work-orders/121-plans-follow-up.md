@@ -355,3 +355,39 @@ grep -n -i -E "sister plans.*(absent|not( yet)? present|unwritten)" $F
 Report, for each lettered item, what you changed and where; each item you could not apply as
 written, with the reading you applied; and each new order or ID you introduced, as one of your
 own choices. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, from base 1b717c4: the worker in 20 minutes (1184 s) and a fresh
+verifier in 7 minutes (433 s); then a second worker round in 2 minutes (104 s) and a fresh
+verifier in 4 minutes (235 s), which found nothing to change. Round one's must: S8-V still
+depended on S8-A, an owner step, against A.2; round two removed it, keeping S8-A before the
+adapters. Its should: S3's run gate and critical path lacked A63-MDIS, the engine's dispatch of
+`place.v1` and `list-machines.v1`; round two added it. Neither verifier's sandbox could run the
+unit suite; the lane coordinator ran every check of "Done when" on the result, all clean.
+
+The ten plans now carry the admin's four answers and the accepted fixes of the four split
+reviews, as the decisions above list. The plans run from 175 to 253 lines, and PROVIDERS.md to
+326.
+
+**The lane coordinator's decision, accepted by the admin (2026-11-11):** the code the runtime
+providers share is a crate of its own, A63-RK, `packages/runtime-provider-kit/`, built first on
+lane 8 in two parts (its server and backend interfaces; its gate). A63-RP, A63-DR, SSH-R and
+S6's stop provider depend on it by path, and no provider crate depends on another's. This
+refines the admin's earlier answer that SSH-R reuse A63-RP's library.
+
+**Added by the lane coordinator, at the admin's answer of 2026-11-11 on scenario servers:** a
+package that serves a scenario goes under `packages/` with a directory named `scenario-sN-...`,
+and its README says that it serves that scenario and is not a provider for general use. The
+coordinator renamed the planned directories (S2's restriction contracts, its Linear aware
+implementation and its adapter; S8's contracts and its two adapters; S6's stop provider) and
+added the rule at the head of "The orders" in the plans of S2, S4, S5, S6, S8 and S9.
+
+The admin accepted as proposals the rule for where a scenario vector goes, the rule that no
+engine order depends on a lane package, and the merge order for the hot files kept in S4's plan.
+It takes into its lane, after the pin, the three admin orders the reviews added: the engine's
+dispatch of `place.v1` and `list-machines.v1` (A63-MDIS), the fences that follow a run's end, and
+S1's servers on the second machine and in Docker.
+
+Merged at the admin's word. Dispatch now follows the admin's order: A63-RK and A63-H1, then the
+local providers, then the scenario servers.

@@ -1,0 +1,771 @@
+{
+  "definitions": {
+    "id.v1": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "implementation-item.v1": {
+      "$defs": {
+        "bindings": {
+          "additionalProperties": {
+            "$ref": "#/$defs/pointer.v1"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "type": "object"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/selection.v1"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "dependentRequired": {
+        "headers": [
+          "remote"
+        ],
+        "packageArguments": [
+          "package"
+        ]
+      },
+      "dependentSchemas": {
+        "environment": {
+          "not": {
+            "required": [
+              "remote"
+            ]
+          }
+        },
+        "package": {
+          "properties": {
+            "package": {
+              "else": {
+                "required": [
+                  "fileSha256"
+                ]
+              },
+              "if": {
+                "properties": {
+                  "registryType": {
+                    "const": "oci"
+                  }
+                },
+                "required": [
+                  "registryType"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "identifier": {
+                    "pattern": "@sha256:[a-f0-9]{64}$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "required": [
+            "tools"
+          ]
+        },
+        "properties": {
+          "headers": {
+            "propertyNames": {
+              "not": {
+                "pattern": "^[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]$"
+              }
+            }
+          },
+          "remote": {
+            "properties": {
+              "url": {
+                "pattern": "^https://"
+              }
+            }
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "plain": {
+            "const": true
+          }
+        },
+        "required": [
+          "plain"
+        ]
+      },
+      "oneOf": [
+        {
+          "required": [
+            "command"
+          ]
+        },
+        {
+          "required": [
+            "package"
+          ]
+        },
+        {
+          "required": [
+            "remote"
+          ]
+        }
+      ],
+      "properties": {
+        "command": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "environment": {
+          "$ref": "#/$defs/implementation-item.v1/$defs/bindings"
+        },
+        "headers": {
+          "$ref": "#/$defs/implementation-item.v1/$defs/bindings"
+        },
+        "implements": {
+          "$ref": "#/$defs/implementation-item.v1/$defs/references"
+        },
+        "nodeSelector": {
+          "$ref": "#/$defs/labels.v1"
+        },
+        "package": {
+          "$ref": "#/$defs/server-package.v1"
+        },
+        "packageArguments": {
+          "$ref": "#/$defs/implementation-item.v1/$defs/bindings"
+        },
+        "plain": {
+          "type": "boolean"
+        },
+        "remote": {
+          "$ref": "#/$defs/server-remote.v1"
+        },
+        "supports": {
+          "$ref": "#/$defs/implementation-item.v1/$defs/references"
+        },
+        "tools": {
+          "additionalProperties": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/selection.v1"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "implements"
+      ],
+      "then": {
+        "not": {
+          "required": [
+            "supports"
+          ]
+        },
+        "required": [
+          "tools"
+        ]
+      },
+      "type": "object"
+    },
+    "labels.v1": {
+      "additionalProperties": {
+        "maxLength": 63,
+        "pattern": "^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$",
+        "type": "string"
+      },
+      "propertyNames": {
+        "maxLength": 317,
+        "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?[A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$",
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "pointer.v1": {
+      "pattern": "^(/([^/~]|~[01])*)*$",
+      "type": "string"
+    },
+    "qualified-reference.v1": {
+      "allOf": [
+        {
+          "pattern": "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(/[a-z0-9][a-z0-9._-]*)*#[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+        },
+        {
+          "not": {
+            "pattern": "^[^/#]*\\.[0-9]+([/#]|$)"
+          }
+        },
+        {
+          "pattern": "#[a-z0-9.-]{1,63}$"
+        }
+      ],
+      "type": "string"
+    },
+    "selection.v1": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/qualified-reference.v1"
+        },
+        {
+          "maxLength": 64,
+          "pattern": "^#[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$",
+          "type": "string"
+        }
+      ]
+    },
+    "server-package.v1": {
+      "$defs": {
+        "argument": {
+          "anyOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/server-package.v1/$defs/inputWithVariables"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "valueHint"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "value"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "isRepeated": {
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "const": "positional"
+                    },
+                    "valueHint": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/server-package.v1/$defs/inputWithVariables"
+                },
+                {
+                  "properties": {
+                    "isRepeated": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "const": "named"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "name"
+                  ],
+                  "type": "object"
+                }
+              ]
+            }
+          ]
+        },
+        "input": {
+          "properties": {
+            "choices": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "default": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "format": {
+              "enum": [
+                "string",
+                "number",
+                "boolean",
+                "filepath"
+              ]
+            },
+            "isRequired": {
+              "type": "boolean"
+            },
+            "isSecret": {
+              "type": "boolean"
+            },
+            "placeholder": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "inputWithVariables": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/server-package.v1/$defs/input"
+            },
+            {
+              "properties": {
+                "variables": {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/server-package.v1/$defs/input"
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            }
+          ]
+        },
+        "keyValueInput": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/server-package.v1/$defs/inputWithVariables"
+            },
+            {
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "properties": {
+        "environmentVariables": {
+          "items": {
+            "$ref": "#/$defs/server-package.v1/$defs/keyValueInput"
+          },
+          "type": "array"
+        },
+        "fileSha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "packageArguments": {
+          "items": {
+            "$ref": "#/$defs/server-package.v1/$defs/argument"
+          },
+          "type": "array"
+        },
+        "registryBaseUrl": {
+          "format": "uri",
+          "type": "string"
+        },
+        "registryType": {
+          "type": "string"
+        },
+        "runtimeArguments": {
+          "items": {
+            "$ref": "#/$defs/server-package.v1/$defs/argument"
+          },
+          "type": "array"
+        },
+        "runtimeHint": {
+          "type": "string"
+        },
+        "transport": {
+          "anyOf": [
+            {
+              "properties": {
+                "type": {
+                  "const": "stdio"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "headers": {
+                  "items": {
+                    "$ref": "#/$defs/server-package.v1/$defs/keyValueInput"
+                  },
+                  "type": "array"
+                },
+                "type": {
+                  "const": "streamable-http"
+                },
+                "url": {
+                  "pattern": "^https?://[^\t\n\u000b\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "url"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "version": {
+          "minLength": 1,
+          "not": {
+            "const": "latest"
+          },
+          "type": "string"
+        }
+      },
+      "required": [
+        "registryType",
+        "identifier",
+        "transport"
+      ],
+      "type": "object"
+    },
+    "server-remote.v1": {
+      "$defs": {
+        "input": {
+          "properties": {
+            "choices": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "default": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "format": {
+              "enum": [
+                "string",
+                "number",
+                "boolean",
+                "filepath"
+              ]
+            },
+            "isRequired": {
+              "type": "boolean"
+            },
+            "isSecret": {
+              "type": "boolean"
+            },
+            "placeholder": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "keyValueInput": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/server-remote.v1/$defs/input"
+            },
+            {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "variables": {
+                  "additionalProperties": {
+                    "$ref": "#/$defs/server-remote.v1/$defs/input"
+                  },
+                  "type": "object"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "properties": {
+        "headers": {
+          "items": {
+            "$ref": "#/$defs/server-remote.v1/$defs/keyValueInput"
+          },
+          "type": "array"
+        },
+        "type": {
+          "const": "streamable-http"
+        },
+        "url": {
+          "format": "uri",
+          "pattern": "^https?://[^\t\n\u000b\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+$",
+          "type": "string"
+        },
+        "variables": {
+          "additionalProperties": {
+            "$ref": "#/$defs/server-remote.v1/$defs/input"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "type",
+        "url"
+      ],
+      "type": "object"
+    }
+  },
+  "operations": {
+    "inspect-run.v1": {
+      "inputSchema": {
+        "properties": {
+          "instance": {
+            "$ref": "#/$defs/id.v1"
+          },
+          "machine": {
+            "properties": {
+              "hostname": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "labels": {
+                "$ref": "#/$defs/labels.v1"
+              }
+            },
+            "required": [
+              "hostname",
+              "labels"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "instance",
+          "machine"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "state": {
+            "enum": [
+              "running",
+              "stopped",
+              "unknown"
+            ]
+          },
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "type": "object"
+      }
+    },
+    "run.v1": {
+      "inputSchema": {
+        "properties": {
+          "environment": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "identity": {
+            "additionalProperties": false,
+            "properties": {
+              "environment": {
+                "additionalProperties": false,
+                "properties": {
+                  "CONDUIT_IDENTITY_DIR": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "CONDUIT_URL": {
+                    "format": "uri",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "CONDUIT_URL",
+                  "CONDUIT_IDENTITY_DIR"
+                ],
+                "type": "object"
+              },
+              "files": {
+                "additionalProperties": false,
+                "properties": {
+                  "ca.crt": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "engine-id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "jwks.json": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "tls.crt": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "tls.key": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "token": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "ca.crt",
+                  "jwks.json",
+                  "engine-id",
+                  "token"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "environment",
+              "files"
+            ],
+            "type": "object"
+          },
+          "instance": {
+            "$ref": "#/$defs/id.v1"
+          },
+          "item": {
+            "$ref": "#/$defs/implementation-item.v1"
+          },
+          "machine": {
+            "properties": {
+              "hostname": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "labels": {
+                "$ref": "#/$defs/labels.v1"
+              }
+            },
+            "required": [
+              "hostname",
+              "labels"
+            ],
+            "type": "object"
+          },
+          "packageArguments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "secrets": {
+            "properties": {
+              "environment": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              "packageArguments": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "instance",
+          "item",
+          "identity",
+          "machine"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      }
+    },
+    "stop.v1": {
+      "inputSchema": {
+        "properties": {
+          "instance": {
+            "$ref": "#/$defs/id.v1"
+          },
+          "machine": {
+            "properties": {
+              "hostname": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "labels": {
+                "$ref": "#/$defs/labels.v1"
+              }
+            },
+            "required": [
+              "hostname",
+              "labels"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "instance",
+          "machine"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

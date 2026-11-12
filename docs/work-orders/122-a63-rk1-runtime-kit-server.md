@@ -174,3 +174,24 @@ git status --porcelain --ignored $D | grep target/ | grep -v '^!!'
 
 `target/` stays ignored and unstaged. Report each choice of decision 5 and each behavior left open
 as a finding, and each interface name as one of your own choices. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, from base bb84a46, beside order 123: the worker in 22 minutes
+(1312 s) and a fresh verifier in 5 minutes (294 s); then a second worker round in 6 minutes
+(333 s) and a fresh verifier in 8 minutes (483 s). The result is
+`packages/runtime-provider-kit/`: the MCP server for `runtime-provider.v1`, its backend
+interfaces (declaration, staging, start with a duplex channel, stop, state, the state store and
+the gate handle), the copied schemas with a drift test, and its tests.
+
+Round one's four musts were fixed in round two: the cancellation epoch of a start is taken before
+its first await; shutdown cleans up from held contexts when the ledger cannot be read; a stop
+goes ahead when the ledger is unreadable; and a call's machine labels refresh the records for its
+hostname. Round two's verifier left three musts and one should, all in how the server keeps its
+stop promises when its state store fails (PRV-021); order 124 closed them, and this order merged
+with it as one change.
+
+The worker's findings, for order 081 and the runtimes' contracts: a repeated run's answer, a
+stop's permanence and the cancellation of a pending start are the kit's choices until 081
+settles them (each behind one function); the lifetime and restart policy, the startup sweep and
+the drain's schedule are a runtime's to state in its contract.

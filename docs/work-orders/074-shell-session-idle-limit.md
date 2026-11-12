@@ -76,3 +76,13 @@ In `engine/`:
 
 Report the totals passed and failed. Tests that bind loopback ports may fail in your sandbox; if
 they do, say so, and the admin reruns them. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on a heavily loaded Mac: the worker in 8 hours, nearly all of it full test runs
+of the slow engine (finding 4-18, which order 070 fixes), then a fresh verifier who found nothing to
+fix. The engine's MCP session manager now keeps a session alive for `call_timeout` plus 60 seconds,
+so a call longer than rmcp's 300-second idle default is no longer cancelled when its session
+expires; where no longer duration is representable, the idle limit is off. Found while planning
+A78, it was the blocker for Conduit running its own work orders. CONFORMANCE.md's DL10 has the
+session idle limit; the finding is logged.

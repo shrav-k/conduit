@@ -826,3 +826,55 @@ mod remaining_fault_hook_tests {
         assert!(actions.contains(&Action::Heal(1, 2)));
     }
 }
+
+/// First one-thread BFS witness, bounded and serialized like `assert_refuted`.
+/// This is reachability evidence, with no liveness or extra safety assertion.
+pub fn assert_reached<P: Protocol>(
+    mut model: Harness<P>,
+    name: &'static str,
+) -> Vec<Action<P::Local>> {
+    let _lock = CHECK_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    model.config.validate();
+    assert_eq!(model.property(name).expectation, Expectation::Sometimes);
+    let condition = model.property(name).condition;
+    let pure = model.clone();
+    let guard = Arc::new(Guard {
+        started: Instant::now(),
+        seen: Mutex::new(HashSet::new()),
+        truncated: Mutex::new(None),
+        first_found: Mutex::new(false),
+    });
+    model.guard = Some(guard.clone());
+    let first = Arc::new(Mutex::new(None));
+    let captured = first.clone();
+    let control = guard.clone();
+    let checker = model
+        .checker()
+        .threads(1)
+        .finish_when(HasDiscoveries::AnyOf(BTreeSet::from([name])))
+        .visitor(move |path: Path<System<P>, Action<P::Local>>| {
+            let mut first = captured.lock().unwrap();
+            if first.is_none() && condition(&pure, path.last_state()) {
+                *first = Some(path.into_actions());
+                *control.first_found.lock().unwrap() = true;
+            }
+        })
+        .spawn_bfs()
+        .join();
+    assert!(
+        guard.truncated.lock().unwrap().is_none(),
+        "witness run truncated"
+    );
+    assert!(guard.started.elapsed() < checker.model().config.timeout);
+    assert!(
+        checker.discoveries().contains_key(name),
+        "expected witness: {name}"
+    );
+    let trace = first
+        .lock()
+        .unwrap()
+        .take()
+        .expect("first witness recorded");
+    print_trace(checker.model(), &trace);
+    trace
+}

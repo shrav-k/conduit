@@ -93,3 +93,14 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer, stacked on order 113's last commit (14a9665): the
+worker, then a fresh verifier; one round, with no fault found. R4 now checks purge evidence
+against the saved snapshots at the purge's source. A repeat answered from its key logs and saves
+the end of a request with no dispatch, while a fresh dispatch logs its dispatch and its end.
+Each fix has a variant that its property refutes: OmitPurgeRecord, in 8 actions, and
+OmitRepeatRecord, in 14. All 53 of MC7b's full runs matched their registered verdicts. The lane
+coordinator merged orders 113 and 115 together, joined the crate with the models on main, and
+reran it under the pinned toolchain with the repository's checks.

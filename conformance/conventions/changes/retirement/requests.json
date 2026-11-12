@@ -77,7 +77,7 @@
             "kind": "instance",
             "id": "00000000-0000-4000-8000-000000000005"
           },
-          "tool": "management.set-up.v1",
+          "tool": "s1.set-up.v1",
           "arguments": {
             "instance": {
               "kind": "Agent",
@@ -149,7 +149,7 @@
             "kind": "instance",
             "id": "00000000-0000-4000-8000-000000000005"
           },
-          "tool": "management.set-up.v1",
+          "tool": "s1.set-up.v1",
           "arguments": {
             "instance": {
               "kind": "Agent",

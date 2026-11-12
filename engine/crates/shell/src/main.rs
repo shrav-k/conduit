@@ -361,7 +361,8 @@ fn set_up_instances(
             if shutdown.is_some_and(|s| s.is_cancelled()) {
                 return Ok(success);
             }
-            let tool = if kind == "Resource" {
+            // ACC-033 rows 4/4A: member setup uses its owning container.
+            let tool = if kind == "Resource" || kind == "Agent" {
                 let route = state.objects.iter().find(|v| {
                     v["kind"] == "Conduit"
                         && reference_id(&v["consumer"]) == &json!(root)

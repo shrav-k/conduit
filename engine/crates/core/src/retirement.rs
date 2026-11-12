@@ -15,11 +15,13 @@ pub(crate) fn preflight(
     if unregister && o["state"] != "retired" {
         return Some(("conflict", "LIF-017"));
     }
-    if o["kind"] == "Pool"
+    if (o["kind"] == "Pool" || o["kind"] == "Fleet")
         && !unregister
-        && s.objects
-            .iter()
-            .any(|x| x["kind"] == "Resource" && access::id(&x["owner"]) == &o["id"])
+        && s.objects.iter().any(|x| {
+            (x["kind"] == "Resource" || x["kind"] == "Agent")
+                && access::id(&x["owner"]) == &o["id"]
+                && x["shutdown"] != "confirmed"
+        })
     {
         return Some(("conflict", "LIF-020"));
     }
@@ -52,7 +54,11 @@ pub(crate) fn blocking_diagnostic(s: &State, route: &Value, rule: &str) -> Optio
     let blockers: Vec<_> = s
         .objects
         .iter()
-        .filter(|x| x["id"] != object["id"] && access::id(&x[field]) == &object["id"])
+        .filter(|x| {
+            x["id"] != object["id"]
+                && access::id(&x[field]) == &object["id"]
+                && (rule != "LIF-020" || x["shutdown"] != "confirmed")
+        })
         .map(|x| {
             format!(
                 "{}/{} ({})",
@@ -321,7 +327,8 @@ fn settle(
         json!({"outcome":outcome,"parts":parts}),
     )?;
     t.state.invocations[i]["retirement"]["phase"] = json!("ended");
-    requests::finish(t, a, c, i, outcome, json!({}), json!([]))
+    requests::finish(t, a, c, i, outcome, json!({}), json!([]))?;
+    crate::cascade::child_ended(t, a, c, i)
 }
 pub(crate) fn hook_ended(
     t: &mut Transition,

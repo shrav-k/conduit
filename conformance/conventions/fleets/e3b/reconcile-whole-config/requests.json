@@ -1,0 +1,326 @@
+{
+  "requests": [
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "s1.reconcile.v1",
+          "arguments": {
+            "invocation": "00000000-0000-4000-8000-000000008805",
+            "occurred": true,
+            "checked": "observed",
+            "revision": "current"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "284274a7-e4a6-5c1b-95e3-c3ead2798571",
+            "3abc2722-5ac8-52ba-b0a8-8e109c657e1a",
+            "5bd48357-0a36-5e5a-9164-ce2fad06e533",
+            "06d03560-335d-5a80-9b42-c03551c1ec01",
+            "16c3804b-b4d5-5547-8f2e-9a30ef6f30fa",
+            "526a6625-3e0f-5c3c-99ac-eda4ff3fd8f9",
+            "33751bcc-7914-5f6e-bdeb-d6242a23da8d",
+            "c42945f9-2ab0-505c-aaac-8c11fe461d2a",
+            "c163e344-3292-5bba-b0f6-89255c413196",
+            "fcc5f413-9b95-5b51-9f92-6431a45d4dcf",
+            "bee40243-6894-5af9-8622-47e31d4ea5fa",
+            "2ab7b1e9-8ade-5ae4-9776-5a236396c4ee",
+            "99ee22c7-7a39-5975-b63a-008c202c5531",
+            "5c01962d-765b-5499-b351-a7fa02c23453",
+            "78a85c55-b336-5645-95fa-cd98b638f993",
+            "3fbf2bf2-53f6-5cbd-9d8c-2c55f4c1e4d6",
+            "38b20e7f-dda5-55f5-8dfc-95a6651b70ce",
+            "9a9fccc1-998a-5ea9-9f0e-8f32edf2e454",
+            "6888b51c-c4bf-5d33-b8be-f7bfdb3ee79c",
+            "d6891db7-e43e-5f86-9c01-1b546459365c",
+            "9bcc475d-51b0-5234-ba66-da061e561af3",
+            "661fc521-9408-5967-814f-2ce22d0dd1b3",
+            "c4915c8a-b90f-5bb7-ae59-ff0ba9b3afa1",
+            "343c3140-e8a5-54ab-b786-da120026e09b",
+            "ff297069-787c-57db-84a4-e39056d7a904",
+            "f970b5b2-e11b-5b93-af37-e0da6f2d69c1",
+            "18142d9c-48c7-5278-8504-ab15f3b6b8e2",
+            "3672a3e3-1b9a-5639-a93c-cd8119e24130",
+            "25bcb929-4296-5e27-99e4-c901a071401e",
+            "5ae5e71a-2ff8-5fc0-8a33-ac600947e9bc",
+            "8c37de3b-47ec-5c8f-8779-97e40b89114f",
+            "bbd9f9f3-99f4-596e-8247-c5c44f97137b",
+            "2fef560f-04a7-5ea5-834c-c02fdebca201",
+            "7a4b540f-48b9-55ad-a1fc-aebfea7f5d6f",
+            "12639bf9-2f6d-505f-a789-e6b9319f302c",
+            "a74d86c3-82d3-5fe1-a2fa-8c8a538eddfb",
+            "24e429fc-148e-57a8-aadf-3cef78cd1a3b",
+            "9dd340b8-57a1-578c-8a96-ae4eeaaca3e6",
+            "a14eca73-93d2-5538-a6e5-d8624645c086",
+            "17e5efbc-550a-5874-b230-d8ef6a99cb3a",
+            "41958be9-1e04-5b16-b0ae-24fe2f209ac8",
+            "f2d32874-9578-584a-81bd-6172338738c3",
+            "a247bac8-854a-5e27-88af-8979d494e0c3",
+            "14dd2f89-509a-54ec-98d1-60586989ae38",
+            "9b2b1e58-43df-5642-98bb-f8ae9451ac64",
+            "2b9096fa-c1a4-5d55-932c-785410eebc7f",
+            "6bc77a9a-9551-546d-9d9f-f95385e0521c",
+            "2fc3dbda-e85d-5133-8868-2e69fdd70452",
+            "c889d9cf-ebf3-5c8a-b3be-9d6502216581",
+            "d9c241fe-7949-5410-8224-ef67f970db7e",
+            "e39ac52b-c3ac-5cb2-b467-dd15263b309a",
+            "36b92ccf-a0d6-5177-978a-f3dfa93f134b",
+            "a7506ee2-bb07-536d-8677-08ae73354d5a",
+            "635fd347-a6d1-5056-b32b-d5ee5ed60675",
+            "e4f9d23c-ec3a-5077-a97f-2738f2ea84ac",
+            "31c3fda2-754b-504a-828b-6c0b006c7ef5",
+            "66fe6285-396e-5f81-b663-39fb44b913da",
+            "15d36265-482b-5962-bd4d-f1865234c0fe",
+            "2862006e-c51e-5ca2-8658-e667d53eb6be",
+            "7c91b07f-f726-56ec-8929-f6cf83b42af1",
+            "a3aeda7c-6f2f-5f68-bc21-644db9cd0549",
+            "7fac5c6b-e1a7-52b4-90ed-bb74a4a06e90",
+            "45963125-adee-50c5-b262-f6d2e205c752",
+            "9e093ecf-d792-5fb9-9bf5-89e97dd0134e",
+            "45f7666d-d44c-5fd8-8b1a-f683c723a105",
+            "bd88c677-c198-5f98-9e5b-43c1a0b6b463",
+            "c1ba5023-1e8d-5705-84f5-fb31a9f1e364",
+            "0b57a790-22f2-59d4-a8c0-29a3af23ddf3",
+            "570600b7-41cb-55b1-9e68-47f27ed8702a",
+            "52c2c933-a771-5c2d-b3ca-3f4be855b855",
+            "5b064e1f-70bb-5d7e-b466-94aea44c8cda",
+            "378d8ecc-a4cc-527b-b19c-ff97d49aa21d",
+            "8d138e52-2eb8-5082-9778-a01da45b1ca5",
+            "6b071843-8f2a-5e4f-9275-661cfe5faf27",
+            "47de14fd-ff98-5635-8678-efb5fc99fd3a",
+            "7f4d99aa-f278-5d2b-8414-1eec194bc63e",
+            "8240f591-ec45-5c4a-bc14-3f606188c39b",
+            "85e36e85-ce96-5b1d-a7f0-302cfac3126f",
+            "1636a909-adb1-5ea8-8ff0-fb29ad71381f",
+            "59e2c3da-a96b-5c0e-9b0a-5bef064bee83"
+          ],
+          "revisions": [
+            "041b-reconcile-control-4-0",
+            "041b-reconcile-control-4-1",
+            "041b-reconcile-control-4-2",
+            "041b-reconcile-control-4-3",
+            "041b-reconcile-control-4-4",
+            "041b-reconcile-control-4-5",
+            "041b-reconcile-control-4-6",
+            "041b-reconcile-control-4-7",
+            "041b-reconcile-control-4-8",
+            "041b-reconcile-control-4-9",
+            "041b-reconcile-control-4-10",
+            "041b-reconcile-control-4-11",
+            "041b-reconcile-control-4-12",
+            "041b-reconcile-control-4-13",
+            "041b-reconcile-control-4-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "patches": [
+        {
+          "name": "agent-a",
+          "set": {
+            "revision": "current"
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008805",
+          "target": "00000000-0000-4000-8000-000000000109",
+          "operation": "example.org/control#set.v1",
+          "state": "unknown",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "contract": {
+            "spec": {
+              "changes": {
+                "setting": ""
+              }
+            }
+          },
+          "arguments": {
+            "setting": {
+              "accountServices": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "s1.reconcile.v1",
+          "arguments": {
+            "invocation": "00000000-0000-4000-8000-000000008805",
+            "occurred": true,
+            "checked": "observed",
+            "revision": "current"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "33bb7304-469a-54b0-acc1-2f1804d53c22",
+            "c8fce331-e04d-5e01-8e83-f381a0a6a725",
+            "7170863f-eb28-5a9a-922f-cb77d00746ac",
+            "2a2263ed-43e6-5262-93af-8daf6e4224a3",
+            "a880afed-cbd9-5172-be7f-f232c43f11f4",
+            "8e1b8f11-83bb-5188-9e5c-ea34a06c4ed3",
+            "fb32a43f-9c51-56bb-bcc0-976c7bce932d",
+            "bd46ccd7-70d1-5590-b168-b564e0cb5de6",
+            "f1a4c30a-2125-590a-85d5-b6daa9277c19",
+            "e38bf4bf-6056-5447-9c71-1c30e3367959",
+            "44de8e39-2800-5c93-82d5-3b89d7e26f63",
+            "32b11c1c-3a4b-5f94-984f-bd1ee9f41207",
+            "62b43c01-4f65-5b44-9e7f-e57e4a2f0866",
+            "694cc336-7e85-5c46-88c2-62ca3922142e",
+            "b045cae6-1043-5945-99c3-47448d98a043",
+            "cb7c4641-5767-5d95-8d40-58d4e5d0bde8",
+            "d7c47ef6-59a3-5719-a611-1488b18cd530",
+            "b2c9c0d0-6de1-576c-a011-3ea85fb1b301",
+            "29bb8a25-1716-55b7-bf57-5f0e3c40a90c",
+            "939d3984-abaf-57e9-9796-793b3bf49778",
+            "1c63e81a-bddb-5fb9-983b-828bdaf943ee",
+            "2b7b704e-00c8-5c51-892e-da409f72c3c9",
+            "4b5f1f21-fc45-5dbd-95c4-f3ae9a60ad84",
+            "4224f415-e5f7-5475-9dc0-ff073e2d7a45",
+            "9ff9793f-cf07-5652-aea7-ea79b42c770c",
+            "00fa3569-0dd8-558e-b353-d3b8676973e7",
+            "202a5d51-d2af-5428-8714-d6a3dd44673e",
+            "8952a0df-af4c-50cf-84f2-445b0976548a",
+            "9028ef1a-8cf1-5038-8b3e-f4c3d871b65a",
+            "65222634-dfab-5a7a-a1a3-c4e53ff76871",
+            "207c5251-b873-5d3c-a96d-9314fb6b5111",
+            "b78c4e5e-6ddf-5506-81fc-ded23c65eb60",
+            "14d5bc0f-00ea-5041-a8bb-b75a0a29795d",
+            "71f8b9a3-ed2e-5c27-93c0-460b0ae315ef",
+            "1b66944d-43ed-576e-96d2-264c6d4e8b65",
+            "70907a12-eed0-5d1c-a1ba-07085f281ff2",
+            "39c56a3c-ba73-5fed-9e3b-fb61305b4694",
+            "29cb9947-c3b9-5b18-a3f6-945972eea812",
+            "b6a1f48c-bd2e-5321-ae35-75fc839e6d00",
+            "e033b867-b5a2-50f3-93d7-dd80ceb18f89",
+            "8cff9dc8-01c4-5290-a101-215148923906",
+            "33cf830d-47fd-5945-ad89-33d9f2ead83f",
+            "86f29fe8-2945-596a-8e13-a9073d888a34",
+            "3a544849-f57f-5313-be9d-bcae8fc6ac37",
+            "b0998c4d-2cce-53b1-ab2a-4046cb8a3c35",
+            "3e0618ab-eed0-53f2-bcac-018f469325f3",
+            "67b19b73-be60-52e6-a7f9-28d96d7dd072",
+            "ee4996fd-39ae-5fe1-974e-609dfb07ae72",
+            "774f5e77-62b2-53f4-a35b-67766733cd27",
+            "455082bf-b38d-5bc1-bf91-129936ed6c8f",
+            "2eb8e20c-cd4b-542a-9c78-06cab4602504",
+            "03366caf-77f2-5a47-b636-290763f8da61",
+            "b42beedf-73dd-5f42-9696-7246ee37d5de",
+            "ce34fc88-c635-5ff7-94ce-9a54cd4d0773",
+            "135a8301-3d3c-55d0-b5fb-32f55b2801f8",
+            "19d3f709-98b1-5fec-9f09-5e4c9aec6f42",
+            "9182d81a-b862-5c1a-9446-d1e8e581f3e1",
+            "00da35e2-2569-5dfe-b355-7a72b23fd395",
+            "98dd038e-2a03-5b3c-8860-2dda1100739a",
+            "ae2af1a3-258e-5a46-aca8-9453edc9e3a9",
+            "99d40396-b2dd-58cd-a05d-86e7ade11ab9",
+            "593ae308-377a-5843-adb6-7a7297f1c742",
+            "346b397e-23f5-5c48-b347-a9e874068ed5",
+            "2a2ee088-0891-5e8d-9c7e-d585f8dff355",
+            "2e373401-987a-5ba3-9eb0-89aed43ba979",
+            "3f28a966-0372-5099-8b4f-fec335f590a0",
+            "25016d26-abbe-5a59-8307-fb33355458b2",
+            "f8925f6b-1a6f-5a3b-87a8-06744a1e7559",
+            "b187a35b-a44f-55b1-b279-c0ef8cd41dcd",
+            "9091b3f0-8036-5ea1-a3f1-c26752bf42bb",
+            "836a73b0-091f-5e82-8de4-a22b13f1b774",
+            "17abbedb-f4c3-5986-b8d2-0e562d06b8ac",
+            "d93165b1-b901-5410-b623-1c32009cbbaf",
+            "692a9bb3-fef9-55d3-b587-2122f320b1db",
+            "b0b540cd-b7d4-5774-a3a6-f77f81b8f408",
+            "20b4c494-58a8-5700-a56c-a3f83596cdd8",
+            "e1859107-fbd1-57b6-bf0b-cd7017552a81",
+            "b8b43f24-80a6-5993-a2ff-e3d05f3f28d8",
+            "b9853d8c-b961-54da-bc48-81bd01c68566",
+            "24b83313-d423-50cf-bc67-c379524f1cdc"
+          ],
+          "revisions": [
+            "041b-reconcile-control-4-0",
+            "041b-reconcile-control-4-1",
+            "041b-reconcile-control-4-2",
+            "041b-reconcile-control-4-3",
+            "041b-reconcile-control-4-4",
+            "041b-reconcile-control-4-5",
+            "041b-reconcile-control-4-6",
+            "041b-reconcile-control-4-7",
+            "041b-reconcile-control-4-8",
+            "041b-reconcile-control-4-9",
+            "041b-reconcile-control-4-10",
+            "041b-reconcile-control-4-11",
+            "041b-reconcile-control-4-12",
+            "041b-reconcile-control-4-13",
+            "041b-reconcile-control-4-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "patches": [],
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008805",
+          "target": "00000000-0000-4000-8000-000000000109",
+          "operation": "example.org/control#set.v1",
+          "state": "unknown",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "contract": {
+            "spec": {
+              "changes": {
+                "setting": ""
+              }
+            }
+          },
+          "arguments": {
+            "setting": {}
+          }
+        }
+      ],
+      "contract_updates": [
+        {
+          "target": "00000000-0000-4000-8000-000000000109",
+          "kind": "Type",
+          "name": "claude-code.v1",
+          "set": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "accountServices": {
+                  "type": "boolean"
+                },
+                "peerMessaging": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

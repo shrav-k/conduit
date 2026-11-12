@@ -46,3 +46,21 @@ and `git diff --check` pass; in `engine/`, `cargo fmt --check`,
 `experiments/011-short-form-spike/`, `cargo test --release`. Report the totals passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so, and the admin reruns them. Do not
 stage anything.
+
+## Record
+
+Run on 2026-11-11 on a heavily loaded Mac: the worker in 2 hours 43 minutes, then three rounds,
+each fixing what a fresh verifier found, and one fix by the admin.
+- Round 2 fixed three must findings and a coverage weakness in the first pass.
+- Round 3 fixed two more: reconciling a control could not update an array element, and dependency
+  collection missed references nested in schema applicators such as `allOf`.
+- Round 3's verifier found one more, which the admin fixed. A held control change whose pointer no
+  longer addresses a setting, such as an array element a later change removed, escaped as an engine
+  error. It now ends invalid under REV-013 with no effect (REV-010, OPS-005), with two unit tests.
+- Authority through Fleets landed: ACC-033's rows 1A, 4A, 6A, 8A and 14A, LIF-020 and LIF-021,
+  retirement with the Fleet's Agents, and the shell's setup loop. The vector delta against `main`
+  shows 157 changes and one flip, all declared, none undeclared.
+- Checks, run by the admin outside the sandbox: `cargo fmt --check`, `cargo clippy --all-targets
+  -- -D warnings`, and the engine's full `cargo test --release`, 25 suites with no failure. After
+  rebasing onto `main`, which then held order 038b's enrollment spec, the core, loader and
+  conformance suites passed again.

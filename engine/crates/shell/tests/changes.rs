@@ -114,7 +114,7 @@ fn fixture(shell: &Shell, extra: bool) {
         success(invoke(
             shell,
             &MissingExecutor,
-            "management.set-up.v1",
+            "s1.set-up.v1",
             json!({"instance":{"kind":"Agent","name":name}}),
         ));
     }
@@ -844,7 +844,7 @@ fn missing_object_diagnostics_name_the_reference_and_explain_removal() {
     success(invoke(
         &shell,
         &MissingExecutor,
-        "management.retire.v1",
+        "s1.retire.v1",
         json!({"instance":{"kind":"Agent","name":"agent-a"}}),
     ));
     let revision = object(&shell, "Agent", "agent-b", false)["revision"].clone();

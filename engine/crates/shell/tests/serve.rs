@@ -258,7 +258,7 @@ fn real_npm_serve_s1_tokens_access_t7_and_shutdown() {
         durable(&store, &written, &prefix);
         assert_eq!(fs::read_to_string(&path).unwrap(), "B works while A is closed");
         cli(&store, "call", &["management.register-replacement.v1", r#"{"instance":{"kind":"Agent","name":"agent-a"},"nested":"project"}"#]);
-        cli(&store, "call", &["management.set-up.v1", r#"{"instance":{"kind":"Agent","name":"agent-a"}}"#]);
+        cli(&store, "call", &["s1.set-up.v1", r#"{"instance":{"kind":"Agent","name":"agent-a"}}"#]);
         changed(&changes_a, 2).await;
         assert_eq!(a.list_tools(None).await.unwrap().tools, list_a);
         let read = a.call_tool(call("project.file.read.v1", json!({"path":path}))).await.unwrap(); durable(&store, &read, &prefix);

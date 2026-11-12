@@ -35,8 +35,12 @@ pub(crate) fn handles(op: &str, c: &Context) -> bool {
     ]
     .iter()
     .any(|n| op == c.qualified(n))
+        || crate::cascade::handles(op, c)
 }
 fn named<'a>(s: &'a State, route: &Value, c: &Context) -> Option<&'a Value> {
+    if crate::cascade::handles(route["operation"].as_str().unwrap_or(""), c) {
+        return access::object(s, &route["target"]);
+    }
     let key = if route["operation"] == c.qualified("unregister.v1") {
         "object"
     } else if route["operation"] == c.qualified("open.v1")
@@ -127,13 +131,19 @@ pub(crate) fn preflight(
             return Ok(Some(("conflict", "REV-002")));
         }
     }
-    if s.invocations
-        .iter()
-        .any(|v| v["state"] == "in-progress" && v["object"] == o["id"] && v["management"] == true)
-    {
+    if busy(s, &o["id"], route.get("cascade_parent")) {
         return Ok(Some(("conflict", "REV-014")));
     }
     Ok(None)
+}
+// REV-014 includes controls and internally dispatched retirements.
+pub(crate) fn busy(s: &State, object: &Value, except: Option<&Value>) -> bool {
+    s.invocations.iter().any(|v| {
+        v["state"] == "in-progress"
+            && except.is_none_or(|id| v["id"] != *id)
+            && (v["object"] == *object && v["management"] == true
+                || v["target"] == *object && v["contract"]["spec"].get("changes").is_some())
+    })
 }
 fn cite(t: &mut Transition, action: &str, rules: &[&str], object: &Value) {
     t.decisions.push(decision(
@@ -166,6 +176,12 @@ pub(crate) fn execute(
     c: &Context,
     i: usize,
 ) -> Result<()> {
+    if crate::cascade::handles(
+        t.state.invocations[i]["operation"].as_str().unwrap_or(""),
+        c,
+    ) {
+        return crate::cascade::begin(t, a, c, i);
+    }
     let v = t.state.invocations[i].clone();
     let route = json!({"operation":v["operation"],"arguments":v["arguments"]});
     let o = named(&t.state, &route, c)

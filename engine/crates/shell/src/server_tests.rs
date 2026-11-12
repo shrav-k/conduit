@@ -462,7 +462,7 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
     let setup = server::client(
         temp.path(),
         None,
-        Some("management.set-up.v1"),
+        Some("s1.set-up.v1"),
         json!({"instance":{"kind":"Agent","name":"agent-a"}}),
     )
     .await
@@ -1209,7 +1209,7 @@ async fn retired_agent_consumer_stream_ends_and_other_consumer_remains() {
         let other = connect(&shell.config.engine_url, &b, Arc::default()).await;
         let list = other.list_tools(None).await.unwrap().tools;
         let root = actor(&shell, "root");
-        let reply=shell.submit(json!({"kind":"invoke","request":{"identity":instance_value(&root),"tool":"management.retire.v1","arguments":{"instance":{"kind":"Agent","name":"agent-a"}}}}),executor.as_ref()).unwrap();
+        let reply=shell.submit(json!({"kind":"invoke","request":{"identity":instance_value(&root),"tool":"s1.retire.v1","arguments":{"instance":{"kind":"Agent","name":"agent-a"}}}}),executor.as_ref()).unwrap();
         assert_eq!(reply["isError"], false, "{reply}");
         tokio::time::timeout(Duration::from_secs(30), async {
             while let Some(chunk) = stream.next().await {

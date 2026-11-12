@@ -11,7 +11,8 @@
     "TPL-012",
     "OPS-022",
     "LIF-004",
-    "LIF-027"
+    "LIF-027",
+    "ACC-033"
   ],
   "profile": "first-build",
   "initial": {
@@ -521,7 +522,7 @@
       "expect": {
         "reply": {
           "_meta": {
-            "io.github.shrav-k.conduit/outcome": "failed"
+            "io.github.shrav-k.conduit/reason": "refused"
           }
         },
         "external_intents": [],
@@ -542,9 +543,7 @@
           }
         ],
         "required_promises": [
-          "ACC-005",
-          "OPS-022",
-          "LIF-027"
+          "ACC-033"
         ]
       }
     }

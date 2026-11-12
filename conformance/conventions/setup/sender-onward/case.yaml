@@ -11,7 +11,8 @@
     "TPL-012",
     "OPS-022",
     "LIF-004",
-    "LIF-027"
+    "LIF-027",
+    "ACC-033"
   ],
   "profile": "first-build",
   "initial": {
@@ -521,7 +522,7 @@
       "expect": {
         "reply": {
           "_meta": {
-            "io.github.shrav-k.conduit/outcome": "unknown"
+            "io.github.shrav-k.conduit/reason": "refused"
           }
         },
         "external_intents": [],
@@ -532,8 +533,8 @@
           },
           {
             "id": "00000000-0000-4000-8000-000000000110",
-            "state": "ready",
-            "open": true
+            "state": "registered",
+            "open": false
           },
           {
             "id": "00000000-0000-4000-8000-000000000111",
@@ -542,25 +543,7 @@
           }
         ],
         "required_promises": [
-          "ACC-005",
-          "OPS-022",
-          "LIF-027"
-        ],
-        "invocation_facts": [
-          {
-            "id": "00000000-0000-4000-8000-000000010201",
-            "caller": "00000000-0000-4000-8000-000000000005",
-            "sender": "00000000-0000-4000-8000-000000000112",
-            "state": "unknown"
-          },
-          {
-            "id": "00000000-0000-4000-8000-000000010204",
-            "caller": "00000000-0000-4000-8000-000000000005",
-            "sender": "00000000-0000-4000-8000-000000000112",
-            "setup_parent": "00000000-0000-4000-8000-000000010201",
-            "serving": "00000000-0000-4000-8000-000000010201",
-            "state": "succeeded"
-          }
+          "ACC-033"
         ]
       }
     }

@@ -19,14 +19,25 @@
           }
         },
         {
-          "id": "00000000-0000-4000-8000-000000000006",
-          "set": {
+          "append": {
+            "id": "00000000-0000-4000-8000-000000000801",
+            "kind": "Conduit",
+            "name": "filtered-setup",
+            "local_name": "filtered-setup",
+            "consumer": "00000000-0000-4000-8000-000000000005",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "capability": "@core#fleet-management.v1",
+            "operations": [
+              "@core#set-up.v1"
+            ],
             "requirements": {
               "test": {
                 "requirement": "example.org/test#filter",
                 "arguments": {}
               }
-            }
+            },
+            "open": true,
+            "state": "ready"
           }
         }
       ],
@@ -113,7 +124,7 @@
             "kind": "instance",
             "id": "00000000-0000-4000-8000-000000000005"
           },
-          "tool": "management.set-up.v1",
+          "tool": "filtered-setup.set-up.v1",
           "arguments": {
             "instance": {
               "kind": "Agent",

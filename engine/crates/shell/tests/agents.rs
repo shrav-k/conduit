@@ -234,6 +234,7 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
     runner.set_completion_executor(Arc::downgrade(&completion));
     for (kind, name) in [
         ("Pool", "workspace"),
+        ("Fleet", "s1"),
         ("Resource", "shared"),
         ("Resource", "history"),
         ("Agent", "agent-a"),
@@ -244,6 +245,8 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
             executor.as_ref(),
             if kind == "Resource" {
                 "root-workspace.set-up.v1"
+            } else if kind == "Agent" {
+                "s1.set-up.v1"
             } else {
                 "management.set-up.v1"
             },
@@ -344,7 +347,7 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
         store,
         "call",
         &[
-            "management.retire.v1",
+            "s1.retire.v1",
             r#"{"instance":{"kind":"Agent","name":"agent-a"}}"#,
         ],
     );

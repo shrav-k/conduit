@@ -125,6 +125,29 @@ pub(super) fn transition(
                     }
                 }
             }
+            // SCH-001/LIF-021: engine-generated parts obey the same input contract.
+            if r["type"] == "invocation-dispatched" && v.get("cascade_parent").is_some() {
+                let (scope, core) = context
+                    .core_environment
+                    .scopes
+                    .iter()
+                    .find(|(_, s)| s.address == context.core_package)
+                    .ok_or("core schema scope absent")?;
+                let name = v["operation"]
+                    .as_str()
+                    .and_then(|op| op.split_once('#'))
+                    .map(|(_, name)| name)
+                    .ok_or("cascade child operation absent")?;
+                let schema = &core.contracts[name]["spec"]["inputSchema"];
+                if !context.core_environment.valid(
+                    scope,
+                    schema,
+                    &v["arguments"],
+                    &context.core_package,
+                )? {
+                    return Err("SCH-001: cascade child violates its inputSchema".into());
+                }
+            }
             if r["type"] == "invocation-dispatched" && v["hook"] != true {
                 let access = records[..position].iter().find(|r| {
                     r["type"] == "access-decision"

@@ -36,8 +36,10 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 
 pub const REVISIONS: [&str; 3] = ["2025-06-18", "2025-11-25", "2026-07-28"];
-const EXECUTABLE_ENGINE_OPERATIONS: [&str; 12] = [
+const EXECUTABLE_ENGINE_OPERATIONS: [&str; 14] = [
     "install.v1",
+    "retire-with-resources.v1",
+    "retire-with-agents.v1",
     "retire.v1",
     "unregister.v1",
     "set-up.v1",

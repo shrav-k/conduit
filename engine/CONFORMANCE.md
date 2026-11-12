@@ -49,7 +49,7 @@ prints these measurements; they are not a persistence format or compaction polic
 
 | DL item | What has not been chosen or implemented here |
 | --- | --- |
-| DL1 | Ordering of otherwise unordered/cyclic Resource retirement by retire-with-resources.v1, which remains unfinished. Single-instance public retirement is implemented. |
+| DL1 | Container retirement dispatches independent members in stored order. Within dependency cycles, members retire in ascending ID order; dependency edges between cycles are preserved (LIF-021). Pool and Fleet cascades are implemented. The member IDs are captured at dispatch; a later registration blocks container retirement with diagnostics and needs another explicit cascade. |
 | DL3 | Actor-reply waiting policy and delivery while the server cannot receive; no such provider runs here. |
 | DL5 | Machine report intervals/deadlines, hostname override and voluntary runtime inspection intervals. The shell now discovers the OS hostname and OS/architecture labels at first start, plus explicitly supplied labels. |
 | DL7 | Package removal/mirror controls, https fetching and package-source providers remain unfinished. Public install.v1 supports local file URLs, authorization, admission and records; installed bytes and virtual files are persisted in State. |
@@ -122,9 +122,12 @@ These helpers are for the store owner, not additional consumer authority.
 
 H03 is bounded explicitly. Public engine execution currently supports set-up.v1, open.v1,
 close.v1, register-replacement.v1, register.v1, replace.v1, inspect.v1, purge.v1,
-reconcile.v1, install.v1, retire.v1 and unregister.v1, subject to the core's preflights.
-Declare-lost.v1 and retire-with-resources.v1 remain unfinished public invocation paths;
-controls and control reconciliation also remain outside the handoff's implemented core slice.
+reconcile.v1, install.v1, retire.v1, unregister.v1, retire-with-resources.v1 and
+retire-with-agents.v1, subject to the core's preflights.
+Declare-lost.v1 and control dispatch remain unfinished public invocation paths.
+Control reconciliation applies the held input values to the current revision (REV-010);
+Agent reconciliation uses the owning Fleet, with management as the retired-owner fallback
+(ACC-033).
 Startup inspects every published operation's held contract, using the publisher's resolved
 scope, and treats a contract with changes as an unfinished control regardless of its type or
 template implementation source. It compares publication with that inventory and refuses an

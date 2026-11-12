@@ -539,8 +539,9 @@ stale completions. Succeeded plain content is retained with outputs until explic
 expiry. Reconciliation uses current ACC-033 authority and records checked evidence.
 
 Dispatch, parameter-header repair and cancellation return intents only; the shell must
-persist state and records before carrying them out. General lifecycle/control reconciliation
-remains outside this slice; records purge is described under I2-08 below. The
+persist state and records before carrying them out. Control reconciliation now uses REV-010 and current Pool/Fleet authority (ACC-033);
+setup/open reconciliation remains unfinished. Pool and Fleet retirement cascades use
+[cascade.rs](crates/core/src/cascade.rs), under LIF-021 and REV-014; records purge is described under I2-08 below. The
 [request vectors](../conformance/README.md#request-endings-i2-06) describe their observations,
 and the [finding log](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/log-increment-2.md#i2-06-request-endings-work-order-015)
 records the admin’s narrowing of header repair and the return-review regressions.

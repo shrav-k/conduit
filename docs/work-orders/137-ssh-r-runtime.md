@@ -227,3 +227,27 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target --exclude-dir=dist
 `target/` and `dist/` stay ignored and unstaged. No real hostname, tailnet name or user's home path
 goes into the crate: use synthetic ones. Report each default of the configuration as your own
 choice. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), from base fdb5423: the worker (2,121 s) and a
+fresh verifier (401 s), then a second worker round (535 s) and a fresh verifier (328 s). Round
+one's four musts were fixed in round two: the executor never closed a command's standard input, so
+`/bin/sh -s` waited for its end; deleting the mandatory environment file after the unit was active
+kept `ExecStopPost` from running, so the file is now optional and a start-only check fences a late
+launch; waiting for the connection's lock bypassed the start's deadline; and a unit prefix starting
+with `-` read as options to `systemctl`. Round two's verifier left two musts, which
+[order 140](140-ssh-r-finish.md) finished: four bound places optional against MAN-017, and a start
+that timed out kept its stop owed for good. Before order 140 ran, the lane coordinator rebased the
+branch onto `main` after [order 138](138-a63-rk-backend-reasons.md), which changed the kit.
+
+The worker's findings: the kit's answers named no backend reason (order 138 has since added
+them); the kit's unknown-state answer, for an unreachable machine, comes before the owed-stop check
+and so names no held stop (the admin's order after 081 fixes this in the kit); and a run
+directory with a stable path fenced a late launch only until the next staging, which order 140
+fixed. **Deferred, at the admin's word (2026-11-12):** PROVIDERS.md decision D's external
+stop-drainer, which outlives the provider's retirement, is not built: a stop still owed when the
+provider retires is carried out only if the provider starts again in the same state directory,
+and until then `RuntimeMaxSec` is the only end of that run. A follow-up order builds it. The
+loopback-`sshd` tier, a later order, and the tests against a real user `systemd` and the Windows
+computer, after the owner's ruling-77 setup, are still to come.

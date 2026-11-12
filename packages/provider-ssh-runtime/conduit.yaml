@@ -1,0 +1,30 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/provider-ssh-runtime
+version: 0.1.0
+exports: [ssh-runtime.v1]
+implementations:
+  provider:
+    implements:
+    - github.com/shrav-k/conduit/core#run.v1
+    - github.com/shrav-k/conduit/core#stop.v1
+    - github.com/shrav-k/conduit/core#inspect-run.v1
+    command: [bin/provider-ssh-runtime]
+    plain: false
+    environment:
+      SSH_RUNTIME_MACHINES: /machines
+      SSH_RUNTIME_PRIVATE_KEY: /privateKey
+      SSH_RUNTIME_BASE: /base
+      SSH_RUNTIME_PATH: /path
+      SSH_RUNTIME_RUN_LIMIT: /runLimit
+      SSH_RUNTIME_MAX_LIFETIME: /maxLifetime
+      SSH_RUNTIME_STOP_TIMEOUT: /stopTimeout
+      SSH_RUNTIME_DRAIN_INTERVAL: /drainInterval
+      SSH_RUNTIME_SYSTEMD_RUN: /systemdRun
+      SSH_RUNTIME_SYSTEMCTL: /systemctl
+      SSH_RUNTIME_LOGINCTL: /loginctl
+      SSH_RUNTIME_UNIT_PREFIX: /unitPrefix
+      SSH_RUNTIME_BIND_ADDRESS: /bindAddress
+      SSH_RUNTIME_ADVERTISED_HOST: /advertisedHost
+      SSH_RUNTIME_KEEPALIVE_IDLE: /keepaliveIdle
+      SSH_RUNTIME_KEEPALIVE_INTERVAL: /keepaliveInterval
+      SSH_RUNTIME_KEEPALIVE_COUNT: /keepaliveCount

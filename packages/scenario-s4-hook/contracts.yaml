@@ -1,0 +1,198 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: read-hook-ledger.v1
+spec:
+  inputSchema:
+    type: object
+    properties:
+      instance:
+        type: string
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      version:
+        const: 1
+      attempts:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            package:
+              type: string
+            instance:
+              type: string
+            invocation:
+              type: string
+            caller:
+              type: string
+            revision:
+              type: string
+            version:
+              const: 1
+            key:
+              type:
+              - string
+              - 'null'
+            attempt:
+              type: integer
+              minimum: 1
+            work:
+              enum:
+              - open
+              - ended
+            reply:
+              enum:
+              - released
+              - dropped
+              - cancelled
+              - none
+            effect:
+              oneOf:
+              - type: object
+                properties:
+                  state:
+                    const: applied
+                  id:
+                    type: string
+                required:
+                - state
+                - id
+                additionalProperties: false
+              - type: object
+                properties:
+                  state:
+                    const: none
+                  cause:
+                    enum:
+                    - blockedBy
+                    - controller
+                    - gate
+                required:
+                - state
+                - cause
+                additionalProperties: false
+              - type: object
+                properties:
+                  state:
+                    const: not-known
+                required:
+                - state
+                additionalProperties: false
+          required:
+          - id
+          - package
+          - instance
+          - invocation
+          - caller
+          - revision
+          - version
+          - key
+          - attempt
+          - work
+          - reply
+          - effect
+          additionalProperties: false
+      invalidLines:
+        type: array
+        items:
+          type: integer
+          minimum: 1
+    required:
+    - version
+    - attempts
+    - invalidLines
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-blocked-by.v1
+spec:
+  inputSchema:
+    type: object
+    properties:
+      revision:
+        $ref: github.com/shrav-k/conduit/core#revision.v1
+      blockedBy:
+        anyOf:
+        - type: string
+          pattern: ^/
+        - type: 'null'
+    required:
+    - revision
+    - blockedBy
+    additionalProperties: false
+  changes:
+    blockedBy: /blockedBy
+  effect: Changes the path at which the hook looks for a file that blocks its attempts.
+  deduplicates: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: hook-ledger-reading.v1
+spec:
+  operations:
+  - '#read-hook-ledger.v1'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: hook-settings.v1
+spec:
+  operations:
+  - '#set-blocked-by.v1'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: s4-hook.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      ledger:
+        type: string
+      control:
+        type: string
+      blockedBy:
+        anyOf:
+        - type: string
+          pattern: ^/
+        - type: 'null'
+    required:
+    - ledger
+    additionalProperties: false
+  requires:
+  - github.com/shrav-k/conduit/core#setup-hook.v1
+  offers:
+  - '#hook-settings.v1'
+  controls:
+  - '#set-blocked-by.v1'
+  implementation:
+    github.com/shrav-k/conduit/core#setup-hook.v1: '#hook'
+    '#set-blocked-by.v1': '#hook'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: s4-hook-ledger.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      ledger:
+        type: string
+    required:
+    - ledger
+    additionalProperties: false
+  offers:
+  - '#hook-ledger-reading.v1'
+  implementation:
+    '#read-hook-ledger.v1': '#reader'

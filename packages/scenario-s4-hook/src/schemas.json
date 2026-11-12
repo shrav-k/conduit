@@ -1,0 +1,192 @@
+{
+  "read-hook-ledger.v1": {
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "instance": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "attempts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "package": {
+                "type": "string"
+              },
+              "instance": {
+                "type": "string"
+              },
+              "invocation": {
+                "type": "string"
+              },
+              "caller": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              },
+              "version": {
+                "const": 1
+              },
+              "key": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "attempt": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "work": {
+                "enum": [
+                  "open",
+                  "ended"
+                ]
+              },
+              "reply": {
+                "enum": [
+                  "released",
+                  "dropped",
+                  "cancelled",
+                  "none"
+                ]
+              },
+              "effect": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "const": "applied"
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "const": "none"
+                      },
+                      "cause": {
+                        "enum": [
+                          "blockedBy",
+                          "controller",
+                          "gate"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "cause"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "const": "not-known"
+                      }
+                    },
+                    "required": [
+                      "state"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "package",
+              "instance",
+              "invocation",
+              "caller",
+              "revision",
+              "version",
+              "key",
+              "attempt",
+              "work",
+              "reply",
+              "effect"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "invalidLines": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "required": [
+        "version",
+        "attempts",
+        "invalidLines"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "set-blocked-by.v1": {
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blockedBy": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^/"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "revision",
+        "blockedBy"
+      ],
+      "additionalProperties": false
+    },
+    "changes": {
+      "blockedBy": "/blockedBy"
+    },
+    "effect": "Changes the path at which the hook looks for a file that blocks its attempts.",
+    "deduplicates": true
+  },
+  "setup-hook.v1": {
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  }
+}

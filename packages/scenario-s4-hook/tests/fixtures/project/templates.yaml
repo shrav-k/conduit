@@ -1,0 +1,44 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: hook
+spec:
+  type: example.org/conduit/scenario-s4-hook#s4-hook.v1
+  config: {ledger: /var/tmp/conduit-s4-hook-ledger, blockedBy: null}
+  controls:
+    example.org/conduit/scenario-s4-hook#set-blocked-by.v1: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: reader
+spec:
+  type: example.org/conduit/scenario-s4-hook#s4-hook-ledger.v1
+  config: {ledger: /var/tmp/conduit-s4-hook-ledger}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: hooked-pool
+spec:
+  type: github.com/shrav-k/conduit/core#pool.v1
+  config: {}
+  entries:
+    first: {from: hook}
+    second: {from: hook}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: ledger-reading
+spec:
+  capability: example.org/conduit/scenario-s4-hook#hook-ledger-reading.v1
+  operations: [example.org/conduit/scenario-s4-hook#read-hook-ledger.v1]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: hook-settings
+spec:
+  capability: example.org/conduit/scenario-s4-hook#hook-settings.v1
+  operations: [example.org/conduit/scenario-s4-hook#set-blocked-by.v1]

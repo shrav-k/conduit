@@ -3,14 +3,15 @@
 > **In short**
 > - Admin proposal SEC-D1: secret-read decisions, attribution and fail-closed records in the core.
 > - Admin proposal SEC-D2: private secret reads and delivery to runs in the shell.
-> - Admin proposal SEC-D3: secret-bearing remote connections and recovery in the shell.
+> - Admin proposal SEC-D3a: secret-bearing remote connections in the shell.
+> - Admin proposal SEC-D3b: SEC-023 authorized reread after values are lost.
 > - Admin proposal FLT-D1: qualify and complete the core's filters, repeats and onward checks.
 > - Admin proposal FLT-D2: qualify their delivery through the shell to real implementations.
-> - Admin proposal S2-V: register rotation/repair and cached-tool vectors in the coverage index.
+> - Admin proposal FLT-D0: run baseline filter/current-tool cases before sizing fixes.
+> - Admin proposal FLT-D3: S8 V4/V5 after FLT-D1 and FLT-D2 only.
 > - Admin A1: accept the secret/core/shell split and merge sequence?
 > - Admin A2: keep engine integration after PIN, or authorize another side branch?
-> - Admin A3: include E02's extra controls in SCR, or keep a separate driver?
-> - Owner: no new question; O1–O5's accepted answers stand.
+> - Owner hold M2-3: HTTPS TLS termination before isolated provider runs; O1–O5 stand.
 
 ## Status
 
@@ -19,17 +20,19 @@ A plan for the lane coordinators and the admin: it binds nothing, and changes no
 accepted in [README.md](README.md). Orders that change `engine/` or `spec/` are proposals to the admin.
 No order named here has been dispatched.
 
+Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
+
 ## What `main` has now
 
 Evidence below is inspection of this commit, not a new test result. The log's entries for orders
-070–072, 075–082 and 038c add order files, not their implementations. 050a/076's work is absent:
+070–072, 076–082 and 038c add order files, not their implementations. 050a/076's work is absent:
 [Codex's manifest](../../packages/agent-codex/conduit.yaml), lines 3–6, still exports 0.1.1 and `.v1`.
 042 and 049a-1 are absent too; [State](../../engine/crates/core/src/lib.rs), lines 65–81, has no
 tombstone, pending-action or machine maps. This agrees with the admin's warning about order files.
 
 | README prerequisite or gap | Present evidence and remaining work |
 | --- | --- |
-| Secret reads/delivery and record failure | [lifecycle.rs](../../engine/crates/core/src/lifecycle.rs), lines 786–803, makes ordinary run bindings; [lib.rs](../../engine/crates/shell/src/lib.rs), lines 68–87, defaults provider/connection execution to Missing. SEC-010/012/015/016's read workflow is missing: SEC-D1–3. Literal redaction already exists in requests.rs, lines 125–145; it is not secret delivery. |
+| Secret reads/delivery and record failure | [lifecycle.rs](../../engine/crates/core/src/lifecycle.rs), lines 786–803, makes ordinary run bindings; [lib.rs](../../engine/crates/shell/src/lib.rs), lines 68–87, defaults provider/connection execution to Missing. SEC-010/012/015/016's read workflow is missing: SEC-D1/D2/D3a/D3b. Literal redaction already exists in requests.rs, lines 125–145; it is not secret delivery. |
 | Filtered repeat dispatch, OPS-024 | [requests.rs](../../engine/crates/core/src/requests.rs), lines 792–838, redispatches a successful filtered read. Keep this; FLT-D1 adds deadline/current-authorization evidence rather than replacing the repeat rules. 077 remains pending, including its filtered plain-content clarification. |
 | CON-022 support check | [registration.rs](../../engine/crates/core/src/registration.rs), lines 2335–2371 and 2426–2451, checks every operation's selected item's supports and rejects plain/engine filter targets. Already met statically; qualify the S2 contract in FLT-D1. |
 | Identity, carried filters, dependent calls | requests.rs, lines 569–608, emits caller/invocation/filter metadata; [access.rs](../../engine/crates/core/src/access.rs), lines 382–425, derives the serving chain and rechecks closure/retirement. Existing slices include [broker](../../conformance/conventions/records/broker/case.yaml). FLT-D adds end-to-end evidence and only demonstrated missing paths. |
@@ -42,10 +45,20 @@ tombstone, pending-action or machine maps. This agrees with the admin's warning 
 | G2: package contracts | Deliberate contract gap, not new language: S2-F fixes the full issue/deadline contract; S2-L implements it; 050 states own-tool behavior; A63-KC states locator/session/cache/upgrade behavior. Freeze these before qualification. |
 | G3: safety field | Still absent from [case.schema.json](../../conformance/case.schema.json); SV1 follows 071. Every safety case below waits for SV1 and follows SV4. No invented field or premature tagging. |
 
+Order 075 is merged (`55cf747`): an Agent Type states the reach of its client’s own tools.
+
 ## The orders
 
+A scenario vector goes in the core or shell order that makes it pass if that order stays at most L;
+otherwise an admin vectors order immediately follows it and depends only on the core and shell orders
+its cases need, never on a lane package, owner step or run. A provider-contract case goes in lane 8’s
+A63-VR, A63-VM, A63-VP or A63-VS suite in [the provider plan](../../docs/implementation/PROVIDERS.md).
+Every package this plan places under `packages/` is a scenario server: its directory is named
+`scenario-s2-...`, and its README says that it serves S2 and is not a provider for general use
+(the admin's rule, 2026-11-11).
+
 Sizes are estimates before pipeline fixes; line counts include tests, excluding generated archives.
-Shared order SEC-D means all three parts; FLT-D means both; S2-L means both implementations orders.
+Shared SEC-D means D1/D2/D3a/D3b; FLT-D means D0–D3; S2-L means both implementation orders.
 G means the seven paper checks of order 117, including the Python unit suite. E adds engine fmt,
 clippy with warnings denied, release tests and vector-delta review against the dispatch base;
 core/loader edits also run experiment 011's release tests. P adds fmt/clippy/release tests in
@@ -55,31 +68,36 @@ each changed Rust crate, a pinned toolchain, Cargo.lock, ignored output and pack
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | S2-F | server | Ship O3's restriction contracts | CON-018, IFC-019 | — | S, 150–220 lines | lane 8 | now |
 | S2-L1 | server | Local Linear stub and aware implementation | IFC-019/020, SEC-019 | S2-F | L, 550–800 lines | lane 8 | after S2-F |
-| S2-L2 | server | Unchanged plain server qualification and small adapter | CON-022, IFC-007/019 | S2-L1 | L, 500–750 lines | lane 8 | after S2-L1 |
-| SEC-D1 | core | Decide secret reads and record before dispatch; V4 | SEC-006–018, SEC-023/024 | PIN, 042, S0b, S2-L1, SV1 | L, 650–900 lines | admin | after dependencies |
+| S2-L2 | server | Separate adapter crate and unchanged plain qualification | CON-022, IFC-007/019 | S2-F, S2-L1 stub protocol freeze only | L, 550–800 lines | lane 8 | after interfaces freeze, not all L1 |
+| SEC-D1 | core | Secret decisions/records; V4 and S10 V1 safety | SEC-006–018, SEC-023/024 | PIN, 042, S0b, SV1 | L, 650–900 lines | admin | after dependencies |
 | SEC-D2 | shell | Execute reads; deliver private values to runs | SEC-010–020, PRV-011/022/026 | SEC-D1, DSP | L, 650–900 lines | admin | after SEC-D1 and DSP on main |
-| SEC-D3 | shell | Connect with headers; recover values after loss | SEC-013/014/018/023/024 | SEC-D2 | L, 550–800 lines | admin | after SEC-D2 |
-| FLT-D1 | core | Complete/qualify filters and onward paths; V1/V2/V5 | ACC-017/034, IFC-019/020, CON-022, OPS-024 | PIN, S0b, 042, 077, S2-L1, SV1 | L, 500–750 lines | admin | after dependencies |
-| FLT-D2 | shell | Verify exact filtered dispatch and dependent-call wire | ACC-017, IFC-019/020 | FLT-D1, DSP, S2-L | M, 350–500 lines | admin | after dependencies |
-| S2-V | vectors | V3 and V6, including their index entries | SEC-018, ACC-001 | SEC-D, FLT-D, 050, 052b, SV1 | M, 300–450 lines | admin | after dependencies |
+| SEC-D3a | shell | Secret-bearing remote connection headers | SEC-013/014/018 | SEC-D2 | L, 550–800 lines | admin | after SEC-D2 |
+| SEC-D3b | shell | Authorized reread after lost values; S2 V3 | SEC-018/023/024 | SEC-D2 | M, 350–550 lines | admin | after SEC-D2 |
+| FLT-D0 | vectors | Baseline V1/V2/V5; V6 if already passing | IFC-019, ACC-006/034/001 | 071, SV1, PIN | XS or S, 100–250 lines | admin | after dependencies |
+| FLT-D1 | core | Fix only gaps demonstrated by D0; onward-close owner | ACC-017/034, IFC-019/020, CON-022, OPS-024 | FLT-D0, S0b, 042, 077 | sized after D0; at most L, split if needed | admin | after baseline cases run |
+| FLT-D2 | shell | Filter/dependent-call wire checks with internal fixtures | ACC-017, IFC-019/020 | FLT-D1, DSP | M, 350–500 lines | admin | after dependencies |
+| FLT-D3 | vectors | S8 V4/V5 with scripted completions | ACC-014/017 | FLT-D1, FLT-D2 | M, 300–450 lines | admin | after these engine orders only |
 | S2-H | harness | Clock, authorization mutations and restoration barriers | OPS-024, ACC-034, SEC-014 | S2-L, SCR | L, 600–850 lines | lane 10 | after S2-L and SCR |
 | S2-O | owner | Test keychain/item, narrow service key, account labels and runtime readiness | SEC-019, PRV-029 | — | about 1 hour presence | owner | after owner's availability |
 | S2-R1 | run | Coordinator, local, T1–T7 | README P1–P6 | run gate below | about 1 hour; 45 min active owner proposed | lane 10 | after run gate |
 | S2-R2 | run | Fresh Codex author, local, T1–T7 | README P1–P6 | S2-R1 | about 1 hour; same owner allowance | lane 10 | after S2-R1 |
-| S2-R3 | run | Coordinator, isolated, T1–T7 | README P1–P6 | S2-R2, A63-DR | about 1 hour; same owner allowance | lane 10 | after S2-R2 and isolated readiness |
-| S2-R4 | run | Fresh Codex author, isolated, T1–T7 | README P1–P6 | S2-R3 | about 1 hour; same owner allowance | lane 10 | after S2-R3 |
+| S2-R3 | run | Coordinator, isolated, T1–T7 | README P1–P6 | S2-R2, A63-DR, DSP, ADDR, M2-3 | about 1 hour; same owner allowance | lane 10 | after isolated readiness and M2-3 |
+| S2-R4 | run | Fresh Codex author, isolated, T1–T7 | README P1–P6 | S2-R3, A63-DR, DSP, ADDR, M2-3 | about 1 hour; same owner allowance | lane 10 | after S2-R3 and M2-3 |
 
-**S2-F.** New contracts-only package under `packages/linear-restrictions/`: manifest,
+**S2-F.** New contracts-only package under `packages/scenario-s2-linear-restrictions/`: manifest,
 contracts, documentation and admission fixtures. State clock/deadline, issue IDs, changed
 authorization data, indirect/returned content, onward calls and denial/state rules as package
 behavior under O3. Change no core contract, service code or vectors. Checks G and admission.
 
-**S2-L1.** New standalone Rust crate under `packages/linear/`, with the package files/tests
+**S2-L1.** New standalone Conduit-aware Rust crate under `packages/scenario-s2-linear/`, with the package files/tests
 used by [agent-codex](../../packages/agent-codex/README.md). Build deterministic local stub
 mode and aware mode, controllable authorization/clock and a dependent-call barrier; synthetic
-secret markers only. No new filter semantics or engine edits; no portable vectors here. Checks G/P.
+secret markers only. Ship container-runnable binaries/items for Docker; S3-PATH adds PATH manifests. No new filter semantics or engine edits; no portable vectors here. Checks G/P.
 
-**S2-L2.** Same service crate's adapter and qualification fixtures; pin the unchanged plain
+**S2-L2.** Separate adapter crate under `packages/scenario-s2-linear-adapter/`, so D01 counts each
+implementation apart. Wait only for S2-F and L1's stub protocol/fixture interface, not L1's
+completed aware implementation; the local Linear stub remains with L1. Include Docker-runnable
+binaries/items and coordinate S3-PATH manifests. Pin the unchanged plain
 server separately, recording its supported operations and honest unsupported-filter verdict.
 Qualify identical reads across all three, restriction cases across adapter/aware only. No
 fork of the plain server or provider implementation; no portable vectors. Checks G/P, D01/D05 matrix.
@@ -88,75 +106,92 @@ fork of the plain server or provider implementation; no portable vectors. Checks
 read-result boundary, plus conformance fixtures/assertions where needed. Hot: core requests.rs,
 access.rs, lifecycle.rs; runner lib.rs and assigned manifest pieces; registration.rs only if
 binding admission requires it. Persist descriptors/outcomes, never values; no store-specific logic.
-Own V4 `s2-secret-read-fails-closed` (safety SEC-012), using S2-L's stub and record-unavailability
+Carry O3's restriction contract from S2's README as an engine-owned fixture; neither S2-F nor
+S2-L is a dependency. Own V4 `s2-secret-read-fails-closed` (safety SEC-012) and S10 V1's
+SEC-007 engine refusal, using scripted engine servers/completions and record-unavailability
 evidence. Test failed/unknown/locked reads, no fallback, attribution and no value in records. G/E.
 
 **SEC-D2.** Shell executor, runner and private delivery helpers; hot shell lib.rs, runner.rs,
 identity.rs; no server.rs, CLI tables, core files, runner lib.rs or manifest edits planned.
 Deliver only to the selected run via its authenticated runtime channel after durable read
 dispatch; discard partial values and keep original values fixed for an existing run. No raw
-values in State, intents published as evidence, diagnostics or Agent results. No new V1–V6; G/E.
+values in State, intents published as evidence, diagnostics or Agent results. No new S2 V1–V6; G/E.
 
-**SEC-D3.** Shell connection/recovery helpers and tests; hot runner.rs and lib.rs, no other
-listed hot files. Implement currently unserved remote connections with URL-bound confidential
-headers, and SEC-023's authorized reread after value loss; preserve caller attribution on
-provider restart. No generic secret cache, automatic rotation or new V1–V6. Checks G/E.
+**SEC-D3a / D3b.** Separate shell jobs, each at most L; hot runner.rs/lib.rs, no other hot files.
+D3a implements secret-bearing remote connections left unserved by DL16, with URL-bound
+confidential headers. D3b implements SEC-023's authorized reread after values are lost, retaining
+caller attribution on provider restart; no cache or automatic rotation. S2 V3
+`s2-rotate-replace-repair` (safety SEC-018), including partial restoration, goes with D3b if
+it makes it pass; otherwise with the actual fixing SEC-D part. If cases push that order above L,
+an admin vectors order immediately follows only the engine orders needed. Checks G/E.
+
+**FLT-D0.** Admin conformance cases/own manifest piece only, after 071/SV1/PIN. Write and run
+V1 `s2-filter-current-read` (IFC-019), V2 `s2-bound-allows-unfiltered` (ACC-006), V5
+`s2-dependent-call-after-close` (ACC-034), and V6 `s2-cached-tool-refused` (ACC-001) if it
+passes at base. Commit only passing cases. Report failures and move those cases to FLT-D1
+(or the fixing order for V6); size D1 only after this evidence. Checks G, release vectors/delta.
 
 **FLT-D1.** Core requests/access/registration and focused assertions; hot requests.rs,
 access.rs, registration.rs, runner lib.rs and assigned manifest pieces, not lifecycle.rs.
 Keep existing support/chain/repeat behavior; fix only demonstrated omissions against promises.
-Own V1 `s2-filter-current-read` (IFC-019), V2 `s2-bound-allows-unfiltered` (ACC-006), and V5
-`s2-dependent-call-after-close` (ACC-034); all use S2-L. Include static bound/support decisions
+Take only D0’s failing V1/V2/V5 cases, retaining their names/promises; V6 goes with its fixing
+order if it failed at base. Own onward calls after close, also cited by S6-ACCESS. Use an internal
+O3 fixture written from S2’s README, not S2-F/L; conformance cases supply implementation
+completions under conformance/README.md and engine tests use scripted servers. Include static bound/support decisions
 as vectors: [G5](../012-model-checking/G5.md) does not count static decisions as model proof. G/E.
 
-**FLT-D2.** Shell dispatch/discovery tests with S2-L's adapter/aware server. Hot runner.rs,
+**FLT-D2.** Shell dispatch/discovery tests with scripted servers inside engine tests, carrying O3's
+contract from S2's README, independent of S2-F/L. Hot runner.rs,
 server.rs and lib.rs; no identity.rs, core files, CLI tables or coverage index changes planned.
 Check carried metadata, stale serving IDs, closure during a dependent call, and plain calls'
 omission of Conduit keys. Complete only wire omissions found; never evaluate a package filter
 in the engine. No new V1–V6. Checks G/E and request/reply-to-record correlation.
 
-**S2-V.** Only conformance cases/fixtures and their manifest registration; admin ownership
-because the index is shared. Own V3 `s2-rotate-replace-repair` (SEC-018) and V6
-`s2-cached-tool-refused` (ACC-001). Both depend on S2-L; V3 includes partial restoration, V6
-separates protocol refusal/tool failure. No runner or production code changes. Checks G, release vectors/delta.
+**FLT-D3.** Admin vectors only: S8 V4 `s8-unsupported-or-unavailable-filter` (ACC-014)
+and V5 `s8-onward-filter-chain` (ACC-017), after FLT-D1 and FLT-D2 only. Synthetic
+completions, own case directory/manifest piece; no S8-H2 or lane package dependency. G/E vectors.
 
 **S2-H.** New Rust harness crate under `experiments/013-s2-shared-login/harness/`, with
 Cargo.lock/toolchain/tests and ignored output. Fix the deadline clock, mutate authorization,
 pause dependent calls, fail restoration after A/before B and record actual barriers. Use SCR
-as the Agent-token MCP driver, adding exact keyed payload replay after a controlled deadline,
-forced cached tool names/serving IDs and retained-output absence assertions; do not substitute
+as the Agent-token MCP driver: SCR2 supplies exact keyed deadline replay, forced cached tool
+names/serving IDs, retained-output absence assertions and clock synchronization; S2-H keeps
+the clock and faults; do not substitute
 unkeyed calls or scripted evidence for P2. No engine/runner/index edits or new vectors. G/P.
 
 **S2-O and S2-R1–4.** Owner uses the existing [accounts](../../docs/guides/accounts.md),
 [service](../../docs/guides/1password-and-linear.md) and [Docker](../../docs/guides/docker.md)
 guides subject to the accepted answers. Runs write dated evidence beside README, from empty
 `<lab>` directories, pinning all inputs before timing. Run gate: PIN, B2-S/C/H, 050 and its
-entire sign-in chain, 052b, SEC-D, FLT-D, S2-V/H/O, A63-KC and passing tagged safety vectors;
-the isolated profile also needs A63-DR/DSP. Measure every README cell, outage and manual repair;
+entire sign-in chain, 052b, SEC-D, FLT-D0/1/2, S2-H/O, A63-KC and passing tagged safety vectors;
+the isolated profile also needs A63-DR, DSP, ADDR and M2-3. FLT-D3 is S8-only, not this run gate. Measure every README cell, outage and manual repair;
 keep fresh-author/coordinator evidence apart. No production edits; checks are README P1–P6 and M0/M1.
 
 ## Shared with other plans
 
 - Batch 1 supplies 070, S0b/S0c, 042, 046a/046b, 047, 048a-1/2, 048b-relay/join,
   051a/051b, 052a-1/2, 052b, 053 and PIN. 050 includes 050a/076 and AGT where needed;
-  075 must permit its own-tool declaration; 042/052a must implement its inspection/plan reach; 038c states its allowed logins. These are existing
+  075 already states its own-tool declaration; 042/052a must implement its inspection/plan reach; 038c states its allowed logins. These are existing
   admin orders, not additional S2 orders. B2-S/C/H supply G1 only after the rerun's judgment.
 - 077 supplies fenced negative reconciliation; 081 supplies same-ID run behavior and states
   the old/new-ID overlap limit; 082 supplies the storage-loss/install corrections. None is
   implemented at this base. Do not infer completion from a work-order commit.
-- A63-KC is the store for all runs, in the logged-in session; A63-DR supplies D20 containers,
+- A63-KC depends on S2-O’s throwaway test keychain and its owner authorization step;
+  it is the store for all runs in the logged-in session; A63-DR supplies D20 containers,
   separate persistent Agent homes, browser callbacks and no service/store credential mounts.
   DSP must be on main for its run calls; ADDR is its shared prerequisite. Order 120 owns both
   providers' splits. A63-H supplies provider qualification; A63-FS ships but is not S2's store.
   A63-RP/MP/PS and PSD are not prerequisites for a lab using built-in local facilities and file
   archive installs. Neither Git fetching nor A63-1P is added to this scenario.
 - SV1 after 071 supplies the field, SV2/SV3 cover earlier cases, SV4 requires every later
-  order to tag its own. Manifest/runner changes stay with the admin, including S2-V.
-- Order 118 owns SCR; request the E02 extensions above. S2-H owns fault preparation. Order
-  119's S8 uses FLT-D; S3 and S10 use SEC-D. Sister plans are `experiments/014-s3-two-machines/plan.md`,
-  `experiments/015-s4-partial-setup/plan.md` and order 120's A63 plan; coordinate IDs, not duplicate builds.
+  order to tag its own. Manifest/runner changes stay with the admin, including FLT-D0/D3.
+- S4’s [plan](../015-s4-partial-setup/plan.md) owns SCR1/2; SCR2 supplies E02’s extensions. S2-H owns fault preparation. Order
+  119's S8 uses FLT-D; S3 and S10 use SEC-D. See [S3](../014-s3-two-machines/plan.md), [S4](../015-s4-partial-setup/plan.md)
+  and [PROVIDERS](../../docs/implementation/PROVIDERS.md); coordinate IDs, not duplicate builds.
 - A6 discovery/invocation traces come from T1/T4, refresh from T5's key rotation; S4 supplies
   the lost response. These are recorded during engine runs, not a new proxy probe.
+
+Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
 
 ## The order of the work
 
@@ -169,26 +204,27 @@ The engine path is the admin's batch-1 chain: 070 → S0b → 042/046a → 046b/
 The other join is S0c/051a plus 043a/043b and K3 → 052a-1/2 → 052b → 053.
 Do not replace the admin's splits with the older plan's unsplit 046/048/052 orders.
 
-After PIN, sequence SEC-D1 → SEC-D2 → SEC-D3, joining DSP from `s3/m2`; in a second lane,
-077 → FLT-D1 → FLT-D2. Join 052b/050 for S2-V and all preparation for S2-R1 → R2 → R3 → R4.
-B2-S → B2-C/B2-H merges only after the owner judges S1's rerun, and gates R1. Whichever of
-that judgment/batch-2 path, SEC-D/DSP or package/runtime preparation finishes last determines
-the critical path to R4. Runtime isolation and owner availability remain explicit joins.
+After PIN, FLT-D0 runs before FLT-D1 is sized. SEC-D1 → SEC-D2 → SEC-D3a/D3b joins
+DSP from `s3/m2`; FLT-D1 → FLT-D2 joins DSP too. Cases stay with passing/fixing orders as
+above; FLT-D3 follows D1/D2 for S8 independently. Join 052b/050 and preparation for R1 → R4.
+B2-S → B2-C/B2-H gates R1 after the S1 judgment. Isolated R3/R4 also wait M2-3/ADDR/DSP/DR.
+Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin): the admin interleaves SEC-D1 and FLT-D1
+with S3-L1/L2/RET1 in core, SEC-D2/D3a/D3b and FLT-D2 with S3-RET2 in shell. D0 follows
+071/SV1/PIN; D3 follows D1/D2. There is no parallel requests.rs merge lane.
 
 ## For the admin
 
-- **A1, split:** combine secrets in one order, or use SEC-D1–3 plus FLT-D1–2.
+- **A1, split:** combine secrets in one order, or use SEC-D1/D2/D3a/D3b plus FLT-D0–3.
   **Recommendation:** the proposed split, keeping each at most L; serialize core requests.rs
   edits and shell lib.rs/runner.rs edits, and assign private manifest pieces after 071.
 - **A2, placement:** integrate before PIN on a side branch, or after PIN on main.
   **Recommendation:** after PIN; use the existing `s3/m2` DSP work, not another dispatch build.
-- **A3, driver:** extend SCR, or build a second protocol client. **Recommendation:** extend
-  SCR with controlled-time synchronization, raw keyed replay/stale-call overrides and assertions;
-  keep the clock and faults in S2-H. Confirm this interface with order 118 before dispatch.
 
 ## For the owner
 
-No new question. Use the accepted O1–O5 answers; neither A22 nor optional 1Password is reopened.
+**M2-3 stays held:** isolated S2-R3/R4 need TLS termination at the engine's HTTPS address.
+Every runtime-provider run receives that address through DSP/079, including a local Docker run.
+No answer here; O1–O5 stand and no other S2 work waits on this choice.
 
 ## Limits
 

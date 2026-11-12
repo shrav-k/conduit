@@ -359,3 +359,30 @@ that it stopped waiting for, the lost-reply control's late answer never leaves t
 ledger shows `cancelled`, which S4-LATE must account for; that a cancellation can still drop an
 answer after the server's check; and that the hook answers `unavailable` to any filter, so a
 setup made through a filtered Conduit cannot run it. Do not stage anything.
+
+## Record
+
+**Not merged; stopped at the lane's checkpoint (2026-11-12).** Run on 2026-11-12 on the Mac, from
+base 7e963b1: the worker (1,087 s) and a fresh verifier (382 s), then a second worker round (283 s)
+and a fresh verifier (391 s). The branch `wo/144-s4-srv2-hook` holds both rounds. Round two's
+worker reports all 14 release tests passing, the archive the same twice, and the installation
+check passing on its loopback port. Round one's must was fixed in round two: the control refused a
+call giving only `revision`, which REV-006 allows; its should, a reader that accepted malformed
+event payloads, was fixed too.
+
+Round two's verifier left two musts, so a finishing order is the next step, stacked on this
+branch:
+
+1. **Required IFC-006 metadata:** the control and the reader accept a call with no Conduit ID
+   (`src/lib.rs`, near line 83), and the test helper omits it. Require a non-empty Conduit ID for
+   both, supply it in the helper, and test a missing and a malformed one, keeping the
+   revision-only control case.
+2. **Losing the control directory:** a call waiting at a barrier whose control directory is
+   removed polls for ever instead of recording `control-lost` and dropping (`src/barrier.rs`,
+   near line 69). Tell an unpublished release from a missing or unreadable directory, route the
+   loss through `control-lost` and a drop, and test removing the directory after `.reached`.
+
+The worker's findings: rmcp drops a late answer after the engine cancels a hook call, so it cannot
+reach S4-LATE (kept in S4-LATE's plan); a cancellation arriving after the server's check can still
+discard an answer, so `released` does not prove delivery; and the hook applies no filter, so a
+setup through a filtered Conduit cannot run it.

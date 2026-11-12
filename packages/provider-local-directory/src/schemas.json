@@ -1,0 +1,66 @@
+{
+  "operations": {
+    "fetch-package.v1": {
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/address.v1"
+          },
+          "version": {
+            "$ref": "#/$defs/version.v1"
+          },
+          "digest": {
+            "$ref": "#/$defs/digest.v1"
+          },
+          "fetch": {
+            "type": "string",
+            "format": "uri-reference",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "address",
+          "version",
+          "digest",
+          "fetch"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "archive": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+          }
+        },
+        "required": [
+          "archive"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "address.v1": {
+      "type": "string",
+      "allOf": [
+        {
+          "pattern": "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(/[a-z0-9][a-z0-9._-]*)*$"
+        },
+        {
+          "not": {
+            "pattern": "^[^/]*\\.[0-9]+(/|$)"
+          }
+        }
+      ]
+    },
+    "version.v1": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\\+[0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*)?$"
+    },
+    "digest.v1": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

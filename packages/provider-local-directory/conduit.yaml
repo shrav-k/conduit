@@ -1,0 +1,8 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/provider-local-directory
+version: 0.1.0
+exports: [local-directory.v1]
+implementations:
+  provider:
+    implements: [github.com/shrav-k/conduit/core#fetch-package.v1]
+    command: [bin/provider-local-directory]

@@ -1,0 +1,25 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/scenario-s4-effect
+version: 0.1.0
+exports: [apply-effect.v1, start-model-work.v1, read-effects.v1, effect-writing.v1, model-work.v1, effect-reading.v1, effect-plain.v1, effect-keyed.v1, effect-ledger.v1]
+implementations:
+  plain:
+    implements: ['#apply-effect.v1', '#start-model-work.v1']
+    command: [bin/scenario-s4-effect, plain]
+    plain: true
+    tools: {'#apply-effect.v1': apply-effect, '#start-model-work.v1': start-model-work}
+    environment:
+      S4_EFFECT_LEDGER: /ledger
+      S4_EFFECT_CONTROL: /control
+      S4_EFFECT_MODE: /mode
+  keyed:
+    implements: ['#apply-effect.v1']
+    command: [bin/scenario-s4-effect, keyed]
+    environment:
+      S4_EFFECT_LEDGER: /ledger
+      S4_EFFECT_CONTROL: /control
+  reader:
+    implements: ['#read-effects.v1']
+    command: [bin/scenario-s4-effect, read]
+    environment:
+      S4_EFFECT_LEDGER: /ledger

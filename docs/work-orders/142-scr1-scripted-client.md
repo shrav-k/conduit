@@ -313,3 +313,29 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target
 `target/` stays ignored and unstaged. Report whether the launch test ran, each choice this order
 leaves to you, and anything the plan or agent-codex leaves open, as your own choices and
 findings. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base c60825d: the worker (1,371 s) and a fresh verifier (450 s),
+then a second worker round (392 s) and a fresh verifier (447 s). Round one's three musts were fixed
+in round two: a trace could take a barrier file's name; option values equal to `resume` were read
+as the subcommand; and unknown fields went unnamed. Round two's verifier left three musts, which
+[order 148](148-scr1-finish.md) finished: a trace name in another case still collided with a
+barrier file on a case-insensitive file system; short redaction entries could corrupt an
+invalid-script report; and markers inside numbers escaped redaction, while a second pass could
+break the summary's JSON.
+
+The result: `experiments/015-s4-partial-setup/scripted-client/`, the crate `scr-client`, S4's
+scripted client, launched as an Agent through agent-codex's `--client-program`, authenticating
+only through the wrapper's header helper, sending keyed, fresh and unkeyed calls exactly once each
+through rmcp's raw request path, holding barriers by an acknowledged file handshake, and keeping
+redacted traces and a summary that completes the turn. Its tests ran on the Mac, the wrapper
+launch test included.
+
+The worker's findings: `script-deadline` was missing from the summary's list of causes and was
+added; the summary's call label is `call-INDEX`; an isolated run's `https` engine address needs
+TLS that this crate does not build, for the order that first needs it; and `tools/set_names.py`
+does not reach `experiments/`, so the names this crate copies from `spec/` need a manual update
+when they change. Its own choices include rmcp's automatic lifecycle (current discovery, with the
+older initialization as a fallback), literal loopback addresses only, symbolic-link barrier
+directories refused, and a shortened deadline injected only in a unit test.

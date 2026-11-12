@@ -38,6 +38,7 @@ expected outcomes and validation record together.
 | [019 — S8: search that returns only what the caller may see](019-s8-filtered-search/README.md) | S8: search over storage returning only what the caller may see. | [Pre-registered](019-s8-filtered-search/README.md) on 2026-11-11 by work order 103; accepted by the owner under ruling 75 D. |
 | [020 — S9: first start, later start and repair](020-s9-start-and-repair/README.md) | S9: first initialization, later start and explicit repair. | [Pre-registered](020-s9-start-and-repair/README.md) on 2026-11-11 by work order 102; accepted by the owner under ruling 75 D. |
 | [021 — S10: every provider swapped](021-s10-swapped-providers/README.md) | S10: S1 and S2 again with every provider swapped. | [Pre-registered](021-s10-swapped-providers/README.md) on 2026-11-11 by work order 103; accepted by the owner under ruling 75 D. |
+| [022 — provider-contract vectors](022-provider-contracts/README.md) | A63: the harness and the suites that show each provider passing its contract. | Built on 2026-11-11 by work order 123: the harness, with no suite yet. |
 | [023 — PB: a paper count of S1 in flow style](023-paper-count/README.md) | PB: S1's tasks counted on paper in flow style against the baseline, under ruling 63 and ruling 68's R1, after ruling 71 fixed the bar's rule. | Executed 2026-11-11, on paper; [results](023-paper-count/results-2026-11-11.md). |
 
 Keep draft syntax, static checks, synthetic tests and tests against live providers distinct.

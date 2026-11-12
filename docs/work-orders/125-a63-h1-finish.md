@@ -95,3 +95,17 @@ git status --porcelain --ignored $D | grep target/ | grep -v '^!!'
 
 `target/` stays ignored and unstaged. Report, for each of the three, the test that shows it fixed.
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, stacked on order 123's last commit (a487678): the worker in about
+9 minutes (565 s) and a fresh verifier in 5 minutes (295 s); then a second worker round in 4
+minutes (252 s) and a fresh verifier in 3.5 minutes (207 s), which found nothing to change. It
+closed the three findings: literal values of a call's `identity` and `secrets` and the keys under
+`labels` are redacted, skipping `$` references; and a rejection for the revision (-32022) is
+retried once at the newest revision both sides list, set through `PeerRequestOptions.meta`, never
+after a -32020 resend. Round one's must, fixed in round two: the retry's answer is held to the
+same accepted response variants as `call_tool_once`, so a malformed result cannot count as
+succeeded; its should, also fixed: a malformed list of supported revisions supplies none. The
+lane coordinator ran the crate's tests on the result: 53 passed. Merged with order 123 as one
+change.

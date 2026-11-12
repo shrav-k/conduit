@@ -1,6 +1,6 @@
 # Ruling 52: explicit refusals, submissions, enrollment's decisions and the measurement plan
 
-Status: in force; done (point 5: ruling 56); open (point 3: whether relative values go) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement); [SUB-010](../../../spec/promises/submissions.yaml) (spec pending except where a promise is cited). This record says why.
+Status: in force; done (point 5: ruling 56) (ruled by the owner on 2026-11-10). Holds now: [IN_FORCE.md: 4. Documents, templates, instantiation and submission](../../../IN_FORCE.md#4-documents-templates-instantiation-and-submission), [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement); [SUB-010](../../../spec/promises/submissions.yaml) (spec pending except where a promise is cited). This record says why.
 
 This is the record of a
 ruling. Where it and the specification differ, the specification governs.
@@ -32,3 +32,11 @@ canonical method. Measurement: Agreed".
   written where the specification states what a result and a diagnostic carry.
 - Finding 4-03 is settled; 4-08 is settled in direction, its promises still to be written.
 - Enrollment's promises wait for decision 5.
+
+## Later answers
+
+2026-11-12: the coordinator recommended closing point 3's open question, whether relative values
+go. They stay as SUB-010 has them: resolved where an engine is handed a directory, and refused
+where documents are carried, so a project that uses them cannot be applied as written. The owner:
+"Agree with all decisions except need more info on 2", and the whole answer is in [ruling 72's later answer](../ruling-72/README.md#later-answers). Point 3 is
+closed, and relative values stay.

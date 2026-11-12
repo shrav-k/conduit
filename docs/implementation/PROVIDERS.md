@@ -10,7 +10,7 @@
 > - Admin proposal A63-MDIS: place/list-machines dispatch beyond 051c's report loop.
 > - Admin decisions A/C/D (2026-11-11): harness at 022; MP1 local/MP2 qualification first; SSH crates separate.
 > - Admin decision B (2026-11-11): packaged locals accompany S10's unchanged configurations.
-> - Admin E: provisional D4 reading recorded below; S4 holds the common merge sequence.
+> - Admin E: the D4 reading recorded below, confirmed by the owner on 2026-11-12; S4 holds the common merge sequence.
 > - Owner holds: M2-1–4, including M2-3 for engine use of all runtime providers.
 > - Owner steps: distinct OS users for RP/H2 tests; keychain binary partition-list authorization.
 
@@ -303,14 +303,14 @@ slot too. Provider/harness crates stay outside those engine hot files and outsid
   SSH-R’s external stop-drainer helper survives server retirement and retries SSH to stop the
   recorded remote systemd units on next contact. Channel lifetime and the configured bound
   remain backstops; stop success cancels an in-flight start and permits no restart (081).
-- **E — admin's decision, 2026-11-11:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+- **E — admin's decision, 2026-11-11:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed it on 2026-11-12 ([ruling 75's later answer](../proposals/ruling-75/README.md#later-answers)).
 - **Uncovered dispatch, proposed:** accept A63-MDIS for place/list-machines beyond 051c's report
   loop, or assign that scope to an existing admin order. **Recommendation:** its own M order,
   with PRV-015 safety cases and an explicit slot in S4's canonical merge sequence.
 
 ## For the owner
 
-M2-1–M2-4 remain held, with no answer here. In particular engine use and engine-facing
+M2-1–M2-4 remain held, with no answer here, beside M2-5 (when the Windows computer is Conduit's) and M2-7 (WSL's memory cap); on 2026-11-12 the owner asked for more information and gave Ubuntu-24.04 as Conduit's distro, which leaves of M2-4 only the distro's lockdown. In particular engine use and engine-facing
 qualification of A63-RP/DR wait on **M2-3**, TLS termination for the HTTPS address every provider
 run receives through DSP/079. Direct suite tests use harness fixtures and do not resolve it.
 A63-OUS asks for distinct OS users before RP/H2 principal tests; A63-OKC asks for binary

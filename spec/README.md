@@ -593,6 +593,18 @@ it. Each point cites the promises that state its parts; the reasons are in the
   retired; a contract that keeps its stops through both has something that runs without that
   server carry them out, such as the provider's own part on the run's machine (PRV-021).
 
+### What the promises on records cover
+
+This is a statement of the limit of the promises on records, not a promise, and nothing tests
+it.
+
+- A loss of records outside the engine that the engine cannot tell is not reported, and a
+  record altered outside the engine where the engine does not find the change is read as it
+  now holds. Which outside losses an engine can tell is its choice, which its conformance
+  document states (REC-003, REC-006, DL8). A program that runs as the engine's operating-system
+  user is such an outside cause (REC-003). Making such a loss or alteration evident,
+  as a signed or chained log would, is not promised in this version.
+
 ## Checking
 
 Run these from the root of the repository:

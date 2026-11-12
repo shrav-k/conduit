@@ -30,3 +30,21 @@ necessary".
 ## What it amends
 
 Nothing that was ruled. It answers the acceleration plan's questions D3, D6 and D8.
+
+## Later answers
+
+2026-11-11: the owner needed the Windows computer and asked: "can we finish up our current tasks
+there and pause the environment until later when I ask you to resume?", then "You can close the
+distro, I don't have anything else running". The coordinator stopped and checkpointed the work
+orders running there and stopped the distro. The computer stays paused until the owner says to
+resume.
+
+2026-11-12: the coordinator put ten numbered questions to the owner. Among them were the Windows
+computer's decisions as item 2 (M2-1 to M2-5 and M2-7; M2-6 is settled by PLC-023), the labels of
+point 2's second subscription accounts as item 9, and whether Conduit should move into a WSL
+distro of its own as item 10. The owner's whole answer: "Agree with all decisions except need more
+info on 2, 3 just pause and let me know, 9 I will give you the new accounts in the morning, 10 you
+can just use that distro I use tor nothing else". Item 3 is recorded in
+[ruling 71](../ruling-71/README.md#later-answers). So Ubuntu-24.04, the computer's default distro,
+is Conduit's distro, and the other Windows decisions wait for the owner, who asked for more
+information.

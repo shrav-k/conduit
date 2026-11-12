@@ -188,6 +188,169 @@ fn real_npm_register_completes_setup_and_ends_runs_on_exit() {
 }
 
 #[test]
+fn https_serve_options_fail_before_writing_address_or_roots() {
+    let parent = tempfile::tempdir().unwrap();
+    let store = parent.path().join("store");
+    command(&store, "init", &[]);
+    let root = parent.path().join("roots.pem");
+    let root_arg = root.to_str().unwrap();
+    let cases = [
+        (
+            vec!["--https-url", "https://engine.example/mcp"],
+            "--https-listen",
+        ),
+        (vec!["--https-listen", "127.0.0.1:3443"], "--https-url"),
+        (
+            vec![
+                "--https-url",
+                "https://engine.example/mcp",
+                "--https-listen",
+                "192.0.2.1:3443",
+            ],
+            "127.0.0.1 or ::1",
+        ),
+        (
+            vec![
+                "--https-url",
+                "https://engine.example/mcp",
+                "--https-listen",
+                "localhost:3443",
+            ],
+            "--https-listen",
+        ),
+        (
+            vec![
+                "--https-url",
+                "https://engine.example/mcp",
+                "--https-listen",
+                "127.0.0.1:0",
+            ],
+            "nonzero port",
+        ),
+        (
+            vec![
+                "--https-url",
+                "https://engine.example/mcp",
+                "--https-listen",
+                "127.0.0.1:3000",
+            ],
+            "first listener",
+        ),
+        (
+            vec![
+                "--https-url",
+                "https://engine.example/mcp",
+                "--https-listen",
+                "[::ffff:127.0.0.1]:3443",
+            ],
+            "127.0.0.1 or ::1",
+        ),
+    ];
+    for (args, expected) in cases {
+        let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .arg("serve")
+            .arg("--store")
+            .arg(&store)
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains(expected),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(!store.join("engine-https-url.json").exists());
+        assert!(!store.join("engine-https-roots.pem").exists());
+    }
+    for (content, expected) in [
+        (
+            "-----BEGIN PRIVATE KEY-----\nAQID\n-----END PRIVATE KEY-----\n",
+            "PRIVATE KEY",
+        ),
+        ("", "at least one"),
+        ("stray text", "only CERTIFICATE"),
+    ] {
+        std::fs::write(&root, content).unwrap();
+        let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .arg("serve")
+            .arg("--store")
+            .arg(&store)
+            .args([
+                "--https-url",
+                "https://engine.example/mcp",
+                "--https-listen",
+                "127.0.0.1:3443",
+                "--https-roots",
+                root_arg,
+            ])
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        assert!(String::from_utf8_lossy(&output.stderr).contains(expected));
+        assert!(!store.join("engine-https-url.json").exists());
+        assert!(!store.join("engine-https-roots.pem").exists());
+    }
+    std::fs::write(
+        &root,
+        "-----BEGIN CERTIFICATE-----\nAQID\n-----END CERTIFICATE-----\n",
+    )
+    .unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .arg("serve")
+        .arg("--store")
+        .arg(&store)
+        .args(["--https-roots", root_arg])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("--https-url"));
+    for (option, value) in [
+        ("--https-url", "https://engine.example/mcp"),
+        ("--https-listen", "127.0.0.1:3443"),
+        ("--https-roots", root_arg),
+    ] {
+        for verb in ["init", "register", "tools"] {
+            let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+                .arg(verb)
+                .arg("--store")
+                .arg(&store)
+                .args([option, value])
+                .output()
+                .unwrap();
+            assert!(!output.status.success());
+            assert!(String::from_utf8_lossy(&output.stderr).contains("unknown argument"));
+            assert!(!store.join("engine-https-url.json").exists());
+            assert!(!store.join("engine-https-roots.pem").exists());
+        }
+    }
+    // DL13: a persisted audience still requires an explicit listener on every serve.
+    let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let config = conduit_shell::Config {
+        engine_https_url: Some("https://engine.example/mcp".into()),
+        ..conduit_shell::Config::for_store(&store).unwrap()
+    };
+    drop(
+        conduit_shell::Shell::open(
+            &store,
+            conduit_shell::boundary::context(&repository).unwrap(),
+            config,
+        )
+        .unwrap(),
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_conduit"))
+        .arg("serve")
+        .arg("--store")
+        .arg(&store)
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    let error = String::from_utf8_lossy(&output.stderr);
+    assert!(error.contains("--https-listen") && error.contains("https://engine.example/mcp"));
+    assert!(!store.join("engine-https-roots.pem").exists());
+}
+
+#[test]
 fn serve_management_commands_and_fixed_audience() {
     use std::time::{Duration, Instant};
     let parent = tempfile::tempdir().unwrap();

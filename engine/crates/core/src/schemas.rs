@@ -998,6 +998,23 @@ pub fn publish(
         .iter()
         .find(|o| o["id"] == conduit)
         .ok_or("unknown Conduit")?;
+    if [path["capability"].as_str().unwrap_or(""), operation]
+        .into_iter()
+        .any(|r| {
+            crate::registration::provider_only(r, &context.core_package, &context.core_environment)
+        })
+    {
+        return Ok((
+            json!({"tool":null,"reason":"refused"}),
+            decision(
+                "omit-provider-tool",
+                &["PRV-004"],
+                &[],
+                json!({"conduit":conduit,"operation":operation}),
+                vec![],
+            ),
+        ));
+    }
     if path["kind"] != "Conduit"
         || path["consumer"] != consumer
         || path["open"] != true

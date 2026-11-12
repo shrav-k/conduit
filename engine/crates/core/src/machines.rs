@@ -1799,10 +1799,45 @@ mod tests {
         conduit["name"] = json!("root-machines");
         conduit["local_name"] = json!("machines-call");
         conduit["target"] = p.clone();
-        conduit["capability"] = json!(h.c.qualified("machine-provider.v1"));
-        conduit["operations"] = json!([h.c.qualified("list-machines.v1")]);
+        // A non-core operation with the same local name is permitted (PRV-004).
+        let op = "example.org/ordinary#list-machines.v1";
+        let cap = "example.org/ordinary#ordinary.v1";
+        let o = h.s.objects.iter_mut().find(|o| o["id"] == p).unwrap();
+        let mut published = crate::registration::publication_object(o, &h.c).unwrap();
+        published.as_object_mut().unwrap().remove("held");
+        let core_scope = published["schema_environment"]["scopes"]["core"].clone();
+        let mut ordinary_scope = core_scope;
+        ordinary_scope["address"] = json!("example.org/ordinary");
+        ordinary_scope["exports"] = Value::Null;
+        ordinary_scope["contracts"] = json!({
+            "list-machines.v1":{"kind":"Operation","metadata":{"name":"list-machines.v1"},"spec":{"inputSchema":{"type":"object"},"outputSchema":{"type":"object"},"effect":"read"}},
+            "ordinary.v1":{"kind":"Capability","metadata":{"name":"ordinary.v1"},"spec":{"operations":[op]}}
+        });
+        published["schema_environment"]["scopes"]["ordinary"] = ordinary_scope;
+        for scope in published["schema_environment"]["scopes"]
+            .as_object_mut()
+            .unwrap()
+            .values_mut()
+        {
+            scope["manifest"]["example.org/ordinary"] = json!("ordinary");
+        }
+        let type_scope = published["contract_scope"].as_str().unwrap().to_owned();
+        let type_name = published["type"]
+            .as_str()
+            .unwrap()
+            .rsplit_once('#')
+            .unwrap()
+            .1
+            .to_owned();
+        published["schema_environment"]["scopes"][&type_scope]["contracts"][&type_name]["spec"]["offers"]
+            .as_array_mut().unwrap().push(json!(cap));
+        published["resolved_implementations"][op] =
+            published["resolved_implementations"][h.c.qualified("list-machines.v1")].clone();
+        *o = published;
+        conduit["capability"] = json!(cap);
+        conduit["operations"] = json!([op]);
         h.s.objects.push(conduit);
-        let request = json!({"kind":"invoke", "key":"list-machines", "request":{
+        let request = json!({"kind":"invoke", "key":"ordinary-list", "request":{
             "identity":{"kind":"instance","id":h.s.objects[4]["id"]},
             "tool":"machines-call.list-machines.v1", "arguments":{}
         }});
@@ -1856,12 +1891,20 @@ mod tests {
             );
             assert_eq!(before[0]["status"], "Unknown");
             assert_eq!(before[0]["reason"], "NodeUnavailable");
-            assert!(
-                ended.reply["structuredContent"]["diagnostics"][0]["message"]["text"]
-                    .as_str()
-                    .unwrap()
-                    .contains("PLC-023")
-            );
+            if ending == "stopped" {
+                assert!(
+                    ended.reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+                        .as_str()
+                        .unwrap()
+                        .contains("PLC-023")
+                );
+            } else {
+                // The dispatched work succeeded; no further work needs dispatch.
+                assert_eq!(
+                    ended.reply["_meta"][format!("{}outcome", h.c.meta_prefix)],
+                    "succeeded"
+                );
+            }
         }
     }
     fn register(h: &mut Harness, documents: Vec<Value>) -> Transition {
@@ -1884,6 +1927,213 @@ mod tests {
         };
         crate::step(&h.s, input, &h.c).unwrap()
     }
+    #[test]
+    fn provider_only_conduits_are_rejected_at_template_and_instance_registration() {
+        for capability in [
+            "runtime-provider.v1",
+            "machine-provider.v1",
+            "package-source.v1",
+        ] {
+            for dynamic in [false, true] {
+                let mut h = Harness::new();
+                let api = h.c.template("node").unwrap()["apiVersion"].clone();
+                let mut template = json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"forbidden"},"spec":{"capability":h.c.qualified(capability),"operations":[]}});
+                if dynamic {
+                    template["spec"]["inputs"] = json!({"operations":{"schema":{"type":"array","items":{"type":"string"}},"to":["/operations"]}});
+                }
+                let t = register(&mut h, vec![template]);
+                assert_eq!(t.reply["reason"], "invalid", "{}", t.reply);
+                assert!(
+                    t.reply["diagnostics"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|d| d["ruleId"] == "PRV-004"
+                            && d["message"]["text"].as_str().unwrap().contains(capability)),
+                    "{}",
+                    t.reply
+                );
+                assert_eq!(t.state.objects, h.s.objects);
+            }
+        }
+        let mut h = Harness::new();
+        h.provider();
+        let api = h.c.template("node").unwrap()["apiVersion"].clone();
+        // A previously stored template cannot bypass the instance check.
+        let source =
+            h.s.objects
+                .iter()
+                .find(|o| o["name"] == "fixture-machine")
+                .unwrap()
+                .clone();
+        let mut template = source;
+        template["kind"] = json!("Conduit");
+        template["name"] = json!("forbidden");
+        template["id"] = json!("forbidden-template");
+        template["spec"] = json!({"capability":h.c.qualified("machine-provider.v1"),"operations":[h.c.qualified("enroll.v1")]});
+        h.s.objects.push(template);
+        let t = register(
+            &mut h,
+            vec![
+                json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"forbidden-instance"},"from":"forbidden","consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Resource","name":"machines"}}),
+            ],
+        );
+        assert_eq!(t.reply["reason"], "invalid", "{}", t.reply);
+        assert!(
+            t.reply["diagnostics"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|d| d["ruleId"] == "PRV-004"),
+            "{}",
+            t.reply
+        );
+        assert_eq!(t.state.objects, h.s.objects);
+    }
+
+    #[test]
+    fn provider_operations_are_rejected_under_other_capabilities_and_input_filled_lists() {
+        for name in [
+            "enroll.v1",
+            "accept-machine.v1",
+            "remove-machine.v1",
+            "list-machines.v1",
+        ] {
+            for dynamic in [false, true] {
+                let mut h = Harness::new();
+                h.provider();
+                let api = h.c.template("node").unwrap()["apiVersion"].clone();
+                let mut template = json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"alternate"},"spec":{"capability":h.c.qualified("object-management.v1")}});
+                if dynamic {
+                    template["spec"]["inputs"] = json!({"operations":{"schema":{"type":"array","items":{"type":"string"}},"to":["/operations"]}});
+                } else {
+                    template["spec"]["operations"] = json!([h.c.qualified(name)]);
+                }
+                let mut documents = vec![template];
+                if dynamic {
+                    documents.push(json!({"apiVersion":api,"kind":"Conduit","metadata":{"name":"alternate-instance"},"from":"alternate","consumer":{"kind":"Interface","name":"root"},"target":{"kind":"Resource","name":"machines"},"arguments":{"operations":[h.c.qualified(name)]}}));
+                }
+                let t = register(&mut h, documents);
+                assert_eq!(t.reply["reason"], "invalid", "{}", t.reply);
+                assert!(
+                    t.reply["diagnostics"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|d| d["ruleId"] == "PRV-004"
+                            && d["message"]["text"].as_str().unwrap().contains(name)),
+                    "{}",
+                    t.reply
+                );
+                assert_eq!(t.state.objects, h.s.objects);
+            }
+        }
+    }
+
+    #[test]
+    fn provider_calls_cannot_become_tools_even_in_an_unvalidated_snapshot() {
+        for name in [
+            "run.v1",
+            "stop.v1",
+            "inspect-run.v1",
+            "list-machines.v1",
+            "place.v1",
+            "enroll.v1",
+            "accept-machine.v1",
+            "remove-machine.v1",
+            "fetch-package.v1",
+        ] {
+            let mut h = Harness::new();
+            let p = h.provider();
+            h.open(json!({}), json!(["fingerprint"]));
+            let mut machine =
+                Harness::machine(&json!("unattributed"), "m1", Harness::fingerprint());
+            machine["evidence"][0]["proves"] = json!("PRIVATE_EVIDENCE");
+            h.report(&p, json!([machine]));
+            assert_eq!(h.s.enrollments[0]["action"]["command"], "ACTION_MARKER");
+            assert!(
+                serde_json::to_string(&h.s.machine_report)
+                    .unwrap()
+                    .contains("PRIVATE_EVIDENCE")
+            );
+            let mut conduit = h.s.objects[5].clone();
+            conduit["id"] = json!("forbidden-conduit");
+            conduit["name"] = json!("forbidden-conduit");
+            conduit["local_name"] = json!("forbidden");
+            conduit["target"] = p;
+            // Operation identity governs even under another capability.
+            conduit["capability"] = json!(h.c.qualified("object-management.v1"));
+            conduit["operations"] = json!([h.c.qualified(name)]);
+            h.s.objects.push(conduit);
+            let invocations = h.s.invocations.clone();
+            let t = crate::step(
+                &h.s,
+                Input::ListTools {
+                    identity: crate::access::Identity::Instance {
+                        id: h.s.objects[4]["id"].as_str().unwrap().into(),
+                    },
+                },
+                &h.c,
+            )
+            .unwrap();
+            assert!(
+                !t.reply["tools"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|tool| tool["name"].as_str().unwrap().starts_with("forbidden."))
+            );
+            let (tool, decision) = crate::schemas::publish(
+                &h.s,
+                h.s.objects[4]["id"].as_str().unwrap(),
+                "forbidden-conduit",
+                &h.c.qualified(name),
+                &h.c,
+            )
+            .unwrap();
+            assert!(tool["tool"].is_null());
+            assert!(
+                serde_json::to_string(&decision)
+                    .unwrap()
+                    .contains("PRV-004")
+            );
+            let t = h.call(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":h.s.objects[4]["id"]},"tool":format!("forbidden.{name}"),"arguments":{}}}));
+            assert_eq!(
+                t.reply["_meta"][format!("{}reason", h.c.meta_prefix)],
+                "refused",
+                "{}",
+                t.reply
+            );
+            assert_eq!(
+                t.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+                "PRV-004"
+            );
+            assert!(t.external_intents.is_empty());
+            assert_eq!(t.state.invocations, invocations);
+            for visible in [
+                &t.reply,
+                &json!(t.decisions),
+                &json!(t.records),
+                &json!(t.state.records),
+            ] {
+                let text = serde_json::to_string(visible).unwrap();
+                assert!(!text.contains("ACTION_MARKER") && !text.contains("PRIVATE_EVIDENCE"));
+            }
+            let t = h.call(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":h.s.objects[4]["id"]},"tool":"access.open.v1","arguments":{"conduit":{"kind":"Conduit","name":"forbidden-conduit"}}}}));
+            assert_eq!(
+                t.reply["_meta"][format!("{}reason", h.c.meta_prefix)],
+                "refused",
+                "{}",
+                t.reply
+            );
+            assert_eq!(
+                t.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+                "PRV-004"
+            );
+            assert!(t.external_intents.is_empty());
+        }
+    }
+
     #[test]
     fn prv013_registration_rejects_second_provider_and_other_owner() {
         let mut h = Harness::new();
@@ -2409,6 +2659,106 @@ mod tests {
         assert!(message.contains("m1") && message.contains("worker"));
         assert!(conflict.external_intents.is_empty());
     }
+    #[test]
+    fn setup_on_an_unavailable_node_only_gates_required_dispatch() {
+        for mode in ["headerless", "retained-hook", "new-hook", "headers", "run"] {
+            let mut h = Harness::new();
+            let (p, mut m) = remote_provider(&mut h);
+            if mode != "run" {
+                let o = h.s.objects.iter_mut().find(|o| o["id"] == p).unwrap();
+                o["resolved_implementations"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove(&h.c.qualified("setup-hook.v1"));
+                for implementation in o["resolved_implementations"]
+                    .as_object_mut()
+                    .unwrap()
+                    .values_mut()
+                {
+                    implementation["item"] = if mode == "headers" {
+                        json!({"remote":{"url":"https://fixture.invalid/","headers":{}}})
+                    } else {
+                        json!({"remote":{"url":"https://fixture.invalid/"}})
+                    };
+                }
+                if mode == "new-hook" || mode == "retained-hook" {
+                    o["resolved_implementations"][h.c.qualified("setup-hook.v1")] =
+                        o["resolved_implementations"][h.c.qualified("list-machines.v1")].clone();
+                    if mode == "retained-hook" {
+                        h.s.invocations.push(json!({"id":"prior-setup-hook","hook":true,"target":p,"operation":h.c.qualified("setup-hook.v1"),"state":"succeeded","retained":{"outputs":{},"content":[]}}));
+                    }
+                }
+            }
+            m["state"] = json!("unreachable");
+            h.report(&p, json!([m]));
+            let setup = setup_provider(&mut h, "setup");
+            let no_work = mode == "headerless" || mode == "retained-hook";
+            assert_eq!(
+                setup.reply["_meta"][format!(
+                    "{}{}",
+                    h.c.meta_prefix,
+                    if no_work { "outcome" } else { "reason" }
+                )],
+                if no_work { "succeeded" } else { "unavailable" },
+                "{mode}: {}",
+                setup.reply
+            );
+            assert!(setup.external_intents.is_empty(), "{mode}");
+            if !no_work {
+                assert_eq!(
+                    setup.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+                    "PLC-023"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn setup_rechecks_required_hook_dispatch_after_node_loss() {
+        for retained in [false, true] {
+            let mut h = Harness::new();
+            let (p, mut m) = remote_provider(&mut h);
+            let op = h.c.qualified("setup-hook.v1");
+            let o = h.s.objects.iter_mut().find(|o| o["id"] == p).unwrap();
+            o["resolved_implementations"][&op] =
+                o["resolved_implementations"][h.c.qualified("list-machines.v1")].clone();
+            if retained {
+                h.s.invocations.push(json!({"id":"prior-setup-hook","hook":true,"target":p,"operation":op,"state":"succeeded","retained":{"outputs":{},"content":[]}}));
+            }
+            let setup = setup_provider(&mut h, "setup");
+            assert_eq!(
+                setup.external_intents[0]["operation"],
+                h.c.qualified("inspect-run.v1")
+            );
+            m["state"] = json!("unreachable");
+            h.report(&p, json!([m]));
+            let ended = h.call(json!({"kind":"setup-report","invocation":setup.reply["invocation"],"report":{"kind":"inspect-run","state":"running"}}));
+            assert!(ended.external_intents.is_empty());
+            assert_eq!(
+                ended.reply["_meta"][format!("{}outcome", h.c.meta_prefix)],
+                // OPS-022: successful run work followed by a withheld hook is
+                // an unknown composite outcome, with the part unavailable.
+                if retained { "succeeded" } else { "unknown" },
+                "{}",
+                ended.reply
+            );
+            if !retained {
+                assert!(
+                    access::object(&h.s, &p).unwrap()["status"]["setup"]["parts"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|part| part["name"] == "machine-ready"
+                            && part["outcome"] == "unavailable")
+                );
+                assert_eq!(
+                    ended.reply["structuredContent"]["diagnostics"][0]["ruleId"],
+                    "PLC-023"
+                );
+            }
+        }
+    }
+
     #[test]
     fn retirement_on_an_unavailable_node_only_gates_required_dispatch() {
         for mode in ["never-set-up", "no-hook-or-stop", "retained-hook"] {

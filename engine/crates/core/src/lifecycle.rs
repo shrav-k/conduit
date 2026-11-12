@@ -436,6 +436,58 @@ fn declarations(s: &State, o: &Value, slot: &str) -> Result<Vec<(String, Value)>
     }
     Ok(ordered)
 }
+fn implementation_needs_dispatch(o: &Value) -> bool {
+    o["resolved_implementations"]
+        .as_object()
+        .into_iter()
+        .flat_map(|items| items.values())
+        .any(|v| {
+            v["item"].get("command").is_some()
+                || v["item"].get("package").is_some()
+                || v["item"]["remote"].get("headers").is_some()
+        })
+}
+
+fn hook_needs_dispatch(s: &State, o: &Value, c: &Context) -> bool {
+    let op = c.qualified("setup-hook.v1");
+    o["resolved_implementations"].get(&op).is_some() && requests::hook_needs_dispatch(s, o, &op)
+}
+
+// TPL-012: a headerless remote without a hook dispatches no setup work.
+// Account checking (PND-005 / CTR-013) is not built yet (order 048a).
+pub(crate) fn needs_dispatch(s: &State, o: &Value, c: &Context) -> bool {
+    implementation_needs_dispatch(o) || hook_needs_dispatch(s, o, c)
+}
+
+fn unavailable_setup(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    o: &Value,
+) -> Result<bool> {
+    let Some(node) = crate::machines::unavailable_node(&t.state, o) else {
+        return Ok(false);
+    };
+    let cause = format!(
+        "PLC-023: node {} ({}) Ready is not True",
+        node["name"], node["id"]
+    );
+    part(
+        t,
+        i,
+        "machine-ready",
+        "unavailable",
+        false,
+        false,
+        Value::Null,
+    );
+    t.state.invocations[i]["setup"]["machine_unavailable"] = json!(cause);
+    settle(t, a, c, i)?;
+    crate::machines::unavailable_diagnostic(t, &cause);
+    Ok(true)
+}
+
 fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> Result<()> {
     let v = t.state.invocations[i].clone();
     let o = access::object(&t.state, &v["object"])
@@ -634,27 +686,10 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
         }
         t.state.invocations[i]["setup"]["phase"] = json!("implementations");
     }
-    if let Some(node) = crate::machines::unavailable_node(&t.state, &o)
-        && o["resolved_implementations"]
-            .as_object()
-            .is_some_and(|items| items.values().any(|v| v["source"] != "engine"))
+    if t.state.invocations[i]["setup"]["phase"] == "implementations"
+        && implementation_needs_dispatch(&o)
+        && unavailable_setup(t, a, c, i, &o)?
     {
-        let cause = format!(
-            "PLC-023: node {} ({}) Ready is not True",
-            node["name"], node["id"]
-        );
-        part(
-            t,
-            i,
-            "machine-ready",
-            "unavailable",
-            false,
-            false,
-            Value::Null,
-        );
-        t.state.invocations[i]["setup"]["machine_unavailable"] = json!(cause);
-        settle(t, a, c, i)?;
-        crate::machines::unavailable_diagnostic(t, &cause);
         return Ok(());
     }
     if t.state.invocations[i]["setup"]["phase"] == "implementations" {
@@ -726,6 +761,9 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
         t.state.invocations[i]["setup"]["phase"] = json!("hook");
     }
     if t.state.invocations[i]["setup"]["phase"] == "hook" {
+        if hook_needs_dispatch(&t.state, &o, c) && unavailable_setup(t, a, c, i, &o)? {
+            return Ok(());
+        }
         let op = c.qualified("setup-hook.v1");
         if let Some(implementation) = o["resolved_implementations"].get(&op) {
             crate::requests::setup_hook(t, a, c, i, &o, implementation)?;
@@ -967,6 +1005,16 @@ pub(crate) fn report(
                 },
                 &v["object"],
             );
+            if state == "stopped"
+                && node_unavailable
+                && v["cancelled"] != true
+                && access::object(&t.state, &v["object"]).unwrap()["state"] != "retired"
+            {
+                let o = access::object(&t.state, &v["object"]).unwrap().clone();
+                unavailable_setup(t, &mut a, c, i, &o)?;
+                child_ended(t, &mut a, c, i)?;
+                return Ok(());
+            }
             if state == "stopped"
                 && !node_unavailable
                 && v["cancelled"] != true

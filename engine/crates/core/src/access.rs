@@ -436,6 +436,14 @@ pub(crate) fn evaluate(
     let Some((path, op)) = selected else {
         return Ok(Verdict::reason("refused", "ACC-001"));
     };
+    if std::iter::once(path["capability"].as_str().unwrap_or(""))
+        .chain(std::iter::once(op))
+        .any(|r| {
+            crate::registration::provider_only(r, &context.core_package, &context.core_environment)
+        })
+    {
+        return Ok(Verdict::reason("refused", "PRV-004"));
+    }
     if op == context.qualified("get-secret.v1") {
         return Ok(Verdict::reason("refused", "SEC-007"));
     }
@@ -556,6 +564,18 @@ fn evaluate_path(
             return Ok(Verdict::reason("refused", "ACC-024"));
         }
         if opening {
+            if std::iter::once(conduit["capability"].as_str().unwrap_or(""))
+                .chain(values(conduit, "operations").filter_map(Value::as_str))
+                .any(|r| {
+                    crate::registration::provider_only(
+                        r,
+                        &context.core_package,
+                        &context.core_environment,
+                    )
+                })
+            {
+                return Ok(Verdict::reason("refused", "PRV-004"));
+            }
             // ACC-054 / SEC-008: an onward request is never root's own act.
             if id(&conduit["consumer"]) == &root["id"]
                 && (instance["id"] != root["id"] || request.serving.is_some())

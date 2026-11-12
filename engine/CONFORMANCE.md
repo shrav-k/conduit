@@ -419,9 +419,19 @@ Late run and inspection endings record the provider's result but cannot restore 
 observation while the node is unavailable; a late stopped inspection starts no run.
 PLC-023 gates work that would dispatch: a successful keyed repeat still returns its retained
 result under OPS-009 after node loss, with fresh access checks.
+Setup likewise requires node availability only for a run, a remote connection with headers,
+or a setup hook that needs dispatch. Headerless remote implementations alone dispatch no
+setup work beyond declarations (TPL-012); a retained hook outcome needs no dispatch.
+Account checks remain unfinished under order 048a and must join this gate when built.
 Retirement without a prior setup succeeds without dispatch under LIF-025 and TPL-009,
 even on an unavailable node. After setup, retirement needs node availability only for a
 new retire hook or a stop; reusing a completed hook requires no dispatch.
+
+PRV-004 rejects provider capabilities and their qualified core operations at Conduit template
+registration and instantiation, including operation lists filled by inputs. Authorization and
+tool publication also withhold them in unvalidated snapshots, so generic calls cannot disclose
+enrollment actions or machine evidence. An operation of another package with the same local
+name remains permitted.
 
 The coordinator's acceptance decision in this order's
 [Record](../docs/work-orders/049a1-build-enrollment-core.md#record) serializes admission

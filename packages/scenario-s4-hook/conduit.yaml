@@ -1,0 +1,13 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/scenario-s4-hook
+version: 0.1.0
+exports: [read-hook-ledger.v1, set-blocked-by.v1, hook-ledger-reading.v1, hook-settings.v1, s4-hook.v1, s4-hook-ledger.v1]
+implementations:
+  hook:
+    implements:
+    - github.com/shrav-k/conduit/core#setup-hook.v1
+    - '#set-blocked-by.v1'
+    command: [bin/scenario-s4-hook, hook]
+  reader:
+    implements: ['#read-hook-ledger.v1']
+    command: [bin/scenario-s4-hook, read]

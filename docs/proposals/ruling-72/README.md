@@ -72,3 +72,12 @@ second Claude and ChatGPT subscriptions) and the Linear account, on the primary 
 widens point 2's test of Conduit's authentication and changes no decision: every one of these
 logins, primary, second and Linear, is to be signed in through Conduit's Interface login flow
 ([ruling 73](../ruling-73/README.md), [ruling 75](../ruling-75/README.md), C) in testing.
+
+2026-11-12, last: asked whether the second accounts could also give the work orders more
+capacity while the owner's own allowance runs low, the owner: "I want to wait to use the second
+accounts as a test for authentication flows within conduit rather than using them now", and "I
+want to use this within conduit as a test of agent subscription isolation and our entire model".
+So the second accounts are used only through Conduit, signed in through its Interface login flow,
+as the test of each Agent's own subscription and of the model as a whole; they give the work
+orders no capacity outside Conduit.
+

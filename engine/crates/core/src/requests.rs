@@ -829,7 +829,10 @@ fn invoke_inner(
         }
         let filtered = route["filters"].as_array().is_some_and(|f| !f.is_empty());
         let readonly = read_only(&contract["spec"]);
-        redispatch = old["state"] == "failed"
+        // A serialized enrollment rejection has a reason, not a retained
+        // outcome (OPS-005); a new request must pass its checks again.
+        redispatch = old["state"] == "rejected"
+            || old["state"] == "failed"
             || old["state"] == "unknown"
                 && old["plain"] != true
                 && contract["spec"]["deduplicates"] == true
@@ -893,9 +896,13 @@ fn invoke_inner(
             .iter()
             .any(|n| op == c.qualified(n))
         && let Some(subject) = access::object(&t.state, &route["arguments"]["instance"])
-        && subject["resolved_implementations"]
-            .as_object()
-            .is_some_and(|items| items.values().any(|v| v["source"] != "engine"))
+        && (if op == c.qualified("retire.v1") {
+            crate::retirement::needs_dispatch(&t.state, subject, c)
+        } else {
+            subject["resolved_implementations"]
+                .as_object()
+                .is_some_and(|items| items.values().any(|v| v["source"] != "engine"))
+        })
         && let Some(node) = crate::machines::unavailable_node(&t.state, subject)
     {
         let cause = format!(
@@ -1516,7 +1523,8 @@ pub(crate) fn cancel(
         if failed { "failed" } else { "unknown" },
         json!({}),
         json!([]),
-    )
+    )?;
+    crate::machines::cancelled_acceptance(t, &mut a, c, i)
 }
 pub(crate) fn expire(t: &mut Transition, id: &str) -> Result<()> {
     let v = t

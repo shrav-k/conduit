@@ -75,6 +75,23 @@ fn run(o: &Value) -> Option<Value> {
         .find(|x| x["item"].get("command").is_some() || x["item"].get("package").is_some())
         .cloned()
 }
+fn ever_setup(s: &State, o: &Value, c: &Context) -> bool {
+    s.invocations
+        .iter()
+        .any(|v| v["operation"] == c.qualified("set-up.v1") && v["object"] == o["id"])
+}
+// PLC-023 gates work, not the presence of an external implementation. LIF-025
+// and TPL-009 settle retirement without setup, or without a new hook or stop.
+pub(crate) fn needs_dispatch(s: &State, o: &Value, c: &Context) -> bool {
+    ever_setup(s, o, c)
+        && (run(o).is_some()
+            || o["resolved_implementations"]
+                .get(c.qualified("retire-hook.v1"))
+                .is_some_and(|implementation| {
+                    implementation["source"] != "engine"
+                        && requests::hook_needs_dispatch(s, o, &c.qualified("retire-hook.v1"))
+                }))
+}
 fn event(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -209,12 +226,7 @@ pub(crate) fn execute(
         json!({"state":"retired","shutdown":shutdown}),
     )?;
     close_ends(t, a, c, i, &o["id"], false)?;
-    let ever_setup = t
-        .state
-        .invocations
-        .iter()
-        .any(|v| v["operation"] == c.qualified("set-up.v1") && v["object"] == o["id"]);
-    if !ever_setup {
+    if !ever_setup(&t.state, o, c) {
         return settle(t, a, c, i, o);
     }
     if o["resolved_implementations"]
@@ -255,7 +267,9 @@ fn hook(
     i: usize,
     o: &Value,
 ) -> Result<()> {
-    if let Some(node) = crate::machines::unavailable_node(&t.state, o) {
+    if requests::hook_needs_dispatch(&t.state, o, &c.qualified("retire-hook.v1"))
+        && let Some(node) = crate::machines::unavailable_node(&t.state, o)
+    {
         let cause = format!(
             "PLC-023: node {} ({}) Ready is not True",
             node["name"], node["id"]

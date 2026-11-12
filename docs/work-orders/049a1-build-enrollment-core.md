@@ -645,3 +645,26 @@ Report:
 - each check's last line.
 
 Do not stage anything.
+
+## Record
+
+2026-11-12, verifier repair round. The admin supplied the following coordinator decision,
+logged for the owner to strike, to settle overlapping acceptances (ENR-006, ENR-007,
+PLC-026):
+
+> One machine has at most one live node, as Kubernetes registers one Node per name.
+> Acceptances of the same machine (the same ENR-002 machine id) are decided one at a time,
+> in the order the engine begins them, as PKG-032 decides installs. An acceptance that finds
+> a live node for that machine is refused with conflict, and its message names the existing
+> node and the machine id (ruling 52). A repeat of the same accepted request answers as its
+> first did (OPS-009) and publishes nothing new. A machine whose node was removed, or
+> declared lost, can be accepted again.
+
+The core applies this decision by provider Resource and machine id. It records provider
+endings as they arrive, holds later successful acceptance endings until earlier acceptances settle,
+and checks for a live node atomically before publication. Regression tests cover both
+completion orders, one successful admission and one conflict, one live node, and the
+successful request's repeat. The ENR promises need this serialization and conflict rule
+written by the admin's next specification order; this repair changes no specification.
+PLC-023's retirement gate now follows the work required: no prior setup needs no dispatch
+(LIF-025, TPL-009); after setup, only a new hook or stop needs node availability.

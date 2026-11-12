@@ -382,7 +382,12 @@ pub fn assemble(files: &Files) -> Result<Value> {
     for (name, bytes) in files {
         if schema_file(name, "case-schema/inputs") {
             let branch = Ordered::parse(bytes).map_err(|e| format!("{name}: {e}"))?;
-            let expected = format!("{}.json", input_name(&branch)?);
+            let expected = format!(
+                "{}.json",
+                input_name(&branch).map_err(|e| format!(
+                    "{name}: {e}; give the input branch properties.kind.const or a nonempty properties.kind.enum containing a valid piece name"
+                ))?
+            );
             if Path::new(name)
                 .file_name()
                 .is_none_or(|n| n != expected.as_str())
@@ -563,7 +568,20 @@ pub fn split(
     }
     if !incoming.is_empty() {
         if let Some(baseline) = &baseline_elements {
+            // Git can restore only one inline region during a rebase. A placeholder
+            // in the other region means it is already split, not that its elements
+            // were retired. The false branch also survives beside new inline inputs.
+            let split_inputs = schema
+                .at(INPUTS)?
+                .array()?
+                .contains(&Ordered::Scalar(Value::Bool(false)));
+            let split_expect = schema.at(EXPECT)?.object()?.is_empty();
             for name in baseline.keys() {
+                if schema_file(name, "case-schema/inputs") && split_inputs
+                    || schema_file(name, "case-schema/expect") && split_expect
+                {
+                    continue;
+                }
                 if !incoming.contains_key(name) {
                     return Err(format!(
                         "{name}: schema element removed inline; retire it by deleting its piece, not --merge"
@@ -925,7 +943,12 @@ mod tests {
 
     #[test]
     fn merge_rejects_schema_removal_and_split_root() {
-        let original = fixture();
+        let mut original = fixture();
+        let mut schema = read(&original, SCHEMA).unwrap().value();
+        schema
+            .pointer_mut("/properties/steps/items/properties/expect/properties")
+            .unwrap()["other"] = json!({"type":"string"});
+        put(&mut original, SCHEMA, schema);
         let mut incoming = split_fixture();
         let mut schema = read(&original, SCHEMA).unwrap().value();
         schema
@@ -933,7 +956,7 @@ mod tests {
             .unwrap()
             .as_object_mut()
             .unwrap()
-            .clear();
+            .remove("reply");
         put(&mut incoming, SCHEMA, schema);
         assert_unchanged_error(
             &incoming,
@@ -946,6 +969,30 @@ mod tests {
             Some(&split_fixture()),
             &BTreeSet::new(),
             "has no cases",
+        );
+
+        let mut original = fixture();
+        let mut schema = read(&original, SCHEMA).unwrap().value();
+        schema
+            .pointer_mut("/properties/steps/items/properties/input/oneOf")
+            .unwrap()
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"properties":{"kind":{"const":"two"}}}));
+        put(&mut original, SCHEMA, schema.clone());
+        let mut incoming = apply(&original, split(&original, None, &BTreeSet::new()).unwrap());
+        schema
+            .pointer_mut("/properties/steps/items/properties/input/oneOf")
+            .unwrap()
+            .as_array_mut()
+            .unwrap()
+            .remove(0);
+        put(&mut incoming, SCHEMA, schema);
+        assert_unchanged_error(
+            &incoming,
+            Some(&original),
+            &BTreeSet::new(),
+            "case-schema/inputs/one.json: schema element removed inline",
         );
     }
 
@@ -980,7 +1027,13 @@ mod tests {
             .unwrap()
             .push(json!({"properties":{"kind":{"enum":["two","three"]}}}));
         put(&mut files, SCHEMA, schema);
+        // A split input region with an inline addition is also valid in merge mode.
+        let merged = apply(
+            &files,
+            split(&files, Some(&fixture()), &BTreeSet::new()).unwrap(),
+        );
         let result = apply(&files, split(&files, None, &BTreeSet::new()).unwrap());
+        assert_eq!(merged, result);
         assert!(result.contains_key("case-schema/inputs/two.json"));
         assert_eq!(
             assemble(&result)
@@ -992,6 +1045,22 @@ mod tests {
                 .len(),
             2
         );
+    }
+
+    #[test]
+    fn malformed_input_piece_names_file_and_repair() {
+        let mut files = split_fixture();
+        let name = "case-schema/inputs/one.json";
+        for invalid in [json!({}), json!({"properties":{"kind":{"const":"../bad"}}})] {
+            put(&mut files, name, invalid);
+            let error = assemble(&files).unwrap_err();
+            assert!(error.contains(name), "{error}");
+            assert!(
+                error.contains("give the input branch properties.kind.const"),
+                "{error}"
+            );
+            assert!(error.contains("valid piece name"), "{error}");
+        }
     }
 
     #[test]

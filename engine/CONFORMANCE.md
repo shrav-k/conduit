@@ -419,6 +419,19 @@ Late run and inspection endings record the provider's result but cannot restore 
 observation while the node is unavailable; a late stopped inspection starts no run.
 PLC-023 gates work that would dispatch: a successful keyed repeat still returns its retained
 result under OPS-009 after node loss, with fresh access checks.
+Retirement without a prior setup succeeds without dispatch under LIF-025 and TPL-009,
+even on an unavailable node. After setup, retirement needs node availability only for a
+new retire hook or a stop; reusing a completed hook requires no dispatch.
+
+The coordinator's acceptance decision in this order's
+[Record](../docs/work-orders/049a1-build-enrollment-core.md#record) serializes admission
+decisions by provider Resource and machine id, in acceptance begin order. Provider endings
+may arrive in either order: a later success waits with its checked enrollment snapshot until
+earlier acceptances settle. Immediately before publishing a node, a successful acceptance
+checks for a live node for that provider/id. If one exists it reports conflict naming the node
+and machine id, and publishes nothing. Successful keyed repeats return their retained result
+without publishing again; removal or declaring the old node lost permits a later admission.
+The ENR promises still need the coordinator's decision written into them.
 
 Request-caused enrollment transitions retain REC-002 attribution (caller, target, operation,
 invocation, Conduit, consumer, serving invocation and idempotency key where applicable),

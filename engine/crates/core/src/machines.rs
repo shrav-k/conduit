@@ -364,6 +364,14 @@ pub(crate) fn preflight(
         if mismatch {
             failures.insert(0,json!({"check":8,"cause":if args.get("fingerprint").is_none() {"typed fingerprint is missing"} else {"typed fingerprint does not equal the reported value"}}));
         }
+        if let Some(node) = p.and_then(|p| node_for(&t.state, &p["id"], &args["machine"], c)) {
+            let failure = json!({"check":3,"cause":format!("machine {} already has live node {} ({})", args["machine"], node["name"], node["id"])});
+            if let Some(old) = failures.iter_mut().find(|f| f["check"] == 3) {
+                *old = failure;
+            } else {
+                failures.push(failure);
+            }
+        }
         if !failures.is_empty() {
             let reason = if mismatch { "invalid" } else { "conflict" };
             let diagnostics=failures.iter().map(|f|json!({"ruleId":"ENR-006","level":"error","message":{"text":format!("ENR-006 check {}: {}",f["check"],f["cause"].as_str().unwrap())}})).collect::<Vec<_>>();
@@ -509,6 +517,15 @@ pub(crate) fn execute(
         t.state.enrollments.push(e);
         emit(t, a, c, i, &p, "enroll.v1", inputs)
     } else if v["operation"] == c.qualified("admit-machine.v1") {
+        let order = t
+            .state
+            .invocations
+            .iter()
+            .filter_map(|v| v["acceptance_order"].as_u64())
+            .max()
+            .unwrap_or(0)
+            + 1;
+        t.state.invocations[i]["acceptance_order"] = json!(order);
         t.state.invocations[i]["machine_wait"] = json!("accept-machine");
         let m = report_machines(&t.state)
             .iter()
@@ -674,6 +691,38 @@ pub(crate) fn report(
         .iter()
         .position(|e| &e["id"] == eid)
         .ok_or("report enrollment missing")?;
+    if kind == "accept-machine" {
+        // ENR-006/007, PLC-026: settle acceptances of one provider/id in the
+        // order they began, even when the provider endings arrive out of order.
+        // Keep checked evidence only with its enrollment (ENR-003/007).
+        if outcome == "succeeded" {
+            t.state.enrollments[ei]["accepting"][v["id"].as_str().unwrap()]["outcome"] =
+                json!(outcome);
+        } else {
+            // ENR-007: failed/unknown provider calls end immediately and publish
+            // nothing. Only successful publication waits for earlier decisions.
+            release_acceptance(&mut t.state.enrollments[ei], &v["id"]);
+            finish(
+                t,
+                a,
+                c,
+                i,
+                outcome,
+                json!({}),
+                "ENR-007",
+                "machine provider call did not succeed; nothing retried",
+            )?;
+        }
+        settle_acceptances(t, a, c, &v["machine_provider"], &v["arguments"]["machine"])?;
+        t.reply = t
+            .request_replies
+            .iter()
+            .rev()
+            .find(|r| r.invocation == v["id"].as_str().unwrap())
+            .map(|r| r.reply.clone())
+            .unwrap_or_else(|| json!({"pending":true,"invocation":v["id"]}));
+        return Ok(());
+    }
     if outcome != "succeeded" {
         if kind == "enroll" {
             t.state.enrollments.remove(ei);
@@ -786,6 +835,92 @@ fn release_acceptance(e: &mut Value, invocation: &Value) {
             e.as_object_mut().unwrap().remove("accepting");
         }
     }
+}
+pub(crate) fn cancelled_acceptance(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+) -> Result<()> {
+    let v = t.state.invocations[i].clone();
+    if v["operation"] != c.qualified("admit-machine.v1") {
+        return Ok(());
+    }
+    if let Some(e) = t
+        .state
+        .enrollments
+        .iter_mut()
+        .find(|e| e["id"] == v["arguments"]["enrollment"])
+    {
+        release_acceptance(e, &v["id"]);
+    }
+    let reply = t.reply.clone();
+    settle_acceptances(t, a, c, &v["machine_provider"], &v["arguments"]["machine"])?;
+    t.reply = reply;
+    Ok(())
+}
+fn settle_acceptances(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    provider: &Value,
+    machine: &Value,
+) -> Result<()> {
+    // A repeat of a failed request replaces its old invocation slot, so the
+    // explicit begin order, rather than the slot, determines serialization.
+    let mut pending = t
+        .state
+        .invocations
+        .iter()
+        .enumerate()
+        .filter(|(_, v)| {
+            v["state"] == "in-progress"
+                && v["operation"] == c.qualified("admit-machine.v1")
+                && v["machine_provider"] == *provider
+                && v["arguments"]["machine"] == *machine
+        })
+        .map(|(i, v)| (v["acceptance_order"].as_u64().unwrap_or(i as u64), i))
+        .collect::<Vec<_>>();
+    pending.sort_unstable();
+    for (_, i) in pending {
+        let v = t.state.invocations[i].clone();
+        let ei = t
+            .state
+            .enrollments
+            .iter()
+            .position(|e| e["id"] == v["arguments"]["enrollment"])
+            .ok_or("acceptance enrollment missing")?;
+        if t.state.enrollments[ei]["accepting"][v["id"].as_str().unwrap()]["outcome"] != "succeeded"
+        {
+            break;
+        }
+        if let Some(node) = node_for(&t.state, provider, machine, c) {
+            let cause = format!(
+                "ENR-006 check 3: machine {machine} already has live node {} ({})",
+                node["name"], node["id"]
+            );
+            release_acceptance(&mut t.state.enrollments[ei], &v["id"]);
+            t.state.invocations[i]["state"] = json!("rejected");
+            let route = json!({"target":v["target"],"caller":v["caller"],"consumer":v["sender"],"conduit":v["conduit"],"operation":v["operation"],"serving":v["serving"]});
+            requests::reject(t, a, c, &route, "conflict", "ENR-006", Some(&v["id"]), None)?;
+            t.reply["structuredContent"] = json!({"diagnostics":[{"ruleId":"ENR-006","level":"error","message":{"text":cause}}]});
+            t.request_replies.push(crate::RequestReply {
+                invocation: v["id"].as_str().unwrap().into(),
+                attempt: v["attempt"].as_u64().unwrap(),
+                reply: t.reply.clone(),
+            });
+            requests::record(
+                t,
+                a,
+                c,
+                "invocation-ended",
+                json!({"target":v["target"],"invocation":v["id"],"caller":v["caller"],"consumer":v["sender"],"operation":v["operation"],"attempt":v["attempt"],"reason":"conflict"}),
+            )?;
+        } else {
+            admit_node(t, a, c, i, ei)?;
+        }
+    }
+    Ok(())
 }
 fn admit_node(
     t: &mut Transition,
@@ -2099,6 +2234,234 @@ mod tests {
         );
         assert_eq!(ended.reply["structuredContent"]["node"]["name"], "worker");
         assert!(h.s.enrollments[0].get("accepting").is_none());
+    }
+    #[test]
+    fn overlapping_successful_acceptances_publish_one_node_in_begin_order() {
+        for (second_ends_first, separate_enrollments) in
+            [(false, false), (true, false), (false, true), (true, true)]
+        {
+            let mut h = Harness::new();
+            let p = h.provider();
+            let (e, _) = h.open(json!({}), json!(["fingerprint"]));
+            h.report(
+                &p,
+                json!([Harness::machine(&e, "m1", Harness::fingerprint())]),
+            );
+            let first = h.accept(&e, "aB+/xyz", Some("first"));
+            let second_enrollment = if separate_enrollments {
+                let (another, _) = h.open(json!({}), json!(["fingerprint"]));
+                h.report(
+                    &p,
+                    json!([Harness::machine(&another, "m1", Harness::fingerprint())]),
+                );
+                another
+            } else {
+                e.clone()
+            };
+            let second = h.accept(&second_enrollment, "aB+/xyz", Some("second"));
+            let (early, late) = if second_ends_first {
+                (&second, &first)
+            } else {
+                (&first, &second)
+            };
+            let early_end = h.end_accept(early);
+            if second_ends_first {
+                assert_eq!(early_end.reply["pending"], true);
+                assert!(
+                    !h.s.objects
+                        .iter()
+                        .any(|o| o["status"]["machine"]["id"] == "m1")
+                );
+            }
+            let late_end = h.end_accept(late);
+            let replies = early_end
+                .request_replies
+                .iter()
+                .chain(&late_end.request_replies)
+                .collect::<Vec<_>>();
+            let accepted = replies
+                .iter()
+                .find(|r| r.invocation == first.reply["invocation"].as_str().unwrap())
+                .unwrap();
+            let rejected = replies
+                .iter()
+                .find(|r| r.invocation == second.reply["invocation"].as_str().unwrap())
+                .unwrap();
+            assert_eq!(
+                accepted.reply["_meta"][format!("{}outcome", h.c.meta_prefix)],
+                "succeeded"
+            );
+            assert_eq!(
+                rejected.reply["_meta"][format!("{}reason", h.c.meta_prefix)],
+                "conflict"
+            );
+            assert!(
+                rejected.reply["_meta"]
+                    .get(format!("{}outcome", h.c.meta_prefix))
+                    .is_none()
+            );
+            let node = &accepted.reply["structuredContent"]["node"];
+            let message = rejected.reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+                .as_str()
+                .unwrap();
+            assert!(message.contains(node["id"].as_str().unwrap()));
+            assert!(message.contains("worker") && message.contains("m1"));
+            assert_eq!(
+                h.s.objects
+                    .iter()
+                    .filter(|o| o["status"]["machine"]["id"] == "m1" && o["state"] != "retired")
+                    .count(),
+                1
+            );
+            assert_eq!(
+                h.s.records
+                    .iter()
+                    .filter(|r| r["type"] == "enrollment-change"
+                        && r["data"]["transition"] == "admitted")
+                    .count(),
+                1
+            );
+            let repeat = h.accept(&e, "aB+/xyz", Some("first"));
+            assert_eq!(repeat.reply, accepted.reply);
+            assert!(repeat.external_intents.is_empty());
+            assert!(h.s.enrollments[0].get("accepting").is_none());
+        }
+    }
+    #[test]
+    fn later_success_is_released_when_earlier_acceptance_ends_without_a_node() {
+        for outcome in ["failed", "unknown", "cancelled", "recovered"] {
+            let mut h = Harness::new();
+            let p = h.provider();
+            let (e, _) = h.open(json!({}), json!(["fingerprint"]));
+            h.report(
+                &p,
+                json!([Harness::machine(&e, "m1", Harness::fingerprint())]),
+            );
+            let first = h.accept(&e, "aB+/xyz", Some("first"));
+            let second = h.accept(&e, "aB+/xyz", Some("second"));
+            assert_eq!(h.end_accept(&second).reply["pending"], true);
+            // The first acceptance is still waiting, so recovery must discard
+            // even the later success rather than publish it (OPS-013).
+            let ended = match outcome {
+                "cancelled" => h.call(json!({"kind":"cancel","invocation":first.reply["invocation"]})),
+                "recovered" => h.call(json!({"kind":"recover"})),
+                _ => h.call(json!({"kind":"setup-report","invocation":first.reply["invocation"],"report":{"kind":"accept-machine","outcome":outcome}})),
+            };
+            assert!(
+                ended
+                    .external_intents
+                    .iter()
+                    .all(|intent| intent["kind"] == "cancel")
+            );
+            assert_eq!(
+                h.s.objects
+                    .iter()
+                    .filter(|o| o["status"]["machine"]["id"] == "m1")
+                    .count(),
+                usize::from(outcome != "recovered")
+            );
+            assert!(h.s.enrollments[0].get("accepting").is_none());
+            let ignored = h.end_accept(&second);
+            assert_eq!(ignored.reply["ignored"], true);
+        }
+    }
+    #[test]
+    fn retried_acceptance_uses_its_new_begin_order_and_machine_id_is_stable() {
+        let mut h = Harness::new();
+        let p = h.provider();
+        let (e, _) = h.open(json!({}), json!(["fingerprint"]));
+        let mut m = Harness::machine(&e, "m1", Harness::fingerprint());
+        h.report(&p, json!([m]));
+        let first = h.accept(&e, "aB+/xyz", Some("first"));
+        let second = h.accept(&e, "aB+/xyz", Some("second"));
+        h.call(json!({"kind":"setup-report","invocation":first.reply["invocation"],"report":{"kind":"accept-machine","outcome":"failed"}}));
+        let retry = h.accept(&e, "aB+/xyz", Some("first"));
+        assert_eq!(h.end_accept(&retry).reply["pending"], true);
+        let done = h.end_accept(&second);
+        assert_eq!(
+            done.reply["_meta"][format!("{}outcome", h.c.meta_prefix)],
+            "succeeded"
+        );
+        let retry_reply = done
+            .request_replies
+            .iter()
+            .find(|r| r.invocation == retry.reply["invocation"].as_str().unwrap())
+            .unwrap();
+        assert_eq!(
+            retry_reply.reply["_meta"][format!("{}reason", h.c.meta_prefix)],
+            "conflict"
+        );
+        // A fresh enrollment and a changed hostname do not change the machine's
+        // provider-scoped identity or permit a second live node (PLC-026).
+        let (another, _) = h.open(json!({}), json!(["fingerprint"]));
+        m = Harness::machine(&another, "m1", Harness::fingerprint());
+        m["hostname"] = json!("renamed.example");
+        m["labels"]["kubernetes.io/hostname"] = m["hostname"].clone();
+        h.report(&p, json!([m]));
+        let conflict = h.accept(&another, "aB+/xyz", None);
+        assert_eq!(
+            conflict.reply["_meta"][format!("{}reason", h.c.meta_prefix)],
+            "conflict"
+        );
+        let message = conflict.reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+            .as_str()
+            .unwrap();
+        assert!(message.contains("m1") && message.contains("worker"));
+        assert!(conflict.external_intents.is_empty());
+    }
+    #[test]
+    fn retirement_on_an_unavailable_node_only_gates_required_dispatch() {
+        for mode in ["never-set-up", "no-hook-or-stop", "retained-hook"] {
+            let mut h = Harness::new();
+            let (p, mut m) = remote_provider(&mut h);
+            if mode != "never-set-up" {
+                let call = setup_provider(&mut h, "setup");
+                h.call(json!({"kind":"setup-report","invocation":call.reply["invocation"],"report":{"kind":"inspect-run","state":"running"}}));
+                // A remote implementation needs no run stopped; a retained hook
+                // outcome likewise needs no new dispatch (TPL-018).
+                let o = h.s.objects.iter_mut().find(|o| o["id"] == p).unwrap();
+                if mode == "retained-hook" {
+                    o["resolved_implementations"][h.c.qualified("retire-hook.v1")] =
+                        o["resolved_implementations"]
+                            .as_object()
+                            .unwrap()
+                            .values()
+                            .next()
+                            .unwrap()
+                            .clone();
+                } else {
+                    o["resolved_implementations"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove(&h.c.qualified("retire-hook.v1"));
+                }
+                for implementation in o["resolved_implementations"]
+                    .as_object_mut()
+                    .unwrap()
+                    .values_mut()
+                {
+                    implementation["item"] = json!({"remote":"https://fixture.invalid/"});
+                }
+                if mode == "retained-hook" {
+                    h.s.invocations.push(json!({"id":"prior-retire-hook","hook":true,"target":p,"operation":h.c.qualified("retire-hook.v1"),"state":"succeeded"}));
+                }
+            }
+            m["state"] = json!("unreachable");
+            h.report(&p, json!([m]));
+            let retired = h.invoke(
+                "retire.v1",
+                json!({"instance":{"kind":"Resource","name":"machines"}}),
+                None,
+            );
+            assert_eq!(
+                retired.reply["_meta"][format!("{}outcome", h.c.meta_prefix)],
+                "succeeded",
+                "{}",
+                retired.reply
+            );
+            assert!(retired.external_intents.is_empty());
+            assert!(!h.s.objects.iter().any(|o| o["id"] == p));
+        }
     }
     #[test]
     fn repeat_digest_covers_typed_input_without_retaining_it() {

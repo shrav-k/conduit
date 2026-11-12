@@ -6,9 +6,35 @@ use std::{collections::BTreeMap, sync::Arc};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_util::sync::CancellationToken;
 
-/// Deliberately carries no backend error text, which can include credentials.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Unavailable;
+/// A runtime failure, optionally with text the runtime writes itself naming what failed
+/// (a setting, variable name, program or machine hostname), never a value. Never pass through
+/// operating-system, library or remote-tool error text: it can contain credentials.
+/// Only staging and start reasons can reach answers, after the kit checks and bounds them.
+/// Compare errors as values; do not use `Unavailable` as a pattern.
+#[derive(Clone, PartialEq, Eq)]
+pub struct Unavailable {
+    reason: Option<String>,
+}
+/// A failure without a reason, preserving existing value uses of `Unavailable`.
+#[allow(non_upper_case_globals)]
+pub const Unavailable: Unavailable = Unavailable { reason: None };
+impl Unavailable {
+    /// Attach a runtime-authored explanation naming what failed, never a supplied value or
+    /// operating-system, library or remote-tool error text.
+    pub fn because(reason: impl Into<String>) -> Self {
+        Self {
+            reason: Some(reason.into()),
+        }
+    }
+    pub(crate) fn into_reason(self) -> Option<String> {
+        self.reason
+    }
+}
+impl std::fmt::Debug for Unavailable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("Unavailable")
+    }
+}
 pub type Result<T> = std::result::Result<T, Unavailable>;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]

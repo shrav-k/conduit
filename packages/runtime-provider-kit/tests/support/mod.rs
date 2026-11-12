@@ -83,6 +83,8 @@ pub struct FileStore {
     pub loads: AtomicUsize,
     pub fail_save: AtomicBool,
     pub fail_stopped_save: AtomicBool,
+    pub fail_running_save: AtomicBool,
+    pub failure_reason: Mutex<Option<String>>,
     pub pause_next_load: AtomicBool,
     pub load_entered: Notify,
     pub resume_load: Notify,
@@ -98,6 +100,8 @@ impl FileStore {
             loads: AtomicUsize::new(0),
             fail_save: AtomicBool::new(false),
             fail_stopped_save: AtomicBool::new(false),
+            fail_running_save: AtomicBool::new(false),
+            failure_reason: Mutex::new(None),
             pause_next_load: AtomicBool::new(false),
             load_entered: Notify::new(),
             resume_load: Notify::new(),
@@ -123,7 +127,7 @@ impl StateStore for FileStore {
             self.resume_load.notified().await;
         }
         if self.fail_load.load(Ordering::SeqCst) {
-            return Err(Unavailable);
+            return Err(fake_error(&self.failure_reason));
         }
         let _lock = self.lock.lock().unwrap();
         Ok(self.read())
@@ -131,8 +135,9 @@ impl StateStore for FileStore {
     async fn save(&self, record: &RunRecord) -> Result<()> {
         if self.fail_save.load(Ordering::SeqCst)
             || (record.state == RunState::Stopped && self.fail_stopped_save.load(Ordering::SeqCst))
+            || (record.state == RunState::Running && self.fail_running_save.load(Ordering::SeqCst))
         {
-            return Err(Unavailable);
+            return Err(fake_error(&self.failure_reason));
         }
         let _lock = self.lock.lock().unwrap();
         let mut records = self.read();
@@ -153,6 +158,13 @@ impl StateStore for FileStore {
         Ok(())
     }
 }
+fn fake_error(reason: &Mutex<Option<String>>) -> Unavailable {
+    reason
+        .lock()
+        .unwrap()
+        .as_ref()
+        .map_or(Unavailable, |reason| Unavailable::because(reason.clone()))
+}
 #[derive(Default)]
 pub struct FakeBackend {
     pub calls: AtomicUsize,
@@ -164,6 +176,13 @@ pub struct FakeBackend {
     pub block: AtomicBool,
     pub fail_stage: AtomicBool,
     pub fail_start: AtomicBool,
+    pub stage_reason: Mutex<Option<String>>,
+    pub start_reason: Mutex<Option<String>>,
+    pub failure_reason: Mutex<Option<String>>,
+    pub fail_inventory: AtomicBool,
+    pub fail_state: AtomicBool,
+    pub cancel_after_stage: AtomicBool,
+    pub cancel_after_start: AtomicBool,
     pub pause_next_stage: AtomicBool,
     pub stage_entered: Notify,
     pub resume_stage: Notify,
@@ -220,6 +239,9 @@ impl RuntimeBackend for FakeBackend {
     }
     async fn inventory(&self) -> Result<Vec<RunRecord>> {
         self.calls.fetch_add(1, Ordering::SeqCst);
+        if self.fail_inventory.load(Ordering::SeqCst) {
+            return Err(fake_error(&self.failure_reason));
+        }
         Ok(self
             .runs
             .lock()
@@ -255,7 +277,7 @@ impl RuntimeBackend for FakeBackend {
             && input.package_arguments["ordinary"] == "public";
         self.staged_valid.store(valid, Ordering::SeqCst);
         if self.fail_stage.load(Ordering::SeqCst) {
-            return Err(Unavailable);
+            return Err(fake_error(&self.stage_reason));
         }
         let staged = Staged {
             drops: self.staged_drops.clone(),
@@ -266,6 +288,9 @@ impl RuntimeBackend for FakeBackend {
                 _ = self.resume_stage.notified() => {},
                 _ = cancel.cancelled() => return Err(Unavailable),
             }
+        }
+        if self.cancel_after_stage.load(Ordering::SeqCst) {
+            cancel.cancel();
         }
         Ok(staged)
     }
@@ -305,8 +330,11 @@ impl RuntimeBackend for FakeBackend {
             ),
         );
         self.launches.fetch_add(1, Ordering::SeqCst);
+        if self.cancel_after_start.load(Ordering::SeqCst) {
+            cancel.cancel();
+        }
         if self.fail_start.load(Ordering::SeqCst) {
-            Err(Unavailable)
+            Err(fake_error(&self.start_reason))
         } else {
             Ok(Box::new(channel))
         }
@@ -319,13 +347,16 @@ impl RuntimeBackend for FakeBackend {
             self.resume_stop.notified().await;
         }
         if self.unavailable.load(Ordering::SeqCst) {
-            return Err(Unavailable);
+            return Err(fake_error(&self.failure_reason));
         }
         self.runs.lock().unwrap().remove(instance);
         Ok(())
     }
     async fn state(&self, context: &CallContext, instance: &str) -> Result<RunState> {
         self.note(context);
+        if self.fail_state.load(Ordering::SeqCst) {
+            return Err(fake_error(&self.failure_reason));
+        }
         if self.pause_next_state.swap(false, Ordering::SeqCst) {
             self.state_entered.notify_one();
             self.resume_state.notified().await;
@@ -345,6 +376,8 @@ pub struct FakeGate {
     pub handles: Mutex<Vec<Arc<Handle>>>,
     pub opens: AtomicUsize,
     pub fail: AtomicBool,
+    pub failure_reason: Mutex<Option<String>>,
+    pub url_override: Mutex<Option<String>>,
 }
 pub struct Handle {
     close: CancellationToken,
@@ -373,14 +406,20 @@ impl Gate for FakeGate {
         _: &CancellationToken,
     ) -> Result<Arc<dyn GateHandle>> {
         if self.fail.load(Ordering::SeqCst) {
-            return Err(Unavailable);
+            return Err(fake_error(&self.failure_reason));
         }
         assert!(identity.files.len() == 6);
         let n = self.opens.fetch_add(1, Ordering::SeqCst);
         let handle = Arc::new(Handle {
             close: CancellationToken::new(),
             done: CancellationToken::new(),
-            url: Mutex::new(format!("https://127.0.0.1:{}/mcp", 41000 + n)),
+            url: Mutex::new(
+                self.url_override
+                    .lock()
+                    .unwrap()
+                    .clone()
+                    .unwrap_or_else(|| format!("https://127.0.0.1:{}/mcp", 41000 + n)),
+            ),
         });
         let task_handle = handle.clone();
         tokio::spawn(async move {

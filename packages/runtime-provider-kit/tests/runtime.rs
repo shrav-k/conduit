@@ -1,3 +1,5 @@
+#[path = "runtime/reasons.rs"]
+mod reasons;
 mod support;
 use rmcp::{ServiceExt, service::ServiceError};
 use runtime_provider_kit::*;
@@ -988,7 +990,7 @@ async fn secrets_and_identity_never_enter_records_logs_or_answers_even_at_trace(
     let store = Arc::new(FileStore::new(directory.path().join("ledger.json")));
     let backend = Arc::new(FakeBackend::default());
     let gate = Arc::new(FakeGate::default());
-    let server = Server::new(backend, store.clone(), gate, options())
+    let server = Server::new(backend.clone(), store.clone(), gate, options())
         .await
         .unwrap();
     let logs = LogCapture::default();
@@ -1021,6 +1023,42 @@ async fn secrets_and_identity_never_enter_records_logs_or_answers_even_at_trace(
             &client.call_tool(call(name, args)).await.unwrap(),
             "succeeded",
         );
+    }
+    // rmcp may log answers. Exercise rejected runtime reasons at trace level too.
+    let input = run_args();
+    let mut sensitive_values: Vec<String> = [
+        &input["identity"]["environment"],
+        &input["identity"]["files"],
+        &input["secrets"]["environment"],
+        &input["secrets"]["packageArguments"],
+    ]
+    .into_iter()
+    .flat_map(|bindings| bindings.as_object().unwrap().values())
+    .map(|value| value.as_str().unwrap().to_owned())
+    .collect();
+    let mut multiline = input.clone();
+    let filename = schemas::identity_file_names()[0];
+    // No other binding contains this marker or the whole normalized file content.
+    let content = format!("{}\nidentity-file-continuation", markers()[0]);
+    multiline["identity"]["files"][filename] = json!(content);
+    sensitive_values.push(content.replace('\n', " "));
+    for (i, value) in sensitive_values.iter().enumerate() {
+        for staging in [true, false] {
+            backend.fail_stage.store(staging, Ordering::SeqCst);
+            backend.fail_start.store(!staging, Ordering::SeqCst);
+            let reason = format!("runtime refused {value}");
+            *backend.stage_reason.lock().unwrap() = Some(reason.clone());
+            *backend.start_reason.lock().unwrap() = Some(reason);
+            let input = if i == sensitive_values.len() - 1 {
+                multiline.clone()
+            } else {
+                input.clone()
+            };
+            outcome(
+                &client.call_tool(call("run.v1", input)).await.unwrap(),
+                "failed",
+            );
+        }
     }
     client.cancel().await.unwrap();
     thread.join().unwrap();

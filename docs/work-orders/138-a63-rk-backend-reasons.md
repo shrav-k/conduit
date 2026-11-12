@@ -118,3 +118,25 @@ git status --porcelain --ignored $D | grep -E "target/" | grep -v '^!!'
 
 `target/` stays ignored and unstaged. Report the length bound and the error type's form as your own
 choices. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base a005dab: the worker (647 s) and a fresh verifier (281 s),
+then a second worker round (278 s) and a fresh verifier (201 s), which found nothing to change.
+Round one's should: both multi-line regressions still passed with the one-line comparison removed,
+since another identity file held a whole value; round two made each fixture need that comparison
+and showed that each fails without it.
+
+The result: `Unavailable` is a braced struct with a private optional reason, with a reasonless
+constant of the same name and a hand-written `Debug` that prints only `Unavailable`; a backend
+attaches a reason with `Unavailable::because`. The kit checks the whole reason, as given and made
+one line, against the run's identity variables and files and its secret variables and package
+arguments, withholding it entirely on a match, then makes it one line and cuts it to 512 Unicode
+scalar values; a blank reason counts as none. It reaches only `run.v1`'s answers for a failed
+staging and a failed backend `start`, as text. Order 127's `provider-local-process` builds and
+passes its tests unchanged, its `Cargo.lock` included. The lane coordinator's review found nothing
+to change.
+
+The worker's own choices: the bound of 512, the withheld text "runtime's reason was withheld
+because it contained a value supplied to the run", and the tests in a submodule of the runtime
+suite.

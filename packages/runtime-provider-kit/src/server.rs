@@ -116,7 +116,13 @@ pub async fn drain_owed_stops<B: RuntimeBackend, S: StateStore>(
     store: &S,
 ) -> Result<usize> {
     let mut stopped = 0;
-    for record in store.load().await?.into_iter().filter(|r| r.owed_stop) {
+    for record in store
+        .load()
+        .await
+        .map_err(|_| Unavailable)?
+        .into_iter()
+        .filter(|r| r.owed_stop)
+    {
         if stop_record(backend, store, record).await.is_ok() {
             stopped += 1;
         }
@@ -160,7 +166,7 @@ async fn stop_attempt<B: RuntimeBackend, S: StateStore>(
         record.owed_stop = false;
         let saved = store.save(record).await;
         storage_failed |= saved.is_err();
-        saved
+        saved.map_err(|_| Unavailable)
     } else {
         Err(Unavailable)
     };
@@ -225,16 +231,20 @@ fn implicit_restart_policy() -> bool {
 // No schema fixes a result for malformed provider metadata or unknown tool names. Keep the
 // choice here: a failed tool result with a static diagnostic, and no backend call for it.
 // spec/ leaves the outcome of a partially failed start open. Confirmed cleanup proves
-// failure; otherwise retain uncertainty and the stop intent, never a backend error string.
-fn start_failure_policy(stopped: bool) -> CallToolResult {
+// failure; otherwise retain uncertainty and the stop intent. Only a checked runtime-authored
+// staging/start reason may enter an answer, never passed-through backend error text.
+fn start_failure_policy(stopped: bool, reason: Option<&str>) -> CallToolResult {
+    let mut message = "start did not complete".to_owned();
+    if let Some(reason) = reason {
+        message.push_str(": ");
+        message.push_str(reason);
+    }
     if stopped {
-        answer("failed", None, "start did not complete; tree stopped")
+        message.push_str("; tree stopped");
+        answer("failed", None, &message)
     } else {
-        answer(
-            "unknown",
-            None,
-            "start did not complete; stop could not be confirmed and persisted",
-        )
+        message.push_str("; stop could not be confirmed and persisted");
+        answer("unknown", None, &message)
     }
 }
 fn invalid_call_policy(message: &'static str) -> CallToolResult {
@@ -345,7 +355,7 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
             .await;
             failed |= attempt.storage_failed;
         }
-        // Unavailable is deliberately payload-free: construction exposes no backend text.
+        // Construction discards reasons: only staging/start diagnostics enter answers.
         if failed { Err(Unavailable) } else { Ok(()) }
     }
     async fn stop_record(&self, mut record: RunRecord, slot: &Slot) -> Result<()> {
@@ -609,11 +619,16 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         slot.remember(&record);
         let staged = match self.0.backend.stage(&context, &input, &cancel).await {
             Ok(staged) => staged,
-            Err(_) => {
+            Err(error) => {
+                let reason = checked_reason(error, &input);
                 cancel.cancel();
                 record.state = RunState::Stopped;
                 let _ = self.0.store.save(&record).await;
-                return answer("failed", None, "staging failed");
+                let message = reason.map_or_else(
+                    || "staging failed".to_owned(),
+                    |reason| format!("staging failed: {reason}"),
+                );
+                return answer("failed", None, &message);
             }
         };
         // A stop may have been published during staging. Re-read under admission and
@@ -634,7 +649,7 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         if cancel.is_cancelled() {
             drop(admission);
             drop(staged);
-            return self.failed_start(record, &slot).await;
+            return self.failed_start(record, &slot, None).await;
         }
         let started = self
             .0
@@ -644,13 +659,14 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         drop(admission);
         let channel = match started {
             Ok(channel) => channel,
-            Err(_) => {
-                return self.failed_start(record, &slot).await;
+            Err(error) => {
+                let reason = checked_reason(error, &input);
+                return self.failed_start(record, &slot, reason).await;
             }
         };
         if cancel.is_cancelled() {
             drop(channel);
-            return self.failed_start(record, &slot).await;
+            return self.failed_start(record, &slot, None).await;
         }
         let ended = CancellationToken::new();
         let observed = Box::new(Observed {
@@ -659,7 +675,7 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         });
         let gate = match self.0.gate.open(observed, &input.identity, &cancel).await {
             Ok(gate) => gate,
-            Err(_) => return self.failed_start(record, &slot).await,
+            Err(_) => return self.failed_start(record, &slot, None).await,
         };
         let url = gate.url();
         if cancel.is_cancelled()
@@ -667,12 +683,12 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
             || sensitive_url(&url, &input)
         {
             gate.close().await;
-            return self.failed_start(record, &slot).await;
+            return self.failed_start(record, &slot, None).await;
         }
         record.state = RunState::Running;
         if self.0.store.save(&record).await.is_err() {
             gate.close().await;
-            return self.failed_start(record, &slot).await;
+            return self.failed_start(record, &slot, None).await;
         }
         *slot.gate.lock().await = Some(gate.clone());
         let server = self.clone();
@@ -695,9 +711,17 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         });
         answer("succeeded", Some(json!({"url":url})), "run started")
     }
-    async fn failed_start(&self, record: RunRecord, slot: &Slot) -> CallToolResult {
+    async fn failed_start(
+        &self,
+        record: RunRecord,
+        slot: &Slot,
+        reason: Option<String>,
+    ) -> CallToolResult {
         slot.flight.lock().unwrap().cancel.cancel();
-        start_failure_policy(self.stop_record(record, slot).await.is_ok())
+        start_failure_policy(
+            self.stop_record(record, slot).await.is_ok(),
+            reason.as_deref(),
+        )
     }
     async fn records(&self, instance: &str, context: &CallContext) -> Result<Vec<RunRecord>> {
         let records: Vec<_> = self
@@ -793,7 +817,7 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         }
     }
 }
-fn sensitive_url(url: &str, input: &RunInput) -> bool {
+fn sensitive_values(input: &RunInput) -> impl Iterator<Item = &str> {
     input
         .identity
         .environment
@@ -801,7 +825,41 @@ fn sensitive_url(url: &str, input: &RunInput) -> bool {
         .chain(input.identity.files.values())
         .chain(input.secrets.environment.values())
         .chain(input.secrets.package_arguments.values())
-        .any(|v| !v.is_empty() && url.contains(v))
+        .map(String::as_str)
+        .filter(|value| !value.is_empty())
+}
+fn sensitive_url(url: &str, input: &RunInput) -> bool {
+    sensitive_values(input).any(|value| url.contains(value))
+}
+fn one_line(text: &str) -> String {
+    text.chars()
+        .map(|c| {
+            if c.is_control() || matches!(c, '\u{2028}' | '\u{2029}') {
+                ' '
+            } else {
+                c
+            }
+        })
+        .collect()
+}
+// Check the entire uncut reason in both forms before exposing any of it in an answer.
+fn checked_reason(error: Unavailable, input: &RunInput) -> Option<String> {
+    let reason = error.into_reason()?;
+    let cleaned = one_line(&reason);
+    if sensitive_values(input)
+        .any(|value| reason.contains(value) || cleaned.contains(&one_line(value)))
+    {
+        return Some(
+            "runtime's reason was withheld because it contained a value supplied to the run"
+                .to_owned(),
+        );
+    }
+    let bounded: String = cleaned.chars().take(512).collect();
+    if bounded.trim().is_empty() {
+        None
+    } else {
+        Some(bounded)
+    }
 }
 impl<B: RuntimeBackend, S: StateStore, G: Gate> ServerHandler for Handler<B, S, G> {
     fn get_info(&self) -> ServerConfig {

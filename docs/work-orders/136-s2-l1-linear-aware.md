@@ -130,3 +130,27 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target --exclude-dir=dist
 
 `target/` and `dist/` stay ignored and unstaged. Report each choice of configuration and each thing
 the contracts package leaves open, as your own choices and findings. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base 9f55b1e: the worker and a fresh verifier, then a second
+worker round (281 s) and a fresh verifier (489 s). The result is `packages/scenario-s2-linear/`:
+the Type `linear-aware.v1` and its item, the Conduit-aware MCP server for S2's three operations,
+the filter `issue-scope.v1` applied before any service request and failing closed, refusals in
+IFC-026's form, the key sent only over `https` or loopback, and the package builder.
+
+Round one's two musts were fixed in round two: an integral `limit` written as a float (`1.0`) was
+read as unlimited, and an unknown tool answered a failed result instead of a protocol error.
+Round two's verifier left two musts. **The lane coordinator fixed them, an admin-side fix at the
+admin's word (small findings, ruling 71):** every line the server writes now passes a redactor that
+replaces the key, raw and JSON-escaped, since the MCP library builds some protocol errors itself,
+-32022 among them, echoing a field the caller sent; and the test clock is checked by the same
+format checker as the deadline, since chrono alone accepted a space separator. A fresh reader then
+found that the redactor could drop the last answer when input ended early, and three clock strings
+chrono still accepted; both were fixed, with regressions (an early end of input, 100 times; the
+three strings; the redacted -32022). The reader confirmed that nothing else writes to stdout. The
+crate's 21 tests pass on the Mac.
+
+The worker's findings: D05's onward-call case stays unexercised, since this implementation makes no
+onward request; and a Linux build and a PATH or absolute item, which A63-DR and S3-PATH would need,
+are listed in its README, not built.

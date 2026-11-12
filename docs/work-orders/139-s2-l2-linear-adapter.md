@@ -129,3 +129,26 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target --exclude-dir=dist
 
 `target/` and `dist/` stay ignored and unstaged. Report each choice of configuration and each thing
 the contracts package leaves open, as your own choices and findings. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base 6047915: the worker (1,089 s) and a fresh verifier
+(335 s), then a second worker round (250 s) and a fresh verifier (319 s), which found nothing to
+change. Round one's two musts were fixed in round two: fractional seconds past nine digits were
+truncated, so a call just before its deadline could be refused (instants now keep their whole
+fraction, with a regression for two instants within a nanosecond); and a blank line at the end of
+`Cargo.toml` failed `git diff --check`. The verifiers' sandbox could not bind loopback listeners,
+so the 13 tests that start the stub ran only in the worker's rounds on the Mac, where all 18 tests
+pass.
+
+The result: `packages/scenario-s2-linear-adapter/`, D01's adapter row, with the Type
+`linear-adapter.v1` offering `issue-reading.v1` (read and list), the filter `issue-scope.v1`
+applied before any service request, the key sent in the bare `Authorization` form only over
+`https` or loopback `http`, with no proxy, redirect or retry, and the package builder. Its README
+counts 531 implementation lines and 1,011 test lines; the aware row's code was not read. The lane
+coordinator's review found nothing to change.
+
+The worker's findings: the contracts leave configuration delivery, transport, pagination and
+diagnostics to implementations; local qualification cannot establish onward calls, a Conduit's
+close, the engine's delivery of the secret or the real service's compatibility; and the pinned
+contracts README still gives the plain package to S2-L2, which S2's plan supersedes (S2-PL).

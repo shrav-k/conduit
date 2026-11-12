@@ -1,0 +1,19 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: linear-adapter.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      baseUrl: {type: string, format: uri}
+      apiKey: {$ref: github.com/shrav-k/conduit/core#secret-reference.v1}
+      testClock: {type: string, format: date-time}
+    required: [baseUrl, apiKey]
+    additionalProperties: false
+  offers:
+  - example.org/conduit/scenario-s2-linear-restrictions#issue-reading.v1
+  implementation:
+    example.org/conduit/scenario-s2-linear-restrictions#read-issue.v1: '#adapter'
+    example.org/conduit/scenario-s2-linear-restrictions#list-issues.v1: '#adapter'

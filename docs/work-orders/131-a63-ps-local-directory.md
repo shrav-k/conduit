@@ -112,3 +112,21 @@ git status --porcelain --ignored $D | grep -E "target/|dist/" | grep -v '^!!'
 ```
 
 `target/` and `dist/` stay ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), from base c203dd8: the worker and a fresh
+verifier, then a second worker round and a fresh verifier (124 s), which found nothing to change.
+Round one's must (every ancestor directory needed listing permission, though traversal is enough)
+was fixed in round two with directory handles opened by `O_PATH`, or `O_SEARCH` on macOS.
+
+Both rounds ran on Linux. On the Mac, the lane coordinator found the tests would not compile
+(`rustix::fs::mknodat` is not on macOS) and one test failed. **Admin-side fix, at the admin's word
+(a small finding, ruling 71):** the test's FIFO is made with `mkfifo(1)`. The coordinator first
+read the failure as macOS refusing search-only directories and stated a limit; a fresh reader
+showed that diagnosis wrong: `O_SEARCH` works on macOS, which refuses an unsearchable root earlier
+than Linux, with a message the test did not expect. The limit was withdrawn, and the root's error
+now says "missing, unreadable or not searchable" on both. All 12 tests pass on the Mac.
+
+The worker's finding: the crate copies its MCP, packaging and schema scaffolding from
+`provider-local-machine`; a shared library could hold it later.

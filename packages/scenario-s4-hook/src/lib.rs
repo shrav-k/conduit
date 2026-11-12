@@ -133,13 +133,14 @@ fn validate(name: &str, meta: &Value, args: &Value) -> Result<Call, String> {
         "setup-hook.v1" if !map.is_empty() => return Err("setup-hook.v1 has no inputs".into()),
         "set-blocked-by.v1" => {
             if !text(&args["revision"])
-                || args.get("blockedBy").is_none()
-                || !args["blockedBy"].is_null() && !absolute(&args["blockedBy"])
+                || args
+                    .get("blockedBy")
+                    .is_some_and(|v| !v.is_null() && !absolute(v))
                 || map
                     .keys()
                     .any(|k| !["revision", "blockedBy"].contains(&k.as_str()))
             {
-                return Err("revision and blockedBy control inputs are required and must match their schema".into());
+                return Err("revision is required; supplied blockedBy must be null or absolute; no other control inputs are allowed".into());
             }
         }
         "read-hook-ledger.v1"

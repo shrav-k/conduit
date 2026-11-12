@@ -317,7 +317,7 @@ async fn repeat_is_another_effect_and_keeps_its_caller() {
     p.close(None).await;
 }
 #[tokio::test]
-async fn blocked_file_is_never_opened_and_control_only_accepts_a_change() {
+async fn blocked_file_is_never_opened_and_control_accepts_revision_only() {
     let l = Lab::new();
     let p = Process::start("hook").await;
     let block = l.dir.path().join("blocked");
@@ -338,6 +338,14 @@ async fn blocked_file_is_never_opened_and_control_only_accepts_a_change() {
         json!({"revision":"revision-a","blockedBy":null}),
     );
     let v = p.call(control).await;
+    assert!(v["_meta"][OUTCOME] == "succeeded" && v["isError"] == false);
+    assert!(fs::read(&l.ledger).unwrap() == before);
+    let revision_only = request(
+        "set-blocked-by.v1",
+        r["_meta"][format!("{PREFIX}config")].clone(),
+        json!({"revision":"revision-a"}),
+    );
+    let v = p.call(revision_only).await;
     assert!(v["_meta"][OUTCOME] == "succeeded" && v["isError"] == false);
     assert!(fs::read(&l.ledger).unwrap() == before);
     assert!(p.call(l.request(false)).await["_meta"][OUTCOME] == "succeeded");
@@ -586,6 +594,104 @@ async fn readback_is_independent_and_never_infers_absence_for_open_work() {
     assert!(l.read()["invalidLines"] == json!([line_count]));
     reader.close(None).await;
     p.close(None).await;
+}
+#[tokio::test]
+async fn malformed_events_are_reported_without_changing_evidence() {
+    let l = Lab::new();
+    let call = ledger::Call {
+        id: ledger::new_id(),
+        instance: "instance-a".into(),
+        invocation: "invocation-a".into(),
+        caller: "caller-a".into(),
+        key: None,
+        revision: "revision-a".into(),
+        attempt: 1,
+        configuration: Value::Null,
+    };
+    let mut lines = vec![call.line(BINARY, "received", json!({"extension":true}))];
+    for (kind, fields) in [
+        ("effect", json!({"effect":"effect-a"})),
+        (
+            "ended",
+            json!({"effect":null,"cause":"gate","diagnostic":"gate failed"}),
+        ),
+        (
+            "ended",
+            json!({"effect":"effect-a","cause":null,"diagnostic":"applied"}),
+        ),
+        ("reply", json!({"outcome":"released"})),
+        (
+            "released",
+            json!({"barrier":"before-apply","outcome":"fail"}),
+        ),
+        (
+            "control-lost",
+            json!({"barrier":"before-reply","outcome":"drop","diagnostic":"I/O failed"}),
+        ),
+    ] {
+        // Missing and ill-typed payload fields must both invalidate the whole event.
+        for field in fields.as_object().unwrap().keys() {
+            let mut line = call.line(BINARY, kind, fields.clone());
+            line.as_object_mut().unwrap().remove(field);
+            lines.push(line);
+            let mut line = call.line(BINARY, kind, fields.clone());
+            line[field] = json!(42);
+            lines.push(line);
+        }
+    }
+    for (kind, fields) in [
+        (
+            "ended",
+            json!({"effect":null,"cause":"other","diagnostic":"failed"}),
+        ),
+        (
+            "ended",
+            json!({"effect":"effect-a","cause":"gate","diagnostic":"applied"}),
+        ),
+        ("reply", json!({"outcome":"succeeded"})),
+        (
+            "released",
+            json!({"barrier":"before-reply","outcome":"fail"}),
+        ),
+        ("released", json!({"barrier":"other","outcome":"proceed"})),
+        (
+            "control-lost",
+            json!({"barrier":"before-apply","outcome":"proceed","diagnostic":"I/O failed"}),
+        ),
+    ] {
+        lines.push(call.line(BINARY, kind, fields));
+    }
+    let mut zero_attempt = call.line(BINARY, "received", json!({}));
+    zero_attempt["attempt"] = json!(0);
+    lines.push(zero_attempt);
+    let mut missing_key = call.line(BINARY, "received", json!({}));
+    missing_key.as_object_mut().unwrap().remove("key");
+    lines.push(missing_key);
+    ledger::append(&l.ledger, &lines).unwrap();
+    let v = l.read();
+    assert!(v["invalidLines"] == json!((2..=lines.len()).collect::<Vec<_>>()));
+    assert!(v["attempts"].as_array().unwrap().len() == 1);
+    assert!(v["attempts"][0]["work"] == "open");
+    assert!(v["attempts"][0]["effect"] == json!({"state":"not-known"}));
+    assert!(v["attempts"][0]["reply"] == "none");
+    let reader = Process::start("read").await;
+    let wire = reader
+        .call(request(
+            "read-hook-ledger.v1",
+            json!({"ledger":l.ledger}),
+            json!({}),
+        ))
+        .await;
+    let output = tokio::process::Command::new(env!("CARGO_BIN_EXE_scenario-s4-hook"))
+        .arg("readback")
+        .arg(&l.ledger)
+        .output()
+        .await
+        .unwrap();
+    assert!(output.status.success());
+    let cli: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert!(wire["structuredContent"] == v && cli == v);
+    reader.close(None).await;
 }
 #[tokio::test]
 async fn shared_ledger_serializes_process_receipts_and_keeps_instances_apart() {

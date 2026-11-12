@@ -20,8 +20,10 @@ the exact restriction and no outcome (IFC-026); a setup through a filtered Condu
 Every call reads its configuration from `io.github.shrav-k.conduit/config`. Malformed metadata,
 configuration or arguments fail before any receipt/effect/change, naming the offending place.
 IDs and revisions are opaque nonempty strings. Hook calls require an idempotency key.
-`set-blocked-by.v1` requires `revision` and `blockedBy`, maps the latter to `/blockedBy`, and
-answers succeeded, isError false, with no outputs or ledger write. The engine stores exactly
+`set-blocked-by.v1` declares `revision` and `blockedBy` required in its contract, maps the latter
+to `/blockedBy`, and permits omission of `blockedBy` under REV-006 (leaving it stored unchanged).
+Every valid call requires `revision` and answers succeeded, isError false, with no outputs or
+ledger write. The engine stores exactly
 the value sent (REV-007); later calls read it with no new run. T1's M2 counts an author's repair
 through a Conduit to the hook instance, calling this control with null or a corrected path.
 Removing the file outside Conduit is an environment step, not an author repair.
@@ -101,7 +103,9 @@ The full output schema is in contracts.yaml. The v1 readback object contains:
   `reply`: released/dropped/cancelled/none.
 - Only explicit ended-with-null-effect evidence establishes none. An open attempt without an
   effect line stays not-known. A committed effect line remains evidence even without ended.
-  Invalid lines are reported, never silently dropped.
+  Invalid lines are reported, never silently dropped. Each event's required fields and values
+  are validated before it updates readback; malformed events leave the prior evidence unchanged.
+  Additional event fields are omitted from readback's common fields.
 
 It states no outcome for a hook invocation or setup as a whole. A part with no effect does not
 make a partially effective setup failed (OPS-022).
@@ -164,11 +168,11 @@ S9 records its reuse. Generated embedded schemas and lockfile count separately.
 <!-- PACKAGE_COUNTS_START -->
 | Category | Files | Nonblank, noncomment lines |
 | --- | --- | --- |
-| Rust implementation and packaging | 5 | 692 |
+| Rust implementation and packaging | 5 | 717 |
 | Manifests, contracts, fixture and build configuration | 7 | 288 |
 | Generated embedded schemas | 1 | 192 |
-| Qualification tests | 3 | 824 |
-| README | 1 | 143 |
+| Qualification tests | 3 | 929 |
+| README | 1 | 147 |
 | Generated Cargo.lock | 1 | 1518 |
-| Total | 18 | 3657 |
+| Total | 18 | 3791 |
 <!-- PACKAGE_COUNTS_END -->

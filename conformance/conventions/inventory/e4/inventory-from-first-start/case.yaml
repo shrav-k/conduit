@@ -1,0 +1,856 @@
+{
+  "id": "e4-inventory-from-first-start",
+  "title": "inventory from first start",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "LIF-013",
+    "ACC-044",
+    "FST-002"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "initial": "../../../../fixtures/root-system-state.json",
+    "fixture": "../fixture.json",
+    "manifest": "../manifest.json",
+    "documents": "../documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "first-start",
+        "evidence": {
+          "time": "2026-11-09T12:00:00Z",
+          "ids": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005",
+            "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007",
+            "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009",
+            "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011",
+            "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013",
+            "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015",
+            "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017",
+            "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019",
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
+          ],
+          "revisions": [
+            "r1",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "r6",
+            "r7",
+            "r8"
+          ],
+          "suffixes": [
+            "abc01",
+            "abc02",
+            "abc03"
+          ]
+        },
+        "machine": {
+          "hostname": " WORKSTATION.Example ",
+          "labels": {
+            "kubernetes.io/hostname": "workstation.example",
+            "kubernetes.io/os": "darwin",
+            "kubernetes.io/arch": "arm64",
+            "example.org/role": "test"
+          },
+          "state": "reachable"
+        },
+        "trustDomain": "vectors-040.example"
+      },
+      "expect": {
+        "state": {
+          "started": true,
+          "objects": [
+            {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "revision": "r1",
+              "kind": "Pool",
+              "name": "system",
+              "from": "@core#system",
+              "state": "ready",
+              "config": {},
+              "first_start": true,
+              "type": "@core#pool.v1",
+              "status": {
+                "trustDomain": "vectors-040.example"
+              }
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000002",
+              "revision": "r2",
+              "kind": "Resource",
+              "name": "local",
+              "from": "@core#node",
+              "state": "ready",
+              "config": {},
+              "first_start": true,
+              "type": "@core#node.v1",
+              "owner": "00000000-0000-4000-8000-000000000001",
+              "placement": "00000000-0000-4000-8000-000000000002",
+              "status": {
+                "hostname": "workstation.example",
+                "labels": {
+                  "kubernetes.io/hostname": "workstation.example",
+                  "kubernetes.io/os": "darwin",
+                  "kubernetes.io/arch": "arm64",
+                  "example.org/role": "test"
+                }
+              }
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000003",
+              "revision": "r3",
+              "kind": "Resource",
+              "name": "management",
+              "from": "@core#management",
+              "state": "ready",
+              "config": {},
+              "first_start": true,
+              "type": "@core#management.v1",
+              "owner": "00000000-0000-4000-8000-000000000001",
+              "placement": "00000000-0000-4000-8000-000000000002"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000004",
+              "revision": "r4",
+              "kind": "Resource",
+              "name": "access",
+              "from": "@core#access",
+              "state": "ready",
+              "config": {},
+              "first_start": true,
+              "type": "@core#access.v1",
+              "owner": "00000000-0000-4000-8000-000000000001",
+              "placement": "00000000-0000-4000-8000-000000000002"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000005",
+              "revision": "r5",
+              "kind": "Interface",
+              "name": "root",
+              "from": "@core#root",
+              "state": "ready",
+              "config": {},
+              "first_start": true,
+              "type": "@core#interface.v1"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000006",
+              "revision": "r6",
+              "kind": "Conduit",
+              "name": "root-management-abc01",
+              "from": "@core#root-management",
+              "state": "ready",
+              "config": {},
+              "first_start": false,
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000003",
+              "local_name": "management",
+              "capability": "@core#object-management.v1",
+              "operations": [
+                "@core#register.v1",
+                "@core#replace.v1",
+                "@core#unregister.v1",
+                "@core#inspect.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#register-replacement.v1",
+                "@core#install.v1",
+                "@core#declare-lost.v1",
+                "@core#purge.v1",
+                "@core#list.v1",
+                "@core#answer.v1"
+              ],
+              "open": true,
+              "provenance": {
+                "cause": "first-start"
+              }
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000007",
+              "revision": "r7",
+              "kind": "Conduit",
+              "name": "root-access-abc02",
+              "from": "@core#root-access",
+              "state": "ready",
+              "config": {},
+              "first_start": false,
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000004",
+              "local_name": "access",
+              "capability": "@core#access-control.v1",
+              "operations": [
+                "@core#open.v1",
+                "@core#close.v1",
+                "@core#reconcile.v1",
+                "@core#lift.v1"
+              ],
+              "open": true,
+              "provenance": {
+                "cause": "first-start"
+              }
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000008",
+              "revision": "r8",
+              "kind": "Conduit",
+              "name": "root-pool-abc03",
+              "from": "@core#root-pool",
+              "state": "ready",
+              "config": {},
+              "first_start": false,
+              "consumer": "00000000-0000-4000-8000-000000000005",
+              "target": "00000000-0000-4000-8000-000000000001",
+              "local_name": "system",
+              "capability": "@core#pool-management.v1",
+              "operations": [
+                "@core#register.v1",
+                "@core#register-replacement.v1",
+                "@core#inspect.v1",
+                "@core#list.v1",
+                "@core#set-up.v1",
+                "@core#retire.v1",
+                "@core#reconcile.v1",
+                "@core#sign-in.v1",
+                "@core#answer.v1"
+              ],
+              "open": true,
+              "provenance": {
+                "cause": "first-start"
+              }
+            }
+          ],
+          "records": [
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000009",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000001",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000010",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000001",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000011",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000002",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000012",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000002",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000013",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000003",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000014",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000003",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000015",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000004",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000016",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000004",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000017",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000005",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000018",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000005",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000019",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000006",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000020",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000006",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000021",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000007",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000022",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000007",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000023",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000008",
+                "cause": "first-start",
+                "action": "registered",
+                "previous": null,
+                "state": "registered"
+              }
+            },
+            {
+              "specversion": "1.0",
+              "id": "00000000-0000-4000-8000-000000000024",
+              "source": "urn:conduit:first-build",
+              "type": "object-change",
+              "time": "2026-11-09T12:00:00Z",
+              "data": {
+                "target": "00000000-0000-4000-8000-000000000008",
+                "cause": "first-start",
+                "action": "lifecycle-changed",
+                "previous": "registered",
+                "state": "ready"
+              }
+            }
+          ],
+          "allocated_ids": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005",
+            "00000000-0000-4000-8000-000000000006",
+            "00000000-0000-4000-8000-000000000007",
+            "00000000-0000-4000-8000-000000000008",
+            "00000000-0000-4000-8000-000000000009",
+            "00000000-0000-4000-8000-000000000010",
+            "00000000-0000-4000-8000-000000000011",
+            "00000000-0000-4000-8000-000000000012",
+            "00000000-0000-4000-8000-000000000013",
+            "00000000-0000-4000-8000-000000000014",
+            "00000000-0000-4000-8000-000000000015",
+            "00000000-0000-4000-8000-000000000016",
+            "00000000-0000-4000-8000-000000000017",
+            "00000000-0000-4000-8000-000000000018",
+            "00000000-0000-4000-8000-000000000019",
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+            "00000000-0000-4000-8000-000000000022",
+            "00000000-0000-4000-8000-000000000023",
+            "00000000-0000-4000-8000-000000000024"
+          ]
+        },
+        "records": [
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000009",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000001",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000010",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000001",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000011",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000002",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000012",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000002",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000013",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000003",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000014",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000003",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000015",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000004",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000016",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000004",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000017",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000005",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000018",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000005",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000019",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000006",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000020",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000006",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000021",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000007",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000022",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000007",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000023",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000008",
+              "cause": "first-start",
+              "action": "registered",
+              "previous": null,
+              "state": "registered"
+            }
+          },
+          {
+            "specversion": "1.0",
+            "id": "00000000-0000-4000-8000-000000000024",
+            "source": "urn:conduit:first-build",
+            "type": "object-change",
+            "time": "2026-11-09T12:00:00Z",
+            "data": {
+              "target": "00000000-0000-4000-8000-000000000008",
+              "cause": "first-start",
+              "action": "lifecycle-changed",
+              "previous": "registered",
+              "state": "ready"
+            }
+          }
+        ],
+        "external_intents": [],
+        "reply": {
+          "started": true
+        },
+        "required_promises": [
+          "FST-001",
+          "FST-002",
+          "FST-003",
+          "FST-005",
+          "NAM-020",
+          "PLC-008",
+          "PLC-026",
+          "PRV-014",
+          "REC-001",
+          "REC-002",
+          "REC-003",
+          "FST-007",
+          "ACC-044",
+          "FLEET-005"
+        ],
+        "absent": [
+          "/state/objects/6/bound",
+          "/state/objects/6/requirements"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "c8a7e116-4e40-5087-a348-a29b008939e0",
+            "23603ce8-4da1-5cb1-bfdc-2b6b425b5d1e",
+            "61f401e6-768c-5de0-9c41-914f0de1512e",
+            "9a5c3351-4377-5fe2-bc73-2b26db5c7571",
+            "c8eb829a-d9e8-5387-9a38-1255ad0a164a",
+            "088d5b33-2581-5296-9875-62adc6e2c5fb",
+            "3a21098b-d552-57ab-9ccc-cd0ee14ccfa3",
+            "97cf884b-a363-534b-8487-bc91e9d4aa44",
+            "160f6b0d-e2e7-5e28-9553-64a649689b9b",
+            "c4b42a94-85f5-5949-90f1-c843f2d10c09",
+            "6dd6d19b-f737-5d75-9966-eebdfdabcf49",
+            "fb3e1dcf-dbee-582d-8af8-5a6b04493df9",
+            "32d8a164-7986-5c4d-a985-fc79477735d7",
+            "b8d1aecb-d485-5169-a0af-10f170089ce9",
+            "f07c360a-df02-5a1d-81fc-df8f9afc2157",
+            "f0f04ae4-4f18-5f80-845a-98b8b58be897",
+            "7d1f7681-4582-5ac6-a491-14fd6a996156",
+            "fa55cd16-f5c5-5ad4-9dc6-cb8d20b80731",
+            "40701731-64bc-504e-bf01-0d33475c6a7c",
+            "fc1a0dd8-69cf-5620-bd9f-7f66befaca32",
+            "ba517a17-febd-5b17-8648-25f5b5104435",
+            "7fb7baec-2bf4-5434-90c6-70ec84367deb",
+            "d9d96cc0-7488-5fd3-a08b-b24e5d0a97db",
+            "65d98e2d-178c-59ea-8896-c9ef987cd0af",
+            "cb465921-53f1-595f-a6b1-2ecea5a6552e",
+            "dca8414c-23d4-55be-b00d-4da6a4444371",
+            "c53a994b-8f3f-5850-8588-f21cde07ea09",
+            "1d2347fa-c30a-5a2c-8256-924cd3bdc1c6",
+            "2dc83746-1a9b-506e-8c1f-6ef8a6d62e33",
+            "07efaa91-a786-5b31-98cd-a214c67cd53a",
+            "a5e83e1c-fa45-5e69-95f0-3af3fc989028",
+            "2a2535ba-1a4d-53f3-a441-00008d1e2da6"
+          ],
+          "revisions": [
+            "wo042-309-0",
+            "wo042-309-1",
+            "wo042-309-2",
+            "wo042-309-3",
+            "wo042-309-4",
+            "wo042-309-5",
+            "wo042-309-6",
+            "wo042-309-7"
+          ],
+          "suffixes": [
+            "b0000",
+            "b0001",
+            "b0002",
+            "b0003",
+            "b0004",
+            "b0005",
+            "b0006",
+            "b0007"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Interface",
+              "name": "root"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "structuredContent": {
+            "inventory": {
+              "consumes": [
+                {
+                  "provenance": {
+                    "cause": "first-start"
+                  }
+                },
+                {
+                  "provenance": {
+                    "cause": "first-start"
+                  }
+                },
+                {
+                  "provenance": {
+                    "cause": "first-start"
+                  }
+                }
+              ],
+              "tombstones": [],
+              "targetOf": [],
+              "scope": []
+            }
+          }
+        }
+      }
+    }
+  ]
+}

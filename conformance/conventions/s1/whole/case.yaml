@@ -71,7 +71,9 @@
     "SUB-008",
     "FST-007",
     "FLEET-005",
-    "ACC-044"
+    "ACC-044",
+    "LIF-040",
+    "ACC-053"
   ],
   "profile": "first-build",
   "initial": {
@@ -6342,6 +6344,9 @@
             "time": "2026-11-09T12:01:24Z"
           }
         ]
+      },
+      "capture": {
+        "stone-whole": "/tombstones/0/id"
       }
     },
     {
@@ -7126,6 +7131,47 @@
             "attempt": 1
           }
         ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "3ef8c8d0-cb28-5a9f-8144-9d1e0e02bfca",
+            "0867f9c2-9e05-5c8a-a208-3a6a4ad8d442",
+            "49a5309f-45e3-5767-adea-6e6c1b2e3ed0",
+            "10d0c3a5-604f-54a3-b233-e0d168443e62",
+            "36532040-aa9b-50b7-aa0d-3139264af19b",
+            "aa9f3e27-ddf2-5d5c-b732-c1e652b9d835",
+            "d59e3f51-5bba-5ecc-aa95-f1cc3d4a420d",
+            "086b4a62-c608-5ad6-8b08-3a1f03079f81",
+            "e71711d5-807e-5565-96d4-e2f8ebbece15",
+            "cd50ae5d-16da-5d22-9980-fb39d629c8be",
+            "e344dccc-3d55-5686-8c64-6a6aa395fb3f",
+            "86879cd0-fc1c-5f79-9afd-36500b54b253"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "$root"
+          },
+          "tool": "access.lift.v1",
+          "arguments": {
+            "id": "$stone-whole"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false,
+          "structuredContent": {
+            "remaining": []
+          }
+        },
+        "tombstone_count": 0
       }
     },
     {

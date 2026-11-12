@@ -31,6 +31,7 @@ pub(crate) fn handles(op: &str, c: &Context) -> bool {
         "set-up.v1",
         "open.v1",
         "close.v1",
+        "lift.v1",
         "register-replacement.v1",
     ]
     .iter()
@@ -39,6 +40,9 @@ pub(crate) fn handles(op: &str, c: &Context) -> bool {
 }
 fn named<'a>(s: &'a State, route: &Value, c: &Context) -> Option<&'a Value> {
     if crate::cascade::handles(route["operation"].as_str().unwrap_or(""), c) {
+        return access::object(s, &route["target"]);
+    }
+    if route["operation"] == c.qualified("lift.v1") {
         return access::object(s, &route["target"]);
     }
     let key = if route["operation"] == c.qualified("unregister.v1") {
@@ -69,6 +73,18 @@ pub(crate) fn preflight(
     if !handles(op, c) && op != c.qualified("retire.v1") {
         return Ok(None);
     }
+    if op == c.qualified("lift.v1") {
+        return Ok(
+            if route["arguments"]["id"]
+                .as_str()
+                .is_some_and(|id| s.tombstones.contains_key(id))
+            {
+                None
+            } else {
+                Some(("invalid", "OPS-029"))
+            },
+        );
+    }
     let o = named(s, route, c).ok_or("authorized lifecycle route has no object")?;
     let setup = op == c.qualified("set-up.v1");
     let retire = op == c.qualified("retire.v1");
@@ -88,6 +104,13 @@ pub(crate) fn preflight(
     }
     if setup && o["state"] == "retired" {
         return Ok(Some(("conflict", "LIF-015")));
+    }
+    if open
+        && o["open"] != true
+        && !crate::inventory::engine_made(o, c)
+        && crate::inventory::matching(s, o).is_some()
+    {
+        return Ok(Some(("conflict", "LIF-041")));
     }
     if open
         && o["open"] != true
@@ -184,6 +207,21 @@ pub(crate) fn execute(
     }
     let v = t.state.invocations[i].clone();
     let route = json!({"operation":v["operation"],"arguments":v["arguments"]});
+    if v["operation"] == c.qualified("lift.v1") {
+        let path = access::object(&t.state, &v["conduit"])
+            .ok_or("lift authority absent")?
+            .clone();
+        let stone = t
+            .state
+            .tombstones
+            .get(v["arguments"]["id"].as_str().ok_or("lift id absent")?)
+            .ok_or("lift tombstone absent")?
+            .clone();
+        t.state.invocations[i]["management"] = json!(true);
+        t.state.invocations[i]["lifted_tombstone"] = stone;
+        let outputs = crate::inventory::lift(t, &path, &v["caller"], &v["arguments"]["id"], c);
+        return requests::finish(t, a, c, i, "succeeded", outputs, json!([]));
+    }
     let o = named(&t.state, &route, c)
         .ok_or("lifecycle object missing")?
         .clone();
@@ -195,12 +233,17 @@ pub(crate) fn execute(
     }
     if op == c.qualified("open.v1") {
         if o["open"] != true {
+            let provenance = match v.get("opening_provenance") {
+                Some(p) => p.clone(),
+                None => crate::inventory::provenance(&t.state, &v, c)?,
+            };
             let object = t
                 .state
                 .objects
                 .iter_mut()
                 .find(|v| v["id"] == o["id"])
                 .unwrap();
+            object["provenance"] = provenance;
             object["open"] = json!(true);
             object["state"] = json!("ready");
             change(t, a, c, i, &o["id"], "opened", json!({"state":"ready"}))?;
@@ -208,12 +251,26 @@ pub(crate) fn execute(
         cite(
             t,
             "open-conduit",
-            &["ACC-006", "CON-023", "LIF-003", "REV-004"],
+            &[
+                "ACC-006", "ACC-044", "LIF-041", "CON-023", "LIF-003", "REV-004",
+            ],
             &o["id"],
         );
         return requests::finish(t, a, c, i, "succeeded", json!({}), json!([]));
     }
     if op == c.qualified("close.v1") {
+        let stone = crate::inventory::make(
+            t,
+            c,
+            &o,
+            &v,
+            &a.evidence.time,
+            json!({"invocation":v["id"]}),
+        )?;
+        if let Some(id) = stone {
+            t.state.invocations[i]["access_subject"] =
+                t.state.tombstones[id.as_str().unwrap()].clone();
+        }
         if let Some(consumer) = t
             .state
             .objects
@@ -531,6 +588,7 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                 .cloned();
             let optional = d["optional"] == true;
             t.state.invocations[i]["setup"]["cursor"] = json!(n + 1);
+            let mut part_diagnostics = Value::Null;
             let mut outcome = "conflict".to_owned();
             let mut id = Value::Null;
             let dependencies_succeeded = slot != "entries"
@@ -591,6 +649,7 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                             })
                             .unwrap_or("refused")
                             .into();
+                        part_diagnostics = t.reply["structuredContent"]["diagnostics"].clone();
                         if t.reply["pending"] == true {
                             t.state.invocations[i]["setup"]["phase"] = json!("entry");
                             t.state.invocations[i]["setup"]["waiting"] =
@@ -618,7 +677,9 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
                 .and_then(|v| v.last_mut())
             {
                 last["object"] = o["slots"][slot][&name].clone();
-                if outcome == "conflict" {
+                if part_diagnostics.is_array() {
+                    last["diagnostics"] = part_diagnostics;
+                } else if outcome == "conflict" {
                     last["diagnostics"] = json!([{"ruleId":"CON-004","level":"error","message":{"text":format!("The nested instance {} is missing or retired.",o["slots"][slot][&name]["id"])}}]);
                 }
             }

@@ -124,9 +124,9 @@ These helpers are for the store owner, not additional consumer authority.
 H03 is bounded explicitly. Public engine execution currently supports set-up.v1, open.v1,
 close.v1, register-replacement.v1, register.v1, replace.v1, inspect.v1, purge.v1,
 reconcile.v1, install.v1, retire.v1, unregister.v1, retire-with-resources.v1,
-retire-with-agents.v1 and list.v1, subject to the core's preflights.
-The shell also passes lift.v1, answer.v1 and sign-in.v1 to the core, which answers each
-unavailable, naming the order that builds it (042, 047 and 048a; OPS-005).
+retire-with-agents.v1, list.v1 and lift.v1, subject to the core's preflights.
+The shell also passes answer.v1 and sign-in.v1 to the core, which answers each
+unavailable, naming the order that builds it (047 and 048a; OPS-005).
 Declare-lost.v1 and control dispatch remain unfinished public invocation paths.
 Control reconciliation applies the held input values to the current revision (REV-010);
 Agent reconciliation uses the owning Fleet, with management as the retired-owner fallback
@@ -334,13 +334,13 @@ stop startup. First-registration setup failures still make `register` exit nonze
 `inspect` uses root MCP requests while the store's writer is held, and keeps the existing local
 workflow when it can open the store. It uses the same read-only state snapshot as the author
 commands for object enumeration and route selection; every request rechecks authority.
-Each successful CLI inspection row for an instance additionally carries `consumedConduits`, including declared and
-standalone Conduits, with each Conduit's actual name, target kind/name/ID and open boolean.
-This supplement uses that snapshot and is outside `result`, not an addition to `inspect.v1`.
-There is no defined inventory for standalone consumer Conduits or their open state in that
-operation's output: `declared` describes the object's declaration, while `status` defines no
-such inventory. This is reported as a gap for the coordinator; the specification is unchanged.
-Refused inspections receive no supplement; finding 4-08 remains open.
+Under LIF-013, successful `inspect.v1` results for instances other than Conduits include the
+authorized `inventory`: consumed and incoming Conduits, their states and opening provenance,
+and visible Conduit tombstones. Interface and Agent inventories include scope; Pool inventories
+include administrators. Templates and Conduits have no inventory.
+Each successful CLI instance row additionally carries `consumedConduits` beside `result`,
+projected from `result.structuredContent.inventory.consumes`, with each Conduit's actual name,
+target kind/name/ID and open boolean. Refused inspections receive no supplement.
 CLI inspection is not an atomic inventory across concurrent management requests.
 
 OPS-029 diagnostics identify the kind and reference supplied by the caller and say it does

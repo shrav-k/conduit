@@ -7,6 +7,7 @@ pub mod archives;
 mod cascade;
 #[cfg(feature = "differential")]
 mod differential;
+mod inventory;
 pub mod lifecycle;
 pub mod packages;
 pub mod records;
@@ -67,6 +68,11 @@ pub struct State {
     pub objects: Vec<Value>,
     pub records: Vec<Value>,
     pub allocated_ids: BTreeSet<String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub tombstones: BTreeMap<String, Value>,
+    /// ACC-029 / ACC-053 / ACC-055: immutable kind and owner facts for IDs named by bounds.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub bound_targets: BTreeMap<String, Value>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub record_gaps: Vec<Value>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

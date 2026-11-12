@@ -1,0 +1,804 @@
+{
+  "id": "e4-tombstone-visibility",
+  "title": "tombstone visibility",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "LIF-040",
+    "OPS-036"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../../../../fixtures/root-system-state.json",
+    "fixture": "../fixture.json",
+    "manifest": "../manifest.json",
+    "documents": "../documents.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "register-project",
+        "file": "fixture",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "aafcda11-14ad-5c5a-ba5c-d0a1600cebb3",
+            "989875c3-7854-55eb-8803-e254c011f86c",
+            "51ad0863-3e6a-5987-b63d-6c3cdefe3fd2",
+            "0d1fbcdc-0c2e-56a0-8b81-138386eefd56",
+            "8da1ca00-9117-5481-8d85-c215fcf199db",
+            "eb9a8359-84a0-5ea4-823d-261c248523d5",
+            "2a179504-a785-5453-8e10-e87cd341ed7e",
+            "9d7a975f-3b0b-5d61-966a-f5b9c6c29575",
+            "8ac2ded3-9977-5af1-a719-3c816911249e",
+            "99cfe16a-1dfc-521c-9735-daca1cb86bc0",
+            "8b569f10-09d3-5eae-b183-e20bbd4b80a9",
+            "4a4f7f35-7130-5231-8fc8-c97120c138ed",
+            "f94e864e-1905-586d-9fb1-30c691ba9aae",
+            "6beb926d-5e74-5fec-8b13-1d1235171c9b",
+            "bf675fc6-6aa7-5b0a-9c44-8c8191ff606f",
+            "dfba39ba-dfef-5c52-8c65-6edce4ebe5d6",
+            "d9581753-6f60-5e6e-a8fb-36d02b95ab94",
+            "f4d348d5-358d-5428-98d6-c4d7e1fbfa5b",
+            "2a3336cb-0764-5084-95ed-1eb1b265ff02",
+            "63ee04cb-218e-5d32-b59a-78bb29e9b429",
+            "85d6fdbb-0c4c-54b0-bdb2-82166c83b8a8",
+            "98485d7b-26fe-5192-8ebb-865ab857c3de",
+            "4471148d-86ae-55b6-bd5a-19e7629b36b1",
+            "4c9ab226-e46f-5e8f-ad53-a9c5d40cf673",
+            "58a85193-cb23-5225-849a-388192862d7c",
+            "65eb6f19-63c6-5ecb-a62e-4afbdc20e61a",
+            "fa36e856-c0e4-5788-ae23-be87a82a7d79",
+            "eff415c1-4338-5bd5-b4d4-64abe6ce6e8d",
+            "fea10c26-e43e-587e-95fe-dfb0e3061a24",
+            "cf0c20c7-281e-580c-9ab2-28f6a224df83",
+            "c46eb95a-0a7d-562d-be37-aef8347f37c5",
+            "2ebf0f38-8e80-5dc2-a1a6-3edada54eb08",
+            "c1040648-9f03-50eb-91bf-2af32e099b2f",
+            "44bc2d6d-e7ea-5e06-8658-9b485eef1807",
+            "9de88d3e-4290-5b03-ab89-17e35c7cb069",
+            "a840de8f-6cf6-5ae7-800e-3c8d56a9b7ba",
+            "b42c1ade-b480-5f7e-b1c4-2f2e05b0eb65",
+            "31bc6fee-44b9-5840-b6e9-b56ab6870cbf",
+            "5eccd7aa-0216-5673-8d84-9810f83d1c76",
+            "840577dc-6311-5751-a6bc-c9503d60a1bb",
+            "ddb3ab2a-795d-5561-bf9b-1060804a0f8b",
+            "31aead14-48e3-54a7-acf2-5799c495c579",
+            "55958ebb-2700-53d6-aaae-9ce4cf018657",
+            "648687c3-40f7-561e-8885-68177d8dd104",
+            "dde6446c-cfc1-5d1b-8e5f-4e0504a762e9",
+            "05b2837c-90fb-5b58-98cd-9ea18409bab8",
+            "998f6342-a176-5c2d-a839-216f748907ed",
+            "282b3368-ecae-53bf-9a6a-eea519095141",
+            "a60525e8-13b5-5099-9ca5-62a5217e416a",
+            "087bb328-f4ad-5456-88d7-c39e7bb8de83",
+            "d9b69237-0efc-5138-93bf-533b7bce5f46",
+            "66e3f1a3-26e8-5d71-8033-000efa609c25",
+            "c94319a3-0244-5054-9156-6f1ea53d6ac9",
+            "d0aac046-370f-5af5-b2c6-e88633948d6f",
+            "1285cf35-d4d1-557f-821f-a4b0c56f4872",
+            "a4539d85-507a-5cc7-9a06-973758afdfd5",
+            "e48e8e6f-9b57-5eb3-b8b3-8b845d63999a",
+            "616a536c-cdc4-548e-8ad4-fff6fa6211cf",
+            "b303cd49-223d-5121-85f0-9490b14af423",
+            "d3edaf17-278c-55bd-9e47-d20b5a2d92ce",
+            "3a72ab21-3dda-5536-98e6-9fb845cc99d0",
+            "9d46f79c-8842-5402-a710-16cc8cb9e42c",
+            "4e0e8143-85e5-5611-8cf4-60a4a43bc00a",
+            "7beed573-cf15-5dca-8954-1719bc0cdb04",
+            "2e31609c-8938-55bb-a899-9c8b8df93f40",
+            "7a7b0251-716f-5709-890f-66e4a9729809",
+            "8d721487-08e3-5652-9151-83031e637db7",
+            "2c635ec7-1bea-5793-b65d-bb08cb1568e0",
+            "b5d6ca18-a02c-5d1d-b955-188a4058c0af",
+            "a4576869-4cf7-5b49-9545-23f48ec993b5",
+            "81fc1ad1-c3da-5598-bca5-cbf4a88f873e",
+            "d9f31b3f-7d7b-5a0e-93df-70953f230bfb",
+            "aa8a3d09-0413-5495-8e4e-caee11c5de60",
+            "3281e597-e15a-5a9d-877d-cdd5686ac7b9",
+            "faa2752a-f3f5-56c8-92f3-b9c804febde1",
+            "75462186-f7b8-5319-bae0-2e79dda32fe9",
+            "397b5b3a-4e30-57d1-824a-f11c22339a8d",
+            "e682e589-3ed6-536f-b5c0-bc590e0f9b44",
+            "49096c3c-d442-546f-b403-0f2ea6a2143c",
+            "b5042d52-fd5c-5308-8c68-df044479d569",
+            "a70833c7-f7ff-5797-bd22-b6b20a996131",
+            "bc5c32c3-e009-5e26-8906-c9857f3b747b",
+            "39370d2a-35e6-57b9-8088-62b0e8a066f7",
+            "cf59952a-2074-590c-8695-7316c00c1b0a",
+            "67e8bd91-ec18-5907-b887-2603eb674303",
+            "68766fa9-35d3-5433-beda-cb9fd8882840",
+            "bb70fc20-6a49-557d-b083-d7578be5490f",
+            "7481ec7c-62df-5725-98bf-c7078e9c0054",
+            "3a82eb82-5004-545b-91cd-3229fb8d5adc",
+            "aec85c46-eafa-5bbf-8d5e-5da6d4f7c906",
+            "8d4eff42-d425-5f03-a75b-fbccc8e71b8a",
+            "0f7115c2-a7ae-565e-8c68-fb8a97167c88",
+            "bb27fd65-9c47-5eed-9018-a066d1a75194",
+            "6d961cdb-dd2c-5dcf-93d2-c2431492fe96",
+            "eca93051-7134-5900-a3a1-6ad951bb2761",
+            "a31481e0-48fc-5058-84ce-b20c61e444f2",
+            "1a1adc91-e5bf-512f-87b6-86e61b7b784f",
+            "9dda357f-a3d5-5782-aa88-556297fd113a",
+            "33b186f1-adf5-5034-ac3f-106fee5d34ea",
+            "7b7f19d8-4c00-54c9-aa3c-9d0654b935fb",
+            "33186331-c9df-57ab-8fbb-086e9e45fc01",
+            "93b13874-685e-53bb-929a-4f15e558d0b1",
+            "1e767585-85d2-5dff-a03a-138673bd7fb2",
+            "14c6c0b5-1467-54df-a75b-9cddb30c5129",
+            "6bdae460-e05c-5898-888b-3c8b5cf25c8a",
+            "a52e69b5-1dd6-5956-9fa0-adb21320fd54",
+            "03d5d517-ad28-5830-85cc-e9c2dc5c133f",
+            "e87ff15d-258c-568b-92ad-c73d65a4ca4c",
+            "91d72bf3-69c6-5748-80a0-5084cd147873",
+            "b893f6d6-7917-52bf-859d-41122e56b8fe",
+            "07d051bf-a988-521c-b468-059f4cbcfd31",
+            "5f2fe930-d914-5853-b0e4-ac6aea7aa385",
+            "e4b347ed-3663-50f8-910a-a9e645635d4f",
+            "80751a06-3c6b-5477-8284-fe2218923df4",
+            "6646b293-4685-56f8-9be1-6d223375c434",
+            "01bcb359-ef4f-5122-a571-0b18bea03422",
+            "2e460787-975d-59a3-86e6-0346873b7cc8",
+            "d5ea9dd3-393a-535e-b83a-fb57f6478a9e",
+            "3833650f-5079-5250-bc4e-694e63587ef4",
+            "acdd5ec8-6c96-5f7c-af32-74651301d072",
+            "291df6c5-4143-5687-a371-0b2825de13a3",
+            "b1ae8208-d7d2-5aeb-b265-8657d3b3a458",
+            "23bbf586-e5ab-5dfe-8871-25c9ad055942",
+            "9c7dbf6e-7a30-5002-a436-4687c0064890",
+            "13de9c8b-cfee-5d0f-9eb3-819985350170",
+            "deeee64a-cfac-5513-b20d-e48f29938a65",
+            "4e6b8e78-545c-599b-89da-b8925463d78b",
+            "07644330-872b-5282-8112-c86d2ed9cd54",
+            "62bfe6b9-c5ab-5924-bd54-ce7560473673",
+            "9c01ec9e-14e9-59b5-9b7a-4f3e3257f7ad",
+            "cd4bdc1b-3021-538a-9911-19fa1e2dfc8f",
+            "71e9024a-363b-55ac-9a5a-1d7be557e36e",
+            "9721159c-77a5-5e60-9fd2-0e52893d9da2",
+            "38c36e0f-7877-524e-889a-fb1ef3ba4b64",
+            "d0651c82-3490-52c4-87cc-e42d550ec393",
+            "e9da8e9c-90a6-5948-a53a-0d73fbfc5f6a",
+            "212c3c68-d888-5009-909a-8740ca3aa02e",
+            "33f598f6-7a3f-54d6-b61f-c40c953117a5",
+            "08c3ed30-332e-582e-8be6-e08115cf2dd5",
+            "0844a820-9c06-5982-8d89-e4045af17630",
+            "36927e24-ebaa-5bc2-a554-697e900a7de6",
+            "174b115f-769b-5994-9d76-4686d5e20929",
+            "61ba0e8b-c902-5f20-92bc-9463b20a9680",
+            "d3e73213-2151-58e3-acc3-a1b272f888d6",
+            "bdb8ebe3-708b-5f57-810b-5034cb9c672d",
+            "24a64eb7-5c35-5010-9bd8-a40367a09d87",
+            "f9022587-d923-59f7-8122-34abe4a8a0ad",
+            "614e737a-5f62-5b1e-a5c8-d7b4e339e26f",
+            "1b8ba7b8-e5d1-50cf-a54f-ed36433a1141",
+            "44ac3cc3-ac5f-5614-b7ed-62de2c705489"
+          ],
+          "revisions": [
+            "wo042-registration-0",
+            "wo042-registration-1",
+            "wo042-registration-2",
+            "wo042-registration-3",
+            "wo042-registration-4",
+            "wo042-registration-5",
+            "wo042-registration-6",
+            "wo042-registration-7",
+            "wo042-registration-8",
+            "wo042-registration-9",
+            "wo042-registration-10",
+            "wo042-registration-11",
+            "wo042-registration-12",
+            "wo042-registration-13",
+            "wo042-registration-14",
+            "wo042-registration-15",
+            "wo042-registration-16",
+            "wo042-registration-17",
+            "wo042-registration-18",
+            "wo042-registration-19",
+            "wo042-registration-20",
+            "wo042-registration-21",
+            "wo042-registration-22",
+            "wo042-registration-23",
+            "wo042-registration-24",
+            "wo042-registration-25",
+            "wo042-registration-26",
+            "wo042-registration-27",
+            "wo042-registration-28",
+            "wo042-registration-29",
+            "wo042-registration-30",
+            "wo042-registration-31",
+            "wo042-registration-32",
+            "wo042-registration-33",
+            "wo042-registration-34",
+            "wo042-registration-35",
+            "wo042-registration-36",
+            "wo042-registration-37",
+            "wo042-registration-38",
+            "wo042-registration-39",
+            "wo042-registration-40",
+            "wo042-registration-41",
+            "wo042-registration-42",
+            "wo042-registration-43",
+            "wo042-registration-44",
+            "wo042-registration-45",
+            "wo042-registration-46",
+            "wo042-registration-47",
+            "wo042-registration-48",
+            "wo042-registration-49",
+            "wo042-registration-50",
+            "wo042-registration-51",
+            "wo042-registration-52",
+            "wo042-registration-53",
+            "wo042-registration-54",
+            "wo042-registration-55",
+            "wo042-registration-56",
+            "wo042-registration-57",
+            "wo042-registration-58",
+            "wo042-registration-59",
+            "wo042-registration-60",
+            "wo042-registration-61",
+            "wo042-registration-62",
+            "wo042-registration-63",
+            "wo042-registration-64",
+            "wo042-registration-65",
+            "wo042-registration-66",
+            "wo042-registration-67",
+            "wo042-registration-68",
+            "wo042-registration-69"
+          ],
+          "suffixes": [
+            "b0000",
+            "b0001",
+            "b0002",
+            "b0003",
+            "b0004",
+            "b0005",
+            "b0006",
+            "b0007",
+            "b0008",
+            "b0009",
+            "b0010",
+            "b0011",
+            "b0012",
+            "b0013",
+            "b0014",
+            "b0015"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000006",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        }
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "state": {
+          "started": true
+        },
+        "external_intents": [],
+        "required_promises": [
+          "SUB-001"
+        ],
+        "record_facts": [
+          {
+            "type": "access-decision"
+          },
+          {
+            "type": "invocation-dispatched"
+          },
+          {
+            "type": "object-change"
+          },
+          {
+            "type": "invocation-ended"
+          },
+          {
+            "type": "request-ended"
+          }
+        ]
+      },
+      "capture": {
+        "viewer": "/objectIds/Interface/viewer",
+        "outsider": "/objectIds/Interface/outsider",
+        "a": "/objectIds/Agent/a",
+        "b": "/objectIds/Agent/b",
+        "store": "/objectIds/Pool/store",
+        "shared": "/objectIds/Resource/shared",
+        "subject": "/objectIds/Conduit/subject",
+        "twin": "/objectIds/Conduit/twin"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "9ce33406-996c-5ad9-ab8e-86a9ab203daa",
+            "3a2a255e-e40c-5b5e-a2bb-d11a57d29d5a",
+            "5d056df5-3703-5c6c-b905-6b2db90f56cc",
+            "e85b1839-3812-55c7-ba91-2680151a3fdb",
+            "76865904-5c14-5862-a403-42018b66a445",
+            "06c1aa2f-7e8c-5d0b-bb1b-c14ed9d15c9f",
+            "d6676aa0-8afa-5668-ac1b-bfd5735567d9",
+            "9fada393-b53c-5a05-aecb-8260619d38a2",
+            "d5e722d8-faeb-52ce-8e57-5f06b69d6adf",
+            "60e89ed1-1d8b-58da-abf8-1b5147fed7f2",
+            "e95c57dd-edd5-5438-b406-724876f47e57",
+            "fa51264e-31fb-5b17-966f-add47ee8d0fd",
+            "f1bd95fe-9f72-5b12-a65e-932a8e054ba2",
+            "0f1dda05-e414-5a56-b669-25805cc1e4e9",
+            "41f8ae0c-c496-5e48-8cd9-649907664f77",
+            "94028931-7259-5027-8a92-ff7f57936c0c",
+            "22a947a0-9242-56e4-9c08-a21c3d729a47",
+            "4eb4f101-e26d-54f8-9598-1f0c8ce04a57",
+            "c3d51b26-c256-5f9b-942b-e8765066d945",
+            "93e9515b-313c-5ed1-80c2-0a7fcd4bb11e",
+            "5b050dac-85be-5a3b-b66d-1e14cd8ce29d",
+            "0476a9bb-3925-5727-b282-fbe6e6213a48",
+            "661f11d6-0d71-5b89-8460-6a6972edf950",
+            "167de8b5-ba04-5f3c-9122-910a7482ca1b",
+            "fb16a03a-801b-58de-b6ad-10e7fef00c81",
+            "28138bb0-0e6a-5643-a528-d3446bc32d32",
+            "220ec66b-029d-541b-b058-24c71fcaf97d",
+            "f1d28065-7716-5324-825f-d61ee9bf1476",
+            "fad4d8b6-359c-506f-83f0-db8771eaa177",
+            "a3f8311a-b8a4-5c55-937a-7fb8c92fdbc0",
+            "efab50a7-d6e7-55a0-a93e-4bafe4c75d30",
+            "9a1c4c46-82cd-5417-8e7b-7cabf7dc9214"
+          ],
+          "revisions": [
+            "wo042-283-0",
+            "wo042-283-1",
+            "wo042-283-2",
+            "wo042-283-3",
+            "wo042-283-4",
+            "wo042-283-5",
+            "wo042-283-6",
+            "wo042-283-7"
+          ],
+          "suffixes": [
+            "b0000",
+            "b0001",
+            "b0002",
+            "b0003",
+            "b0004",
+            "b0005",
+            "b0006",
+            "b0007"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "viewer-fleet"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "9ed5e347-50ca-558f-8f6d-0711822620b7",
+            "3a209cd6-9763-557a-94f6-16400cf49c16",
+            "8b4963ea-337b-598b-83c6-06d74c5a34df",
+            "4f5d2d23-b6ab-5d15-896b-8a9e17ffdd34",
+            "dfdc77c7-a5b7-5c4b-bc2c-a9422c766073",
+            "246b727b-1038-576d-87d6-3b714cf18589",
+            "e83ccbc0-d50d-5426-9561-6240b821d8d7",
+            "124ad85a-4766-50d0-818d-4af71149f4f9",
+            "617e9662-d45e-558a-8f2a-d9cc693ad9df",
+            "f91b23b1-71e3-5287-a99e-98539791dbef",
+            "14e052fe-81b1-5ce7-aadf-153d1e4e2a96",
+            "54cfe960-c603-553b-8654-4ab074a9ecea",
+            "cc68bbd5-25d5-5e21-a4a2-8b0b965eaa90",
+            "36541ac7-025a-5d4a-b9da-566c4ace1590",
+            "b2d7ec34-eb4b-51b2-a9b1-78e58c2cb7a0",
+            "4a76bd0c-9bd1-5b21-a31b-0319e989502c",
+            "fc6d7ee5-66e3-56b3-bbd0-094cbe48406b",
+            "31c16367-b458-54a9-baba-ef99e233b86d",
+            "3184929e-3730-5c7d-8d92-2ba73d40b421",
+            "b4cc65c4-2b26-5dc0-8bf3-1d4f04880ca6",
+            "c1e55e87-58f2-5013-bb17-166038e6ec62",
+            "c5ed402a-c5a9-5964-86ad-12767cbc8b20",
+            "a433081d-d044-5028-93a0-6360975b570c",
+            "6a948210-1934-5d0b-94db-27c685c51a4e",
+            "2a18d9c4-92d4-5143-be00-419ff282f7b6",
+            "d2532902-d9e4-58d7-b7ae-643c41b32e66",
+            "570824b9-2c64-562e-92f4-f89ecf24a8ff",
+            "2784185e-760e-5559-a9ca-73e612f7976b",
+            "f653c73f-3457-5673-976e-65478d5218eb",
+            "483db6f6-2e77-5803-b139-a94e7d3b3fc4",
+            "a478b287-52ae-5a14-9696-8bcb06123b9a",
+            "4b56d54a-8b82-5307-86ca-55c84745ff90"
+          ],
+          "revisions": [
+            "wo042-285-0",
+            "wo042-285-1",
+            "wo042-285-2",
+            "wo042-285-3",
+            "wo042-285-4",
+            "wo042-285-5",
+            "wo042-285-6",
+            "wo042-285-7"
+          ],
+          "suffixes": [
+            "b0000",
+            "b0001",
+            "b0002",
+            "b0003",
+            "b0004",
+            "b0005",
+            "b0006",
+            "b0007"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "subject"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "d5776286-0e9d-5281-b9f0-73ce5f658959",
+            "46990c0d-9459-5d01-a263-046ab9eeb05d",
+            "71299ea1-28e0-5af2-9b19-5213fb707ca6",
+            "ee3d1504-68f5-5232-abd3-de2e5ef3ebf1",
+            "3379d2f8-a9e9-5ecf-b747-414825c154cc",
+            "e9ed6767-39dc-5ad9-a6f6-86a5538a9fb9",
+            "c1a35ed1-6aed-5bc5-83e7-024dd58b5ca1",
+            "ba145f0f-8ca7-5ec7-8917-e2b26b4c36b2",
+            "7bbd7889-2ab5-558c-8231-7a000d6af69e",
+            "bf0b648e-0f9e-5079-a5f3-d288078ac3ed",
+            "61b18a55-3d1c-577e-8374-f1518f597e21",
+            "ead8c4ca-69c4-5133-b33d-d10646f5ef2d",
+            "66363a5f-4324-5c3d-9439-40dc9aa77d43",
+            "6750cab1-484d-588f-8f79-db6cfa467bb4",
+            "aa974cc2-1c69-5cc5-bd72-2b29603c0a7c",
+            "a3d04220-9603-5e73-802e-93728d7ab0f2",
+            "7eddc435-7fea-564d-9ee1-90e512aab8c5",
+            "ee5379bb-ded6-5fcd-8b52-514142444d45",
+            "888715f4-3313-599e-962e-6417111bf1a0",
+            "44a8d418-63b1-56c7-b497-2ab3408b7884",
+            "afdea28e-1dc2-5840-bfb9-7c862c15f97d",
+            "7f8807b6-911f-5eee-b143-0ea1dcd899de",
+            "12d7e066-7851-5532-aa2f-d723a3a4900d",
+            "baf2f889-944d-5787-8445-e08a2ebea437",
+            "b36d3771-6ed8-5607-a38b-e48ecca035aa",
+            "cc782c40-8327-5bbe-926a-ad2503d837ff",
+            "1915e5b7-bdf7-585e-9ac0-bbc07aad9eb2",
+            "34d8d3c5-1378-5670-9e82-6ca625316df8",
+            "a134e5bb-25fe-5e97-b8bd-a1b8531e47ed",
+            "fa800001-06c0-58c7-a2ab-ff9b75c10c47",
+            "29aee3c2-3cb2-517e-a2e3-0c56e30a4831",
+            "c6ca1cee-09d1-5356-9658-69955bff3965"
+          ],
+          "revisions": [
+            "wo042-277-0",
+            "wo042-277-1",
+            "wo042-277-2",
+            "wo042-277-3",
+            "wo042-277-4",
+            "wo042-277-5",
+            "wo042-277-6",
+            "wo042-277-7"
+          ],
+          "suffixes": [
+            "b0000",
+            "b0001",
+            "b0002",
+            "b0003",
+            "b0004",
+            "b0005",
+            "b0006",
+            "b0007"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.close.v1",
+          "arguments": {
+            "conduit": "subject"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      },
+      "capture": {
+        "stone": "/tombstones/0/id"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "c6dcc0c5-9205-5b63-8dad-a834702c99b9",
+            "2d2155c9-6838-51e3-a7b7-c40548d43eed",
+            "d283df9e-2ddd-587e-8e57-edfb3dedf2e6",
+            "3720c3fa-0f80-54b5-a9dd-26d84dd84aa8",
+            "ec7e11b8-5eaa-5229-af6d-af8a1271bdd9",
+            "73ebd6f0-21e0-5a1f-8f19-031a1e1007b4",
+            "d6d39380-31e4-5454-98fe-3c6a7ae4d5f8",
+            "f152e38f-b3f3-55ec-b8df-ab73783e71cd",
+            "b34d3460-0582-50e5-87f0-7f26d4d9f94d",
+            "bf520188-34f7-50dc-9c74-43b0765a4e32",
+            "5c962767-3864-5d92-9b86-c8445f57d5db",
+            "547b237d-b783-5456-8752-69f3e2106262",
+            "3b452e6b-3716-5ab0-bd0c-b207e0b8e576",
+            "ff308a6e-0fe0-5910-9339-ebb6656f9407",
+            "bf4d43db-93a1-5aca-b721-c441316b10c5",
+            "44c780cd-07b2-5f77-a262-875a0b897e2a",
+            "cec2e5f8-80d7-53df-8c54-6f631d6bc01e",
+            "877925a9-ee53-570d-884b-92933ed15be7",
+            "f90b0f7a-df6b-5761-9404-b2c8695fe2cf",
+            "a0f795ab-330b-5deb-b875-a4fa914b2577",
+            "ee4534bf-3814-554f-a971-68443305d2bd",
+            "57ddfbe6-62b4-5921-a85a-07f8fa7acb23",
+            "51faccd3-ae48-57d7-8b57-130e4b346312",
+            "db8d5ad5-697f-572d-aa57-afb1cbd0c714",
+            "f992364e-f89d-5acc-a23c-7cf230b90f06",
+            "eaa00b4c-3873-5d82-b95d-f371a0ce16ba",
+            "a80d407b-95be-5638-a658-71fc469c7a95",
+            "83da61c8-0488-59b8-8fce-4eb443b54bf4",
+            "4ce5ac75-21aa-5dd3-9ae6-6e539f64184d",
+            "bbcb6561-ef1f-5ab4-90d5-2860274c69d7",
+            "664220d2-8485-5b3e-87d3-adff4ca8bc61",
+            "35e77be1-7836-5924-b102-fe244bdd2229"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "viewer-list"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "6c93ec2a-9771-563b-9dce-dd9837e181a9",
+            "1273f013-3444-50b7-b07e-631064f9222a",
+            "df7cde65-914b-5cf1-acd9-2cfd97cfed01",
+            "dff428bb-b175-5c99-ad37-174b44b3402c",
+            "d5d6dc99-2b84-5627-9d9c-32cc54761f8f",
+            "18af369c-e0a3-5182-b516-ec62349a092f",
+            "0416d0e4-df22-5527-a2bf-72a0bf1139b7",
+            "7107051a-3b15-53dc-9e35-668c5f4a2760",
+            "c69573e1-14bc-54c5-8ae4-31d3902ad345",
+            "01254065-485e-5d19-aaf2-758f6ba5b419",
+            "d7a5534d-9888-52e7-8828-9cec343cc739",
+            "eddb5b23-7690-54cb-a220-d27f5c9d019d",
+            "6223439b-8fc8-50aa-8a19-8f8f5d8b1967",
+            "e5583ece-49ab-5359-86ee-a0fe0766a87e",
+            "a15f87de-119c-58cb-96cb-8e80b73f1507",
+            "c4f39d3a-e4fc-514f-a7f8-85c7216d22cf",
+            "7b6fa941-5bc4-50bf-bd31-9338ca48899c",
+            "71f3a5e2-6613-5aeb-b46f-7222aaf95f65",
+            "a0ff032e-4de2-51b3-b8ea-872e78416c6c",
+            "d0db546a-d4a7-53e9-85aa-7be8616abeee",
+            "785a6a48-8b06-5c11-8eb3-a0f46f64384c",
+            "3db1fbe8-fd96-569f-8201-d60c4b5cfef4",
+            "555e923f-4d67-56f8-8e2d-910c6da58a4d",
+            "59872f11-09eb-5391-be2e-e31a218c3a00",
+            "a23384c1-b11d-5b10-9a3a-aa97c1808ede",
+            "b9d5e22e-744b-541e-9d4c-735b309c0db0",
+            "1802e7b4-c499-5744-9060-dde9cb52c5fd",
+            "17234e0e-a8ca-5540-8831-0bbbc2ce3759",
+            "3d09cd4e-679b-505b-ab31-b100c3c6f02c",
+            "c49a0614-f153-5349-94e5-4b51ba5b4a88",
+            "d96c9e56-19b5-53ff-987c-0deba8fad35c",
+            "c98d24ae-e0bc-5525-9884-632995a1edcf"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "$viewer"
+          },
+          "tool": "catalog.list.v1",
+          "arguments": {
+            "kind": "Conduit"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "structuredContent": {
+            "tombstones": [
+              {
+                "id": "$stone",
+                "by": "00000000-0000-4000-8000-000000000005"
+              }
+            ],
+            "packages": []
+          }
+        },
+        "absent": [
+          "/reply/structuredContent/count",
+          "/reply/structuredContent/total",
+          "/reply/structuredContent/cursor"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "36e4e930-9d8d-5f8b-9451-088bde8d8686",
+            "6a9a78db-756e-58e0-b6f3-3f25336b28e3",
+            "79ecc9eb-cda3-58e3-8ad7-5eb6b835d14e",
+            "3eeae575-73f4-5e55-957c-9c8cdfe88bbb",
+            "b279f170-def0-5853-ab81-ca945374c974",
+            "dbfb1018-e792-597b-bae4-3bf86957f630",
+            "3e618166-945d-5f03-925b-614195fe2c64",
+            "3bf6f416-e875-5e67-b050-343a27fd16df",
+            "8c4dd7a7-d1c9-50a3-a4ae-b0a551efb9f4",
+            "753902dd-e57a-5264-9c2a-71a6c0156cda",
+            "241e9e39-23f6-5e9b-981a-1f37bde71868",
+            "89e171fa-2156-5810-a21b-1893aee13e9c",
+            "b2b0bc50-027b-56f0-aef3-539071a1b775",
+            "71ce9586-a312-50c5-a1c2-5da41b5d5501",
+            "226bb4eb-12bd-56d9-b0f4-5689b4612d12",
+            "25649202-560c-5efa-8d36-2c9cf1e1b2ff",
+            "0723043b-9649-57b0-ac56-de8d2c29d7d5",
+            "1f4a9ed2-dce7-57cd-aba1-3d8678dc0726",
+            "7a386595-416d-5c10-ac1a-5411a1b08b27",
+            "e79d18a6-ba24-5733-b916-9968dd0f2c8b",
+            "3eadad4c-327f-5ab8-a3fb-e684c0f748b0",
+            "0a286941-427b-5daf-96d0-b03ee143c926",
+            "8372c186-b80f-58d8-9825-0957fa25ec77",
+            "13333e24-f83f-56fb-9d20-28dd3a28fb9f",
+            "84bc8767-4a4d-52b8-b00c-539aaaf3c99e",
+            "c80a580a-5709-556b-a6dd-380a279ae163",
+            "b1756608-51f4-59b0-a7e0-ce7d928de0dd",
+            "e2ae601d-9e17-5052-ac46-e7999fe17f07",
+            "2c1dc8d7-ebdf-5477-ad4b-c0a54c96ea6f",
+            "a1268f1d-a89c-5b6b-bcf3-4cca41e315ad",
+            "c81542af-9ea8-51e6-9611-8e4ec135f7ac",
+            "afb3a7ba-3545-5ca8-a6fc-38ddc3e72d99"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.close.v1",
+          "arguments": {
+            "conduit": "viewer-fleet"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "2720c3da-b8ce-5ea7-8a83-93c51d114bc2",
+            "3161aa15-4d7c-577e-a751-33f6f307df44",
+            "fd5b029c-1a1c-536e-992d-760a16e29ffb",
+            "15a14c4f-4e5a-5e9a-aa06-0ce6dfbd7729",
+            "371fa533-f2d1-55d9-936d-35928a484918",
+            "8b5a80f4-9493-595d-af2b-830285c1f974",
+            "aebabc10-dc31-5235-b44f-0ec2351db968",
+            "77770234-ba1e-581e-8f69-f9e887d64918",
+            "9ee96413-a5ab-5988-8425-aefbfb3c51fc",
+            "f4c5cb06-c5f2-53e4-b24d-b4a201fc5124",
+            "3ec59f68-5d19-5256-8785-b16a72b0122d",
+            "91f57617-0ed5-599a-9ca7-1ce9b02ddce5",
+            "ba0a3b4f-8b92-5c92-aa7b-8f2cc4b70b82",
+            "92615c94-1c55-5e99-b7b0-9febc2c0d9e5",
+            "76fb8cf9-0b3e-5668-bfc0-9703730fb30f",
+            "6b703a7a-4857-508f-ba3e-e0eafdfff9cc",
+            "797eed4a-3689-50d5-91bf-bae3f9242c7d",
+            "c242cbad-897a-5654-89c5-23cfe2b12aa0",
+            "d1aee134-185c-5c8a-ad56-4d8056023677",
+            "c761345f-244c-512c-8e1c-96c2991a4499",
+            "e1ccab07-a54e-51fa-b1e0-f1e12a7d2281",
+            "9ec03803-9ca9-5290-8fa9-a3c5ee1a2cb7",
+            "71d2f91c-563d-54e8-8375-31c9318b9817",
+            "f98d0a16-a32a-577e-b333-c071d4272e31",
+            "eb7e4712-aec9-5172-a0fd-cb32b61d27d1",
+            "8e7a76f1-cba0-5cdc-bca7-078e6797466d",
+            "ef6861ea-dbe7-5b44-a3c0-77fafbefc9af",
+            "34c40ef3-9ef6-5f35-bb03-15a46c4f4f74",
+            "8ebc955a-081f-5a23-8329-99a0c9ec5e15",
+            "4292e399-a99c-5b27-a30a-fcad810e3efc",
+            "598f618d-5998-5adb-bc39-e2b3e76dafb9",
+            "c8629b2d-5976-5b68-b42a-6af58bf6d10a"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "$viewer"
+          },
+          "tool": "catalog.list.v1",
+          "arguments": {
+            "kind": "Conduit"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "structuredContent": {
+            "tombstones": [],
+            "packages": []
+          }
+        },
+        "absent": [
+          "/reply/structuredContent/count",
+          "/reply/structuredContent/total"
+        ]
+      }
+    }
+  ]
+}

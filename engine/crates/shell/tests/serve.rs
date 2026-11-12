@@ -258,6 +258,11 @@ fn real_npm_serve_s1_tokens_access_t7_and_shutdown() {
         let written = b.call_tool(call("project.file.write.v1", json!({"path":path,"content":"B works while A is closed"}))).await.unwrap();
         durable(&store, &written, &prefix);
         assert_eq!(fs::read_to_string(&path).unwrap(), "B works while A is closed");
+        // ACC-053 / LIF-041: restoration requires the root client's explicit lift.
+        let closed_state = state(&store);
+        let stone = &closed_state["tombstones"].as_object().unwrap().values()
+            .find(|stone| stone["object"]["id"] == conduit["id"]).unwrap()["id"];
+        cli(&store,"call",&["access.lift.v1",&json!({"id":stone}).to_string()]);
         cli(&store, "call", &["management.register-replacement.v1", r#"{"instance":{"kind":"Agent","name":"agent-a"},"nested":"project"}"#]);
         cli(&store, "call", &["s1.set-up.v1", r#"{"instance":{"kind":"Agent","name":"agent-a"}}"#]);
         changed(&changes_a, 2).await;

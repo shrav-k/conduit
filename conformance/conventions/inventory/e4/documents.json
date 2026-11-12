@@ -1,0 +1,757 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "ping.v1"
+    },
+    "spec": {
+      "effect": "A fixture effect.",
+      "inputSchema": {
+        "type": "object"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Capability",
+    "metadata": {
+      "name": "item-access.v1"
+    },
+    "spec": {
+      "operations": [
+        "#ping.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "item.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [
+        "#item-access.v1"
+      ],
+      "implementation": {
+        "#ping.v1": "#fixture-server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "agent.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [
+        "#item-access.v1"
+      ],
+      "implementation": {
+        "#ping.v1": "#fixture-server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "item"
+    },
+    "spec": {
+      "type": "#item.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "worker"
+    },
+    "spec": {
+      "type": "#agent.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "person"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "declared-person"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1",
+      "conduits": {
+        "slot": {
+          "from": "github.com/shrav-k/conduit/core#root-pool",
+          "target": {
+            "kind": "Pool",
+            "name": "store"
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "ping"
+    },
+    "spec": {
+      "capability": "#item-access.v1",
+      "operations": [
+        "#ping.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "read-pool"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#inspect.v1",
+        "github.com/shrav-k/conduit/core#list.v1",
+        "github.com/shrav-k/conduit/core#reconcile.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "read-fleet"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#fleet-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#inspect.v1",
+        "github.com/shrav-k/conduit/core#list.v1",
+        "github.com/shrav-k/conduit/core#reconcile.v1",
+        "github.com/shrav-k/conduit/core#set-up.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "delegate-access"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#access-control.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#open.v1",
+        "github.com/shrav-k/conduit/core#close.v1",
+        "github.com/shrav-k/conduit/core#lift.v1",
+        "github.com/shrav-k/conduit/core#reconcile.v1"
+      ],
+      "requirements": {
+        "bound": {
+          "requirement": "github.com/shrav-k/conduit/core#bound.v1",
+          "arguments": {
+            "targets": [
+              {
+                "kind": "Pool",
+                "name": "store"
+              }
+            ],
+            "operations": [
+              "github.com/shrav-k/conduit/core#inspect.v1",
+              "github.com/shrav-k/conduit/core#list.v1",
+              "github.com/shrav-k/conduit/core#reconcile.v1"
+            ],
+            "pools": [
+              {
+                "kind": "Pool",
+                "name": "store"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "no-lift"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#access-control.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#open.v1",
+        "github.com/shrav-k/conduit/core#reconcile.v1"
+      ],
+      "requirements": {
+        "bound": {
+          "requirement": "github.com/shrav-k/conduit/core#bound.v1",
+          "arguments": {
+            "targets": [
+              {
+                "kind": "Pool",
+                "name": "store"
+              }
+            ],
+            "operations": [
+              "github.com/shrav-k/conduit/core#inspect.v1",
+              "github.com/shrav-k/conduit/core#list.v1",
+              "github.com/shrav-k/conduit/core#reconcile.v1"
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "storage"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#pool.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "store"
+    },
+    "from": "storage"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Pool",
+    "metadata": {
+      "name": "other"
+    },
+    "from": "storage"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "metadata": {
+      "name": "group"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Fleet",
+    "metadata": {
+      "name": "elsewhere"
+    },
+    "from": "github.com/shrav-k/conduit/core#fleet"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "viewer"
+    },
+    "from": "person"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "outsider"
+    },
+    "from": "person"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "declared"
+    },
+    "from": "declared-person"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "shared"
+    },
+    "from": "item",
+    "owner": "store"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "a"
+    },
+    "from": "worker",
+    "owner": "group"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Agent",
+    "metadata": {
+      "name": "b"
+    },
+    "from": "worker",
+    "owner": "elsewhere"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "subject"
+    },
+    "from": "read-pool",
+    "consumer": {
+      "kind": "Agent",
+      "name": "a"
+    },
+    "target": {
+      "kind": "Pool",
+      "name": "store"
+    },
+    "as": "project"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "twin"
+    },
+    "from": "read-pool",
+    "consumer": {
+      "kind": "Agent",
+      "name": "a"
+    },
+    "target": {
+      "kind": "Pool",
+      "name": "store"
+    },
+    "as": "twin"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "outside"
+    },
+    "from": "read-pool",
+    "consumer": {
+      "kind": "Agent",
+      "name": "a"
+    },
+    "target": {
+      "kind": "Pool",
+      "name": "other"
+    },
+    "as": "other"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "owned"
+    },
+    "from": "read-pool",
+    "consumer": {
+      "kind": "Interface",
+      "name": "root"
+    },
+    "target": {
+      "kind": "Pool",
+      "name": "store"
+    },
+    "as": "ordinary"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "viewer-pool"
+    },
+    "from": "manage-pool",
+    "consumer": {
+      "kind": "Interface",
+      "name": "viewer"
+    },
+    "target": {
+      "kind": "Pool",
+      "name": "store"
+    },
+    "as": "pool"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "viewer-access"
+    },
+    "from": "delegate-access",
+    "consumer": {
+      "kind": "Interface",
+      "name": "viewer"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "access"
+    },
+    "as": "access"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "viewer-no-lift"
+    },
+    "from": "no-lift",
+    "consumer": {
+      "kind": "Interface",
+      "name": "viewer"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "access"
+    },
+    "as": "limited"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "viewer-fleet"
+    },
+    "from": "read-fleet",
+    "consumer": {
+      "kind": "Interface",
+      "name": "viewer"
+    },
+    "target": {
+      "kind": "Fleet",
+      "name": "group"
+    },
+    "as": "fleet"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "a-self"
+    },
+    "from": "read-fleet",
+    "consumer": {
+      "kind": "Agent",
+      "name": "a"
+    },
+    "target": {
+      "kind": "Fleet",
+      "name": "group"
+    },
+    "as": "own"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "to-shared"
+    },
+    "from": "ping",
+    "consumer": {
+      "kind": "Agent",
+      "name": "a"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "shared"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "to-agent"
+    },
+    "from": "ping",
+    "consumer": {
+      "kind": "Interface",
+      "name": "viewer"
+    },
+    "target": {
+      "kind": "Agent",
+      "name": "a"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "manage-pool"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#pool-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#inspect.v1",
+        "github.com/shrav-k/conduit/core#list.v1",
+        "github.com/shrav-k/conduit/core#reconcile.v1",
+        "github.com/shrav-k/conduit/core#set-up.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "viewer-shared"
+    },
+    "from": "ping",
+    "consumer": {
+      "kind": "Interface",
+      "name": "viewer"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "shared"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "shared-access"
+    },
+    "from": "github.com/shrav-k/conduit/core#root-access",
+    "consumer": {
+      "kind": "Resource",
+      "name": "shared"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "access"
+    },
+    "as": "access"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "shared-next"
+    },
+    "from": "read-pool",
+    "consumer": {
+      "kind": "Resource",
+      "name": "shared"
+    },
+    "target": {
+      "kind": "Pool",
+      "name": "other"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "parts-person"
+    },
+    "spec": {
+      "type": "github.com/shrav-k/conduit/core#interface.v1",
+      "conduits": {
+        "first": {
+          "from": "github.com/shrav-k/conduit/core#root-pool",
+          "target": {
+            "kind": "Pool",
+            "name": "store"
+          },
+          "optional": true
+        },
+        "second": {
+          "from": "github.com/shrav-k/conduit/core#root-pool",
+          "target": {
+            "kind": "Pool",
+            "name": "store"
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Interface",
+    "metadata": {
+      "name": "parts"
+    },
+    "from": "parts-person"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "hook-item.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object"
+      },
+      "requires": [
+        "github.com/shrav-k/conduit/core#setup-hook.v1"
+      ],
+      "implementation": {
+        "github.com/shrav-k/conduit/core#setup-hook.v1": "#fixture-server"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "hook-template"
+    },
+    "spec": {
+      "type": "#hook-item.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "hook-subject"
+    },
+    "from": "hook-template",
+    "owner": "store"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "kept-other"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#access-control.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#lift.v1"
+      ],
+      "requirements": {
+        "bound": {
+          "requirement": "github.com/shrav-k/conduit/core#bound.v1",
+          "arguments": {
+            "targets": [
+              {
+                "kind": "Pool",
+                "name": "other"
+              }
+            ],
+            "operations": [
+              "github.com/shrav-k/conduit/core#inspect.v1",
+              "github.com/shrav-k/conduit/core#list.v1",
+              "github.com/shrav-k/conduit/core#reconcile.v1"
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "viewer-kept"
+    },
+    "from": "kept-other",
+    "consumer": {
+      "kind": "Interface",
+      "name": "viewer"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "access"
+    },
+    "as": "kept"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "cross-fleet"
+    },
+    "from": "ping",
+    "consumer": {
+      "kind": "Agent",
+      "name": "b"
+    },
+    "target": {
+      "kind": "Agent",
+      "name": "a"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "list-management"
+    },
+    "spec": {
+      "capability": "github.com/shrav-k/conduit/core#object-management.v1",
+      "operations": [
+        "github.com/shrav-k/conduit/core#list.v1"
+      ]
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "viewer-list"
+    },
+    "from": "list-management",
+    "consumer": {
+      "kind": "Interface",
+      "name": "viewer"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "management"
+    },
+    "as": "catalog"
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Conduit",
+    "metadata": {
+      "name": "root-extra"
+    },
+    "from": "github.com/shrav-k/conduit/core#root-access",
+    "consumer": {
+      "kind": "Interface",
+      "name": "root"
+    },
+    "target": {
+      "kind": "Resource",
+      "name": "access"
+    },
+    "as": "extra"
+  }
+]

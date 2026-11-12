@@ -844,13 +844,31 @@ fn run_case(
             }
             Ok((actual, next))
         };
-        let (actual, next) = run().map_err(|e| format!("step {}: {e}", index + 1))?;
+        let (mut actual, next) = run().map_err(|e| format!("step {}: {e}", index + 1))?;
+        let mut object_ids = json!({});
+        for o in next.objects.iter().filter(|o| o.get("spec").is_none()) {
+            object_ids[o["kind"].as_str().ok_or("object kind absent")?]
+                [o["name"].as_str().ok_or("object name absent")?] = o["id"].clone();
+        }
+        actual["objectIds"] = object_ids;
+        let mut tombstone_ids = json!({});
+        for stone in next.tombstones.values() {
+            tombstone_ids[stone["object"]["kind"]
+                .as_str()
+                .ok_or("tombstone kind absent")?][stone["object"]["name"]
+                .as_str()
+                .ok_or("tombstone name absent")?] = stone["id"].clone();
+        }
+        actual["tombstoneIds"] = tombstone_ids;
+        actual["tombstones"] = json!(next.tombstones.values().collect::<Vec<_>>());
         let expected = expand(&raw_step["expect"], &symbols, spec)?;
         let mut fields = expected.as_object().ok_or("missing expectation")?.clone();
         if let Some(count) = fields.remove("object_count") {
             projection(&json!(next.objects.len()), &count, "/object_count")?;
         }
+        let tombstones = next.tombstones.values().cloned().collect::<Vec<_>>();
         for (key, values) in [
+            ("tombstone_facts", &tombstones),
             ("object_facts", &next.objects),
             ("invocation_facts", &next.invocations),
         ] {
@@ -859,13 +877,29 @@ fn run_case(
                     let found = values
                         .iter()
                         .find(|v| {
-                            fact.get("id").is_some_and(|id| v["id"] == *id)
+                            (key == "tombstone_facts" && projection(v, fact, key).is_ok())
+                                || fact.get("id").is_some_and(|id| v["id"] == *id)
                                 || fact
                                     .get("name")
                                     .is_some_and(|n| v["name"] == *n && v.get("spec").is_none())
                         })
                         .ok_or_else(|| format!("{key}: missing {fact}"))?;
                     projection(found, fact, key)?;
+                }
+            }
+        }
+        if let Some(groups) = fields.remove("inventory_facts") {
+            for (key, facts) in groups.as_object().ok_or("inventory_facts must be a map")? {
+                let entries = actual["reply"]["structuredContent"]["inventory"][key]
+                    .as_array()
+                    .ok_or("inventory array absent")?;
+                for fact in facts.as_array().ok_or("inventory facts must be arrays")? {
+                    if !entries
+                        .iter()
+                        .any(|entry| projection(entry, fact, key).is_ok())
+                    {
+                        return Err(format!("inventory {key}: missing {fact}"));
+                    }
                 }
             }
         }
@@ -886,6 +920,22 @@ fn run_case(
                 }
             }
         }
+        if let Some(count) = fields.remove("tombstone_count") {
+            projection(&json!(next.tombstones.len()), &count, "/tombstone_count")?;
+        }
+        if let Some(absent) = fields.remove("absent_tombstones") {
+            for id in absent
+                .as_array()
+                .ok_or("absent_tombstones must be an array")?
+            {
+                if next
+                    .tombstones
+                    .contains_key(id.as_str().ok_or("tombstone ID must be a string")?)
+                {
+                    return Err(format!("unexpected tombstone {id}"));
+                }
+            }
+        }
         if let Some(absent) = fields.remove("absent_objects") {
             for id in absent.as_array().ok_or("absent_objects must be an array")? {
                 if next.objects.iter().any(|o| o["id"] == *id) {
@@ -897,7 +947,9 @@ fn run_case(
             if unchanged != true {
                 return Err("stateUnchanged must be true when present".into());
             }
-            if next.objects != state.objects || next.installed_packages != state.installed_packages
+            if next.objects != state.objects
+                || next.installed_packages != state.installed_packages
+                || next.tombstones != state.tombstones
             {
                 return Err(format!("step {}: objects changed", index + 1));
             }

@@ -11,7 +11,9 @@
     "LIF-009",
     "INS-020",
     "IFC-012",
-    "IFC-038"
+    "IFC-038",
+    "LIF-040",
+    "ACC-053"
   ],
   "profile": "first-build",
   "initial": {
@@ -581,6 +583,50 @@
         "reply": {
           "isError": false
         }
+      },
+      "capture": {
+        "stone-t4a": "/tombstones/0/id"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "8c3c86ed-0db7-5c5f-a32a-38b311800a5f",
+            "24f05e8b-2d5d-59fc-8dd8-586d638cc1c3",
+            "a42f3441-cbb1-5e69-830f-05f04d4f2211",
+            "fa6e9c20-40fb-5be4-acc2-e73884c0102b",
+            "cb382ca1-d08e-5f28-b4af-61cf94d207f6",
+            "39986073-436d-5457-b7d2-92919960c042",
+            "3975ab69-1a83-584d-9ac0-cf045bcd708a",
+            "30731392-235a-54da-8131-fcf4ca4c4005",
+            "27c5cf21-1db5-59fc-8cc8-9b0a14ab15e8",
+            "398e0aec-09d0-5ff4-bd86-def987113d4b",
+            "91be60a3-f105-5072-94e4-fef835d285b8",
+            "64cf5804-3586-5c59-83ba-fc8fb6f17d54"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.lift.v1",
+          "arguments": {
+            "id": "$stone-t4a"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false,
+          "structuredContent": {
+            "remaining": []
+          }
+        },
+        "tombstone_count": 0
       }
     },
     {
@@ -683,6 +729,50 @@
         "reply": {
           "isError": false
         }
+      },
+      "capture": {
+        "stone-t4c": "/tombstones/0/id"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "c121dd18-3051-5610-98cc-882fba57115e",
+            "972e7a8c-5709-5d29-9abf-de8ae32b0960",
+            "199045d9-136b-59f5-bebf-8c2bc62a6151",
+            "03b121fd-2a4f-5539-bba6-e17257cd641a",
+            "5ec06d63-4cbc-579b-b37d-ebcc80df0436",
+            "05445c94-a567-5361-8bb2-54d1b9dfd3c4",
+            "f8423934-e647-5c14-b703-c93832455fb4",
+            "33fec303-f8f6-5786-a936-007a2fff1110",
+            "8c0a971e-d487-5611-b95a-6b8496f8cfdb",
+            "03539289-5f45-59b1-8684-918bc0f2d84b",
+            "2f1e1911-5e39-5212-9b59-a54c6374ce3e",
+            "b24a4100-5151-5fde-ab79-784457187621"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.lift.v1",
+          "arguments": {
+            "id": "$stone-t4c"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false,
+          "structuredContent": {
+            "remaining": []
+          }
+        },
+        "tombstone_count": 0
       }
     },
     {

@@ -43,3 +43,20 @@ and `git diff --check` pass; in `engine/`, `cargo fmt --check`,
 `experiments/011-short-form-spike/`, `cargo test --release`. Report the totals passed and failed;
 tests that bind loopback ports may fail in your sandbox: say so, and the admin reruns them. Do not
 stage anything.
+
+## Record
+
+The first work order run entirely through Conduit (A78, ruling 70): on 2026-11-11 and 12 its four
+worker turns and four verifier turns ran as turns of Conduit's own Agents worker-1 and verifier-1
+(codex.v2, the real store, the dogfood harness), each answering with a report valid against its
+schema. Round 4's verifier found no new fault. One turn of round 3 failed when the Mac briefly lost
+its network (the Agent package answered "client failure: other"; a dogfood finding), and was run
+again; one guard tripped in that failed turn, when GitHub's refs could not be read. The admin then
+rebased the work onto main, which had gained order 070's lazy publication and order 081, and
+resolved the conflicts in the core's access.rs (the bound-coverage rule kept in a state form for
+the inventory and a view form for publication) and lib.rs. One vector then failed
+(e4-tombstone-register-replacement, LIF-041); a Codex round on the Mac fixed it, after which all
+491 vectors passed on the normal and differential builds. That round's fresh verifier found the
+Fleet reconciliation check matching a sender through a reused name; the admin fixed it to match by
+ID only (ruling 71). Kept for later work: the inventory-reading vector does not exercise a Fleet
+holder, and node-requests' readmission injects the expected node instead of testing readmission.

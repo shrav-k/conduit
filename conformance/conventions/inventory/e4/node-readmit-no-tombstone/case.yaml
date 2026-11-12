@@ -1,0 +1,127 @@
+{
+  "id": "e4-node-readmit-no-tombstone",
+  "title": "node readmit no tombstone",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "LIF-040",
+    "LIF-041"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "node-initial"
+  },
+  "files": {
+    "initial": "../../../../fixtures/root-system-state.json",
+    "fixture": "../fixture.json",
+    "manifest": "../manifest.json",
+    "documents": "../documents.json",
+    "node-initial": "../node-initial.json",
+    "node-requests": "../node-requests.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "72871e60-88ea-5ed6-8211-7a3c5ae0f3c6",
+            "6a25d54d-bdc5-5e64-bfba-629a62fd1fb9",
+            "26eb7301-6d97-5e0b-bb4e-7e78302d5971",
+            "a73cf7ee-6444-5898-9598-dfb75de0f421",
+            "83f7d1c8-8dbc-5866-96b5-71b8b1c0a425",
+            "15e18378-8437-57e2-8350-263c79d9296d",
+            "ef998c5f-798c-5af7-9b47-523bcb3a104b",
+            "839304c6-16cf-5f75-940d-6b63239489b1",
+            "16211965-0e2e-537e-884b-3611cb303c20",
+            "f4a20824-4123-5561-ad4a-da7938bdc71d",
+            "660eb61e-9449-52e2-adb7-ee47f0ad3cbe",
+            "32c8233d-9fb3-5489-a1e0-851cf7b117a4",
+            "7eeb4c76-a5f9-5413-a53b-cfdbcff20ed3",
+            "566e9c95-ebc5-5939-a3c3-0e132fe0540b",
+            "51e5fd15-5b1e-5c90-99d2-8868801fdf8e",
+            "7931c3e9-8ffb-5851-93f3-1bb7aa472c28",
+            "cc38adda-b542-57d5-8cc4-6ccc0252ca6d",
+            "174cfea1-e653-5762-9f06-7b8836586cc6",
+            "4c99ae54-0c4a-5e8a-8b5c-591b7e4a1139",
+            "41d0cc50-3b90-5083-a132-85147223cc17",
+            "08aaae3c-af69-5696-87cc-e501a218bbac",
+            "716510ea-0904-520e-8178-d64ddb1e6e5f",
+            "ecc23ebc-63eb-5507-b6ef-539343a4d292",
+            "3925b3e5-8658-5fbf-87e3-041252184ac5",
+            "10a02f6a-5b0d-50ad-91bb-6274571d987d",
+            "adecd2ad-8cb4-5ca0-9f1f-f17137b4363b",
+            "0b0ab4d6-4870-5352-9d0e-d6791bea08dd",
+            "6c27c092-0088-5bdf-975c-cad2e81a4a59",
+            "64839296-18b1-59af-b9be-db63a4f7a30e",
+            "4b22e7bc-b6ee-570d-8e66-b37264a4eb7e",
+            "65b72175-3b65-5d0e-bf9e-baa77bbedf8c",
+            "5d938eef-e020-5119-9faa-d0ba3c5c45fc"
+          ],
+          "revisions": [
+            "strong-50-0",
+            "strong-50-1",
+            "strong-50-2",
+            "strong-50-3",
+            "strong-50-4",
+            "strong-50-5",
+            "strong-50-6",
+            "strong-50-7"
+          ],
+          "suffixes": [
+            "c0000",
+            "c0001",
+            "c0002",
+            "c0003",
+            "c0004",
+            "c0005",
+            "c0006",
+            "c0007"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "system.retire.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Resource",
+              "name": "worker-host"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        },
+        "tombstone_count": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "node-requests",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        },
+        "tombstone_count": 0,
+        "object_facts": [
+          {
+            "name": "worker-host",
+            "id": "22222222-2222-4222-8222-222222222222"
+          }
+        ]
+      }
+    }
+  ]
+}

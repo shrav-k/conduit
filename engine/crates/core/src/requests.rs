@@ -435,7 +435,9 @@ fn record_content(t: &Transition, c: &Context, data: &mut Value) -> Result<()> {
         (arguments, "inputs", "inputSchema"),
         (outputs, "outputs", "outputSchema"),
     ] {
-        if ty["spec"]["records"][setting] != true {
+        if ty["spec"]["records"][setting] != true
+            && !(setting == "inputs" && op == c.qualified("lift.v1"))
+        {
             continue;
         }
         if setting == "outputs" && op == c.qualified("get-secret.v1") {
@@ -907,6 +909,18 @@ fn invoke_inner(
         && let Some((reason, rule)) = crate::lifecycle::preflight(&t.state, &route, c)?
     {
         reject(t, a, c, &route, reason, rule, None, None)?;
+        if rule == "LIF-041"
+            && let Some(o) =
+                access::fixed_object(&t.state, &route["arguments"]["conduit"], "Conduit")
+            && let Some(stone) = crate::inventory::matching(&t.state, o)
+        {
+            t.reply["structuredContent"]["diagnostics"] = json!([crate::inventory::diagnostic(
+                &t.state,
+                &route["caller"],
+                stone,
+                c
+            )]);
+        }
         if let Some(message) = crate::retirement::blocking_diagnostic(&t.state, &route, rule) {
             t.reply["structuredContent"]["diagnostics"][0]["message"]["text"] = json!(message);
         }
@@ -1032,7 +1046,6 @@ fn invoke_inner(
     // C11's temporary stubs: authority and arguments have already been checked.
     // OPS-005: unavailable ends before dispatch; its message names the build order.
     if let Some((_, order, promise)) = [
-        ("lift.v1", "042", "ACC-053"),
         ("answer.v1", "047", "PND-009"),
         ("sign-in.v1", "048a", "PND-010"),
     ]
@@ -1048,11 +1061,13 @@ fn invoke_inner(
         let parent = access::object(&t.state, &route["arguments"]["instance"])
             .ok_or("replacement parent absent")?
             .clone();
-        // DL6: the trial reads objects, allocator IDs and catalog metadata only.
+        // DL6 / LIF-041: include tombstones so the trial rejects the same replacements
+        // as dispatch, without copying records, invocations or package file contents.
         let mut trial = Transition {
             state: State {
                 objects: t.state.objects.clone(),
                 allocated_ids: t.state.allocated_ids.clone(),
+                tombstones: t.state.tombstones.clone(),
                 installed_packages: t
                     .state
                     .installed_packages
@@ -1083,7 +1098,30 @@ fn invoke_inner(
             &route["arguments"]["nested"],
         )?;
         if let Some(rule) = result["rule"].as_str() {
-            return reject(t, a, c, &route, "invalid", rule, None, None);
+            reject(
+                t,
+                a,
+                c,
+                &route,
+                if rule == "LIF-041" {
+                    "conflict"
+                } else {
+                    "invalid"
+                },
+                rule,
+                None,
+                None,
+            )?;
+            if rule == "LIF-041" {
+                t.reply["structuredContent"]["diagnostics"] =
+                    json!([crate::inventory::diagnostic(
+                        &t.state,
+                        &route["caller"],
+                        &result["tombstone"],
+                        c
+                    )]);
+            }
+            return Ok(());
         }
     }
     let installation = if op == c.qualified("install.v1") {
@@ -1197,6 +1235,18 @@ fn invoke_inner(
     let plain = implementation["item"]["plain"] == true;
     let mut invocation = json!({"id":id,"key":key,"sender":route["consumer"],"caller":route["caller"],"target":route["target"],"conduit":route["conduit"],"operation":op,"arguments":route["arguments"],"digest":digest,"filters":route["filters"],"state":"in-progress","plain":plain,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":plain || contract["spec"].get("outputSchema").is_some(),"attempt":previous.as_ref().and_then(|v|v["attempt"].as_u64()).unwrap_or(0)+1,"wire_retried":false,"config":target["config"],"revision":target["revision"]});
     start_attempt(&mut invocation, previous.as_ref());
+    if ["open.v1", "close.v1"]
+        .iter()
+        .any(|name| *op == c.qualified(name))
+        && let Some(subject) =
+            access::fixed_object(&t.state, &route["arguments"]["conduit"], "Conduit")
+    {
+        let mut held = json!({"object":{"kind":"Conduit"},"target":crate::inventory::endpoint(&t.state,&subject["target"]),"operations":subject["operations"]});
+        if let Some(b) = access::bound(subject, c) {
+            held["bound"] = b.clone();
+        }
+        invocation["access_subject"] = held;
+    }
     let related = referenced_objects(&t.state, &target, op, &route["arguments"], c)?;
     if !related.is_empty() {
         invocation["input_objects"] = json!(related);
@@ -1205,10 +1255,14 @@ fn invoke_inner(
         invocation["serving"] = json!(serving);
     }
     if let Some(parent) = parent {
+        invocation["sender"] = parent["sender"].clone();
         invocation["setup_parent"] = parent["id"].clone();
         invocation["serving"] = parent["id"].clone();
         invocation["caller"] = parent["caller"].clone();
         invocation["filters"] = parent["filters"].clone();
+    }
+    if op == c.qualified("open.v1") {
+        invocation["opening_provenance"] = crate::inventory::provenance(&t.state, &invocation, c)?;
     }
     if let Some(old) = previous {
         invocation["previous"] = old;
@@ -1270,6 +1324,39 @@ fn invoke_inner(
             json!({"checked":args["checked"]}),
             vec![],
         ));
+        if args["occurred"] == true
+            && t.state.invocations[reconciled]["operation"] == c.qualified("open.v1")
+        {
+            let original = t.state.invocations[reconciled].clone();
+            let provenance = match original.get("opening_provenance") {
+                Some(p) => p.clone(),
+                None => crate::inventory::provenance(&t.state, &original, c)?,
+            };
+            // ACC-033 row 12: settle a removed subject without touching a replacement.
+            if let Some(subject) = access::object_by_id(&t.state, &original["object"]) {
+                // LIF-028 / CON-031: retirement cannot be undone by an old opening.
+                let consumer_retired = access::object_by_id(&t.state, &subject["consumer"])
+                    .is_none_or(|consumer| consumer["state"] == "retired");
+                let id = subject["id"].clone();
+                let subject = t.state.objects.iter_mut().find(|o| o["id"] == id).unwrap();
+                if subject.get("provenance").is_none() {
+                    subject["provenance"] = provenance;
+                }
+                subject["open"] = json!(!consumer_retired);
+                subject["state"] = json!(if consumer_retired {
+                    "registered"
+                } else {
+                    "ready"
+                });
+            }
+            t.decisions.push(decision(
+                "reconcile-original-opening",
+                &["ACC-044", "ACC-033", "LIF-028", "CON-031"],
+                &[],
+                json!({"object":original["object"]}),
+                vec![],
+            ));
+        }
         if args["occurred"] == true
             && t.state.invocations[reconciled]["operation"] == c.qualified("retire.v1")
         {

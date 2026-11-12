@@ -31,6 +31,10 @@ fn yes() -> bool {
 pub(crate) fn id(value: &Value) -> &Value {
     value.get("id").unwrap_or(value)
 }
+/// LIF-040 / ACC-053: a kept identity never resolves through a reused name.
+pub(crate) fn object_by_id<'a>(state: &'a State, reference: &Value) -> Option<&'a Value> {
+    state.objects.iter().find(|o| o["id"] == *id(reference))
+}
 pub(crate) fn object<'a>(state: &'a State, reference: &Value) -> Option<&'a Value> {
     // POOL-014: retain the raw reference lookup for helpers that take State.
     object_in(&state.objects, reference)
@@ -54,7 +58,19 @@ fn object_in<'a>(objects: &'a [Value], reference: &Value) -> Option<&'a Value> {
                 && reference.get("kind").is_none_or(|k| o["kind"] == *k)
     })
 }
-fn open(path: &Value) -> bool {
+// OBJ-006: a bare name means the kind fixed by the governing reference schema.
+pub(crate) fn fixed_object<'a>(
+    state: &'a State,
+    reference: &Value,
+    kind: &str,
+) -> Option<&'a Value> {
+    if let Some(name) = reference.as_str() {
+        object(state, &json!({"kind":kind,"name":name}))
+    } else {
+        object(state, reference)
+    }
+}
+pub(crate) fn open(path: &Value) -> bool {
     path["kind"] == "Conduit" && path["open"] == true && path["state"] == "ready"
 }
 fn values<'a>(v: &'a Value, key: &str) -> impl Iterator<Item = &'a Value> {
@@ -66,30 +82,85 @@ fn requirements(path: &Value) -> impl Iterator<Item = &Value> {
         .into_iter()
         .flat_map(|m| m.values())
 }
-fn bound<'a>(path: &'a Value, context: &Context) -> Option<&'a Value> {
+pub(crate) fn bound<'a>(path: &'a Value, context: &Context) -> Option<&'a Value> {
     requirements(path).find(|r| r["requirement"] == context.qualified("bound.v1"))
 }
-fn covers(b: &Value, target: &Value) -> bool {
+pub(crate) fn covers(b: &Value, target: &Value) -> bool {
     values(&b["arguments"], "targets").any(|v| id(v) == &target["id"])
         || values(&b["arguments"], "pools").any(|v| {
             target["kind"] == "Pool" && id(v) == &target["id"]
                 || target["kind"] == "Resource" && id(v) == id(&target["owner"])
         })
 }
-fn subset(new: &Value, old: &Value, view: &PublicationView<'_>) -> Result<bool> {
-    // ACC-029: every bound target is read through the normalized view.
+/// ACC-029 / ACC-030 / ACC-053: a bound is narrower when its Pools, targets and operations all
+/// lie within the earlier bound's. A kept identity never resolves through a reused name, and a
+/// target that has gone is judged from the kept kind and ownership (keep_bound_targets).
+pub(crate) fn subset(new: &Value, old: &Value, state: &State) -> bool {
+    values(&new["arguments"], "pools")
+        .all(|p| values(&old["arguments"], "pools").any(|v| id(v) == id(p)))
+        && values(&new["arguments"], "targets").all(|v| {
+            values(&old["arguments"], "targets").any(|target| id(target) == id(v))
+                || state
+                    .bound_targets
+                    .get(id(v).as_str().unwrap_or(""))
+                    .or_else(|| object_by_id(state, v))
+                    .is_some_and(|o| covers(old, o))
+        })
+        && values(&new["arguments"], "operations")
+            .all(|op| values(&old["arguments"], "operations").any(|v| v == op))
+}
+/// The same rule on a publication view: a live target is read through the normalized view
+/// (ACC-029), by ID only.
+fn subset_in_view(
+    new: &Value,
+    old: &Value,
+    view: &PublicationView<'_>,
+    state: &State,
+) -> Result<bool> {
     if !values(&new["arguments"], "pools")
         .all(|p| values(&old["arguments"], "pools").any(|v| id(v) == id(p)))
     {
         return Ok(false);
     }
     for v in values(&new["arguments"], "targets") {
-        if !view.object(v)?.is_some_and(|o| covers(old, o)) {
+        if values(&old["arguments"], "targets").any(|target| id(target) == id(v)) {
+            continue;
+        }
+        let covered = match state.bound_targets.get(id(v).as_str().unwrap_or("")) {
+            Some(kept) => covers(old, kept),
+            None => view
+                .find(|o| o["id"] == *id(v))?
+                .is_some_and(|o| covers(old, o)),
+        };
+        if !covered {
             return Ok(false);
         }
     }
     Ok(values(&new["arguments"], "operations")
         .all(|op| values(&old["arguments"], "operations").any(|v| v == op)))
+}
+
+/// ACC-029 / ACC-053 / ACC-055: keep bound target kind and ownership independently of objects,
+/// tombstones and records, since all three may disappear before a lift or reconciliation.
+pub(crate) fn keep_bound_targets(state: &mut State, context: &Context) {
+    let targets: Vec<_> = state
+        .objects
+        .iter()
+        .filter_map(|o| bound(o, context))
+        .flat_map(|b| values(&b["arguments"], "targets"))
+        .filter_map(|r| object_by_id(state, r))
+        .filter(|o| o["kind"] == "Resource" || o["kind"] == "Pool")
+        .map(|o| {
+            let mut target = json!({"kind":o["kind"],"id":o["id"]});
+            if o["kind"] == "Resource" {
+                target["owner"] = o["owner"].clone();
+            }
+            (o["id"].as_str().unwrap().to_owned(), target)
+        })
+        .collect();
+    for (id, target) in targets {
+        state.bound_targets.entry(id).or_insert(target);
+    }
 }
 
 /// IFC-012/IFC-033: a call-local, objects-only publication view. Unread objects
@@ -497,7 +568,7 @@ fn routing<'a>(
         Some("retire-with-agents.v1") => view
             .object(&path["target"])?
             .filter(|o| o["kind"] == "Fleet" && o["state"] != "retired"),
-        Some("open.v1" | "close.v1") => Some(view.management("access")?),
+        Some("open.v1" | "close.v1" | "lift.v1") => Some(view.management("access")?),
         Some("reconcile.v1") => {
             let invocation = state
                 .invocations
@@ -783,7 +854,7 @@ fn evaluate_path(
             (match (new, old) {
                 (_, None) => true,
                 (None, Some(_)) => false,
-                (Some(new), Some(old)) => subset(new, old, view)?,
+                (Some(new), Some(old)) => subset_in_view(new, old, view, state)?,
             }) && (!opening
                 || values(conduit, "operations")
                     .all(|op| values(path, "operations").any(|v| v == op)))
@@ -806,6 +877,60 @@ fn evaluate_path(
                     b,
                 ),
                 None => Verdict::reason("refused", "ACC-030"),
+            });
+        }
+    }
+    // ACC-053 and ACC-055 are access decisions, before any outcome/conflict disclosure.
+    if op == context.qualified("lift.v1") {
+        let stone = request.arguments["id"]
+            .as_str()
+            .and_then(|id| state.tombstones.get(id));
+        if stone.is_none_or(|stone| !crate::inventory::covered(state, path, stone, context, false))
+            && bound(path, context).is_some()
+        {
+            return Ok(Verdict::restriction(
+                "refused",
+                "ACC-053",
+                bound(path, context).unwrap(),
+            ));
+        }
+    }
+    if op == context.qualified("reconcile.v1") && instance["id"] != root["id"] {
+        let invocation = state
+            .invocations
+            .iter()
+            .find(|v| v["id"] == request.arguments["invocation"]);
+        let allowed = if target["from"] == context.qualified("access")
+            && bound(path, context).is_some()
+        {
+            invocation.is_some_and(|v| {
+                let held = if v["operation"] == context.qualified("lift.v1") {
+                    v.get("lifted_tombstone").or_else(|| v["arguments"]["id"].as_str().and_then(|id| state.tombstones.get(id))).cloned()
+                } else {
+                    v.get("access_subject").cloned().or_else(|| object(state, &v["arguments"]["conduit"]).map(|o| json!({"object":{"kind":"Conduit"},"target":crate::inventory::object(object(state,&o["target"]).unwrap_or(&Value::Null)),"operations":o["operations"],"bound":bound(o, context)})))
+                };
+                held.is_some_and(|stone| crate::inventory::covered(state,path,&stone,context,v["operation"] == context.qualified("open.v1")))
+            })
+        } else if target["kind"] == "Pool" || target["kind"] == "Fleet" {
+            invocation.is_some_and(|v| {
+                v["sender"] == instance["id"]
+                    || target["kind"] == "Fleet"
+                        && (v["sender"] == target["id"]
+                            // LIF-040 / ACC-055: a sender is matched by its kept ID only, never
+                            // through a name that a later object may reuse.
+                            || object_by_id(state, &v["sender"]).is_some_and(|sender| {
+                                sender["kind"] == "Agent" && id(&sender["owner"]) == &target["id"]
+                            }))
+            })
+        } else {
+            true
+        };
+        if !allowed {
+            return Ok(match bound(path, context) {
+                Some(b) if target["from"] == context.qualified("access") => {
+                    Verdict::restriction("refused", "ACC-055", b)
+                }
+                _ => Verdict::reason("refused", "ACC-055"),
             });
         }
     }
@@ -920,7 +1045,8 @@ fn evaluate_path(
         reason: None,
         rules: vec![
             "ACC-001", "ACC-002", "ACC-003", "ACC-008", "ACC-009", "ACC-016", "ACC-017", "ACC-029",
-            "ACC-030", "ACC-033", "ACC-036", "ACC-024", "ACC-057", "IFC-012", "IFC-020", "IFC-022",
+            "ACC-030", "ACC-033", "ACC-036", "ACC-024", "ACC-053", "ACC-055", "ACC-057", "IFC-012",
+            "IFC-020", "IFC-022",
         ],
         restriction: None,
         route: json!({"consumer":instance["id"],"caller":caller,"conduit":path["id"],"target":target["id"],"operation":op,"arguments":args,"filters":filters,"restrictionMode":"mediated"}),

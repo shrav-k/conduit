@@ -1,0 +1,132 @@
+{
+  "read-issue.v1": {
+    "idempotentHint": true,
+    "openWorldHint": true,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue": {
+          "type": "string",
+          "pattern": "^[A-Z]+-[0-9]+$",
+          "not": {
+            "pattern": "[^A-Z0-9-]"
+          }
+        }
+      },
+      "required": [
+        "issue"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "issue": {
+          "type": "object",
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "pattern": "^[A-Z]+-[0-9]+$",
+              "not": {
+                "pattern": "[^A-Z0-9-]"
+              }
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "state": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "identifier",
+            "title",
+            "description",
+            "state",
+            "updatedAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "issue"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "list-issues.v1": {
+    "idempotentHint": true,
+    "openWorldHint": true,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identifier": {
+                "type": "string",
+                "pattern": "^[A-Z]+-[0-9]+$",
+                "not": {
+                  "pattern": "[^A-Z0-9-]"
+                }
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "identifier",
+              "title",
+              "description",
+              "state",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "issues"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

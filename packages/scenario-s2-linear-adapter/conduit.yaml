@@ -1,0 +1,19 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/scenario-s2-linear-adapter
+version: 0.1.0
+packages:
+  example.org/conduit/scenario-s2-linear-restrictions:
+    version: 0.1.0
+    digest: sha256:6380ce0e6a7db56712f457fd3a56aa7a6802ce3e019c56a3433eda440feac43e
+exports: [linear-adapter.v1]
+implementations:
+  adapter:
+    implements:
+    - example.org/conduit/scenario-s2-linear-restrictions#read-issue.v1
+    - example.org/conduit/scenario-s2-linear-restrictions#list-issues.v1
+    command: [bin/scenario-s2-linear-adapter]
+    environment:
+      S2_LINEAR_ADAPTER_BASE_URL: /baseUrl
+      S2_LINEAR_ADAPTER_API_KEY: /apiKey
+    supports:
+    - example.org/conduit/scenario-s2-linear-restrictions#issue-scope.v1

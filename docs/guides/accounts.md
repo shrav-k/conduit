@@ -11,10 +11,10 @@ in the current shell.
 
 ## Before the engine can sign an Agent in
 
-1. **Turn on Codex's device sign-in, on both ChatGPT accounts.** In ChatGPT, open Settings, then
-   Security, and enable device code authorization for Codex (a beta). With it, the engine shows
-   you a URL and a short code, and you complete the sign-in in any browser. Without it, Codex can
-   only sign in through a browser on this machine.
+1. **Choose how to sign Codex in.** Its browser login completes by itself on one machine.
+   From another, its return comes back through `conduit` or an SSH forward. A device code
+   stays an option where your account has it on. Claude Code needs a browser on its Agent's
+   own machine.
 2. **Know which email each account uses.** The configuration names the account each Agent is
    for, and the engine refuses a sign-in to any other ([ruling 49](../proposals/ruling-49/README.md),
    point 3). Tell the coordinator the two emails for Claude and the two for ChatGPT, or a label
@@ -33,8 +33,10 @@ shows which Agent it is for, the account expected and the full URL.
 - **Sign in as the account named.** If your browser is signed in to the other account, use a
   private window or another browser profile. A sign-in as the wrong account is refused and
   undone, and the engine asks again.
-- **Codex** shows a code: enter it at the URL. **Claude Code** opens its page in the browser on
-  this machine and completes by itself; you never paste anything back.
+- **Codex** uses its browser login: on one machine it completes by itself; from another,
+  bring its return back through `conduit` or an SSH forward. You can choose a device code
+  where your account has it on, and enter that code at the page shown. **Claude Code** signs
+  in with a browser on the Agent's own machine; Conduit carries no Claude return.
 
 ## A5, the test
 

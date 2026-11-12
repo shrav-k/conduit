@@ -9,10 +9,11 @@
 #                           under PLC-007; `records` may be given; a Type of the family Pool
 #                           lists the core package's `pool-management.v1` under `offers`),
 #                           TPL-002 (a type is of one of the five families that have one),
-#                           CTR-013 (`signIn` holds exactly `account`, a pointer; the Type lists
-#                           `sign-in-hook.v1`, `account-hook.v1` and `sign-out-hook.v1` under
-#                           `requires`), CTR-014 (`toolsDirectory` holds exactly `directory`, a
-#                           pointer; only family Agent states it)
+#                           CTR-013 (the closed signIn shape, account pointer and logins;
+#                           the Type lists `sign-in-hook.v1`, `account-hook.v1` and
+#                           `sign-out-hook.v1` under `requires`), CTR-014 (`toolsDirectory`
+#                           holds exactly `directory`, a pointer; only family Agent states it)
+#   sign-in-login.v1        CTR-013 (literal logins, their four return kinds and members)
 #   capability-spec.v1      CTR-003
 #   operation-spec.v1       CTR-002 (`inputSchema` and `outputSchema`, whose properties are
 #                           the inputs and the outputs, a property name being any non-empty
@@ -56,8 +57,9 @@
 # path are required by the Type's `schema`, and the place is confined to string or null
 # (CTR-013, CTR-014), which relate values in one document; that no control of a Type stating
 # `toolsDirectory` has `changes` reaching its place (CTR-014), which needs the contracts of
-# the controls; that a `default` satisfies its schema (SCH-019); and compatibility between
-# releases (NAM-024).
+# the controls; that a `default` satisfies its schema (SCH-019); compatibility between
+# releases (NAM-024); and CTR-013's other rules: the three hooks, distinct login names, no
+# URL matching two logins, and client IDs shared across addresses.
 # tools/check_schemas.py also checks some of these, as far as the documents in front of it show:
 # spec/schemas/README.md, "What a schema cannot express", says which.
 # Standing: draft specification; see spec/README.md for status and coverage.
@@ -129,7 +131,7 @@ metadata:
   name: type-spec.v1
   description: >-
     The `spec` of a Type contract. `family` is required. `schema`, `offers`, `requires`, `implementation`,
-    `controls`, `conditions`, `records` and `nodeSelector` may each be left out, and one that is left
+    `controls`, `conditions`, `records`, `signIn` and `nodeSelector` may each be left out, and one that is left
     out lists nothing. A type that states no `schema` puts no rule on the configuration of its instances,
     and so lists no control. `nodeSelector` is a label selector that the labels of an instance's node
     must match. A Type of the family Pool lists the core package's capability `pool-management.v1`
@@ -164,6 +166,16 @@ spec:
       type: array
       items:
         $ref: github.com/shrav-k/conduit/core#selection.v1
+    signIn:
+      type: object
+      properties:
+        account: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+        logins:
+          type: array
+          minItems: 1
+          items: {$ref: github.com/shrav-k/conduit/core#sign-in-login.v1}
+      required: [account, logins]
+      additionalProperties: false
     nodeSelector:
       $ref: github.com/shrav-k/conduit/core#labels.v1
     conditions:
@@ -182,12 +194,6 @@ spec:
           type: boolean
         outputs:
           type: boolean
-      additionalProperties: false
-    signIn:
-      type: object
-      properties:
-        account: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
-      required: [account]
       additionalProperties: false
     toolsDirectory:
       type: object
@@ -368,3 +374,85 @@ spec:
     arguments: {type: object}
   required: [requirement]
   additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: sign-in-login.v1
+  description: >-
+    One literal login a Type states under CTR-013, pinned with its contract. No value is a
+    pointer into configuration. Device uses the service's verification page and the panel's
+    code (RFC 8628); redirect uses loopback (RFC 8252); page returns an opaque code; service
+    completes through its own HTTPS page. Nothing returns through Conduit for device or service.
+spec:
+  type: object
+  properties:
+    name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+    return: {enum: [device, redirect, page, service]}
+    authorization:
+      type: string
+      format: uri
+      pattern: '^https://(\[[^/?#@ \\]+\]|[^:/?#@\[\] \\]+)(:[0-9]*)?(/[^?# \\]*)?$'
+    clientId:
+      type: string
+      minLength: 1
+      description: >-
+        The OAuth client ID. For device it is the ID the program presents at the device
+        authorization endpoint (RFC 8628 section 3.1), absent from the verification URL.
+    redirect:
+      type: object
+      properties:
+        host: {enum: [localhost, 127.0.0.1, '[::1]']}
+        ports:
+          anyOf:
+          - {const: any}
+          - type: array
+            minItems: 1
+            uniqueItems: true
+            items: {type: integer, minimum: 1024, maximum: 65535}
+        path: {type: string, pattern: '^/'}
+      required: [host, ports, path]
+      additionalProperties: false
+    page:
+      type: string
+      format: uri
+      pattern: '^https://([^/?#@ \\]*@)?(\[[^/?#@ \\]+\]|[^:/?#@\[\] \\]+)(:[0-9]*)?([/?][^# \\]*)?$'
+    carried:
+      type: boolean
+      description: >-
+        Whether the engine may carry the return from the person's Interface to its program.
+        False completes only with a browser on the program's machine (CTR-013, PND-013).
+    issuer:
+      type: string
+      format: uri
+      pattern: '^https://(\[[^/?#@ \\]+\]|[^:/?#@\[\] \\]+)(:[0-9]*)?(/[^?# \\]*)?$'
+  required: [name, return, authorization, clientId]
+  additionalProperties: false
+  allOf:
+  - if:
+      properties:
+        return: {const: redirect}
+    then:
+      required: [redirect]
+      properties:
+        page: false
+    else:
+      properties:
+        redirect: false
+        issuer: false
+  - if:
+      properties:
+        return: {enum: [page, service]}
+    then:
+      required: [page]
+    else:
+      properties:
+        page: false
+  - if:
+      properties:
+        return: {enum: [redirect, page]}
+    then:
+      required: [carried]
+    else:
+      properties:
+        carried: false

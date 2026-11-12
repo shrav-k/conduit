@@ -646,3 +646,32 @@ Report:
 - each check's last line.
 
 Do not `git add` or commit anything.
+
+## Record
+
+Run on 2026-11-11 on a loaded Mac: the worker in 99 minutes, then two rounds; the final verifier
+found no fault. The return of a browser login (rulings 73 and 75, C1 to C7) is in the
+specification:
+- `signIn` lists its logins in `sign-in-login.v1`, each with its identity and one of four return
+  kinds, shown at install and in inspection and pinned with the package's digest;
+- PND-013 carries the return on IFC-049's retry, bound to the session and the sign-in, never
+  recorded or shown to a model;
+- the return goes to the Interface that received the sign-in (PND-010);
+- the account check stays strict, and the engine holds no login token (SEC-020);
+- a client ID that two installed Types at different addresses claim needs root's recorded
+  confirmation, while Types of one package's own versions share freely.
+
+The coordinator's readings in the order apply.
+
+The admin rebased the order onto `main` after orders 041b and 075 had merged, resolving every
+conflict by keeping both sides:
+- the manifest was merged as data, adding this order's one case;
+- the totals were recounted from the promise files: 517, with 226 `language`, 243 `convention`
+  and 48 `interface`. The contracts and naming rows were recounted from the manifest, correcting
+  two figures that were already stale on `main`;
+- a duplicate `signIn` definition that Git's automatic merge left in the contract schema was
+  removed;
+- order 075's own-tools fixtures were given a login, since `signIn` now requires its logins.
+
+All 440 vectors pass, and the documentation, schema, ruling, name and private-path checks are
+clean.

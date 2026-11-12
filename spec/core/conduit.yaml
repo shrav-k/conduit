@@ -136,6 +136,7 @@ exports:
   - pool-entry.v1
   - contract.v1
   - type-spec.v1
+  - sign-in-login.v1
   - capability-spec.v1
   - operation-spec.v1
   - requirement-spec.v1

@@ -121,8 +121,9 @@
     provider capability must be is PRV-001. The only Type of family Fleet is the core
     `fleet.v1`, which offers `fleet-management.v1` (FLEET-001); a Type of that family outside
     the core package is rejected.
-    A Type may also state `signIn`, the expected-account declaration and three required hooks
-    of CTR-013, and `toolsDirectory`, the own tools declaration of CTR-014.
+    A Type may also state `signIn`, its account pointer, logins and three required hooks
+    under CTR-013, and `toolsDirectory`, the own tools declaration of CTR-014. Records follow
+    REC-002.
   vectors: []
 
 - id: CTR-005
@@ -284,19 +285,48 @@
   when: >-
     A Type contract states signIn.
   then: >-
-    It holds exactly {account: <JSON Pointer into configuration>}. The place and every
-    member on its path are required, and the place is confined to string or null by
-    MAN-017's test. The Type requires the three core operations sign-in-hook.v1, account-
-    hook.v1 and sign-out-hook.v1. A contract that fails any of these rules is rejected at
-    install or submission.
+    It holds exactly account, a pointer into configuration, and logins, a non-empty list of
+    sign-in-login.v1. Every login value is literal, never a configuration pointer. A login
+    states name, return, authorization and clientId. Names differ within the Type. Return is
+    device, redirect, page or service: device states the verification page, redirect the
+    loopback host, ports and path, and page and service the HTTPS page used as redirect_uri.
+    Only redirect and page state carried, required for both; only redirect may state issuer.
+    No other member is allowed. The account place and every member on its path are required,
+    and the place is confined to string or null by MAN-017's test. The Type requires the three
+    core operations sign-in-hook.v1, account-hook.v1 and sign-out-hook.v1. No URL may pass
+    IFC-049's checks for two of its logins, including overlapping fixed ports and ports: any
+    on the same host and path. A contract failing these rules is rejected at install or
+    submission. The logins are part of the Type contract: PKG-004's package digest and
+    SUB-008's digest of a submitted project's contracts cover them.
   observable: >-
-    A string at that place is the expected account for sign-in. A null value disables the
-    account check and sign-in actions, as for an API-key configuration. The engine reads
-    only what account-hook reports, never the instance's state directory. The hooks are
-    selected as implementations under the Type's requires and template implementation rules
-    (TPL-004), invoked only as parts of sign-in.v1 or setup, for their caller and filters
-    (PND-011), and exposed through no consumer tool.
-  vectors: []
+    A string at the account place is the expected account. Null disables both sign-in actions
+    and the account check, as for API-key configuration. A Type states signIn only where
+    account-hook.v1 reports an account attested by the service: returned at login, such as in
+    an ID token or profile, or reported when asked, such as by userinfo or the service's own
+    call. An account supplied by configuration or a person does not count. A Type unable to
+    learn it states no signIn and gets no sign-in or relayed URL (IFC-016). The engine reads
+    only what account-hook reports, never the instance's state directory. Hooks are selected
+    under requires and TPL-004, invoked only as parts of sign-in.v1 or setup for their caller
+    and filters (PND-011), and exposed through no consumer tool. The engine starts no login
+    and holds no token it yields (SEC-020). A Resource needing browser login is implemented by
+    a package that completes it and keeps its token in its own state directory (PRV-029). The
+    engine carries no return for carried: false (PND-013). The engine compares the client IDs
+    of a Type's logins with every Type it holds at another address: every installed package's
+    Types and every submission's Types held by a template or instance (SUB-008, PKG-029).
+    Types at one address share freely, including sibling Types, package versions and
+    submissions at one address. Installing a package whose Type shares such a client ID
+    reports conflict unless the request confirms it in install.v1's optional confirmClientIds
+    list. Only root may give that input; another caller giving it reports refused. A
+    confirmation naming a client ID shared with no such Type reports invalid. Registering a
+    project or replacing a template with one (SUB-009) reports conflict for such sharing, with
+    no confirmation. OPS-023's access, validity, conflict and availability order governs these
+    decisions before dispatch. Each diagnostic names CTR-013, its cause, the client ID and
+    both Types where shared, and reveals no URL value. A confirming install record keeps only
+    those input client IDs under REC-002. install.v1 optionally outputs logins, each item's
+    qualified Type reference and logins for each package Type stating signIn. inspect.v1
+    optionally outputs its object's Type's logins, present where that Type states signIn.
+  vectors:
+  - conformance/language/contracts/sign-in-logins/case.yaml
 
 
 - id: CTR-014

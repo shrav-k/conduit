@@ -5036,6 +5036,15 @@
       "safety_rows": [
         "fleets-retire-schema-inactive"
       ]
+    },
+    {
+      "id": "contracts-sign-in-logins",
+      "case": "language/contracts/sign-in-logins/case.yaml",
+      "promises": [
+        "CTR-013",
+        "SUB-005"
+      ],
+      "safety_rows": []
     }
   ],
   "s1_coverage": [

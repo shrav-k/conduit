@@ -86,6 +86,9 @@
     that `secret-reference.v1` governs only in the resolved form, under SEC-004.
     Records naming pending actions follow PND-012: request records hold action IDs and no
     prompt, code or fingerprint; the answer records its evidence separately (PND-004).
+    Exception to management's keeping no inputs: an install.v1 request confirming shared
+    client IDs (CTR-013) keeps data.inputs.confirmClientIds, the client IDs confirmed, and
+    no other input. A return under PND-013 is none of the _meta values this rule keeps.
   vectors: []
 
 - id: REC-003

@@ -11,7 +11,7 @@
 > - Admin proposal FLT-D3: S8 V4/V5 after FLT-D1 and FLT-D2 only.
 > - Admin A1: accept the secret/core/shell split and merge sequence?
 > - Admin A2: keep engine integration after PIN, or authorize another side branch?
-> - Owner hold M2-3: HTTPS TLS termination before isolated provider runs; O1–O5 stand.
+> - Ruling 77: `tailscale serve` after the Mac’s tailnet rename, with ADDR and DSP, before isolated provider runs; O1–O5 stand.
 
 ## Status
 
@@ -81,8 +81,8 @@ each changed Rust crate, a pinned toolchain, Cargo.lock, ignored output and pack
 | S2-O | owner | Test keychain/item, narrow service key, account labels and runtime readiness | SEC-019, PRV-029 | — | about 1 hour presence | owner | after owner's availability |
 | S2-R1 | run | Coordinator, local, T1–T7 | README P1–P6 | run gate below | about 1 hour; 45 min active owner proposed | lane 10 | after run gate |
 | S2-R2 | run | Fresh Codex author, local, T1–T7 | README P1–P6 | S2-R1 | about 1 hour; same owner allowance | lane 10 | after S2-R1 |
-| S2-R3 | run | Coordinator, isolated, T1–T7 | README P1–P6 | S2-R2, A63-DR, DSP, ADDR, M2-3 | about 1 hour; same owner allowance | lane 10 | after isolated readiness and M2-3 |
-| S2-R4 | run | Fresh Codex author, isolated, T1–T7 | README P1–P6 | S2-R3, A63-DR, DSP, ADDR, M2-3 | about 1 hour; same owner allowance | lane 10 | after S2-R3 and M2-3 |
+| S2-R3 | run | Coordinator, isolated, T1–T7 | README P1–P6 | S2-R2, A63-DR, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77) | about 1 hour; same owner allowance | lane 10 | after isolated readiness and the ruling 77 TLS setup |
+| S2-R4 | run | Fresh Codex author, isolated, T1–T7 | README P1–P6 | S2-R3, A63-DR, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77) | about 1 hour; same owner allowance | lane 10 | after S2-R3 and the ruling 77 TLS setup |
 
 **S2-F.** New contracts-only package under `packages/scenario-s2-linear-restrictions/`: manifest,
 contracts, documentation and admission fixtures. State clock/deadline, issue IDs, changed
@@ -164,7 +164,7 @@ unkeyed calls or scripted evidence for P2. No engine/runner/index edits or new v
 guides subject to the accepted answers. Runs write dated evidence beside README, from empty
 `<lab>` directories, pinning all inputs before timing. Run gate: PIN, B2-S/C/H, 050 and its
 entire sign-in chain, 052b, SEC-D, FLT-D0/1/2, S2-H/O, A63-KC and passing tagged safety vectors;
-the isolated profile also needs A63-DR, DSP, ADDR and M2-3. FLT-D3 is S8-only, not this run gate. Measure every README cell, outage and manual repair;
+the isolated profile also needs A63-DR, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77). FLT-D3 is S8-only, not this run gate. Measure every README cell, outage and manual repair;
 keep fresh-author/coordinator evidence apart. No production edits; checks are README P1–P6 and M0/M1.
 
 ## Shared with other plans
@@ -207,7 +207,7 @@ Do not replace the admin's splits with the older plan's unsplit 046/048/052 orde
 After PIN, FLT-D0 runs before FLT-D1 is sized. SEC-D1 → SEC-D2 → SEC-D3a/D3b joins
 DSP from `s3/m2`; FLT-D1 → FLT-D2 joins DSP too. Cases stay with passing/fixing orders as
 above; FLT-D3 follows D1/D2 for S8 independently. Join 052b/050 and preparation for R1 → R4.
-B2-S → B2-C/B2-H gates R1 after the S1 judgment. Isolated R3/R4 also wait M2-3/ADDR/DSP/DR.
+B2-S → B2-C/B2-H gates R1 after the S1 judgment. Isolated R3/R4 also wait A63-DR, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77).
 Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin): the admin interleaves SEC-D1 and FLT-D1
 with S3-L1/L2/RET1 in core, SEC-D2/D3a/D3b and FLT-D2 with S3-RET2 in shell. D0 follows
 071/SV1/PIN; D3 follows D1/D2. There is no parallel requests.rs merge lane.
@@ -222,9 +222,9 @@ with S3-L1/L2/RET1 in core, SEC-D2/D3a/D3b and FLT-D2 with S3-RET2 in shell. D0 
 
 ## For the owner
 
-**M2-3 stays held:** isolated S2-R3/R4 need TLS termination at the engine's HTTPS address.
+**Ruling 77:** isolated S2-R3/R4 wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename, to terminate TLS at the engine's HTTPS address.
 Every runtime-provider run receives that address through DSP/079, including a local Docker run.
-No answer here; O1–O5 stand and no other S2 work waits on this choice.
+O1–O5 stand and no other S2 work waits on this setup.
 
 ## Limits
 

@@ -96,3 +96,16 @@ grep -n -i -E "M2-[1-4].*(held|hold|candidate|selected|stays|remain)" experiment
 
 Report each line you changed, by file and line, and each place where keeping the dependency needed
 a choice. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base 311ecff: the worker, then a fresh verifier (111 s), which
+found nothing to change in one round. The plans of S2, S3, S4, S6, S9 and S10, and PROVIDERS.md,
+now carry ruling 77's answers in place of the held M2-1 to M2-4, each with its dependency kept:
+SSH-M and SSH-R as the Windows computer's providers, no longer waiting; the run user `conduit-run`
+with no sudo; `tailscale serve` after the Mac's tailnet rename, beside ADDR and DSP, on every run a
+runtime provider makes; and the distro locked down. S3's plan gains, as an owner step, the
+question of how S3 cuts the network and loses the machine now that interop is off: (A) the owner's
+hand at a barrier, recommended; (B) a restricted Windows account; (C) a helper inside the distro.
+The admin has put it to the owner. The worker's finding: the second-machine guide's section on how
+S3 cuts the network still describes the old method.

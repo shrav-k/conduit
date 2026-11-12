@@ -8,7 +8,7 @@
 > - S6-WIRE: propose end-to-end retirement/task/provider wire qualification to the admin.
 > - Admin A: coordinate S4's task orders and DSP, or resplit; recommendation: reuse both once.
 > - Admin B: keep cycles in the complete run and preserve PIN; recommendation: qualify existing DL1 after PIN.
-> - Owner: Q4 includes unordered and cyclic cases; M2-3 holds provider-facing engine runs.
+> - Ruling 77: provider-facing engine runs wait for ADDR and DSP, and `tailscale serve` after the Mac’s tailnet rename; Q4 includes unordered and cyclic cases.
 
 ## Status
 
@@ -173,7 +173,7 @@ No native client replay, subscription, second machine or account sign-in is adde
 - DSP is shared provider dispatch, after its own prerequisites on the node side branch and PIN.
   ADDR is required for the HTTPS address of DSP’s provider runs; AGT/049a-1/SSH-R/SSH-M
   are not independent S6 requirements. Respect
-  DSP's own dependencies without choosing answers to M2-1–M2-4. No remote machine is substituted.
+  DSP's own dependencies; ruling 77 answered M2-1 to M2-4. No remote machine is substituted.
 - B2-S/C/H are not prerequisites for ordinary close/retire or the non-root notice fixture.
   Do not use act-for authority not yet written/built. 050 and sign-in are unnecessary here.
 
@@ -184,7 +184,7 @@ running its suite), with S3-L2 fixture reuse where available. Core/shell/vectors
 through 053 → PIN, including 052a-1/2/052b, unless admin assigns a side branch.
 PIN/042/081/SV1/S4-TASK1/FLT-D1 → ACCESS → DUTY1 → 047/DUTY2.
 077/DSP → END joins S4-LATE/S4-TASK2/S9-CUT2/DSP/DUTY1/2 → WIRE → RUN;
-H/STOP join RUN, and M2-3 gates live provider-run reachability, not scripted engine tests.
+H/STOP join RUN; live provider-run reachability waits for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77); scripted engine tests do not.
 Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin): ACCESS follows S5-C1, DUTY1/2 follow
 S5-C2; END spans both lanes after 077 and before WIRE. WIRE follows S9-CUT2 and the other
 shared shell work. No owner sign-in or batch-2 gate; no new DL1 policy.
@@ -203,8 +203,8 @@ Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optio
 
 ## For the owner
 
-Q4 already includes unordered/cyclic retirement. **M2-3 remains held** for S6-STOP's live
-runtime-provider runs to reach the engine's HTTPS address (079/DSP); no TLS answer here.
+Q4 already includes unordered/cyclic retirement. **Ruling 77:** S6-STOP's live
+runtime-provider runs wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename, to reach the engine's HTTPS address (079/DSP).
 Scripted engine tests and other preparation do not wait. No new shutdown deadline or
 cancellation guarantee is proposed.
 

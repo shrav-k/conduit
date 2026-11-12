@@ -244,7 +244,8 @@ package/harness preparation can proceed alongside it without concurrent requests
 ## For the owner
 
 None. Q4's boundary/path distinction and Q5's unknown partial effect remain as accepted;
-no answer to M2-1–M2-4 or a new repair feature is selected.
+ruling 77 answered M2-1 to M2-4;
+no new repair feature is selected.
 
 ## Limits
 

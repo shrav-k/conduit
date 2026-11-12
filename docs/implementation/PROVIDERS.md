@@ -11,7 +11,7 @@
 > - Admin decisions A/C/D (2026-11-11): harness at 022; MP1 local/MP2 qualification first; SSH crates separate.
 > - Admin decision B (2026-11-11): packaged locals accompany S10's unchanged configurations.
 > - Admin E: the D4 reading recorded below, confirmed by the owner on 2026-11-12; S4 holds the common merge sequence.
-> - Owner's answers (ruling 77, 2026-11-12): M2-1 SSH-M/SSH-R; M2-2 `conduit-run`; M2-3 `tailscale serve`; M2-4 interop off. M2-5 is ruling 72's later answer.
+> - Owner's answers (ruling 77, 2026-11-12): M2-1 SSH-M/SSH-R; M2-2 `conduit-run`, with no sudo; M2-3 `tailscale serve` after the Mac's tailnet rename; M2-4 the distro locked down (interop, `appendWindowsPath` and automount off). M2-5 is on demand (ruling 72's later answer).
 > - Owner steps: distinct OS users for RP/H2 tests; keychain binary partition-list authorization; ruling 77's setup on the Windows computer (`conduit-run`, the lockdown, Codex signed in as `conduit-run`); before the end-to-end run, the Mac renamed in the tailnet, then HTTPS certificates turned on.
 
 ## Status
@@ -62,8 +62,8 @@ No additional language is proposed here. A new missing behavior must be reported
 
 | Core capability | First / second implementation and existing tool | Exercise / engine prerequisite |
 | --- | --- | --- |
-| `runtime-provider.v1` | A63-RP local process on OS process groups; A63-DR on Docker CLI/daemon. SSH-R is a third, on OpenSSH/systemd. | S2 D20, S3 isolated consumers, S10 T3/T5: ADDR/DSP and M2-3's `tailscale serve` ([ruling 77](../proposals/ruling-77/README.md)) for engine use; container Agents also need 050. |
-| `machine-provider.v1` | A63-MP on local OS machine reports; SSH-M on OpenSSH, the second-host provider that [ruling 77](../proposals/ruling-77/README.md) selects for M2-1. A Tailscale provider is a later candidate. | S3 supplies machines’ second-implementation evidence: 049a-1, 049b, DSP, 051c and proposed A63-MDIS; see admin C. |
+| `runtime-provider.v1` | A63-RP local process on OS process groups; A63-DR on Docker CLI/daemon. SSH-R is a third, on OpenSSH/systemd. | S2 D20, S3 isolated consumers, S10 T3/T5: ADDR and DSP, and `tailscale serve` set up after the Mac's tailnet rename ([ruling 77](../proposals/ruling-77/README.md)) for engine use; container Agents also need 050. |
+| `machine-provider.v1` | A63-MP on local OS machine reports; SSH-M on OpenSSH, the second-host provider that [ruling 77](../proposals/ruling-77/README.md) selects. A Tailscale provider is a later candidate. | S3 supplies machines’ second-implementation evidence: 049a-1, 049b, DSP, 051c and proposed A63-MDIS; see admin C. |
 | `package-source.v1` | A63-PS on filesystem directory reads, claiming `file`; A63-GS on Git, claiming `git+https`. | S10 T4 (S7 only if fetching HTTPS archives): PSD, immutable claims and fresh caches. Unclaimed `file`/`https` remain engine fetches. |
 | `secret-provider.v1` | S2/S10 first: A63-KC on macOS Security APIs; shipped A63-FS on filesystem files. S10 second: A63-1P on 1Password CLI after A73, else A63-FS. | S2, S3 and S10 T2/T5: SEC-D; B2-S/C/H before scenarios depend on driven-Agent restrictions. File/keychain also pass the same suite. |
 
@@ -185,8 +185,8 @@ principals (A63-OUS), no launchd/systemd supervision. RP1 tests operations and r
 RP2 connects the kit gate, recovery/startup sweep and principals. Its external stop-drainer helper
 survives server retirement, reads durable obligations and stops process groups; test it after server exit.
 Declare pinned npm/stdio and absolute commands, unsupported registry/transport rejection and cleanup.
-Engine use needs ADDR/DSP and M2-3's TLS termination, which ruling 77 makes `tailscale serve` on the Mac after its tailnet
-rename; no provider-run qualification through the engine can reach its HTTPS address before that is set up.
+Engine use needs ADDR and DSP, and `tailscale serve` set up after the Mac's tailnet
+rename (ruling 77); no provider-run qualification through the engine can reach its HTTPS address before that is set up.
 DL13's gate TLS and credential delivery stay a limit until DSP. Direct MCP suite tests use harness trust fixtures.
 
 **A63-MP1 / MP2.** `packages/provider-local-machine/`, Type `local-machine.v1`, machine capability.
@@ -227,7 +227,7 @@ Support a Docker daemon/context on the second machine and PRV-011's confidential
 S3-O2 prepares that endpoint. Host-relative wrappers do not run in containers: 050's owner supplies
 Agent items, S2-L its service items, and S3-S1ITEM is proposed for S1's. Qualify each architecture,
 private home and independent login/callback; no copied login. Record URL/trust translations in D15/D16.
-Engine use/qualification waits ADDR/DSP, M2-3's `tailscale serve` set up (ruling 77), and 050 for the Agent profile.
+Engine use/qualification waits ADDR and DSP, and `tailscale serve` set up after the Mac's tailnet rename (ruling 77), and 050 for the Agent profile.
 
 **A63-GS.** `packages/provider-git/`, Type `git-source.v1`, source capability, git+https only.
 D15: pinned commit/blob selection/base64; Git transfer; disposable object cache, no credential copy;
@@ -287,7 +287,7 @@ setup for those tests; DR2b follows 050 and joins S3-O2 for the second daemon. H
 gate, H2b reuses A741. H1 gates suite qualification; only safety cases wait SV1, only VR's
 repeated-run cases wait 081. MP2 waits activated contracts and settled qualification C.
 
-Critical joins: PIN → ADDR → DSP plus M2-3's `tailscale serve` → runtime engine use; PIN → 049a-1/049b →
+Critical joins: PIN → ADDR → DSP plus `tailscale serve` set up after the Mac's tailnet rename (ruling 77) → runtime engine use; PIN → 049a-1/049b →
 SSH-M → VM report; PIN/SV1 → PSD1a → 082/PSD1b → PSD2, with PSD3 independently
 joining PSD1/DSP TLS. SEC-D/050/B2-S/C/H, S2's D09, paired suite reports and owner sign-ins join
 [S10's freeze and twelve replays](../../experiments/021-s10-swapped-providers/plan.md).
@@ -310,7 +310,7 @@ slot too. Provider/harness crates stay outside those engine hot files and outsid
   dispatch. Withhold full paired evidence until the same suite passes both; 049b is only a fixture.
 - **D — decided by the admin, 2026-11-11:** SSH-R and SSH-M are separate provider crates
   (`packages/provider-ssh-runtime/` and `packages/provider-ssh-machine/`), under ruling 40.
-  SSH-R reuses A63-RK by path, not RP or H. Neither waits on M2-1 or M2-2 any more: [ruling 77](../proposals/ruling-77/README.md)
+  SSH-R reuses A63-RK by path, not RP or H. Both are unblocked: [ruling 77](../proposals/ruling-77/README.md)
   selects both for the Windows computer, and SSH-R's runs use one account, `conduit-run`, without sudo;
   its contract states that PRV-025's isolation is unmet until each Agent has its own user.
   SSH-R’s external stop-drainer helper survives server retirement and retries SSH to stop the
@@ -323,14 +323,16 @@ slot too. Provider/harness crates stay outside those engine hot files and outsid
 
 ## For the owner
 
-On 2026-11-12 the owner answered the held M2 questions: M2-1 to M2-4 in [ruling 77](../proposals/ruling-77/README.md), M2-5 in
+On 2026-11-12 the owner answered the M2 questions: M2-1 to M2-4 in [ruling 77](../proposals/ruling-77/README.md), M2-5 in
 [ruling 72's later answer](../proposals/ruling-72/README.md#later-answers), and M2-7 needed no ruling (WSL keeps its default
-memory limit). M2-1: SSH-M and SSH-R, with Tailscale the network and a later candidate. M2-2: one run user,
-`conduit-run`, without sudo. M2-4: Windows interop, `appendWindowsPath` and automount off in Ubuntu-24.04.
+memory limit). M2-5 is on demand, whenever the computer is on and the owner has not paused it.
+M2-1: SSH-M and SSH-R, with Tailscale the network.
+A Tailscale provider is a later candidate. M2-2: one run user,
+`conduit-run`, without sudo. M2-4: the distro locked down (ruling 77), with Windows interop, `appendWindowsPath` and automount off in Ubuntu-24.04: nothing in the distro starts Windows programs, has the Windows path or mounts Windows drives.
 M2-3: `tailscale serve` on the Mac, with a Let's Encrypt certificate, after the Mac is renamed in the tailnet;
 it terminates TLS for the HTTPS address every provider run receives through DSP/079, in front of order
 079's loopback listener (`--https-listen`). Engine use and engine-facing qualification of A63-RP/DR
-therefore wait on ADDR/DSP and that setup, no longer on a held choice; DL13's gate TLS and
+therefore wait on ADDR and DSP, and `tailscale serve` set up after the Mac's tailnet rename (ruling 77); DL13's gate TLS and
 credential delivery stay a limit until DSP. Direct suite tests use harness fixtures.
 A63-OUS asks for distinct OS users before RP/H2 principal tests; A63-OKC asks for binary
 partition-list authorization on S2-O's throwaway item, following experiment 005.

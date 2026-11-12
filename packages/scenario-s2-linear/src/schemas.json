@@ -1,0 +1,243 @@
+{
+  "read-issue.v1": {
+    "idempotentHint": true,
+    "openWorldHint": true,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue": {
+          "type": "string",
+          "pattern": "^[A-Z]+-[0-9]+$",
+          "not": {
+            "pattern": "[^A-Z0-9-]"
+          }
+        }
+      },
+      "required": [
+        "issue"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "issue": {
+          "type": "object",
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "pattern": "^[A-Z]+-[0-9]+$",
+              "not": {
+                "pattern": "[^A-Z0-9-]"
+              }
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "state": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "identifier",
+            "title",
+            "description",
+            "state",
+            "updatedAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "issue"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "list-issues.v1": {
+    "idempotentHint": true,
+    "openWorldHint": true,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identifier": {
+                "type": "string",
+                "pattern": "^[A-Z]+-[0-9]+$",
+                "not": {
+                  "pattern": "[^A-Z0-9-]"
+                }
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "identifier",
+              "title",
+              "description",
+              "state",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "issues"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "update-issue.v1": {
+    "effect": "Changes only the named issue's supplied title and description, with the service's consequent updated time; never changes its team, parent or placement.",
+    "idempotentHint": false,
+    "openWorldHint": true,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue": {
+          "type": "string",
+          "pattern": "^[A-Z]+-[0-9]+$",
+          "not": {
+            "pattern": "[^A-Z0-9-]"
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "issue"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "title"
+          ]
+        },
+        {
+          "required": [
+            "description"
+          ]
+        }
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "issue": {
+          "type": "object",
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "pattern": "^[A-Z]+-[0-9]+$",
+              "not": {
+                "pattern": "[^A-Z0-9-]"
+              }
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "state": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "identifier",
+            "title",
+            "description",
+            "state",
+            "updatedAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "issue"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "issue-scope.v1": {
+    "inputs": {
+      "issues": {
+        "schema": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]+-[0-9]+$",
+            "not": {
+              "pattern": "[^A-Z0-9-]"
+            }
+          }
+        }
+      },
+      "deadline": {
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

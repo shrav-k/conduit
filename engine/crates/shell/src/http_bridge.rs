@@ -200,6 +200,7 @@ impl Bridge {
         let mut pending = Vec::new();
         let mut data = Vec::new();
         let mut skip_lf = false;
+        let mut first_line = true;
         let mut emitted = false;
         while let Some(chunk) = stream.next().await {
             for byte in chunk.map_err(|_| ())? {
@@ -214,6 +215,13 @@ impl Bridge {
                 }
                 skip_lf = byte == b'\r';
                 let line = std::mem::take(&mut pending);
+                // The first line accumulates across chunks, including a split UTF-8 BOM.
+                let line = if first_line {
+                    first_line = false;
+                    line.strip_prefix(b"\xef\xbb\xbf").unwrap_or(&line)
+                } else {
+                    &line
+                };
                 if line.is_empty() {
                     if !data.is_empty() {
                         data.pop();
@@ -226,6 +234,9 @@ impl Bridge {
                     }
                 } else if let Some(value) = line.strip_prefix(b"data:") {
                     data.extend_from_slice(value.strip_prefix(b" ").unwrap_or(value));
+                    data.push(b'\n');
+                } else if line == b"data" {
+                    // A colonless field has an empty value, including its data newline.
                     data.push(b'\n');
                 }
             }
@@ -334,7 +345,9 @@ async fn run(url: reqwest::Url, directory: &Path, refused: Arc<AtomicBool>) -> R
     };
     let result = async {
         let mut stdin = BufReader::new(tokio::io::stdin()).lines();
-        let first = stdin.next_line().await.map_err(|_| ())?.ok_or(())?;
+        let Some(first) = stdin.next_line().await.map_err(|_| ())? else {
+            return Ok(());
+        };
         let (session, revision) = bridge.post(first, true).await?;
         bridge.session = session;
         bridge.revision = Some(HeaderValue::from_str(&revision.ok_or(())?).map_err(|_| ())?);
@@ -414,6 +427,67 @@ pub fn main_entry() -> i32 {
 #[cfg(test)]
 mod response_tests {
     use super::*;
+    #[tokio::test]
+    async fn sse_bom_prefixed_initialization_survives_every_chunk_boundary() {
+        crate::install_crypto_provider();
+        let (output, mut lines) = mpsc::unbounded_channel();
+        let bridge = Bridge {
+            client: Client::new(),
+            url: reqwest::Url::parse("https://bridge.test/mcp").unwrap(),
+            token: HeaderValue::from_static("Bearer test-marker"),
+            session: None,
+            revision: None,
+            output,
+        };
+        let reply = r#"{ "jsonrpc":"2.0", "id":1, "result":{"protocolVersion":"2025-11-25"} }"#;
+        let event = format!("\u{feff}data: {reply}\r\n\r\n");
+        for split in 0..=event.len() {
+            let chunks = [
+                Ok::<_, std::io::Error>(event.as_bytes()[..split].to_vec()),
+                Ok(event.as_bytes()[split..].to_vec()),
+            ];
+            let response = axum::http::Response::builder()
+                .header("content-type", "text/event-stream")
+                .body(reqwest::Body::wrap_stream(futures_util::stream::iter(
+                    chunks,
+                )))
+                .unwrap();
+            assert_eq!(
+                bridge.response(response.into(), true, false).await.unwrap(),
+                Some("2025-11-25".into()),
+                "chunk boundary {split}"
+            );
+            assert_eq!(lines.try_recv().unwrap(), format!("{reply}\n").as_bytes());
+        }
+    }
+
+    #[tokio::test]
+    async fn sse_bare_data_field_preserves_its_empty_line() {
+        crate::install_crypto_provider();
+        let (output, mut lines) = mpsc::unbounded_channel();
+        let bridge = Bridge {
+            client: Client::new(),
+            url: reqwest::Url::parse("https://bridge.test/mcp").unwrap(),
+            token: HeaderValue::from_static("Bearer test-marker"),
+            session: None,
+            revision: None,
+            output,
+        };
+        let response = axum::http::Response::builder()
+            .header("content-type", "text/event-stream")
+            .body("data: {\ndata\ndata: \"jsonrpc\":\"2.0\",\"method\":\"notifications/test\"}\n\n")
+            .unwrap();
+        bridge
+            .response(response.into(), false, false)
+            .await
+            .unwrap();
+        assert_eq!(
+            lines.try_recv().unwrap(),
+            b"{  \"jsonrpc\":\"2.0\",\"method\":\"notifications/test\"}\n"
+        );
+        assert!(lines.try_recv().is_err());
+    }
+
     #[tokio::test]
     async fn response_envelopes_and_sse_endings_preserve_bytes_or_end_the_bridge() {
         crate::install_crypto_provider();

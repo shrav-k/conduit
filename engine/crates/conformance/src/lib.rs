@@ -774,6 +774,7 @@ fn run_case(
                         "invocation-ended",
                         "provider-call",
                         "object-change",
+                        "enrollment-change",
                     ]
                     .iter()
                     .any(|e| r["type"] == *e)
@@ -847,6 +848,54 @@ fn run_case(
         let (actual, next) = run().map_err(|e| format!("step {}: {e}", index + 1))?;
         let expected = expand(&raw_step["expect"], &symbols, spec)?;
         let mut fields = expected.as_object().ok_or("missing expectation")?.clone();
+        if let Some(panel) = fields.remove("panel") {
+            let input = expand(&raw_step["input"], &symbols, spec)?;
+            let fixture_time = if let Some(alias) = input["file"]
+                .as_str()
+                .filter(|_| input["kind"] == "lifecycle-fixture")
+            {
+                let fixture = expand(&read_value(&base.join(&case.files[alias]))?, &symbols, spec)?;
+                fixture["requests"][input["index"].as_u64().unwrap() as usize]["call"]["evidence"]["time"].as_str().map(str::to_owned)
+            } else {
+                None
+            };
+            let time = input["evidence"]["time"]
+                .as_str()
+                .or(fixture_time.as_deref())
+                .ok_or("panel requires the step's time")?;
+            projection(
+                &conduit_core::machines::panel(&next, time),
+                &panel,
+                "/panel",
+            )?;
+        }
+        if let Some(absent) = fields.remove("undisclosed") {
+            let exported =
+                conduit_core::step(&next, Input::ExportRecords { unreadable: vec![] }, context)?;
+            let surfaces = json!({"reply":actual["reply"],"decisions":actual["decisions"],"intents":actual["external_intents"],"records":actual["records"],"stored_records":next.records,"invocations":next.invocations,"objects":next.objects,"export":exported.reply});
+            for item in absent.as_array().ok_or("undisclosed must be an array")? {
+                let text = item["text"].as_str().ok_or("undisclosed item needs text")?;
+                let value = if item["whole_state"] == true {
+                    json!({"surfaces":surfaces,"state":next})
+                } else {
+                    surfaces.clone()
+                };
+                // Compare decoded strings, including object keys, without JSON escaping artifacts.
+                fn contains(v: &Value, text: &str) -> bool {
+                    match v {
+                        Value::String(s) => s.contains(text),
+                        Value::Array(vs) => vs.iter().any(|v| contains(v, text)),
+                        Value::Object(m) => {
+                            m.iter().any(|(k, v)| k.contains(text) || contains(v, text))
+                        }
+                        _ => false,
+                    }
+                }
+                if contains(&value, text) {
+                    return Err("undisclosed string escaped its private state fields".into());
+                }
+            }
+        }
         if let Some(count) = fields.remove("object_count") {
             projection(&json!(next.objects.len()), &count, "/object_count")?;
         }
@@ -939,6 +988,7 @@ fn run_case(
                     .ok_or("diagnostic index missing")? as usize;
                 let d = actual["diagnostics"]
                     .get(n)
+                    .or_else(|| actual["reply"]["structuredContent"]["diagnostics"].get(n))
                     .ok_or("expected diagnostic absent")?;
                 for word in assertion["message_contains"]
                     .as_array()

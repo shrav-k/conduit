@@ -4710,6 +4710,168 @@
       "safety_rows": [
         "defaults-ids-last"
       ]
+    },
+    {
+      "id": "enrollment-enroll-own-provider",
+      "case": "conventions/enrollment/enroll-own-provider/case.yaml",
+      "promises": [
+        "ENR-001",
+        "PRV-003"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-enroll-reserved",
+      "case": "conventions/enrollment/enroll-reserved/case.yaml",
+      "promises": [
+        "ACC-032",
+        "ACC-056"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-enroll-opens",
+      "case": "conventions/enrollment/enroll-opens/case.yaml",
+      "promises": [
+        "ENR-001",
+        "ENR-002",
+        "ENR-003",
+        "PRV-005",
+        "REC-001"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-enroll-invalid-inputs",
+      "case": "conventions/enrollment/enroll-invalid-inputs/case.yaml",
+      "promises": [
+        "ENR-001"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-enroll-evidence-unmet",
+      "case": "conventions/enrollment/enroll-evidence-unmet/case.yaml",
+      "promises": [
+        "ENR-001",
+        "ENR-005"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-join-attaches",
+      "case": "conventions/enrollment/join-attaches/case.yaml",
+      "promises": [
+        "ENR-003",
+        "ENR-004",
+        "PLC-026"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-admit",
+      "case": "conventions/enrollment/admit/case.yaml",
+      "promises": [
+        "ENR-006",
+        "ENR-007",
+        "ENR-010",
+        "ENR-011",
+        "PLC-008",
+        "PLC-023",
+        "PLC-026"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-admit-fingerprint",
+      "case": "conventions/enrollment/admit-fingerprint/case.yaml",
+      "promises": [
+        "ENR-006",
+        "ENR-007",
+        "OPS-023"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-admit-not-admissible",
+      "case": "conventions/enrollment/admit-not-admissible/case.yaml",
+      "promises": [
+        "ENR-006",
+        "OPS-023",
+        "IFC-050"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-admit-accept-failed",
+      "case": "conventions/enrollment/admit-accept-failed/case.yaml",
+      "promises": [
+        "ENR-007"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-admit-accept-unknown",
+      "case": "conventions/enrollment/admit-accept-unknown/case.yaml",
+      "promises": [
+        "ENR-007",
+        "OPS-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-refuse-pending",
+      "case": "conventions/enrollment/refuse-pending/case.yaml",
+      "promises": [
+        "ENR-008"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-expiry-before-join",
+      "case": "conventions/enrollment/expiry-before-join/case.yaml",
+      "promises": [
+        "ENR-003",
+        "ENR-004",
+        "ENR-009",
+        "PND-004"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "enrollment-expiry-after-join",
+      "case": "conventions/enrollment/expiry-after-join/case.yaml",
+      "promises": [
+        "ENR-009"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "nodes-no-node-without-admission",
+      "case": "conventions/nodes/no-node-without-admission/case.yaml",
+      "promises": [
+        "ENR-004",
+        "PLC-026"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "nodes-id-mismatch",
+      "case": "conventions/nodes/id-mismatch/case.yaml",
+      "promises": [
+        "PLC-023",
+        "PLC-026"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "nodes-labels-drift",
+      "case": "conventions/nodes/labels-drift/case.yaml",
+      "promises": [
+        "ENR-010",
+        "PLC-007"
+      ],
+      "safety_rows": []
     }
   ],
   "s1_coverage": [
@@ -4790,14 +4952,19 @@
       "promise": "PLC-008",
       "vectors": [
         "first-start",
-        "s1-whole"
+        "s1-whole",
+        "enrollment-admit"
       ]
     },
     {
       "promise": "PLC-026",
       "vectors": [
         "first-start",
-        "s1-whole"
+        "s1-whole",
+        "enrollment-join-attaches",
+        "enrollment-admit",
+        "nodes-no-node-without-admission",
+        "nodes-id-mismatch"
       ]
     },
     {
@@ -6494,13 +6661,15 @@
       "vectors": [
         "setup-run-unknown",
         "setup-run-failed",
-        "setup-run-unknown-run"
+        "setup-run-unknown-run",
+        "enrollment-enroll-own-provider"
       ]
     },
     {
       "promise": "PRV-005",
       "vectors": [
-        "setup-review-provider-records"
+        "setup-review-provider-records",
+        "enrollment-enroll-opens"
       ]
     },
     {
@@ -6716,7 +6885,8 @@
       "vectors": [
         "access-routing",
         "access-root-local-lost",
-        "records-purge-nonroot"
+        "records-purge-nonroot",
+        "enrollment-enroll-reserved"
       ]
     },
     {
@@ -7027,7 +7197,8 @@
         "requests-effectful-plain-headers",
         "requests-aware-headers-no-repair",
         "records-purge",
-        "records-purge-succeeded"
+        "records-purge-succeeded",
+        "enrollment-admit-accept-unknown"
       ]
     },
     {
@@ -7111,7 +7282,9 @@
         "records-authority",
         "records-keyed-refused",
         "records-keyed-invalid",
-        "records-keyed-conflict"
+        "records-keyed-conflict",
+        "enrollment-admit-fingerprint",
+        "enrollment-admit-not-admissible"
       ]
     },
     {
@@ -7330,7 +7503,8 @@
         "records-purge-succeeded",
         "records-authority",
         "records-input-reference",
-        "s1-whole"
+        "s1-whole",
+        "enrollment-enroll-opens"
       ]
     },
     {

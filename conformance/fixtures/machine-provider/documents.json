@@ -1,0 +1,48 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "fixture-machine.v1"
+    },
+    "spec": {
+      "family": "Resource",
+      "schema": {
+        "type": "object"
+      },
+      "offers": [
+        "github.com/shrav-k/conduit/core#machine-provider.v1"
+      ],
+      "records": {
+        "inputs": true,
+        "outputs": true
+      },
+      "implementation": {
+        "github.com/shrav-k/conduit/core#list-machines.v1": "#fixture",
+        "github.com/shrav-k/conduit/core#place.v1": "#fixture",
+        "github.com/shrav-k/conduit/core#enroll.v1": "#fixture",
+        "github.com/shrav-k/conduit/core#accept-machine.v1": "#fixture",
+        "github.com/shrav-k/conduit/core#remove-machine.v1": "#fixture"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "fixture-machine"
+    },
+    "spec": {
+      "type": "#fixture-machine.v1"
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Resource",
+    "metadata": {
+      "name": "machines"
+    },
+    "from": "fixture-machine",
+    "owner": "system"
+  }
+]

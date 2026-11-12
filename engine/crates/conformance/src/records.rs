@@ -81,7 +81,10 @@ pub(super) fn transition(
             return Err("REC-001: refused access lacks its reason".into());
         }
         if r["type"] == "provider-call" {
-            for f in ["invocation", "target", "operation"] {
+            for f in ["target", "operation"].into_iter().chain(
+                (data["operation"] != format!("{}#list-machines.v1", context.core_package))
+                    .then_some("invocation"),
+            ) {
                 if !data[f].is_string() {
                     return Err(format!("REC-002: provider call lacks {f}"));
                 }

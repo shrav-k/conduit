@@ -1,0 +1,18 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "address": "example.org/fixture-machines",
+  "implementations": {
+    "fixture": {
+      "implements": [
+        "github.com/shrav-k/conduit/core#list-machines.v1",
+        "github.com/shrav-k/conduit/core#place.v1",
+        "github.com/shrav-k/conduit/core#enroll.v1",
+        "github.com/shrav-k/conduit/core#accept-machine.v1",
+        "github.com/shrav-k/conduit/core#remove-machine.v1"
+      ],
+      "command": [
+        "fixture-machine"
+      ]
+    }
+  }
+}

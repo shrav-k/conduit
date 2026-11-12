@@ -36,7 +36,10 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 
 pub const REVISIONS: [&str; 3] = ["2025-06-18", "2025-11-25", "2026-07-28"];
-const EXECUTABLE_ENGINE_OPERATIONS: [&str; 12] = [
+const EXECUTABLE_ENGINE_OPERATIONS: [&str; 15] = [
+    "enroll-machine.v1",
+    "admit-machine.v1",
+    "refuse-machine.v1",
     "install.v1",
     "retire.v1",
     "unregister.v1",

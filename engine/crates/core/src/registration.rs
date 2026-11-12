@@ -1916,6 +1916,27 @@ pub(crate) fn prepare(
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
         return reject(t, b.diagnostics, evidence, request, context);
     }
+    // PRV-013 machine-provider half; OBJ-023 rejects the atomic submission.
+    for o in resolved
+        .iter()
+        .filter(|o| o["kind"] == "Resource" && crate::machines::offers(o, context))
+    {
+        let system = all_resolved
+            .iter()
+            .find(|v| v["from"] == context.qualified("system"));
+        let other = all_resolved.iter().find(|v| {
+            v["kind"] == "Resource"
+                && v["id"] != o["id"]
+                && v["state"] != "retired"
+                && crate::machines::offers(v, context)
+        });
+        if system.is_none_or(|v| crate::access::id(&o["owner"]) != &v["id"]) || other.is_some() {
+            b.diagnostics.push(diagnostic("PRV-013", o["name"].as_str().unwrap_or(""), &format!("Resource {} must be owned by system and be the sole live machine provider; provider in the way: {}", o["id"], other.map(|v| v["id"].clone()).unwrap_or(Value::Null)), "error"));
+        }
+    }
+    if b.diagnostics.iter().any(|d| d["level"] == "error") {
+        return reject(t, b.diagnostics, evidence, request, context);
+    }
     // Nothing has been published before this point. The caller receives only this commit.
     let mut registered = b
         .templates
@@ -2395,4 +2416,8 @@ pub(crate) fn replacement(
     a.cursor = b.allocation.cursor;
     t.state = b.state;
     Ok(result)
+}
+
+pub(crate) fn offers_machine_provider(object: &Value, core: &str) -> bool {
+    offered(object, core).is_ok_and(|v| v.contains(&format!("{core}#machine-provider.v1")))
 }

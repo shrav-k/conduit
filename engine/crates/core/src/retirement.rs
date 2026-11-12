@@ -181,6 +181,8 @@ pub(crate) fn execute(
         }
         return stop(t, a, c, i, o);
     }
+    let was_machine_provider =
+        crate::machines::provider(&t.state, c).is_some_and(|p| p["id"] == o["id"]);
     let v = t.state.invocations[i].clone();
     let lost = access::object(&t.state, &o["placement"]).is_some_and(|n| n["state"] == "retired");
     let shutdown = if lost { "unknown" } else { "pending" };
@@ -194,6 +196,9 @@ pub(crate) fn execute(
     object["state"] = json!("retired");
     object["shutdown"] = json!(shutdown);
     object["retirement"] = v["id"].clone();
+    if was_machine_provider {
+        crate::machines::retired(t, a, c, &o["id"])?;
+    }
     event(
         t,
         a,
@@ -250,6 +255,13 @@ fn hook(
     i: usize,
     o: &Value,
 ) -> Result<()> {
+    if let Some(node) = crate::machines::unavailable_node(&t.state, o) {
+        let cause = format!(
+            "PLC-023: node {} ({}) Ready is not True",
+            node["name"], node["id"]
+        );
+        return unavailable(t, a, c, i, o, &cause);
+    }
     t.state.invocations[i]["retirement"]["phase"] = json!("hook");
     requests::hook(
         t,
@@ -353,6 +365,7 @@ pub(crate) fn report(
         lifecycle::Report::Run { outcome, .. } => ("run.v1", outcome.as_str()),
         lifecycle::Report::Stop { outcome } => ("stop.v1", outcome.as_str()),
         lifecycle::Report::Connected { outcome, .. } => ("connect", outcome.as_str()),
+        _ => return Err("machine report for retirement".into()),
     };
     if !["succeeded", "failed", "unknown"].contains(&outcome) {
         return Err("invalid retirement part outcome".into());
@@ -444,6 +457,20 @@ pub(crate) fn cancel(
         .ok_or("retirement object disappeared")?
         .clone();
     stop(t, a, c, i, &o)
+}
+
+pub(crate) fn unavailable(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    i: usize,
+    o: &Value,
+    cause: &str,
+) -> Result<()> {
+    add(t, i, "machine-ready", "unavailable");
+    settle(t, a, c, i, o)?;
+    crate::machines::unavailable_diagnostic(t, cause);
+    Ok(())
 }
 
 #[cfg(test)]

@@ -1,0 +1,148 @@
+{
+  "id": "enrollment-enroll-reserved",
+  "layers": [
+    "convention"
+  ],
+  "promises": [
+    "ACC-032",
+    "ACC-056"
+  ],
+  "title": "Enrollment verbs are reserved to root before validation",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../../../fixtures/root-system-state.json",
+    "project": "../../../fixtures/machine-provider/project.json",
+    "documents": "../../../fixtures/machine-provider/documents.json",
+    "manifest": "../../../fixtures/machine-provider/manifest.json",
+    "requests": "requests.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-032"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 1
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-032"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 2
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-032"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 3
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-032"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 4
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-032"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 5
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": [],
+        "required_promises": [
+          "ACC-032"
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 6
+      },
+      "expect": {
+        "reply": {
+          "_meta": {
+            "io.github.shrav-k.conduit/reason": "refused"
+          }
+        },
+        "external_intents": []
+      }
+    }
+  ]
+}

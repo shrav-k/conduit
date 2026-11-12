@@ -39,7 +39,11 @@ refers to something in its own package as `#name` (NAM-022).
 Every document here validates against those schemas, and `python3 tools/check_schemas.py`
 checks it.
 
-The unreleased core remains version 0.1.0. Runtime-sensitive contract edits are staged for
+The unreleased core remains version 0.1.0.
+As an explicit exception, list-machines.v1 and place.v1 are edited in place at 0.1.0
+for enrollment (batch 1 reading 18): required machine id, pending state and placement by id.
+No shipped package implements a machine provider; compatible-version replacements would be .v2.
+ Runtime-sensitive contract edits are staged for
 build order 048a under [036b-staged](../../docs/work-orders/036b-staged/), and enrollment
 bindings for 049a and provider contract edits for 049b under
 [038b-staged](../../docs/work-orders/038b-staged/). Those directories contain exact patches.
@@ -129,9 +133,9 @@ set up by `open.v1` and retired by `close.v1`.
 | `lift.v1` | `access-control.v1` | — | yes | — | ACC-053 |
 | `answer.v1` | `object-management.v1`, `pool-management.v1`, `fleet-management.v1` | — | yes | — | PND-009, ACC-033 |
 | `sign-in.v1` | `pool-management.v1`, `fleet-management.v1` | — | no | — | PND-010, PND-011, IFC-049 |
-| `enroll-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-001, ACC-032, IFC-049 |
-| `admit-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-006, ENR-007, ACC-032 |
-| `refuse-machine.v1` | No active capability; binding staged for 049a | — | no | yes | ENR-008, ENR-012, ACC-032 |
+| `enroll-machine.v1` | `object-management.v1` | — | no | yes | ENR-001, ACC-032, IFC-049 |
+| `admit-machine.v1` | `object-management.v1` | — | no | yes | ENR-006, ENR-007, ACC-032 |
+| `refuse-machine.v1` | `object-management.v1` | — | no | yes | ENR-008, ENR-012, ACC-032 |
 
 ### The hooks, and the operations of providers
 
@@ -147,11 +151,14 @@ set up by `open.v1` and retired by `close.v1`.
 | `inspect-run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-009, PRV-027, PRV-028, IFC-017 |
 | `list-machines.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-014 |
 | `place.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-015 |
-| `enroll.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's enrollment | ENR-002, PRV-005 |
-| `accept-machine.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's admission | ENR-007, PRV-005 |
-| `remove-machine.v1` | No active capability; binding staged for 049b | The engine, by provider call within root's refusal | ENR-008, ENR-012, PRV-005 |
+| `enroll.v1` | `machine-provider.v1` | The engine, by provider call within root's enrollment | ENR-002, PRV-005 |
+| `accept-machine.v1` | `machine-provider.v1` | The engine, by provider call within root's admission | ENR-007, PRV-005 |
+| `remove-machine.v1` | `machine-provider.v1` | The engine, by provider call within root's refusal | ENR-008, ENR-012, PRV-005 |
 | `fetch-package.v1` | `package-source.v1` | The engine, by a provider call | PRV-017 |
 | `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023, PRV-026 |
+
+The machine-provider enrollment bindings and the id-based report and placement contracts
+are active (ENR-002, ENR-007, ENR-008, PRV-014, PRV-015).
 
 No Operation contract states a default implementation (CTR-002), and `engine` implements none
 of these fifteen (MAN-012, SEC-020): a template selects an implementation for each that it needs,

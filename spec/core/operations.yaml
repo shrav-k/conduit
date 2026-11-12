@@ -990,14 +990,18 @@ kind: Operation
 metadata:
   name: list-machines.v1
   description: >-
-    Report the machines: for each, its `hostname`, in canonical form, trimmed and lowercased, of
+    Report the machines: for each, its required, opaque stable id scoped to this provider, derived
+    from its key where available (ENR-002); enrollment where attributed; evidence under ENR-005;
+    its `hostname`, in canonical form, trimmed and lowercased, of
     at most 63 characters, and at most once, the provider's contract stating which name of a
     machine it reports; its `labels`, which hold `kubernetes.io/hostname`, whose value is the
     hostname, and `kubernetes.io/os` and `kubernetes.io/arch`, whose values are those that Go
-    gives `GOOS` and `GOARCH`; and its `state`, `reachable`, `unreachable` or `gone`, which is
+    gives `GOOS` and `GOARCH`; and its `state`, `pending`, `reachable`, `unreachable` or `gone`, which is
     only for a machine that the provider knows no longer exists. A report that names one
-    hostname twice is not used, and a machine that a report omits counts as unreachable until a
-    report gives it a state. Labels are reported status and never configuration. The engine
+    hostname or id twice is not used, and a machine that a report omits counts as unreachable until a
+    report gives it a state. Pending machines get no node and are never placed on; only admission makes a node.
+    A node's labels are fixed under ENR-010; a differing report changes none and adds a condition.
+    Pending machine evidence is shown only in root's panel and recorded answer (PND-008). The engine
     invokes it by a provider call, and no Conduit lists it.
 spec:
   outputSchema:
@@ -1008,10 +1012,15 @@ spec:
         items:
           type: object
           properties:
+            id: {type: string, minLength: 1}
+            enrollment: {$ref: github.com/shrav-k/conduit/core#id.v1}
+            evidence:
+              type: array
+              items: {$ref: github.com/shrav-k/conduit/core#evidence-item.v1}
             hostname: {type: string, minLength: 1, maxLength: 63}
             labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
-            state: {enum: [reachable, unreachable, gone]}
-          required: [hostname, labels, state]
+            state: {enum: [pending, reachable, unreachable, gone]}
+          required: [id, hostname, labels, state]
     required: [machines]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -1019,11 +1028,11 @@ kind: Operation
 metadata:
   name: place.v1
   description: >-
-    Choose the machine on which an instance is placed: one that the provider reports reachable
-    and whose labels match `nodeSelector`, the label selector of the instance's type and of
+    Choose the machine on which an instance is placed: one machine represented by a node that the provider reports reachable
+    and whose node's fixed labels match `nodeSelector`, the label selector of the instance's type and of
     the items selected for it, which for an instance that has an item that is run and names no
-    `runtime` also holds the hostname of the machine the engine runs on. `hostname` names the
-    machine, and is absent where the provider places the instance on none. The engine invokes
+    `runtime` also holds the hostname of the machine the engine runs on. id names the machine within this provider Resource, never a pending machine,
+    and is absent where the provider places the instance on none. The engine invokes
     it by a provider call, while it decides a request that would instantiate the instance, and
     no Conduit lists it.
 spec:
@@ -1036,7 +1045,7 @@ spec:
   outputSchema:
     type: object
     properties:
-      hostname: {type: string, minLength: 1, maxLength: 63}
+      id: {type: string, minLength: 1}
 
 # --- The operation of a package-source provider.
 ---

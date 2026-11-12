@@ -35,3 +35,5 @@ Its relay restriction must also permit the engine's secret-free enrollment URL f
 ENR-003 and IFC-049, including successful completion on retry or at DL18, while preserving
 rejection of unsolicited implementation elicitation. 038b leaves those four entries unchanged
 and reports them for the coordinator to align.
+
+Order 049a1 applied both staged patches, 049a.patch and 049b.patch.

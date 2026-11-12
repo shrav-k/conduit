@@ -5,6 +5,7 @@
 pub mod access;
 pub mod archives;
 pub mod lifecycle;
+pub mod machines;
 pub mod packages;
 pub mod records;
 pub mod registration;
@@ -71,9 +72,13 @@ pub struct State {
     pub installed_packages: Vec<archives::InstalledPackage>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub preinstalled_snapshots: Vec<packages::Snapshot>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub enrollments: Vec<Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub machine_report: Option<Value>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Evidence {
     pub time: String,
@@ -107,6 +112,16 @@ pub struct Request {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
 pub enum Input {
+    Clock {
+        evidence: Evidence,
+    },
+    MachineReport {
+        evidence: Evidence,
+        provider: Value,
+        outcome: String,
+        #[serde(default)]
+        outputs: Option<Value>,
+    },
     ExportRecords {
         #[serde(default)]
         unreadable: Vec<String>,
@@ -298,7 +313,7 @@ impl Context {
 }
 
 /// One atomic transition. Errors leave the caller's state untouched, including allocations.
-pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition> {
+pub fn step(state: &State, mut input: Input, context: &Context) -> Result<Transition> {
     let mut transition = Transition {
         state: state.clone(),
         decisions: vec![],
@@ -307,7 +322,55 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         reply: Value::Null,
         request_replies: vec![],
     };
+    // ENR-003/009, PND-004: expiry precedes every input with a time.
+    let evidence = match &mut input {
+        Input::Clock { evidence }
+        | Input::MachineReport { evidence, .. }
+        | Input::Invoke { evidence, .. }
+        | Input::Complete { evidence, .. }
+        | Input::Cancel { evidence, .. }
+        | Input::SetupReport { evidence, .. }
+        | Input::Recover { evidence }
+        | Input::BuiltinRunStopped { evidence, .. }
+        | Input::Access { evidence, .. }
+        | Input::RegisterProject { evidence, .. }
+        | Input::FirstStart { evidence, .. }
+        | Input::Submit { evidence, .. }
+        | Input::Request { evidence, .. } => Some(evidence),
+        _ => None,
+    };
+    if let Some(evidence) = evidence {
+        let used = {
+            let mut a = Allocation {
+                evidence,
+                cursor: 0,
+            };
+            machines::expire(&mut transition, &mut a, context)?;
+            a.cursor
+        };
+        evidence.ids.drain(..used);
+    }
     match input {
+        Input::Clock { .. } => transition.reply = json!({"clock":true}),
+        Input::MachineReport {
+            evidence,
+            provider,
+            outcome,
+            outputs,
+        } => {
+            let mut a = Allocation {
+                evidence: &evidence,
+                cursor: 0,
+            };
+            machines::machine_report(
+                &mut transition,
+                &mut a,
+                context,
+                provider,
+                &outcome,
+                outputs,
+            )?;
+        }
         Input::ExportRecords { unreadable } => records::export(&mut transition, &unreadable)?,
         Input::Invoke {
             evidence,

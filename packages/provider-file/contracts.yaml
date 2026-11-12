@@ -1,0 +1,44 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: file-secret.v1
+  description: >-
+    Unix file secret store. The locator is config.path, an absolute path to one file.
+    Runs on the machine holding that file, by the engine's own runner over stdio.
+    Reads only that file, never configuration values, environment variables or another
+    store. Requires a readable regular file with no group or other permission bits
+    (mode & 0077 == 0), opened with O_NOFOLLOW and checked by fstat. A final symbolic
+    link is refused; parent-directory links are allowed. Docker secret mounts (0444)
+    and Kubernetes secret mounts (a link, 0644) are refused. The file may contain at
+    most 65536 bytes before decoding and newline removal; at most 65537 bytes are
+    read, including one overflow-detection byte. Gives UTF-8 with exactly one final
+    newline removed, retaining a second newline and any preceding carriage return.
+    Keeps no value copy, cache or persistent state; logs no value. No credential,
+    version, stage, structured-key selection or unattended interaction is required.
+    D15(a), observed: src/lib.rs (lines 23, 81 and 97 onward) read_secret, answer and FileServer handle
+    discovery, extension and request
+    validation, filter refusal, read_secret's bounded descriptor read and safe errors;
+    src/bin/package.rs builds the archive. D15(b), observed: Unix open/fstat/read and
+    permissions delegated through rustix/std, MCP through rmcp, archive/hash through
+    tar/flate2/sha2. D15(c), absent: provider-owned persistent state or stop/restart
+    work; the operator owns and retains the source file, and every call reopens it.
+    D15(d), observed in tests: operator supplies a private file and absolute locator;
+    no store credential or network gate is needed with the engine's own runner;
+    repair permissions or replace the file at the same path to recover. Engine
+    integration is untested here. README.md records the inventory and test evidence.
+spec:
+  family: Resource
+  offers: [github.com/shrav-k/conduit/core#secret-provider.v1]
+  implementation:
+    github.com/shrav-k/conduit/core#get-secret.v1: '#provider'
+  records:
+    inputs: false
+    outputs: false
+  schema:
+    type: object
+    properties:
+      path:
+        type: string
+        pattern: '^/'
+    required: [path]
+    additionalProperties: false

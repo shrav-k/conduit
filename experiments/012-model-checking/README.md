@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b) and 112 (MC7a), ruling 71's proof lane.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b), 111 and 114 (MC6), and 112 (MC7a), ruling 71's proof lane.
 The expected verdicts below were registered before execution; later orders extend this harness.
 
 ## Question and scope
@@ -4545,3 +4545,1063 @@ only the external ledger.
 16. engine Reconcile(true, 0)
 17. delivered B -> engine [position 0]
 ```
+
+## MC6 — setup, retirement, removal and Pools: pre-registration
+
+Registered 2026-11-11 for work order 111, before the first model run. The reference
+model is [src/lifecycle.rs](src/lifecycle.rs); it imports no engine code. The expected
+table is immutable. Observations differing from it will be recorded separately.
+
+### Nodes, storage, scripts and bounds
+
+R sends actor requests to E (the engine); H implements runs, hooks, stops and one
+ordinary operation. E saves instance IDs, lifecycle, shutdown, invocation/part outcomes,
+hook keys and attempts, tombstones and the resolved definitions. Crash discards only a
+volatile cache. Recovery restores saved work without resending any dispatch; an already
+sent reply may finish that work. H saves its effects and run state. The external ledger
+records dispatches, results and state observations at their send/decision boundaries;
+no property consults node data, queues, fault counters or live engine state. The test
+replays every first refutation and erases every node and queue before rechecking it.
+
+IDs are I, T, c, c-prime, d, rT, P, e1, e2, e2-prime, J and K. Closed and removed IDs
+remain distinct from replacements. c and c-prime occupy one declared slot of I and
+target T; d is another Conduit consumed by I, and rT is R's independent route to T.
+T starts registered: the first explicit open of c happens before T is set up. d and
+rT start open. e2 refers to e1, fixing setup order e1/e2 and retirement order e2/e1.
+All hooks are non-deduplicating, effectful hooks selected from the instance's resolved
+definition. Every modelled setup part is mandatory; account hooks, remote connections,
+secrets, filters, cycles, Fleets, machines and cancellation are absent.
+
+Each script stage waits for the preceding stage's actor answers, never for unrelated
+late messages. Two requests in brackets are sent without waiting for either answer:
+
+- Setup: [set up I, set up J]; set up I as another caller; set up I again; reconcile
+  I's setup hook; reconcile an unknown setup of I; set up I again; set up J; replace
+  and unregister the template; observe I. I's first hook fails, its second is unknown,
+  and the reconciled hook is not repeated. J's first run fails without an effect.
+- Removal: open c while T is registered; set up I (hook unknown); reconcile its hook;
+  set up I again (ready); set up J (hook unknown); reconcile J's setup (ready);
+  ask for c's replacement while c exists; explicitly close c while I is ready; set
+  up I against the closed slot; replacement requests with denied access, invalid
+  inputs and matching tombstone; lift c's tombstone; replace the template; explicitly
+  register c-prime; ask for a second replacement. Timer/Crash additionally ask to open
+  c-prime here. Retire I with a failed hook and successful stop (unknown); ask to open
+  c-prime and set up I; reconcile I's old unknown setup and any unknown open; make an
+  ordinary request; unregister I (another stop, then remove); ask to set up removed I;
+  set up T; [ordinary request to T, retire T]; request T again; retire J twice;
+  reconcile the earlier retirement as not occurred, then the latest as occurred;
+  retire never-set-up K; unregister the template; observe T. J's second stop returns
+  unknown. rT lets the ordinary request be in flight when T's retirement is dispatched,
+  even though I is already removed. I's c-prime is registered at its retirement in
+  Base; its opening then conflicts while I exists. Unregistration closes d and c-prime.
+- Pool: [set up e2 directly, set up J]; set up P twice; ask for a Resource while e1
+  is live; plainly retire P while members are unconfirmed; retire with Resources;
+  reconcile e2's unknown retirement; register e2-prime, a fresh name matching no old
+  Resource tombstone; retire with Resources again; reconcile e1's retirement; retire
+  with Resources a third time; ask for a Resource while P is retired but exists;
+  retire P again. e2's first direct run fails, without setting up e1. The first cascade
+  waits on e2's unknown hook, the second on e1's failed hook plus successful stop, and
+  the third reaches P. Dispatch of the cascade itself is never P's retirement.
+
+A setup opens its declaration, asks for the run, then dispatches the setup hook.
+Already-open slots succeed without another open; closed slots conflict and instantiate
+nothing. A retirement takes effect at dispatch and, when any setup was ever dispatched,
+asks for the hook's run, dispatches an eligible hook, then asks for the stop whatever
+came of the hook. An unknown hook is retained; a failed hook alone gets a new attempt,
+with the same instance/operation key and the current caller. A setup that opened c and
+failed later is unknown; a further setup retaining an unknown hook is unknown even
+when that hook dispatches nothing. Setup failure causes no rollback.
+
+The outcome function requires all parts to succeed for success; any unknown or any
+partial effect yields unknown; failed parts with no effect yield failed. Shutdown is
+pending during retirement, unknown after an unknown retirement, confirmed after success
+or positive reconciliation, and confirmed immediately for no setup ever dispatched.
+A negative reconciliation is permitted only after all relevant dispatches and H jobs
+are fenced; reconciling an older retirement leaves the latest shutdown classification.
+Unknown setup/open reconciliation never revives a retired instance or consumer.
+An explicit open has separate stored-effect and confirmation steps, allowing Timer to
+end it unknown before retirement and reconciliation. No eventual completion is claimed:
+a quiescent-state witness means all queued work has drained and all invocations ended.
+
+Eight configurations per part split faults: Base has none; LossR/ReorderR allow one
+loss/reorder in either R/E direction; LossH/ReorderH allow one in either E/H direction;
+Crash allows one E crash/recovery; Timer allows one E timer; Silence lets H omit one
+hook reply and allows one E timer. H's omission is a bounded model action, not a harness
+fault. ReorderR has the two bracketed actor requests. ReorderH has their two independent
+implementation requests (runs for Setup/Pool; call and retire-hook run for Removal).
+Timers use `timer_enabled`, not `fault_allowed`. There is no implicit retry of a lost
+actor request or answer. A lossy branch can stop; safety still applies to its prefix.
+Every enabled harness fault must have a witness in its own full run.
+
+Zero budgets: duplication is MC2's dispatch identity question; cuts/heals and permanently
+lost machines belong to MC4's placement model; each remaining fault is enabled only in
+its named configuration to avoid multiplying independent histories. No simultaneous
+fault kinds beyond crash/recovery and silence/timer are claimed. The queue bound is six
+per directed link, with at most two actor requests together and at most three late
+implementation messages; overflow fails. There are twelve IDs, two entry slots, fewer
+than 64 root requests and 32 child invocations, one silence and one of each enabled
+fault. Each run has a 190,000 unique-state ceiling and a 10-second deadline, with a
+half-second target; the intended addition to crate test time is about 20 seconds.
+
+### Properties and catalogue accounting
+
+L checks monotone lifecycle, ready after successful setup, unchanged after unsuccessful
+setup, retirement at dispatch, observation without lifecycle change, and conflict on
+retired setup versus invalid after removal. S checks setup part order and the initiating
+actor on declared opens. H checks hook dispatch eligibility; K checks the stable key,
+current caller, selected implementation and absence of a Conduit. O checks aggregate
+outcomes of setup and retirement against their dispatched/retained parts. B checks no
+rollback and that explicit closure leaves a ready consumer ready. C checks closure of
+all relevant ends, retired access and opening restrictions. R checks explicit new IDs,
+registered replacements, live-slot conflicts and retired-owner invalid. T checks
+creation of tombstones and access/invalid precedence before a matching conflict.
+D checks shutdown classification, removal only after confirmation or unregistration,
+the additional stop on unregistration, and no retirement work without a dispatched
+setup. P checks dependency order, ready-member skips and the Pool retirement gate.
+F checks retained resolved definitions, records, backing data and unrelated objects.
+Q checks reconciliation before and after retirement, including latest versus older
+retirements. A checks negative fencing and at most one hook effect under these scripts.
+
+Two additional literal predicates are deliberately retained: V (the contract's failed
+retire hook keeps shutdown pending) and N (LIF-019 forbids changing any referrer on
+removal). They conflict with the order's chosen readings. HookPending follows V and
+refutes D; PreserveReferences follows N and refutes C. Unfenced follows present OPS-014's
+unfenced negative reconciliation and is expected to refute A, as MC2-001 did. These are
+controls, not silently adopted language changes. Supporting OPS-012, OPS-014, OPS-024,
+OPS-029, IMP-007, ACC-012 and ACC-053, and the open/stop/retire-hook contracts are named
+outside the 58-promise count.
+
+Each row below occurs once in the accounting list. “Modelled” means the stated bounded
+slice, not all behavior of a promise. Each quoted when/then is complete, including its
+preconditions; `must not` is stated where the YAML level supplies the negation.
+
+| Promise | Accounting | Predicate / reason |
+| --- | --- | --- |
+| LIF-001 | Modelled | L |
+| LIF-003 | Modelled | L |
+| LIF-004 | Modelled | L |
+| LIF-005 | Modelled | L |
+| LIF-006 | Modelled | L |
+| LIF-008 | Modelled | R |
+| LIF-009 | Modelled | R |
+| LIF-010 | Modelled | L |
+| LIF-011 | Not modelled | A static decision, to be shown by vectors. |
+| LIF-012 | Not modelled | A static decision, to be shown by vectors. |
+| LIF-013 | Not modelled | A static decision, to be shown by vectors. |
+| LIF-014 | Modelled | D |
+| LIF-015 | Modelled | L |
+| LIF-016 | Modelled | F |
+| LIF-017 | Modelled | D |
+| LIF-018 | Modelled | D |
+| LIF-019 | Modelled | F; N retains the literal referrer prohibition |
+| LIF-020 | Modelled | P |
+| LIF-021 | Modelled | P |
+| LIF-022 | Not modelled | A static decision, to be shown by vectors. |
+| LIF-023 | Modelled | L |
+| LIF-024 | Modelled | D |
+| LIF-025 | Modelled | D |
+| LIF-026 | Modelled | H |
+| LIF-027 | Modelled | B |
+| LIF-028 | Modelled | Q |
+| LIF-029 | Modelled | R |
+| LIF-034 | Not modelled | A static decision, to be shown by vectors. |
+| LIF-035 | Modelled | D |
+| LIF-036 | Modelled | D |
+| LIF-037 | Not modelled | A static decision, to be shown by vectors. |
+| LIF-040 | Modelled | T |
+| LIF-041 | Modelled | T |
+| OPS-021 | Modelled | H |
+| OPS-022 | Modelled | O |
+| OPS-028 | Modelled | K |
+| POOL-003 | Modelled | R |
+| POOL-007 | Modelled | P |
+| POOL-013 | Modelled | P |
+| POOL-015 | Not modelled | A static decision, to be shown by vectors. |
+| POOL-017 | Modelled | R |
+| TPL-009 | Modelled | O |
+| TPL-012 | Modelled | S |
+| TPL-017 | Modelled | H |
+| TPL-018 | Modelled | H |
+| INS-020 | Modelled | F |
+| SUB-009 | Not modelled | A static decision, to be shown by vectors. |
+| FST-002 | Not modelled | A static decision, to be shown by vectors. |
+| FST-003 | Not modelled | A static decision, to be shown by vectors. |
+| FST-007 | Not modelled | A static decision, to be shown by vectors. |
+| ACC-005 | Modelled | S |
+| ACC-018 | Modelled | K |
+| ACC-039 | Modelled | C |
+| CON-004 | Modelled | S |
+| CON-008 | Modelled | C |
+| CON-014 | Modelled | B |
+| CON-023 | Modelled | C |
+| CON-031 | Modelled | C |
+
+Counts: **47 modelled; 11 not modelled, all static decisions to be shown by vectors**.
+FST-002/FST-003 additionally have S1's `bootstrap` trace. Partial slices outside this
+model: TPL-017/ACC-018 filters; TPL-018's run reported unknown; LIF-021/TPL-012
+cancellation (OPS-027); LIF-040 inventory visibility and full tombstone field encoding;
+LIF-016 type-specific held resources; LIF-021 cycles/Fleets; optional setup parts,
+account hooks, remote items and secrets. F checks a fixed unrelated object and symbolic
+retained data; it does not execute a filesystem. P's direct-member check covers the
+no-implicit-other-entry slice, not Pool authorization. Closed Conduits are the explicit
+exception in F; N preserves the conflicting literal clause separately.
+
+### Exact promise predicates
+
+**LIF-001 (L; must).** When: “An instance of any family is inspected.” Then: “It reports exactly one lifecycle state: registered, ready or retired.”
+
+**LIF-003 (L; must).** When: “An instance's setup succeeds: the invocation of `set-up.v1` that names it or, for a Conduit, of `open.v1`.” Then: “Its state is ready.”
+
+**LIF-004 (L; must).** When: “An instance's setup fails, or has an unknown outcome, or is not dispatched.” Then: “Its state is unchanged, and its status reports how that setup ended.”
+
+**LIF-005 (L; must).** When: “A request to retire an instance is dispatched.” Then: “Its state is retired from that moment, whatever the outcome of the invocation of `retire.v1` or, for a Conduit, of `close.v1`.”
+
+**LIF-006 (L; must not).** When: “An instance is ready or retired.” Then: “Any operation returns it to an earlier state.”
+
+**LIF-008 (R; must not).** When: “An instance made by a nested instantiation, such as a declared Conduit or the Resource of a Pool's entry, is retired.” Then: “Setup, anything else that happens to the instance it belongs to, or anything other than an explicit request under LIF-009, makes another instance in its place.”
+
+**LIF-009 (R; must).** When: “An actor explicitly asks for a new instance for a nested instantiation whose instance is retired or has been removed.” Then: “A new instance is instantiated from the nested instantiation as the instance it belongs to holds it in its resolved definition, with a new ID, in the state registered. It is made from the template that the `from` of the nested instantiation names, as that template stands when the request is made. The retired instance is not changed. The request is a registration: it is authorized under ACC-033 as registering that instance would be, and it sets nothing up and opens nothing. It is the operation `register-replacement.v1`, which names, in `instance`, the instance that holds the nested instantiation and, in `nested`, the name of the declared Conduit or the entry. Where a rule on instantiation does not make the new instance, as where that template no longer exists, the request is not dispatched, and reports invalid, as the registration of a document that the same rule rejects does under OBJ-023.”
+
+**LIF-010 (L; must).** When: “What an instance is doing cannot be observed, for example because the machine provider reports its machine unreachable, under PLC-023.” Then: “Its lifecycle state is unchanged.”
+
+**LIF-014 (D; must).** When: “An instance is retired.” Then: “Its status reports its shutdown as exactly one of confirmed, pending or unknown.”
+
+**LIF-015 (L; must).** When: “A retired instance is addressed by a request to set it up or to change it.” Then: “The request is not dispatched, and reports conflict.”
+
+**LIF-016 (F; must not).** When: “An instance is retired.” Then: “Anything is stopped or released other than what the instance itself holds, as its type contract defines, and its own run, which its retirement stops under PRV-008.”
+
+**LIF-017 (D; must).** When: “An actor asks to unregister an instance.” Then: “The request is dispatched only where the instance is retired, and it removes the instance. Otherwise it is not dispatched, and reports conflict.”
+
+**LIF-018 (D; must).** When: “The shutdown of a retired instance can never be confirmed by its implementation.” Then: “It stays unknown until an actor reconciles, under OPS-014, the invocation of `retire.v1` whose outcome is unknown, or a further retirement under LIF-026 succeeds. The reconciliation is authorized against the target that authorized the retirement, as ACC-033 states.”
+
+**LIF-019 (F; must not).** When: “An object is unregistered or removed.” Then: “Records, backing files or service data are erased, or any object that refers to it is changed, retired or unregistered.”
+
+**LIF-020 (P; must).** When: “An actor asks to retire a Pool owning a Resource, or a Fleet owning an Agent, whose shutdown is not confirmed.” Then: “The request is not dispatched and reports conflict.”
+
+**LIF-021 (P; must).** When: “An actor explicitly asks to retire a Pool with its Resources or a Fleet with its Agents.” Then: “The members are retired in dependency order, and the container's retirement is dispatched only once every member's shutdown is confirmed. The order puts a member before each other member of that container it refers to or is the consumer of a Conduit to, and, for a Resource, before any member it names in `runtime`, transitively. Among cycles the order is the engine's (DL1). A member's retirement is dispatched only once the shutdown of every member the order puts before it is confirmed. The request dispatches a retirement for each member whose shutdown is not confirmed: a further retirement under LIF-026 if already retired, and none where shutdown is confirmed. A retirement that does not confirm shutdown, or a reason in place of dispatch, holds back only the members ordered after it; every other retirement proceeds.”
+
+**LIF-023 (L; must not).** When: “No actor has asked for the retirement of an instance, and the instance is none of these: a Conduit whose consumer or target is retired or declared lost, under CON-008; a node declared lost, or an instance placed on one, under PLC-017 or PLC-024; a Resource that a Pool owns, retired with the Pool under LIF-021; an Agent retired with its Fleet under LIF-021.” Then: “The instance is retired.”
+
+**LIF-024 (D; must).** When: “The shutdown of a retired instance is reported.” Then: “A Conduit's shutdown is confirmed when it is closed, however it was closed: it holds nothing to shut down. The shutdown of any other instance is confirmed once an invocation of `retire.v1` for it has succeeded, and at once for an instance for which no setup was ever dispatched, under LIF-025. A shutdown that is not confirmed is unknown where the outcome of the latest invocation of `retire.v1` for the instance is unknown, and for an instance for which a setup was dispatched and whose node was declared lost, under PLC-017, or whose machine the machine provider reported gone, under PLC-024. It is pending otherwise.”
+
+**LIF-025 (D; must).** When: “An instance for which no setup was ever dispatched is retired.” Then: “Its retire hook is not dispatched, no stop of a run is asked for, and its shutdown is confirmed at once.”
+
+**LIF-026 (H; must).** When: “An actor asks to retire an instance that is retired and whose shutdown is not confirmed.” Then: “The request is decided like any other request to retire the instance. LIF-015 does not stop it.”
+
+**LIF-027 (B; must not).** When: “An instance's setup does not succeed: it fails, has an unknown outcome or is not dispatched.” Then: “A Conduit that the setup opened is closed, an instance that it set up is retired, or a run that it asked for is stopped, because of it.”
+
+**LIF-028 (Q; must).** When: “An actor reconciles, under OPS-014, an invocation of `set-up.v1`, `open.v1`, `retire.v1` or `close.v1` whose outcome is unknown.” Then: “Recording that a setup or an open occurred makes the instance ready or the Conduit open, unless the instance, or the Conduit's consumer, has been retired. Recording that a retirement or a close occurred confirms the shutdown. Recording that it did not occur gives the outcome failed, and changes nothing else.”
+
+**LIF-029 (R; must).** When: “An actor asks under LIF-009 for a new Conduit for a declared Conduit while the Conduit made for it is not retired.” Then: “The request is not dispatched, and reports conflict.”
+
+**LIF-035 (D; must).** When: “The shutdown of a retired instance is confirmed, under LIF-024.” Then: “The instance is removed: it no longer exists, and its records are kept as LIF-019 states. A Conduit is so removed when it is closed.”
+
+**LIF-036 (D; must).** When: “A request to unregister an instance is dispatched, under LIF-017, and an implementation item that is run is selected for the instance.” Then: “Before it removes the instance, the engine asks the instance's runtime provider once more to stop its run, with `stop.v1` naming the instance's ID and giving, in `machine`, the machine of the instance's node as the node's status holds it, under PRV-027, as PRV-008 asks it in a retirement.”
+
+**LIF-040 (T; must).** When: “A Conduit is closed, by request or under CON-008, or another instance is retired.” Then: “Unless the object was made by the engine, the engine makes a tombstone and keeps it as state apart from records until lifted under ACC-053. It retains the object's kind, name and ID; the time; the tombstone's own ID; the cause; `by`, who closed or retired it; its provenance; and its owning Pool or Fleet by kind, name and ID at closing or retirement, where it had one. A Conduit's tombstone also retains both ends by kind, name and ID, its local name, capability and operations. Optional `within` is absent in this version and means the engine.”
+
+**LIF-041 (T; must).** When: “A request would instantiate an instance, including a nested instantiation during registration or under LIF-009, or open a Conduit by `open.v1` or a setup part under ACC-005, and a tombstone matches it.” Then: “After the access decision and every check giving invalid (OPS-023), the request is not dispatched and reports conflict; nothing changes. A Conduit matches where the tombstone has the same consumer and either the same local name or the same target and capability. Another instance matches the kind and name the tombstone holds. Names are compared engine-wide, as `within` absent means the engine.”
+
+**OPS-021 (H; must).** When: “An instance is set up or retired again, and the invocation of its setup hook or its retire hook from an earlier setup or retirement has the outcome unknown.” Then: “That hook is not dispatched again, except as a new attempt of the same invocation where OPS-012 dispatches one, with the idempotency key that OPS-028 gave it.”
+
+**OPS-022 (O; must).** When: “An invocation of `set-up.v1` or of `retire.v1` has ended.” Then: “Its outcome is succeeded only if every part not marked optional succeeded, failed only if no part had an effect, and otherwise unknown. In a further setup or retirement, a part that is not dispatched counts with the outcome it has from before or from its reconciliation.”
+
+**OPS-028 (K; must).** When: “The engine dispatches a setup hook or a retire hook, under TPL-017 or TPL-018.” Then: “It gives the invocation an idempotency key, derived from the instance's ID and from the hook's operation, and sends it. The idempotency key is the same in every setup of that instance, or in every retirement of it, and is scoped to the instance alone, not to a caller, a sending instance or a target: a later dispatch of the hook matches the earlier invocation as a repeat does under OPS-009, whoever is the caller of the setup or the retirement it belongs to. So a further setup or retirement dispatches the hook again only as a new attempt, where OPS-012 or OPS-024 would dispatch one for a repeat, and a hook that succeeded is not dispatched again, as OPS-009 dispatches nothing for a repeat. A new attempt is made for the caller of the setup or the retirement within which it is dispatched, as TPL-017 and TPL-018 state, and from then on that is the caller of the hook's invocation, as an invocation counts as dispatched through the Conduit of its latest attempt under OPS-024.”
+
+**POOL-003 (R; must).** When: “An actor asks for a new Resource for an entry while the Resource instantiated from that entry is not retired.” Then: “The request is not dispatched, and reports conflict.”
+
+**POOL-007 (P; must not).** When: “A Resource instantiated from an entry is set up by a request that names that Resource.” Then: “The Resource of any other entry is set up because of it.”
+
+**POOL-013 (P; must).** When: “A Pool is set up.” Then: “The setup of the Resource of each entry is a part of the Pool's setup, under the entry's name, begun only once the parts for the entries it refers to have succeeded. The part sets up that entry's Resource that is not retired, under POOL-015. For a Resource that is already ready nothing is dispatched, and the part counts as succeeded. Where the entry has no Resource that is not retired, the part is not dispatched and reports conflict.”
+
+**POOL-017 (R; must).** When: “An actor asks under LIF-009 for a new Resource for an entry of a retired Pool.” Then: “The request is not dispatched, and reports invalid.”
+
+**TPL-009 (O; must).** When: “An instance is retired by an invocation of `retire.v1`.” Then: “Within that invocation, where a setup of the instance was ever dispatched, the engine dispatches its retire hook, where its template selects one, under TPL-018, and then asks its runtime provider to stop its run, where an item that is run is selected for it, under PRV-008, whatever came of the hook: where it succeeded, failed or ended unknown, and where it was not dispatched. Nothing else is done, apart from the run or the connection that TPL-018 asks for to serve the hook, with the reads of secrets that it needs under SEC-010 and SEC-013, and the closing of its Conduits under CON-008. Where the invocation is cancelled under OPS-027 before the hook is dispatched, the hook is not dispatched, and the stop is asked for all the same.”
+
+**TPL-012 (S; must).** When: “An instance is set up by an invocation of `set-up.v1`.” Then: “The setup is these parts, in this order: first opening its declared Conduits, under CON-004, or for a Pool setting up the Resources of its entries, under POOL-013; then asking for its run, under PRV-007, and connecting to each `remote` item among its selected implementations, under IFC-041; then, where its Type states signIn and its account pointer holds a string, checking the account with account-hook.v1 and undoing any different account with sign-out-hook.v1, under PND-005 and PND-011; then dispatching its setup hook, under TPL-017. A part is begun only once every part that comes before it in that order, and is not marked optional, has succeeded. No part is begun once the instance is retired, or once the setup is cancelled under OPS-027. Nothing else is dispatched, apart from the reads of secrets that the run or a connection needs, under SEC-010 and SEC-013.”
+
+**TPL-017 (H; must).** When: “An instance is set up whose template selects an implementation for `setup-hook.v1`.” Then: “Within each invocation of `set-up.v1` for the instance, as the last part of the setup under TPL-012, the engine dispatches `setup-hook.v1` to that implementation, through no Conduit, for the caller of the setup, with the idempotency key that OPS-028 gives it.”
+
+**TPL-018 (H; must).** When: “An instance for which a setup was ever dispatched is retired by an invocation of `retire.v1`, and its template selects an implementation for `retire-hook.v1`.” Then: “Within that invocation, before the stop of TPL-009, the engine dispatches `retire-hook.v1` to that implementation, through no Conduit, for the caller of the retirement, with the idempotency key that OPS-028 gives it, where the hook is to be dispatched: where no earlier invocation of it exists for the instance, or where OPS-012 or OPS-024 would dispatch a new attempt of the earlier one, under OPS-021 and OPS-028. Where the hook is to be dispatched, its implementation is an item that is run and its runtime provider reports the run `stopped`, the engine first asks for the run, under PRV-007; where it reports the run's state `unknown`, the hook is not dispatched and its part reports unavailable. Where the hook is to be dispatched, its implementation is a `remote` item and no connection to it lasts whose values the engine holds, the engine first connects to it, under IFC-041 and SEC-013. Where the hook is not to be dispatched, no run is asked for, no connection is made, and the retirement goes on to the stop.”
+
+**INS-020 (F; must).** When: “A template from which instances have been made is replaced or unregistered.” Then: “Each of those instances keeps the definition and configuration it resolved when it was made. Having instances does not prevent a template from being replaced or unregistered.”
+
+**ACC-005 (S; must).** When: “A setup opens a declared Conduit, under CON-004.” Then: “The part of the setup that opens it is a request for `open.v1` that names that Conduit, sent by the instance that sent the request to set up. It is decided under ACC-006 like any other request of that instance to open a Conduit: by that instance's own Conduit to `access`.”
+
+**ACC-018 (K; must).** When: “The engine dispatches a setup hook or a retire hook, under TPL-017 or TPL-018.” Then: “The hook is dispatched to the implementation that its own instance has selected for the hook's operation, and is not a request through any Conduit. It carries the filters of the invocation of `set-up.v1` or `retire.v1` that it belongs to, as ACC-017 has an onward request that serves that invocation carry them, and that implementation applies them as IFC-019 states. A request that the implementation makes while serving the hook is an onward request, under ACC-016, which names the hook's invocation in `io.github.shrav-k.conduit/serving`.”
+
+**ACC-039 (C; must).** When: “A request is made through an open Conduit whose consumer is retired. Or an onward request is made, through any Conduit, that serves an invocation in whose chain such a Conduit stands: the invocation that it names was dispatched through one, or an invocation of that invocation's chain was.” Then: “The request is permitted only if it belongs to the retirement of that consumer: it is an onward request that serves the consumer's retire hook, directly or through others, or the engine's read of a secret for a run that the retirement asks for, or for a connection that it makes, to serve that hook, under TPL-018 and SEC-011. Every other such request is not dispatched, and reports refused.”
+
+**CON-004 (S; must).** When: “An instance that declares Conduits is set up.” Then: “The opening of each declared Conduit is a part of the setup, under the declared Conduit's name. Where the Conduit made for it is in the state registered, the part is a request for `open.v1` that names that Conduit, made by the instance that sent the request to set up, under ACC-005. Where that Conduit is open, nothing is dispatched and the part counts as succeeded. Where the nested instantiation has no Conduit that is not retired, the part reports conflict. Setup instantiates no Conduit.”
+
+**CON-008 (C; must).** When: “An actor permitted under ACC-012 closes a Conduit, or its consumer or its target is retired or declared lost.” Then: “The Conduit is closed. A Conduit whose target is retired, or either of whose ends is declared lost or is placed on a machine that is reported gone, under PLC-024, is closed at once. A Conduit whose consumer is retired is closed once the consumer's shutdown is confirmed, or once a request to unregister the consumer removes it, under LIF-017. From the moment the retirement of a target is dispatched, a request to that target is a request through a closed Conduit: it is not dispatched, and reports refused. A closed Conduit is removed, under LIF-035.”
+
+**CON-014 (B; must).** When: “A Conduit whose consumer is ready is closed.” Then: “The consumer is not retired or interrupted.”
+
+**CON-023 (C; must).** When: “An actor asks to open a Conduit whose target is in the state registered.” Then: “The Conduit is opened as it would be to a target that is ready. A Conduit may be opened to any target that is not retired.”
+
+**CON-031 (C; must).** When: “An actor asks to open a Conduit that is not open and whose consumer or whose target is retired.” Then: “The request is not dispatched, and reports conflict.”
+
+### Expected verdict table (fixed before execution)
+
+Safety columns in order are L S H K O B C R T D P F Q A V N, corresponding to
+`SAFETY[0..16]`. Unlisted safety columns hold. A listed letter is refuted. Reach
+columns are the 26 `REACH` predicates, numbered 0 through 25 in source order:
+
+0 successful setup; 1 failed setup; 2 unknown setup; 3 failed hook's new attempt;
+4 unknown hook retained without dispatch; 5 unknown observation; 6 ready explicit close;
+7 tombstone conflict; 8 access refusal first; 9 invalid first; 10 new Conduit;
+11 retired setup conflict; 12 removed setup invalid; 13 registered Conduit/retired
+consumer; 14 unknown setup reconciled ready; 15 unknown setup reconciled retired;
+16 unknown open reconciled after consumer retirement; 17 older retirement reconciled
+failed; 18 retirement reconciled confirmed; 19 no setup ever dispatched;
+20 target retirement while call in flight; 21 Pool setup twice; 22 plain Pool retirement
+blocked; 23 new Resource name; 24 H silence; 25 quiescent. Unlisted reaches are absent.
+
+The following row expansion is part of the table: run each Correct part with all eight
+configurations. Start with its Base row; Silence adds reach 24, Pool Timer/Silence add
+reach 2, Removal Crash removes reach 13, and Removal Timer adds reach 16. Every enabled
+harness fault is reached in every row. The full-run test checks absent witnesses too.
+
+| Part / configuration / variant | Refuted safety | Reached predicates |
+| --- | --- | --- |
+| Setup / Base / Correct | none | 0 1 2 3 4 5 14 25 |
+| Removal / Base / Correct | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 |
+| Pool / Base / Correct | V | 0 1 18 19 21 22 23 25 |
+
+Variants use their part's expanded Correct row, with the changes below; every remaining
+safety and reach entry stays exactly as in that row. One full run exhausts each variant,
+and one separate single-thread BFS prints its first target refutation.
+
+| Variant | Part/configuration | Safety changes | Reach changes |
+| --- | --- | --- | --- |
+| Regress | Setup/Base | L refuted | none |
+| EarlyPart | Setup/Base | S refuted | none |
+| RepeatHook | Setup/Base | H refuted | remove 4 |
+| WrongKey | Setup/Base | K refuted | none |
+| FalseSuccess | Setup/Base | O refuted | remove 2 14 |
+| Rollback | Setup/Base | B refuted | remove 3 4 14 |
+| KeepConduit | Removal/Base | C refuted, N holds | none |
+| AutoReplace | Removal/Base | R refuted | remove 10 |
+| IgnoreTombstone | Removal/Base | T refuted | none |
+| EarlyRemove | Removal/Base | D refuted | remove 11 13 17 18 |
+| EarlyPool | Pool/Base | P refuted | remove 18 19 23 25 |
+| OtherData | Removal/Base | F refuted | none |
+| Revive | Removal/Base | Q refuted | remove 12 |
+| Unfenced | Setup/Timer | A refuted | none |
+| HookPending | Removal/Base | D refuted, V holds | none |
+| PreserveReferences | Removal/Base | C refuted, N holds | none |
+
+No model run has occurred at the point this table was written. Results and any difference
+will be appended below, preserving these expected rows.
+
+### MC6 first-run observations and bounded revision (before the next run)
+
+The first Setup runs exhausted: Base 2,876 states/0.089 s, LossR 3,915/0.126 s,
+ReorderR 6,841/0.213 s, LossH 3,464/0.097 s, ReorderH 4,999/0.159 s,
+Crash 56,480/2.168 s, Timer 88,897/3.828 s, Silence 161,346/7.215 s.
+Their expected verdicts agreed. Removal/Base exhausted 1,757 states/0.089 s:
+V and N were refuted as expected, but reach 20 was absent. The reach predicate
+incorrectly remembered an earlier call's end across a new dispatch. It is corrected
+to track the set of in-flight invocation IDs, preserving the expected table. This
+was a witness defect, not a language counterexample (MC6-003).
+
+Before the next run, the timing bounds are narrowed to meet the order's total-time
+target: Setup crash only during the initial pair, Removal crash during c-prime's open
+or the call/target-retirement pair, Pool crash during the first cascade. Setup timer
+only during the second setup (including the unfenced hook control), Removal timer
+during c-prime's explicit open, Pool timer during the first Pool setup. Silence is
+allowed once during the first two stages, and its timer only after an omitted hook
+reply while that part is still awaiting it. Recovery remains available after any
+allowed crash. These are explicit bounded windows, not harness permissions inferred
+from `fault_allowed`. Loss and reordering retain the full script. No verdict table
+entry changes. Backing data and records are now saved symbolic state, observed by F
+on removal; OtherData actually clears backing state before that observation.
+
+The bounded revision exhausted 22 Correct rows with their expected verdicts, before
+Pool/Timer exposed an implementation defect in this reference model: expiring a parent
+while it awaited an entry child left no slot for the child's later answer. No verdict
+was obtained for that row. Timers now expire only implementation wire parts or explicit
+opens, not parent/child bookkeeping. A regression will cover that distinction.
+
+Before rerunning, the scripts also complete several previously thin slices: Setup now
+closes c, lifts its tombstone, registers c-prime and sets I up to open it. Removal asks
+to unregister ready I in the existing live-slot request stage; it retires I twice more
+(the second hook is unknown, the third retains it without dispatch), reconciles that
+hook and probes an ordinary request through I's still-open d. The target-retirement
+crash window consequently moves to stage 31. No old expected cell is changed; Setup's
+additional reaches are observations against the original table. New reach columns,
+registered before their first run, are 26 closed declaration slot (Removal), 27 replacement
+opened by setup (Setup), 28 retired Pool entry invalid (Pool), 29 unknown retirement
+hook retained, 30 retire hook reconciled, 31 active unregistration conflict, 32 retire
+hook onward and 33 ordinary retired consumer refused (all five in Removal). Each is
+expected absent in the other parts. Their parent variant initially inherits those entries;
+any difference will be retained with the old table's other differences.
+
+Pool/Timer then hit its 10-second deadline; that truncated run supplies no verdict.
+Before the next run, Pool has a stated phase boundary: it drains implementation messages
+and jobs from the first Pool setup before sending the second one. The unknown outcomes
+stay unknown; retirement still owes hook and stop after an unknown setup. This bounds
+late setup messages rather than excluding a safety discovery. Other parts retain their
+late-message interleavings. The timer's wire-part restriction remains in force.
+
+The pre-run source review also restricts retire-hook onward requests through d to I,
+d's actual consumer; other instances have no such route. An ordinary request through
+rT to registered T is unavailable, rather than dispatched. S now independently checks
+the complete mandatory order represented by the model, D checks each retired setup's
+stop debt, F checks the instance ID of each stop, and P checks that a direct member's
+setup creates no child setup. These checks retain their registered expected verdicts.
+
+The 40-row run next exhausted in 20.22 seconds. The differences are retained below;
+none required changing a promise. A source check before the next run corrects unnecessary
+run dispatch: a run already reported running is a succeeded no-op; a retained unknown or
+succeeded retire hook asks for no run. Actual run/stop effects now reflect a transition
+in H's saved run state. L also checks lifecycle monotonicity in reconciliation events,
+so Revive may refute L as well as Q. No prior table cell is rewritten.
+
+A separate pre-registered control column A2, appended after N, checks only the hook effect
+count. It is expected refuted for Unfenced and RepeatHook, and holds in every other row.
+It has the same OPS-021/OPS-028 preconditions as A; it adds no demand to a failed hook's
+new attempt (a failed hook has had no effect). A second Unfenced refutation targets A2,
+so the printed trace reaches the repeated effect, beyond the first bad negative record.
+
+### MC6 differences retained beside the expected table
+
+The next 40-row run exhausted in 16.80 seconds after the run-dispatch correction.
+The following is the complete observed delta from the original table plus its registered
+extensions. “+ safety” means additionally refuted, “- safety” means holds instead.
+“+ reach” means reached instead of absent, “- reach” means absent instead of reached.
+Unlisted cells agree. These are MC6-004, an expected-table/accounting gap; they are not
+additional unsafe findings in the language. `registered` and `observed` are separate
+functions, and the test rejects any difference beyond these recorded observations.
+
+| Rows | + safety | - safety | + reach | - reach |
+| --- | --- | --- | --- | --- |
+| Setup / every Correct configuration | none | none | 6 10 | none |
+| Pool / Timer and Silence / Correct | none | none | 4 | none |
+| Setup/Base / Regress, EarlyPart, WrongKey, FalseSuccess | none | none | 6 10 | none |
+| Setup/Base / RepeatHook | A | none | 6 10 | 14 |
+| Setup/Base / Rollback | none | none | 3 10 14 26 | none |
+| Removal/Base / IgnoreTombstone | none | none | none | 7 |
+| Removal/Base / EarlyRemove | none | none | none | 29 30 32 33 |
+| Pool/Base / EarlyPool | none | none | 18 25 | none |
+| Removal/Base / Revive | L | N | 27 | none |
+| Setup/Timer / Unfenced | none | none | 6 10 | none |
+
+The additional Setup reaches follow its explicitly registered completion of the replacement
+sequence. A Pool setup after a timer or omitted hook can retain that unknown hook in its
+second setup. RepeatHook also repeats an effect and makes I ready before the reconciliation
+witness's registered-to-ready condition. Rollback still permits later repair and a new
+failed hook attempt. IgnoreTombstone removes the sole matching-conflict answer. EarlyRemove
+precludes the later retire-hook and open-Conduit probes; EarlyPool still permits retirement
+reconciliation and eventual quiescence within this finite script. Revive also violates lifecycle
+monotonicity, prevents unregistration by making I active, and permits its replacement to open;
+therefore its N refutation disappears. These interactions are retained, not hidden by weakening
+predicates or deleting their original expected cells.
+
+### Final pre-run coverage additions
+
+The complete crate passed 39 tests in 56.75 test seconds (59.56 seconds wall). Before
+its final measurement, two remaining conditions receive explicit witnesses. T's failed
+retire hook now has a failed stop as well: its run is already running, so the run part
+is a no-op, no part has an effect, retirement fails and shutdown stays pending. I's
+failed hook and successful stop still exercise MC6-001 unchanged.
+
+One additional Correct configuration, **Removal/ShutdownTimer**, has a timer budget of
+one and every other fault budget zero for the same split-fault reasons. Its timer is
+enabled only while existing I is retired with unknown shutdown, and records the before
+and after shutdown without changing it. The new **TimeConfirms** variant in that same
+configuration confirms and removes I on this tick; D must be refuted. It inherits
+Removal/Base's V/N refutations. Its expected reaches are the Removal/Base row minus
+11, 13, 29, 30, 32 and 33. Every other expected entry inherits the registered row and
+its earlier extensions. New reach 34 (tick after unknown shutdown) is expected in these
+two new rows only; reach 35 (a retirement ends failed) is expected in every Removal
+row only. A tick's before/after equality is D's LIF-018 check, with its complete when/then
+quoted above. These additions precede their first run. The final matrix has 42 full runs
+and 17 variants, with no increase in any state ceiling, timeout or fault budget.
+
+ReorderH's Removal witness, after the already-running run became a no-op, is the ordinary
+call and **retire-hook itself**, both outstanding on E-to-H; no answer to the call is
+required before R sends the target retirement.
+
+The first added-row run exposed a missing clause in the new D predicate: it did not
+compare the tick's recorded before and after values, so TimeConfirms initially refuted
+nothing beyond the existing V/N contradictions. That reference-property defect is fixed;
+its originally registered D refutation is retained. The refutation test caught it.
+The optional tick also permits every original Removal reach before it fires (or on a
+branch where it does not fire): TimeConfirms therefore additionally reaches 11, 13,
+29, 30, 32 and 33 against its registered exclusions. This is another row of MC6-004;
+the original expected entries are unchanged. No specification counterexample is claimed
+from either bookkeeping defect. L's successful-setup condition explicitly includes
+`open.v1`, and C also checks the registered-target opening case with all its modelled
+access, existence and tombstone preconditions.
+
+The final coverage review also observes H's actual consumer run on both sides of explicit
+closure, rather than inferring “not interrupted” solely from lifecycle. Before running it,
+**CloseStops/Removal/Base** is registered: it stops I's run when R closes c while I is
+ready, and must refute B alone in addition to Base's V/N contradictions. Its reach entries
+are exactly the registered Removal/Base row plus the earlier observed deltas and reach
+35. The baseline closure never changes the run. This adds one full run and one first
+refutation: the completed matrix is **43 runs, 25 Correct configurations and 18 variants**.
+
+### MC6 findings, traces and limits
+
+**MC6-001 — contradiction: retire-hook contract versus OPS-022/LIF-024.** The first
+single-thread BFS trace on Correct/Removal/Base has 92 actions. Its relevant projection
+is open c to registered T; setup I ends unknown; reconcile its hook; setup I succeeds;
+close c while I stays ready; reject setup against the closed slot; lift the tombstone;
+register c-prime; dispatch I's retirement; retain its already-running run without another
+run dispatch; dispatch its retire hook (failed); dispatch its stop (succeeded); end the
+retirement unknown and report shutdown unknown. The last part has an effect, so failed
+is not an allowed outcome; the mandatory failed hook excludes succeeded. Literal V,
+“a hook that did not succeed keeps the shutdown pending”, is refuted. HookPending's
+separate 92-action first trace has the same dispatches and outcomes but reports pending:
+V holds and D (LIF-024) is refuted. Both exact wire/local traces are printed by the tests.
+The model follows the order's OPS-022/LIF-024 reading; the specification is untouched.
+
+**MC6-002 — contradiction: LIF-019 versus CON-008/LIF-017.** Correct/Removal/Base's
+first N refutation has 147 actions. After the preceding retirement, I stays retired
+with unknown shutdown; two further retirements retain an unknown hook until reconciliation.
+The script's ordinary request through d is refused. The actor then unregisters I;
+E asks H for the additional stop, H succeeds, and E removes I and closes its registered
+c-prime and open d. Both Conduits refer to I as consumer. Closing retires them, which
+LIF-019's literal prohibition forbids. PreserveReferences has the corresponding
+147-action first C refutation: it keeps both Conduits when removing I, making literal N
+hold but breaking CON-008. F excludes these expressly permitted Conduit changes and
+checks that resolved definitions, records, backing data and the unrelated object remain.
+
+**Unfenced control — existing reconciliation gap, OPS-014/OPS-024/OPS-028.** Its first
+A refutation is 37 actions: a timeout records I's second hook attempt unknown while the
+dispatch can still act; the actor observes no effect and records failed without fencing.
+Its separate A2 refutation is 50 actions: the next eligible setup dispatches a third
+attempt with the same key; H completes both the old unknown attempt and the new attempt,
+recording two hook effects. No copied dispatch or lost saved state is needed. Correct
+requires no dispatch or implementation job capable of a later effect before recording
+failed, and refutes neither A nor A2. This reproduces MC2-001 in lifecycle context under
+present OPS-014; the in-force/spec-pending fenced reading prevents it in this model.
+
+**MC6-003 — reference-model defects found during construction.** The original in-flight
+witness remembered an earlier invocation's end. A Pool parent timer left no slot for a
+late child answer. The final tick variant caught a missing before/after comparison in
+D. These were defects in this experiment, not contradictions in Conduit; the two
+structural regressions and seeded TimeConfirms refutation check their fixes. Truncated
+searches were rejected and supply no verdict. The original table is retained beside
+the revised source bounds and MC6-004's complete observed deltas.
+
+The first-trace lengths for the 18 variants are printed in the counted run. Properties
+read the ledger after all node data and queues are erased on replay. Whole-invocation
+positive reconciliation assumes an authorized actor's checked evidence; this model
+does not prove its evidence collection. Hook reconciliation explicitly observes H's
+effect state, and every negative reconciliation fences queued dispatches and H jobs.
+The model tests saved engine state, symbolic resources and fixed definitions, not an
+engine implementation, filesystem, cryptography, provider contract, unbounded execution,
+or simultaneous independent fault kinds. It establishes no liveness or fairness.
+
+For MC8's slice accounting: ACC-039 covers direct retire-hook onward requests and direct
+ordinary requests from the retired consumer; indirect invocation chains and retirement
+secret reads are absent. ACC-005 carries the initiating caller with fixed unlimited
+access; comparisons among narrower bounds are outside this model. Positive reconciliation
+records are actor inputs, not a model of provider-specific evidence or external repair.
+
+
+### MC6 final dated results — 2026-11-11
+
+Final source: formatting and clippy with warnings denied passed. `cargo test --release`
+passed **39 tests**, with **0 doc tests**, in **64.46 test seconds / 71.36 seconds wall**
+(including compilation). The counted command passed the same **39 tests / 0 doc tests**
+in **62.47 test seconds / 62.74 seconds wall**. The MC6 full searches alone total
+**16.093 seconds** in that counted run; the separate first-refutation searches add to
+that. The largest MC6 search has **47,256 unique states**; the slowest is **2.013 seconds**.
+All 43 final searches exhausted; none was truncated. All enabled harness fault witnesses
+were reached, including recovery and every configured timer. Every observed verdict and
+reach agrees with the retained observed table; differences from the original expected
+table are exactly MC6-004, including the later TimeConfirms row.
+
+The table gives actual unique states, depth (initial state counts as one), seconds,
+refuted safety columns, and every reached protocol predicate. All unlisted safety
+columns hold; all unlisted protocol predicates are absent. Harness witnesses are separate
+and all passed. Safety columns are L S H K O B C R T D P F Q A V N A2; reaches 0–35
+are defined above. These are measurements from the final counted run, not forecasts.
+
+| Part/configuration/variant | Unique states | Depth | Seconds | Refuted | Reached |
+| --- | --- | --- | --- | --- | --- |
+| Setup/Base/Correct | 3,121 | 89 | 0.094 | none | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/LossR/Correct | 4,440 | 89 | 0.149 | none | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/ReorderR/Correct | 7,478 | 89 | 0.285 | none | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/LossH/Correct | 3,604 | 89 | 0.129 | none | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/ReorderH/Correct | 5,426 | 89 | 0.180 | none | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/Crash/Correct | 33,902 | 92 | 1.449 | none | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/Timer/Correct | 44,141 | 90 | 1.937 | none | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/Silence/Correct | 11,810 | 89 | 0.380 | none | 0 1 2 3 4 5 6 10 14 24 25 27 |
+| Removal/Base/Correct | 1,232 | 232 | 0.073 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/LossR/Correct | 1,737 | 232 | 0.099 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/ReorderR/Correct | 3,878 | 232 | 0.260 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/LossH/Correct | 1,493 | 232 | 0.087 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/ReorderH/Correct | 1,992 | 232 | 0.131 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/Crash/Correct | 17,086 | 239 | 1.399 | V N | 0 1 2 5 6 7 8 9 10 11 12 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/Timer/Correct | 3,540 | 236 | 0.209 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/Silence/Correct | 2,449 | 232 | 0.150 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 24 25 26 29 30 31 32 33 35 |
+| Pool/Base/Correct | 2,967 | 143 | 0.106 | V | 0 1 18 19 21 22 23 25 28 |
+| Pool/LossR/Correct | 3,714 | 143 | 0.154 | V | 0 1 18 19 21 22 23 25 28 |
+| Pool/ReorderR/Correct | 10,453 | 143 | 0.411 | V | 0 1 18 19 21 22 23 25 28 |
+| Pool/LossH/Correct | 3,731 | 143 | 0.160 | V | 0 1 18 19 21 22 23 25 28 |
+| Pool/ReorderH/Correct | 5,332 | 143 | 0.214 | V | 0 1 18 19 21 22 23 25 28 |
+| Pool/Crash/Correct | 19,410 | 146 | 0.947 | V | 0 1 18 19 21 22 23 25 28 |
+| Pool/Timer/Correct | 34,131 | 144 | 1.636 | V | 0 1 2 4 18 19 21 22 23 25 28 |
+| Pool/Silence/Correct | 12,911 | 143 | 0.510 | V | 0 1 2 4 18 19 21 22 23 24 25 28 |
+| Removal/ShutdownTimer/Correct | 13,396 | 233 | 0.850 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 34 35 |
+| Setup/Base/Regress | 3,121 | 89 | 0.097 | L | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/Base/EarlyPart | 846 | 83 | 0.019 | S | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/Base/RepeatHook | 3,436 | 98 | 0.104 | H A A2 | 0 1 2 3 5 6 10 25 27 |
+| Setup/Base/WrongKey | 3,121 | 89 | 0.094 | K | 0 1 2 3 4 5 6 10 14 25 27 |
+| Setup/Base/FalseSuccess | 3,121 | 89 | 0.096 | O | 0 1 3 4 5 6 10 25 27 |
+| Setup/Base/Rollback | 3,360 | 83 | 0.102 | B | 0 1 2 3 5 10 14 25 26 27 |
+| Removal/Base/KeepConduit | 1,232 | 232 | 0.071 | C V | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/Base/AutoReplace | 1,232 | 232 | 0.072 | R V N | 0 1 2 5 6 7 8 9 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/Base/IgnoreTombstone | 1,232 | 232 | 0.071 | T V N | 0 1 2 5 6 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/Base/EarlyRemove | 1,012 | 194 | 0.062 | D V N | 0 1 2 5 6 7 8 9 10 12 14 15 19 20 25 26 31 35 |
+| Pool/Base/EarlyPool | 3,009 | 145 | 0.107 | P V | 0 1 18 21 22 25 28 |
+| Removal/Base/OtherData | 1,232 | 232 | 0.072 | F V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/Base/Revive | 1,234 | 234 | 0.071 | L Q V | 0 1 2 5 6 7 8 9 10 11 13 14 15 17 18 19 20 25 26 27 29 30 31 32 33 35 |
+| Setup/Timer/Unfenced | 47,256 | 93 | 2.013 | A A2 | 0 1 2 3 4 5 6 10 14 25 27 |
+| Removal/Base/HookPending | 1,232 | 232 | 0.072 | D N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/Base/PreserveReferences | 1,232 | 232 | 0.072 | C V | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+| Removal/ShutdownTimer/TimeConfirms | 13,324 | 233 | 0.827 | D V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 34 35 |
+| Removal/Base/CloseStops | 1,235 | 235 | 0.072 | B V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 |
+
+First single-thread BFS refutation lengths in the counted run (actions):
+
+| Variant | Target | Actions |
+| --- | --- | --- |
+| Regress | L | 86 |
+| EarlyPart | S | 3 |
+| RepeatHook | H | 35 |
+| WrongKey | K | 8 |
+| FalseSuccess | O | 12 |
+| Rollback | B | 8 |
+| KeepConduit | C | 147 |
+| AutoReplace | R | 54 |
+| IgnoreTombstone | T | 64 |
+| EarlyRemove | D | 92 |
+| EarlyPool | P | 64 |
+| OtherData | F | 147 |
+| Revive | Q | 133 |
+| Unfenced | A | 37 |
+| HookPending | D | 92 |
+| PreserveReferences | C | 147 |
+| TimeConfirms | D | 93 |
+| CloseStops | B | 50 |
+
+The additional Unfenced/A2 trace has 50 actions; Correct/Removal/Base's literal V and N
+traces have 92 and 147 respectively. All 18 variant traces remain refuted after erasing
+node data and queues on replay. The Pool child-timer regression and the per-invocation
+in-flight witness regression pass. No vector was written. No harness, existing model,
+specification, engine, ruling, catalogue or other experiment was changed. The accounting
+remains **47 modelled slices and 11 static exclusions**, with the partial exclusions and
+supporting promises explicitly kept outside those claims above. MC8 and the owner must
+carry the two contradictions and the pending fencing rule forward; this work order does
+not amend any binding text.
+
+### MC6 verifier revision: registration before execution
+
+The admin's next verifier found four unchecked obligations in the reference model.
+This revision changes only the lifecycle module and this section. The scripts, fault
+windows, budgets and bounds above stay in force. The original expected and observed
+tables above are retained. This registration precedes any run of the revised model.
+
+- **INS-020 / F:** each instance stores its immutable creation-time resolved definition
+  separately from its current definition. Template replacement/unregistration logs the
+  actual post-operation definition of I against that saved resolution, and removal
+  compares against the same saved resolution, rather than a fresh snapshot. Replacements
+  save their own resolution under their new ID. The definition number represents the
+  resolved definition and configuration together, as in the original bounded model.
+- **TPL-009 / O and TPL-018 / H:** a retirement-dispatch event records whether a setup
+  was ever dispatched and the prior retire-hook outcome. The ledger scan requires an
+  eligible hook's actual dispatch before the stop when its run succeeded, and a processed
+  hook part before every stop, including failed, unknown and retained hooks. A hook
+  dispatch requires a successful run part and no preceding stop in that invocation.
+  Every completed retirement with a dispatched setup must contain an actual stop
+  dispatch and its completed part; a never-set-up instance has no retirement parts.
+  H also retains the eligibility check against None/Failed, and K checks identity.
+  This checks ordering and required parts as well as O's existing outcome aggregation.
+  Cancellation, remote items and run-reported-unknown remain excluded above.
+- **LIF-035 / D:** closing a Conduit, completing a retirement, positively reconciling a
+  retirement, and the quiescent boundary log actual existence. A retired instance with
+  confirmed shutdown must be absent at each such completed boundary. Intermediate
+  ledger events within the atomic completion are not mistaken for a separate boundary.
+  Records remain covered by F. This is a safety condition on completion, not liveness.
+- **LIF-005 and LIF-023 / L:** actor requests are logged when R sends them. Every
+  retirement dispatch must immediately record retired and match that actor request,
+  or belong to an actor-requested Pool cascade. Every new transition to retired must
+  have a preceding retirement dispatch or a permitted Conduit closure: explicit close,
+  retirement of its target, or removal of its consumer. Cascade dependencies remain P's
+  responsibility. Machine loss and Fleets remain outside this model. A later request
+  or state transition cannot justify an earlier transition.
+
+These implement the complete when/then quotations already registered above for those
+six promises, with the same bounded preconditions and exclusions. They correct model
+defects; they do not amend the promises or the two recorded contradictions.
+
+New witnesses, appended without renumbering existing reaches: 36 a changed template
+differs from the instance's saved resolution; 37 stop after a failed retire hook;
+38 stop after an unknown retire hook; 39 stop after a retained retire hook; 40 a
+confirmed retired non-Conduit instance is absent; 41 retirement is recorded retired
+at dispatch. The template witness observes the precondition independently of F's
+verdict, so it also reaches in the broken adoption control.
+
+Expected additions to every existing row: Setup reaches 36; Removal reaches
+36–41; Pool reaches 37, 38, 40, 41. Existing safety verdicts and reach 0–35 are
+expected unchanged. Every unlisted new reach is absent. Five new controls run once
+each, with a separate first-refutation run. Their complete expected verdicts use the
+previously retained observed Correct row for their part/configuration, plus:
+
+| Control | Part/configuration | Additional refuted safety | Reach changes |
+| --- | --- | --- | --- |
+| AdoptTemplate | Setup/Base | F | none |
+| StopBeforeHook | Removal/Base | H O | remove 37 38 39 |
+| KeepConfirmed | Removal/Base | D | remove 40 |
+| DelayRetirement | Removal/Base | L | none |
+| UnsolicitedRetirement | Setup/Base | L | none |
+
+AdoptTemplate replaces I's current resolved definition when its template changes,
+while retaining the creation snapshot. StopBeforeHook plans run/stop/hook instead of
+run/hook/stop. KeepConfirmed omits automatic removal after both successful retirement
+and positive reconciliation but still allows explicit unregistration. DelayRetirement
+leaves lifecycle unchanged at dispatch and sets retired only at completion.
+UnsolicitedRetirement retires I when its template is unregistered, without an actor
+retirement request or a listed exception. Its transition is monotone and attributed
+to template unregistration, so the old monotonicity/observation predicate would accept it.
+
+### MC6 verifier revision: observed differences
+
+The first revised full-table test stopped at Rollback's additional L refutation. The
+next diagnostic run exhausted all 48 rows and collected every discrepancy before
+failing. The registered expectations above remain unchanged. Observed changes are:
+
+| Row | Registered revision expectation | Observed |
+| --- | --- | --- |
+| Setup/Base/Rollback | B refuted | L and B refuted: rollback closes c without an authorized retirement cause |
+| Removal/Base/EarlyRemove | New reaches 38 and 39 present | Both absent: early removal prevents I's later unknown and retained retire hooks |
+| Removal/Base/StopBeforeHook | Existing reach 18 present | Absent: J's second stop is chosen before its second hook attempt, so it succeeds; that retirement succeeds and removes J before the positive reconciliation request |
+
+These are additional expected-table gaps in the experiment (MC6-005), not new language
+counterexamples. The stronger predicates accept every Correct row with the same two
+previously recorded literal contradictions. All five new controls refute their
+registered safety properties. The executable observed table records exactly these
+three changes beside the earlier MC6-004 differences. The full-run test now collects
+all discrepancies before failing, so one mismatch cannot hide later rows.
+
+### MC6 verifier revision results — 2026-11-11
+
+All four verifier findings are fixed within this order's scope. Formatting and
+Clippy with warnings denied passed. The ordinary release suite passed **39 tests /
+0 doc tests** in **64.74 test seconds / 71.42 seconds wall**, including compilation.
+The counted single-test-thread suite passed the same **39 tests / 0 doc tests** in
+**64.24 test seconds / 64.47 seconds wall**. No timing-sensitive shell test failed,
+and no `RUST_TEST_THREADS=2` rerun was needed. `CARGO_BUILD_JOBS` was inherited as 6;
+cargo commands ran one at a time.
+
+The 48 MC6 full searches total **20.197 seconds**, plus the separate first-refutation
+searches. The largest search has **65,666 unique states**; the slowest is
+**3.018 seconds**. These are measured values; the approximately
+20-second target remains a target, not a result. All searches exhausted below the
+190,000-state and ten-second bounds. Every configured fault had its witness. All
+verdicts and reaches match the observed table, including MC6-005's three additions;
+there are no further differences. The two existing literal contradictions remain.
+
+The measurements below replace no earlier table. Columns have the same meanings as
+the earlier results; reaches now range from 0 to 41. Unlisted safety columns hold and
+unlisted reaches are absent.
+
+| Part/configuration/variant | Unique states | Depth | Seconds | Refuted | Reached |
+| --- | --- | --- | --- | --- | --- |
+| Setup/Base/Correct | 3,121 | 89 | 0.087 | none | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/LossR/Correct | 4,440 | 89 | 0.144 | none | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/ReorderR/Correct | 7,478 | 89 | 0.271 | none | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/LossH/Correct | 3,604 | 89 | 0.123 | none | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/ReorderH/Correct | 5,426 | 89 | 0.176 | none | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/Crash/Correct | 36,282 | 92 | 1.363 | none | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/Timer/Correct | 62,691 | 90 | 3.018 | none | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/Silence/Correct | 11,810 | 89 | 0.359 | none | 0 1 2 3 4 5 6 10 14 24 25 27 36 |
+| Removal/Base/Correct | 1,232 | 232 | 0.082 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/LossR/Correct | 1,737 | 232 | 0.108 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/ReorderR/Correct | 3,878 | 232 | 0.257 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/LossH/Correct | 1,493 | 232 | 0.099 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/ReorderH/Correct | 1,992 | 232 | 0.142 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/Crash/Correct | 19,633 | 239 | 1.522 | V N | 0 1 2 5 6 7 8 9 10 11 12 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/Timer/Correct | 3,540 | 236 | 0.210 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/Silence/Correct | 2,449 | 232 | 0.153 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 24 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Pool/Base/Correct | 2,967 | 143 | 0.103 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/LossR/Correct | 3,714 | 143 | 0.144 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/ReorderR/Correct | 10,453 | 143 | 0.395 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/LossH/Correct | 3,731 | 143 | 0.148 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/ReorderH/Correct | 5,332 | 143 | 0.195 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/Crash/Correct | 23,127 | 146 | 1.019 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/Timer/Correct | 34,131 | 144 | 1.540 | V | 0 1 2 4 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/Silence/Correct | 12,911 | 143 | 0.459 | V | 0 1 2 4 18 19 21 22 23 24 25 28 37 38 40 41 |
+| Removal/ShutdownTimer/Correct | 24,458 | 233 | 1.679 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 34 35 36 37 38 39 40 41 |
+| Setup/Base/Regress | 3,121 | 89 | 0.089 | L | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/Base/EarlyPart | 846 | 83 | 0.019 | S | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/Base/RepeatHook | 3,436 | 98 | 0.098 | H A A2 | 0 1 2 3 5 6 10 25 27 36 |
+| Setup/Base/WrongKey | 3,121 | 89 | 0.091 | K | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Setup/Base/FalseSuccess | 3,121 | 89 | 0.089 | O | 0 1 3 4 5 6 10 25 27 36 |
+| Setup/Base/Rollback | 3,360 | 83 | 0.096 | L B | 0 1 2 3 5 10 14 25 26 27 36 |
+| Removal/Base/KeepConduit | 1,232 | 232 | 0.122 | C V | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/Base/AutoReplace | 1,232 | 232 | 0.087 | R V N | 0 1 2 5 6 7 8 9 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/Base/IgnoreTombstone | 1,232 | 232 | 0.082 | T V N | 0 1 2 5 6 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/Base/EarlyRemove | 1,012 | 194 | 0.059 | D V N | 0 1 2 5 6 7 8 9 10 12 14 15 19 20 25 26 31 35 36 37 40 41 |
+| Pool/Base/EarlyPool | 3,009 | 145 | 0.100 | P V | 0 1 18 21 22 25 28 37 38 40 41 |
+| Removal/Base/OtherData | 1,232 | 232 | 0.082 | F V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/Base/Revive | 1,234 | 234 | 0.078 | L Q V | 0 1 2 5 6 7 8 9 10 11 13 14 15 17 18 19 20 25 26 27 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Setup/Timer/Unfenced | 65,666 | 93 | 2.960 | A A2 | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Removal/Base/HookPending | 1,232 | 232 | 0.082 | D N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/Base/PreserveReferences | 1,232 | 232 | 0.080 | C V | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Removal/ShutdownTimer/TimeConfirms | 24,309 | 233 | 1.684 | D V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 34 35 36 37 38 39 40 41 |
+| Removal/Base/CloseStops | 1,235 | 235 | 0.082 | B V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Setup/Base/AdoptTemplate | 3,121 | 89 | 0.089 | F | 0 1 2 3 4 5 6 10 14 25 27 36 |
+| Removal/Base/StopBeforeHook | 1,232 | 232 | 0.082 | H O V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 19 20 25 26 29 30 31 32 33 35 36 40 41 |
+| Removal/Base/KeepConfirmed | 1,232 | 232 | 0.082 | D V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 41 |
+| Removal/Base/DelayRetirement | 1,232 | 232 | 0.080 | L V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 |
+| Setup/Base/UnsolicitedRetirement | 3,121 | 89 | 0.088 | L | 0 1 2 3 4 5 6 10 14 25 27 36 |
+
+First single-thread BFS refutations, including all five new controls:
+
+| Variant | Target | Actions |
+| --- | --- | --- |
+| Regress | L | 86 |
+| EarlyPart | S | 3 |
+| RepeatHook | H | 35 |
+| WrongKey | K | 8 |
+| FalseSuccess | O | 12 |
+| Rollback | B | 8 |
+| KeepConduit | C | 147 |
+| AutoReplace | R | 54 |
+| IgnoreTombstone | T | 64 |
+| EarlyRemove | D | 92 |
+| EarlyPool | P | 64 |
+| OtherData | F | 147 |
+| Revive | Q | 133 |
+| Unfenced | A | 37 |
+| HookPending | D | 92 |
+| PreserveReferences | C | 147 |
+| TimeConfirms | D | 93 |
+| CloseStops | B | 50 |
+| AdoptTemplate | F | 64 |
+| StopBeforeHook | O | 84 |
+| KeepConfirmed | D | 220 |
+| DelayRetirement | L | 82 |
+| UnsolicitedRetirement | L | 83 |
+
+Every first variant refutation remains refuted after all node data and queues are
+erased. The pre-existing Pool timer and in-flight invocation regressions pass. The
+accounting remains **47 modelled slices / 11 static exclusions**, with the same
+partial exclusions and supporting promises above. The revision adds no conformance
+vector and changes no specification or other model. The existing contradictions
+and pending fenced-reconciliation rule still require the owner/MC8 follow-up already
+recorded above.
+
+### MC6 final verifier checks — 2026-11-11
+
+Work order 114 closes four faults in the model's checks. This registration precedes
+its first execution. All earlier registrations, witness numbers and the heading
+“MC6 findings, traces and limits” remain unchanged, as do MC6-001 and MC6-002.
+
+- **K / ACC-018:** Begin saves the owner's creation-time resolved definition. Each
+  Dispatch carries the definition from which the engine selected its implementation.
+  K derives the expected instance, hook operation and definition from the owning
+  Begin, and checks target, key and caller against that owner. The definition number
+  identifies the resolved implementation/configuration in this bounded model.
+  “Not a request through any Conduit” holds by the model's structure: hooks are sent
+  directly from E to H; no hook passes through a Conduit request or access path.
+- **L / LIF-010:** Observe now waits for a model choice: the implementation answers
+  with its lifecycle observation, or does not answer and the observation is reported
+  unknown. Neither choice consumes a fault or adds a budget. The observation event
+  logs the unavailable condition, reported value (`None` means unknown), and lifecycle
+  before and after. Witness 5 remains the original Observe witness. Appended witness
+  **42** requires an unavailable observation reported unknown. L checks that its
+  lifecycle is unchanged. Machine placement and PLC-023 remain a slice outside the
+  model; MC4's property P2 covers PLC-023. The explicit unavailability choice is the
+  LIF-010 precondition within this model, so the accounting is expected to remain
+  **47 modelled / 11 not modelled**.
+- **D / LIF-014, LIF-018, LIF-024, LIF-025:** track retirement dispatch and end by
+  invocation ID. Every Retire, State, Existence and retirement Reconciled event while
+  the latest retirement is active must report pending, except when no setup was ever
+  dispatched or an earlier retirement succeeded or was reconciled as having occurred.
+  Confirmation is retained across a further retirement. D also checks the latest
+  negative reconciliation restores pending, independently of Q's existing check.
+- **Negative reconciliation / LIF-026:** J has a third retirement before its positive
+  reconciliation. It ends unknown without applying any effect, then is fenced and
+  negatively reconciled as the latest retirement. Appended witness **43** requires
+  exactly J's latest, unknown, fenced retirement with no effect in H's ledger and
+  shutdown unknown before reconciliation. The earlier negative case stays, and
+  witness 18 must still reach in Removal. To make that earlier negative truthful too,
+  J's first stop reports unknown without applying an effect; its failed hook also
+  applies none. Its second retirement applies its successful hook and stop; its third
+  reuses the hook and stops an already stopped run. H logs all applied retirement effects by
+  invocation, and a negative retirement reconciliation is admitted only with none.
+
+New controls, registered before execution, run once each plus a first-refutation
+search. Their expected complete verdicts start from the retained observed Correct
+row for their part/configuration, with the additions below. Every existing row is
+expected to retain its safety verdicts and reaches 0–41; Setup and Removal add reach
+42, Removal adds reach 43, Pool adds neither. Existing table differences remain.
+
+| Control | Part/configuration | Additional refuted safety | Reach changes |
+| --- | --- | --- | --- |
+| WrongHookInstance | Setup/Base | K | none |
+| CurrentTemplateHook | Removal/Base | K | none |
+| UnknownAtDispatch | Removal/Base | D | none |
+| KeepLatestUnknown | Removal/Base | D Q | none |
+
+WrongHookInstance sends I's setup hook to J with a key consistent with J.
+CurrentTemplateHook selects a hook implementation from the current template after
+ReplaceTemplate, rather than the instance's saved resolved definition.
+UnknownAtDispatch reports unknown in place of pending at retirement dispatch.
+KeepLatestUnknown leaves shutdown unknown after J's latest negative reconciliation.
+Targeted regression tests also remove or corrupt the new ledger evidence to check
+that each strengthened predicate/witness depends on its full precondition.
+
+The first diagnostic run passed seven lifecycle tests and failed the full-table test
+only on two reach differences. All 52 searches exhausted; all registered safety
+verdicts matched. The unchanged registrations are retained:
+
+| Row | Registered final-check expectation | Observed |
+| --- | --- | --- |
+| Removal/Base/StopBeforeHook | 17 reached, 18 absent (the earlier observed row) | 17 absent, 18 reached: the control's first stop is selected before the first hook and succeeds, so that retirement has an applied stop and cannot truthfully be reconciled negatively; J's later stop is unknown and its positive reconciliation still occurs |
+| Setup/Base/WrongHookInstance | 4 reached | 4 absent: the reply updates J's hook, so I never retains an unknown hook for reuse |
+
+These are model-table differences, not language findings. The executable observed
+table adds exactly these differences. To keep exploration small, the next run logs
+H's additional per-invocation effect events only for retirements, which are the
+invocations whose negative records need them. The existing hook Applied ledger
+continues to log every hook effect. No script, choice, fault budget or verdict is
+changed by omitting redundant run-effect events for setup invocations.
+
+The queued Observe choice also participates in the quiescent boundary: an unanswered
+observation still awaiting that choice prevents quiescence. This preserves the
+original boundary's meaning after making observations explicit.
+
+Final source review restricts H's first-stop no-effect choice to an **unknown** stop.
+A successful stop in StopBeforeHook still applies its effect; a regression in the
+negative-reconciliation test checks H's stopped run and applied-stop ledger. This
+keeps the control's original successful-stop meaning while making every negative
+record truthful. Its registered verdicts and the two recorded reach differences
+are unchanged. The complete release checks below use this final source.
+
+Final validation passed **43 tests / 0 doc tests** in **78.15 test
+seconds / 87.22 seconds wall** for `cargo test --release`, including compilation.
+The counted `--nocapture --test-threads=1` run passed the same totals in
+**78.00 test seconds / 78.25 seconds wall**. Formatting and Clippy with
+warnings denied passed. `CARGO_BUILD_JOBS` was inherited as **4**; cargo commands ran
+one at a time. An earlier diagnostic table run failed only on the two reach
+differences recorded above; initial Clippy complaints about a nested conditional
+and a redundant closure were fixed before these final checks.
+
+All **52** complete searches exhausted below the 190,000-state and ten-second bounds,
+with every configured fault witnessed. They total **26.988 seconds**,
+excluding first-refutation searches. The largest has **72,666 unique states**;
+the slowest takes **3.811 seconds**. All safety verdicts and reaches match
+the executable observed table. Beyond the two reach differences above, there are
+no differences from this section's registration. MC6-004 and MC6-005's earlier
+differences remain recorded in their original tables. MC6-001 and MC6-002 remain
+unchanged. Every first refutation still fails with node data and queues erased.
+
+The new unavailable-observation precondition is reachable, so LIF-010 remains
+modelled by L and witness 42; the fallback row of **46 modelled / 12 not modelled**
+is not needed. The accounting remains **47 modelled / 11 not modelled** with the
+same earlier partial exclusions. PLC-023's machine slice is outside MC6 and is
+covered by MC4's P2. No conformance vector, specification, ruling or other model
+changed. No additional out-of-scope change is needed beyond the already recorded
+owner/MC8 follow-up for the two contradictions and fenced reconciliation.
+
+These final measurements retain all earlier tables. Every row is listed because its
+state count, depth, time or registered reach set changed. V and N denote the two
+literal contradiction predicates; all unlisted safety predicates hold and unlisted
+reaches are absent. Reaches range from 0 to 43.
+
+| Part/configuration/variant | Unique states | Depth | Seconds | Refuted | Reached |
+| --- | --- | --- | --- | --- | --- |
+| Setup/Base/Correct | 3,261 | 90 | 0.098 | none | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/LossR/Correct | 4,650 | 90 | 0.166 | none | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/ReorderR/Correct | 7,842 | 90 | 0.281 | none | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/LossH/Correct | 3,744 | 90 | 0.129 | none | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/ReorderH/Correct | 5,670 | 90 | 0.173 | none | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/Crash/Correct | 37,962 | 93 | 1.510 | none | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/Timer/Correct | 69,411 | 91 | 3.639 | none | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/Silence/Correct | 12,426 | 90 | 0.393 | none | 0 1 2 3 4 5 6 10 14 24 25 27 36 42 |
+| Removal/Base/Correct | 1,442 | 243 | 0.111 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/LossR/Correct | 2,037 | 243 | 0.172 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/ReorderR/Correct | 4,564 | 243 | 0.360 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/LossH/Correct | 1,739 | 243 | 0.143 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/ReorderH/Correct | 2,356 | 243 | 0.204 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Crash/Correct | 23,623 | 250 | 2.170 | V N | 0 1 2 5 6 7 8 9 10 11 12 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Timer/Correct | 4,170 | 247 | 0.390 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Silence/Correct | 2,869 | 243 | 0.238 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 24 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Pool/Base/Correct | 2,967 | 143 | 0.104 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/LossR/Correct | 3,714 | 143 | 0.159 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/ReorderR/Correct | 10,453 | 143 | 0.420 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/LossH/Correct | 3,731 | 143 | 0.167 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/ReorderH/Correct | 5,332 | 143 | 0.208 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/Crash/Correct | 24,534 | 146 | 1.263 | V | 0 1 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/Timer/Correct | 34,131 | 144 | 1.830 | V | 0 1 2 4 18 19 21 22 23 25 28 37 38 40 41 |
+| Pool/Silence/Correct | 12,911 | 143 | 0.546 | V | 0 1 2 4 18 19 21 22 23 24 25 28 37 38 40 41 |
+| Removal/ShutdownTimer/Correct | 29,078 | 244 | 2.922 | V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 |
+| Setup/Base/Regress | 3,261 | 90 | 0.096 | L | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/Base/EarlyPart | 886 | 84 | 0.023 | S | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/Base/RepeatHook | 3,576 | 99 | 0.108 | H A A2 | 0 1 2 3 5 6 10 25 27 36 42 |
+| Setup/Base/WrongKey | 3,261 | 90 | 0.100 | K | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/Base/FalseSuccess | 3,261 | 90 | 0.098 | O | 0 1 3 4 5 6 10 25 27 36 42 |
+| Setup/Base/Rollback | 3,524 | 84 | 0.102 | L B | 0 1 2 3 5 10 14 25 26 27 36 42 |
+| Removal/Base/KeepConduit | 1,442 | 243 | 0.107 | C V | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Base/AutoReplace | 1,442 | 243 | 0.109 | R V N | 0 1 2 5 6 7 8 9 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Base/IgnoreTombstone | 1,442 | 243 | 0.108 | T V N | 0 1 2 5 6 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Base/EarlyRemove | 1,162 | 201 | 0.075 | D V N | 0 1 2 5 6 7 8 9 10 12 14 15 19 20 25 26 31 35 36 37 40 41 42 43 |
+| Pool/Base/EarlyPool | 3,009 | 145 | 0.104 | P V | 0 1 18 21 22 25 28 37 38 40 41 |
+| Removal/Base/OtherData | 1,442 | 243 | 0.109 | F V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Base/Revive | 1,444 | 245 | 0.107 | L Q V | 0 1 2 5 6 7 8 9 10 11 13 14 15 17 18 19 20 25 26 27 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Setup/Timer/Unfenced | 72,666 | 94 | 3.811 | A A2 | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Removal/Base/HookPending | 1,442 | 243 | 0.110 | D N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Base/PreserveReferences | 1,442 | 243 | 0.107 | C V | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/ShutdownTimer/TimeConfirms | 28,929 | 244 | 2.841 | D V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 |
+| Removal/Base/CloseStops | 1,445 | 246 | 0.127 | B V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Setup/Base/AdoptTemplate | 3,261 | 90 | 0.099 | F | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Removal/Base/StopBeforeHook | 1,487 | 246 | 0.111 | H O V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 18 19 20 25 26 29 30 31 32 33 35 36 40 41 42 43 |
+| Removal/Base/KeepConfirmed | 1,442 | 243 | 0.109 | D V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 41 42 43 |
+| Removal/Base/DelayRetirement | 1,442 | 243 | 0.111 | L V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Setup/Base/UnsolicitedRetirement | 3,261 | 90 | 0.100 | L | 0 1 2 3 4 5 6 10 14 25 27 36 42 |
+| Setup/Base/WrongHookInstance | 3,156 | 87 | 0.093 | K | 0 1 2 3 5 6 10 14 25 27 36 42 |
+| Removal/Base/CurrentTemplateHook | 1,442 | 243 | 0.108 | K V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Base/UnknownAtDispatch | 1,442 | 243 | 0.109 | D V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+| Removal/Base/KeepLatestUnknown | 1,442 | 243 | 0.110 | D Q V N | 0 1 2 5 6 7 8 9 10 11 12 13 14 15 17 18 19 20 25 26 29 30 31 32 33 35 36 37 38 39 40 41 42 43 |
+
+Final first-refutation lengths (single-thread BFS):
+
+| Variant | Target | Actions |
+| --- | --- | --- |
+| Regress | L | 87 |
+| EarlyPart | S | 3 |
+| RepeatHook | H | 35 |
+| WrongKey | K | 8 |
+| FalseSuccess | O | 12 |
+| Rollback | B | 8 |
+| KeepConduit | C | 147 |
+| AutoReplace | R | 54 |
+| IgnoreTombstone | T | 64 |
+| EarlyRemove | D | 92 |
+| EarlyPool | P | 64 |
+| OtherData | F | 147 |
+| Revive | Q | 133 |
+| Unfenced | A | 37 |
+| HookPending | D | 92 |
+| PreserveReferences | C | 147 |
+| TimeConfirms | D | 93 |
+| CloseStops | B | 50 |
+| AdoptTemplate | F | 64 |
+| StopBeforeHook | O | 84 |
+| KeepConfirmed | D | 230 |
+| DelayRetirement | L | 82 |
+| UnsolicitedRetirement | L | 83 |
+| WrongHookInstance | K | 8 |
+| CurrentTemplateHook | K | 84 |
+| UnknownAtDispatch | D | 82 |
+| KeepLatestUnknown | D | 227 |

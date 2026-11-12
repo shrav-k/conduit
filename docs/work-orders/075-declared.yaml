@@ -1,0 +1,3 @@
+- name: Agent tools directory and sign-in schema validation
+  kind: added
+  cases: [loader-own-tools]

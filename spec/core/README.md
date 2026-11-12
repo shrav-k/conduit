@@ -359,6 +359,13 @@ machine the request comes from (IFC-042).
 `inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records`,
 plus `inventory` for instances other than Conduits, opening `provenance` for Conduits,
 `inventory.scope` for Interfaces and Agents, and `inventory.administrators` for Pools (LIF-013, ACC-044).
+`inventory.ownTools` is present for every Agent: whether its Type states `toolsDirectory`,
+its pointer and whether a directory is named, with the directory and `enforcement: neither`
+when it is. The reach is neither enforced nor mediated in this version, whatever the runtime
+provider. A `consumes` entry for an open Conduit targeting an Agent and listing an operation
+marked `startsModelWork: true` carries the target's `ownTools` as `targetOwnTools`, for every
+consumer including root: one hop of own tools reach, disclosing only that configuration value
+and pointer (CTR-014, LIF-013).
 The `system` status also holds `trustDomain` (FST-007).
 `packages` is a list. A package's item has `address`, `version` and `digest`; the core package's
 item has no `digest`; and the item of a submitted project has `address`, the digest that
@@ -527,7 +534,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `register.v1` | Operation | OPS-019, ACC-033, SUB-006 |
 | `replace.v1` | Operation | SUB-009, SUB-007 |
 | `unregister.v1` | Operation | LIF-012, LIF-017, LIF-036, LIF-037 |
-| `inspect.v1` | Operation | LIF-013, ACC-033, LIF-037 |
+| `inspect.v1` | Operation | LIF-013, ACC-033, LIF-037; Agent own tools and one-hop target reach, CTR-014 |
 | `set-up.v1` | Operation | OPS-019, ACC-033, LIF-003, TPL-012, LIF-037 |
 | `retire.v1` | Operation | OPS-019, ACC-033, LIF-005, TPL-009, LIF-037 |
 | `reconcile.v1` | Operation | OPS-014, REV-010, OPS-031 |
@@ -605,7 +612,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `declared-conduit.v1` | Schema of a document's part | OBJ-014 |
 | `pool-entry.v1` | Schema of a document's part | OBJ-014, POOL-009 |
 | `contract.v1` | Schema of a document | CTR-001 |
-| `type-spec.v1` | Schema of a document's part | CTR-004 |
+| `type-spec.v1` | Schema of a document's part | CTR-004; `signIn` and its three hooks, CTR-013; Agent `toolsDirectory`, CTR-014 |
 | `capability-spec.v1` | Schema of a document's part | CTR-003 |
 | `operation-spec.v1` | Schema of a document's part | CTR-002, CTR-006, CTR-009, CTR-012 |
 | `requirement-spec.v1` | Schema of a document's part | CTR-005 |
@@ -628,7 +635,7 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `fleet-management.v1` | Capability | FLEET-001, FLEET-004, ACC-033, OPS-019 |
 | `provenance.v1` | Schema | ACC-044, REC-004 |
 | `tombstone.v1` | Schema | LIF-040, LIF-041, ACC-053, PLC-024 |
-| `inventory.v1` | Schema | LIF-013, ACC-044, LIF-040 |
+| `inventory.v1` | Schema | LIF-013, ACC-044, LIF-040; `ownTools` and `targetOwnTools`, CTR-014 |
 | `trust-domain.v1` | Schema | FST-007 |
 | `list.v1` | Operation | OPS-036, ACC-033, LIF-040 |
 | `lift.v1` | Operation | ACC-053, LIF-040 |

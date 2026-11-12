@@ -153,6 +153,18 @@
       ]
     },
     {
+      "id": "loader-own-tools",
+      "case": "language/loader/own-tools/case.yaml",
+      "promises": [
+        "CTR-014",
+        "CTR-013",
+        "SUB-005"
+      ],
+      "safety_rows": [
+        "loader-own-tools"
+      ]
+    },
+    {
       "id": "first-start-protected-authorized",
       "case": "language/first-start/protected-authorized/case.yaml",
       "promises": [

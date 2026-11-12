@@ -1,0 +1,29 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Type",
+  "metadata": {
+    "name": "tools-agent.v1",
+    "description": "The client always provides a request-for-input tool. A string directory also gives shell, code execution, file edits and network access, working in that directory. On the engine's own runner those tools run as the engine's user without confinement, with the client's sandbox and approval prompts off; the directory does not bound their reach. With null, only the request-for-input tool remains."
+  },
+  "spec": {
+    "family": "Agent",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "directory": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "directory"
+      ]
+    },
+    "toolsDirectory": {
+      "directory": "/directory"
+    }
+  }
+}

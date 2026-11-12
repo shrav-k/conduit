@@ -169,7 +169,9 @@ The following are kit choices and limits of this bridge, rather than additions t
 ## Recovery and lifecycle choices
 
 These are the choices in work order 122 decision 5, isolated in the server's policy functions;
-order 081 settles the specification text. The current specification remains the authority.
+PRV-019, PRV-021 and PRV-030 in [the provider promises](../../spec/promises/providers.yaml),
+as order 081 wrote them, state the specification's promises.
+The current specification remains the authority.
 
 - `repeated_run_policy`: a running run returns its held gate's current URL without staging or
   starting another. Unknown starts nothing and answers unknown. Without a held gate, a running
@@ -177,7 +179,10 @@ order 081 settles the specification text. The current specification remains the 
 - `successful_stop_policy`: cancel the instance's in-flight stage/start/gate opening, wait for
   it to quiesce, close its gate, then stop its whole tree. No restart follows a successful stop.
   A subsequent explicit `run.v1` may ask for a new run. Calls for one ID are serialized, including
-  calls that name different machines; a queued start overtaken by a stop is cancelled too.
+  calls that name different machines; a queued start overtaken by `stop.v1` is cancelled too.
+  A `stop.v1` arriving while a start is in flight cancels it. A drain carrying out a stop owed
+  before the start began does not cancel that start, whichever drain carries it out. When
+  the start's own drain carries out its owed stop, the start proceeds.
   Registration and cancellation happen before the first ledger read, so a stalled read cannot
   hide an earlier run from a later stop.
 - `lifetime_policy`: EOF, channel errors/drop, gate termination or the configured lifetime bound
@@ -193,13 +198,18 @@ order 081 settles the specification text. The current specification remains the 
   which the runtime sets to a nonzero duration. Both interval and tool calls use the instance
   lock. Invalid arguments and extension errors reach no backend. Each stop intent is durably
   written before the backend effect; clearing it follows confirmed whole-tree termination.
-  A held stop is carried out before any new run on that machine starts; a start refused for
+  A held stop is carried out before any new run on that machine starts; a start held by
   this names the owed stop, and starts nothing. A runtime's contract must state this rule.
   On a provider of one machine, a single owed stop blocks every new run there. Stops held only
-  in memory also block the machine; stops owed on other machines do not. The refusal answers
-  failed and names every owed instance and the hostname, saying that the start may be tried
-  again once those stops are carried out. A repeated run that is already running still returns
-  its held gate's URL. Stop intents are published in memory before storage or backend work,
+  in memory also block the machine; another instance's stops owed on other machines do not.
+  If the start's own owed stop cannot be carried out, the answer is unknown, beginning with
+  "run may still be running" and naming each of its owed stops with its instance ID and that
+  stop's machine hostname, including historical machines. When the start's own state is
+  unknown, the answer also names every other instance's owed stop on the call's machine.
+  Another instance's owed stop on that machine gives failed where the start's own state can
+  be read, else unknown. Both answers name the stop and machine and say that the start may
+  be tried again once those stops are carried out. A repeated run that is already running still
+  returns its held gate's URL. Stop intents are published in memory before storage or backend work,
   including intents that become durable, so admission sees stops published during its state
   lookup. A per-machine read-write lock coordinates this publication with admission checks
   before staging and immediately before start. A run is admitted only if, at the moment its

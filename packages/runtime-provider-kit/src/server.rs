@@ -414,6 +414,43 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
             ))
         }
     }
+    fn owed_stop_uncertainty(
+        &self,
+        instance: &str,
+        context: &CallContext,
+        records: Vec<RunRecord>,
+        ledger: Vec<RunRecord>,
+    ) -> Option<CallToolResult> {
+        let mut owed: Vec<_> = self
+            .drain_records(combine(records, ledger))
+            .into_iter()
+            .filter(|r| {
+                r.owed_stop
+                    && (r.instance == instance
+                        || r.context.machine.hostname == context.machine.hostname)
+            })
+            .map(|r| {
+                format!(
+                    "instance {} on machine {}",
+                    r.instance, r.context.machine.hostname
+                )
+            })
+            .collect();
+        owed.sort();
+        owed.dedup();
+        if owed.is_empty() {
+            None
+        } else {
+            Some(answer(
+                "unknown",
+                None,
+                &format!(
+                    "run may still be running; stops still owed for {}; the start may be tried again once those stops are carried out",
+                    owed.join(", ")
+                ),
+            ))
+        }
+    }
     // Return write failures separately: only construction refuses service for them.
     async fn drain(&self, call: Option<&CallContext>) -> Result<bool> {
         // Same operation locks as tools/call; re-check memory as well as the ledger after waiting.
@@ -436,7 +473,13 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
                 .find(|r| r.same_run(&record) && r.owed_stop)
             {
                 slot.refresh(&mut current, call);
-                successful_stop_policy(&slot);
+                // A drain retires the old flight, but cannot cancel a run.v1 waiting to
+                // take this lock. Only stop.v1 and shutdown advance that call's epoch.
+                {
+                    let mut flight = slot.flight.lock().unwrap();
+                    flight.serial += 1;
+                    flight.cancel.cancel();
+                }
                 if let Some(gate) = slot.gate.lock().await.take() {
                     gate.close().await;
                 }
@@ -580,6 +623,12 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
                 .collect(),
         );
         let state = self.state_of(&records).await;
+        if state == RunState::Unknown
+            && let Some(unknown) =
+                self.owed_stop_uncertainty(&instance, &context, records, ledger.clone())
+        {
+            return unknown;
+        }
         let url = slot.gate.lock().await.as_ref().map(|g| g.url());
         if let Some(answer) = repeated_run_policy(state, url) {
             return answer;

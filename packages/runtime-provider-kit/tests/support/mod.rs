@@ -168,6 +168,7 @@ fn fake_error(reason: &Mutex<Option<String>>) -> Unavailable {
 #[derive(Default)]
 pub struct FakeBackend {
     pub calls: AtomicUsize,
+    pub stages: AtomicUsize,
     pub starts: AtomicUsize,
     pub launches: AtomicUsize,
     pub stops: AtomicUsize,
@@ -197,6 +198,7 @@ pub struct FakeBackend {
     pub resume_stop: Notify,
     pub entered: Notify,
     pub contexts: Mutex<Vec<CallContext>>,
+    pub call_order: Mutex<Vec<(&'static str, String)>>,
     pub runs: Mutex<BTreeMap<String, (RunRecord, Option<DuplexStream>)>>,
     pub staged_valid: AtomicBool,
 }
@@ -257,6 +259,7 @@ impl RuntimeBackend for FakeBackend {
         cancel: &CancellationToken,
     ) -> Result<Staged> {
         self.note(context);
+        self.stages.fetch_add(1, Ordering::SeqCst);
         let expected = run_args();
         let valid = input
             .identity
@@ -303,6 +306,10 @@ impl RuntimeBackend for FakeBackend {
         _: Duration,
     ) -> Result<Channel> {
         self.note(context);
+        self.call_order
+            .lock()
+            .unwrap()
+            .push(("start", instance.into()));
         self.starts.fetch_add(1, Ordering::SeqCst);
         self.entered.notify_one();
         if self.pause_next_start.swap(false, Ordering::SeqCst) {
@@ -341,6 +348,10 @@ impl RuntimeBackend for FakeBackend {
     }
     async fn stop(&self, context: &CallContext, instance: &str) -> Result<()> {
         self.note(context);
+        self.call_order
+            .lock()
+            .unwrap()
+            .push(("stop", instance.into()));
         self.stops.fetch_add(1, Ordering::SeqCst);
         if self.pause_next_stop.swap(false, Ordering::SeqCst) {
             self.stop_entered.notify_one();

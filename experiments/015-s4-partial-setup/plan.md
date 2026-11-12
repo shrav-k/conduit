@@ -79,8 +79,10 @@ use the pinned engine toolchain. Vector expectations are authored from promises,
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | SCR1 | harness | Core scripted MCP Agent client | IFC-022/025, OPS-009/010/032 | — | M, 350–550 lines | lane 10 | now |
 | SCR2 | harness | Task drivers, S2 deadline/stale extras and clock sync | IFC-016, OPS-024, ACC-034 | SCR1 | M, 400–600 lines | lane 10 | after SCR1 |
-| S4-SRV1 | server | Plain partial/task and deduplicating effect fixture | IFC-010, OPS-012/018 | — | L, 650–850 lines | lane 8 | now |
-| S4-SRV2 | server | Setup hook and independent ledger reader | TPL-012, OPS-028 | — | M, 350–500 lines | lane 8 | now |
+| S4-SRV1 | server | Plain partial and deduplicating effect fixture; installation checks | IFC-010, OPS-012/018 | — | L+, about 1,450–1,850 lines | lane 8 | order 143 |
+| S4-SRV1b | server | The plain partial task: tasks, cancel, before-task-error | IFC-010/016, OPS-018 | S4-SRV1 | M | lane 8 | before S4-TASK2 is used |
+| S4-SRV2 | server | Setup hook, `blockedBy`, lost-reply control and ledger reader; installation checks | TPL-012, OPS-028 | — | L, about 1,100–1,500 lines | lane 8 | order 144 |
+| S4-SRV2b | server | The hook's onward request and E20's test | IFC-020, OPS-013/014 | S4-SRV2 | M | lane 8 | before S4-LATE's E20 |
 | S4-TASK1 | core | Task identity, lifecycle and authority boundary | IFC-010/016, ACC-034 | PIN, 077, 048a-1, SV1 | L, 650–850 lines | admin | after dependencies |
 | S4-TASK2 | shell | Task MCP relay and final-result mapping | IFC-010/016/025 | S4-TASK1, DSP | L, 650–850 lines | admin | after dependencies |
 | S4-LATE | shell | Forward late ordinary/hook completions after timeout | OPS-013/014/018/021 | PIN, 077 | M, 400–600 lines | admin | after dependencies |
@@ -105,7 +107,9 @@ Agent packages/homes/sign-in, update the harness launch manifest/fixture to that
 item and identity/home bindings; 050's owner supplies any required package wiring. No real login
 is needed for scripted runs, and SCR never substitutes for a required real client. Checks G/P.
 
-**S4-SRV1.** New package crate `packages/scenario-s4-effect/`: Cargo.toml, lock/toolchain,
+**S4-SRV1.** (The failed-task variant and the barrier before a task's terminal error below are
+S4-SRV1b's; order 143 builds the rest.) New package crate `packages/scenario-s4-effect/`:
+Cargo.toml, lock/toolchain,
 conduit.yaml, contracts.yaml, README and tests, following the existing Agent package form.
 Plain variants write ledger entry one then return -32021, directly or as a failed task, for both
 an effect operation and startsModelWork without effect. Non-plain mode deduplicates across all attempts
@@ -114,7 +118,8 @@ of the deduplication key. A fixture test sends two attempts with that same key a
 Barriers hold before application, after ledger commit/before reply, and before task terminal error;
 independent readback and receipts distinguish lost success from unknown. No engine or generic repair API.
 
-**S4-SRV2.** New package crate `packages/scenario-s4-hook/` with the same package files/checks.
+**S4-SRV2.** (A's onward call and E20's test below are S4-SRV2b's; order 144 builds the rest.)
+New package crate `packages/scenario-s4-hook/` with the same package files/checks.
 S9-SRV reuses this hook implementation and its lost-reply control; build it once.
 A no-effect hook can end before its reply is lost, expose independent evidence that work ended,
 and delay A's onward call until B's attempt. For E20, hold the ended call's terminal
@@ -178,6 +183,18 @@ For real E09/A6, add a loopback proxy between the real Agent and engine that dro
 engine-to-client success response and records a redacted wire trace. SCR’s dropped reply alone
 cannot cause a real client’s loss. Wait on admin D’s answer about the Agent’s engine URL for
 this preparation/E09 only. No edits to engine, runner or manifest. Test scheduling and independent ledgers; release/fmt/clippy.
+
+**T1's blocked part (the admin's decision, 2026-11-12, logged for the owner to strike).** S4-SRV2's
+hook takes an optional configuration place, `blockedBy`, an absolute path or null, which its control
+`set-blocked-by.v1` changes: where it names a file that exists, the attempt performs nothing, writes
+no effect, and fails with a diagnostic naming the place and the file (ruling 52). T1 tests whether
+an author can diagnose and repair a failed setup through Conduit, so the repair that M2 counts as
+the author's is a change to the instance's configuration through Conduit, calling that control to
+set `blockedBy` to null or a corrected path (an instance's configuration changes only through a
+control, OPS-020). Removing the file outside Conduit is allowed, but M2 records it as a manual
+environment step, not the author's repair. The orders split: S4-SRV1b takes the plain partial task
+and S4-SRV2b the onward request and E20's test, so that each order stays buildable; neither can be
+reached before S4-TASK2 or S4-LATE.
 
 **S4-RUN / S4-ACCOUNT / S4-E09.** Pin engine/packages/client/protocol and qualify all vector and
 wire tests before timing. Two separate author packs/runs preserve M0–M3, all faults/requests,

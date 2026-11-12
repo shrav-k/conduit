@@ -1,7 +1,7 @@
 //! Invocation state is durable core state, separate from records. Intents are only plans:
 //! the embedding shell persists the transition before carrying out any call (DL2).
 use crate::{
-    Allocation, Context, Evidence, Result, Transition, access, decision, packages, schemas,
+    Allocation, Context, Evidence, Result, State, Transition, access, decision, packages, schemas,
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -674,7 +674,13 @@ fn invoke_inner(
         ));
         return Ok(());
     }
-    let v = access::evaluate(&t.state, request, c, true)?;
+    let v = access::evaluate(
+        &t.state,
+        &access::PublicationView::new(&t.state, c),
+        request,
+        c,
+        true,
+    )?;
     let mut route = v.route;
     // OPS-029 follows authorization. Preserve the caller's spelling for its diagnostic
     // even when access evaluation has no resolved object from which to build a route.
@@ -858,7 +864,13 @@ fn invoke_inner(
         return Ok(());
     }
     // OPS-023 puts ordinary unavailability after conflicts, including the repeat index.
-    let available = access::evaluate(&t.state, request, c, false)?;
+    let available = access::evaluate(
+        &t.state,
+        &access::PublicationView::new(&t.state, c),
+        request,
+        c,
+        false,
+    )?;
     if let Some(reason) = available.reason {
         return reject(
             t,
@@ -917,7 +929,29 @@ fn invoke_inner(
         let parent = access::object(&t.state, &route["arguments"]["instance"])
             .ok_or("replacement parent absent")?
             .clone();
-        let mut trial = t.clone();
+        // DL6: the trial reads objects, allocator IDs and catalog metadata only.
+        let mut trial = Transition {
+            state: State {
+                objects: t.state.objects.clone(),
+                allocated_ids: t.state.allocated_ids.clone(),
+                installed_packages: t
+                    .state
+                    .installed_packages
+                    .iter()
+                    .map(|p| crate::archives::InstalledPackage {
+                        package: p.package.clone(),
+                        files: Default::default(),
+                    })
+                    .collect(),
+                preinstalled_snapshots: t.state.preinstalled_snapshots.clone(),
+                ..State::default()
+            },
+            decisions: vec![],
+            records: vec![],
+            external_intents: vec![],
+            reply: Value::Null,
+            request_replies: vec![],
+        };
         let mut allocation = Allocation {
             evidence: a.evidence,
             cursor: a.cursor,
@@ -1003,7 +1037,27 @@ fn invoke_inner(
         {
             return Err("installation evidence does not match the request".into());
         }
-        let mut trial = t.clone();
+        // DL6: the trial reads objects, allocator IDs and catalog metadata only.
+        let mut trial = Transition {
+            state: State {
+                objects: t.state.objects.clone(),
+                installed_packages: t
+                    .state
+                    .installed_packages
+                    .iter()
+                    .map(|p| crate::archives::InstalledPackage {
+                        package: p.package.clone(),
+                        files: Default::default(),
+                    })
+                    .collect(),
+                ..State::default()
+            },
+            decisions: t.decisions.clone(),
+            records: vec![],
+            external_intents: vec![],
+            reply: Value::Null,
+            request_replies: vec![],
+        };
         crate::archives::install(
             &mut trial,
             input,
@@ -1137,7 +1191,16 @@ fn invoke_inner(
             }
         }
         finish(t, a, c, i, "succeeded", json!({}), json!([]))?;
-    } else if let Some(trial) = installation {
+    } else if let Some(mut trial) = installation {
+        // DL2: restore untouched existing file contents by move, preserving format version 1.
+        for (existing, checked) in t
+            .state
+            .installed_packages
+            .iter_mut()
+            .zip(&mut trial.state.installed_packages)
+        {
+            checked.files = std::mem::take(&mut existing.files);
+        }
         t.state.installed_packages = trial.state.installed_packages;
         t.decisions.extend(trial.decisions);
         if trial.reply["changed"] != false {

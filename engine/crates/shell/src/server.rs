@@ -104,7 +104,9 @@ fn held_control(target: &Value, operation: &str, scope: &str, shell: &Shell) -> 
 /// Compare actual publication with the dispatcher inventory from the I3 handoff.
 /// This bounds implementation; it never filters the tool list or decides access.
 pub fn unfinished(shell: &Shell, consumer: &str) -> Result<BTreeMap<String, String>> {
+    // IFC-012/IFC-033: share one lazy object view for this publication inventory.
     let state = shell.state()?;
+    let view = conduit_core::access::PublicationView::new(&state, &shell.context);
     let mut found = BTreeMap::new();
     for path in state.objects.iter().filter(|o| {
         o["kind"] == "Conduit" && reference(&o["consumer"]) == consumer && o["open"] == true
@@ -120,7 +122,7 @@ pub fn unfinished(shell: &Shell, consumer: &str) -> Result<BTreeMap<String, Stri
         {
             let op = operation.as_str().ok_or("invalid operation")?;
             let (definition, publication) = conduit_core::schemas::publish(
-                &state,
+                &view,
                 consumer,
                 path["id"].as_str().ok_or("missing path ID")?,
                 op,

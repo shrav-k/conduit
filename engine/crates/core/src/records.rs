@@ -278,8 +278,9 @@ pub(crate) fn execute(
         }
         outputs = json!({"objects":created,"diagnostics":[]});
     } else if v["operation"] == c.qualified("list.v1") {
-        let view = access::publication_state(&t.state, c)?;
-        let container = access::object(&view, &v["target"]).ok_or("list container absent")?;
+        // OPS-036/ACC-033: list reads stored fields only; package visibility uses State.
+        let view = &t.state;
+        let container = access::object(view, &v["target"]).ok_or("list container absent")?;
         let mut objects = vec![];
         for object in &view.objects {
             let candidate = match container["kind"].as_str() {
@@ -298,7 +299,7 @@ pub(crate) fn execute(
             if !candidate
                 || args.get("kind").is_some_and(|k| object["kind"] != *k)
                 // OPS-036 / IFC-020: the caller's inspection rights determine visibility.
-                || !access::may_inspect(&view, &v["caller"], object, c)?
+                || !access::may_inspect(view, &v["caller"], object, c)?
             {
                 continue;
             }
@@ -316,7 +317,7 @@ pub(crate) fn execute(
         }
         let mut packages = vec![];
         if container["from"] == c.qualified("management")
-            && access::may_inspect_packages(&view, &v["caller"], c)?
+            && access::may_inspect_packages(view, &v["caller"], c)?
         {
             for installed in &view.installed_packages {
                 let snapshot = &installed.package;

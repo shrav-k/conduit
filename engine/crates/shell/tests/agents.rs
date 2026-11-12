@@ -99,9 +99,16 @@ fn cli(store: &Path, verb: &str, args: &[&str]) -> Value {
 }
 #[test]
 fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
+    // IFC-012/IFC-033: preserve every assertion through the shared setup.
     let parent = tempfile::tempdir().unwrap();
+    let (shell, store, _) = setup_s1(parent.path());
+    run_agents(shell, &store);
+}
+
+// IFC-033: register the same S1 project for the live run and latency measurement.
+fn setup_s1(parent: &Path) -> (Arc<Shell>, PathBuf, Duration) {
     let root = repo();
-    let store = parent.path().join("store");
+    let store = parent.join("store");
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let port = listener.local_addr().unwrap().port();
     drop(listener);
@@ -138,9 +145,9 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
         );
         assert_eq!(shell.state().unwrap(), before);
         // CLI installation of the unmodified package, without executing any client.
-        let catalog_store = parent.path().join(format!("catalog-{name}"));
+        let catalog_store = parent.join(format!("catalog-{name}"));
         cli(&catalog_store, "init", &[]);
-        let template = parent.path().join(format!("template-{name}"));
+        let template = parent.join(format!("template-{name}"));
         fs::create_dir(&template).unwrap();
         let ty = if name == "agent-codex" {
             "codex.v1"
@@ -168,12 +175,8 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
             .map(|l| serde_json::from_str(l).unwrap())
             .collect();
         assert_eq!(replies[0]["accepted"], true, "{replies:?}");
-        boundary::install_package(
-            &shell,
-            &root,
-            &scripted_package(&package, name, parent.path()),
-        )
-        .unwrap();
+        boundary::install_package(&shell, &root, &scripted_package(&package, name, parent))
+            .unwrap();
     }
     let spec = conduit_loader::Specification::read(&root.join("spec")).unwrap();
     let mut project = boundary::project(&root.join("engine/examples/s1"), &spec).unwrap();
@@ -183,7 +186,7 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
     }
     for d in &mut project.documents {
         if d["kind"] == "Resource" {
-            let path = parent.path().join(d["metadata"]["name"].as_str().unwrap());
+            let path = parent.join(d["metadata"]["name"].as_str().unwrap());
             fs::create_dir(&path).unwrap();
             d["arguments"]["root"] = json!(path);
         }
@@ -214,7 +217,9 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
         .find(|o| o["local_name"] == "management" && o["consumer"] == root_id)
         .unwrap();
     common::install(&shell, &root, snapshots, &mut project);
+    let registration_started = Instant::now();
     let registered=shell.submit(json!({"kind":"register-project","snapshots":[],"builtin":shell.context.builtin,"project":project,"request":{"sender":root_id,"caller":root_id,"conduit":route["id"],"target":route["target"],"operation":format!("{}#register.v1",shell.context.core_package)}}),&MissingExecutor).unwrap();
+    let registration_time = registration_started.elapsed();
     assert_eq!(registered["accepted"], true, "{registered}");
     for name in ["root-workspace", "turn-a", "turn-b"] {
         invoke(
@@ -224,14 +229,11 @@ fn live_s1_scripted_agents_call_engine_with_distinct_run_identities() {
             json!({"conduit":name}),
         );
     }
-    run_agents(shell, &store);
+    (shell, store, registration_time)
 }
 
-fn run_agents(shell: Arc<Shell>, store: &Path) {
-    let runner = Runner::new(&shell, env!("CARGO_BIN_EXE_conduit").into()).unwrap();
-    let executor = Arc::new(ServingExecutor::new(runner.executor()));
-    let completion: Arc<dyn conduit_shell::Executor> = executor.clone();
-    runner.set_completion_executor(Arc::downgrade(&completion));
+// ACC-033: exercise the same core/provider setup loop in both S1 runs.
+fn setup_instances(shell: &Shell, executor: &dyn conduit_shell::Executor) {
     for (kind, name) in [
         ("Pool", "workspace"),
         ("Fleet", "s1"),
@@ -241,8 +243,8 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
         ("Agent", "agent-b"),
     ] {
         invoke(
-            &shell,
-            executor.as_ref(),
+            shell,
+            executor,
             if kind == "Resource" {
                 "root-workspace.set-up.v1"
             } else if kind == "Agent" {
@@ -253,6 +255,15 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
             json!({"instance":{"kind":kind,"name":name}}),
         );
     }
+}
+
+fn run_agents(shell: Arc<Shell>, store: &Path) {
+    // ACC-033/IMP-002: the shared setup loop preserves the live isolation assertions.
+    let runner = Runner::new(&shell, env!("CARGO_BIN_EXE_conduit").into()).unwrap();
+    let executor = Arc::new(ServingExecutor::new(runner.executor()));
+    let completion: Arc<dyn conduit_shell::Executor> = executor.clone();
+    runner.set_completion_executor(Arc::downgrade(&completion));
+    setup_instances(&shell, executor.as_ref());
     // Starting wrappers and listing their tools must not start either scripted client.
     assert_eq!(runner.running_count(), 4);
     for entry in fs::read_dir(store.join("work")).unwrap() {
@@ -327,7 +338,8 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
         .map(|n| scripted_client(n).canonicalize().unwrap())
         .collect();
     assert_eq!(actual_clients, expected_clients);
-    let records = shell.state().unwrap().records;
+    // DL2: inspect records through the shared committed snapshot.
+    let records = &shell.state().unwrap().records;
     assert!(!records.iter().any(|r| {
         r["data"].get("inputs").is_some()
             && r["data"]["operation"]
@@ -373,6 +385,67 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
     );
     shutdown.cancel();
     runtime.block_on(task).unwrap().unwrap();
+    drop(completion);
+    drop(runner);
+}
+
+// DL2/ACC-033: time actual commits and a successful core inspection of an Agent.
+#[test]
+#[ignore]
+fn commit_latency_on_s1() {
+    let parent = tempfile::tempdir().unwrap();
+    let (shell, store, registration_time) = setup_s1(parent.path());
+    let runner = Runner::new(&shell, env!("CARGO_BIN_EXE_conduit").into()).unwrap();
+    let executor = Arc::new(ServingExecutor::new(runner.executor()));
+    let completion: Arc<dyn conduit_shell::Executor> = executor.clone();
+    runner.set_completion_executor(Arc::downgrade(&completion));
+    setup_instances(&shell, executor.as_ref());
+    let root = id(&shell, "root");
+    for (name, input) in [
+        (
+            "list-tools",
+            json!({"kind":"list-tools","identity":{"kind":"instance","id":root}}),
+        ),
+        (
+            "s1.inspect.v1",
+            json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":"s1.inspect.v1","arguments":{"object":{"kind":"Agent","name":"agent-a"}}}}),
+        ),
+    ] {
+        let mut elapsed = Vec::new();
+        for _ in 0..20 {
+            let started = Instant::now();
+            // MissingExecutor makes an accidental external dispatch fail the inspection.
+            let reply = shell.submit(input.clone(), &MissingExecutor).unwrap();
+            elapsed.push(started.elapsed());
+            if name == "s1.inspect.v1" {
+                assert_eq!(reply["isError"], false, "inspection must run in core");
+            } else {
+                assert!(reply["tools"].is_array());
+            }
+        }
+        elapsed.sort();
+        println!(
+            "{name} median_ms={:.3} max_ms={:.3}",
+            (elapsed[9].as_secs_f64() + elapsed[10].as_secs_f64()) * 500.0,
+            elapsed[19].as_secs_f64() * 1000.0
+        );
+    }
+    let state = shell.state().unwrap();
+    let package_bytes: usize = state
+        .installed_packages
+        .iter()
+        .map(|p| serde_json::to_vec(&p.files).unwrap().len())
+        .sum();
+    println!(
+        "register_project_ms={:.3}",
+        registration_time.as_secs_f64() * 1000.0
+    );
+    println!(
+        "state_bytes={} objects_bytes={} package_file_bytes={}",
+        fs::metadata(store.join("state.json")).unwrap().len(),
+        serde_json::to_vec(&state.objects).unwrap().len(),
+        package_bytes
+    );
     drop(completion);
     drop(runner);
 }

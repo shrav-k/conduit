@@ -54,6 +54,7 @@ pub struct RunIdentity {
 
 impl Authority {
     pub fn open(store: &Store, configured_domain: Option<&str>) -> Result<Self> {
+        // DL2/DL13: use the state parsed at open to bind the signing authority.
         if configured_domain.is_some_and(|d| !conduit_core::valid_trust_domain(d)) {
             return Err("malformed trustDomain (FST-007)".into());
         }
@@ -63,7 +64,7 @@ impl Authority {
                 .map_err(|_| "invalid signing authority")?
         } else {
             // Losing the authority of an established store must not silently rotate its identity.
-            if store.read()?.state.started {
+            if store.snapshot()?.started {
                 return Err("established store is missing its signing authority".into());
             }
             let key = rcgen::KeyPair::generate_for(&rcgen::PKCS_ECDSA_P256_SHA256)
@@ -97,7 +98,7 @@ impl Authority {
         };
         if !conduit_core::valid_trust_domain(&data.engine_id)
             || configured_domain.is_some_and(|d| d != data.engine_id)
-            || store.read()?.state.objects.iter().any(|o| {
+            || store.snapshot()?.objects.iter().any(|o| {
                 o["name"] == "system"
                     && o["kind"] == "Pool"
                     && o["status"]["trustDomain"] != data.engine_id

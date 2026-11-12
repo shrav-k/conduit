@@ -517,16 +517,18 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
     assert_eq!(modern_list.tools, list_a.tools);
     assert_eq!(modern_list.cache_scope, Some(CacheScope::Private));
     assert_eq!(modern_list.ttl_ms, Some(0)); // rmcp's required modern protocol default
+    // DL2: copy the selected value from the shared last-commit snapshot.
     let conduit = shell
         .state()
         .unwrap()
         .objects
-        .into_iter()
+        .iter()
         .find(|o| {
             o["kind"] == "Conduit"
                 && reference_value(&o["consumer"]) == &json!(actor(&shell, "agent-a"))
                 && o["nested"]["name"] == "project"
         })
+        .cloned()
         .unwrap();
     let closed = server::client(
         temp.path(),
@@ -609,7 +611,8 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
         .unwrap_err();
     assert!(result.contains("unfinished"), "{result}");
     assert_eq!(
-        serde_json::to_value(shell.state().unwrap()).unwrap(),
+        // DL2: serialize the shared committed snapshot by reference.
+        serde_json::to_value(shell.state().unwrap().as_ref()).unwrap(),
         serde_json::to_value(before).unwrap()
     );
     keepalive.cancel();
@@ -660,12 +663,14 @@ async fn pending_http_completion_and_client_cancellation() {
     });
     wait_changes(&memory.dispatches, 1).await;
     assert!(!request.is_finished());
+    // DL2: copy the selected value from the shared last-commit snapshot.
     let invocation = shell
         .state()
         .unwrap()
         .invocations
-        .into_iter()
+        .iter()
         .find(|i| i["state"] == "in-progress")
+        .cloned()
         .unwrap();
     shell
         .complete(
@@ -835,12 +840,14 @@ async fn rejected_calls_keep_valid_keys_and_onward_attribution() {
     // A live invocation establishes an original caller different from its target.
     let pending = shell.begin(json!({"kind":"invoke","request":{"identity":instance_value(&actor(&shell,"agent-b")),"tool":"project.file.read.v1","arguments":{"path":"hello.txt"}}}), executor.as_ref()).unwrap();
     let invocation = pending.invocation().unwrap();
+    // DL2: copy the selected value from the shared last-commit snapshot.
     let parent = shell
         .state()
         .unwrap()
         .invocations
-        .into_iter()
+        .iter()
         .find(|v| v["id"] == invocation)
+        .cloned()
         .unwrap();
     let target = parent["target"].as_str().unwrap();
     let onward_token = shell.authority.token(target, url).unwrap();

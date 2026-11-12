@@ -1,6 +1,6 @@
 //! Authored schemas (SCH-001/009/015/016/019) and standalone tools (IFC-033).
 //! All package snapshots are supplied values. No I/O or ambient resolver is used.
-use crate::{Context, Decision, Result, State, decision};
+use crate::{Context, Decision, Result, decision};
 use conduit_loader::formats;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
@@ -985,18 +985,15 @@ pub(crate) fn publication_omission(
 }
 
 pub fn publish(
-    state: &State,
+    view: &crate::access::PublicationView<'_>,
     consumer: &str,
     conduit: &str,
     operation: &str,
     context: &Context,
 ) -> Result<(Value, Decision)> {
-    let view = crate::access::publication_state(state, context)?;
-    let state = &view;
-    let path = state
-        .objects
-        .iter()
-        .find(|o| o["id"] == conduit)
+    // IFC-012/IFC-033: one caller-owned view supplies both normalized objects.
+    let path = view
+        .find(|o| o["id"] == conduit)?
         .ok_or("unknown Conduit")?;
     if path["kind"] != "Conduit"
         || path["consumer"] != consumer
@@ -1017,11 +1014,19 @@ pub fn publish(
             ),
         ));
     }
-    let target = state
-        .objects
-        .iter()
-        .find(|o| o["id"] == path["target"])
+    let target = view
+        .find(|o| o["id"] == path["target"])?
         .ok_or("missing target")?;
+    publish_normalized(path, target, operation, context)
+}
+
+// IFC-033: unchanged tool construction, shared with the BASE reference only after lookup.
+pub(crate) fn publish_normalized(
+    path: &Value,
+    target: &Value,
+    operation: &str,
+    context: &Context,
+) -> Result<(Value, Decision)> {
     if let Some((rule, reason)) = publication_omission(target, operation, context)? {
         let (action, rules): (&str, &[&str]) = match rule {
             "SEC-007" => ("omit-secret-tool", &["IFC-012", "SEC-007"]),

@@ -340,15 +340,14 @@ fn request_for(
     arguments: Value,
     c: &Context,
 ) -> Result<Option<access::AccessRequest>> {
-    let tools = crate::access::publication_state(&t.state, c)?;
+    // ACC-033: all candidate evaluations share one call-local view.
+    let view = access::PublicationView::new(&t.state, c);
     let mut refused = None;
-    for p in tools.objects.iter().filter(|p| {
-        p["kind"] == "Conduit"
-            && p["consumer"] == parent["sender"]
-            && p["target"] == *target
-            && p["open"] == true
-            && p["state"] == "ready"
-    }) {
+    for p in view.paths(&parent["sender"]) {
+        let p = p?;
+        if p["target"] != *target {
+            continue;
+        }
         if !p["operations"]
             .as_array()
             .is_some_and(|ops| ops.contains(&json!(operation)))
@@ -366,7 +365,7 @@ fn request_for(
             readable: true,
             authority_readable: true,
         };
-        if access::evaluate(&t.state, &request, c, true)?
+        if access::evaluate(&t.state, &view, &request, c, true)?
             .reason
             .is_none()
         {

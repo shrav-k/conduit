@@ -13,7 +13,9 @@ use std::collections::{BTreeMap, VecDeque};
 use std::path::Path;
 use std::sync::{Arc, Condvar, Mutex, Weak};
 use std::time::Duration;
-use store::{Store, Stored};
+#[cfg(test)]
+use store::Stored;
+use store::{Memory, Store};
 use uuid::Uuid;
 
 pub type Result<T> = std::result::Result<T, String>;
@@ -156,11 +158,12 @@ pub struct Shell {
     #[cfg(test)]
     evidence: Mutex<VecDeque<Value>>,
     #[cfg(test)]
-    trace: Mutex<Vec<Transition>>,
+    trace: Mutex<Option<Vec<Transition>>>,
 }
 
 impl Shell {
     pub fn open(directory: &Path, context: Context, config: Config) -> Result<Self> {
+        // DL2/DL13: Store hands its one parsed committed snapshot to identity and recovery.
         let url = url::Url::parse(&config.engine_url).map_err(|_| "invalid engine URL")?;
         let loopback = matches!(url.host(), Some(url::Host::Domain("localhost")))
             || matches!(url.host(), Some(url::Host::Ipv4(ip)) if ip == std::net::Ipv4Addr::LOCALHOST)
@@ -207,7 +210,7 @@ impl Shell {
             #[cfg(test)]
             evidence: Mutex::new(VecDeque::new()),
             #[cfg(test)]
-            trace: Mutex::new(Vec::new()),
+            trace: Mutex::new(None),
         };
         // An open is a restart boundary, even for an empty store. No intent is replayed.
         let recovered = shell.commit(json!({"kind":"recover"}))?;
@@ -217,19 +220,19 @@ impl Shell {
         Ok(shell)
     }
 
-    pub fn state(&self) -> Result<State> {
+    pub fn state(&self) -> Result<Arc<State>> {
+        // DL2/DL13: each reader shares the last commit, with no parse or deep copy.
         self.writer
             .lock()
             .map_err(|_| "writer lock poisoned")?
             .store
-            .read()
-            .map(|s| s.state)
+            .snapshot()
     }
 
     /// PRV-029: stable, private storage, separate from each run's working directory.
     pub(crate) fn state_directory(&self, instance: &str) -> Result<std::path::PathBuf> {
         let writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
-        let state = writer.store.read()?.state;
+        let state = writer.store.snapshot()?;
         if !state
             .objects
             .iter()
@@ -276,17 +279,19 @@ impl Shell {
         )
     }
     pub fn verify_token(&self, token: Option<&str>) -> Result<conduit_core::access::Identity> {
+        // DL13: revocation checks the instance's existence in the last committed State.
         Ok(self
             .authority
-            .verify(token, &self.config.engine_url, &self.state()?))
+            .verify(token, &self.config.engine_url, self.state()?.as_ref()))
     }
     pub fn materialize_identity(&self, descriptor: &Value) -> Result<RunIdentity> {
+        // DL2/DL13: identity materialization checks the last committed snapshot.
         let writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
         let identity = self.authority.materialize(
             &writer.store.directory,
             descriptor,
             &self.config.engine_url,
-            &writer.store.read()?.state,
+            writer.store.snapshot()?.as_ref(),
             &self.context,
         )?;
         self.client_token(
@@ -299,7 +304,8 @@ impl Shell {
     }
 
     fn client_token(&self, writer: &Writer, instance: &str) -> Result<()> {
-        let state = writer.store.read()?.state;
+        // DL13: issue a token only for an instance in the last committed State.
+        let state = writer.store.snapshot()?;
         if !state.objects.iter().any(|o| {
             o["id"] == instance
                 && o.get("spec").is_none()
@@ -320,7 +326,7 @@ impl Shell {
         self.client_token(&writer, instance)
     }
 
-    fn transition(&self, state: &State, mut input: Value) -> Result<Transition> {
+    fn transition(&self, state: State, store: &Store, mut input: Value) -> Result<Transition> {
         if input["kind"] == "first-start"
             && input
                 .get("trustDomain")
@@ -359,6 +365,8 @@ impl Shell {
         } else {
             None
         };
+        // DL6: retry a consumed State only by rereading the last durable commit.
+        let mut state = Some(state);
         for supply in [256, 16384] {
             if needs_evidence {
                 input["evidence"] = evidence(&kind, &time, supply)?;
@@ -369,7 +377,11 @@ impl Shell {
             }
             let parsed: Input = serde_json::from_value(input.clone())
                 .map_err(|e| format!("embedding input: {e}"))?;
-            match conduit_core::step(state, parsed, &self.context) {
+            let state = match state.take() {
+                Some(state) => state,
+                None => store.read()?.state,
+            };
+            match conduit_core::step_owned(state, parsed, &self.context) {
                 Ok(t) => {
                     if kind == "invoke"
                         && input.get("archive").is_none()
@@ -399,8 +411,14 @@ impl Shell {
                         input["archive"] = json!({"name":path.to_string_lossy(),"address":args["address"],"version":args["version"],"digest":args["digest"],"directory":directory,"completion":completion});
                         let parsed = serde_json::from_value(input.clone())
                             .map_err(|e| format!("embedding input: {e}"))?;
-                        return conduit_core::step(state, parsed, &self.context)
-                            .map_err(|e| format!("embedding error: {e}"));
+                        // DL2/IMP-007: archive evidence retries the committed State, not the trial.
+                        drop(t);
+                        return conduit_core::step_owned(
+                            store.read()?.state,
+                            parsed,
+                            &self.context,
+                        )
+                        .map_err(|e| format!("embedding error: {e}"));
                     }
                     return Ok(t);
                 }
@@ -411,7 +429,7 @@ impl Shell {
         Err("embedding error: evidence exhausted after retry".into())
     }
 
-    fn persist(&self, writer: &Writer, stored: &mut Stored, transition: &Transition) -> Result<()> {
+    fn persist(&self, writer: &Writer, stored: &mut Memory, transition: &Transition) -> Result<()> {
         let now = Utc::now().to_rfc3339_opts(SecondsFormat::Nanos, true);
         stored.output_times.retain(|id, _| {
             transition
@@ -435,11 +453,13 @@ impl Shell {
                 }
             }
         }
-        stored.state = transition.state.clone();
-        writer.store.write(stored)
+        // DL2/REC-003/OPS-013: persist records and outcomes before advancing memory.
+        writer
+            .store
+            .write_state(&transition.state, &stored.output_times)
     }
 
-    fn retention(&self, writer: &Writer, stored: &mut Stored) -> Result<()> {
+    fn retention(&self, writer: &Writer, stored: &mut Memory) -> Result<()> {
         let now = Utc::now();
         let mut outputs = Vec::new();
         for v in &stored.state.invocations {
@@ -471,11 +491,15 @@ impl Shell {
                     .to_std()
                     .is_ok_and(|age| age > self.config.max_output_age)
             {
+                // DL10: only expiry writes; both retention checks use the in-memory commit.
+                let state = Arc::unwrap_or_clone(std::mem::take(&mut stored.state));
                 let t = self.transition(
-                    &stored.state,
+                    state,
+                    &writer.store,
                     json!({"kind":"expire-outputs","invocation":id}),
                 )?;
                 self.persist(writer, stored, &t)?;
+                stored.state = Arc::new(t.state);
                 total -= size;
             }
         }
@@ -484,21 +508,32 @@ impl Shell {
 
     fn commit(&self, input: Value) -> Result<Committed> {
         let mut writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
-        let mut stored = writer.store.read()?;
+        // DL2: taking memory leaves the cache empty on every failed step/write.
+        let mut stored = writer.store.take()?;
         if input["kind"] != "recover" {
             self.retention(&writer, &mut stored)?;
         }
-        let before = stored.state.clone();
-        let t = self.transition(&before, input)?;
+        // IFC-038: notices read objects only. The State is copied only for a held reader.
+        let before = State {
+            objects: stored.state.objects.clone(),
+            ..State::default()
+        };
+        let state = Arc::unwrap_or_clone(std::mem::take(&mut stored.state));
+        let mut t = self.transition(state, &writer.store, input)?;
         self.persist(&writer, &mut stored, &t)?;
         // PRV-029/LIF-035: reconcile only after removal is durable. A directory
         // whose delete fails remains the retry marker, including across restart.
-        writer.store.clean_state_directories(&stored.state)?;
+        writer.store.clean_state_directories(&t.state)?;
         #[cfg(test)]
-        self.trace
+        if let Some(trace) = self
+            .trace
             .lock()
             .map_err(|_| "trace lock poisoned")?
-            .push(t.clone());
+            .as_mut()
+        {
+            // DL2: retain a transition only when its test explicitly requests a trace.
+            trace.push(t.clone());
+        }
         // Publish replies only after both records and invocation state are durable.
         for ended in &t.request_replies {
             if let Some(cells) = writer
@@ -539,16 +574,20 @@ impl Shell {
             *cell.value.lock().map_err(|_| "reply lock poisoned")? = Some(t.reply.clone());
             None
         };
+        // DL10/IFC-038: keep the second retention check before notices. Expiry
+        // changes only retained outputs, so the committed objects are still t's.
+        stored.state = Arc::new(std::mem::take(&mut t.state));
         self.retention(&writer, &mut stored)?;
         let mut notifications =
-            conduit_core::access::tool_list_changes(&before, &t.state, &self.context)?;
+            conduit_core::access::tool_list_changes(&before, &stored.state, &self.context)?;
         for o in before.objects.iter().filter(|o| {
             o.get("spec").is_none() && (o["kind"] == "Agent" || o["kind"] == "Interface")
         }) {
-            if !t.state.objects.iter().any(|n| n["id"] == o["id"]) {
+            if !stored.state.objects.iter().any(|n| n["id"] == o["id"]) {
                 notifications.push(json!({"consumer":o["id"],"method":"consumer-ended"}));
             }
         }
+        writer.store.remember(stored);
         Ok(Committed {
             ticket: Ticket { invocation, cell },
             intents: t.external_intents,

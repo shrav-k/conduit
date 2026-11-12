@@ -43,13 +43,15 @@ fn id(shell: &Shell, kind: &str, name: &str, template: bool) -> Value {
         .clone()
 }
 fn object(shell: &Shell, kind: &str, name: &str, template: bool) -> Value {
+    // DL2: share the committed snapshot and copy only the selected object.
     let key = id(shell, kind, name, template);
     shell
         .state()
         .unwrap()
         .objects
-        .into_iter()
+        .iter()
         .find(|o| o["id"] == key)
+        .cloned()
         .unwrap()
 }
 fn invoke(shell: &Shell, executor: &dyn Executor, tool: &str, args: Value) -> Value {
@@ -71,12 +73,14 @@ fn tools(shell: &Shell, name: &str) -> Vec<String> {
 fn fixture(shell: &Shell, extra: bool) {
     shell.submit(json!({"kind":"first-start","machine":conduit_shell::local_machine(BTreeMap::new()).unwrap()}),&MissingExecutor).unwrap();
     let root = id(shell, "Interface", "root", false);
+    // DL2: select the management Conduit from the shared snapshot.
     let route = shell
         .state()
         .unwrap()
         .objects
-        .into_iter()
+        .iter()
         .find(|o| o["consumer"] == root && o["local_name"] == "management")
+        .cloned()
         .unwrap();
     let spec = conduit_loader::Specification::read(&repo().join("spec")).unwrap();
     let mut project =
@@ -143,17 +147,19 @@ fn replacement(shell: &Shell, executor: &dyn Executor, name: &str, operations: V
     ));
 }
 fn replace_nested(shell: &Shell, executor: &dyn Executor, name: &str) {
+    // DL2/IFC-012: select a Conduit from the shared committed snapshot.
     let consumer = id(shell, "Agent", name, false);
     let path = shell
         .state()
         .unwrap()
         .objects
-        .into_iter()
+        .iter()
         .find(|o| {
             o["kind"] == "Conduit"
                 && o["consumer"].get("id").unwrap_or(&o["consumer"]) == &consumer
                 && o["nested"]["name"] == "project"
         })
+        .cloned()
         .unwrap();
     success(invoke(
         shell,

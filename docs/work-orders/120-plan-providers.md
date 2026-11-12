@@ -362,3 +362,47 @@ grep -n -E "[[:space:]]+$" docs/implementation/PROVIDERS.md
 Report each gap as a finding, each order you propose and each estimate as one of your own
 choices, and each difference from the state of the work above as a finding. Do not stage
 anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, beside orders 117 to 119, from base 31acd73: the worker in 16
+minutes (935 s) and a fresh verifier in 5 minutes (310 s); then a second worker round in 1.5
+minutes (88 s) and a fresh verifier in 5 minutes (303 s), which found nothing to change. The
+first verifier's one must: the runtime suite refused a repeated `run.v1`, against order 081,
+under which a repeated `run.v1` for a running run answers with that run. Round two follows 081
+and makes those cases wait for it. Neither verifier's sandbox could run the unit suite; the lane
+coordinator ran every check of "Done when" on the result, all clean.
+
+The result is `docs/implementation/PROVIDERS.md` and its row in `docs/README.md`. It plans:
+
+- **the harness:** A63-H1 (the item launcher, MCP driver and reports, M) and A63-H2 (trust roots,
+  run certificates, gate clients and faults, L), proposed as a crate in the engine's workspace
+  and so the admin's; and four contract suites, A63-VR, VM, VP and VS, under
+  `conformance/provider-contracts/`, whose index is the admin's;
+- **the packages, lane 8:** A63-RP1 and RP2 (local process), MP1 and MP2 (local machine), PS
+  (local directory, `file`), FS (file store), KC (keychain), DR1 and DR2 (Docker), GS (Git,
+  `git+https`) and 1P (1Password, after A73), each with D15's four fields as planned;
+- **the engine's package-source work, proposed to the admin:** PSD1 (admission, scheme claims
+  and serialized first installs, after 082), PSD2 (source calls on DSP's path) and PSD3 (the
+  engine's own `https` fetching);
+- **questions for the admin:** where the harness lives (A), local-machine enrollment
+  qualification (C), SSH's crate boundary (D), and the order of merging with ruling 75 D4's
+  reading (E).
+
+**Decision B, the admin's, logged as a coordinator decision (2026-11-11):** option (b). The
+packaged local runtime, machine and package-source providers are built as well; each passes the
+same contract suites over MCP as the second providers; S10's accepted configurations stay as the
+owner accepted them, with the engine's built-ins as its first implementations. So no question
+goes to the owner. The lane coordinator wrote the decision into the plan's box, its section B and
+"For the owner".
+
+**Added by the lane coordinator, at the admin's request:** a paragraph "What A63-RP shares with
+SSH-R". A63-RP's crate exposes, as a library, the provider's MCP server (discovery, the three
+runtime operations over a backend interface, the run ledger, owed stops and the staging of run
+files) and the gate (the run's certificate, the engine's proof checked before any MCP bytes, the
+byte bridge and the close after a silent cut). SSH-R and A63-DR depend on it by path; each
+runtime keeps its own transport, principals, stop mechanics, state and contract text. Question
+D's recommendation now points there.
+
+Merged after the second verifier was clean, at the admin's word. A fresh skeptic reviews the
+split before any order in it is dispatched.

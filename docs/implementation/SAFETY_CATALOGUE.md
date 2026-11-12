@@ -539,7 +539,7 @@ Read: 6 promises. Source: [spec/conventions/records.yaml](../../spec/conventions
 | --- | --- | --- | --- | --- | --- |
 | REC-001 | convention | must | result | `observable`: “states that the request was permitted, or that it was not dispatched and the reason” — recording the wrong access verdict falsely states what was decided and dispatched. | S1-records |
 | REC-002 | convention | must | secret | `observable`: “no part of its `identity`” — including run identity in a record discloses credentials to record readers. | S1-close-in-flight, S1-authority-unreadable, S1-records |
-| REC-003 | convention | must not | result | `then`: “It is removed or altered by anything other than a purge” — altering an existing record can falsely attribute who performed an operation. | S1-purge |
+| REC-003 | convention | must not | result | `then`: “The engine removes or alters it other than by a purge under REC-004” — altering an existing record can falsely attribute who performed an operation. | S1-purge |
 | REC-004 | convention | must | effect | `observable`: “no effect is applied a second time” — purging invocation state with records lets an old keyed request repeat its effect. | S1-purge |
 | REC-005 | convention | must | result | `then`: “in the order in which they were made at that source” — returning another order gives a false account of the recorded sequence of decisions and actions. | S1-records |
 | REC-006 | convention | must | result | `observable`: “It is never presented as complete” — presenting an incomplete history as complete gives a wrong output about the requests and effects it contains. | S1-records |

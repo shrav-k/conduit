@@ -1,0 +1,6 @@
+# 082: REC-006 reports a known loss outside the engine as an incomplete read.
+- name: known record loss outside the engine
+  kind: added
+  operation: add
+  cases: [records-lost]
+  paths: ['']

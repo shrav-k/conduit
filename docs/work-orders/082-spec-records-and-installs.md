@@ -721,3 +721,23 @@ Report:
 - each check's last line.
 
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 and 12 on the Windows computer: one worker round and a fresh verifier, who found
+no fault. The worker applied all twelve of the coordinator's settlements as written: REC-003 and
+REC-006 narrowed to what the engine does and can tell (MC7b-001), with DL8 documenting which
+outside losses an engine tells, and PKG-032 deciding the installs of one address and version one
+at a time (MC7b-002). It added the vector records-lost; all 439 portable vectors pass. The engine's
+full suite did not finish clean in the Windows sandbox (both crash barriers, which main has since
+given 600 seconds, the S1 HTTP test and a listener-readiness deadline, each a timing failure
+outside this order's files); the admin ran the spec suites on the Mac before merging.
+
+The worker's findings, kept for later work: for the owner, obligations when invocation state,
+tombstones, provenance or installed packages cannot be stored; whether an undetected outside loss
+or alteration must be made evident; whether records restored from a copy taken before a purge may
+be returned; and races across addresses (client IDs, installation against registration). For the
+coordinator, whether a purge leaves a gap, recreating a lost record, and a bound on a fetch's
+duration. For the build, the shell's install paths, its loss detection under DL8, the runner's lack
+of concurrent installs, and MC7b's rerun with PKG-032. PKG-032 is one more convention-layer safety
+promise for G5 (218).

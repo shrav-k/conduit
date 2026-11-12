@@ -292,6 +292,7 @@
     made once the archive can be fetched is decided as any other. An archive is fetched under
     PRV-017. Nothing is fetched for an address and version that is already installed, under
     PKG-025 and PKG-027, so a request for one never reports unavailable for this cause.
+    Requests to install one address and version are decided one at a time under PKG-032.
   vectors: []
 
 - id: PKG-025
@@ -310,6 +311,8 @@
     The request reports conflict whether or not the archive can be fetched now, and whatever
     digest the archive at the place of `fetch` has: PKG-024 and PKG-026 are about a package that
     is not yet installed at that address and version.
+    Requests to install one address and version are decided one at a time under PKG-032,
+    each from what is installed once the earlier requests have ended.
   vectors: []
 
 
@@ -350,6 +353,8 @@
     and one whose `fetch` is a relative reference reports invalid under PKG-023, although
     nothing would have been fetched. The same holds for PKG-025, where OPS-023 puts invalid
     before conflict.
+    Requests to install one address and version are decided one at a time under PKG-032,
+    each from what is installed once the earlier requests have ended.
   vectors: []
 
 - id: PKG-028
@@ -433,4 +438,36 @@
     whether a standard template's operation list changed. This is a recommendation, not a
     rejection rule; a plan prints and counts any widening of the resolved Conduit operations
     before apply, including widening through a pin change.
+  vectors: []
+
+- id: PKG-032
+  layer: convention
+  level: must
+  when: >-
+    A request to install an address and version arrives while the engine is deciding another
+    request to install that address and version.
+  then: >-
+    The engine decides requests to install one address and version one at a time. It begins
+    to decide a request only once every request to install that address and version that it
+    began to decide before has ended, and decides it from what is installed then. A repeat
+    answered without a dispatch under OPS-009, OPS-012, OPS-032 or OPS-034 is answered as those
+    promises say, and waits for nothing.
+  observable: >-
+    No order is promised between requests that arrive together. Each request is answered as
+    the same request would be if made once every request that the engine began to decide
+    before it had ended: by the install promises and every other promise under which a request
+    to install is not dispatched, in OPS-023's order. Where an earlier request installed the
+    package with another digest, PKG-025 reports conflict and nothing is fetched; with the same
+    digest, PKG-027 reports succeeded, changes nothing and fetches nothing. Where none installed
+    it, the request is decided as one for a package not yet installed, under PKG-023, PKG-024
+    and PKG-026; a request with no `fetch` then reports invalid under PKG-023. Of requests that
+    name different digests, at most one installs its package, and nothing is put in the place
+    of an installed package. Requests for another version at that address, under NAM-011, or
+    for another address are not held back. Two versions are the same as PKG-003 states.
+    Deciding includes fetching the archive, before dispatch, under PRV-005 and PRV-017. Each
+    later request waits as part of its own decision, only for requests the engine began to
+    decide before it; waiting leaves no state that outlives the request, and nothing wakes on
+    its own. An install fetches and installs no other package, under PKG-028, so no two installs
+    wait on each other.
+    Cargo likewise waits for the lock on its package cache before proceeding.
   vectors: []

@@ -1,7 +1,7 @@
 # Records: what is always recorded, what a record holds and how long it is kept.
 # The list of events and the fields follow Kubernetes audit events and AWS CloudTrail, which
 # record who, what, when and how it ended, and cannot be deleted through the interface they record.
-# A record is added and never altered.
+# The engine adds a record and never alters it.
 # Standing: draft specification; see spec/README.md for status and coverage.
 #
 # Removed IDs (not reused):
@@ -97,12 +97,19 @@
   when: >-
     A record exists.
   then: >-
-    It is removed or altered by anything other than a purge.
+    The engine removes or alters it other than by a purge under REC-004.
   observable: >-
     The record can still be read after the engine has restarted and after the objects it names
-    are unregistered or removed. A reconciliation adds a record and alters none. Inspecting an
-    object lists the records that name it, under LIF-013, and an object that has been
-    unregistered or removed is no longer inspected. How the records that name no object that
+    are unregistered or removed. The engine's own crash and restart are its acts, as are every
+    write it makes to the storage of its records, including one interrupted by its crash, and
+    every compaction, copy or rollback to an earlier copy that it makes itself. A record that
+    any of these removes or alters is removed or altered by the engine. A record removed or
+    altered by a fault outside the engine is not removed or altered under this promise: the
+    medium failing, someone other than the engine restoring an older copy of the store, or
+    another process removing or changing its file. REC-006 says what a read then reports.
+    A reconciliation adds a record and alters none. Inspecting an object lists the records
+    that name it, under LIF-013, and an object that has been unregistered or removed is no
+    longer inspected. How the records that name no object that
     still exists are read is DL8 of the implementation-defined list.
   vectors: []
 
@@ -156,9 +163,15 @@
   layer: convention
   level: must
   when: >-
-    Records that should exist cannot be read, or were lost.
+    Records that should exist cannot be read, or were lost and the engine can tell that they
+    were, including records lost by a fault outside the engine under REC-003.
   then: >-
     The result of reading them says that there is a gap, and where.
   observable: >-
-    A result that omits records says so. It is never presented as complete.
+    A result that omits such records says so. It is never presented as complete.
+    A record found damaged counts as one that cannot be read: it is reported as a gap and
+    never returned as the record. A record that could not be read and can be read again is
+    returned, and no gap remains for it. A loss of records is not presented as a purge under
+    REC-004, and no record of a purge is kept for it. Which losses of records outside the
+    engine it can tell is DL8 of the implementation-defined list.
   vectors: []

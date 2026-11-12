@@ -4041,6 +4041,13 @@
       ]
     },
     {
+      "id": "records-lost",
+      "case": "conventions/records/lost/case.yaml",
+      "promises": [
+        "REC-006"
+      ]
+    },
+    {
       "id": "records-authority",
       "case": "conventions/records/authority/case.yaml",
       "promises": [
@@ -7763,7 +7770,8 @@
       "vectors": [
         "records-purge",
         "records-purge-succeeded",
-        "records-unreadable"
+        "records-unreadable",
+        "records-lost"
       ]
     },
     {

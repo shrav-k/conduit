@@ -31,9 +31,10 @@ call parameters and Conduit metadata into opaque, private rmcp extensions before
 request: rmcp 3.9.0 otherwise logs full requests at debug and trace levels. The handler recovers
 the original parameters without serializing that extension. Parsing errors close the byte
 transport without logging its raw input. No logger is installed or globally disabled. Backend
-errors are the payload-free `Unavailable` type, so subprocess output or credential-bearing
-error messages cannot become an answer. Backend and gate implementations must apply the same
-rule to their own logging.
+errors use `Unavailable` without a reason by default. A runtime can attach its own explanation
+with `Unavailable::because(text)` under the rules below. Passed-through subprocess output or
+credential-bearing error text must never become a reason. Backend and gate implementations
+must apply the same rule to their own logging.
 
 ## Runtime interfaces
 
@@ -64,6 +65,35 @@ runtime contract states. The engine URL must preserve scheme, host, port and pat
 and secret environment names cannot overlap or bind identity variables, case-insensitively for
 the latter. No ambient environment or state-directory variable is added by the kit. A runtime
 supplies a state directory only if its contract declares one (PRV-029).
+
+A reason is text the runtime writes itself naming what failed: a setting, a variable's name,
+a program or a machine's hostname, never a value. Never pass through an operating-system,
+library or remote tool's error text. `Unavailable` remains usable as a value and a type;
+compare it as a value, never use it as a pattern. Its `Debug` always prints only `Unavailable`,
+even with a reason.
+
+Only failed staging and a backend `start` error can put a reason in an answer: `staging failed:`
+or `start did not complete:` followed by a space and the reason, with the existing tree-stop
+suffix for start. Outcomes and text without a reason stay unchanged. The kit drops reasons from gate
+opening, the state store, inventory, stop and state. Reasons are text content, never Conduit's
+`_meta` reason key. The kit holds them only until building the answer and never writes them
+to its ledger, state store, records or its own logs. Like a gate URL, the answer carrying a
+reason can reach rmcp's debug log, so the kit checks it before answering.
+
+The reason and its one-line form are checked against the same non-empty sensitive values
+used to check a gate URL: identity variables, identity files, secret variables and secret
+package arguments. A whole value found in the original reason, or its one-line form found in
+the one-line reason, withholds the entire reason and substitutes
+`runtime's reason was withheld because it contained a value supplied to the run`.
+This check precedes cutting, so a value beyond the length limit still withholds the whole
+reason. A fragment of a value is not caught.
+Ordinary environment values and item/package arguments are not secrets by their schemas and
+do not count; short ordinary values would otherwise withhold most reasons.
+
+The kit makes reasons one line by replacing each control character and U+2028 and U+2029 with
+a space, and cuts them to at most 512 Unicode scalar values on a character boundary. The same
+replacement makes sensitive values one line for comparison. An empty or blank reason after
+cleaning and cutting counts as no reason.
 
 `Identity`, `Secrets` and `RunInput` have no `Debug` or `Serialize` implementation. Staged
 material must clean up when dropped; staging that fails or is cancelled cleans its temporary

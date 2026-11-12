@@ -33,6 +33,39 @@ contract says so. A63-RP1 is order 127. Since order 127, A63-RP1 also wires the 
 each run's process group with a guard, so no run outlives the provider; A63-RP2 keeps the external
 drainer of owed stops and the separate operating-system users; registry packages are A63-RPN.
 
+**Lane SP's checkpoint (2026-11-12, at the admin's word, for the owner's usage limits).** Lane SP
+(ruling 71: plans, providers and scenario servers, model checking, A74/S3, scenario runs and
+probes) stopped here; nothing of the lane runs, and every unfinished branch is on GitHub.
+
+- **Built and merged since the status above:** the kit's reasons for a failed staging or start (138)
+  and its rule for a start after its own owed stop, under order 081 (141); SSH-R's durable directory
+  outside the engine's lifecycle (145); S2's adapter row (139); S4's scripted client SCR1 (142 and
+  148) and effect servers S4-SRV1 (143); and SSH-R's stop-drainer (146, 149 and 150), which outlives
+  the provider. **Stopped unmerged:** S4-SRV2 (order 144), its branch `wo/144-s4-srv2-hook` pushed,
+  with two musts left for a finishing order, named in its Record.
+- **The queue, in order:**
+  1. S4-SRV2's finishing order, stacked on `wo/144-s4-srv2-hook`, for the two musts its Record
+     names;
+  2. SSH-R's key sweep for retired providers (order 147, written, not dispatched);
+  3. SSH-R's loopback-`sshd` tier, an order not yet written (a `loginctl` stand-in, `PermitUserRC
+     no` and a `PidFile` in its temporary directory; a `drainInterval` above five minutes, which
+     order 146's worker found the configuration allows);
+  4. S4-SRV1b (the plain partial task) and S4-SRV2b (the hook's onward request and E20's test),
+     then SCR2 and S4-H, in [S4's plan](../../experiments/015-s4-partial-setup/plan.md);
+  5. the other scenario servers the plans name: S5-SRV, S6-SRV, S9-SRV (reusing S4-SRV2's hook),
+     S8-C, and A63's KC, DR and GS;
+  6. S2-LOG, Linear's OAuth login through the Interface (A82), after the core lane's 048a, 048b and
+     051b;
+  7. model checking: MC4's P1 registered again, and the models of orders 109, 110, 112 and 113
+     reviewed against order 081's promises, after 077 lands; the MC2 rerun, after 077; MC9 after
+     batch 2; SV1 after 071; MX0 at the admin's word.
+- **Open for the owner:** S3's cut, heal and loss method (S3-OF, options A to C in
+  [S3's plan](../../experiments/014-s3-two-machines/plan.md)); and the plain Linear server for
+  S2's runs, chosen with the owner before them, to the requirements in
+  [S2's plan](../../experiments/013-s2-shared-login/plan.md).
+- **Waiting on others:** SSH-M on 049a1 in `s3/m2`; PRV-021's three cases in the admin's next
+  spec order.
+
 ## What `main` has now
 
 Evidence below is the tree at that commit, not the presence of an order file or its commit title.

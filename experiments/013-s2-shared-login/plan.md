@@ -22,6 +22,12 @@ No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
+**Checkpoint (2026-11-12, lane SP):** built S2-F (order 133), the Linear stub (135), the aware
+row S2-L1 (136) and the adapter row S2-L2 (139). Next: S2-H with SCR2; S2-PL once the plain
+server is chosen with the owner; S2-LOG (A82) after the core lane's 048a, 048b and 051b. Open for
+the owner: the plain Linear server for S2's runs, to the requirements in "The plain row" below.
+The lane's whole queue is in [PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
+
 ## What `main` has now
 
 Evidence below is inspection of this commit, not a new test result. The log's entries for orders

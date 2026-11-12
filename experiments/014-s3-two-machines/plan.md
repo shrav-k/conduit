@@ -27,6 +27,12 @@ No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `8b5c8093c1ca2a7a73e71fd50cce90a8f522f4f8`.
 
+**Checkpoint (2026-11-12, lane SP):** built SSH-R, the SSH runtime provider (orders 137 and 140),
+its durable directory (145) and its stop-drainer (146, 149 and 150). Next: SSH-R's key sweep
+(order 147, written, not dispatched), then its loopback-`sshd` tier; SSH-M waits for 049a1 in
+`s3/m2`. Open for the owner: S3's cut, heal and loss method (S3-OF, options A to C). The lane's
+whole queue is in [PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
+
 ## What `main` has now
 
 The log records 041b at `1091a71`; commits headed 070–072, 076–082, 049a1 and 038c add order files. Their work is absent here; side-branch contents and

@@ -56,6 +56,12 @@ It changes no engine code. Where only the model can show a fix, your report says
    `retire-hook.v1` says that a hook that did not succeed "keeps the shutdown pending". OPS-022 and
    LIF-024 make a retirement whose hook failed and whose stop succeeded end unknown, and so its
    shutdown is unknown.
+4b. **The Conduits a removal closes** (order 111, MC6-002, confirmed on the correct model in a
+   147-action trace). LIF-019 says that no object that refers to an object is retired by it. But when
+   an instance is removed, CON-008 closes the Conduits whose consumer it is, and closing a Conduit
+   retires it (LIF-017, LIF-035). The model's control that keeps those Conduits keeps LIF-019 and
+   breaks CON-008. Its trace and the control are in experiments/012-model-checking/README.md, under
+   "MC6 findings, traces and limits", on order 111's branch, which merges with its follow-up 114.
 
 Today's text, on `main` at 355e431:
 
@@ -408,6 +414,13 @@ Read first:
    The core already settles both this way. If the runner cannot express them, say why. If a case
    that you wrote from the promises fails, report the failure and leave the case out: this order
    changes no engine code.
+
+4b. **The Conduits a removal closes** (MC6-002; the coordinator's settlement, for CON-008 and
+   LIF-017). LIF-019's rule is meant for objects that refer to the retired one from outside its
+   Conduits, not for the Conduits of which it is an end, which CON-008 closes with its removal. Narrow
+   LIF-019 so that it says so, citing CON-008, and check that LIF-017, LIF-035 and the definitions
+   of "retire" and "close" agree with the narrowed text. Change nothing in CON-008. If a vector
+   already expects LIF-019's literal wording, report it and declare the change.
 
 5. **The vectors.** Write each expectation by hand from the promises, never by copying the
    engine's output, and declare every change.

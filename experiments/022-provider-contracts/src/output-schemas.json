@@ -1,0 +1,120 @@
+{
+  "outputs": {
+    "run.v1": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "stop.v1": null,
+    "inspect-run.v1": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "enum": [
+            "running",
+            "stopped",
+            "unknown"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "state"
+      ]
+    },
+    "list-machines.v1": {
+      "type": "object",
+      "properties": {
+        "machines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "hostname": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 63
+              },
+              "labels": {
+                "$ref": "github.com/shrav-k/conduit/core#labels.v1"
+              },
+              "state": {
+                "enum": [
+                  "reachable",
+                  "unreachable",
+                  "gone"
+                ]
+              }
+            },
+            "required": [
+              "hostname",
+              "labels",
+              "state"
+            ]
+          }
+        }
+      },
+      "required": [
+        "machines"
+      ]
+    },
+    "place.v1": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        }
+      }
+    },
+    "fetch-package.v1": {
+      "type": "object",
+      "properties": {
+        "archive": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+        }
+      },
+      "required": [
+        "archive"
+      ]
+    },
+    "get-secret.v1": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ]
+    }
+  },
+  "definitions": {
+    "labels.v1": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "maxLength": 317,
+        "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?[A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63,
+        "pattern": "^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$"
+      }
+    }
+  }
+}

@@ -176,3 +176,23 @@ git status --porcelain --ignored $D | grep target/ | grep -v '^!!'
 
 `target/` stays ignored and unstaged. Report each choice of the case form and of the report as one
 of your own choices, and each behavior `spec/` leaves open as a finding. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, from base bb84a46, beside order 122: the worker in 24 minutes
+(1453 s) and a fresh verifier in 7 minutes (403 s); then a second worker round in 7 minutes
+(431 s) and a fresh verifier in 7 minutes (427 s). The result is
+`experiments/022-provider-contracts/`: the launcher (a package archive by its digest, extracted
+under `<lab>`, with PRV-023's environment and a persistent state directory), the MCP driver
+(discovery, the extension declared by the client itself, PRV-005's keys, one send per call), the
+`provider.yaml` case form and its strict validation, descriptors, per-implementation reports with
+redaction, the four empty suites, and its own tests; with its row in `experiments/README.md` and
+its register row in ROADMAP.md, by the admin's leave.
+
+Round one's six musts were fixed in round two: the tool name is the export name, not the
+qualified reference; the client declares the extension itself, since `rmcp` overwrote a manual
+declaration; calls use `call_tool_once`, so nothing is resent; restart steps and
+`no_marker_anywhere` reject unknown fields; the instance IDs `.` and `..` are refused; and the
+tool name, its version and case IDs are redacted. Round two's verifier left three musts (two in
+redaction, one in IFC-046's revision retry); order 125 closed them, and this order merged with it
+as one change.

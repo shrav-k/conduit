@@ -258,6 +258,8 @@ impl Executor for Scripted {
 /// Establish S1 through setup using the same fixture evidence, then use OS evidence.
 fn established(path: &Path) -> Shell {
     let shell = open(path);
+    // DL2: only tests that inspect transitions retain the test trace.
+    *shell.trace.lock().unwrap() = Some(Vec::new());
     let case = case();
     let steps = case["steps"].as_array().unwrap();
     let mut symbols = BTreeMap::new();
@@ -267,7 +269,15 @@ fn established(path: &Path) -> Shell {
             shell.evidence.lock().unwrap().push_back(evidence.clone());
         }
         let committed = shell.commit(input).unwrap();
-        let t = shell.trace.lock().unwrap().last().unwrap().clone();
+        let t = shell
+            .trace
+            .lock()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .last()
+            .unwrap()
+            .clone();
         if let Some(capture) = step["capture"].as_object() {
             let value = serde_json::to_value(&t).unwrap();
             for (k, p) in capture {
@@ -282,7 +292,7 @@ fn established(path: &Path) -> Shell {
         drop(committed);
     }
     shell.evidence.lock().unwrap().clear();
-    shell.trace.lock().unwrap().clear();
+    *shell.trace.lock().unwrap() = None;
     shell
 }
 fn actor(shell: &Shell, name: &str) -> String {
@@ -305,7 +315,8 @@ fn invoke(shell: &Shell, name: &str, tool: &str, key: Option<&str>) -> Value {
 fn s1_whole_through_store_loop_and_scripted_executor() {
     let temp = temporary();
     let shell = open(temp.path());
-    shell.trace.lock().unwrap().clear();
+    // DL2: the full-loop test explicitly opts into transition tracing.
+    *shell.trace.lock().unwrap() = Some(Vec::new());
     let case = case();
     let steps = case["steps"].as_array().unwrap();
     let replies = steps
@@ -339,7 +350,7 @@ fn s1_whole_through_store_loop_and_scripted_executor() {
             ticket.try_reply().unwrap().is_some(),
             "pending must not escape the full loop"
         );
-        let trace = std::mem::take(&mut *shell.trace.lock().unwrap());
+        let trace = std::mem::take(shell.trace.lock().unwrap().as_mut().unwrap());
         assert!(!trace.is_empty());
         for transition in trace {
             let step = &steps[index];
@@ -557,9 +568,10 @@ fn retention_cap_oldest_first_and_age_survive_restart() {
 fn filtered_shell(path: &Path) -> Shell {
     let shell = established(path);
     let writer = shell.writer.lock().unwrap();
-    let mut stored = writer.store.read().unwrap();
+    // DL2: adapt the fixture's state access to the shared committed snapshot.
+    let mut stored = writer.store.take().unwrap();
     let mut filtered_paths = 0;
-    for object in &mut stored.state.objects {
+    for object in &mut Arc::make_mut(&mut stored.state).objects {
         if object["kind"] == "Conduit" && object["nested"]["name"] == "project" {
             object["requirements"]["deadline"] = filter();
             filtered_paths += 1;
@@ -595,12 +607,15 @@ fn filtered_shell(path: &Path) -> Shell {
     for id in ids {
         let transition = shell
             .transition(
-                &stored.state,
+                Arc::unwrap_or_clone(std::mem::take(&mut stored.state)),
+                &writer.store,
                 json!({"kind":"expire-outputs","invocation":id}),
             )
             .unwrap();
         shell.persist(&writer, &mut stored, &transition).unwrap();
+        stored.state = Arc::new(transition.state);
     }
+    writer.store.remember(stored);
     drop(writer);
     shell
 }
@@ -987,7 +1002,9 @@ fn identities_verify_revoke_and_never_enter_state_records_or_output() {
         Identity::Unreadable
     ));
     let mut removed = shell.state().unwrap();
-    removed.objects.retain(|v| v["id"] != id);
+    Arc::make_mut(&mut removed)
+        .objects
+        .retain(|v| v["id"] != id);
     assert!(matches!(
         shell
             .authority
@@ -1474,4 +1491,126 @@ fn first_start_presents_final_lists_and_unbuilt_operations_name_their_orders() {
             .iter()
             .any(|r| r["type"] == "invocation-dispatched")
     );
+}
+
+// DL2/DL6: compare memory with a fresh parse without exposing store credentials.
+fn assert_memory_equals_disk(shell: &Shell) {
+    let snapshot = shell.state().unwrap();
+    let writer = shell.writer.lock().unwrap();
+    let disk = writer.store.read().unwrap();
+    let memory = writer.store.take().unwrap();
+    assert!(*snapshot == disk.state, "reader differs from state.json");
+    assert!(
+        *memory.state == disk.state,
+        "writer differs from state.json"
+    );
+    assert_eq!(memory.output_times, disk.output_times);
+    // DL2: reference serialization must retain version 1's exact field order and bytes.
+    assert!(
+        serde_json::to_vec(&disk).unwrap()
+            == store::private_read(&writer.store.directory.join("state.json")).unwrap(),
+        "version-1 serialization differs from state.json"
+    );
+    writer.store.remember(memory);
+}
+
+// DL2/IMP-007/REC-003/OPS-013: a failed persistence boundary discards memory;
+// after rename, the committed file rather than the failed proposed state wins.
+fn memory_equals_disk_after_fault(fault: store::WriteFault) {
+    let temp = temporary();
+    let shell = established(temp.path());
+    let pending = shell
+        .begin(
+            invoke(&shell, "agent-b", "project.file.write.v1", None),
+            &Deferred,
+        )
+        .unwrap();
+    let input = json!({"kind":"complete","invocation":pending.invocation.as_ref().unwrap(),"attempt":1,
+        "completion":{"kind":"result","result":{"content":[{"type":"text","text":"retained fault-test output"}]}}});
+    let held = shell.state().unwrap();
+    let before = store::private_read(&shell.directory.join("state.json")).unwrap();
+    assert!(Arc::ptr_eq(&held, &shell.state().unwrap()));
+    *shell.writer.lock().unwrap().store.fault.borrow_mut() = Some(fault);
+    let error = match shell.commit(input.clone()) {
+        Err(error) => error,
+        Ok(_) => panic!("fault did not fail the commit"),
+    };
+    assert!(error.contains("injected state write failure"));
+    let after = store::private_read(&shell.directory.join("state.json")).unwrap();
+    assert_eq!(
+        before == after,
+        fault != store::WriteFault::DirectorySync,
+        "only the directory-fsync fault must leave the renamed commit on disk"
+    );
+    assert_memory_equals_disk(&shell);
+    shell.commit(input).unwrap();
+    assert_memory_equals_disk(&shell);
+    // DL2: a held reader retains its immutable previous commit across the next write.
+    assert!(!Arc::ptr_eq(&held, &shell.state().unwrap()));
+}
+
+#[test]
+fn memory_equals_disk_after_temporary_write_failure() {
+    // DL2: the per-store fault must leave memory equal to the authoritative file.
+    memory_equals_disk_after_fault(store::WriteFault::Write);
+}
+#[test]
+fn memory_equals_disk_after_file_fsync_failure() {
+    // DL2: the per-store fault must leave memory equal to the authoritative file.
+    memory_equals_disk_after_fault(store::WriteFault::FileSync);
+}
+#[test]
+fn memory_equals_disk_after_rename_failure() {
+    // DL2: the per-store fault must leave memory equal to the authoritative file.
+    memory_equals_disk_after_fault(store::WriteFault::Rename);
+}
+#[test]
+fn memory_equals_disk_after_directory_fsync_failure() {
+    // DL2: the per-store fault must leave memory equal to the authoritative file.
+    memory_equals_disk_after_fault(store::WriteFault::DirectorySync);
+}
+
+#[test]
+fn memory_equals_disk_after_step_failure_and_evidence_retry() {
+    // DL6: both exhausted-ID attempts consume their State, then reload the last commit.
+    let temp = temporary();
+    let shell = established(temp.path());
+    let input = invoke(&shell, "agent-b", "project.file.write.v1", None);
+    shell
+        .evidence
+        .lock()
+        .unwrap()
+        .push_back(json!({"time":"2026-11-11T00:00:00Z","ids":[],"revisions":[],"suffixes":[]}));
+    let error = match shell.commit(input.clone()) {
+        Err(error) => error,
+        Ok(_) => panic!("empty evidence unexpectedly succeeded"),
+    };
+    assert!(error.starts_with("embedding error: exhausted "));
+    assert_memory_equals_disk(&shell);
+    shell.commit(input).unwrap();
+    assert_memory_equals_disk(&shell);
+}
+
+#[test]
+fn state_write_fault_is_private_to_its_store_and_state_file() {
+    // DL2/DL13: token writes and another store cannot consume this store's state fault.
+    let first = temporary();
+    let shell = open(first.path());
+    let bootstrap = json!({"kind":"first-start","machine":local_machine(BTreeMap::new()).unwrap()});
+    shell.submit(bootstrap.clone(), &MissingExecutor).unwrap();
+    let root = actor(&shell, "root");
+    *shell.writer.lock().unwrap().store.fault.borrow_mut() = Some(store::WriteFault::Write);
+    shell.issue_client_token(&root).unwrap();
+
+    let second = temporary();
+    let other = open(second.path());
+    other.submit(bootstrap, &MissingExecutor).unwrap();
+    assert_memory_equals_disk(&other);
+
+    let input = json!({"kind":"list-tools","identity":{"kind":"instance","id":root}});
+    let error = shell.submit(input.clone(), &MissingExecutor).unwrap_err();
+    assert!(error.contains("injected state write failure"));
+    assert_memory_equals_disk(&shell);
+    shell.submit(input, &MissingExecutor).unwrap();
+    assert_memory_equals_disk(&shell);
 }

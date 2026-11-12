@@ -3,7 +3,7 @@
 use crate::{Allocation, Context, Evidence, Result, State, Transition, decision, schemas};
 use serde::Deserialize;
 use serde_json::{Value, json};
-use std::collections::BTreeSet;
+use std::{borrow::Cow, cell::OnceCell, collections::BTreeSet};
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
@@ -32,10 +32,14 @@ pub(crate) fn id(value: &Value) -> &Value {
     value.get("id").unwrap_or(value)
 }
 pub(crate) fn object<'a>(state: &'a State, reference: &Value) -> Option<&'a Value> {
+    // POOL-014: retain the raw reference lookup for helpers that take State.
+    object_in(&state.objects, reference)
+}
+fn object_in<'a>(objects: &'a [Value], reference: &Value) -> Option<&'a Value> {
     // POOL-014 names the current entry Resource, never the Pool that owns it.
     if let Some(entry) = reference.get("entry") {
-        let pool = object(state, &json!({"kind":"Pool","name":reference["name"]}))?;
-        return state.objects.iter().find(|o| {
+        let pool = object_in(objects, &json!({"kind":"Pool","name":reference["name"]}))?;
+        return objects.iter().find(|o| {
             o["kind"] == "Resource"
                 && o["state"] != "retired"
                 && o["nested"]["parent"] == pool["id"]
@@ -43,20 +47,12 @@ pub(crate) fn object<'a>(state: &'a State, reference: &Value) -> Option<&'a Valu
                 && o["nested"]["name"] == *entry
         });
     }
-    state.objects.iter().find(|o| {
+    objects.iter().find(|o| {
         o["id"] == *id(reference)
             || reference.as_str().is_some_and(|s| o["name"] == s)
             || reference.get("name").is_some_and(|n| o["name"] == *n)
                 && reference.get("kind").is_none_or(|k| o["kind"] == *k)
     })
-}
-// OBJ-006: a bare name means the kind fixed by the governing reference schema.
-fn fixed_object<'a>(state: &'a State, reference: &Value, kind: &str) -> Option<&'a Value> {
-    if let Some(name) = reference.as_str() {
-        object(state, &json!({"kind":kind,"name":name}))
-    } else {
-        object(state, reference)
-    }
 }
 fn open(path: &Value) -> bool {
     path["kind"] == "Conduit" && path["open"] == true && path["state"] == "ready"
@@ -80,36 +76,145 @@ fn covers(b: &Value, target: &Value) -> bool {
                 || target["kind"] == "Resource" && id(v) == id(&target["owner"])
         })
 }
-fn subset(new: &Value, old: &Value, state: &State) -> bool {
-    values(&new["arguments"], "pools")
+fn subset(new: &Value, old: &Value, view: &PublicationView<'_>) -> Result<bool> {
+    // ACC-029: every bound target is read through the normalized view.
+    if !values(&new["arguments"], "pools")
         .all(|p| values(&old["arguments"], "pools").any(|v| id(v) == id(p)))
-        && values(&new["arguments"], "targets")
-            .all(|v| object(state, v).is_some_and(|o| covers(old, o)))
-        && values(&new["arguments"], "operations")
-            .all(|op| values(&old["arguments"], "operations").any(|v| v == op))
-}
-
-/// Normalize only a private publication view; registration's stored references stay frozen.
-pub(crate) fn publication_state(state: &State, context: &Context) -> Result<State> {
-    let mut view = state.clone();
-    for o in &mut view.objects {
-        if o.get("spec").is_some() {
-            continue;
-        }
-        if o["kind"] == "Conduit" {
-            for key in ["consumer", "target"] {
-                o[key] = id(&o[key]).clone();
-            }
-            o["local_name"] = o
-                .get("local_name")
-                .cloned()
-                .or_else(|| o["nested"].get("name").cloned())
-                .unwrap_or_else(|| o["name"].clone());
-        } else {
-            *o = crate::registration::publication_object(o, context)?;
+    {
+        return Ok(false);
+    }
+    for v in values(&new["arguments"], "targets") {
+        if !view.object(v)?.is_some_and(|o| covers(old, o)) {
+            return Ok(false);
         }
     }
-    Ok(view)
+    Ok(values(&new["arguments"], "operations")
+        .all(|op| values(&old["arguments"], "operations").any(|v| v == op)))
+}
+
+/// IFC-012/IFC-033: a call-local, objects-only publication view. Unread objects
+/// are never normalized; templates borrow their unchanged stored representation.
+pub struct PublicationView<'a> {
+    objects: &'a [Value],
+    context: &'a Context,
+    normalized: Vec<OnceCell<Result<Cow<'a, Value>>>>,
+}
+impl<'a> PublicationView<'a> {
+    pub fn new(state: &'a State, context: &'a Context) -> Self {
+        // IFC-033: no records, invocations, snapshots or package files enter the view.
+        Self {
+            objects: &state.objects,
+            context,
+            normalized: (0..state.objects.len()).map(|_| OnceCell::new()).collect(),
+        }
+    }
+    fn at(&self, index: usize) -> Result<&Value> {
+        // IFC-033: normalize a looked-up object at most once, including a failed lookup.
+        self.normalized[index]
+            .get_or_init(|| {
+                let object = &self.objects[index];
+                if object.get("spec").is_some() {
+                    return Ok(Cow::Borrowed(object));
+                }
+                if object["kind"] == "Conduit" {
+                    if ["consumer", "target"]
+                        .iter()
+                        .all(|key| object.get(key).is_some_and(|v| id(v) == v))
+                        && object.get("local_name").is_some()
+                    {
+                        return Ok(Cow::Borrowed(object));
+                    }
+                    let mut o = object.clone();
+                    for key in ["consumer", "target"] {
+                        o[key] = id(&o[key]).clone();
+                    }
+                    o["local_name"] = o
+                        .get("local_name")
+                        .cloned()
+                        .or_else(|| o["nested"].get("name").cloned())
+                        .unwrap_or_else(|| o["name"].clone());
+                    Ok(Cow::Owned(o))
+                } else {
+                    let normalized = crate::registration::publication_object(object, self.context)?;
+                    Ok(if normalized == *object {
+                        Cow::Borrowed(object)
+                    } else {
+                        Cow::Owned(normalized)
+                    })
+                }
+            })
+            .as_ref()
+            .map(|o| o.as_ref())
+            .map_err(Clone::clone)
+    }
+    pub fn find(&self, predicate: impl Fn(&Value) -> bool) -> Result<Option<&Value>> {
+        // IFC-033: raw ID/name/kind selection does not normalize unrelated instances.
+        self.objects
+            .iter()
+            .position(predicate)
+            .map(|i| self.at(i))
+            .transpose()
+    }
+    pub fn object(&self, reference: &Value) -> Result<Option<&Value>> {
+        // ACC-033: retain POOL-014's exact reference lookup before normalization.
+        if let Some(entry) = reference.get("entry") {
+            let Some(pool) = self.object(&json!({"kind":"Pool","name":reference["name"]}))? else {
+                return Ok(None);
+            };
+            return self.find(|o| {
+                o["kind"] == "Resource"
+                    && o["state"] != "retired"
+                    && o["nested"]["parent"] == pool["id"]
+                    && o["nested"]["slot"] == "entries"
+                    && o["nested"]["name"] == *entry
+            });
+        }
+        let Some(raw) = object_in(self.objects, reference) else {
+            return Ok(None);
+        };
+        self.find(|o| std::ptr::eq(o, raw))
+    }
+    pub fn paths<'b>(
+        &'b self,
+        consumer: &'b Value,
+    ) -> impl Iterator<Item = Result<&'b Value>> + 'b {
+        // IFC-012: preserve open Conduit order, normalizing only matching paths.
+        self.objects
+            .iter()
+            .enumerate()
+            .filter(move |(_, o)| open(o) && id(&o["consumer"]) == consumer)
+            .map(|(i, _)| self.at(i))
+    }
+    fn fixed(&self, reference: &Value, kind: &str) -> Result<Option<&Value>> {
+        // ACC-024/OBJ-006: a bare name uses the governing reference kind.
+        if let Some(name) = reference.as_str() {
+            self.object(&json!({"kind":kind,"name":name}))
+        } else {
+            self.object(reference)
+        }
+    }
+    fn management(&self, name: &str) -> Result<&Value> {
+        // ACC-033: management/root reads use the same normalized objects as publication.
+        self.find(|o| o["from"] == self.context.qualified(name))?
+            .ok_or_else(|| format!("missing built-in {name}"))
+    }
+    fn owner(&self, object: &Value) -> Result<Option<&Value>> {
+        // ACC-033: resolve the named instance's owner in the publication view.
+        self.object(&object["owner"])
+    }
+    fn current_path(&self, consumer: &Value, target: &Value, op: &str) -> Result<bool> {
+        // ACC-033: preserve the current open-path scan and retired-target check.
+        if target["state"] == "retired" {
+            return Ok(false);
+        }
+        for path in self.paths(consumer) {
+            let path = path?;
+            if id(&path["target"]) == &target["id"] && values(path, "operations").any(|v| v == op) {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
 }
 pub(crate) fn established<'a>(
     state: &'a State,
@@ -131,33 +236,47 @@ pub(crate) fn established<'a>(
             .ok_or(("refused", "IFC-022")),
     }
 }
-fn tools(state: &State, instance: &str, context: &Context) -> Result<Vec<Value>> {
+pub(crate) fn tools(
+    view: &PublicationView<'_>,
+    instance: &str,
+    context: &Context,
+) -> Result<Vec<Value>> {
+    // IFC-012/IFC-033: every tool in this list shares one publication view.
     let mut tools = vec![];
-    for path in state
-        .objects
-        .iter()
-        .filter(|o| open(o) && id(&o["consumer"]) == &json!(instance))
-    {
+    visit_tools(view, instance, context, |tool| tools.push(tool.clone()))?;
+    tools.sort_by_key(|v| v["name"].as_str().unwrap_or("").to_owned());
+    Ok(tools)
+}
+fn visit_tools(
+    view: &PublicationView<'_>,
+    instance: &str,
+    context: &Context,
+    mut visit: impl FnMut(&Value),
+) -> Result<()> {
+    // IFC-033/IFC-038: publication errors also matter when no list must be collected.
+    let consumer = json!(instance);
+    for path in view.paths(&consumer) {
+        let path = path?;
         for op in values(path, "operations") {
             let (published, _) = schemas::publish(
-                state,
+                view,
                 instance,
                 path["id"].as_str().ok_or("missing Conduit ID")?,
                 op.as_str().ok_or("missing operation name")?,
                 context,
             )?;
             if let Some(tool) = published.get("tool").filter(|v| !v.is_null()) {
-                tools.push(tool.clone());
+                visit(tool);
             }
         }
     }
-    tools.sort_by_key(|v| v["name"].as_str().unwrap_or("").to_owned());
-    Ok(tools)
+    Ok(())
 }
 pub(crate) fn list(t: &mut Transition, identity: &Identity, context: &Context) -> Result<()> {
+    // IFC-012: publish the established consumer's private current list.
     match established(&t.state, identity) {
         Ok(instance) => {
-            t.reply = json!({"tools":tools(&t.state,instance["id"].as_str().ok_or("missing instance ID")?,context)?, "cacheScope":"private", "capabilities":{"tools":{"listChanged":true}}});
+            t.reply = json!({"tools":tools(&PublicationView::new(&t.state, context),instance["id"].as_str().ok_or("missing instance ID")?,context)?, "cacheScope":"private", "capabilities":{"tools":{"listChanged":true}}});
             t.decisions.push(decision(
                 "list-current-tools",
                 &["IFC-012", "IFC-013", "IFC-033", "IFC-038", "CON-017"],
@@ -182,6 +301,15 @@ pub(crate) fn list(t: &mut Transition, identity: &Identity, context: &Context) -
 /// The shell routes each returned notification to subscribed streams of that consumer.
 /// Comparing state, rather than connections or prior calls, keeps the lists private.
 pub fn tool_list_changes(before: &State, after: &State, context: &Context) -> Result<Vec<Value>> {
+    // IFC-038: preserve the public error while retaining its consumer for differential checks.
+    tool_list_changes_attributed(before, after, context).map_err(|(_, error)| error)
+}
+pub(crate) fn tool_list_changes_attributed(
+    before: &State,
+    after: &State,
+    context: &Context,
+) -> std::result::Result<Vec<Value>, (String, String)> {
+    // IFC-038: unchanged dependencies imply equal lists, but publication can still fail.
     let consumers: BTreeSet<_> = before
         .objects
         .iter()
@@ -189,14 +317,44 @@ pub fn tool_list_changes(before: &State, after: &State, context: &Context) -> Re
         .filter(|o| o["kind"] == "Conduit")
         .filter_map(|o| id(&o["consumer"]).as_str())
         .collect();
+    let before_view = PublicationView::new(before, context);
+    let after_view = PublicationView::new(after, context);
     let mut changes = vec![];
     for consumer in consumers {
-        if tools(before, consumer, context)? != tools(after, consumer, context)? {
+        let old = list_dependencies(before, consumer);
+        let new = list_dependencies(after, consumer);
+        let changed = if old.is_some() && old == new {
+            // IFC-033/IFC-038: validate once without collecting, cloning or sorting a list.
+            visit_tools(&before_view, consumer, context, |_| {})
+                .map_err(|error| (consumer.to_owned(), error))?;
+            false
+        } else {
+            tools(&before_view, consumer, context)
+                .and_then(|old| tools(&after_view, consumer, context).map(|new| old != new))
+                .map_err(|error| (consumer.to_owned(), error))?
+        };
+        if changed {
             changes.push(json!({"consumer":consumer,"method":"notifications/tools/list_changed"}));
         }
     }
     Ok(changes)
 }
+fn list_dependencies<'a>(state: &'a State, consumer: &str) -> Option<Vec<(&'a Value, &'a Value)>> {
+    // IFC-038: a missing target deliberately falls back to publication's original error.
+    state
+        .objects
+        .iter()
+        .filter(|o| open(o) && id(&o["consumer"]) == consumer)
+        .map(|p| {
+            state
+                .objects
+                .iter()
+                .find(|o| o["id"] == *id(&p["target"]))
+                .map(|target| (p, target))
+        })
+        .collect()
+}
+
 pub(crate) struct Verdict {
     pub(crate) reason: Option<&'static str>,
     pub(crate) rules: Vec<&'static str>,
@@ -276,30 +434,32 @@ pub(crate) fn may_inspect(
 }
 /// First matching row of ACC-033. Unknown named objects are diagnosed only after access.
 fn routing<'a>(
-    state: &'a State,
+    state: &State,
+    view: &'a PublicationView<'_>,
     path: &'a Value,
     op: &str,
     args: &Value,
     context: &Context,
 ) -> Result<(Option<&'a Value>, Option<&'a Value>)> {
-    let mgmt = management(state, "management", context)?;
+    // ACC-033: only reconciliation invocation reads use the transition State.
+    let mgmt = view.management("management")?;
     let core_op = op.strip_prefix(&format!("{}#", context.core_package));
     let named = match core_op {
-        Some("inspect.v1" | "unregister.v1") => object(state, &args["object"]),
-        Some("replace.v1") => state.objects.iter().find(|o| {
+        Some("inspect.v1" | "unregister.v1") => view.object(&args["object"])?,
+        Some("replace.v1") => view.find(|o| {
             o["kind"] == args["template"]["kind"]
                 && o["name"] == args["template"]["metadata"]["name"]
                 && o.get("spec").is_some()
-        }),
+        })?,
         Some("set-up.v1" | "retire.v1" | "register-replacement.v1") => {
-            object(state, &args["instance"])
+            view.object(&args["instance"])?
         }
-        Some("open.v1" | "close.v1") => fixed_object(state, &args["conduit"], "Conduit"),
-        Some("declare-lost.v1") => fixed_object(state, &args["node"], "Resource"),
+        Some("open.v1" | "close.v1") => view.fixed(&args["conduit"], "Conduit")?,
+        Some("declare-lost.v1") => view.fixed(&args["node"], "Resource")?,
         _ => None,
     };
     let route = match core_op {
-        Some("list.v1") => object(state, &path["target"]).filter(|o| {
+        Some("list.v1") => view.object(&path["target"])?.filter(|o| {
             o["from"] == context.qualified("management")
                 || o["kind"] == "Pool"
                 || o["kind"] == "Fleet"
@@ -317,7 +477,7 @@ fn routing<'a>(
             Some(o)
                 if (o["kind"] == "Resource" || o["kind"] == "Agent") && o.get("spec").is_none() =>
             {
-                owner(state, o).filter(|p| p["state"] != "retired")
+                view.owner(o)?.filter(|p| p["state"] != "retired")
             }
             _ => Some(mgmt),
         },
@@ -325,29 +485,33 @@ fn routing<'a>(
             Some(o)
                 if (o["kind"] == "Resource" || o["kind"] == "Agent") && o.get("spec").is_none() =>
             {
-                owner(state, o)
+                view.owner(o)?
                     .filter(|p| p["state"] != "retired")
                     .or(Some(mgmt))
             }
             _ => Some(mgmt),
         },
-        Some("retire-with-resources.v1") => object(state, &path["target"])
+        Some("retire-with-resources.v1") => view
+            .object(&path["target"])?
             .filter(|o| o["kind"] == "Pool" && o["state"] != "retired"),
-        Some("retire-with-agents.v1") => object(state, &path["target"])
+        Some("retire-with-agents.v1") => view
+            .object(&path["target"])?
             .filter(|o| o["kind"] == "Fleet" && o["state"] != "retired"),
-        Some("open.v1" | "close.v1") => Some(management(state, "access", context)?),
+        Some("open.v1" | "close.v1") => Some(view.management("access")?),
         Some("reconcile.v1") => {
             let invocation = state
                 .invocations
                 .iter()
                 .find(|v| v["id"] == args["invocation"]);
             match invocation {
-                Some(v) => match object(state, v.get("object").unwrap_or(&v["target"])) {
+                Some(v) => match view.object(v.get("object").unwrap_or(&v["target"]))? {
                     None => Some(mgmt),
-                    Some(_) if v["management"] == true => object(state, &v["target"])
+                    Some(_) if v["management"] == true => view
+                        .object(&v["target"])?
                         .filter(|p| p["state"] != "retired")
                         .or(Some(mgmt)),
-                    Some(o) if o["kind"] == "Resource" || o["kind"] == "Agent" => owner(state, o)
+                    Some(o) if o["kind"] == "Resource" || o["kind"] == "Agent" => view
+                        .owner(o)?
                         .filter(|p| p["state"] != "retired")
                         .or(Some(mgmt)),
                     _ => Some(mgmt),
@@ -355,13 +519,16 @@ fn routing<'a>(
                 None => Some(mgmt),
             }
         }
-        _ => object(state, &path["target"]).filter(|o| o["state"] != "retired"),
+        _ => view
+            .object(&path["target"])?
+            .filter(|o| o["state"] != "retired"),
     };
     Ok((route, named))
 }
 
 pub(crate) fn evaluate(
     state: &State,
+    view: &PublicationView<'_>,
     request: &AccessRequest,
     context: &Context,
     defer: bool,
@@ -424,13 +591,12 @@ pub(crate) fn evaluate(
     } else if instance["kind"] != "Agent" && instance["kind"] != "Interface" {
         return Ok(Verdict::reason("refused", "IFC-021"));
     }
-    let view = publication_state(state, context)?;
+    let instance = view
+        .find(|o| o["id"] == instance["id"])?
+        .ok_or("missing established instance")?;
     let mut selected = None;
-    for path in view
-        .objects
-        .iter()
-        .filter(|p| open(p) && p["consumer"] == instance["id"])
-    {
+    for path in view.paths(&instance["id"]) {
+        let path = path?;
         let local = path["local_name"].as_str().ok_or("missing local name")?;
         for op in values(path, "operations").filter_map(Value::as_str) {
             if op
@@ -448,7 +614,7 @@ pub(crate) fn evaluate(
         return Ok(Verdict::reason("refused", "SEC-007"));
     }
     let mut verdict = evaluate_path(
-        &view, request, context, instance, &caller, filters, path, op, defer,
+        state, view, request, context, instance, &caller, filters, path, op, defer,
     )?;
     if verdict.route.is_null() {
         verdict.route = json!({"consumer":instance["id"],"caller":caller,"conduit":path["id"],"target":path["target"],"operation":op});
@@ -459,6 +625,7 @@ pub(crate) fn evaluate(
 #[allow(clippy::too_many_arguments)]
 fn evaluate_path(
     state: &State,
+    view: &PublicationView<'_>,
     request: &AccessRequest,
     context: &Context,
     instance: &Value,
@@ -468,7 +635,10 @@ fn evaluate_path(
     op: &str,
     defer: bool,
 ) -> Result<Verdict> {
-    let target = object(state, &path["target"]).ok_or("missing Conduit target")?;
+    // ACC-024/ACC-033/ACC-039/ACC-054: objects come from view, invocations from State.
+    let target = view
+        .object(&path["target"])?
+        .ok_or("missing Conduit target")?;
 
     let (env, scope, contract) = match schemas::operation(target, op, &context.core_package) {
         Ok(c) => c,
@@ -477,11 +647,11 @@ fn evaluate_path(
         }
         Err(e) => return Err(e),
     };
-    let (route, named) = routing(state, path, op, &request.arguments, context)?;
+    let (route, named) = routing(state, view, path, op, &request.arguments, context)?;
     if route.is_none_or(|r| r["id"] != path["target"]) {
         return Ok(Verdict::reason("refused", "ACC-033"));
     }
-    let root = management(state, "root", context)?;
+    let root = view.management("root")?;
     if contract["spec"]["reservedToRoot"] == true
         && (instance["id"] != root["id"] || request.serving.is_some())
     {
@@ -525,9 +695,10 @@ fn evaluate_path(
             } else {
                 "Pool"
             };
-            if let Some(pool) = fixed_object(state, &doc["owner"], family)
+            if let Some(pool) = view
+                .fixed(&doc["owner"], family)?
                 .filter(|p| p["kind"] == family && p["state"] != "retired")
-                && !current_path(state, &instance["id"], pool, op)
+                && !view.current_path(&instance["id"], pool, op)?
             {
                 return Ok(Verdict::reason("refused", "ACC-033"));
             }
@@ -535,7 +706,7 @@ fn evaluate_path(
     }
     if op == context.qualified("register-replacement.v1")
         && let Some(pool) = named.filter(|p| p["kind"] == "Pool" && p["state"] != "retired")
-        && !current_path(state, &instance["id"], pool, op)
+        && !view.current_path(&instance["id"], pool, op)?
     {
         return Ok(Verdict::reason("refused", "ACC-033"));
     }
@@ -583,7 +754,8 @@ fn evaluate_path(
                 if operation == context.qualified("get-secret.v1")
                     && (instance["id"] != root["id"]
                         || request.serving.is_some()
-                        || object(state, &conduit["consumer"])
+                        || view
+                            .object(&conduit["consumer"])?
                             .is_none_or(|c| c["kind"] != "Resource" && c["kind"] != "Agent"))
                 {
                     return Ok(Verdict::reason("refused", "SEC-008"));
@@ -604,23 +776,27 @@ fn evaluate_path(
                 }
             }
         }
-        let access_target = id(&conduit["target"]) == &management(state, "access", context)?["id"];
+        let access_target = id(&conduit["target"]) == &view.management("access")?["id"];
         let old = bound(path, context);
         let new = bound(conduit, context);
         let allowed = if access_target {
             (match (new, old) {
                 (_, None) => true,
                 (None, Some(_)) => false,
-                (Some(new), Some(old)) => subset(new, old, state),
+                (Some(new), Some(old)) => subset(new, old, view)?,
             }) && (!opening
                 || values(conduit, "operations")
                     .all(|op| values(path, "operations").any(|v| v == op)))
         } else {
-            old.is_none_or(|b| {
-                object(state, &conduit["target"]).is_some_and(|t| covers(b, t))
-                    && values(conduit, "operations")
-                        .all(|op| values(&b["arguments"], "operations").any(|v| v == op))
-            })
+            match old {
+                None => true,
+                Some(b) => {
+                    view.object(&conduit["target"])?
+                        .is_some_and(|t| covers(b, t))
+                        && values(conduit, "operations")
+                            .all(|op| values(&b["arguments"], "operations").any(|v| v == op))
+                }
+            }
         };
         if !allowed {
             return Ok(match old {
@@ -634,7 +810,7 @@ fn evaluate_path(
         }
     }
     let (publication, _) = schemas::publish(
-        state,
+        view,
         instance["id"].as_str().ok_or("missing instance ID")?,
         path["id"].as_str().ok_or("missing Conduit ID")?,
         op,
@@ -677,14 +853,17 @@ fn evaluate_path(
     {
         return Ok(Verdict::reason("invalid", "OPS-029"));
     }
-    if registration
-        && values(&request.arguments, "documents").any(|d| {
-            d["kind"] == "Resource"
-                && d.get("from").is_some()
-                && fixed_object(state, &d["owner"], "Pool").is_some_and(|p| p["state"] == "retired")
-        })
-    {
-        return Ok(Verdict::reason("invalid", "POOL-004"));
+    if registration {
+        for d in values(&request.arguments, "documents")
+            .filter(|d| d["kind"] == "Resource" && d.get("from").is_some())
+        {
+            if view
+                .fixed(&d["owner"], "Pool")?
+                .is_some_and(|p| p["state"] == "retired")
+            {
+                return Ok(Verdict::reason("invalid", "POOL-004"));
+            }
+        }
     }
     if registration
         && values(&request.arguments, "documents").any(|d| {
@@ -754,7 +933,13 @@ pub(crate) fn decide(
     request: &AccessRequest,
     context: &Context,
 ) -> Result<()> {
-    let mut verdict = evaluate(&t.state, request, context, false)?;
+    let mut verdict = evaluate(
+        &t.state,
+        &PublicationView::new(&t.state, context),
+        request,
+        context,
+        false,
+    )?;
     verdict.rules.extend([
         "OPS-023", "IFC-025", "REC-001", "REC-002", "REC-003", "ACC-027", "ACC-036",
     ]);
@@ -844,4 +1029,58 @@ pub(crate) fn decide(
         vec![],
     ));
     Ok(())
+}
+
+#[cfg(test)]
+mod notification_tests {
+    use super::*;
+    use std::collections::BTreeMap;
+
+    #[test]
+    fn unchanged_dependencies_preserve_publication_error_and_consumer() {
+        // IFC-033/IFC-038: an unchanged invalid tool must still fail after an earlier consumer.
+        let context = Context {
+            builtin: None,
+            core_package: "test.core".into(),
+            meta_prefix: "test/".into(),
+            templates: BTreeMap::new(),
+            record_source: "urn:test".into(),
+            core_environment: schemas::Environment {
+                scopes: BTreeMap::from([(
+                    "core".into(),
+                    schemas::Scope {
+                        address: "test.core".into(),
+                        version: None,
+                        manifest: BTreeMap::new(),
+                        contracts: BTreeMap::new(),
+                        exports: None,
+                    },
+                )]),
+            },
+        };
+        let state = State {
+            objects: vec![
+                json!({"kind":"Resource","id":"target"}),
+                json!({"kind":"Conduit","id":"first-path","consumer":"a-first",
+                    "target":"target","state":"ready","open":true,"operations":[]}),
+                json!({"kind":"Conduit","id":"invalid-path","consumer":"b-failing",
+                    "target":"target","state":"ready","open":true,
+                    "operations":["example.org/list#act.v1"]}),
+            ],
+            ..State::default()
+        };
+        #[cfg(feature = "differential")]
+        crate::differential::check(&state, &state, &context).unwrap();
+        let view = PublicationView::new(&state, &context);
+        let expected = tools(&view, "b-failing", &context).unwrap_err();
+        assert!(expected.starts_with("NAM-014:"));
+        assert_eq!(
+            tool_list_changes(&state, &state, &context),
+            Err(expected.clone())
+        );
+        assert_eq!(
+            tool_list_changes_attributed(&state, &state, &context),
+            Err(("b-failing".into(), expected))
+        );
+    }
 }

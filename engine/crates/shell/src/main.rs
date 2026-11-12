@@ -178,7 +178,8 @@ fn run() -> Result<()> {
     };
     if command == "serve" {
         conduit_shell::server::preflight(&shell)?;
-        shell.issue_client_token(&object_id(&shell.state()?, "root")?)?;
+        // DL2/DL13: token subjects come from the shared last-commit snapshot.
+        shell.issue_client_token(&object_id(shell.state()?.as_ref(), "root")?)?;
         let runner = Runner::new(&shell, std::env::current_exe().map_err(|e| e.to_string())?)?;
         let executor = Arc::new(conduit_shell::server::ServingExecutor::new(
             runner.executor(),
@@ -234,7 +235,8 @@ fn run() -> Result<()> {
                 json!({"kind":"first-start","machine":conduit_shell::local_machine(labels)?}),
                 &MissingExecutor,
             )?;
-            shell.issue_client_token(&object_id(&shell.state()?, "root")?)?;
+            // DL2/DL13: token subjects come from the shared last-commit snapshot.
+            shell.issue_client_token(&object_id(shell.state()?.as_ref(), "root")?)?;
             println!("{reply}");
             success &= conduit_shell::author::succeeded(&reply);
         }

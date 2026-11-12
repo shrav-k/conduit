@@ -346,3 +346,22 @@ gave the view, whether it normalizes lazily, the shared snapshot, the new entry 
 fault's field. Tests that bind loopback ports may fail in your sandbox: say so, and the admin
 reruns them. If the crash tests fail at their barrier under load, rerun them with
 `RUST_TEST_THREADS=2` and say so. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 and 12. The first worker, on the Windows computer, ran about 5 hours and was
+stopped when the owner paused that computer; its partial work was checkpointed, rebased onto main
+and continued on the Mac over three more rounds. Round 3 left one blocker that the order's own two
+demands could not both meet: in the access-identity vector an unrelated Resource holds an
+unreadable value, and lazy publication returns root's 42 tools while BASE's whole-state
+normalization errors. The admin decided, as coordinator's and logged for the owner to strike,
+that the lazy result is the correct one (an object a consumer's publication does not read must
+not fail its tool list, IFC-012), and that strict equivalence is kept by correcting the
+differential reference rather than the lazy path: an object whose normalization fails becomes a
+marker that errors only where a publication reads it. Round 4 built that, and its fresh verifier
+found no fault.
+
+Measured on the same base, before and after: the shell's library tests 1900 s to 100 s, the agents
+tests 404 s to 20 s, listing root's tools 14.7 s to 0.38 s (median), inspect.v1 13.2 s to 0.35 s,
+and register-project 4.0 s to 0.95 s. All 440 vectors pass on both the normal and the differential
+builds. Registration's four permitted copies remain, as the order allowed.

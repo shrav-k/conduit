@@ -5,6 +5,8 @@
 pub mod access;
 pub mod archives;
 mod cascade;
+#[cfg(feature = "differential")]
+mod differential;
 pub mod lifecycle;
 pub mod packages;
 pub mod records;
@@ -301,8 +303,24 @@ impl Context {
 
 /// One atomic transition. Errors leave the caller's state untouched, including allocations.
 pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition> {
+    // DL6: the borrowed entry leaves its caller's State intact on every error.
+    step_owned(state.clone(), input, context)
+}
+
+/// DL2/DL6: consume the caller's State; an error consumes it as well.
+pub fn step_owned(state: State, input: Input, context: &Context) -> Result<Transition> {
+    #[cfg(feature = "differential")]
+    let before = state.clone();
+    let transition = step_body(state, input, context)?;
+    #[cfg(feature = "differential")]
+    differential::check(&before, &transition.state, context)?;
+    Ok(transition)
+}
+
+fn step_body(state: State, input: Input, context: &Context) -> Result<Transition> {
+    // DL2: vectors and the shell execute this same transition body.
     let mut transition = Transition {
-        state: state.clone(),
+        state,
         decisions: vec![],
         records: vec![],
         external_intents: vec![],
@@ -410,9 +428,10 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
                 )
             });
             let arguments = json!({"documents":documents,"manifest":project.manifest});
+            let entries = packages::catalog_entries(&transition.state, snapshots);
             registration::register(
                 &mut transition,
-                packages::catalog_entries(state, snapshots),
+                entries,
                 builtin,
                 project,
                 &evidence,
@@ -434,7 +453,7 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
         } => {
             let resolution = packages::Catalog::new(
                 builtin,
-                packages::catalog_entries(state, snapshots),
+                packages::catalog_entries(&transition.state, snapshots),
                 &context.core_package,
             )?
             .resolve(&project)?;
@@ -446,7 +465,13 @@ pub fn step(state: &State, input: Input, context: &Context) -> Result<Transition
             conduit,
             operation,
         } => {
-            let (reply, d) = schemas::publish(state, &consumer, &conduit, &operation, context)?;
+            let (reply, d) = schemas::publish(
+                &access::PublicationView::new(&transition.state, context),
+                &consumer,
+                &conduit,
+                &operation,
+                context,
+            )?;
             transition.reply = reply;
             transition.decisions.push(d);
         }

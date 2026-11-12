@@ -310,3 +310,31 @@ grep -rn -E "[[:space:]]+$" experiments/013-s2-shared-login experiments/014-s3-t
 Report each gap as a finding, each order you propose and each estimate as one of your own
 choices, and each difference from the state of the work above as a finding. Do not stage
 anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, beside orders 118 to 120, from base 31acd73: the worker in 17
+minutes (1049 s), then a fresh verifier in 8 minutes (454 s), which found nothing to change. The
+verifier's sandbox could not run the unit suite; the lane coordinator ran every check of "Done
+when" on the result, all clean, including the unit suite and both scans.
+
+The result is two plans, `experiments/013-s2-shared-login/plan.md` (199 lines) and
+`experiments/014-s3-two-machines/plan.md` (219 lines), and one sentence in each README's Status.
+
+- **S2.** Lane 8 can start now: S2-F (the restriction contracts, S), then S2-L1 (the Linear stub
+  and aware implementation, L) and S2-L2 (the plain server's qualification and the adapter, L).
+  It proposes to the admin SEC-D1 to SEC-D3 (secret reads, delivery and secret-bearing remote
+  connections), FLT-D1 and FLT-D2 (filters and onward calls), and S2-V (vectors V3 and V6), all
+  after the pin. S2-H, the fault harness, extends `SCR`. The runs wait for batch 2 (G1), 050 with
+  the sign-in chain, 052b, A63-KC, and A63-DR with DSP for the isolated profile.
+- **S3.** S3-A741 (A74's engine-free stand-ins) can start now, on lane 9. It proposes to the admin
+  S3-CS (PLC-024's portable loss cause), S3-L1 and S3-L2 (declare-lost, provider-gone,
+  unreachable and the owed stop), S3-RET1 and S3-RET2 (the carried browser return, after 038c),
+  and S3-V1 and S3-V2. It builds on the Windows node's orders and names no answer to M2-1 to M2-4.
+- **Findings, for the admin:** G1 (driven-Agent secrets, batch 2), G2 (package contracts), G3
+  (the safety field, SV1), G4 (enrollment, now partly written by 038b, so S3's V7 can name
+  ENR-006), G5 (PLC-024's loss cause), G6 (the carried return, 038c), and A1, ruling 75 D4's
+  reading against the second-account runs.
+
+Merged once the verifier was clean, at the admin's word. Each plan's split goes to a fresh
+skeptic before any order in it is dispatched.

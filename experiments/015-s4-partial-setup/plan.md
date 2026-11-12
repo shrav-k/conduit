@@ -22,6 +22,12 @@ admin. No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
+**Checkpoint (2026-11-12, lane SP):** built SCR1 (orders 142 and 148) and S4-SRV1 (143).
+S4-SRV2 (order 144) stopped unmerged at the checkpoint: its branch `wo/144-s4-srv2-hook` is on
+GitHub, with two musts left for a finishing order, named in its Record. Next, after that order:
+S4-SRV1b, S4-SRV2b, SCR2 and S4-H. The lane's whole queue is in
+[PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
+
 ## What `main` has now
 
 Evidence is from this commit, not from an order's presence or its commit subject.

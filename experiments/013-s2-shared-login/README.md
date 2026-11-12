@@ -32,6 +32,8 @@ Pre-registered on 2026-11-11 by work order 101. Accepted by the owner on 2026-11
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
+Its order-level plan is [plan.md](plan.md), written by work order 117; the plan changes nothing accepted here.
+
 ## Question
 
 Can one service login be shared by two Agents with different restrictions, through

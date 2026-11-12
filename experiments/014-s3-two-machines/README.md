@@ -31,6 +31,8 @@ Pre-registered on 2026-11-11 by work order 101. Accepted by the owner on 2026-11
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
+Its order-level plan is [plan.md](plan.md), written by work order 117; the plan changes nothing accepted here.
+
 ## Question
 
 Do S1 and S2 work across two machines, including a partition and a lost machine, as

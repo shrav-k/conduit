@@ -119,6 +119,7 @@ removed documents are in the [archive index](archive/README.md).
 | [implementation/FIRST_BUILD.md](implementation/FIRST_BUILD.md) | First-build increments, tasks and measurements. |
 | [implementation/plan-and-apply/](implementation/plan-and-apply/README.md) | The CLI reference for `conduit plan` and `conduit apply`, with golden cases that do not bind (spec batch 1, K3). Being written by work order 069. |
 | [implementation/SAFETY_CATALOGUE.md](implementation/SAFETY_CATALOGUE.md) | The safety promises of `spec/`, and the safety promises each of S1's safety traces tests, for the safety vectors and model checking (A40, G5). Being written by work order 100. |
+| [implementation/PROVIDERS.md](implementation/PROVIDERS.md) | The first and second provider of each provider contract, their contract vectors and the engine work they need (A63; work order 120). |
 | [engine/](../engine/README.md) | The first build, runnable, and its [conformance choices](../engine/CONFORMANCE.md). |
 | [conformance/](../conformance/README.md) | Portable vectors, fixtures, coverage and gaps. |
 | [implementation/WORK_ORDERS.md](implementation/WORK_ORDERS.md) | Coordinator and worker roles, dispatch, review and records. |

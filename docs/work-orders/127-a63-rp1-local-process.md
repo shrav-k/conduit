@@ -15,7 +15,9 @@ A63 builds two providers for each provider contract (ruling 40). The engine's ow
 built-in local-process runtime and stays S10's first implementation; the admin decided (option (b)
 of order 120) that a packaged local-process provider is built as well, so that the runtime
 contract's suite runs over MCP on two real implementations, this one and Docker. This order is
-A63-RP1 of [PROVIDERS.md](../implementation/PROVIDERS.md): read its row and its paragraph
+A63-RP1 of [PROVIDERS.md](../implementation/PROVIDERS.md). It starts only once order 129, which
+makes the kit refuse a run on a machine that still owes a stop, is merged. Read its row and its
+paragraph
 "A63-RP1 / RP2". It builds the package on the runtime-provider kit,
 `packages/runtime-provider-kit/`, which orders 122, 124 and 126 built: the kit holds the MCP
 server and the gate; this provider implements the kit's backend for a local process. RP2, later,
@@ -116,6 +118,10 @@ Read first:
      removed (PRV-029); and that it needs its own state directory to start;
    - no restart of a run (PRV-010); a stop's reach, the process group, which a descendant that
      calls `setsid` escapes; and where owed stops are kept (PRV-021);
+   - the owner's rule of 2026-11-12 (MC4-002): a held stop is carried out before any new run on
+     that machine starts, and a start refused for this names the owed stop. The kit enforces it
+     since order 129. On this provider, which runs on one machine, a single owed stop blocks every
+     new run until it is carried out;
    - D15's four fields as [S10's README](../../experiments/021-s10-swapped-providers/README.md#measures)
      defines them. Say plainly what RP1 does not yet do.
 8. **Tests**, with a small MCP server built by the tests as the run's program, and a TLS client in
@@ -134,6 +140,12 @@ Read first:
      at 0600 in a 0700 directory, removed after a confirmed stop;
    - no secret or identity value in the provider's own logs, answers or state file;
    - the state file survives a restart with its contents;
+   - a start that a held stop blocks: instance A's stop cannot be carried out, so `run.v1` for
+     instance B is refused (`failed`, its message naming A's ID and the machine); once A's stop is
+     carried out, B starts. Make A's stop fail through an injectable signaller in the backend
+     library, which the tests replace, never through an environment variable or flag of the
+     shipped binary (`cfg(test)` does not reach a binary that integration tests run). A signal
+     that fails with the marker's lock still held gives `unknown` and an owed stop (decision 5);
    - `conduit.yaml` validates against the manifest schema and `contracts.yaml` against the
      document schema in `spec/schemas/`, in a test that is skipped, saying so, where `spec/` is
      absent: `tools/check_schemas.py` does not read `packages/`;

@@ -76,6 +76,7 @@ fn change(
     c: &Context,
     index: usize,
     transition: &str,
+    invocation: Option<usize>,
 ) -> Result<()> {
     let e = &t.state.enrollments[index];
     let mut data = json!({"subject":e["provider"],"enrollment":e["id"],"transition":transition});
@@ -99,13 +100,34 @@ fn change(
     for key in keys {
         data[*key] = e[*key].clone();
     }
+    // REC-002: retain request correlation without importing arguments or outputs
+    // (in particular, neither the join action nor typed fingerprint, ENR-003/007).
+    if let Some(i) = invocation {
+        let v = &t.state.invocations[i];
+        for (dest, source) in [
+            ("invocation", "id"),
+            ("caller", "caller"),
+            ("target", "target"),
+            ("operation", "operation"),
+            ("consumer", "sender"),
+            ("conduit", "conduit"),
+            ("serving", "serving"),
+            ("idempotencyKey", "key"),
+            ("requiredCapabilities", "requiredCapabilities"),
+            ("extensionRevision", "extensionRevision"),
+        ] {
+            if let Some(value) = v.get(source).filter(|value| !value.is_null()) {
+                data[dest] = value.clone();
+            }
+        }
+    }
     // This evidence is the declared kinds, never machine evidence (ENR-003/007).
     t.records
         .push(a.record(&mut t.state, c, "enrollment-change", data)?);
     t.decisions.push(decision(
         "enrollment-change",
         &[
-            "ENR-001", "ENR-003", "ENR-007", "ENR-008", "ENR-009", "REC-001",
+            "ENR-001", "ENR-003", "ENR-007", "ENR-008", "ENR-009", "REC-001", "REC-002",
         ],
         &["DL8"],
         json!({"transition":transition}),
@@ -119,7 +141,7 @@ pub(crate) fn expire(t: &mut Transition, a: &mut Allocation<'_>, c: &Context) ->
         if e["state"] == "open" && !live(e, &a.evidence.time) {
             t.state.enrollments[i]["state"] = json!("expired");
             drop_action(&mut t.state.enrollments[i]);
-            change(t, a, c, i, "expired")?;
+            change(t, a, c, i, "expired", None)?;
         }
     }
     Ok(())
@@ -526,7 +548,7 @@ pub(crate) fn execute(
         {
             t.state.enrollments[ei]["state"] = json!("refused");
             drop_action(&mut t.state.enrollments[ei]);
-            change(t, a, c, ei, "refused")?;
+            change(t, a, c, ei, "refused", Some(i))?;
         }
         t.state.invocations[i]["removals"] = json!(
             ids.iter()
@@ -723,7 +745,7 @@ pub(crate) fn report(
         }
         e["state"] = json!("open");
         let result = json!({"enrollment":e["id"],"pendingAction":e["pendingAction"]});
-        change(t, a, c, ei, "opened")?;
+        change(t, a, c, ei, "opened", Some(i))?;
         expire(t, a, c)?;
         finish(t, a, c, i, "succeeded", result, "ENR-001", "")
     } else {
@@ -854,7 +876,7 @@ fn admit_node(
     en["weakerCheckAccepted"] = json!(weaker);
     drop_action(en);
     release_acceptance(en, &invocation);
-    change(t, a, c, ei, "admitted")?;
+    change(t, a, c, ei, "admitted", Some(i))?;
     t.decisions.push(decision(
         "admit-node",
         &[
@@ -997,13 +1019,14 @@ pub(crate) fn retired(
     a: &mut Allocation<'_>,
     c: &Context,
     id: &Value,
+    i: usize,
 ) -> Result<()> {
     for ei in 0..t.state.enrollments.len() {
         if t.state.enrollments[ei]["provider"] == *id && t.state.enrollments[ei]["state"] == "open"
         {
             t.state.enrollments[ei]["state"] = json!("refused");
             drop_action(&mut t.state.enrollments[ei]);
-            change(t, a, c, ei, "refused")?;
+            change(t, a, c, ei, "refused", Some(i))?;
         }
     }
     if t.state
@@ -1503,6 +1526,207 @@ mod tests {
         }
         fn end_accept(&mut self, t: &Transition) -> Transition {
             self.call(json!({"kind":"setup-report","invocation":t.reply["invocation"],"report":{"kind":"accept-machine","outcome":"succeeded"}}))
+        }
+    }
+    // A scripted provider placed on an admitted node; every run ending is test input.
+    fn remote_provider(h: &mut Harness) -> (Value, Value) {
+        let p = h.provider();
+        let (e, _) = h.open(json!({}), json!(["fingerprint"]));
+        let mut m = Harness::machine(&e, "m1", Harness::fingerprint());
+        h.report(&p, json!([m]));
+        let call = h.accept(&e, "aB+/xyz", None);
+        let admitted = h.end_accept(&call);
+        let node = admitted.reply["structuredContent"]["node"]["id"].clone();
+        m["state"] = json!("reachable");
+        h.report(&p, json!([m]));
+        h.s.objects.iter_mut().find(|o| o["id"] == p).unwrap()["placement"] = node;
+        h.s.objects
+            .iter_mut()
+            .find(|o| o["name"] == "root-system")
+            .unwrap()["operations"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!(h.c.qualified("set-up.v1")));
+        (p, m)
+    }
+    fn setup_provider(h: &mut Harness, key: &str) -> Transition {
+        h.call(json!({"kind":"invoke", "key":key, "request":{
+            "identity":{"kind":"instance","id":h.s.objects[4]["id"]},
+            "tool":"root-system.set-up.v1",
+            "arguments":{"instance":{"kind":"Resource","name":"machines"}}
+        }}))
+    }
+    #[test]
+    fn enrollment_transitions_keep_request_attribution_without_private_values() {
+        let mut h = Harness::new();
+        let p = h.provider();
+        let (e, opened) = h.open(json!({}), json!(["fingerprint"]));
+        let call = h.invoke("refuse-machine.v1", json!({"enrollment":e}), Some("refuse"));
+        h.open(json!({}), json!(["fingerprint"]));
+        let (admitting, _) = h.open(json!({}), json!(["fingerprint"]));
+        h.report(
+            &p,
+            json!([Harness::machine(&admitting, "m1", Harness::fingerprint())]),
+        );
+        let accepted = h.accept(&admitting, "aB+/xyz", Some("accept"));
+        let admitted = h.end_accept(&accepted);
+        // Also cover the refused transition caused within provider retirement.
+        let retired = h.invoke(
+            "retire.v1",
+            json!({"instance":{"kind":"Resource","name":"machines"}}),
+            Some("retire-provider"),
+        );
+        for (t, transition) in [
+            (&opened, "opened"),
+            (&call, "refused"),
+            (&admitted, "admitted"),
+            (&retired, "refused"),
+        ] {
+            let record = t
+                .records
+                .iter()
+                .find(|r| r["type"] == "enrollment-change" && r["data"]["transition"] == transition)
+                .unwrap();
+            let data = &record["data"];
+            let v = t
+                .state
+                .invocations
+                .iter()
+                .find(|v| v["id"] == data["invocation"])
+                .unwrap();
+            for (dest, source) in [
+                ("caller", "caller"),
+                ("target", "target"),
+                ("operation", "operation"),
+                ("consumer", "sender"),
+                ("conduit", "conduit"),
+                ("idempotencyKey", "key"),
+            ] {
+                assert_eq!(
+                    data.get(dest),
+                    v.get(source).filter(|v| !v.is_null()),
+                    "{transition}: {dest}"
+                );
+            }
+            assert_eq!(record["subject"], p);
+            assert!(data.get("inputs").is_none());
+            assert!(data.get("outputs").is_none());
+            assert!(
+                !serde_json::to_string(record)
+                    .unwrap()
+                    .contains("ACTION_MARKER")
+            );
+            assert!(!serde_json::to_string(record).unwrap().contains("aB+/xyz"));
+        }
+    }
+    #[test]
+    fn successful_setup_repeat_survives_node_loss_but_rechecks_access() {
+        let mut h = Harness::new();
+        let (p, mut m) = remote_provider(&mut h);
+        let call = setup_provider(&mut h, "setup");
+        assert_eq!(
+            call.external_intents[0]["operation"],
+            h.c.qualified("inspect-run.v1")
+        );
+        let done = h.call(json!({"kind":"setup-report", "invocation":call.reply["invocation"], "report":{"kind":"inspect-run","state":"running"}}));
+        assert_eq!(
+            done.reply["_meta"][format!("{}outcome", h.c.meta_prefix)],
+            "succeeded"
+        );
+        m["state"] = json!("unreachable");
+        h.report(&p, json!([m]));
+        let repeat = setup_provider(&mut h, "setup");
+        assert_eq!(repeat.reply, done.reply);
+        assert!(repeat.external_intents.is_empty());
+        h.s.objects
+            .iter_mut()
+            .find(|o| o["name"] == "root-system")
+            .unwrap()["open"] = json!(false);
+        let denied = setup_provider(&mut h, "setup");
+        assert_eq!(
+            denied.reply["error"]["data"][format!("{}reason", h.c.meta_prefix)],
+            "refused",
+            "{}",
+            denied.reply
+        );
+    }
+    #[test]
+    fn successful_operation_repeat_survives_node_loss_without_redispatch() {
+        let mut h = Harness::new();
+        let (p, mut m) = remote_provider(&mut h);
+        let mut conduit =
+            h.s.objects
+                .iter()
+                .find(|o| o["name"] == "root-system")
+                .unwrap()
+                .clone();
+        conduit["id"] = json!("00000000-0000-4000-8000-000000099999");
+        conduit["name"] = json!("root-machines");
+        conduit["local_name"] = json!("machines-call");
+        conduit["target"] = p.clone();
+        conduit["capability"] = json!(h.c.qualified("machine-provider.v1"));
+        conduit["operations"] = json!([h.c.qualified("list-machines.v1")]);
+        h.s.objects.push(conduit);
+        let request = json!({"kind":"invoke", "key":"list-machines", "request":{
+            "identity":{"kind":"instance","id":h.s.objects[4]["id"]},
+            "tool":"machines-call.list-machines.v1", "arguments":{}
+        }});
+        let call = h.call(request.clone());
+        assert_eq!(call.external_intents.len(), 1, "{}", call.reply);
+        let result = json!({"structuredContent":{"machines":[]},"_meta":{format!("{}outcome",h.c.meta_prefix):"succeeded"}});
+        let done = h.call(json!({"kind":"complete","invocation":call.reply["invocation"],"attempt":1,"completion":{"kind":"result","result":result}}));
+        assert_eq!(
+            done.reply["_meta"][format!("{}outcome", h.c.meta_prefix)],
+            "succeeded",
+            "{}",
+            done.reply
+        );
+        m["state"] = json!("unreachable");
+        h.report(&p, json!([m]));
+        let repeat = h.call(request);
+        assert_eq!(repeat.reply, done.reply);
+        assert!(repeat.external_intents.is_empty());
+    }
+    #[test]
+    fn late_runtime_endings_do_not_restore_observations_or_start_runs_on_lost_nodes() {
+        for ending in ["running", "stopped", "run"] {
+            let mut h = Harness::new();
+            let (p, mut m) = remote_provider(&mut h);
+            let call = setup_provider(&mut h, "setup");
+            assert_eq!(
+                call.external_intents[0]["operation"],
+                h.c.qualified("inspect-run.v1")
+            );
+            if ending == "run" {
+                let run = h.call(json!({"kind":"setup-report", "invocation":call.reply["invocation"], "report":{"kind":"inspect-run","state":"stopped"}}));
+                assert_eq!(
+                    run.external_intents[0]["operation"],
+                    h.c.qualified("run.v1")
+                );
+            }
+            m["state"] = json!("unreachable");
+            h.report(&p, json!([m]));
+            let before = access::object(&h.s, &p).unwrap()["status"]["conditions"].clone();
+            let report = if ending == "run" {
+                json!({"kind":"run","outcome":"succeeded","url":"https://fixture.invalid/"})
+            } else {
+                json!({"kind":"inspect-run","state":ending})
+            };
+            let ended = h.call(json!({"kind":"setup-report", "invocation":call.reply["invocation"], "report":report}));
+            assert!(ended.external_intents.is_empty(), "{ending}");
+            assert_eq!(
+                access::object(&h.s, &p).unwrap()["status"]["conditions"],
+                before,
+                "{ending}"
+            );
+            assert_eq!(before[0]["status"], "Unknown");
+            assert_eq!(before[0]["reason"], "NodeUnavailable");
+            assert!(
+                ended.reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+                    .as_str()
+                    .unwrap()
+                    .contains("PLC-023")
+            );
         }
     }
     fn register(h: &mut Harness, documents: Vec<Value>) -> Transition {

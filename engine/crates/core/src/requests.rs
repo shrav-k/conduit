@@ -888,9 +888,10 @@ fn invoke_inner(
         );
     }
     // PLC-023: lifecycle implementations also run on the named instance's node.
-    if ["set-up.v1", "retire.v1"]
-        .iter()
-        .any(|n| op == c.qualified(n))
+    if (previous.is_none() || redispatch)
+        && ["set-up.v1", "retire.v1"]
+            .iter()
+            .any(|n| op == c.qualified(n))
         && let Some(subject) = access::object(&t.state, &route["arguments"]["instance"])
         && subject["resolved_implementations"]
             .as_object()
@@ -906,7 +907,8 @@ fn invoke_inner(
             json!({"diagnostics":[{"ruleId":"PLC-023","level":"error","message":{"text":cause}}]});
         return Ok(());
     }
-    if target["resolved_implementations"][op]["source"] != "engine"
+    if (previous.is_none() || redispatch)
+        && target["resolved_implementations"][op]["source"] != "engine"
         && !(op == c.qualified("get-secret.v1")
             && request.serving.as_ref().is_some_and(|id| {
                 t.state.invocations.iter().any(|v| {

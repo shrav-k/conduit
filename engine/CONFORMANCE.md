@@ -415,6 +415,15 @@ unobserved instances have an Unknown Running condition with no lastHeartbeatTime
 applies to unreachable reports, omission, provider retirement and recovery. A reachable node
 alone does not turn an instance's stale observation back into a current one; a new observation
 is needed. Instances placed on local or another reachable node are unchanged.
+Late run and inspection endings record the provider's result but cannot restore a current
+observation while the node is unavailable; a late stopped inspection starts no run.
+PLC-023 gates work that would dispatch: a successful keyed repeat still returns its retained
+result under OPS-009 after node loss, with fresh access checks.
+
+Request-caused enrollment transitions retain REC-002 attribution (caller, target, operation,
+invocation, Conduit, consumer, serving invocation and idempotency key where applicable),
+including enrollments closed within provider retirement. These fields import no request inputs,
+provider outputs, join action, message or typed fingerprint.
 A gone report currently counts as unreachable without
 retirement; PLC-024's gone handling waits for scenario S3. LabelsDrift is True while any
 reported label differs from the fixed labels, with each differing key in its message; a matching

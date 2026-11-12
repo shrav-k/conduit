@@ -197,7 +197,7 @@ pub(crate) fn execute(
     object["shutdown"] = json!(shutdown);
     object["retirement"] = v["id"].clone();
     if was_machine_provider {
-        crate::machines::retired(t, a, c, &o["id"])?;
+        crate::machines::retired(t, a, c, &o["id"], i)?;
     }
     event(
         t,

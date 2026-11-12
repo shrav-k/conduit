@@ -934,6 +934,11 @@ pub(crate) fn report(
         &["REC-001", "REC-002", "REC-003", "PRV-009"],
         &v["object"],
     );
+    // PLC-023 / OBS-003: an ending may arrive after its node was lost.
+    // Record the call's actual result, but do not make its observation current
+    // or start a stopped run while the machine remains unavailable.
+    let node_unavailable = access::object(&t.state, &v["object"])
+        .is_some_and(|o| crate::machines::unavailable_node(&t.state, o).is_some());
     match report {
         Report::InspectRun { state } if phase == "inspect-run" => {
             if !["running", "stopped", "unknown"].contains(&state.as_str()) {
@@ -945,14 +950,25 @@ pub(crate) fn report(
                 .iter_mut()
                 .find(|o| o["id"] == v["object"])
                 .ok_or("run subject missing")?;
-            observe_run(o, &state, &evidence.time)?;
+            if !node_unavailable {
+                observe_run(o, &state, &evidence.time)?;
+            }
             cite(
                 t,
-                "observe-run",
-                &["PRV-007", "PRV-009", "LIF-011", "OBS-002", "OBS-003"],
+                if node_unavailable {
+                    "withhold-run-observation"
+                } else {
+                    "observe-run"
+                },
+                if node_unavailable {
+                    &["PLC-023", "OBS-003"]
+                } else {
+                    &["PRV-007", "PRV-009", "LIF-011", "OBS-002", "OBS-003"]
+                },
                 &v["object"],
             );
             if state == "stopped"
+                && !node_unavailable
                 && v["cancelled"] != true
                 && access::object(&t.state, &v["object"]).unwrap()["state"] != "retired"
             {
@@ -1010,7 +1026,7 @@ pub(crate) fn report(
             } else {
                 outcome.as_str()
             };
-            if outcome != "failed" {
+            if outcome != "failed" && !node_unavailable {
                 let object = t
                     .state
                     .objects

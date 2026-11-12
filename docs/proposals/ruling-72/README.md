@@ -62,3 +62,13 @@ coordinator read "Windows computer is up again", with this answer, as the resume
 2026-11-11; the owner may strike that reading. With interop
 off ([ruling 77](../ruling-77/README.md), point 4), the owner then stops the distro with
 `wsl --terminate Ubuntu-24.04`. M2-7 needs no ruling: WSL keeps its default memory limit.
+
+2026-11-12, later still: the owner gave the second accounts of point 2: "The second accounts are
+also subscriptions under [a second address] rather than [the owner's own address]", and "The linear
+account will be tied to [the owner's own address]. However we should test the interface login flow
+with all of these logins." The addresses are kept outside the repository, which names the accounts
+by label only: "primary" (the owner's own Claude and ChatGPT subscriptions), "second" (point 2's
+second Claude and ChatGPT subscriptions) and the Linear account, on the primary address. This
+widens point 2's test of Conduit's authentication and changes no decision: every one of these
+logins, primary, second and Linear, is to be signed in through Conduit's Interface login flow
+([ruling 73](../ruling-73/README.md), [ruling 75](../ruling-75/README.md), C) in testing.

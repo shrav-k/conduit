@@ -132,7 +132,6 @@ Only the owner settles these questions; later-stage questions below retain their
 | A20: v0 authorization's cross-path, issuer-independence and provider-scope questions, after the bypass probe A7 | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings), [A7](../ROADMAP.md#experiments-and-probes) |
 | After the S1 rerun: S1's bar, with findings 4-01 and 4-11, and C6 to C12 | [Ruling 71](proposals/ruling-71/README.md), points 2 and 3; [increment 4](proposals/first-build/log-increment-4.md); [ruling 62](proposals/ruling-62/README.md) |
 | Ruling 77's setup on the Windows computer, which needs the owner's sudo: `conduit-run`, the coordinator's key moved to it, the lockdown, and Codex signed in as `conduit-run`; before the end-to-end run, the Mac renamed in the tailnet and HTTPS certificates turned on | [Ruling 77](proposals/ruling-77/README.md#what-follows) |
-| The labels of the second Claude and ChatGPT subscription accounts, which the owner is to give | [Ruling 75](proposals/ruling-75/README.md), D2, and [ruling 72](proposals/ruling-72/README.md), point 2, with [its later answers](proposals/ruling-72/README.md#later-answers) |
 | Readiness G8: close open questions or put them outside builders' scope; G11: owner's sign-off | [Readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) |
 
 ## Known to be open

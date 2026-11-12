@@ -120,6 +120,8 @@ struct Run {
     group: Arc<ProcessGroup>,
     responses: Responses,
     setup: String,
+    url: Option<String>,
+    discovered: AsyncMutex<Option<bool>>,
 }
 struct Inner {
     stopping: AtomicBool,
@@ -213,7 +215,8 @@ impl Drop for Runner {
         self.inner.stopping.store(true, Ordering::SeqCst);
         for (subject, run) in self.inner.runs.lock().unwrap().iter() {
             run.group.stop();
-            if let Some(shell) = self.inner.shell.upgrade()
+            if run.url.is_none()
+                && let Some(shell) = self.inner.shell.upgrade()
                 && shell
                     .submit(
                         json!({"kind":"builtin-run-stopped","object":subject}),
@@ -234,6 +237,9 @@ impl Drop for Runner {
     }
 }
 impl Executor for Runner {
+    fn provider_call(&self, intent: &Value, identity: Option<&RunIdentity>) -> Result<Execution> {
+        self.inner.provider_call(intent, identity)
+    }
     fn builtin_runner(&self, intent: &Value, identity: Option<&RunIdentity>) -> Result<Execution> {
         self.inner.builtin_runner(intent, identity)
     }
@@ -252,6 +258,9 @@ impl Executor for Runner {
 }
 // Arc permits deferred work to use the same executor for any intents its completion emits.
 impl Executor for Arc<Inner> {
+    fn provider_call(&self, intent: &Value, identity: Option<&RunIdentity>) -> Result<Execution> {
+        self.provider_later(intent, identity)
+    }
     fn builtin_runner(&self, intent: &Value, identity: Option<&RunIdentity>) -> Result<Execution> {
         let subject = string(intent, "subject")?.to_owned();
         let operation = string(intent, "operation")?;
@@ -535,6 +544,8 @@ impl Inner {
             group,
             responses,
             setup: setup.into(),
+            url: None,
+            discovered: AsyncMutex::new(None),
         });
         if let Some(previous) = self
             .runs
@@ -1110,6 +1121,625 @@ impl Inner {
             run.group.stop();
         }
         Err("run missing or malformed reply".into())
+    }
+}
+
+mod provider {
+    //! Provider operations share discovery, metadata, timeout and result interpretation.
+    use super::*;
+
+    // Initialization can be cancelled by runtime shutdown as well as return normally.
+    struct BridgeDirectory(PathBuf);
+    impl Drop for BridgeDirectory {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[derive(Debug, PartialEq)]
+    enum ProviderReply {
+        NotSent,
+        Nothing,
+        Succeeded(Value),
+        Failed,
+        Unknown,
+        NoResult,
+    }
+    fn capability_performed_nothing(data: &Value) -> bool {
+        let Some(caps) = data["requiredCapabilities"].as_object() else {
+            return false;
+        };
+        if caps.is_empty() || !caps.values().all(Value::is_object) {
+            return false;
+        }
+        if let Some(extensions) = caps.get("extensions").and_then(Value::as_object)
+            && (!extensions.values().all(Value::is_object)
+                || extensions.is_empty() && caps.len() == 1)
+        {
+            return false;
+        }
+        true
+    }
+    fn provider_result(completion: Value, prefix: &str, schema: &Value) -> ProviderReply {
+        if completion["kind"] == "protocol-error" {
+            return if completion["code"] == -32021
+                && capability_performed_nothing(&completion["data"])
+            {
+                ProviderReply::Nothing
+            } else {
+                ProviderReply::NoResult
+            };
+        }
+        if completion["kind"] != "result" {
+            return ProviderReply::NoResult;
+        }
+        let result = &completion["result"];
+        let outcome = result["_meta"].get(format!("{prefix}outcome"));
+        let reason = result["_meta"].get(format!("{prefix}reason"));
+        if outcome.is_some() && reason.is_some() {
+            return ProviderReply::Unknown;
+        }
+        if let Some(reason) = reason {
+            return if ["refused", "unavailable"].iter().any(|r| reason == r)
+                && result["isError"] == true
+            {
+                ProviderReply::Nothing
+            } else {
+                ProviderReply::Unknown
+            };
+        }
+        match outcome.and_then(Value::as_str) {
+            Some("succeeded") if result["isError"] != true => {
+                let outputs = result
+                    .get("structuredContent")
+                    .cloned()
+                    .unwrap_or_else(|| json!({}));
+                if conduit_core::schemas::standalone_valid(schema, &outputs).unwrap_or(false) {
+                    ProviderReply::Succeeded(outputs)
+                } else {
+                    ProviderReply::Unknown
+                }
+            }
+            Some("failed") if result["isError"] == true => ProviderReply::Failed,
+            _ => ProviderReply::Unknown,
+        }
+    }
+    impl Run {
+        fn live(&self) -> bool {
+            !self.service.is_closed()
+                && !self.service.peer().is_transport_closed()
+                && !self.group.stopped.load(Ordering::SeqCst)
+        }
+    }
+    impl Inner {
+        fn provider_diagnostic(&self, operation: &str, message: &str) {
+            // Both parts are fixed by this module, never provider content or arguments.
+            let operation = match operation.rsplit('#').next() {
+                Some("run.v1") => "run.v1",
+                Some("stop.v1") => "stop.v1",
+                Some("inspect-run.v1") => "inspect-run.v1",
+                _ => "provider operation",
+            };
+            self.errors
+                .lock()
+                .unwrap()
+                .push(format!("{operation}: {message}"));
+        }
+        async fn provider_operation(&self, intent: &Value, inputs: Value) -> ProviderReply {
+            let operation = intent["operation"].as_str().unwrap_or("");
+            let run = self
+                .runs
+                .lock()
+                .unwrap()
+                .get(intent["provider"].as_str().unwrap_or(""))
+                .cloned();
+            let Some(run) = run.filter(|r| r.live() && r.url.is_none()) else {
+                self.provider_diagnostic(operation, "provider has no live own-runner session");
+                return ProviderReply::NotSent;
+            };
+            let Some(shell) = self.shell.upgrade() else {
+                return ProviderReply::NotSent;
+            };
+            let prefix = shell.context.meta_prefix.clone();
+            let schema = shell
+                .context
+                .core_environment
+                .scopes
+                .iter()
+                .find_map(|(scope, held)| {
+                    held.contracts
+                        .values()
+                        .find(|v| {
+                            v["kind"] == "Operation"
+                                && v["metadata"]["name"].as_str() == operation.rsplit('#').next()
+                        })
+                        .and_then(|v| v["spec"].get("outputSchema"))
+                        .map(|schema| {
+                            shell
+                                .context
+                                .core_environment
+                                .publish_schema(scope, schema, &shell.context.core_package)
+                                .unwrap_or(Value::Bool(false))
+                        })
+                })
+                .unwrap_or_else(|| json!({}));
+            let timeout = shell.config.call_timeout;
+            drop(shell);
+            // Core request invocation IDs are UUIDs; this namespace can never be an attempt.
+            let key = (format!("provider:{}", Uuid::new_v4()), 0);
+            let called = AtomicBool::new(false);
+            let completion = tokio::time::timeout(timeout, async {
+            let mut discovered = run.discovered.lock().await;
+            if discovered.is_none() {
+                let discovery = self.call(&run, &key, json!({"method":"server/discover","params":{}})).await;
+                *discovered = Some(discovery.is_ok_and(|v| v["kind"] == "result" && v["result"]["capabilities"]["extensions"][format!("{prefix}implementation-interface")]["revision"] == "v0"));
+            }
+            if *discovered != Some(true) {
+                self.provider_diagnostic(operation, "provider discovery lacks Conduit's implementation-interface extension at v0");
+                return Ok(ProviderReply::NotSent);
+            }
+            drop(discovered);
+            if self.cancelled_setups.lock().unwrap().contains(intent["invocation"].as_str().unwrap_or("")) || self.stopping.load(Ordering::SeqCst) {
+                return Ok(ProviderReply::NotSent);
+            }
+            let mut meta = serde_json::Map::new();
+            meta.insert(format!("{prefix}instance"), intent["provider"].clone());
+            for field in ["operation", "config", "revision", "invocation", "caller"] {
+                if let Some(value) = intent.get(field) { meta.insert(format!("{prefix}{field}"), value.clone()); }
+            }
+            meta.insert("io.modelcontextprotocol/clientCapabilities".into(), json!({"extensions":{format!("{prefix}implementation-interface"):{"revision":"v0"}}}));
+            called.store(true, Ordering::SeqCst);
+            self.call(&run, &key, json!({"method":"tools/call","params":{"name":operation.rsplit('#').next().unwrap_or(""),"arguments":inputs,"_meta":meta}}))
+                .await.map(|v| provider_result(v, &prefix, &schema))
+        }).await;
+            if let Some((_, id)) = self.requests.lock().unwrap().remove(&key) {
+                run.responses.lock().unwrap().remove(&id);
+            }
+            match completion {
+                Ok(Ok(reply)) => reply,
+                _ if !called.load(Ordering::SeqCst) => {
+                    self.provider_diagnostic(operation, "provider discovery could not be read");
+                    ProviderReply::NotSent
+                }
+                _ => {
+                    self.provider_diagnostic(
+                        operation,
+                        "provider returned no result before the call ended",
+                    );
+                    ProviderReply::NoResult
+                }
+            }
+        }
+        pub(super) fn provider_later(
+            self: &Arc<Self>,
+            intent: &Value,
+            identity: Option<&RunIdentity>,
+        ) -> Result<Execution> {
+            let shell = self.shell.upgrade().ok_or("shell stopped")?;
+            let operation = string(intent, "operation")?;
+            if !["run.v1", "stop.v1", "inspect-run.v1"]
+                .iter()
+                .any(|n| operation == format!("{}#{n}", shell.context.core_package))
+            {
+                return Ok(Execution::Missing);
+            }
+            let mut inputs = intent["inputs"].clone();
+            let missing_identity = operation.ends_with("#run.v1") && identity.is_none();
+            if let Some(identity) = identity {
+                inputs["identity"] =
+                    json!({"environment":identity.environment,"files":identity.files});
+            }
+            let this = self.clone();
+            let intent = intent.clone();
+            self.handle.spawn(async move {
+            let operation = intent["operation"].as_str().unwrap();
+            let subject = intent["subject"].as_str().unwrap();
+            let setup = intent["invocation"].as_str().unwrap();
+            if this.cancelled_setups.lock().unwrap().contains(setup) { return; }
+            if operation.ends_with("#stop.v1") && let Some(run) = this.runs.lock().unwrap().remove(subject) { run.group.stop(); }
+            let reply = if missing_identity {
+                this.provider_diagnostic(operation, "provider run has no https engine address");
+                ProviderReply::NotSent
+            } else { this.provider_operation(&intent, inputs).await };
+            let report = if operation.ends_with("#run.v1") {
+                match reply {
+                    ProviderReply::Succeeded(outputs) => {
+                        let url = outputs["url"].as_str().unwrap_or("");
+                        if this.start_bridge(subject, setup, url, operation).await.is_ok() { json!({"kind":"run","outcome":"succeeded","url":url}) }
+                        else { json!({"kind":"run","outcome":"unknown"}) }
+                    }
+                    ProviderReply::Failed | ProviderReply::Nothing | ProviderReply::NotSent => json!({"kind":"run","outcome":"failed"}),
+                    _ => json!({"kind":"run","outcome":"unknown"}),
+                }
+            } else if operation.ends_with("#stop.v1") {
+                json!({"kind":"stop","outcome":match reply { ProviderReply::Succeeded(_) => "succeeded", ProviderReply::Failed => "failed", _ => "unknown" }})
+            } else {
+                let mut state = "unknown";
+                if let ProviderReply::Succeeded(outputs) = &reply {
+                    state = outputs["state"].as_str().unwrap_or("unknown");
+                    if state == "running" {
+                        let old = this.runs.lock().unwrap().get(subject).cloned();
+                        let url = outputs["url"].as_str().or_else(|| old.as_ref().and_then(|r| r.url.as_deref()));
+                        let reached = old.as_ref().is_some_and(|r| r.live() && r.url.as_deref() == url);
+                        if !reached && match url {
+                            Some(url) => this.start_bridge(subject, setup, url, operation).await.is_err(),
+                            None => { this.provider_diagnostic(operation, "running provider run has no URL to prove the instance"); true }
+                        } {
+                            state = "unknown";
+                            // The provider's latest URL supersedes the old one even if
+                            // its proof fails. Keep no stale session available to dispatch.
+                            if let Some(old) = old {
+                                old.group.stop();
+                                let mut runs = this.runs.lock().unwrap();
+                                if runs.get(subject).is_some_and(|current| Arc::ptr_eq(current,&old)) { runs.remove(subject); }
+                            }
+                        }
+                    }
+                }
+                json!({"kind":"inspect-run","state":state})
+            };
+            if this.cancelled_setups.lock().unwrap().contains(setup) { return; }
+            let executor = this.completion_executor.lock().unwrap().as_ref().and_then(Weak::upgrade);
+            if let Some(shell) = this.shell.upgrade() && shell.setup_report(setup, report, executor.as_deref().unwrap_or(&this)).is_err() {
+                this.provider_diagnostic(operation, "provider report could not be persisted");
+            }
+        });
+            Ok(Execution::Deferred)
+        }
+        async fn start_bridge(
+            self: &Arc<Self>,
+            subject: &str,
+            setup: &str,
+            url: &str,
+            operation: &str,
+        ) -> Result<()> {
+            let shell = self.shell.upgrade().ok_or("shell stopped")?;
+            let timeout = shell.config.initialize_timeout;
+            let parent = self.directory.join("http-bridges");
+            private_directory(&parent)?;
+            let cleanup = BridgeDirectory(parent.join(Uuid::new_v4().to_string()));
+            let directory = &cleanup.0;
+            private_directory(directory)?;
+            async {
+                for (name, value) in shell.authority.bridge_files(subject)? {
+                    crate::store::atomic_write(directory, &name, value.as_bytes())?;
+                }
+                drop(shell);
+                let (mut child, group) = self.spawn(
+                    &self.guard,
+                    &["__http-bridge".into(), url.into()],
+                    &self.directory,
+                    &BTreeMap::from([(
+                        "HTTP_BRIDGE_DIR".into(),
+                        directory.to_string_lossy().into_owned(),
+                    )]),
+                    setup,
+                )?;
+                if crate::store::atomic_write(
+                    &self.directory.join("run-groups"),
+                    &Uuid::new_v4().to_string(),
+                    &serde_json::to_vec(&json!({"engine":std::process::id(),"group":group.pid}))
+                        .map_err(|_| "bridge group diagnostic encoding failed")?,
+                )
+                .is_err()
+                {
+                    group.stop();
+                    return Err("bridge group diagnostic could not be written".into());
+                }
+                let responses = Arc::new(Mutex::new(HashMap::new()));
+                let transport = Wire {
+                    reader: BufReader::new(child.stdout.take().ok_or("missing bridge stdout")?)
+                        .lines(),
+                    writer: Arc::new(AsyncMutex::new(child.stdin.take())),
+                    responses: responses.clone(),
+                };
+                let initialized = tokio::time::timeout(timeout, ().serve(transport)).await;
+                let service = match initialized {
+                    Ok(Ok(service)) => service,
+                    _ => {
+                        // The guard publishes the bridge's distinct proof-refusal exit status.
+                        let socket = group
+                            .lifetime
+                            .lock()
+                            .unwrap()
+                            .as_ref()
+                            .and_then(|s| s.try_clone().ok());
+                        let code = if let Some(socket) = socket {
+                            use tokio::io::AsyncReadExt;
+                            socket.set_nonblocking(true).ok();
+                            if let Ok(mut socket) = tokio::net::UnixStream::from_std(socket) {
+                                tokio::time::timeout(
+                                    std::time::Duration::from_secs(1),
+                                    socket.read_i32(),
+                                )
+                                .await
+                                .ok()
+                                .and_then(std::result::Result::ok)
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        };
+                        group.stop();
+                        let _ = child.wait().await;
+                        self.provider_diagnostic(
+                            operation,
+                            if code == Some(crate::http_bridge::PROOF_REFUSED) {
+                                "certificate did not prove the instance"
+                            } else {
+                                "bridge initialization failed or deadline passed"
+                            },
+                        );
+                        return Err("bridge session not initialized".into());
+                    }
+                };
+                responses.lock().unwrap().clear();
+                let cancelled = self.cancelled_setups.lock().unwrap();
+                if self.stopping.load(Ordering::SeqCst) || cancelled.contains(setup) {
+                    group.stop();
+                    return Err("setup cancelled".into());
+                }
+                let run = Arc::new(Run {
+                    service,
+                    group,
+                    responses,
+                    setup: setup.into(),
+                    url: Some(url.into()),
+                    discovered: AsyncMutex::new(None),
+                });
+                if let Some(old) = self
+                    .runs
+                    .lock()
+                    .unwrap()
+                    .insert(subject.into(), run.clone())
+                {
+                    old.group.stop();
+                }
+                drop(cancelled);
+                let group = run.group.clone();
+                let socket = group
+                    .lifetime
+                    .lock()
+                    .unwrap()
+                    .as_ref()
+                    .and_then(|s| s.try_clone().ok());
+                let owner = Arc::downgrade(self);
+                let operation = operation.to_owned();
+                self.handle.spawn(async move {
+                    use tokio::io::AsyncReadExt;
+                    let code = if let Some(socket) = socket {
+                        socket.set_nonblocking(true).ok();
+                        if let Ok(mut socket) = tokio::net::UnixStream::from_std(socket) {
+                            socket.read_i32().await.ok()
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
+                    if code == Some(crate::http_bridge::PROOF_REFUSED)
+                        && let Some(owner) = owner.upgrade()
+                    {
+                        owner.provider_diagnostic(
+                            &operation,
+                            "certificate did not prove the instance",
+                        );
+                    }
+                    group.stop();
+                    let _ = child.wait().await;
+                });
+                Ok(())
+            }
+            .await
+        }
+    }
+
+    #[cfg(test)]
+    mod provider_reading_tests {
+        use super::*;
+        #[test]
+        fn provider_reading_rejects_contradictions_and_bad_outputs_and_distinguishes_no_effect() {
+            let prefix = "test/";
+            let schema =
+                json!({"type":"object","properties":{"url":{"type":"string"}},"required":["url"]});
+            for (result, expected) in [
+                (
+                    json!({"_meta":{"test/outcome":"succeeded"},"structuredContent":{"url":"https://gate.test"}}),
+                    ProviderReply::Succeeded(json!({"url":"https://gate.test"})),
+                ),
+                (
+                    json!({"_meta":{"test/outcome":"failed"},"isError":true}),
+                    ProviderReply::Failed,
+                ),
+                (
+                    json!({"_meta":{"test/outcome":"succeeded"}}),
+                    ProviderReply::Unknown,
+                ),
+                (
+                    json!({"_meta":{"test/outcome":"succeeded"},"isError":true}),
+                    ProviderReply::Unknown,
+                ),
+                (
+                    json!({"_meta":{"test/outcome":"failed"}}),
+                    ProviderReply::Unknown,
+                ),
+                (
+                    json!({"_meta":{"test/outcome":"failed","test/reason":"invalid"},"isError":true}),
+                    ProviderReply::Unknown,
+                ),
+                (
+                    json!({"_meta":{"test/reason":"refused"},"isError":true}),
+                    ProviderReply::Nothing,
+                ),
+                (
+                    json!({"_meta":{"test/reason":"unavailable"},"isError":true}),
+                    ProviderReply::Nothing,
+                ),
+                (
+                    json!({"_meta":{"test/reason":"invalid"},"isError":true}),
+                    ProviderReply::Unknown,
+                ),
+                (
+                    json!({"_meta":{"test/reason":"conflict"},"isError":true}),
+                    ProviderReply::Unknown,
+                ),
+            ] {
+                assert_eq!(
+                    provider_result(json!({"kind":"result","result":result}), prefix, &schema),
+                    expected
+                );
+            }
+            for required in [
+                json!({"extensions":{"test/implementation-interface":{"revision":"v1"}}}),
+                json!({"sampling":{}}),
+            ] {
+                assert_eq!(
+                    provider_result(
+                        json!({"kind":"protocol-error","code":-32021,"data":{"requiredCapabilities":required}}),
+                        prefix,
+                        &schema
+                    ),
+                    ProviderReply::Nothing
+                );
+            }
+            for required in [
+                json!({}),
+                json!({"extensions":{}}),
+                json!({"sampling":true}),
+                json!({"extensions":{"unknown":true}}),
+            ] {
+                assert_eq!(
+                    provider_result(
+                        json!({"kind":"protocol-error","code":-32021,"data":{"requiredCapabilities":required}}),
+                        prefix,
+                        &schema
+                    ),
+                    ProviderReply::NoResult
+                );
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod generic_provider_tests {
+        use super::*;
+        #[test]
+        #[ignore = "stdio generic provider fixture; spawned by generic provider test"]
+        fn scripted_generic_provider() {
+            use std::io::{BufRead, Write};
+            let path = PathBuf::from(std::env::var_os("TEST_GENERIC_LOG").unwrap());
+            for line in std::io::stdin().lock().lines() {
+                let Ok(value) = serde_json::from_str::<Value>(&line.unwrap()) else {
+                    continue;
+                };
+                writeln!(
+                    fs::OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(&path)
+                        .unwrap(),
+                    "{value}"
+                )
+                .unwrap();
+                let result = match value["method"].as_str().unwrap_or("") {
+                    "initialize" => {
+                        json!({"protocolVersion":value["params"]["protocolVersion"],"capabilities":{},"serverInfo":{"name":"generic-provider","version":"1"}})
+                    }
+                    "server/discover" => {
+                        json!({"supportedVersions":["2026-07-28"],"serverInfo":{"name":"generic-provider","version":"1"},"capabilities":{"extensions":{"io.github.shrav-k.conduit/implementation-interface":{"revision":"v0"}}}})
+                    }
+                    "tools/call" => {
+                        json!({"content":[],"structuredContent":{"machines":[]},"_meta":{"io.github.shrav-k.conduit/outcome":"succeeded"}})
+                    }
+                    _ => continue,
+                };
+                println!(
+                    "{}",
+                    json!({"jsonrpc":"2.0","id":value["id"],"result":result})
+                );
+                std::io::stdout().flush().unwrap();
+            }
+        }
+        #[test]
+        fn generic_provider_call_lists_machines_with_provider_keys_and_discovers_each_run() {
+            let temp = tempfile::tempdir().unwrap();
+            let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+            let shell = Arc::new(
+                Shell::open(
+                    &temp.path().join("store"),
+                    crate::boundary::context(&repository).unwrap(),
+                    crate::Config::default(),
+                )
+                .unwrap(),
+            );
+            shell.submit(json!({"kind":"first-start","machine":crate::local_machine(BTreeMap::new()).unwrap()}), &crate::MissingExecutor).unwrap();
+            let state = shell.state().unwrap();
+            let subject = state
+                .objects
+                .iter()
+                .find(|o| o["kind"] == "Resource" && o.get("spec").is_none())
+                .unwrap()["id"]
+                .as_str()
+                .unwrap();
+            let current = std::env::current_exe().unwrap();
+            let runner = Runner::new(
+                &shell,
+                current.parent().unwrap().parent().unwrap().join("conduit"),
+            )
+            .unwrap();
+            let path = temp.path().join("wire");
+            let start = json!({"subject":subject,"invocation":Uuid::new_v4().to_string(),"inputs":{"item":{"command":[current,"--exact","runner::provider::generic_provider_tests::scripted_generic_provider","--ignored","--nocapture"]},"environment":{"TEST_GENERIC_LOG":path}}});
+            let call = json!({"provider":subject,"operation":format!("{}#list-machines.v1",shell.context.core_package),"config":{"own":true},"revision":7,"inputs":{}});
+            runner._runtime.block_on(async {
+                assert_eq!(
+                    runner.inner.provider_operation(&call, json!({})).await,
+                    ProviderReply::NotSent
+                );
+                for _ in 0..2 {
+                    runner.inner.start(&start, BTreeMap::new()).await.unwrap();
+                    for _ in 0..2 {
+                        assert_eq!(
+                            runner.inner.provider_operation(&call, json!({})).await,
+                            ProviderReply::Succeeded(json!({"machines":[]}))
+                        );
+                    }
+                }
+            });
+            let messages = fs::read_to_string(path)
+                .unwrap()
+                .lines()
+                .filter_map(|l| serde_json::from_str::<Value>(l).ok())
+                .collect::<Vec<_>>();
+            assert_eq!(
+                messages
+                    .iter()
+                    .filter(|m| m["method"] == "server/discover")
+                    .count(),
+                2
+            );
+            assert_eq!(
+                messages
+                    .iter()
+                    .filter(|m| m["method"] == "tools/call")
+                    .count(),
+                4
+            );
+            for message in messages.iter().filter(|m| m["method"] == "tools/call") {
+                let meta = &message["params"]["_meta"];
+                assert_eq!(meta.as_object().unwrap().len(), 5);
+                assert_eq!(
+                    meta[format!("{}instance", shell.context.meta_prefix)],
+                    subject
+                );
+                assert_eq!(
+                    meta[format!("{}config", shell.context.meta_prefix)],
+                    json!({"own":true})
+                );
+                assert_eq!(meta[format!("{}revision", shell.context.meta_prefix)], 7);
+                assert_eq!(message["params"]["name"], "list-machines.v1");
+            }
+        }
     }
 }
 

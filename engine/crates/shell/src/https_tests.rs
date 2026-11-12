@@ -351,6 +351,7 @@ struct Listeners {
 }
 impl Listeners {
     async fn start(address: &str) -> Self {
+        install_crypto_provider();
         let temp = temporary();
         drop(established(temp.path()));
         let first = std::net::TcpListener::bind("127.0.0.1:0").unwrap();

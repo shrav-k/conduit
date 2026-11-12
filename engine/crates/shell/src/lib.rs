@@ -1,6 +1,7 @@
 //! Durable boundary for the pure core, with an optional owned stdio runner.
 pub mod author;
 pub mod boundary;
+pub mod http_bridge;
 mod https;
 mod identity;
 pub mod runner;
@@ -9,6 +10,11 @@ mod store;
 use chrono::{DateTime, SecondsFormat, Utc};
 use conduit_core::{Context, Input, State, Transition};
 pub use identity::RunIdentity;
+
+/// Install once, before constructing a reqwest client with its default TLS backend.
+pub fn install_crypto_provider() {
+    let _ = rustls::crypto::ring::default_provider().install_default();
+}
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, VecDeque};
 use std::path::Path;
@@ -340,7 +346,7 @@ impl Shell {
         let Some(address) = self.config.engine_https_url.as_deref() else {
             return Ok(None);
         };
-        let identity = self.authority.materialize(
+        let mut identity = self.authority.materialize(
             &writer.store.directory,
             descriptor,
             address,
@@ -365,6 +371,17 @@ impl Shell {
                 bundle.as_bytes(),
             )?;
         }
+        self.authority
+            .add_run_certificate(&mut identity, instance, &self.context)?;
+        // Keep the augmented trust bundle in the in-memory provider payload as well.
+        let bundle_name = descriptor["fileNames"][0]
+            .as_str()
+            .ok_or("invalid identity file name")?;
+        identity.files.insert(
+            bundle_name.into(),
+            String::from_utf8(store::private_read(&identity.directory.join(bundle_name))?)
+                .map_err(|_| "invalid trust bundle")?,
+        );
         Ok(Some(identity))
     }
 

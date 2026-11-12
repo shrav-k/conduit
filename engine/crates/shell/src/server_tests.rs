@@ -30,6 +30,7 @@ async fn connect(
     token: &str,
     changes: Arc<AtomicUsize>,
 ) -> RunningService<RoleClient, Consumer> {
+    install_crypto_provider();
     Consumer { changes }
         .serve(StreamableHttpClientTransport::with_client(
             reqwest::Client::new(),
@@ -39,6 +40,7 @@ async fn connect(
         .unwrap()
 }
 async fn modern(url: &str, token: &str) -> RunningService<RoleClient, ()> {
+    install_crypto_provider();
     use rmcp::{ClientServiceExt, service::ClientLifecycleMode};
     ().serve_with_lifecycle(
         StreamableHttpClientTransport::with_client(
@@ -93,6 +95,7 @@ impl Executor for Memory {
     }
 }
 fn fixed_shell(path: &Path) -> Shell {
+    install_crypto_provider();
     let shell = established(path);
     drop(shell);
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
@@ -113,6 +116,7 @@ fn fixed_shell(path: &Path) -> Shell {
     Shell::open(path, context(), config).unwrap()
 }
 async fn ready(url: &str) {
+    install_crypto_provider();
     // Binding is a progress condition; the test makes no startup-speed promise.
     tokio::time::timeout(Duration::from_secs(600), async {
         loop {
@@ -718,6 +722,7 @@ async fn pending_http_completion_and_client_cancellation() {
 }
 
 async fn raw_session(url: &str, token: &str, revision: &str) -> Option<String> {
+    install_crypto_provider();
     if revision == "2026-07-28" {
         return None;
     }
@@ -1387,6 +1392,7 @@ async fn retired_agent_consumer_stream_ends_and_other_consumer_remains() {
 
 #[tokio::test]
 async fn initialization_failures_retry_only_handshake_and_name_step_and_wait() {
+    install_crypto_provider();
     use axum::{Json, Router, http::StatusCode, routing::post};
     let temp = temporary();
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -1436,6 +1442,7 @@ async fn initialization_failures_retry_only_handshake_and_name_step_and_wait() {
 
 #[tokio::test]
 async fn request_failure_after_initialization_keeps_tool_identity_cause_and_remedy() {
+    install_crypto_provider();
     let temp = temporary();
     let shell = Arc::new(fixed_shell(temp.path()));
     shell.issue_client_token(&actor(&shell, "agent-a")).unwrap();
@@ -1470,6 +1477,7 @@ async fn request_failure_after_initialization_keeps_tool_identity_cause_and_reme
 
 #[tokio::test]
 async fn transport_failure_after_initialization_keeps_context_without_retry() {
+    install_crypto_provider();
     use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::post};
     for tool in [Some("management.retire.v1"), None] {
         let temp = temporary();
@@ -1529,6 +1537,7 @@ async fn transport_failure_after_initialization_keeps_context_without_retry() {
 
 #[tokio::test]
 async fn authentication_waiting_for_commit_does_not_block_async_worker() {
+    install_crypto_provider();
     let temp = temporary();
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let url = format!("http://{}/mcp", listener.local_addr().unwrap());

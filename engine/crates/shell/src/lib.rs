@@ -1,6 +1,7 @@
 //! Durable boundary for the pure core, with an optional owned stdio runner.
 pub mod author;
 pub mod boundary;
+mod https;
 mod identity;
 pub mod runner;
 pub mod server;
@@ -24,6 +25,9 @@ pub struct Config {
     pub max_output_bytes: usize,
     pub max_output_age: Duration,
     pub engine_url: String,
+    pub engine_https_url: Option<String>,
+    pub https_listen: Option<std::net::SocketAddr>,
+    pub https_roots: Option<String>,
     pub pass_environment: Vec<String>,
     pub initialize_timeout: Duration,
     pub call_timeout: Duration,
@@ -35,6 +39,9 @@ impl Default for Config {
             max_output_bytes: 64 * 1024 * 1024,
             max_output_age: Duration::from_secs(7 * 24 * 60 * 60),
             engine_url: "http://127.0.0.1:3000/mcp".into(),
+            engine_https_url: None,
+            https_listen: None,
+            https_roots: None,
             pass_environment: Vec::new(),
             initialize_timeout: Duration::from_secs(30),
             call_timeout: Duration::from_secs(120),
@@ -42,7 +49,7 @@ impl Default for Config {
     }
 }
 impl Config {
-    /// Clients read only the public endpoint, without opening/recovering a live store.
+    /// Read public endpoints and certificate roots without opening/recovering a live store.
     pub fn for_store(directory: &Path) -> Result<Self> {
         let path = directory.join("engine-url.json");
         let mut config = Self::default();
@@ -50,6 +57,7 @@ impl Config {
             config.engine_url = serde_json::from_slice(&store::private_read(&path)?)
                 .map_err(|_| "invalid stored engine URL")?;
         }
+        config.read_https(directory)?;
         Ok(config)
     }
 }
@@ -160,7 +168,7 @@ pub struct Shell {
 }
 
 impl Shell {
-    pub fn open(directory: &Path, context: Context, config: Config) -> Result<Self> {
+    pub fn open(directory: &Path, context: Context, mut config: Config) -> Result<Self> {
         let url = url::Url::parse(&config.engine_url).map_err(|_| "invalid engine URL")?;
         let loopback = matches!(url.host(), Some(url::Host::Domain("localhost")))
             || matches!(url.host(), Some(url::Host::Ipv4(ip)) if ip == std::net::Ipv4Addr::LOCALHOST)
@@ -180,13 +188,17 @@ impl Shell {
         }
         let store = Store::open(directory)?;
         let address = store.directory.join("engine-url.json");
-        if address.try_exists().map_err(|e| e.to_string())? {
+        let address_exists = address.try_exists().map_err(|e| e.to_string())?;
+        if address_exists {
             let fixed: String = serde_json::from_slice(&store::private_read(&address)?)
                 .map_err(|_| "invalid stored engine URL")?;
             if fixed != config.engine_url {
                 return Err("engine address differs from the store's fixed token audience".into());
             }
-        } else {
+        }
+        // DL13/IFC-042: resolve and validate the fixed audience under the writer lease.
+        config.fix_https(&store.directory)?;
+        if !address_exists {
             store::atomic_write(
                 &store.directory,
                 "engine-url.json",
@@ -296,6 +308,64 @@ impl Shell {
                 .ok_or("missing identity subject")?,
         )?;
         Ok(identity)
+    }
+
+    /// IFC-042: the same proof checks, with only the receiver's audience changed.
+    pub fn verify_https_token(
+        &self,
+        token: Option<&str>,
+    ) -> Result<conduit_core::access::Identity> {
+        Ok(match self.config.engine_https_url.as_deref() {
+            Some(address) => self.authority.verify(token, address, &self.state()?),
+            None => conduit_core::access::Identity::None,
+        })
+    }
+
+    /// DL13/PRV-022: provider runs never receive the own-runner HTTP identity.
+    pub fn materialize_provider_identity(&self, descriptor: &Value) -> Result<Option<RunIdentity>> {
+        let writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
+        let instance = descriptor["materializeFor"]
+            .as_str()
+            .ok_or("missing identity subject")?;
+        let state = writer.store.read()?.state;
+        // IFC-042: no issuance path gives root the https audience.
+        if state
+            .objects
+            .iter()
+            .any(|o| o["id"] == instance && o["kind"] == "Interface" && o["name"] == "root")
+        {
+            return Err("root cannot receive the https token audience (IFC-042)".into());
+        }
+        self.client_token(&writer, instance)?;
+        let Some(address) = self.config.engine_https_url.as_deref() else {
+            return Ok(None);
+        };
+        let identity = self.authority.materialize(
+            &writer.store.directory,
+            descriptor,
+            address,
+            &state,
+            &self.context,
+        )?;
+        // PRV-022/DL13: preserve the store root first, with every PEM block on its own lines.
+        if let Some(roots) = self.config.https_roots.as_deref() {
+            let path = identity.directory.join(
+                descriptor["fileNames"][0]
+                    .as_str()
+                    .ok_or("invalid identity file name")?,
+            );
+            let root = String::from_utf8(store::private_read(&path)?)
+                .map_err(|_| "invalid store root PEM")?;
+            let bundle = format!("{}\n{}", root.trim_end(), https::roots(roots)?);
+            store::atomic_write(
+                &identity.directory,
+                path.file_name()
+                    .and_then(|s| s.to_str())
+                    .ok_or("invalid identity file name")?,
+                bundle.as_bytes(),
+            )?;
+        }
+        Ok(Some(identity))
     }
 
     fn client_token(&self, writer: &Writer, instance: &str) -> Result<()> {
@@ -568,7 +638,9 @@ impl Shell {
             let kind = intent["kind"].as_str().ok_or("intent has no kind")?;
             let run = matches!(kind, "builtin-runner" | "provider-call")
                 && intent["operation"] == format!("{}#run.v1", self.context.core_package);
-            let identity = if run {
+            let identity = if run && kind == "provider-call" {
+                self.materialize_provider_identity(&intent["inputs"]["identity"])?
+            } else if run {
                 Some(self.materialize_identity(&intent["inputs"]["identity"])?)
             } else {
                 None

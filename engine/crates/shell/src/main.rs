@@ -55,6 +55,27 @@ fn run() -> Result<()> {
                 )
             }
             "--url" => url = Some(args.next().ok_or("--url needs engine address")?),
+            // DL13/IFC-042: only serve can name the fixed HTTPS token audience.
+            "--https-url" if command == "serve" => {
+                config.engine_https_url = Some(args.next().ok_or("--https-url needs URL")?);
+            }
+            "--https-listen" if command == "serve" => {
+                // DL13: parse a numeric socket address; never resolve a host name.
+                config.https_listen = Some(
+                    args.next()
+                        .ok_or("--https-listen needs ADDRESS")?
+                        .parse()
+                        .map_err(|_| "--https-listen must be 127.0.0.1:PORT or [::1]:PORT")?,
+                );
+            }
+            // DL13/PRV-022: read here; Shell::open checks and copies under its lease.
+            "--https-roots" if command == "serve" => {
+                let file = args.next().ok_or("--https-roots needs FILE")?;
+                config.https_roots = Some(
+                    std::fs::read_to_string(&file)
+                        .map_err(|e| format!("--https-roots cannot read FILE: {e}"))?,
+                );
+            }
             "--as" if command == "tools" => {
                 as_instance = Some(args.next().ok_or("--as needs INSTANCE")?)
             }
@@ -124,7 +145,14 @@ fn run() -> Result<()> {
     if command != "init" && !store.join("state.json").is_file() {
         return Err("store is not initialized; run conduit init".into());
     }
-    config.engine_url = url.unwrap_or(Config::for_store(&store)?.engine_url);
+    let fixed = Config::for_store(&store)?;
+    config.engine_url = url.unwrap_or(fixed.engine_url);
+    config.engine_https_url = config.engine_https_url.or(fixed.engine_https_url);
+    // PRV-022: Shell::open inherits stored roots under the lease when none are supplied.
+    // DL13: check serve's option combinations before opening or writing the store.
+    if command == "serve" {
+        config.validate_serve()?;
+    }
     if ["install", "submit", "replace", "retire", "unregister"].contains(&command.as_str()) {
         let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;

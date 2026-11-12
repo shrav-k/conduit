@@ -36,7 +36,11 @@ const COMMANDS: [(&str, &str, &str); 12] = [
     ),
     ("inspect", "", "inspect --store /tmp/conduit"),
     ("records", "", "records --store /tmp/conduit"),
-    ("serve", "", "serve --store /tmp/conduit"),
+    (
+        "serve",
+        "[--https-url URL] [--https-listen ADDRESS] [--https-roots FILE]",
+        "serve --store /tmp/conduit",
+    ),
     (
         "tools",
         "[--as NAME|KIND/NAME]",
@@ -58,7 +62,7 @@ const DESCRIPTIONS: [&str; 12] = [
     "Unregister an object through serve using its current revision; retire live instances first.",
     "Inspect every object as root, one JSON line each. Uses serve if the store is active. Refused inspections also cause a nonzero exit.",
     "Export ordered CloudEvents as JSON lines; stop serve first. Gaps cause a nonzero exit.",
-    "Hold the store, set up registered instances and serve MCP on its fixed loopback URL. SIGTERM or Ctrl-C ends runs.",
+    "Hold the store, set up registered instances and serve MCP on its fixed loopback URL. With an https address, also serve /mcp for that address on a second loopback listener. SIGTERM or Ctrl-C ends runs.",
     "List tools presented to root or a named instance. Set up the instance first and open its Conduits if its list is empty.",
     "Call a presented root tool once through serve. ARGUMENTS-JSON must be an object (default {}). Failed or unknown outcomes cause a nonzero exit.",
 ];
@@ -81,7 +85,7 @@ pub fn print(command: Option<&str>) -> Result<(), String> {
         }
     }
     println!(
-        "--store DIR: initialized private store (required except for help).\n--help: show usage without opening a store.\nRunner/store options for init, register and serve:\n  --url URL: fixed loopback /mcp address (default http://127.0.0.1:3000/mcp).\n  --output-cap-bytes N: retained output cap (default 67108864).\n  --output-age-seconds N: retained output age (default 604800).\n  --initialize-timeout-seconds N: provider initialization wait (default 30).\n  --call-timeout-seconds N: provider call wait (default 120).\n  --pass-environment NAME: allow an environment name into provider runs; repeatable.\nServing commands use the URL fixed in the store. Any printed failed result causes exit 1."
+        "--store DIR: initialized private store (required except for help).\n--help: show usage without opening a store.\nRunner/store options for init, register and serve:\n  --url URL: fixed loopback /mcp address (default http://127.0.0.1:3000/mcp).\n  --output-cap-bytes N: retained output cap (default 67108864).\n  --output-age-seconds N: retained output age (default 604800).\n  --initialize-timeout-seconds N: provider initialization wait (default 30).\n  --call-timeout-seconds N: provider call wait (default 120).\n  --pass-environment NAME: allow an environment name into provider runs; repeatable.\nOptions for serve alone:\n  --https-url URL: canonical https /mcp address, with no loopback host; fixed in the store at first use.\n  --https-listen ADDRESS: second HTTP listener at 127.0.0.1:PORT or [::1]:PORT; required with an https address, including a fixed one.\n  --https-roots FILE: CERTIFICATE PEM roots for that address; checked content replaces the stored copy. Requires an https address.\nServing commands use the URL fixed in the store. Any printed failed result causes exit 1."
     );
     Ok(())
 }

@@ -125,6 +125,11 @@ pub struct Fake {
     pub session_failure: AtomicBool,
     pub programs: AtomicUsize,
     pub sent: tokio::sync::Notify,
+    pub stop_hold: AtomicBool,
+    pub stopping: tokio::sync::Notify,
+    pub stop_release: tokio::sync::Notify,
+    pub stops_in_flight: Arc<AtomicUsize>,
+    pub live_masters: Arc<AtomicUsize>,
     pub stage_hold: AtomicBool,
     pub staged: tokio::sync::Notify,
     pub stage_release: tokio::sync::Notify,
@@ -149,6 +154,11 @@ impl Default for Fake {
             session_failure: AtomicBool::new(false),
             programs: AtomicUsize::new(0),
             sent: tokio::sync::Notify::new(),
+            stop_hold: AtomicBool::new(false),
+            stopping: tokio::sync::Notify::new(),
+            stop_release: tokio::sync::Notify::new(),
+            stops_in_flight: Arc::new(AtomicUsize::new(0)),
+            live_masters: Arc::new(AtomicUsize::new(0)),
             stage_hold: AtomicBool::new(false),
             staged: tokio::sync::Notify::new(),
             stage_release: tokio::sync::Notify::new(),
@@ -160,8 +170,14 @@ impl Default for Fake {
     }
 }
 struct FakeMaster {
+    live: Arc<AtomicUsize>,
     reachable: Arc<AtomicBool>,
     alive: Arc<AtomicBool>,
+}
+impl Drop for FakeMaster {
+    fn drop(&mut self) {
+        self.live.fetch_sub(1, Ordering::SeqCst);
+    }
 }
 impl Master for FakeMaster {
     fn alive(&mut self) -> bool {
@@ -229,7 +245,9 @@ impl Executor for Fake {
             return Err(Unavailable);
         }
         self.master_alive.store(true, Ordering::SeqCst);
+        self.live_masters.fetch_add(1, Ordering::SeqCst);
         Ok(Box::new(FakeMaster {
+            live: self.live_masters.clone(),
             reachable: self.reachable.clone(),
             alive: self.master_alive.clone(),
         }))
@@ -332,6 +350,18 @@ impl Executor for Fake {
             });
         }
         if words.iter().any(|s| s == "stop") {
+            struct Flight(Arc<AtomicUsize>);
+            impl Drop for Flight {
+                fn drop(&mut self) {
+                    self.0.fetch_sub(1, Ordering::SeqCst);
+                }
+            }
+            self.stops_in_flight.fetch_add(1, Ordering::SeqCst);
+            let _flight = Flight(self.stops_in_flight.clone());
+            if self.stop_hold.load(Ordering::SeqCst) {
+                self.stopping.notify_one();
+                self.stop_release.notified().await;
+            }
             let end = words.iter().position(|s| s == "--").unwrap();
             assert_eq!(words.len(), end + 2);
             self.finish_unit(&words[end + 1]);

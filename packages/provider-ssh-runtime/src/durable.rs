@@ -1,4 +1,4 @@
-//! Local durable ownership, shared by the server and its future external drainer.
+//! Local durable ownership, shared by the server and its external drainer.
 use crate::{
     codec,
     storage::{atomic_write, private_directory},
@@ -15,6 +15,8 @@ use std::{
         },
     },
     path::{Path, PathBuf},
+    sync::Arc,
+    time::Duration,
 };
 
 pub(crate) fn refusal(text: String) -> Unavailable {
@@ -109,31 +111,98 @@ fn validate_owner(durable: &Path, expected_uid: u32) -> Result<()> {
 }
 
 /// An exclusive lock held until drop; cannot be manufactured from an unlocked file.
+#[derive(Clone)]
 pub struct OwnerLock {
     root: PathBuf,
-    _file: File,
+    _file: Arc<File>,
+}
+
+/// Nonblocking flock only. Opening never creates the parent directory.
+pub(crate) fn try_lock(root: &Path, name: &str) -> std::io::Result<Option<File>> {
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+        .open(root.join(name))?;
+    // SAFETY: a live descriptor retained by the returned guard; LOCK_NB never blocks.
+    if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } == 0 {
+        return Ok(Some(file));
+    }
+    let error = std::io::Error::last_os_error();
+    if error.kind() == std::io::ErrorKind::WouldBlock {
+        Ok(None)
+    } else {
+        Err(error)
+    }
+}
+
+/// Empty coordination files need only existence. Avoid a shared atomic-write scratch name:
+/// multiple waiting processes may publish the same signal concurrently.
+pub(crate) fn signal(root: &Path, name: &str) -> std::io::Result<()> {
+    OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+        .open(root.join(name))?;
+    Ok(())
 }
 impl OwnerLock {
     pub fn acquire(root: &Path) -> Result<Self> {
         at(private_directory(root), root)?;
+        Self::try_existing(root)?.ok_or_else(|| {
+            refusal(format!(
+                "owner.lock {} is held",
+                root.join("owner.lock").display()
+            ))
+        })
+    }
+    /// Does not create a missing instance directory. None means another owner holds it.
+    pub fn try_existing(root: &Path) -> Result<Option<Self>> {
         let root = at(root.canonicalize(), root)?;
-        let path = root.join("owner.lock");
-        let file = at(
-            OpenOptions::new()
-                .read(true)
-                .write(true)
-                .create(true)
-                .truncate(false)
-                .mode(0o600)
-                .custom_flags(libc::O_NOFOLLOW)
-                .open(&path),
-            &path,
-        )?;
-        // SAFETY: a live descriptor, held for the guard's lifetime; no blocking.
-        if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
-            return Err(refusal(format!("owner.lock {} is held", path.display())));
+        Ok(
+            at(try_lock(&root, "owner.lock"), &root.join("owner.lock"))?.map(|file| Self {
+                root,
+                _file: Arc::new(file),
+            }),
+        )
+    }
+    /// Startup has ten seconds to request and acquire ownership before initialize.
+    pub async fn acquire_provider(root: &Path) -> Result<Self> {
+        at(private_directory(root), root)?;
+        struct YieldRequest(PathBuf);
+        impl Drop for YieldRequest {
+            fn drop(&mut self) {
+                let _ = fs::remove_file(&self.0);
+            }
         }
-        Ok(Self { root, _file: file })
+        let _request = YieldRequest(root.join("yield"));
+        let until = tokio::time::Instant::now() + Duration::from_secs(10);
+        loop {
+            match Self::try_existing(root) {
+                Ok(Some(owner)) => {
+                    let _ = fs::remove_file(root.join("yield"));
+                    return Ok(owner);
+                }
+                Ok(None) if tokio::time::Instant::now() < until => {
+                    at(signal(root, "yield"), &root.join("yield"))?;
+                }
+                result => {
+                    let _ = fs::remove_file(root.join("yield"));
+                    return result.and_then(|_| {
+                        Err(refusal(format!(
+                            "owner.lock {} is held",
+                            root.join("owner.lock").display()
+                        )))
+                    });
+                }
+            }
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
     }
     /// Verify this lock covers root, then check its state-dir binding under the lock.
     /// Some(state) permits initialization, writing the ledger first. None requires existing
@@ -199,6 +268,23 @@ impl OwnerLock {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn concurrent_empty_signals_do_not_share_a_scratch_file() {
+        let dir = tempfile::tempdir().unwrap();
+        std::thread::scope(|scope| {
+            for _ in 0..8 {
+                let root = dir.path();
+                scope.spawn(move || {
+                    for _ in 0..25 {
+                        signal(root, "yield").unwrap();
+                    }
+                });
+            }
+        });
+        assert_eq!(fs::read(dir.path().join("yield")).unwrap(), b"");
+        assert_eq!(fs::read_dir(dir.path()).unwrap().count(), 1);
+    }
+
     #[test]
     fn foreign_owned_durable_directory_is_refused() {
         let dir = tempfile::tempdir().unwrap();

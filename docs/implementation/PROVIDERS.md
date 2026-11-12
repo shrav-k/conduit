@@ -25,13 +25,13 @@ Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a7825
 
 **Built so far (2026-11-12, the lane coordinator):** A63-RK1 (orders 122 and 124), A63-H1 (orders
 123 and 125), A63-RK2 (order 126), A63-MP1 (order 128), A63-PS (order 131), A63-FS (order 132),
-SSH-R (orders 137 and 140, without its drainer), the kit's reasons for a failed staging or start
-(order 138), and the kit's rule that no run starts on a machine that owes a stop (orders 129 and
-130), under the owner's answer to MC4-002 of 2026-11-12: every runtime provider Conduit ships
-carries out a stop it still owes on a machine before it starts any run there, and its contract says
-so. A63-RP1 is order 127. Since order 127, A63-RP1 also wires the kit's gate and leads each run's
-process group with a guard, so no run outlives the provider; A63-RP2 keeps the external drainer of
-owed stops and the separate operating-system users; registry packages are A63-RPN.
+SSH-R (orders 137, 140 and 145, and its drainer, orders 146, 149 and 150), the kit's reasons for a
+failed staging or start (order 138), and the kit's rule that no run starts on a machine that owes a
+stop (orders 129 and 130), under the owner's answer to MC4-002 of 2026-11-12: every runtime provider
+Conduit ships carries out a stop it still owes on a machine before it starts any run there, and its
+contract says so. A63-RP1 is order 127. Since order 127, A63-RP1 also wires the kit's gate and leads
+each run's process group with a guard, so no run outlives the provider; A63-RP2 keeps the external
+drainer of owed stops and the separate operating-system users; registry packages are A63-RPN.
 
 ## What `main` has now
 
@@ -315,10 +315,11 @@ slot too. Provider/harness crates stay outside those engine hot files and outsid
   selects both for the Windows computer, and SSH-R's runs use one account, `conduit-run`, without sudo;
   its contract states that PRV-025's isolation is unmet until each Agent has its own user.
   SSH-R’s external stop-drainer helper survives server retirement and retries SSH to stop the
-  recorded remote systemd units on next contact. **Deferred at the admin's word (2026-11-12):**
-  orders 137 and 140 build SSH-R without it; a stop still owed when the provider retires is
-  carried out only if the provider starts again in the same state directory, and until then
-  `RuntimeMaxSec` is the only end of that run. A follow-up order builds it. Channel lifetime and the configured bound
+  recorded remote systemd units on next contact. **Built (2026-11-12):** orders 137 and 140
+  deferred it at the admin's word; order 145 moved SSH-R's state into a durable directory outside
+  the engine's lifecycle, under the admin's decision under PRV-021, and orders 146, 149 and 150
+  built the drainer, at most one per instance, kept alive by the provider. Order 147's sweep of
+  retired providers' keys is still to come. Channel lifetime and the configured bound
   remain backstops; stop success cancels an in-flight start and permits no restart (081).
 - **E — admin's decision, 2026-11-11:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed it on 2026-11-12 ([ruling 75's later answer](../proposals/ruling-75/README.md#later-answers)).
 - **Uncovered dispatch, proposed:** accept A63-MDIS for place/list-machines beyond 051c's report

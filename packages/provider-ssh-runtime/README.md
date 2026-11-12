@@ -1,6 +1,6 @@
 # SSH runtime provider
 
-Work orders 137, 140 and 145 build `example.org/conduit/provider-ssh-runtime` 0.1.0. Its only Type,
+Work orders 137, 140, 145 and 146 build `example.org/conduit/provider-ssh-runtime` 0.1.0. Its only Type,
 `ssh-runtime.v1`, offers `runtime-provider.v1`; the non-plain `provider` item implements
 `run.v1`, `stop.v1` and `inspect-run.v1`. It depends by path only on the
 [runtime-provider kit](../runtime-provider-kit/README.md). SSH-M is a separate provider.
@@ -113,10 +113,67 @@ never acquire another instance's operation lock. Calls for one instance serializ
 machines. The kit cancels and waits for stage/start/gate opening, closes the gate, then stops;
 no launch may follow a confirmed stop. Inspection is unknown while unreachable or stop is owed.
 
-Decision D's external stop-drainer that outlives provider retirement is **not built**. A stop
-still owed on retirement is carried out only if the provider starts again using the same durable
-instance subdirectory. Until then RuntimeMaxSec is the only end of that run, and the run directory of a
-run that never started stays on the remote. Failed staging and start attach the same named,
+At most one external stop-drainer waits or works in each durable subdirectory. Immediately
+after owner.lock and the state-dir check, before the private key, part, known_hosts or kit
+recovery can refuse startup, the provider tries drainer.lock without blocking. If free, it
+releases it at once and starts the sibling `bin/provider-ssh-runtime-drain`; a failed start
+refuses startup, naming it. If held, a drainer is alive or about to be, so none is started.
+Throughout initialization, service and shutdown the provider repeats this check once a second,
+logging a failed replacement start to diagnostics.log and retrying at the next poll. A drainer
+killed while the provider runs, or one that dies before taking its lock, is replaced within
+a poll after the kernel releases the lock.
+
+The drainer starts a new session with setsid, /dev/null as stdin and both outputs appended to
+mode 0600 drainer.log. Its environment contains only PATH; the durable subdirectory and original
+CONDUIT_STATE_DIR bytes are its two arguments. It leaves the engine runner's process group by
+design (DL16), and survives that group's kill. Stopping the engine's whole service cgroup or
+rebooting also ends the drainer; owed stops then wait for the provider's next start. It starts
+no run, serves no call and opens no gate.
+
+Once SshBackend::new succeeds, and before RuntimeServer::new, the provider atomically writes
+mode 0600 drainer-config in the subdirectory. It holds only the configuration schema's places:
+paths, references and settings, including the private key's path, never secret values (SEC-001).
+A provider whose backend refuses startup leaves the previous configuration in place; a failed
+write refuses startup, naming drainer-config, after the drainer has started.
+
+The drainer tries drainer.lock without blocking; if held, it exits at once. It holds that lock
+for its whole life, including the wait for owner.lock, draining, the retirement watch and yield.
+It waits for owner.lock using nonblocking flock and Tokio timers, logging and retrying errors;
+only a missing subdirectory or ledger ends that wait. Each time it takes owner.lock it reads
+drainer-config afresh and builds its backend from that configuration, so a drainer already
+waiting serves with the newest accepted configuration. A missing or invalid drainer-config is
+logged by name and ends the drainer. On every exit, including cancellation, the attempt and
+backend (and thus SSH masters) drop first, then drainer.lock, then owner.lock. Yield instead
+releases only owner.lock, keeping drainer.lock until the same drainer serves again.
+
+Once it owns owner.lock it removes stale yield, reads the ledger afresh and uses the kit's
+drain_owed_stops. Missing subdirectory or ledger is logged and ends the drainer; an unreadable
+ledger is a failed attempt. Failures wait drainInterval, capped at five minutes, then double
+up to that cap.
+At maxLifetime + stopTimeout since its latest owner-lock acquisition it cancels any attempt
+still in flight and makes one last attempt, then retains any remaining obligation for the
+provider's next start. The last attempt retains the backend's SSH command bounds and can be
+interrupted by yield. Each attempt rereads the ledger.
+
+A starting provider writes yield on every owner-lock poll and waits at most ten seconds before
+initialize. On giving up it removes yield and refuses, naming owner.lock. The drainer checks
+yield at least once a second, including during attempts, backoff and the retirement watch;
+it drops the in-flight attempt and backend (killing its SSH masters) before releasing owner.lock.
+The kit saves each stop's intent before trying it. After yielding it waits eleven seconds,
+then tries owner.lock again; a held lock returns it to waiting, even for a brief sweep owner.
+No server or second drainer works beside the current owner.
+
+When nothing is owed, including an instance that never ran a run, or after the final attempt,
+the drainer watches for retirement for at most one minute. Retirement means symlink_metadata
+finds the original CONDUIT_STATE_DIR path absent while its parent still exists; a moved or
+unmounted store does not count. This path need not exist at drainer startup and is never
+canonicalized. If retired, nothing is owed on a fresh ledger read, and state-dir still holds
+those original bytes, it removes the private key and known_hosts from the durable subdirectory.
+The ledger and markers stay for the operator. Otherwise it exits retaining key material for
+the next provider start. A provider retired while no drainer watched keeps its key until
+order 147's sweep, or the operator, removes it.
+
+Failed staging and start attach the same named,
 value-free reason written on stderr and in 0600 diagnostics.log through `Unavailable::because`.
 The kit includes it after `staging failed:` or `start did not complete:`, with its existing
 stop suffix for start, after checking for sensitive values and bounding it to one line.
@@ -186,7 +243,7 @@ no provider instance ID directly; PRV-029's unique, never-reused path identifies
 
 | Place | Contents |
 | --- | --- |
-| Durable instance subdirectory: `owner.lock` | Exclusive ownership for the server or future drainer; different instances have different locks |
+| Durable instance subdirectory: `owner.lock` | Exclusive ownership for the server or drainer; different instances have different locks |
 | `state-dir` | Exact original CONDUIT_STATE_DIR bytes, without a newline |
 | `ledger.json` | Atomically written kit records, including owed stops |
 | `markers/` | Durable run inventory, including unstarted material to sweep |
@@ -195,7 +252,10 @@ no provider instance ID directly; PRV-029's unique, never-reused path identifies
 | `known_hosts` | Pinned public host keys |
 | Configured `privateKey` | Operator-installed private key inside this subdirectory |
 | `diagnostics.log` | Provider diagnostics, without run output or credential values |
-| Drainer's log (order 146) | Reserved for the external drainer in this same subdirectory; not created by this order |
+| `drainer.log` | External drainer diagnostics; both stdout and stderr append here |
+| `drainer.lock` | Held by one external drainer for its whole life, including waiting and yield |
+| `drainer-config` | Atomically published schema configuration, mode 0600; read on every owner-lock acquisition |
+| `yield` | Provider's request for the drainer to release owner.lock |
 | CONDUIT_STATE_DIR: `stderr/` | Run standard-error files only; may contain run-printed credentials and disappear with instance removal |
 | Private temporary socket directory | SSH control sockets, always outside both state directories |
 
@@ -226,8 +286,8 @@ The backend constructor accepts the durable subdirectory, an optional engine sta
 and an optional already-held `OwnerLock`. Without an engine state directory it reads, creates
 and canonicalizes nothing there; it opens existing durable state for a future drainer even
 after the engine state directory and its parent are removed. Only the server makes `stderr/`
-and checks containment and the old layout. Order 146 builds the drainer; this order provides
-its durable storage and ownership boundary.
+and checks containment and the old layout. The external drainer uses this constructor after
+taking the owner lock.
 
 ## The owner's ruling-77 setup
 
@@ -266,7 +326,7 @@ These are unit observations, not S10/WSL evidence; see
 | --- | --- |
 | (a) Own operations/custom code | Observed in source and fake tests: src/backend.rs implements RuntimeBackend, durable markers, generation reservations and cleanup, run admission, contact, sweep and start/stop/state; src/ssh.rs owns subprocesses/master/session and SSH argv; src/codec.rs encodes shell/stdin/environment; src/config.rs validates startup; src/durable.rs owns instance binding and locking; src/storage.rs atomically commits the ledger; src/main.rs serves; src/bin/package.rs archives; src/lib.rs exports the interface. This is an implementation inventory, not a counted S10 result. |
 | (b) Delegation | Observed mapping: kit owns MCP/admission/gate/lifecycle/owed stops (shared work counted once with local-process and future Docker); OpenSSH owns authentication, host pinning and transport; systemd owns exec, cgroup stop, lifetime and stop-post cleanup. Real OpenSSH/systemd behavior is untested here. |
-| (c) Persistent state | Observed: provider OS user owns durableDir and each hashed subdirectory with owner.lock, state-dir, part, known_hosts, markers, permanent generation reservations, ledger.json, diagnostics.log and operator key; only stderr logs stay in the engine state directory. The operator controls durable-directory removal. Remote shared user owns part/runs and persistent part/state. Inventory, atomic ledger and owed-stop restart tests cover local recovery. Retirement has no external drainer yet; reopening the same durable subdirectory is required. Remote files, modes and staging are tested by a fake executing scripts in a temporary directory. |
+| (c) Persistent state | Observed: provider OS user owns durableDir and each hashed subdirectory with owner.lock, state-dir, part, known_hosts, markers, permanent generation reservations, ledger.json, diagnostics.log and operator key; only stderr logs stay in the engine state directory. The operator controls durable-directory removal. Remote shared user owns part/runs and persistent part/state. Inventory, atomic ledger and owed-stop restart tests cover local recovery. The external drainer reads the newest accepted configuration and survives the provider process group; owed stops after a service cgroup stop or reboot wait for reopening the same subdirectory. Remote files, modes and staging are tested by a fake executing scripts in a temporary directory. |
 | (d) Operator setup/recovery | Untested on the Windows computer: install keys, pin hosts, configure the table and the remote setup above; route the gate on the engine's machine. Manual recovery after retirement: restart the provider with the same state and configuration to retry held stops, including unacknowledged launches. If the state is lost, an operator must inventory/stop that part's remote units and remove run files; persistent state is deliberately retained. No setup script or independent supervisor is shipped. |
 
 ## Build and unit checks

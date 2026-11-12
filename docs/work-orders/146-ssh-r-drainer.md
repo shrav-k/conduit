@@ -136,3 +136,20 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target --exclude-dir=dist
 The provider's shell scripts stay POSIX, since the tests run them on macOS too (order 140's
 Record). `target/` and `dist/` stay ignored and unstaged. Report each choice you make as your own.
 Do not stage anything.
+
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), from base e03ca3e: the worker (1,198 s) and a fresh
+verifier (174 s), then a second worker round (289 s) and a fresh verifier (199 s). Both verifiers
+found a race in how drainers handed over: round one's, an older waiting drainer superseding the
+newest; round two's, a drainer's place set when it registered, which can come later than its
+launch. [Order 149](149-ssh-r-drainer-finish.md) tried launch generations and found two more such
+races, and [order 150](150-ssh-r-one-drainer.md) replaced the whole handoff (see its Record). The
+drainer itself stands as this order built it: started with the provider, waiting on the owner
+lock, draining owed stops with a backoff to its bound, yielding to a starting provider, and
+deleting the key and `known_hosts` once the instance is retired and nothing is owed.
+
+The worker's finding: the configuration allows a `drainInterval` above five minutes, while the
+backoff starts at that interval and is capped at five minutes; left for SSH-R's loopback-tier
+order.

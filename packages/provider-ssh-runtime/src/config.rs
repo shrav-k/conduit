@@ -200,3 +200,84 @@ impl Config {
         }
     }
 }
+
+/// The file holds precisely the schema's configuration places, never process inputs.
+const PLACES: &[(&str, &str)] = &[
+    ("advertisedHost", "SSH_RUNTIME_ADVERTISED_HOST"),
+    ("base", "SSH_RUNTIME_BASE"),
+    ("bindAddress", "SSH_RUNTIME_BIND_ADDRESS"),
+    ("drainInterval", "SSH_RUNTIME_DRAIN_INTERVAL"),
+    ("durableDir", "SSH_RUNTIME_DURABLE_DIR"),
+    ("keepaliveCount", "SSH_RUNTIME_KEEPALIVE_COUNT"),
+    ("keepaliveIdle", "SSH_RUNTIME_KEEPALIVE_IDLE"),
+    ("keepaliveInterval", "SSH_RUNTIME_KEEPALIVE_INTERVAL"),
+    ("loginctl", "SSH_RUNTIME_LOGINCTL"),
+    ("machines", "SSH_RUNTIME_MACHINES"),
+    ("maxLifetime", "SSH_RUNTIME_MAX_LIFETIME"),
+    ("path", "SSH_RUNTIME_PATH"),
+    ("privateKey", "SSH_RUNTIME_PRIVATE_KEY"),
+    ("runLimit", "SSH_RUNTIME_RUN_LIMIT"),
+    ("stopTimeout", "SSH_RUNTIME_STOP_TIMEOUT"),
+    ("systemctl", "SSH_RUNTIME_SYSTEMCTL"),
+    ("systemdRun", "SSH_RUNTIME_SYSTEMD_RUN"),
+    ("unitPrefix", "SSH_RUNTIME_UNIT_PREFIX"),
+];
+
+impl Config {
+    pub fn write_drainer(&self, root: &std::path::Path) -> std::io::Result<()> {
+        self.validate().map_err(std::io::Error::other)?;
+        let places = serde_json::json!({
+            "advertisedHost": self.gate.advertised_host,
+            "base": self.base,
+            "bindAddress": self.gate.bind_address.to_string(),
+            "drainInterval": self.drain_interval.as_secs(),
+            "durableDir": self.durable_dir,
+            "keepaliveCount": self.gate.keepalive_count,
+            "keepaliveIdle": self.gate.keepalive_idle.as_secs(),
+            "keepaliveInterval": self.gate.keepalive_interval.as_secs(),
+            "loginctl": self.loginctl,
+            "machines": serde_json::to_string(&self.machines)?,
+            "maxLifetime": self.max_lifetime.as_secs(),
+            "path": self.run_path,
+            "privateKey": self.private_key,
+            "runLimit": self.run_limit,
+            "stopTimeout": self.stop_timeout.as_secs(),
+            "systemctl": self.systemctl,
+            "systemdRun": self.systemd_run,
+            "unitPrefix": self.prefix,
+        });
+        crate::storage::atomic_write(root, "drainer-config", &serde_json::to_vec(&places)?)
+    }
+
+    pub fn read_drainer(root: &std::path::Path) -> std::io::Result<Self> {
+        use serde_json::Value;
+        let invalid = || std::io::Error::other("invalid drainer-config");
+        let places: serde_json::Map<String, Value> =
+            serde_json::from_slice(&std::fs::read(root.join("drainer-config"))?)
+                .map_err(|_| invalid())?;
+        if places.len() != PLACES.len() {
+            return Err(invalid());
+        }
+        let mut bindings = std::collections::BTreeMap::new();
+        for &(place, binding) in PLACES {
+            let value = places.get(place).ok_or_else(invalid)?;
+            let integer = matches!(
+                place,
+                "drainInterval"
+                    | "keepaliveCount"
+                    | "keepaliveIdle"
+                    | "keepaliveInterval"
+                    | "maxLifetime"
+                    | "runLimit"
+                    | "stopTimeout"
+            );
+            let text = if integer {
+                value.as_u64().ok_or_else(invalid)?.to_string()
+            } else {
+                value.as_str().ok_or_else(invalid)?.to_owned()
+            };
+            bindings.insert(binding, text);
+        }
+        Self::from_lookup(|name| bindings.remove(name)).map_err(|_| invalid())
+    }
+}

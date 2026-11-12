@@ -167,7 +167,7 @@ Run these with `bash`. Each prints nothing when it passes:
 
 ```bash
 D=experiments/022-provider-contracts
-grep -rn -E "/Users/[A-Za-z]|/privat[e]/tmp|/home/[a-z]|/tmp/claude|\.codex/auth\.json" $D --exclude-dir=target
+grep -rn -E "/Users/[A-Za-z]|/privat[e]/tmp|/home/[a-z]|/tmp/claud[e]|\.codex/auth\.json" $D --exclude-dir=target
 grep -rn -E "[[:space:]]+$" $D --exclude-dir=target
 git status --porcelain --ignored $D | grep target/ | grep -v '^!!'
 ```

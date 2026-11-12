@@ -223,3 +223,14 @@ fn all_portable_cases_pass() {
         );
     }
 }
+
+#[test]
+fn one_and_four_threads_report_the_same_fields() {
+    let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let sequential =
+        conduit_conformance::run_matching_with_threads(&repository, "access-", 1).unwrap();
+    assert!(sequential.len() >= 10);
+    let parallel =
+        conduit_conformance::run_matching_with_threads(&repository, "access-", 4).unwrap();
+    assert_eq!(sequential, parallel);
+}

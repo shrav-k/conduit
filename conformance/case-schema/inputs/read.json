@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "read"
+    },
+    "file": {
+      "type": "string",
+      "minLength": 1
+    },
+    "syntax": {
+      "enum": [
+        "yaml",
+        "json"
+      ]
+    }
+  },
+  "required": [
+    "kind",
+    "file",
+    "syntax"
+  ]
+}

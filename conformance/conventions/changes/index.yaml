@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "id": "change-retirement",
+      "case": "conventions/changes/retirement/case.yaml",
+      "promises": [
+        "LIF-019",
+        "LIF-024",
+        "LIF-035",
+        "LIF-036",
+        "CON-025",
+        "REV-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "change-t4",
+      "case": "conventions/changes/t4/case.yaml",
+      "promises": [
+        "SUB-009",
+        "LIF-009",
+        "INS-020",
+        "IFC-012",
+        "IFC-038"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "change-t5",
+      "case": "conventions/changes/t5/case.yaml",
+      "promises": [
+        "PKG-005",
+        "PKG-020",
+        "PKG-025",
+        "IFC-012",
+        "NAM-011"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

@@ -70,7 +70,7 @@ INTERFACE = ROOT / "spec" / "interface" / "implementation.yaml"
 FOREIGN_META_PREFIXES = ("io.modelcontextprotocol/",)
 # Build-only switches are not run identity variables. Keep this exception exact so
 # other CONDUIT_ spellings, including identity typos, still fail the check.
-BUILD_TEST_VARIABLES = {"CONDUIT_TEST_NPM"}
+BUILD_TEST_VARIABLES = {"CONDUIT_TEST_NPM", "CONDUIT_VECTOR_THREADS"}
 # A run of characters that can make up a name, a reference or a path.
 TOKEN = re.compile(r"[A-Za-z0-9._/#:-]+")
 DNS_NAME = re.compile(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+")

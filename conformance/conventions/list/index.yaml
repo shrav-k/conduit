@@ -1,0 +1,57 @@
+{
+  "cases": [
+    {
+      "id": "list-from-first-start",
+      "case": "conventions/list/from-first-start/case.yaml",
+      "promises": [
+        "OPS-036",
+        "FST-002",
+        "FST-007",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-kind-filter",
+      "case": "conventions/list/kind-filter/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "LIF-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-management",
+      "case": "conventions/list/management/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "LIF-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-onward-caller",
+      "case": "conventions/list/onward-caller/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "ACC-016",
+        "IFC-020",
+        "IFC-021"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "list-refused-without-list",
+      "case": "conventions/list/refused-without-list/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-001",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "install-archive"
+    },
+    "file": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "kind",
+    "file"
+  ]
+}

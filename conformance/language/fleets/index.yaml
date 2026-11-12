@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "id": "fleet-instance",
+      "case": "language/fleets/instance/case.yaml",
+      "promises": [
+        "FLEET-001",
+        "OBJ-009",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "fleet-names",
+      "case": "language/fleets/names/case.yaml",
+      "promises": [
+        "FLEET-006",
+        "OBJ-023",
+        "OBJ-025"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

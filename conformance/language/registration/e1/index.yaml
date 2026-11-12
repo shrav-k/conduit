@@ -1,0 +1,140 @@
+{
+  "cases": [
+    {
+      "id": "as-declared",
+      "case": "language/registration/e1/as-declared/case.yaml",
+      "promises": [
+        "IFC-014",
+        "IFC-012",
+        "OBJ-013"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "as-unique",
+      "case": "language/registration/e1/as-unique/case.yaml",
+      "promises": [
+        "IFC-014",
+        "IFC-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "conduit-as",
+      "case": "language/registration/e1/conduit-as/case.yaml",
+      "promises": [
+        "OBJ-013",
+        "IFC-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "conduit-as-invalid",
+      "case": "language/registration/e1/conduit-as-invalid/case.yaml",
+      "promises": [
+        "OBJ-001",
+        "OBJ-013",
+        "OBJ-022"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-description-bare",
+      "case": "language/registration/e1/e05-description-bare/case.yaml",
+      "promises": [
+        "IFC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e05-description-target",
+      "case": "language/registration/e1/e05-description-target/case.yaml",
+      "promises": [
+        "IFC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "expected-id-access-order",
+      "case": "language/registration/e1/expected-id-access-order/case.yaml",
+      "promises": [
+        "LIF-037",
+        "OPS-023",
+        "ACC-054"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "expected-id-close",
+      "case": "language/registration/e1/expected-id-close/case.yaml",
+      "promises": [
+        "LIF-037",
+        "OPS-023",
+        "OPS-029"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "expected-id-open",
+      "case": "language/registration/e1/expected-id-open/case.yaml",
+      "promises": [
+        "LIF-037",
+        "OPS-023",
+        "OPS-029"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "root-consumer-onward",
+      "case": "language/registration/e1/root-consumer-onward/case.yaml",
+      "promises": [
+        "ACC-054",
+        "SEC-008",
+        "IFC-028"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "root-consumer-open",
+      "case": "language/registration/e1/root-consumer-open/case.yaml",
+      "promises": [
+        "ACC-054",
+        "SEC-008"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "root-consumer-register",
+      "case": "language/registration/e1/root-consumer-register/case.yaml",
+      "promises": [
+        "ACC-054",
+        "SEC-008",
+        "OBJ-013"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "root-consumer-register-invalid",
+      "case": "language/registration/e1/root-consumer-register-invalid/case.yaml",
+      "promises": [
+        "ACC-054",
+        "OPS-023",
+        "OBJ-013",
+        "SUB-004",
+        "INS-002"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "root-consumer-register-onward-invalid",
+      "case": "language/registration/e1/root-consumer-register-onward-invalid/case.yaml",
+      "promises": [
+        "ACC-054",
+        "OPS-023",
+        "SEC-008",
+        "IFC-028"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

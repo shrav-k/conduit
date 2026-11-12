@@ -1,0 +1,492 @@
+{
+  "cases": [
+    {
+      "id": "archives-absolute",
+      "case": "language/archives/absolute/case.yaml",
+      "promises": [
+        "MAN-014",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-dangling",
+      "case": "language/archives/dangling/case.yaml",
+      "promises": [
+        "SUB-010",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-digest-format",
+      "case": "language/archives/digest-format/case.yaml",
+      "promises": [
+        "PKG-004",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-dot-entry",
+      "case": "language/archives/dot-entry/case.yaml",
+      "promises": [
+        "PKG-004",
+        "PKG-022",
+        "PKG-026",
+        "PKG-017",
+        "MAN-011"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-hardlink",
+      "case": "language/archives/hardlink/case.yaml",
+      "promises": [
+        "PKG-004",
+        "PKG-022",
+        "PKG-026",
+        "PKG-017",
+        "MAN-011"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-hardlink-escape",
+      "case": "language/archives/hardlink-escape/case.yaml",
+      "promises": [
+        "MAN-014",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-indirect-link-escape",
+      "case": "language/archives/indirect-link-escape/case.yaml",
+      "promises": [
+        "MAN-014",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-instance",
+      "case": "language/archives/instance/case.yaml",
+      "promises": [
+        "MAN-011",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-instance-contract-holder",
+      "case": "language/archives/instance-contract-holder/case.yaml",
+      "promises": [
+        "PKG-029",
+        "MAN-016"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-instance-implementation-holder",
+      "case": "language/archives/instance-implementation-holder/case.yaml",
+      "promises": [
+        "PKG-029",
+        "MAN-016"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-invalid-document",
+      "case": "language/archives/invalid-document/case.yaml",
+      "promises": [
+        "SUB-005",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-invalid-version",
+      "case": "language/archives/invalid-version/case.yaml",
+      "promises": [
+        "PKG-001",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-link-absolute",
+      "case": "language/archives/link-absolute/case.yaml",
+      "promises": [
+        "MAN-014",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-link-cycle",
+      "case": "language/archives/link-cycle/case.yaml",
+      "promises": [
+        "PKG-022",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-link-escape",
+      "case": "language/archives/link-escape/case.yaml",
+      "promises": [
+        "MAN-014",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-link-expansions-39",
+      "case": "language/archives/link-expansions-39/case.yaml",
+      "promises": [
+        "PKG-022",
+        "MAN-013",
+        "MAN-011",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-link-expansions-40",
+      "case": "language/archives/link-expansions-40/case.yaml",
+      "promises": [
+        "PKG-022",
+        "MAN-013",
+        "MAN-011",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-link-expansions-41",
+      "case": "language/archives/link-expansions-41/case.yaml",
+      "promises": [
+        "PKG-022",
+        "MAN-013",
+        "MAN-011",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-manifest-directory-parent",
+      "case": "language/archives/manifest-directory-parent/case.yaml",
+      "promises": [
+        "PKG-022",
+        "MAN-013",
+        "MAN-011",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-manifest-file-parent",
+      "case": "language/archives/manifest-file-parent/case.yaml",
+      "promises": [
+        "PKG-022",
+        "MAN-013",
+        "MAN-011",
+        "PKG-023",
+        "SUB-010"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-manifest-missing-parent",
+      "case": "language/archives/manifest-missing-parent/case.yaml",
+      "promises": [
+        "PKG-022",
+        "MAN-013",
+        "MAN-011",
+        "PKG-023",
+        "SUB-010"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-missing-dependency",
+      "case": "language/archives/missing-dependency/case.yaml",
+      "promises": [
+        "PKG-028",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-nested-document",
+      "case": "language/archives/nested-document/case.yaml",
+      "promises": [
+        "PKG-004",
+        "PKG-022",
+        "PKG-026",
+        "PKG-017",
+        "MAN-011"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-nested-manifest",
+      "case": "language/archives/nested-manifest/case.yaml",
+      "promises": [
+        "MAN-013",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-no-project-holder",
+      "case": "language/archives/no-project-holder/case.yaml",
+      "promises": [
+        "PKG-017",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-not-gzip",
+      "case": "language/archives/not-gzip/case.yaml",
+      "promises": [
+        "PKG-022",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-not-tar",
+      "case": "language/archives/not-tar/case.yaml",
+      "promises": [
+        "PKG-022",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-package-holder",
+      "case": "language/archives/package-holder/case.yaml",
+      "promises": [
+        "PKG-017",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-program",
+      "case": "language/archives/program/case.yaml",
+      "promises": [
+        "PKG-004",
+        "PKG-022",
+        "PKG-026",
+        "PKG-017",
+        "MAN-011"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-project-unheld",
+      "case": "language/archives/project-unheld/case.yaml",
+      "promises": [
+        "PKG-017",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-registered-project-holder",
+      "case": "language/archives/registered-project-holder/case.yaml",
+      "promises": [
+        "PKG-029",
+        "MAN-016",
+        "NAM-009",
+        "PKG-005",
+        "SUB-008"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-s1",
+      "case": "language/archives/s1/case.yaml",
+      "promises": [
+        "PKG-006",
+        "PKG-003",
+        "PKG-021",
+        "NAM-014",
+        "NAM-020",
+        "SUB-008",
+        "PKG-004",
+        "PKG-022",
+        "PKG-026",
+        "PKG-017",
+        "PKG-028",
+        "MAN-011",
+        "MAN-013",
+        "MAN-014",
+        "PKG-023",
+        "NAM-013",
+        "PKG-025",
+        "PKG-027"
+      ],
+      "safety_rows": [
+        "archive-installation",
+        "s1"
+      ]
+    },
+    {
+      "id": "archives-symlink",
+      "case": "language/archives/symlink/case.yaml",
+      "promises": [
+        "PKG-004",
+        "PKG-022",
+        "PKG-026",
+        "PKG-017",
+        "MAN-011"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-template-contract-holder",
+      "case": "language/archives/template-contract-holder/case.yaml",
+      "promises": [
+        "PKG-029",
+        "MAN-016"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-template-implementation-holder",
+      "case": "language/archives/template-implementation-holder/case.yaml",
+      "promises": [
+        "PKG-029",
+        "MAN-016"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-traversal",
+      "case": "language/archives/traversal/case.yaml",
+      "promises": [
+        "MAN-014",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-unavailable",
+      "case": "language/archives/unavailable/case.yaml",
+      "promises": [
+        "PKG-024"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-wrong-address",
+      "case": "language/archives/wrong-address/case.yaml",
+      "promises": [
+        "PKG-017",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-wrong-digest",
+      "case": "language/archives/wrong-digest/case.yaml",
+      "promises": [
+        "PKG-026",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    },
+    {
+      "id": "archives-wrong-version",
+      "case": "language/archives/wrong-version/case.yaml",
+      "promises": [
+        "PKG-017",
+        "PKG-023"
+      ],
+      "safety_rows": [
+        "archive-installation"
+      ]
+    }
+  ]
+}

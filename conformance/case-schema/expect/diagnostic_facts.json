@@ -1,0 +1,43 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "index": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "message_contains": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "keyword_location": {
+        "type": "boolean"
+      },
+      "keyword": {
+        "type": "string",
+        "minLength": 1
+      },
+      "contract": {
+        "type": "string",
+        "minLength": 1
+      },
+      "pointer": {
+        "type": "string",
+        "minLength": 1
+      },
+      "root_schema": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "index",
+      "message_contains"
+    ]
+  }
+}

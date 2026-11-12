@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "id": "first-start-protected",
+      "case": "language/first-start/protected/case.yaml",
+      "promises": [
+        "FST-006",
+        "NAM-020",
+        "SUB-003",
+        "REC-001",
+        "REC-002",
+        "ACC-033",
+        "OPS-023",
+        "FST-007",
+        "FST-002",
+        "FLEET-005",
+        "ACC-044"
+      ],
+      "safety_rows": [
+        "first-start-protected"
+      ]
+    },
+    {
+      "id": "first-start-protected-authorized",
+      "case": "language/first-start/protected-authorized/case.yaml",
+      "promises": [
+        "FST-006",
+        "NAM-020",
+        "SUB-003",
+        "REC-001",
+        "REC-002",
+        "ACC-033",
+        "OPS-023"
+      ],
+      "safety_rows": [
+        "first-start-protected-authorized"
+      ]
+    },
+    {
+      "id": "first-start-protected-without-pool",
+      "case": "language/first-start/protected-without-pool/case.yaml",
+      "promises": [
+        "FST-006",
+        "ACC-033",
+        "OPS-023"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

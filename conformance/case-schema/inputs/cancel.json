@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "cancel"
+    },
+    "evidence": {
+      "type": "object"
+    },
+    "invocation": {
+      "type": "string"
+    },
+    "confirmation": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "kind",
+    "evidence",
+    "invocation"
+  ]
+}

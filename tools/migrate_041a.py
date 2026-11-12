@@ -396,7 +396,8 @@ def write_declaration():
         group = groups.setdefault(key, dict(shape, cases=set(), paths=set()))
         group['cases'].add(change['case'])
         group['paths'].add(re.sub(r'/[0-9]+(?=/|$)', '/*', change['path']).replace('[', '[[]'))
-    inventory = {c['id'] for c in structured((ROOT / 'conformance/manifest.yaml').read_bytes())['cases']}
+    inventory = {c['id'] for piece in sorted((ROOT / 'conformance').rglob('index.yaml'))
+                 for c in structured(piece.read_bytes())['cases']}
     result = []
     ordered = sorted(groups.values(), key=lambda g: -len(g['cases']) * len(g['paths']))
     for i, group in enumerate(ordered):

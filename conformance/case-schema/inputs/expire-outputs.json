@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "expire-outputs"
+    },
+    "invocation": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "invocation"
+  ]
+}

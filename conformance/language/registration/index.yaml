@@ -1,0 +1,980 @@
+{
+  "cases": [
+    {
+      "id": "registration-argument-map-default",
+      "case": "language/registration/argument-map-default/case.yaml",
+      "promises": [
+        "INS-006",
+        "INS-007",
+        "INS-019"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-argument-overrides",
+      "case": "language/registration/argument-overrides/case.yaml",
+      "promises": [
+        "INS-006",
+        "INS-019"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-arguments-default",
+      "case": "language/registration/arguments-default/case.yaml",
+      "promises": [
+        "INS-007",
+        "INS-019",
+        "INS-024"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-arguments-invalid",
+      "case": "language/registration/arguments-invalid/case.yaml",
+      "promises": [
+        "INS-005",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-arguments-null",
+      "case": "language/registration/arguments-null/case.yaml",
+      "promises": [
+        "INS-009",
+        "INS-005"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-arguments-optional",
+      "case": "language/registration/arguments-optional/case.yaml",
+      "promises": [
+        "INS-008",
+        "INS-019"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-arguments-relative",
+      "case": "language/registration/arguments-relative/case.yaml",
+      "promises": [
+        "INS-006",
+        "INS-018"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-arguments-required",
+      "case": "language/registration/arguments-required/case.yaml",
+      "promises": [
+        "INS-004",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-arguments-unknown",
+      "case": "language/registration/arguments-unknown/case.yaml",
+      "promises": [
+        "INS-003",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-config-invalid",
+      "case": "language/registration/config-invalid/case.yaml",
+      "promises": [
+        "INS-014",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-config-standard-defaults",
+      "case": "language/registration/config-standard-defaults/case.yaml",
+      "promises": [
+        "INS-012",
+        "PLC-005"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-destination-overlap",
+      "case": "language/registration/destination-overlap/case.yaml",
+      "promises": [
+        "INS-010",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-destination-parent",
+      "case": "language/registration/destination-parent/case.yaml",
+      "promises": [
+        "INS-011",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-duplicate",
+      "case": "language/registration/duplicate/case.yaml",
+      "promises": [
+        "SUB-004",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-entry-active-replacement",
+      "case": "language/registration/entry-active-replacement/case.yaml",
+      "promises": [
+        "POOL-014",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-entry-placement-retained",
+      "case": "language/registration/entry-placement-retained/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "POOL-016"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-entry-retired-only",
+      "case": "language/registration/entry-retired-only/case.yaml",
+      "promises": [
+        "POOL-014",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-entry-runtime-retained",
+      "case": "language/registration/entry-runtime-retained/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "POOL-009",
+        "PRV-006"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-existing-name",
+      "case": "language/registration/existing-name/case.yaml",
+      "promises": [
+        "OBJ-002",
+        "OBJ-025",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-frozen-template",
+      "case": "language/registration/frozen-template/case.yaml",
+      "promises": [
+        "NAM-010",
+        "INS-020",
+        "SUB-008",
+        "INS-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-generated-collision",
+      "case": "language/registration/generated-collision/case.yaml",
+      "promises": [
+        "OBJ-003",
+        "INS-016"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-implementation-default",
+      "case": "language/registration/implementation-default/case.yaml",
+      "promises": [
+        "TPL-004",
+        "NAM-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-implementation-engine",
+      "case": "language/registration/implementation-engine/case.yaml",
+      "promises": [
+        "TPL-003",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-implementation-missing",
+      "case": "language/registration/implementation-missing/case.yaml",
+      "promises": [
+        "TPL-004",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-implementation-override",
+      "case": "language/registration/implementation-override/case.yaml",
+      "promises": [
+        "TPL-004"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-implementation-two-runs",
+      "case": "language/registration/implementation-two-runs/case.yaml",
+      "promises": [
+        "TPL-019",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-implementation-wrong-operation",
+      "case": "language/registration/implementation-wrong-operation/case.yaml",
+      "promises": [
+        "TPL-005",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-live-agents",
+      "case": "language/registration/live-agents/case.yaml",
+      "promises": [
+        "SUB-001",
+        "SUB-002",
+        "SUB-003",
+        "SUB-006",
+        "INS-013",
+        "INS-016",
+        "OBJ-003",
+        "OBJ-009",
+        "TPL-004",
+        "NAM-009",
+        "PLC-001",
+        "PLC-002",
+        "POOL-001",
+        "MAN-010",
+        "MAN-017",
+        "PKG-020",
+        "TPL-019",
+        "SCH-009"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "registration-nested-reference-input",
+      "case": "language/registration/nested-reference-input/case.yaml",
+      "promises": [
+        "INS-006",
+        "OBJ-009",
+        "INS-016"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-nested-reference-missing",
+      "case": "language/registration/nested-reference-missing/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-operations-input-accepted",
+      "case": "language/registration/operations-input-accepted/case.yaml",
+      "promises": [
+        "INS-023",
+        "INS-012"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-operations-input-rejected",
+      "case": "language/registration/operations-input-rejected/case.yaml",
+      "promises": [
+        "INS-023",
+        "INS-012"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-owner",
+      "case": "language/registration/owner/case.yaml",
+      "promises": [
+        "POOL-001",
+        "POOL-004",
+        "SUB-002"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-owner-missing",
+      "case": "language/registration/owner-missing/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-owner-retired",
+      "case": "language/registration/owner-retired/case.yaml",
+      "promises": [
+        "POOL-004",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-placement-explicit",
+      "case": "language/registration/placement-explicit/case.yaml",
+      "promises": [
+        "PLC-001"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-placement-label-darwin",
+      "case": "language/registration/placement-label-darwin/case.yaml",
+      "promises": [
+        "PLC-007",
+        "INS-016"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-placement-label-linux",
+      "case": "language/registration/placement-label-linux/case.yaml",
+      "promises": [
+        "PLC-007",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-placement-not-node",
+      "case": "language/registration/placement-not-node/case.yaml",
+      "promises": [
+        "PLC-001",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-placement-retired",
+      "case": "language/registration/placement-retired/case.yaml",
+      "promises": [
+        "PLC-018",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-pool-entries",
+      "case": "language/registration/pool-entries/case.yaml",
+      "promises": [
+        "POOL-002",
+        "INS-016",
+        "OBJ-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-reference-authored-id",
+      "case": "language/registration/reference-authored-id/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-reference-chains",
+      "case": "language/registration/reference-chains/case.yaml",
+      "promises": [
+        "OBJ-021",
+        "OBJ-009",
+        "SCH-015"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-reference-config",
+      "case": "language/registration/reference-config/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "OBJ-021",
+        "SUB-002"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-reference-missing",
+      "case": "language/registration/reference-missing/case.yaml",
+      "promises": [
+        "OBJ-009",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-reference-null",
+      "case": "language/registration/reference-null/case.yaml",
+      "promises": [
+        "OBJ-021"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-reference-patterns",
+      "case": "language/registration/reference-patterns/case.yaml",
+      "promises": [
+        "OBJ-021",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-reference-template",
+      "case": "language/registration/reference-template/case.yaml",
+      "promises": [
+        "OBJ-007",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-requirement-authored-id",
+      "case": "language/registration/requirement-authored-id/case.yaml",
+      "promises": [
+        "NAM-019",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-requirement-bound",
+      "case": "language/registration/requirement-bound/case.yaml",
+      "promises": [
+        "NAM-019",
+        "OBJ-009",
+        "OBJ-021"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-requirement-contract-context",
+      "case": "language/registration/requirement-contract-context/case.yaml",
+      "promises": [
+        "NAM-019",
+        "OBJ-009",
+        "OBJ-021"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-requirement-invalid",
+      "case": "language/registration/requirement-invalid/case.yaml",
+      "promises": [
+        "NAM-019",
+        "INS-005"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-requirement-missing",
+      "case": "language/registration/requirement-missing/case.yaml",
+      "promises": [
+        "NAM-019",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-requirement-required",
+      "case": "language/registration/requirement-required/case.yaml",
+      "promises": [
+        "NAM-019",
+        "INS-004"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-requirement-schema-default",
+      "case": "language/registration/requirement-schema-default/case.yaml",
+      "promises": [
+        "NAM-019",
+        "SCH-009",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-requirement-unknown",
+      "case": "language/registration/requirement-unknown/case.yaml",
+      "promises": [
+        "NAM-019",
+        "INS-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-retained-package-build-metadata",
+      "case": "language/registration/retained-package-build-metadata/case.yaml",
+      "promises": [
+        "PKG-003",
+        "PKG-007",
+        "NAM-010"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-retained-package-missing",
+      "case": "language/registration/retained-package-missing/case.yaml",
+      "promises": [
+        "PKG-007",
+        "NAM-010"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-runtime-explicit",
+      "case": "language/registration/runtime-explicit/case.yaml",
+      "promises": [
+        "PRV-006",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-runtime-non-provider",
+      "case": "language/registration/runtime-non-provider/case.yaml",
+      "promises": [
+        "PRV-006"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-runtime-retired",
+      "case": "language/registration/runtime-retired/case.yaml",
+      "promises": [
+        "PRV-006",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-runtime-wrong-family",
+      "case": "language/registration/runtime-wrong-family/case.yaml",
+      "promises": [
+        "PRV-006",
+        "SUB-005"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-s1",
+      "case": "language/registration/s1/case.yaml",
+      "promises": [
+        "SUB-001",
+        "SUB-002",
+        "SUB-003",
+        "SUB-006",
+        "INS-013",
+        "INS-016",
+        "OBJ-003",
+        "OBJ-009",
+        "TPL-004",
+        "NAM-009",
+        "PLC-001",
+        "PLC-002",
+        "POOL-001"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-s1-atomic-rejection",
+      "case": "language/registration/s1-atomic-rejection/case.yaml",
+      "promises": [
+        "SUB-003",
+        "INS-004"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-s1-orders",
+      "case": "language/registration/s1-orders/case.yaml",
+      "promises": [
+        "SUB-001",
+        "SUB-002",
+        "SUB-003",
+        "SUB-006",
+        "INS-013",
+        "INS-016",
+        "OBJ-003",
+        "OBJ-009",
+        "TPL-004",
+        "NAM-009",
+        "PLC-001",
+        "PLC-002",
+        "POOL-001"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-s1-rejected-orders",
+      "case": "language/registration/s1-rejected-orders/case.yaml",
+      "promises": [
+        "SUB-001",
+        "SUB-003",
+        "INS-004"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-s1-reverse",
+      "case": "language/registration/s1-reverse/case.yaml",
+      "promises": [
+        "SUB-001",
+        "SUB-002",
+        "SUB-003",
+        "SUB-006",
+        "INS-013",
+        "INS-016",
+        "OBJ-003",
+        "OBJ-009",
+        "TPL-004",
+        "NAM-009",
+        "PLC-001",
+        "PLC-002",
+        "POOL-001"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-standard-argument-consumer",
+      "case": "language/registration/standard-argument-consumer/case.yaml",
+      "promises": [
+        "OBJ-013"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-standard-argument-owner",
+      "case": "language/registration/standard-argument-owner/case.yaml",
+      "promises": [
+        "OBJ-013"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-standard-argument-placement",
+      "case": "language/registration/standard-argument-placement/case.yaml",
+      "promises": [
+        "OBJ-013"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-standard-argument-runtime",
+      "case": "language/registration/standard-argument-runtime/case.yaml",
+      "promises": [
+        "OBJ-013"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-standard-argument-target",
+      "case": "language/registration/standard-argument-target/case.yaml",
+      "promises": [
+        "OBJ-013"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-entry-missing",
+      "case": "language/registration/template-entry-missing/case.yaml",
+      "promises": [
+        "OBJ-008",
+        "POOL-005",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-entry-reference",
+      "case": "language/registration/template-entry-reference/case.yaml",
+      "promises": [
+        "OBJ-008",
+        "POOL-005",
+        "OBJ-009"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-family",
+      "case": "language/registration/template-family/case.yaml",
+      "promises": [
+        "INS-002",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-kind-name",
+      "case": "language/registration/template-kind-name/case.yaml",
+      "promises": [
+        "INS-025"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-missing",
+      "case": "language/registration/template-missing/case.yaml",
+      "promises": [
+        "INS-002",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-nested-from-note",
+      "case": "language/registration/template-nested-from-note/case.yaml",
+      "promises": [
+        "OBJ-008"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-nested-notes",
+      "case": "language/registration/template-nested-notes/case.yaml",
+      "promises": [
+        "OBJ-008"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-project-local",
+      "case": "language/registration/template-project-local/case.yaml",
+      "promises": [
+        "INS-025",
+        "SUB-002"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-template-unresolved",
+      "case": "language/registration/template-unresolved/case.yaml",
+      "promises": [
+        "OBJ-008"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-type-default",
+      "case": "language/registration/type-default/case.yaml",
+      "promises": [
+        "INS-019",
+        "INS-008"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-type-family",
+      "case": "language/registration/type-family/case.yaml",
+      "promises": [
+        "TPL-002",
+        "SUB-003"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    },
+    {
+      "id": "registration-type-no-schema",
+      "case": "language/registration/type-no-schema/case.yaml",
+      "promises": [
+        "CTR-004",
+        "OBJ-021"
+      ],
+      "safety_rows": [
+        "registration"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "restore-state"
+    },
+    "records_purged": {
+      "type": "boolean"
+    },
+    "evidence": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "kind"
+  ]
+}

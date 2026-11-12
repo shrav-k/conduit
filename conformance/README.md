@@ -2,16 +2,19 @@
 
 Not binding. The [specification](../spec/README.md) alone binds. This is a portable convention
 of the first build's runner, adopted by the admin's [decisions 3, 4 and 7](../docs/proposals/first-build/increment-2/decisions.md).
-The [case schema](case.schema.json) describes the current executable subset. Later orders
-extend it alongside their cases; an unknown input or assertion fails rather than being skipped.
+The [case schema](case.schema.json), with its pieces under `case-schema/`, describes the
+current executable subset. Later orders extend it alongside their cases as described in
+[the pieces section](#the-coverage-index-and-the-case-schema-in-pieces); an unknown input or
+assertion fails rather than being skipped.
 
 Each `case.yaml` has a stable `id`, `layers` (`language`, `convention`, `interface`), promise
 IDs, a title, the `first-build` profile, an `initial` recipe, named files and ordered `steps`.
 An initial recipe is `empty` or `snapshot`, whose `file` names an alias holding an explicitly
 supplied established core state. A snapshot is runner metadata, not submitted Conduit
 documents, and makes no transition. Cases may use JSON syntax in their YAML files;
-Conduit's strict reader reads both the runner metadata and the fixtures. [manifest.yaml](manifest.yaml)
-is the coverage index. The four original loader settlements are named in their case titles;
+Conduit's strict reader reads the cases and fixtures. The `index.yaml`
+pieces form the coverage index; [manifest.yaml](manifest.yaml) keeps the S1 coverage rows.
+The four original loader settlements are named in their case titles;
 the review's BOM, pattern-token and artifact-pin amendments have cases too. The artifact-pin
 case checks a document and claims no execution or dependency-graph verification.
 
@@ -115,6 +118,83 @@ runs; there is no layer filter that could silently skip conventions. The workspa
 the same suite. Broken fixtures and unsupported inputs fail as harness errors, never invented
 Conduit reasons. An undecidable language case is stopped and logged for the admin in
 [the open increment's log](../docs/proposals/first-build/log-increment-4.md).
+
+The runner uses `std::thread::available_parallelism()` workers unless
+`CONDUIT_VECTOR_THREADS` supplies a positive integer. `1` runs cases one after another.
+Reports and failures retain sorted case-path order at every worker count. Inventory and
+schema checks cover the whole tree before any matching case runs.
+
+From `engine/`, the pieces tool moves inline entries and schema elements left by new work:
+
+```sh
+cargo run --release -p conduit-conformance --example pieces
+cargo run --release -p conduit-conformance --example pieces -- --merge ROOT
+cargo run --release -p conduit-conformance --example pieces -- --compare ROOT
+```
+
+Without a flag, identical elements already held in pieces are dropped from the inline
+lists; conflicting forms fail with a suggestion to use `--merge`. With nothing inline,
+the tool changes nothing. `--merge ROOT` compares inline elements with a tree saved before
+the split and plans every change before writing. `--compare ROOT` changes nothing and
+proves that the entries, S1 coverage metadata and assembled schema equal that tree.
+
+## The coverage index and the case schema in pieces
+
+A case's entry belongs in the `index.yaml` of the directory holding its own directory.
+For example, `conventions/requests/aware-failed/case.yaml` belongs in
+`conventions/requests/index.yaml`, and `language/registration/e1/conduit-as/case.yaml`
+belongs in `language/registration/e1/index.yaml`. Entries are sorted by `id` in byte order.
+A new directory gets a new piece. Each piece contains only a nonempty `cases` list.
+Keep each entry's `id`, `case` (relative to this directory), `promises` and optional
+`safety_rows`; an absent tag list differs from an empty one. `index.yaml` is reserved
+for coverage-index pieces under this directory. The manifest retains `status`,
+`s1_coverage` and `s1_coverage_source`, without `cases`.
+
+An input kind adds a file under `case-schema/inputs/`, named for its kind; a branch
+listing several kinds is named for the first. An expectation adds its property schema
+under `case-schema/expect/`, named for the property. A new kind's rule is a new file
+under `case-schema/rules/`, holding one rule. Do not extend an inline rule's list.
+The one exception is the last inline rule's list of kinds exempt from `data.target`.
+A kind's runner code belongs in a new module under `src/steps/` in the conformance crate,
+with one line in its dispatch; expectation code belongs in that crate's `src/expect.rs`.
+
+The runner replaces the input `oneOf` placeholder (`false`) with input pieces, and the
+empty expectation `properties` with expectation pieces, in filename order. It appends
+rule files to the existing `allOf`, also in filename order. The remaining schema retains
+`capture`, `initial`, required members and existing rules, and is valid JSON Schema
+by itself. The ordered pieces tool writes JSON with the same pretty printer and key
+order as the former inline files, plus a final newline.
+
+For this split branch rebased over an order which merged first and changed the inline
+files, the admin takes the new base's manifest and case schema whole. Keep the old
+BASE copy until the first command below completes. From `engine/`:
+
+```sh
+cargo run --release -p conduit-conformance --example pieces -- --merge target/s0a/base
+```
+
+Then replace that saved tree with an archive of the new BASE, redo the baseline
+measurements, and rerun every work-order check.
+
+For a branch made before the split and rebased after it:
+
+1. Before rebasing, find the commit the branch started from with `git merge-base HEAD main`.
+   Copy that commit's `conformance/manifest.yaml` and `conformance/case.schema.json` into
+   ignored build output under one directory, retaining those two relative paths.
+2. At a conflict in either file, keep the branch's side of each conflicting hunk (stage 3
+   in a rebase), and Git's merge elsewhere. Save the file's three index stages with
+   `git show :1:FILE`, `git show :2:FILE` and `git show :3:FILE`, then run
+   `git merge-file --theirs STAGE2 STAGE1 STAGE3` and copy the resulting STAGE2 file over
+   FILE. The S1 coverage rows merge as ordinary text.
+3. From `engine/`, run the pieces tool with `-- --merge ROOT`, where ROOT is the saved
+   directory, then run the runner.
+
+The three-way merge drops unchanged inline elements, adds new ones, and applies a
+changed element only if its piece still holds the saved form or already holds the new
+form. Changes on both sides fail. An entry removed inline is removed from its piece
+only if its case is gone and the piece still holds the saved form; an empty piece is
+deleted. Removing an input branch or expectation property inline fails: an order that
+retires one deletes its piece. Never merge an entry, a piece or a schema branch by hand.
 
 ## Reviewing vector changes
 
@@ -445,7 +525,7 @@ not evidence of real file effects, Agent behavior or confinement.
 The manifest's `s1_coverage` contains exactly the 308 promise IDs in the
 [frozen S1 inventory](s1-promises.yaml), copied from increment 2's study, section 2, including
 its observation paragraph. The [safety traces proposed for S1 in increment 2](s1-safety-cases.md)
-are preserved separately; they do not define the manifest's `safety_rows` tags.
+are preserved separately; they do not define the coverage-index pieces' `safety_rows` tags.
 Each row has vectors declaring that promise, or a specific reason
 why no vector does. A case tag demonstrates only its asserted slice; neither a tag nor an
 explicit reason proves a whole promise. The runner checks the inventory even with an ID
@@ -500,7 +580,7 @@ rewritten here.** A later order can:
    on failure. Never let shorter fixtures supply time or entropy from ambient sources.
 5. Migrate by family, run both representations and compare transitions/verdicts, and retain
    omission/extra-object, missing-record and wrong-correlation regression checks. Measure
-   bytes before/after and preserve case IDs, manifest attributions and readable failure paths.
+   bytes before/after and preserve case IDs, coverage-index attributions and readable failure paths.
    Invocation-context compaction is a separate DL2 storage task, not a fixture rewrite.
 
 

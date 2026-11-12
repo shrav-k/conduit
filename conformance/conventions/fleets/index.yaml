@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "id": "fleet-consumer",
+      "case": "conventions/fleets/consumer/case.yaml",
+      "promises": [
+        "FLEET-004",
+        "IFC-022"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "fleet-register-name-clash",
+      "case": "conventions/fleets/register-name-clash/case.yaml",
+      "promises": [
+        "FLEET-006",
+        "OBJ-025",
+        "SUB-003",
+        "IFC-025"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

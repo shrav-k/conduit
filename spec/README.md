@@ -4,8 +4,9 @@ Status on 2026-11-11: draft, begun 2026-11-05. Incomplete, and not a release. Ev
 been written as promises, and the core package, the JSON Schemas of documents and the
 manifest's format have been written as documents. The first build has a strict loader, a pure
 core on S1 and a runnable engine shell in [engine/](../engine/README.md).
-There are 441 portable vectors under [conformance/](../conformance/README.md), testing slices
-of promises; the [manifest](../conformance/manifest.yaml) records the coverage and its gaps.
+Portable vectors under [conformance/](../conformance/README.md) test slices of promises, and
+the [manifest](../conformance/manifest.yaml) records the coverage and its gaps; the runner reports
+how many there are.
 This remains a draft: the model and vectors do not yet cover the whole specification, and the
 next cold read follows the first build. Ruling 38, point 4, asks for agreement between the
 core, vectors and promises, and no unsafe finding in the latest round of readers.
@@ -192,7 +193,7 @@ says what the promises leave open.
 
 Counts below are current; vector coverage is the recorded S1 coverage as of 2026-11-10. A vector tag tests a slice of a promise,
 not necessarily its whole obligation; the [coverage manifest](../conformance/manifest.yaml)
-lists the cases and the reasons for missing S1 coverage.
+lists each S1 promise's vectors, or the reason it has none.
 
 | Path | Part | State |
 | --- | --- | --- |

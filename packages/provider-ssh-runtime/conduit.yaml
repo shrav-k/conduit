@@ -11,6 +11,7 @@ implementations:
     command: [bin/provider-ssh-runtime]
     plain: false
     environment:
+      SSH_RUNTIME_DURABLE_DIR: /durableDir
       SSH_RUNTIME_MACHINES: /machines
       SSH_RUNTIME_PRIVATE_KEY: /privateKey
       SSH_RUNTIME_BASE: /base

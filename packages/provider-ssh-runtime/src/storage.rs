@@ -4,7 +4,7 @@ use sha2::{Digest, Sha256};
 use std::{
     fs::{self, File, OpenOptions},
     io::Write,
-    os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt},
+    os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
     sync::Mutex,
 };
@@ -20,7 +20,10 @@ pub fn private_directory(path: &Path) -> std::io::Result<()> {
         Err(e) => return Err(e),
     }
     let m = fs::symlink_metadata(path)?;
-    if !m.is_dir() || m.permissions().mode() & 0o777 != 0o700 {
+    if !m.is_dir() || m.permissions().mode() & 0o7777 != 0o700
+        // SAFETY: geteuid takes no arguments and has no preconditions.
+        || m.uid() != unsafe { libc::geteuid() }
+    {
         return Err(std::io::Error::other("state directory must be private"));
     }
     Ok(())
@@ -36,7 +39,7 @@ pub(crate) fn private_file(path: &Path) -> std::io::Result<File> {
         .open(path)
 }
 
-/// One writer per provider state directory; the backend holds its exclusive owner lock.
+/// One writer per durable instance subdirectory; the backend holds its exclusive owner lock.
 pub struct FileStore {
     root: PathBuf,
     lock: Mutex<()>,
@@ -51,7 +54,6 @@ impl FileStore {
     fn read(&self) -> Result<Vec<RunRecord>> {
         match fs::read(self.root.join("ledger.json")) {
             Ok(bytes) => serde_json::from_slice(&bytes).map_err(|_| Unavailable),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Vec::new()),
             Err(_) => Err(Unavailable),
         }
     }

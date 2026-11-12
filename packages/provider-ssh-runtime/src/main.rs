@@ -18,14 +18,29 @@ fn serve() -> Result<(), &'static str> {
     let state = std::env::var_os(names::STATE_DIR_VARIABLE)
         .filter(|s| !s.is_empty())
         .ok_or(names::STATE_DIR_VARIABLE)?;
-    let config = Config::from_lookup(|name| std::env::var(name).ok())?;
+    let config = Config::from_lookup(|name| std::env::var(name).ok()).inspect_err(|place| {
+        if *place == "SSH_RUNTIME_PRIVATE_KEY"
+            && let Some(durable) = std::env::var_os("SSH_RUNTIME_DURABLE_DIR")
+        {
+            let expected = provider_ssh_runtime::durable::instance_directory(
+                Path::new(&durable),
+                Path::new(&state),
+            );
+            eprintln!(
+                "SSH-R refuses startup: SSH_RUNTIME_PRIVATE_KEY must lie in {}",
+                expected.display()
+            );
+        }
+    })?;
     let options = config.options();
     let gate = config.gate.clone();
+    let root =
+        provider_ssh_runtime::durable::instance_directory(&config.durable_dir, Path::new(&state));
     let backend = Arc::new(
-        SshBackend::new(Path::new(&state), config)
+        SshBackend::new(&root, Some(Path::new(&state)), config, None)
             .map_err(|_| "SSH backend state, owner.lock or ssh")?,
     );
-    let store = Arc::new(FileStore::new(Path::new(&state)));
+    let store = Arc::new(FileStore::new(&root));
     tokio::runtime::Runtime::new()
         .map_err(|_| "Tokio runtime")?
         .block_on(async {

@@ -149,7 +149,7 @@ async fn stages_private_files_precedence_and_stdin_only_values_then_starts_and_s
             "line\n$%".into(),
         ];
         assert_eq!(&run[4..], expected);
-        let log = fs::read_dir(f.root.path().join("stderr"))
+        let log = fs::read_dir(f.state.join("stderr"))
             .unwrap()
             .next()
             .unwrap()
@@ -189,7 +189,7 @@ async fn stages_private_files_precedence_and_stdin_only_values_then_starts_and_s
 fn ssh_options_are_exact_and_paths_escape_spaces_and_percent() {
     let f = Fixture::new();
     let machine = &f.config.machines[0];
-    let pinned = f.root.path().join("known_hosts");
+    let pinned = f.durable.as_path().join("known_hosts");
     let socket = f.backend.socket_directory().join("socket");
     let call = ssh::invocation(
         std::path::Path::new("/synthetic/ssh"),
@@ -268,8 +268,10 @@ async fn marker_inventory_is_complete_offline_and_owner_part_are_persistent() {
     );
     assert!(
         SshBackend::with_executor(
-            f.root.path(),
+            f.durable.as_path(),
+            Some(&f.state),
             f.config.clone(),
+            None,
             "/synthetic/ssh".into(),
             f.fake.clone()
         )
@@ -277,7 +279,7 @@ async fn marker_inventory_is_complete_offline_and_owner_part_are_persistent() {
     );
     let part = f.backend.part().to_owned();
     let config = f.config.clone();
-    let root = f.root.path().to_path_buf();
+    let root = f.durable.as_path().to_path_buf();
     drop(staged);
     tokio::task::yield_now().await;
     // A second provider uses a different part even when serving the same remote user.
@@ -344,7 +346,7 @@ async fn each_first_contact_check_refuses_and_names_the_program() {
         );
         assert!(f.diagnostics().contains(diagnostic));
         assert_eq!(
-            fs::metadata(f.root.path().join("diagnostics.log"))
+            fs::metadata(f.durable.as_path().join("diagnostics.log"))
                 .unwrap()
                 .permissions()
                 .mode()
@@ -469,7 +471,7 @@ async fn cancellation_before_send_and_after_send_and_late_arrival_cannot_launch(
         .write(true)
         .create_new(true)
         .mode(0o600)
-        .open(f.root.path().join("late.log"))
+        .open(f.durable.as_path().join("late.log"))
         .unwrap();
     let late = f
         .fake
@@ -627,7 +629,7 @@ async fn unreachable_stop_is_owed_blocks_another_run_and_drains_next_contact() {
         .unwrap();
     // Recovery sees this marker even with the machine off, and persists its owed stop.
     f.fake.reachable.store(false, Ordering::SeqCst);
-    let store = Arc::new(FileStore::new(f.root.path()));
+    let store = Arc::new(FileStore::new(f.durable.as_path()));
     let server = RuntimeServer::new(
         Arc::new(f.backend.clone()),
         store.clone(),
@@ -672,7 +674,7 @@ async fn unreachable_stop_is_owed_blocks_another_run_and_drains_next_contact() {
 async fn stop_published_during_staging_refuses_start_and_drops_remote_material() {
     use rmcp::ServiceExt;
     let f = Fixture::new();
-    let store = Arc::new(FileStore::new(f.root.path()));
+    let store = Arc::new(FileStore::new(f.durable.as_path()));
     let server = RuntimeServer::new(
         Arc::new(f.backend.clone()),
         store.clone(),
@@ -726,7 +728,7 @@ async fn corrupt_inventory_prevents_kit_startup_instead_of_omitting_a_run() {
         .stage(&context(), &input(ID), &CancellationToken::new())
         .await
         .unwrap();
-    let marker = fs::read_dir(f.root.path().join("markers"))
+    let marker = fs::read_dir(f.durable.as_path().join("markers"))
         .unwrap()
         .next()
         .unwrap()
@@ -737,7 +739,7 @@ async fn corrupt_inventory_prevents_kit_startup_instead_of_omitting_a_run() {
     assert!(
         RuntimeServer::new(
             Arc::new(f.backend.clone()),
-            Arc::new(FileStore::new(f.root.path())),
+            Arc::new(FileStore::new(f.durable.as_path())),
             Arc::new(NeverGate),
             f.config.options()
         )
@@ -983,7 +985,7 @@ async fn timed_out_launch_stop_clears_owed_and_old_generation_stays_fenced() {
     use provider_ssh_runtime::ssh::Executor;
     use rmcp::ServiceExt;
     let f = Fixture::new();
-    let store = Arc::new(FileStore::new(f.root.path()));
+    let store = Arc::new(FileStore::new(f.durable.as_path()));
     let server = RuntimeServer::new(
         Arc::new(f.backend.clone()),
         store.clone(),
@@ -1244,7 +1246,7 @@ async fn run_answers_carry_backend_reasons_without_values() {
         let f = Fixture::new();
         let server = RuntimeServer::new(
             Arc::new(StageProbe(f.backend.clone())),
-            Arc::new(FileStore::new(f.root.path())),
+            Arc::new(FileStore::new(f.durable.as_path())),
             Arc::new(NeverGate),
             f.config.options(),
         )
@@ -1309,7 +1311,7 @@ async fn per_machine_limit_counts_staging_and_running_before_a_session_opens() {
     let f = Fixture::with_limit(1);
     let server = RuntimeServer::new(
         Arc::new(f.backend.clone()),
-        Arc::new(FileStore::new(f.root.path())),
+        Arc::new(FileStore::new(f.durable.as_path())),
         Arc::new(NeverGate),
         f.config.options(),
     )

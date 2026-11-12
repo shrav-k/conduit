@@ -32,7 +32,7 @@ metadata:
     resolved on the provider's PATH once at startup, then invoked by absolute path with an empty
     environment and all configuration files disabled. Its ed25519 host keys are pinned.
 
-    The first start durably makes a random 64-bit part in the provider's state directory. Units
+    The first start durably makes a random 64-bit part in the durable instance subdirectory. Units
     are `<prefix><part>-<SHA-256(instance-ID)>.service`; remote directories are
     `<base>/<part>/runs/<hash>/<generation>/` and `<base>/<part>/state/<hash>/`. Another provider's
     part is never swept. Each staging reserves a random 16-character hex generation in the local state,
@@ -54,7 +54,7 @@ metadata:
     The gate holds identity in memory. The provider's state holds no copy of
     these values: it holds a private key path, the operator-installed private key, pinned public
     host keys, markers, generation reservations, the ledger and diagnostics. Run stderr goes continuously into a private
-    0600 local `stderr/<marker>-<generation>.log` file and persists until the operator removes it;
+    0600 local `CONDUIT_STATE_DIR/stderr/<marker>-<generation>.log` file, removed with the instance;
     a run can itself print credentials there. Diagnostics never include values or subprocess output.
 
     Every run has the lifetime the kit supplies (at most maxLifetime), enforced remotely by
@@ -94,7 +94,7 @@ metadata:
     once. Each machine has one owned foreground master, no ssh agent and no shared control socket.
 
     A durable marker precedes staging. Inventory reads markers only and remains complete when
-    all machines are off. One owner.lock excludes a second provider in the same state directory.
+    all machines are off. One owner.lock excludes a second provider in the same durable instance subdirectory.
     ledger.json atomically retains the kit's records and owed stops. The kit drains at startup,
     before well-formed calls and each drainInterval. Recovery stops every marker/ledger run because
     old channels cannot survive provider restart; an incomplete inventory prevents serving.
@@ -108,8 +108,8 @@ metadata:
     no launch may follow a confirmed stop. Inspection is unknown while unreachable or stop is owed.
 
     Decision D's external stop-drainer that outlives provider retirement is **not built**. A stop
-    still owed on retirement is carried out only if the provider starts again in the same state
-    directory. Until then RuntimeMaxSec is the only end of that run, and the run directory of a
+    still owed on retirement is carried out only if the provider starts again using the same durable
+    instance subdirectory. Until then RuntimeMaxSec is the only end of that run, and the run directory of a
     run that never started stays on the remote. Failed staging and start attach the same named,
     value-free reason written on stderr and in 0600 diagnostics.log through `Unavailable::because`.
     The kit includes it after `staging failed:` or `start did not complete:`, with its existing
@@ -126,6 +126,34 @@ metadata:
     lowered, leaving one session spare alongside a command. Stage counts unstopped markers and
     refuses past the per-machine limit before opening a session, naming the machine and runLimit.
     This avoids sshd refusing a session, which can drop the master and all its runs.
+    Required durableDir (SSH_RUNTIME_DURABLE_DIR), with no default, is an absolute directory
+    outside the engine's store and lifecycle. Under the admin's 2026-11-12 decision for PRV-021,
+    the operator creates it, owned by the provider user at mode 0700, and removes it only after
+    all owed stops and remote material have been cleaned. PRV-029 removes CONDUIT_STATE_DIR
+    with the instance; durable state must survive that removal and provider retirement.
+    Each mode 0700 subdirectory is named by lowercase hex SHA-256 of the exact supplied
+    CONDUIT_STATE_DIR bytes, without a newline or canonicalization. It holds owner.lock,
+    state-dir (those exact bytes), ledger.json (including owed stops), markers/, generations/,
+    part, known_hosts, the configured privateKey, diagnostics.log and the future drainer's log
+    (order 146). Only run stderr files stay in CONDUIT_STATE_DIR/stderr/; these can contain
+    run-printed credentials and are removed with the instance. SSH control sockets always
+    use a private temporary directory, since the durable path is too long.
+    Startup creates or opens the subdirectory, locks owner.lock, then checks state-dir.
+    Fresh initialization atomically writes [] to ledger.json before writing state-dir.
+    An existing valid ledger without state-dir is retained, including explicit migrations
+    and interrupted initialization. A different state-dir value, or state-dir without a ledger,
+    refuses startup; a missing ledger is an error, never nothing owed.
+    Startup refuses a missing, relative, SSH-option-incompatible, non-directory, symlink,
+    foreign-owned or non-0700 durableDir, or one inside CONDUIT_STATE_DIR or its parent
+    (including that parent itself). Containment uses canonical paths; the hash uses raw bytes.
+    privateKey must be a regular mode 0600 file inside the durable instance subdirectory;
+    refusal names that expected subdirectory. Other refusals name their configuration place.
+    No silent migration: old ledger.json, markers/, generations/, part or known_hosts under
+    CONDUIT_STATE_DIR are each named and refused. Stop the provider and move all of them,
+    preserving owed stops and the old part, into the computed subdirectory; move the key and
+    diagnostics too, update privateKey and keep stderr/ in CONDUIT_STATE_DIR. The README
+    gives the hash input, operator preparation, file locations and migration procedure.
+
 spec:
   family: Resource
   offers: [github.com/shrav-k/conduit/core#runtime-provider.v1]
@@ -139,9 +167,10 @@ spec:
     outputs: false
   schema:
     type: object
-    required: [machines, privateKey, base, path, runLimit, systemdRun, systemctl, loginctl, unitPrefix, maxLifetime, stopTimeout, drainInterval, bindAddress, advertisedHost, keepaliveIdle, keepaliveInterval, keepaliveCount]
+    required: [durableDir, machines, privateKey, base, path, runLimit, systemdRun, systemctl, loginctl, unitPrefix, maxLifetime, stopTimeout, drainInterval, bindAddress, advertisedHost, keepaliveIdle, keepaliveInterval, keepaliveCount]
     properties:
       machines: {type: string, minLength: 1, description: 'JSON array: hostname, host, port, user=conduit-run, host_key=ssh-ed25519 public key'}
+      durableDir: {type: string, pattern: '^/'}
       privateKey: {type: string, pattern: '^/'}
       base: {type: string, pattern: '^/[A-Za-z0-9/._-]+$'}
       path: {type: string, minLength: 1}

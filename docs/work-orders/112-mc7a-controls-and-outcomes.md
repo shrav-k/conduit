@@ -217,3 +217,29 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer, from a fixed base: a worker, then a fresh verifier,
+which found two musts and a should:
+- a property that exempted every recorded reason without checking that the implementation gave
+  one;
+- a cancellation check that derived its confirmation from the outcome it checked;
+- no reconciliation that told a merge into the current configuration from one into the original.
+
+A second round of 8 minutes (477 s) fixed all three. A fresh verifier in 4 minutes (215 s) found
+no fault.
+
+The order added `controls.rs`. Of the 31 promises, 18 are modelled and 13 are static decisions
+left to vectors; this order's entry for REV-010 supersedes MC2's. Forty-two bounded runs finished
+within their limits, the largest 19,008 states.
+
+**No property of the current promises was found broken beyond what ruling 75 A1 already
+settles.** The properties hold in all 17 correct configurations, and each of the 25 broken
+variants broke its named property. The unfenced control, which follows OPS-014's present text,
+reproduces MC2-001 for a control (MC7a-002): an actor records that the effect did not occur while
+the attempt can still act, and the effect lands afterwards. Ruling 75 A1 settles this, and order
+077 writes it into the specification. One cell differs from the table, an expectation (MC7a-001).
+
+The lane coordinator joined the crate with the other models on main and reran it under the
+pinned Rust 1.97.1, with fmt, clippy and the repository's checks, before the merge.

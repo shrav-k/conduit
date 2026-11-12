@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a) and 110 (MC5b), ruling 71's proof lane.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b) and 112 (MC7a), ruling 71's proof lane.
 The expected verdicts below were registered before execution; later orders extend this harness.
 
 ## Question and scope
@@ -3277,3 +3277,1271 @@ static decisions left to vectors. It proves no unbounded result, fairness, imple
 conformance, confidentiality of a real transport/store, or isolation from the stated domain
 of trust. The omitted cases and supporting assumptions above remain limits. Pinned-toolchain
 validation passed in this refresh.
+
+
+## MC7a — controls, revisions and outcomes (work order 112)
+
+### Model and expectations registered before execution
+
+Registered 2026-11-11, before the first MC7a model-checker run. This is an independent
+reference model in `src/controls.rs`, not engine validation. It applies the coordinator's
+readings in the order, including ruling 75 A1's pending fence; the specification is not edited.
+The prior MC2 omission of REV-010 is superseded by this section's accounting, once only for MC8.
+
+Nodes are callers A and B, the engine, and one implementation process. The engine saves its
+invocation, sent patch, outcome, fence, configuration, revision, lifecycle, script position and
+unknown-setting mask across its crash. Recovery records an active invocation as unknown before
+processing another engine event; it neither fences nor replays it. The implementation has a
+separate job and run lifetime. Every property reads only the external ledger. Event emission
+logs the message and the facts then, before delivery; fault transitions cannot rewrite history.
+The ledger records physical application separately from implementation reports and engine stores.
+
+**Part 1, controls and revisions.** Initial stored configuration is `(x=0,y=2)` with revision
+r0 and schema `x <= y`. A sends a two-setting control `(1,1)` and a probe without waiting.
+On dispatch, B sends seven requests without waiting: a competing control, setup, retirement,
+unauthorized request, invalid request, in-progress repeat, and a pre-existing succeeded repeat
+with no outputs. The implementation link carries the dispatch and a probe without waiting.
+Thus both caller and implementation reordering have two messages on one directed link.
+The last repeat is answered succeeded without dispatch even while the control is active;
+refused and invalid precede contention. The other permitted fresh contenders conflict at once.
+
+A bounded script barrier drains these requests and probes before implementation completion,
+cancellation, retirement, timers or the engine crash. This isolates admission contention from
+completion without enumerating independent contender successes. Ordinary deliveries remain
+FIFO and enabled; the barrier is a model bound, not a claim about a real engine's scheduler.
+After it, application, reply delivery, a timer and retirement race freely. The implementation
+may apply both settings, neither, or only the first; it reports succeeded, failed, or unknown
+accordingly, and can report unknown without knowing whether an effect occurred. Silence is a
+separate one-use implementation choice in Silence, not a hidden transport fault.
+
+Unknown changes neither stored values nor revision and labels exactly the supplied settings
+unknown. An actor may inspect and send one reconciliation, choosing a current, stale or missing
+revision for occurred, or no revision for absent. Reconciliation does not fabricate another
+implementation report. A later valid engine-implemented change to `(0,0)` may be stored before
+the actor reconciles; it is B's management change, not an automatic repair. The serialized suffix
+stores `(0,0)`, a no-op `(0,0)`, and the original `(0,2)`, exercising advance, no advance and
+revision freshness on return. Each store is recorded, including no-ops.
+
+Schema uses a one-setting control `x=1`, initially valid with y=2. It requires the later stored
+change to `(0,0)` before reconciliation: applying the original x=1 now produces `(1,0)` and
+is invalid. No invalid merge is manufactured against the original configuration. Retired races
+one immediate PLC-017 retirement against completion; it dispatches nothing and fences nothing.
+Removed additionally removes the retired instance before reconciliation. These branches store
+nothing after retirement, including on success, and reconciliation changes only the outcome.
+
+There is one attempt, so “every attempt is fenced” is a conjunction over one element; MC2 owns
+multiple-attempt identity/retry behavior. An answer fences even when late, while leaving a
+recorded outcome unchanged. A timer, cancellation, silence or engine restart fences nothing.
+The run's end fences; a queued dispatch addresses that ended run and cannot apply afterward.
+Work an implementation retains after answering, remote APIs, and independent external actors
+changing the physical settings are outside this model. Unfenced deliberately follows OPS-014's
+present text: an actor can record absent before the attempt is fenced, and a late effect can
+then land. It is an expected refutation of the pending fence and the registered absence control,
+not a new interpretation of what an implementation's failed report means.
+
+**Part 2, outcomes, cancellation and model work.** Outcomes uses the same single dispatched
+invocation and physical two-setting effect, plus malformed responses (missing outcome/reason,
+both, disagreeing isError, invalid declared output), and valid implementation reasons with no
+effect. It models the OPS-007 cases as explicit response classes, not a JSON/MCP parser. The
+protocol's -32021 and IFC-046 exceptions are outside those response classes and are not treated
+as missing results. OPS-006 is accounted as a static wire-shape decision; malformed implementations
+are adversarial input to the engine's OPS-007 handling, not evidence that such implementations
+conform. Stopping before a response is represented by the separate silence choice and run end.
+
+Cancellation closes the request's response stream while active, forwards cancellation, then
+records its end in a separate transition. A failed result received before that record confirms
+no effect; a later failed result fences but changes no outcome. The implementation may finish
+meanwhile or ignore cancellation, and the timer may end the invocation. All physical claims
+are checked at report emission, never inferred from a reconciled result.
+
+Repeats starts from three explicitly recorded succeeded invocations: an effectful operation
+with declared outputs and a filter, an effectful operation with no outputs and a filter, and an
+operation with outputs no longer kept and no filter. They are kept invocation facts, not new
+implementation calls; matching caller, sender, target, key and contents are fixed. The first
+and third answer conflict with the invocation ID and no outputs; the second answers succeeded
+under supporting OPS-009. No variant requires redispatch of a keyed repeat.
+
+ModelWork runs all fourteen IMP-002 causes, including setup and retire hook dispatch, runtime
+restart, machine reachability and an engine restart, as explicit script events with no model
+work. It then sends unmarked and marked parent operations through an open listing Conduit,
+and marked requests through closed and non-listing Conduits. Both admitted implementations
+send an onward request for a marked operation while serving their parent. Only the marked
+parent is admitted; its leaf model work has its own dispatch. All other access and parent
+lifetime checks are fixed to permitted/in-progress, so the positive branch says only that
+IMP-008 is not its reason for refusal. These are finite event abstractions, not implementations
+of registration, lifecycle, hook orchestration, transport parsing or a model provider.
+
+### MC7a catalogue accounting (31 promises)
+
+Each row below is counted once. “Static” means **a static decision, to be shown by vectors**;
+there is no race or fault in the omitted document/schema/wire-shape decision. No vector is
+written by this order. OPS-006's syntax is static even though malformed inputs are exercised
+for OPS-007. Modelled means the bounded property projection described below, not all possible
+instances of that promise.
+
+| Promise | Accounting | Property or reason |
+| --- | --- | --- |
+| OPS-001 | Modelled | O |
+| OPS-002 | Modelled | C |
+| OPS-003 | Modelled | C |
+| OPS-004 | Modelled | C |
+| OPS-005 | Modelled | N |
+| OPS-006 | Not modelled | Static: a static decision, to be shown by vectors |
+| OPS-007 | Modelled | M |
+| OPS-019 | Not modelled | Static: a static decision, to be shown by vectors |
+| OPS-020 | Not modelled | Static: a static decision, to be shown by vectors |
+| OPS-023 | Not modelled | Static: a static decision, to be shown by vectors |
+| OPS-026 | Not modelled | Static: a static decision, to be shown by vectors |
+| OPS-027 | Modelled | K |
+| OPS-029 | Not modelled | Static: a static decision, to be shown by vectors |
+| OPS-033 | Not modelled | Static: a static decision, to be shown by vectors |
+| OPS-034 | Modelled | P |
+| OPS-036 | Not modelled | Static: a static decision, to be shown by vectors |
+| REV-001 | Not modelled | Static: a static decision, to be shown by vectors |
+| REV-003 | Modelled | A |
+| REV-005 | Modelled | F |
+| REV-006 | Not modelled | Static: a static decision, to be shown by vectors |
+| REV-007 | Modelled | E |
+| REV-009 | Modelled | U |
+| REV-010 | Modelled | R |
+| REV-013 | Modelled | V |
+| REV-014 | Modelled | T |
+| REV-015 | Not modelled | Static: a static decision, to be shown by vectors |
+| IMP-001 | Modelled | W |
+| IMP-002 | Modelled | W |
+| IMP-008 | Modelled | I |
+| TPL-011 | Not modelled | Static: a static decision, to be shown by vectors |
+| TPL-013 | Not modelled | Static: a static decision, to be shown by vectors |
+
+Totals: **18 modelled, 13 not modelled, all 13 static**. Supporting promises are outside the
+31 and the count: OPS-008–014, OPS-018, OPS-024, IMP-007, REV-002, REV-004, REV-011,
+REV-012, CTR-006, ACC-019, ACC-033, PLC-017 and IFC-025. The fence is supporting ruling
+75 A1/order 077, spec pending. L checks supporting OPS-013 and is also outside the count.
+
+### MC7a properties and preconditions
+
+Safety order used in the tables: **A F E U R V T O C N M K P W I G B L**. All are invariants
+of recorded events, not eventual claims; no fairness or liveness is assumed. G checks the
+pending fence, B checks the absence control, and L checks late replies. H means holds,
+F means refuted. A/F apply only at actual stored changes; R excludes schema-invalid merges
+which V checks, and C applies only to implementation reports, not to actor reconciliations.
+Each modeled promise's complete when/then is quoted here, with its level where it negates then.
+
+**A** — REV-003.
+
+> REV-003 when: An object's stored definition or configuration changes.
+>
+> must then: Its revision advances.
+
+
+**F** — REV-005.
+
+> REV-005 when: An object's revision advances.
+>
+> must not then: It takes a value the object has had before.
+
+
+**E** — REV-007.
+
+> REV-007 when: A control succeeds.
+>
+> must then: It has applied exactly the values it was sent and, unless its instance was retired while it ran, exactly those values are stored, each at the pointer that the control's `changes` gives for its input. It returns no `settings`, and an implementation never applies another value in the place of one it was sent.
+
+
+**U** — REV-009.
+
+> REV-009 when: A control's outcome is unknown.
+>
+> must then: The stored configuration and revision are unchanged, and the settings the control addressed are reported as unknown. They are the settings of the inputs the request supplied, at the pointers the control's `changes` gives for those inputs.
+
+
+**R** — REV-010.
+
+> REV-010 when: A control whose outcome is unknown is reconciled under OPS-014.
+>
+> must then: A reconciliation that records the control as having taken effect, on an instance that exists and is not retired, is a request to change that instance: it names the instance's current revision, and the values the control was sent, which the engine keeps under OPS-008, are stored at the pointers of its `changes`. A reconciliation that records that the effect did not occur names no revision and stores nothing. Where the instance is retired or no longer exists, a reconciliation of the control names no revision, whichever way it records the effect: it records the outcome and stores nothing.
+
+> observable (the remainder of REV-010, quoted in full): After a reconciliation that stores values, the stored configuration equals the current configuration with the values the control was sent applied at those pointers, whatever other change was stored after the control was dispatched. The revision advances under REV-003 if anything changed, and those settings are no longer reported as unknown. Such a reconciliation is a request to change an object, so REV-002 and REV-011 apply to it as to any other: one that names a revision that is not current reports conflict, and one that names none reports invalid. One where those values, applied to the current configuration, would make it fail the type's schema is REV-013. A reconciliation that records that the effect did not occur changes no object and so names no revision: the control's outcome becomes failed, and the settings it addressed are no longer reported as unknown. One that names a revision all the same reports invalid, under OPS-031. In `reconcile.v1` the revision is the input `revision`. The values are not stated in the request: the engine stores those it sent. The request is authorized under ACC-033 against the target that manages the instance: the Pool that owns a Resource or the Fleet that owns an Agent, and `management` for other families, a retired owner or an instance that no longer exists. It is not authorized by a Conduit to the instance itself, as the control was. A retired instance takes no change, under LIF-015, so a reconciliation of a control dispatched to it records the outcome alone, whichever way it records the effect, as REV-007 stores nothing for a control that succeeds after its instance was retired, and the settings the control addressed are no longer reported as unknown. Once the instance no longer exists there is no current revision to name and no configuration to store values in: the reconciliation is authorized against `management`, under ACC-033, and records that the effect occurred or that it did not, and nothing else. One that names a revision all the same reports invalid, under OPS-031. ACC-055 also limits which invocations a holder other than root may reconcile.
+
+
+**V** — REV-013.
+
+> REV-013 when: A reconciliation records a control as having taken effect, and the values the control was sent, applied to the current configuration at the pointers of its `changes`, would make that configuration fail the type's schema.
+>
+> must then: The reconciliation is not dispatched, and reports invalid.
+
+
+**T** — REV-014.
+
+> REV-014 when: A request to set up, retire or change an instance arrives while another setup, retirement or change of it, the engine's own included, has been dispatched and has not ended, and the request is not a repeat that is answered without a dispatch, under OPS-009, OPS-012, OPS-032 or OPS-034.
+>
+> must then: It is not dispatched, and reports conflict at once.
+
+
+**O** — OPS-001.
+
+> OPS-001 when: An invocation that was dispatched has ended, and its implementation did not answer with a reason in place of an outcome under IFC-026.
+>
+> must then: It has exactly one outcome: succeeded, failed or unknown.
+
+
+**C** — OPS-002, OPS-003, OPS-004.
+
+> OPS-002 when: An implementation reports the outcome succeeded.
+>
+> must then: The effect the operation's contract describes has occurred.
+
+> OPS-003 when: An implementation reports the outcome failed.
+>
+> must then: The effect the operation's contract describes has not occurred, in whole or in part.
+
+> OPS-004 when: An implementation cannot confirm that the effect occurred, cannot confirm that it did not, or knows that it occurred only in part.
+>
+> must then: It reports the outcome unknown.
+
+
+**N** — OPS-005.
+
+> OPS-005 when: A request is not dispatched, and it is not a repeat that OPS-009 or OPS-012 answers with the invocation's outcome; or the implementation answers a request with a reason in place of an outcome, under IFC-026.
+>
+> must then: It has no outcome. It reports why, as exactly one of: refused, invalid, conflict or unavailable.
+
+
+**M** — OPS-007.
+
+> OPS-007 when: No result arrives from an implementation that carries Conduit's keys, other than the protocol's error -32021 whose `data.requiredCapabilities` names Conduit's extension, with which IFC-008 has such an implementation say that it performed nothing, or names a capability that the call did not declare, which IFC-047 has such an implementation answer only where it has performed nothing for the call, and other than an error after which the engine sends the call once more under IFC-046; the implementation stops before returning one; a result from an implementation that carries Conduit's keys states neither an outcome nor a reason under IFC-026, or states both; such a result states an outcome with which its `isError` disagrees; or a declared output fails validation in a result that would otherwise have the outcome succeeded, whether or not the implementation is marked `plain`.
+>
+> must then: The invocation's outcome is unknown.
+
+
+**K** — OPS-027.
+
+> OPS-027 when: An invocation is cancelled while it is in progress: the request that dispatched it is cancelled by the protocol's own means, which are `notifications/cancelled` on stdio, the close of the response stream on Streamable HTTP, and `tasks/cancel` for a task.
+>
+> must then: The engine passes the cancellation on to the implementation by the protocol's means. The invocation's outcome is unknown, unless its implementation confirms that nothing was done.
+
+
+**P** — OPS-034.
+
+> OPS-034 when: A request arrives that matches, as OPS-009 describes a match, the request of an invocation that succeeded, of an operation that declares outputs, where no filter applies to the request and the engine does not keep those outputs, or where a filter applies to it and the operation is not one that OPS-024 dispatches again: its contract states an `effect`, it is a control, or its contract is marked `startsModelWork: true`.
+>
+> must then: It is a repeat. Nothing is dispatched, and it reports conflict. Its result's `_meta` holds the engine's ID for that invocation.
+
+
+**W** — IMP-001, IMP-002.
+
+> IMP-001 when: Model work starts.
+>
+> must then: It is the effect of an operation whose contract declares that it starts model work, dispatched through an open Conduit that lists that operation.
+
+> IMP-002 when: An object is registered, instantiated, set up, retired, inspected or observed; a Conduit is opened or closed; an operation not marked as starting model work is invoked on an Agent, whatever it delivers to the Agent; a setup hook or a retire hook is dispatched; a runtime provider restarts a run; a machine is reported reachable again; or the engine restarts.
+>
+> must not then: Model work starts because of it.
+
+
+**I** — IMP-008.
+
+> IMP-008 when: A request for an operation marked as starting model work names, in `io.github.shrav-k.conduit/serving`, an invocation of an operation that is not so marked.
+>
+> must then: The request is not dispatched, and reports refused.
+
+
+**G/B**: when an authorized actor records an unknown invocation absent (G), every attempt
+must already be fenced under the order's reading; when its absence was recorded (B), the
+modeled attempt cannot later apply any part of its effect. G and B are controls for the
+pending fence, not catalogue additions. **L**: when a response arrives after the invocation
+ended, without a new attempt or reconciliation, the earlier recorded outcome stays unchanged.
+This deliberately avoids MC3's unconditional late-reply/outcome property.
+
+### MC7a configurations, bounds and variants
+
+Correct runs in Control with Base, LossCaller, ReorderCaller, LossImplementation,
+ReorderImplementation, Crash and Silence, then Schema, Retired, Removed, Outcomes,
+Cancellation, Repeats and ModelWork with Base. Every run enables one engine timer. Loss
+and reordering budgets are one each in their named part, on both directions of caller/engine
+or engine/implementation links respectively. Crash and recovery each have budget one, only
+for the engine, after the contention batch drained and while the invocation is active.
+`gate_remaining_faults=true` routes timer and recovery through `fault_allowed`; windows are
+in `fault_enabled` and timer eligibility in `timer_enabled`. Faults cannot affect the late
+serialized suffix. Silence has its own bound of one and must have a reconciliation witness.
+Every enabled harness fault has its automatic reach property, expected reached in every run.
+
+Zero budgets: duplication is outside this order (explicit repeats are script requests, and
+dispatch transport does not copy); partition/heal are outside this order; permanent machine
+loss is outside it (the PLC-017 declaration is a script event, not physical death); other
+zero loss/reorder/crash/recovery budgets isolate the named fault in another configuration.
+All configurations have four nodes, seven messages per link, one primary attempt, one timer,
+one reconciliation, at most one retirement/removal/run end and three suffix stores. Queues
+are asserted, never silently pruned. The unique-state ceiling is 150,000 and timeout nine
+seconds, below this order's limits. A full run must finish exhaustively for any verdict.
+
+Variants, run only with Base in their named scene, change exactly the following mechanism:
+
+| Variant | Scene | Seeded defect | Target |
+| --- | --- | --- | --- |
+| StaleRevision | Control | Stores change without advancing revision | A |
+| ReusedRevision | Control | Alternates two issued revisions, reusing one | F |
+| Substitute | Control | Applies x=0 instead of supplied x=1, reports success | E (also C) |
+| StoreUnknown | Control | Stores sent values on unknown | U |
+| WrongReconcile | Control | Stores initial values instead of sent values | R |
+| AcceptInvalid | Schema | Skips merged schema check | V |
+| QueueContender | Control | Keeps the competing change queued | T |
+| DoubleOutcome | Outcomes | Records two outcomes together | O (also M) |
+| FalseSuccess | Outcomes | Reports success without an effect | C |
+| PartialFailed | Outcomes | Reports failed after a partial effect | C |
+| UncertainFailed | Outcomes | Reports failed when it cannot confirm the effect | C |
+| OutcomeForReason | Outcomes | Reports failed for an unauthorized undispatched request | N (also T) |
+| TrustMalformed | Outcomes | Records failed on malformed response | M |
+| DropCancellation | Cancellation | Does not forward the cancellation | K |
+| CancelFailed | Cancellation | Records failed with no confirmation | K |
+| LeakOutputs | Repeats | Gives kept outputs through the filter | P |
+| RepeatNoOutputsConflict | Repeats | Reports conflict for no-output succeeded repeat | P |
+| ImplicitWork | ModelWork | Starts work on an implicit event | W |
+| ClosedWork | ModelWork | Starts work without an open listing Conduit | W |
+| AllowOnward | ModelWork | Admits onward work for an unmarked parent | I |
+| Unfenced | Control | Present OPS-014 permits recording absent before fence | B (also G) |
+| LateConfirmation | Cancellation | Late failed reply replaces unknown | L |
+
+### MC7a expected table, fixed before the first run
+
+Every unlisted safety entry is H. Each row expands to the full safety order above.
+Correct/Control/* means **each** of the seven fault parts listed above; mutants run only
+where the preceding table says. Every reach not in the row's set is expected unreached.
+The Rust `expected` function encodes these same sets, and tests compare every full run.
+One separate one-thread BFS per mutant prints its first targeted trace. Later observations
+that differ must be recorded beside this table, never substituted into it.
+
+| Configuration/variant | Expected refuted safety | Expected reached w indices |
+| --- | --- | --- |
+| Correct/Control/* | None | 0–8, 10, 15–18, 29 |
+| Correct/Schema/Base | None | 0–4, 6, 9–10, 15–17, 29 |
+| Correct/Retired/Base | None | 0–8, 10–13, 15–18, 29 |
+| Correct/Removed/Base | None | 0–6, 10–12, 14–18, 29 |
+| Correct/Outcomes/Base | None | 10, 15–19 |
+| Correct/Cancellation/Base | None | 10, 15–18, 20–22 |
+| Correct/Repeats/Base | None | 10, 15–18, 23–25 |
+| Correct/ModelWork/Base | None | 10, 15–18, 26–28 |
+| StaleRevision | A | Control's set |
+| ReusedRevision | F | Control's set |
+| Substitute | E, C | Control's set |
+| StoreUnknown | U | Control's set |
+| WrongReconcile | R | Control's set |
+| AcceptInvalid | V | Schema's set minus 9 |
+| QueueContender | T | Control's set |
+| DoubleOutcome | O, M | Outcomes' set |
+| FalseSuccess | C | Outcomes' set minus 16 |
+| PartialFailed | C | Outcomes' set |
+| UncertainFailed | C | Outcomes' set minus 17 |
+| OutcomeForReason | N, T | Outcomes' set |
+| TrustMalformed | M | Outcomes' set |
+| DropCancellation | K | Cancellation's set |
+| CancelFailed | K | Cancellation's set |
+| LeakOutputs | P | Repeats' set |
+| RepeatNoOutputsConflict | P | Repeats' set |
+| ImplicitWork | W | ModelWork's set |
+| ClosedWork | W | ModelWork's set |
+| AllowOnward | I | ModelWork's set |
+| Unfenced | G, B | Control's set |
+| LateConfirmation | L | Cancellation's set |
+
+Reach indices (each is a `sometimes` property of the external ledger):
+
+| Index | Required recorded precondition/event |
+| --- | --- |
+| 0 | Stored values change |
+| 1 | A store leaves values equal (supporting REV-004) |
+| 2 | Stored values return to the original after a different value |
+| 3 | A control succeeds |
+| 4 | A control ends unknown |
+| 5 | An actor reconciliation records occurred |
+| 6 | An actor reconciliation records absent |
+| 7 | A reconciliation names a stale revision and reports conflict (R separately checks valid merges) |
+| 8 | A valid merge reconciliation names no revision and is invalid |
+| 9 | After a later stored change, a current-revision merge fails the schema |
+| 10 | B's competing control arrives while A's control is active |
+| 11 | Retirement happens while a control is active |
+| 12 | A control succeeds after that retirement |
+| 13 | A retired, existing instance's unknown control is reconciled |
+| 14 | A removed instance's unknown control is reconciled |
+| 15 | An implementation reports succeeded |
+| 16 | An implementation reports failed |
+| 17 | An implementation reports unknown with no confirmed effect |
+| 18 | The implementation applies only part of a two-setting effect |
+| 19 | A malformed implementation response is emitted |
+| 20 | A cancelled invocation is recorded unknown |
+| 21 | A cancelled invocation is recorded failed on prior confirmation |
+| 22 | A failed confirmation arrives after a cancelled invocation ended |
+| 23 | A filtered repeat of a succeeded invocation with outputs arrives |
+| 24 | A filtered repeat of a succeeded invocation without outputs arrives |
+| 25 | A repeat arrives with no filter and outputs no longer kept |
+| 26 | All fourteen implicit causes occur (W separately checks that they start no model work) |
+| 27 | A marked parent sends an onward marked request |
+| 28 | An unmarked parent sends an onward marked request |
+| 29 | A reconciliation is reached after the configured fault; Silence requires silence |
+
+The same run need not consume all budgets on one path: the full run must reach each enabled
+fault, and w29 additionally couples the selected fault to a subsequent unknown/reconciliation.
+The timer is reachable in every configuration, including those with crash/recovery. Schema's
+invalid merge is not a proxy for stale/missing revision; it has its own current-revision witness.
+This model supplies bounded projections for S5 P2/P3/P5. Static validation/default/discovery
+cases in S5 P4 remain for vectors; real-client behavior and external verification remain S5's.
+
+Supporting preconditions quoted before the first run (outside the catalogue count):
+
+> REV-004 when: An object's stored definition and configuration do not change.
+>
+> must not then: Its revision advances.
+
+> REV-002 when: A request to change an object names a revision that is not the object's current revision.
+>
+> must then: The change is not dispatched, and reports conflict.
+
+> REV-011 when: A request to change an object names no revision.
+>
+> must then: The change is not dispatched, and reports invalid.
+
+> OPS-009 when: A request arrives from the instance that sent an earlier request, with the same caller, target, idempotency key and contents as that request; the invocation that request began succeeded; and either no filter applies to the request, and (the operation declares no outputs and is not implemented by a plain server, or the engine still keeps the invocation's outputs and any plain content), or a filter applies to it, and the operation declares no outputs and is not one that OPS-024 dispatches again: its contract states an `effect`, it is a control, or its contract is marked `startsModelWork: true`.
+>
+> must then: The request is a repeat, not a new request. Nothing is dispatched, and the result is that invocation's: the outcome succeeded, its outputs and any plain content.
+
+> OPS-013 when: An invocation's outcome is unknown, and no new attempt at it is dispatched under OPS-012.
+>
+> must then: The outcome stays unknown until it is reconciled.
+
+### MC7a first observation and inspection refinement
+
+The first full matrix run completed all 36 runs (no bound truncation), with one difference:
+**MC7a-001 — expectation gap, AcceptInvalid/Schema/Base**. V was refuted as expected, but
+w5 and w7 were reached as well. Skipping the invalid-merge check lets a current revision
+record occurred, or lets a stale revision reach conflict. The original table omitted those
+two consequences of the mutation. No correct-model property failed, and this is not a
+specification finding. The table and `expected()` remain unchanged; the test checks the
+observed extra reaches beside the registration. All other entries matched.
+
+Before the next run, the probes were refined into explicit inspection observations: a
+caller probe returns whether the engine has accepted the control, and the implementation
+probe returns whether it has accepted the dispatch. They record that fact in the ledger.
+Reordering a probe before its preceding request therefore has an observable difference,
+without fencing the control. Both are real inspection requests; their result transport is
+abstracted as an atomic reply to that inspection. The script barrier still precedes physical
+application, as registered. This adds observer history, not a changed safety behavior. The
+immutable fault-part selector was moved into the ledger too: all custom property predicates
+now read only the ledger, including w29. Bounds, verdicts and reach expectations are unchanged.
+
+### MC7a bound refinement registered before its first run
+
+The inspection-history refinement completed Correct/Control/Base at 57,533 unique states,
+depth 21, 0.854 s, with all safety holding and expected reaches. The next LossCaller run
+hit the 150,000-state ceiling and was rejected: **no verdict is claimed for it**. All 22
+separate refutation runs completed before that rejection. No safety property failed on the
+correct model, and the expected table is unchanged.
+
+Before rerunning, each inspection observation is stored in its own immutable ledger slot,
+rather than interleaved in the ordered history of stores, reports and request decisions.
+There is exactly one inspection per destination and duplication is disabled. Their acceptance
+snapshots remain independent, observable facts, but their ordering relative to unrelated
+contention results is irrelevant to every property. No node state, message, fault, application
+choice or timing window is changed. This representation lets independent observations commute.
+Two additional reach properties, registered before this refined run, explicitly require the
+caller inspection to overtake its control in ReorderCaller, and the implementation inspection
+to overtake its dispatch in ReorderImplementation. Each is present only in its named part,
+and is expected reached. All other safety and reach entries remain as registered above.
+
+### MC7a return-link configurations registered before their first run
+
+To exercise caller result transport as well as request transport, add two Correct/Control
+parts, **LossReceipt** and **ReorderReceipt**. Each enables the same one engine timer and one
+loss or reorder budget respectively. The original LossCaller/ReorderCaller now explicitly
+restrict their fault to caller-to-engine request links; the new parts restrict it to
+engine-to-caller result links. This splits directions rather than treating an unused return
+link as fault coverage. The original seven Control rows and their expected verdicts are
+retained; these two rows extend that table.
+
+In these two parts the engine sends A its persisted primary result, and sends B each of the
+seven immediate contention answers. B sends its requests without waiting for those answers,
+so several answers can be queued on engine-to-B and genuinely reordered. Callers' received
+results occupy eight separate immutable ledger slots. Losing A's successful receipt does not
+change the engine's saved success. The bounded completion barrier also drains B's response
+batch, and queued result messages drain before the serialized suffix. Every emitted result
+is still returned at the engine's decision, without waiting for the competing invocation.
+Other parts retain atomic delivery of caller results to isolate their own faults.
+
+| Additional configuration | Expected refuted safety | Expected reach |
+| --- | --- | --- |
+| Correct/Control/LossReceipt | None | Control's w set, every enabled fault, primary result received |
+| Correct/Control/ReorderReceipt | None | Control's w set, every enabled fault, primary result received |
+
+The last witness requires some path to deliver A's result; it does not demand delivery on a
+path that loses it. w29 still requires reconciliation after the configured return-link fault.
+Queue bound seven and all state/time limits remain unchanged. There are now **38 full runs**:
+16 correct configurations and 22 variants. This extension is registered after the earlier
+36-run refined matrix passed, before either new configuration is run.
+
+LossReceipt additionally requires a lost **successful** primary receipt: the ledger has its
+succeeded end, no A receipt, and all three suffix stores. Those stores can happen only after
+all queues drained, so this cannot be an undelivered result still in flight. The engine's
+saved success remains unchanged. This reach property is expected reached only in LossReceipt,
+where it is registered; it is registered before that configuration's first run.
+
+
+### MC7a physical partial-effect refinement, registered before its first run
+
+Final review found a defect in the model data, rather than a language counterexample: the
+initial two-setting control sent `(1,2)` against stored `(0,2)`. Applying only x changed one
+setting but left the physical values equal to those of full success, because y was already 2.
+Before the first run with the corrected data, change the two-setting control to `(1,1)`.
+Both supplied values now differ from the initial `(0,2)`; partial application produces
+`(1,2)`, physically distinct from full `(1,1)`. Both full configurations satisfy `x <= y`.
+Schema still sends only x=1 and reaches the same invalid `(1,0)` after the later change.
+No expected safety or reach entry changes. The earlier 42-test runs passed, but their final
+matrix measurements are superseded by the reruns recorded below. This repairs the model's
+own partial-effect witness; no safety counterexample was removed.
+
+
+
+### MC7a dated results — 2026-11-11
+
+Measured on Linux x86_64, AMD Ryzen 9 5900X, Rust `1.97.1`
+(`8bab26f4f`, 2026-07-14), Stateright `0.31.0`. `CARGO_BUILD_JOBS` was left as the
+environment set it. Full runs used the harness default two checker threads; first
+refutations used one-thread BFS. The final ordinary release command passed **42 unit
+tests, 0 failed**, and **0 doc tests**, in **50.32 seconds wall time**, including compilation
+(test execution 42.19 s). The counts command, `cargo test --release -- --nocapture
+--test-threads=1`, also passed **42 unit tests and 0 doc tests**, in **41.59 seconds wall
+time** (test execution 41.33 s). The three MC7a tests are included in those totals.
+
+All **38 final MC7a full runs** completed exhaustively below their bounds. Safety column:
+“all H” means every entry in A F E U R V T O C N M K P W I G B L holds; otherwise the
+listed entries are F and every other entry is H. Reach column lists observed w indices;
+every other w index was unreached, as registered or explicitly recorded for MC7a-001.
+All enabled harness fault witnesses were reached. The two inspection-overtaking witnesses,
+both return-link primary-receipt witnesses, and the lost-success-receipt witness were all
+reached in the configurations that register them.
+
+| Variant/scene/part | Unique states | Depth | Seconds | Observed safety | Observed w reach |
+| --- | --- | --- | --- | --- | --- |
+| Correct/Control/Base | 843 | 21 | 0.008 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Control/LossCaller | 7,865 | 21 | 0.091 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Control/ReorderCaller | 19,008 | 21 | 0.210 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Control/LossReceipt | 9,271 | 29 | 0.108 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Control/ReorderReceipt | 2,535 | 29 | 0.029 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Control/LossImplementation | 2,324 | 21 | 0.024 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Control/ReorderImplementation | 1,678 | 21 | 0.017 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Control/Crash | 1,622 | 23 | 0.016 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Control/Silence | 982 | 21 | 0.010 | all H | 0–8, 10, 15–18, 29 |
+| Correct/Schema/Base | 189 | 21 | 0.002 | all H | 0–4, 6, 9–10, 15–17, 29 |
+| Correct/Retired/Base | 1,168 | 21 | 0.011 | all H | 0–8, 10–13, 15–18, 29 |
+| Correct/Removed/Base | 726 | 20 | 0.007 | all H | 0–6, 10–12, 14–18, 29 |
+| Correct/Outcomes/Base | 202 | 17 | 0.002 | all H | 10, 15–19 |
+| Correct/Cancellation/Base | 404 | 19 | 0.004 | all H | 10, 15–18, 20–22 |
+| Correct/Repeats/Base | 238 | 23 | 0.003 | all H | 10, 15–18, 23–25 |
+| Correct/ModelWork/Base | 679 | 44 | 0.006 | all H | 10, 15–18, 26–28 |
+| StaleRevision/Control/Base | 843 | 21 | 0.007 | A F; rest H | 0–8, 10, 15–18, 29 |
+| ReusedRevision/Control/Base | 843 | 21 | 0.008 | F F; rest H | 0–8, 10, 15–18, 29 |
+| Substitute/Control/Base | 843 | 21 | 0.007 | E, C F; rest H | 0–8, 10, 15–18, 29 |
+| StoreUnknown/Control/Base | 843 | 21 | 0.008 | U F; rest H | 0–8, 10, 15–18, 29 |
+| WrongReconcile/Control/Base | 843 | 21 | 0.009 | R F; rest H | 0–8, 10, 15–18, 29 |
+| AcceptInvalid/Schema/Base | 189 | 21 | 0.002 | V F; rest H | 0–7, 10, 15–17, 29 |
+| QueueContender/Control/Base | 843 | 21 | 0.008 | T F; rest H | 0–8, 10, 15–18, 29 |
+| DoubleOutcome/Outcomes/Base | 202 | 17 | 0.002 | O, M F; rest H | 10, 15–19 |
+| FalseSuccess/Outcomes/Base | 202 | 17 | 0.002 | C F; rest H | 10, 15, 17–19 |
+| PartialFailed/Outcomes/Base | 202 | 17 | 0.002 | C F; rest H | 10, 15–19 |
+| UncertainFailed/Outcomes/Base | 202 | 17 | 0.002 | C F; rest H | 10, 15–16, 18–19 |
+| OutcomeForReason/Outcomes/Base | 202 | 17 | 0.002 | T, N F; rest H | 10, 15–19 |
+| TrustMalformed/Outcomes/Base | 202 | 17 | 0.002 | M F; rest H | 10, 15–19 |
+| DropCancellation/Cancellation/Base | 287 | 18 | 0.003 | K F; rest H | 10, 15–18, 20–22 |
+| CancelFailed/Cancellation/Base | 341 | 19 | 0.004 | K F; rest H | 10, 15–18, 20–22 |
+| LeakOutputs/Repeats/Base | 238 | 23 | 0.003 | P F; rest H | 10, 15–18, 23–25 |
+| RepeatNoOutputsConflict/Repeats/Base | 238 | 23 | 0.003 | P F; rest H | 10, 15–18, 23–25 |
+| ImplicitWork/ModelWork/Base | 679 | 44 | 0.007 | W F; rest H | 10, 15–18, 26–28 |
+| ClosedWork/ModelWork/Base | 679 | 44 | 0.007 | W F; rest H | 10, 15–18, 26–28 |
+| AllowOnward/ModelWork/Base | 700 | 45 | 0.007 | I F; rest H | 10, 15–18, 26–28 |
+| Unfenced/Control/Base | 779 | 21 | 0.008 | G, B F; rest H | 0–8, 10, 15–18, 29 |
+| LateConfirmation/Cancellation/Base | 404 | 19 | 0.004 | L F; rest H | 10, 15–18, 20–22 |
+
+Largest final run: **19,008 unique states**. Sum of the full-run checker times above: **0.655 s**; this is not the whole crate's wall time.
+
+**Every difference from registration:** AcceptInvalid/Schema/Base reaches w5 and w7 in
+addition to the registered set (MC7a-001). There is no other safety, reach or enabled-fault
+difference. The rejected intermediate inspection-history run described above has no verdict;
+its bound rejection is not a safety finding. The representation refinement preserves all
+registered safety behavior, and the two new return-link parts were registered before running.
+
+**MC7a-002 — pending fence gap, reproduced from MC2-001.** Unfenced follows current
+OPS-014 rather than the order's pending ruling 75 A1 reading. It refutes G and B: the actor
+records absence before the attempt is fenced, then the implementation applies the original
+control. In the first 15-action trace below, actions 1–11 dispatch and drain the contention
+and inspection batch; 12 records unknown, 13 sends absent reconciliation, 14 records failed,
+and 15 applies the full effect. No engine state was lost and no implementation reported
+failed. This is not a counterexample to OPS-003, which binds implementation reports, nor a
+new claim about repeated effects: MC2's original trace supplies the repeat. It demonstrates
+why the already accepted fence still needs writing in OPS-014, outside this order's scope.
+The Correct control, registered first, keeps the pending reading and holds G/B in every part.
+
+### MC7a first single-thread BFS refutations
+
+Each trace below is from its own final one-thread refutation run, distinct from the full
+matrix run. The test replays each trace, erases every node's data and clears the queues,
+and checks that its safety failure remains in the external ledger. All 22 variants refute
+their target; no variant is accepted merely for traversing a mutation branch.
+
+**StaleRevision**, 13 actions; target A.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. implementation Finish(Full, Succeeded)
+13. delivered implementation -> engine [position 0]
+```
+
+**ReusedRevision**, 16 actions; target F.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. implementation Finish(Full, Succeeded)
+13. delivered implementation -> engine [position 0]
+14. engine Suffix
+15. engine Suffix
+16. engine Suffix
+```
+
+**Substitute**, 13 actions; target E.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. implementation Finish(Full, Succeeded)
+13. delivered implementation -> engine [position 0]
+```
+
+**StoreUnknown**, 12 actions; target U.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+```
+
+**WrongReconcile**, 15 actions; target R.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. implementation Finish(Full, Succeeded)
+14. engine Reconcile(true, 0)
+15. delivered B -> engine [position 0]
+```
+
+**AcceptInvalid**, 17 actions; target V.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. implementation Finish(Full, Succeeded)
+14. delivered implementation -> engine [position 0]
+15. engine LaterChange
+16. engine Reconcile(true, 0)
+17. delivered B -> engine [position 0]
+```
+
+**QueueContender**, 2 actions; target T.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered B -> engine [position 0]
+```
+
+**DoubleOutcome**, 12 actions; target O.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+```
+
+**FalseSuccess**, 12 actions; target C.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. implementation Finish(None, Failed)
+```
+
+**PartialFailed**, 12 actions; target C.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. implementation Finish(Partial, Unknown)
+```
+
+**UncertainFailed**, 12 actions; target C.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. implementation Finish(None, Unknown)
+```
+
+**OutcomeForReason**, 5 actions; target N.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered B -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+```
+
+**TrustMalformed**, 13 actions; target M.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. implementation Finish(Full, MissingTag)
+13. delivered implementation -> engine [position 0]
+```
+
+**DropCancellation**, 12 actions; target K.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. engine CloseStream
+```
+
+**CancelFailed**, 13 actions; target K.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. engine CloseStream
+13. engine RecordCancel
+```
+
+**LeakOutputs**, 15 actions; target P.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. engine StopRun
+14. engine Script
+15. delivered A -> engine [position 0]
+```
+
+**RepeatNoOutputsConflict**, 17 actions; target P.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. engine StopRun
+14. engine Script
+15. delivered A -> engine [position 0]
+16. engine Script
+17. delivered A -> engine [position 0]
+```
+
+**ImplicitWork**, 14 actions; target W.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. engine StopRun
+14. engine Script
+```
+
+**ClosedWork**, 38 actions; target W.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. engine StopRun
+14. engine Script
+15. engine Script
+16. engine Script
+17. engine Script
+18. engine Script
+19. engine Script
+20. engine Script
+21. engine Script
+22. engine Script
+23. engine Script
+24. engine Script
+25. engine Script
+26. engine Script
+27. engine Script
+28. engine Script
+29. delivered A -> engine [position 0]
+30. delivered engine -> implementation [position 0]
+31. delivered implementation -> engine [position 0]
+32. engine Script
+33. delivered A -> engine [position 0]
+34. delivered engine -> implementation [position 0]
+35. delivered implementation -> engine [position 0]
+36. delivered engine -> implementation [position 0]
+37. engine Script
+38. delivered A -> engine [position 0]
+```
+
+**AllowOnward**, 31 actions; target I.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. engine StopRun
+14. engine Script
+15. engine Script
+16. engine Script
+17. engine Script
+18. engine Script
+19. engine Script
+20. engine Script
+21. engine Script
+22. engine Script
+23. engine Script
+24. engine Script
+25. engine Script
+26. engine Script
+27. engine Script
+28. engine Script
+29. delivered A -> engine [position 0]
+30. delivered engine -> implementation [position 0]
+31. delivered implementation -> engine [position 0]
+```
+
+**Unfenced**, 15 actions; target B.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. engine Reconcile(false, 0)
+14. delivered B -> engine [position 0]
+15. implementation Finish(Full, Succeeded)
+```
+
+**LateConfirmation**, 14 actions; target L.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. implementation Finish(None, Failed)
+14. delivered implementation -> engine [position 0]
+```
+
+### What MC7a establishes and leaves to S5
+
+The 18 modelled catalogue projections hold on every correct configuration, including loss,
+reordering, crash/recovery, silence, retirement and the schema-invalid reconciliation. Every
+one of the thirty common precondition witnesses is reached in at least one correct run. The
+22 variants and the pending-text control all have counterexamples. Thirteen static decisions
+remain for vectors; supporting promises and the pending fence are outside the 31-count ledger.
+No conformance vector, specification, engine file or ruling is changed.
+
+The bounded contention batch precedes completion; later changes are serialized, and one
+attempt cannot prove the multi-attempt fence. Multiple non-timer fault classes do not occur
+together. Explicit silence here applies no effect; an effect with a missing response is also
+covered by timer/reply races and implementation-link loss. There is no partition, plain-server
+adapter, remote API continuation, provider gate, parser, actual model provider or real caller.
+The implicit-event projection does not prove the independent lifecycle algorithms. The
+succeeded repeat fixtures fix identity/content matching rather than rechecking MC2. S5 must
+still supply real implementation verification, author measures, static discovery/default/schema
+vectors and user-visible lost-receipt recovery. These bounded results claim neither liveness,
+unbounded safety nor correctness of any build.
+
+### MC7a admin review: additions registered before execution, 2026-11-11
+
+The three review findings identify defects in the model's checks and coverage. They do not
+change a promise or its quoted preconditions above. This registration precedes every run of
+the revised model. The original expected tables and dated results remain historical evidence.
+
+**Outcome precondition (must).** Each implementation reply is logged as `Received`, with
+whether the invocation was still in progress, before any outcome conversion. `End` additionally
+records the actual received reply, or none for a timer, recovery or cancellation record. O's
+OPS-001 exemption now depends on that reply being an implementation reason, rather than on
+the engine's chosen answer being a reason. N also checks the implementation-reason branch of
+OPS-005. New `ReasonForOutcome/Outcomes/Base` converts an ordinary succeeded reply to conflict;
+it must refute O while leaving every other safety entry holding.
+
+**Cancellation confirmation (must).** `CancelEnd` carries only the chosen outcome. K scans the
+preceding ledger events for a received `Reply::Failed` while the invocation was in progress;
+neither a chosen failed outcome nor a failed reply received after the end supplies confirmation.
+w21 likewise requires an independently received failed reply before the cancelled end. New
+`CancelUnknownFailed/Cancellation/Base` converts a cancelled invocation's received unknown reply
+to failed; it must refute K while leaving every other safety entry holding. The implementation
+report remains unknown, so C does not mistake this engine defect for an implementation claim.
+
+**Current configuration (should).** New `CurrentMerge/Base` uses the same four nodes, links,
+fault gates and bounds as Control/Base. Its control supplies only x=1 against INITIAL `(0,2)`;
+partial physical application is excluded because this control addresses one setting. After
+unknown, the script requires an intervening stored change to `(0,1)` before reconciliation.
+Applying x=1 to that current configuration yields valid `(1,1)`, preserving the untouched y=1;
+applying it to INITIAL yields `(1,2)`. Current/stale/missing revisions and absence remain script
+choices. New `OriginalReconcile/CurrentMerge/Base` merges into INITIAL, rather than into the
+current configuration. R must refute it. This complements Schema's invalid merge and retains
+the original `WrongReconcile` variant and its expected row.
+
+All three additions use Base (timer budget one, other harness faults isolated in the existing
+Control parts); the timer and existing unknown/reconciliation witnesses remain mandatory.
+Each new variant has its own full exhaustive run and first one-thread BFS refutation. No
+property consults node state, including after the ledger-independence test clears every node.
+
+Three new ledger reach properties distinguish these preconditions without demanding the
+correct result, so the broken variants must still reach them:
+
+| Index | Required recorded precondition/event |
+| --- | --- |
+| 30 | After a later store, a live existing instance's occurred reconciliation names the current revision, addresses only part of its settings, and has a valid merge differing from the merge into INITIAL |
+| 31 | An ordinary succeeded, failed or unknown reply is received while the invocation is in progress |
+| 32 | An unknown reply is received while the invocation is in progress, after stream cancellation |
+
+Expected table extension, fixed before this revision's first run: every original row retains
+its safety and w0–w29 registration. w31 is reached in **every** row. w32 is reached exactly in
+Cancellation rows. w30 is reached exactly in the two CurrentMerge rows. Every other new reach
+entry is unreached. The previously recorded AcceptInvalid w5/w7 difference remains separate.
+
+| Added variant/scene/part | Expected refuted safety (all others H) | Expected w0–w32 reaches (all others unreached) |
+| --- | --- | --- |
+| Correct/CurrentMerge/Base | None | 0–8, 10, 15–17, 29–31 |
+| OriginalReconcile/CurrentMerge/Base | R | 0–8, 10, 15–17, 29–31 |
+| ReasonForOutcome/Outcomes/Base | O | 10, 15–19, 31 |
+| CancelUnknownFailed/Cancellation/Base | K | 10, 15–18, 20–22, 31–32 |
+
+Accounting remains **18 modelled, 13 not modelled, all 13 static**. Supporting promises remain
+outside the count. There are now 42 MC7a full runs, 25 broken variants and 33 common witnesses.
+
+### MC7a admin review results — 2026-11-11
+
+All three verifier findings above are fixed within the order’s scope. The final ordinary
+release run passed **42 unit tests, 0 failed**, and **0 doc tests**, in **40.84 seconds wall
+time** (test execution 37.49 s). The counts run, `cargo test --release -- --nocapture
+--test-threads=1`, passed the same totals in **39.50 seconds wall time** (test execution
+39.24 s). Both commands used the environment’s `CARGO_BUILD_JOBS`, unchanged. The targeted
+MC7a check also passed its three tests. No timing-sensitive test failed or needed a rerun.
+
+`cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, all five repository Python
+checkers, the Python unittest suite (**41 tests**), and `git diff --check` passed. The two
+required grep scans found no matches (exit 1). The Python interpreter was `/usr/bin/python3`,
+with PyYAML and jsonschema available. Only this README and `src/controls.rs` changed;
+nothing was staged, and build output remains ignored.
+
+Every full run below completed exhaustively. In the safety column, the listed entries are
+**refuted**, every other entry in **A F E U R V T O C N M K P W I G B L** holds, and “all H”
+means all eighteen hold. The reach column lists every reached w index; all others are
+unreached. Every enabled harness fault and every part-specific inspection/receipt witness
+was reached. All 33 common witnesses are reached by at least one correct configuration.
+
+| Variant/scene/part | Unique states | Depth | Seconds | Observed safety | Observed w reach |
+| --- | --- | --- | --- | --- | --- |
+| Correct/Control/Base | 843 | 21 | 0.008 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Control/LossCaller | 7,865 | 21 | 0.091 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Control/ReorderCaller | 19,008 | 21 | 0.227 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Control/LossReceipt | 9,271 | 29 | 0.108 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Control/ReorderReceipt | 2,535 | 29 | 0.030 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Control/LossImplementation | 2,324 | 21 | 0.023 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Control/ReorderImplementation | 1,678 | 21 | 0.016 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Control/Crash | 1,622 | 23 | 0.015 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Control/Silence | 982 | 21 | 0.010 | all H | 0–8, 10, 15–18, 29, 31 |
+| Correct/Schema/Base | 189 | 21 | 0.002 | all H | 0–4, 6, 9–10, 15–17, 29, 31 |
+| Correct/CurrentMerge/Base | 189 | 21 | 0.002 | all H | 0–8, 10, 15–17, 29–31 |
+| Correct/Retired/Base | 1,168 | 21 | 0.011 | all H | 0–8, 10–13, 15–18, 29, 31 |
+| Correct/Removed/Base | 726 | 20 | 0.007 | all H | 0–6, 10–12, 14–18, 29, 31 |
+| Correct/Outcomes/Base | 202 | 17 | 0.002 | all H | 10, 15–19, 31 |
+| Correct/Cancellation/Base | 404 | 19 | 0.004 | all H | 10, 15–18, 20–22, 31–32 |
+| Correct/Repeats/Base | 238 | 23 | 0.002 | all H | 10, 15–18, 23–25, 31 |
+| Correct/ModelWork/Base | 679 | 44 | 0.006 | all H | 10, 15–18, 26–28, 31 |
+| StaleRevision/Control/Base | 843 | 21 | 0.007 | A refuted; rest H | 0–8, 10, 15–18, 29, 31 |
+| ReusedRevision/Control/Base | 843 | 21 | 0.008 | F refuted; rest H | 0–8, 10, 15–18, 29, 31 |
+| Substitute/Control/Base | 843 | 21 | 0.008 | E, C refuted; rest H | 0–8, 10, 15–18, 29, 31 |
+| StoreUnknown/Control/Base | 843 | 21 | 0.008 | U refuted; rest H | 0–8, 10, 15–18, 29, 31 |
+| WrongReconcile/Control/Base | 843 | 21 | 0.008 | R refuted; rest H | 0–8, 10, 15–18, 29, 31 |
+| OriginalReconcile/CurrentMerge/Base | 189 | 21 | 0.002 | R refuted; rest H | 0–8, 10, 15–17, 29–31 |
+| AcceptInvalid/Schema/Base | 189 | 21 | 0.002 | V refuted; rest H | 0–7, 10, 15–17, 29, 31 |
+| QueueContender/Control/Base | 843 | 21 | 0.008 | T refuted; rest H | 0–8, 10, 15–18, 29, 31 |
+| DoubleOutcome/Outcomes/Base | 202 | 17 | 0.002 | O, M refuted; rest H | 10, 15–19, 31 |
+| ReasonForOutcome/Outcomes/Base | 202 | 17 | 0.002 | O refuted; rest H | 10, 15–19, 31 |
+| FalseSuccess/Outcomes/Base | 202 | 17 | 0.002 | C refuted; rest H | 10, 15, 17–19, 31 |
+| PartialFailed/Outcomes/Base | 202 | 17 | 0.002 | C refuted; rest H | 10, 15–19, 31 |
+| UncertainFailed/Outcomes/Base | 202 | 17 | 0.002 | C refuted; rest H | 10, 15–16, 18–19, 31 |
+| OutcomeForReason/Outcomes/Base | 202 | 17 | 0.002 | T, N refuted; rest H | 10, 15–19, 31 |
+| TrustMalformed/Outcomes/Base | 202 | 17 | 0.002 | M refuted; rest H | 10, 15–19, 31 |
+| DropCancellation/Cancellation/Base | 287 | 18 | 0.003 | K refuted; rest H | 10, 15–18, 20–22, 31–32 |
+| CancelFailed/Cancellation/Base | 341 | 19 | 0.003 | K refuted; rest H | 10, 15–18, 20–22, 31–32 |
+| CancelUnknownFailed/Cancellation/Base | 404 | 19 | 0.005 | K refuted; rest H | 10, 15–18, 20–22, 31–32 |
+| LeakOutputs/Repeats/Base | 238 | 23 | 0.003 | P refuted; rest H | 10, 15–18, 23–25, 31 |
+| RepeatNoOutputsConflict/Repeats/Base | 238 | 23 | 0.003 | P refuted; rest H | 10, 15–18, 23–25, 31 |
+| ImplicitWork/ModelWork/Base | 679 | 44 | 0.007 | W refuted; rest H | 10, 15–18, 26–28, 31 |
+| ClosedWork/ModelWork/Base | 679 | 44 | 0.007 | W refuted; rest H | 10, 15–18, 26–28, 31 |
+| AllowOnward/ModelWork/Base | 700 | 45 | 0.008 | I refuted; rest H | 10, 15–18, 26–28, 31 |
+| Unfenced/Control/Base | 779 | 21 | 0.008 | G, B refuted; rest H | 0–8, 10, 15–18, 29, 31 |
+| LateConfirmation/Cancellation/Base | 404 | 19 | 0.004 | L refuted; rest H | 10, 15–18, 20–22, 31–32 |
+
+Largest run: **19,008 unique states**. Sum of MC7a full-run checker
+times: **0.680 s**. These times exclude compilation and the other models.
+
+
+**Every difference from the registered tables:** the retained MC7a-001 difference is still
+AcceptInvalid/Schema/Base reaching w5 and w7 in addition to its expected set. No new safety,
+reachability or fault-witness difference occurred. The original table was not rewritten.
+The three new mutants refute exactly their registered target, while their implementation
+reports remain valid. The pending-text Unfenced control still refutes G/B (MC7a-002); the
+specification correction belongs to order 077, outside this order’s scope.
+
+The catalogue count remains **18 modelled / 13 not modelled (all 13 static decisions for
+vectors)**, with supporting promises excluded. These remain bounded reference-model results,
+with the earlier limits and S5 obligations unchanged.
+
+#### New first one-thread BFS refutations
+
+Each trace below was printed by its own target-only refutation run. Its first eleven actions
+dispatch the primary invocation and drain the contention/probe batch. The existing test also
+replays every trace, clears every node and link, and confirms the target remains refuted using
+only the external ledger.
+
+**ReasonForOutcome**, 13 actions. O: the received reply is succeeded, but the engine records conflict. No implementation reason supplies the exemption.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. implementation Finish(Full, Succeeded)
+13. delivered implementation -> engine [position 0]
+```
+
+**CancelUnknownFailed**, 14 actions. K: after stream closure the implementation reports unknown for a partial effect. The engine records failed without a received failed confirmation.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. engine CloseStream
+13. implementation Finish(Partial, Unknown)
+14. delivered implementation -> engine [position 0]
+```
+
+**OriginalReconcile**, 17 actions. R: after unknown, the late full-effect reply fences the attempt. A later store changes y to 1. Reconciliation stores `(1,2)` by merging x=1 into INITIAL, instead of preserving y=1 in `(1,1)`.
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered A -> engine [position 0]
+3. delivered B -> engine [position 0]
+4. delivered B -> engine [position 0]
+5. delivered B -> engine [position 0]
+6. delivered B -> engine [position 0]
+7. delivered B -> engine [position 0]
+8. delivered B -> engine [position 0]
+9. delivered B -> engine [position 0]
+10. delivered engine -> implementation [position 0]
+11. delivered engine -> implementation [position 0]
+12. timer engine
+13. implementation Finish(Full, Succeeded)
+14. delivered implementation -> engine [position 0]
+15. engine LaterChange
+16. engine Reconcile(true, 0)
+17. delivered B -> engine [position 0]
+```

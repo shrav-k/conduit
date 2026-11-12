@@ -227,7 +227,7 @@ Ticket that waits for a core ending. Transition.request_replies carries the core
 final replies, correlated by invocation and attempt, so a refusal is delivered even if the
 core removes the invocation or restores its previous success. The [runner](crates/shell/src/runner.rs)
 executes committed run, dispatch, refresh and cancellation intents outside that mutex, returning
-completions through the shell. Runtime providers and remote connections remain unserved;
+completions through the shell. Runtime provider calls are served as CONFORMANCE’s DL16 rows state; remote connections remain unserved;
 missing/failed reports go through the core. The base S1 fixture used above has no executable
 Agent; [live S1](examples/s1/README.md) supplies the real-client wrappers instead.
 

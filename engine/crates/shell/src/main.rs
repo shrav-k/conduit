@@ -464,6 +464,13 @@ fn object_id(state: &conduit_core::State, name: &str) -> Result<String> {
         .ok_or_else(|| format!("missing first-start object {name}"))
 }
 fn main() {
+    conduit_shell::install_crypto_provider();
+    if std::env::args_os()
+        .nth(1)
+        .is_some_and(|arg| arg == "__http-bridge")
+    {
+        std::process::exit(conduit_shell::http_bridge::main_entry());
+    }
     let result = if std::env::args().nth(1).as_deref() == Some("__run-guard") {
         conduit_shell::runner::guard_main()
     } else {

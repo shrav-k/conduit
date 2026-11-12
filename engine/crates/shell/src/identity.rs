@@ -50,6 +50,7 @@ pub(crate) struct Authority {
 pub struct RunIdentity {
     pub environment: BTreeMap<String, String>,
     pub directory: PathBuf,
+    pub files: BTreeMap<String, String>,
 }
 
 impl Authority {
@@ -124,12 +125,21 @@ impl Authority {
         )
     }
     pub(crate) fn token(&self, instance: &str, address: &str) -> Result<String> {
+        self.signed_token(&self.instance_id(instance), address)
+    }
+    fn instance_id(&self, instance: &str) -> String {
+        format!(
+            "spiffe://{}/conduit/instance/{instance}",
+            self.data.engine_id
+        )
+    }
+    fn signed_token(&self, subject: &str, audience: &str) -> Result<String> {
         let header = B64.encode(br#"{"alg":"ES256","typ":"JWT","kid":"store"}"#);
         let issued = chrono::Utc::now();
         let expires = issued
             .checked_add_months(chrono::Months::new(100 * 12))
             .ok_or("identity expiration out of range")?;
-        let claims = json!({"sub":format!("spiffe://{}/conduit/instance/{instance}",self.data.engine_id),"aud":[address],"iat":issued.timestamp(),"exp":expires.timestamp(),"jti":Uuid::new_v4().to_string()});
+        let claims = json!({"sub":subject,"aud":[audience],"iat":issued.timestamp(),"exp":expires.timestamp(),"jti":Uuid::new_v4().to_string()});
         let payload =
             B64.encode(serde_json::to_vec(&claims).map_err(|_| "claims encoding failed")?);
         let signed = format!("{header}.{payload}");
@@ -181,14 +191,17 @@ impl Authority {
             format!("spiffe://{}/conduit/engine", self.data.engine_id),
             self.token(instance, address)?,
         ];
+        let mut materialized = BTreeMap::new();
         for (name, content) in files.iter().zip(contents) {
             let name = name.as_str().ok_or("invalid identity file name")?;
             if Path::new(name).components().count() != 1 || name == "." || name == ".." {
                 return Err("invalid identity file path".into());
             }
             atomic_write(&directory, name, content.as_bytes())?;
+            materialized.insert(name.into(), content);
         }
         Ok(RunIdentity {
+            files: materialized,
             environment: BTreeMap::from([
                 (
                     env[0].as_str().ok_or("invalid identity variable")?.into(),
@@ -201,6 +214,74 @@ impl Authority {
             ]),
             directory,
         })
+    }
+    fn certificate(&self, subject: &str) -> Result<(String, String)> {
+        use chrono::Datelike;
+        let key = rcgen::KeyPair::generate_for(&rcgen::PKCS_ECDSA_P256_SHA256)
+            .map_err(|_| "certificate key generation failed")?;
+        let signing_key =
+            rcgen::KeyPair::from_pem(&self.data.key).map_err(|_| "invalid root signing key")?;
+        let issuer = rcgen::Issuer::from_ca_cert_pem(&self.data.certificate, signing_key)
+            .map_err(|_| "invalid root certificate")?;
+        let mut params = rcgen::CertificateParams::default();
+        params.distinguished_name = rcgen::DistinguishedName::new();
+        params.subject_alt_names = vec![rcgen::SanType::URI(
+            subject.try_into().map_err(|_| "invalid certificate URI")?,
+        )];
+        params.is_ca = rcgen::IsCa::ExplicitNoCa;
+        params.key_usages = vec![rcgen::KeyUsagePurpose::DigitalSignature];
+        params.extended_key_usages = vec![
+            rcgen::ExtendedKeyUsagePurpose::ServerAuth,
+            rcgen::ExtendedKeyUsagePurpose::ClientAuth,
+        ];
+        params.use_authority_key_identifier_extension = true;
+        // Later than the token's hundred-calendar-year lifetime, including leap days.
+        params.not_after = rcgen::date_time_ymd(chrono::Utc::now().year() + 101, 1, 1);
+        let certificate = params
+            .signed_by(&key, &issuer)
+            .map_err(|_| "certificate signing failed")?;
+        Ok((certificate.pem(), key.serialize_pem()))
+    }
+    pub(crate) fn add_run_certificate(
+        &self,
+        identity: &mut RunIdentity,
+        instance: &str,
+        context: &Context,
+    ) -> Result<()> {
+        let schema = &context
+            .core_environment
+            .scopes
+            .values()
+            .flat_map(|s| s.contracts.values())
+            .find(|v| v["kind"] == "Operation" && v["metadata"]["name"] == "run.v1")
+            .ok_or("missing run contract")?["spec"]["inputSchema"]["properties"]["identity"]["properties"]
+            ["files"];
+        let names = certificate_names();
+        for name in names {
+            if schema["properties"].get(name).is_none()
+                || schema["required"]
+                    .as_array()
+                    .is_some_and(|a| a.iter().any(|v| v == name))
+            {
+                return Err("certificate names differ from held run contract".into());
+            }
+        }
+        let (cert, key) = self.certificate(&self.instance_id(instance))?;
+        identity.files.insert(names[0].clone(), cert);
+        identity.files.insert(names[1].clone(), key);
+        Ok(())
+    }
+    pub(crate) fn bridge_files(&self, instance: &str) -> Result<BTreeMap<String, String>> {
+        let engine = format!("spiffe://{}/conduit/engine", self.data.engine_id);
+        let subject = self.instance_id(instance);
+        let (cert, key) = self.certificate(&engine)?;
+        Ok(BTreeMap::from([
+            ("root.pem".into(), self.data.certificate.clone()),
+            ("peer-id".into(), subject.clone()),
+            ("bearer".into(), self.signed_token(&engine, &subject)?),
+            ("client.pem".into(), cert),
+            ("client.key".into(), key),
+        ]))
     }
     pub fn verify(&self, token: Option<&str>, address: &str, state: &State) -> Identity {
         let Some(token) = token else {
@@ -251,4 +332,128 @@ fn exists(state: &State, id: &str) -> bool {
                 .iter()
                 .any(|kind| v["kind"] == *kind)
     })
+}
+
+fn certificate_names() -> &'static [String; 2] {
+    static NAMES: std::sync::OnceLock<[String; 2]> = std::sync::OnceLock::new();
+    NAMES.get_or_init(|| {
+        let names = conduit_loader::read_bytes(
+            conduit_loader::Syntax::Yaml,
+            include_bytes!("../../../../spec/names.yaml"),
+        )
+        .expect("built-in names")[0]
+            .to_json();
+        ["certificateFile", "keyFile"].map(|key| {
+            names[key]
+                .as_str()
+                .expect("assigned certificate name")
+                .into()
+        })
+    })
+}
+
+#[cfg(test)]
+mod certificate_tests {
+    use super::*;
+    use rustls::pki_types::{CertificateDer, UnixTime, pem::PemObject};
+    #[test]
+    fn provider_credentials_chain_match_keys_and_outlive_tokens_and_gate_proof_is_engine_only() {
+        let temp = tempfile::tempdir().unwrap();
+        let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let shell = crate::Shell::open(
+            &temp.path().join("store"),
+            crate::boundary::context(&repository).unwrap(),
+            crate::Config {
+                engine_https_url: Some("https://engine.test/mcp".into()),
+                ..crate::Config::default()
+            },
+        )
+        .unwrap();
+        shell.submit(json!({"kind":"first-start","machine":crate::local_machine(BTreeMap::new()).unwrap()}), &crate::MissingExecutor).unwrap();
+        let state = shell.state().unwrap();
+        let instance = state
+            .objects
+            .iter()
+            .find(|o| o["kind"] == "Resource" && o.get("spec").is_none())
+            .unwrap()["id"]
+            .as_str()
+            .unwrap();
+        let schema = &shell.context.core_environment.scopes["core"].contracts["run.v1"]["spec"]["inputSchema"]
+            ["properties"]["identity"]["properties"];
+        let desc = json!({"materializeFor":instance,"environmentNames":schema["environment"]["required"],"fileNames":schema["files"]["required"]});
+        let own = shell.materialize_identity(&desc).unwrap();
+        assert!(
+            certificate_names()
+                .iter()
+                .all(|n| !own.files.contains_key(n) && !own.directory.join(n).exists())
+        );
+        let identity = shell.materialize_provider_identity(&desc).unwrap().unwrap();
+        let names = certificate_names();
+        assert_eq!(identity.files.len(), 6);
+        assert!(names.iter().all(|n| !identity.directory.join(n).exists()));
+        let cert_der =
+            CertificateDer::from_pem_slice(identity.files[&names[0]].as_bytes()).unwrap();
+        let (_, cert) = x509_parser::parse_x509_certificate(cert_der.as_ref()).unwrap();
+        assert!(!cert.is_ca());
+        let san = cert.subject_alternative_name().unwrap().unwrap();
+        assert!(
+            matches!(san.value.general_names.as_slice(), [x509_parser::extensions::GeneralName::URI(uri)] if *uri == shell.authority.instance_id(instance))
+        );
+        let usage = cert.key_usage().unwrap().unwrap();
+        assert!(usage.value.digital_signature());
+        let eku = cert.extended_key_usage().unwrap().unwrap();
+        assert!(eku.value.server_auth && eku.value.client_auth);
+        let key = rcgen::KeyPair::from_pem(&identity.files[&names[1]]).unwrap();
+        assert!(cert.public_key().subject_public_key.data.as_ref() == key.public_key_raw());
+        let token = &identity.files[desc["fileNames"][3].as_str().unwrap()];
+        let claims: Value =
+            serde_json::from_slice(&B64.decode(token.split('.').nth(1).unwrap()).unwrap()).unwrap();
+        assert!(cert.validity().not_after.timestamp() >= claims["exp"].as_i64().unwrap());
+        let root =
+            CertificateDer::from_pem_slice(shell.authority.data.certificate.as_bytes()).unwrap();
+        let (_, root_cert) = x509_parser::parse_x509_certificate(root.as_ref()).unwrap();
+        assert_eq!(cert.issuer(), root_cert.subject());
+        let mut roots = rustls::RootCertStore::empty();
+        roots.add(root).unwrap();
+        rustls::client::verify_server_cert_signed_by_trust_anchor(
+            &rustls::server::ParsedCertificate::try_from(&cert_der).unwrap(),
+            &roots,
+            &[],
+            UnixTime::now(),
+            rustls::crypto::ring::default_provider()
+                .signature_verification_algorithms
+                .all,
+        )
+        .unwrap();
+        let files = shell.authority.bridge_files(instance).unwrap();
+        let token = &files["bearer"];
+        let parts = token.split('.').collect::<Vec<_>>();
+        let claims: Value = serde_json::from_slice(&B64.decode(parts[1]).unwrap()).unwrap();
+        assert!(
+            claims["sub"] == format!("spiffe://{}/conduit/engine", shell.authority.trust_domain())
+        );
+        assert!(claims["aud"] == json!([shell.authority.instance_id(instance)]));
+        let signature = Signature::from_slice(&B64.decode(parts[2]).unwrap()).unwrap();
+        shell
+            .authority
+            .key
+            .verifying_key()
+            .verify(format!("{}.{}", parts[0], parts[1]).as_bytes(), &signature)
+            .unwrap();
+        for address in [
+            &shell.config.engine_url,
+            shell.config.engine_https_url.as_ref().unwrap(),
+            &shell.authority.instance_id(instance),
+        ] {
+            assert!(matches!(
+                shell.authority.verify(Some(token), address, &state),
+                Identity::Unreadable
+            ));
+        }
+        let cert_der = CertificateDer::from_pem_slice(files["client.pem"].as_bytes()).unwrap();
+        let (_, cert) = x509_parser::parse_x509_certificate(cert_der.as_ref()).unwrap();
+        assert!(
+            matches!(cert.subject_alternative_name().unwrap().unwrap().value.general_names.as_slice(), [x509_parser::extensions::GeneralName::URI(uri)] if *uri == claims["sub"].as_str().unwrap())
+        );
+    }
 }

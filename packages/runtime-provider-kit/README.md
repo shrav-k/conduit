@@ -156,11 +156,28 @@ order 081 settles the specification text. The current specification remains the 
   enforce it remotely so that it works when this server is gone.
 - `startup_policy`: sweep both the ledger and the backend inventory. Stop every reported run,
   since this server holds none of their old channels. Failed stops remain owed. An incomplete
-  inventory or an inability to durably record recovery intent prevents serving.
+  inventory or an inability to durably record recovery intent prevents serving. A stop that the
+  startup sweep could not carry out is owed and blocks new runs on that machine until a drain
+  carries it out.
 - `drain`: drain owed stops at startup, before each well-formed call and at `drain_interval`,
   which the runtime sets to a nonzero duration. Both interval and tool calls use the instance
   lock. Invalid arguments and extension errors reach no backend. Each stop intent is durably
   written before the backend effect; clearing it follows confirmed whole-tree termination.
+  A held stop is carried out before any new run on that machine starts; a start refused for
+  this names the owed stop, and starts nothing. A runtime's contract must state this rule.
+  On a provider of one machine, a single owed stop blocks every new run there. Stops held only
+  in memory also block the machine; stops owed on other machines do not. The refusal answers
+  failed and names every owed instance and the hostname, saying that the start may be tried
+  again once those stops are carried out. A repeated run that is already running still returns
+  its held gate's URL. Stop intents are published in memory before storage or backend work,
+  including intents that become durable, so admission sees stops published during its state
+  lookup. A per-machine read-write lock coordinates this publication with admission checks
+  before staging and immediately before start. A run is admitted only if, at the moment its
+  start begins, no other instance owes a stop on its machine. Starts share the read side;
+  a stop publishes its obligation under the write side. A stop never waits on staging, only
+  on the backend's start calls already in progress on its machine. A runtime's contract must
+  state these admission and stop-waiting rules. Admission never takes another instance's
+  operation lock.
 - `inspect`: inspect every recorded machine for an ID and the call's machine. Report stopped
   only if all are known stopped; any uncertainty or owed stop gives unknown. Return the held
   gate's current URL wherever known. Backend state is authoritative rather than cached ledger

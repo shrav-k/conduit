@@ -6,7 +6,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
-use tokio::sync::Mutex as AsyncMutex;
+use tokio::sync::{Mutex as AsyncMutex, RwLock};
 use tokio_util::sync::CancellationToken;
 
 #[derive(Clone, Copy)]
@@ -26,7 +26,8 @@ struct Slot {
     // Cleanup must not depend on a readable ledger. Keep only nonsensitive recovery context,
     // including historical machines, before handing any staged work to the backend.
     contexts: Mutex<BTreeMap<String, CallContext>>,
-    unsaved_stops: Mutex<BTreeMap<String, RunRecord>>,
+    // Include durable and in-progress intents so an older ledger snapshot cannot miss them.
+    held_stops: Mutex<BTreeMap<String, RunRecord>>,
 }
 impl Default for Slot {
     fn default() -> Self {
@@ -39,7 +40,7 @@ impl Default for Slot {
             }),
             gate: AsyncMutex::new(None),
             contexts: Mutex::new(BTreeMap::new()),
-            unsaved_stops: Mutex::new(BTreeMap::new()),
+            held_stops: Mutex::new(BTreeMap::new()),
         }
     }
 }
@@ -72,12 +73,7 @@ impl Slot {
         );
     }
     fn pending(&self) -> Vec<RunRecord> {
-        self.unsaved_stops
-            .lock()
-            .unwrap()
-            .values()
-            .cloned()
-            .collect()
+        self.held_stops.lock().unwrap().values().cloned().collect()
     }
     fn records(&self, instance: &str) -> Vec<RunRecord> {
         let contexts = self
@@ -102,6 +98,7 @@ struct Inner<B, S, G> {
     gate: Arc<G>,
     options: Options,
     slots: Mutex<BTreeMap<String, Arc<Slot>>>,
+    admissions: Mutex<BTreeMap<String, Arc<RwLock<()>>>>,
     shutdown: CancellationToken,
 }
 pub struct RuntimeServer<B, S, G>(Arc<Inner<B, S, G>>);
@@ -141,22 +138,22 @@ async fn stop_attempt<B: RuntimeBackend, S: StateStore>(
     backend: &B,
     store: &S,
     record: &mut RunRecord,
-    slot: Option<&Slot>,
+    coordination: Option<(&Slot, &RwLock<()>)>,
 ) -> StopAttempt {
-    // Even on a store failure, try to stop the tree. Retain only obligations whose
-    // intent was not saved AND whose stop failed; confirmed stops clear memory.
+    // Publish before awaiting storage/backend work. Admission checks under the same
+    // machine lock, so either the run is admitted first or it sees this obligation.
     record.owed_stop = true;
     record.state = RunState::Unknown;
+    if let Some((slot, admission)) = coordination {
+        let _guard = admission.write().await;
+        slot.held_stops
+            .lock()
+            .unwrap()
+            .insert(record.context.machine.hostname.clone(), record.clone());
+    }
+    // Even on a store failure, try to stop the tree.
     let intent = store.save(record).await;
     let stopped = backend.stop(&record.context, &record.instance).await;
-    if let Some(slot) = slot {
-        let mut pending = slot.unsaved_stops.lock().unwrap();
-        if intent.is_err() && stopped.is_err() {
-            pending.insert(record.context.machine.hostname.clone(), record.clone());
-        } else {
-            pending.remove(&record.context.machine.hostname);
-        }
-    }
     let mut storage_failed = intent.is_err();
     let result = if intent.is_ok() && stopped.is_ok() {
         record.state = RunState::Stopped;
@@ -167,6 +164,14 @@ async fn stop_attempt<B: RuntimeBackend, S: StateStore>(
     } else {
         Err(Unavailable)
     };
+    if (result.is_ok() || (intent.is_err() && stopped.is_ok()))
+        && let Some((slot, _)) = coordination
+    {
+        slot.held_stops
+            .lock()
+            .unwrap()
+            .remove(&record.context.machine.hostname);
+    }
     StopAttempt {
         result,
         storage_failed,
@@ -284,6 +289,7 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
             gate,
             options,
             slots: Mutex::new(BTreeMap::new()),
+            admissions: Mutex::new(BTreeMap::new()),
             shutdown: CancellationToken::new(),
         }));
         server.startup_policy().await?;
@@ -312,6 +318,15 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
             .or_default()
             .clone()
     }
+    fn admission(&self, hostname: &str) -> Arc<RwLock<()>> {
+        self.0
+            .admissions
+            .lock()
+            .unwrap()
+            .entry(hostname.into())
+            .or_default()
+            .clone()
+    }
     // Order 081 settles startup recovery: no channel survives provider restart, even orphans.
     async fn startup_policy(&self) -> Result<()> {
         let loaded = self.0.store.load().await;
@@ -320,11 +335,12 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         for mut record in combine(loaded.unwrap_or_default(), inventory.unwrap_or_default()) {
             let slot = self.slot(&record.instance);
             slot.refresh(&mut record, None);
+            let admission = self.admission(&record.context.machine.hostname);
             let attempt = stop_attempt(
                 self.0.backend.as_ref(),
                 self.0.store.as_ref(),
                 &mut record,
-                Some(&slot),
+                Some((&slot, &admission)),
             )
             .await;
             failed |= attempt.storage_failed;
@@ -333,11 +349,12 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         if failed { Err(Unavailable) } else { Ok(()) }
     }
     async fn stop_record(&self, mut record: RunRecord, slot: &Slot) -> Result<()> {
+        let admission = self.admission(&record.context.machine.hostname);
         stop_attempt(
             self.0.backend.as_ref(),
             self.0.store.as_ref(),
             &mut record,
-            Some(slot),
+            Some((slot, &admission)),
         )
         .await
         .result
@@ -352,6 +369,40 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
             .flat_map(|s| s.pending())
             .collect();
         combine(pending, records)
+    }
+    // Caller holds this instance's operation lock, then the machine's read lock.
+    // Include live intents as well as durable ones without locking another instance.
+    fn owed_stop_refusal(
+        &self,
+        instance: &str,
+        context: &CallContext,
+        ledger: Vec<RunRecord>,
+    ) -> Option<CallToolResult> {
+        let mut owed: Vec<_> = self
+            .drain_records(ledger)
+            .into_iter()
+            .filter(|r| {
+                r.owed_stop
+                    && r.instance != instance
+                    && r.context.machine.hostname == context.machine.hostname
+            })
+            .map(|r| r.instance)
+            .collect();
+        owed.sort();
+        owed.dedup();
+        if owed.is_empty() {
+            None
+        } else {
+            Some(answer(
+                "failed",
+                None,
+                &format!(
+                    "machine {} still owes stops for instances {}; the start may be tried again once those stops are carried out",
+                    context.machine.hostname,
+                    owed.join(", ")
+                ),
+            ))
+        }
     }
     // Return write failures separately: only construction refuses service for them.
     async fn drain(&self, call: Option<&CallContext>) -> Result<bool> {
@@ -379,11 +430,12 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
                 if let Some(gate) = slot.gate.lock().await.take() {
                     gate.close().await;
                 }
+                let admission = self.admission(&current.context.machine.hostname);
                 let attempt = stop_attempt(
                     self.0.backend.as_ref(),
                     self.0.store.as_ref(),
                     &mut current,
-                    Some(&slot),
+                    Some((&slot, &admission)),
                 )
                 .await;
                 storage_failed |= attempt.storage_failed;
@@ -504,15 +556,33 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
         {
             return invalid_call_policy("runtime does not run this item on this machine");
         }
-        let records = match self.records(&instance, &context).await {
+        let ledger = match self.0.store.load().await {
             Ok(r) => r,
             Err(_) => return answer("unknown", None, "cannot read run ledger"),
         };
+        let records = self.call_records(
+            &instance,
+            &context,
+            ledger
+                .iter()
+                .filter(|r| r.instance == instance)
+                .cloned()
+                .collect(),
+        );
         let state = self.state_of(&records).await;
         let url = slot.gate.lock().await.as_ref().map(|g| g.url());
         if let Some(answer) = repeated_run_policy(state, url) {
             return answer;
         }
+        // The drain waits for known stops before taking this instance's lock. Stops can
+        // publish during state_of: check their live intents under the machine lock.
+        // Release it before staging so staging never delays a stop.
+        let machine_admission = self.admission(&context.machine.hostname);
+        let admission = machine_admission.read().await;
+        if let Some(refused) = self.owed_stop_refusal(&instance, &context, ledger) {
+            return refused;
+        }
+        drop(admission);
         if let Some(old_gate) = slot.gate.lock().await.take() {
             old_gate.close().await;
         }
@@ -546,16 +616,33 @@ impl<B: RuntimeBackend, S: StateStore, G: Gate> RuntimeServer<B, S, G> {
                 return answer("failed", None, "staging failed");
             }
         };
+        // A stop may have been published during staging. Re-read under admission and
+        // hold through start only; failed_start itself needs the machine's write lock.
+        let admission = machine_admission.read().await;
+        let refused = match self.0.store.load().await {
+            Ok(ledger) => self.owed_stop_refusal(&instance, &context, ledger),
+            Err(_) => Some(answer("unknown", None, "cannot read run ledger")),
+        };
+        if let Some(refused) = refused {
+            cancel.cancel();
+            drop(admission);
+            drop(staged);
+            record.state = RunState::Stopped;
+            let _ = self.0.store.save(&record).await;
+            return refused;
+        }
         if cancel.is_cancelled() {
+            drop(admission);
             drop(staged);
             return self.failed_start(record, &slot).await;
         }
-        let channel = match self
+        let started = self
             .0
             .backend
             .start(&context, &instance, staged, &cancel, lifetime)
-            .await
-        {
+            .await;
+        drop(admission);
+        let channel = match started {
             Ok(channel) => channel,
             Err(_) => {
                 return self.failed_start(record, &slot).await;

@@ -90,3 +90,15 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 and 12 on the Mac, from base b451e4a: the worker and a fresh verifier (187 s),
+then a second worker round (493 s) and a fresh verifier (331 s). It made the runtime-provider kit
+refuse `run.v1` on a machine that still owes a stop for another instance: `failed`, with an
+explicit message naming each owed stop's instance and the machine (the owner's answer to MC4-002,
+2026-11-12; the admin's decision on the outcome). Round one's must (a stop published during the
+run's state lookup was missed) was fixed in round two with a per-machine admission lock. Round
+two's verifier left one must, a window after admission: the run released the lock before it
+saved, staged and started, so a stop published then could fail and the run still start. Order 130
+closed it, and this order merged with it as one change.

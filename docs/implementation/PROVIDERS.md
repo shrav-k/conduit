@@ -23,6 +23,15 @@ No order named here has been dispatched. A fresh skeptic reviews this split befo
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
+**Built so far (2026-11-12, the lane coordinator):** A63-RK1 (orders 122 and 124), A63-H1
+(orders 123 and 125), A63-RK2 (order 126), A63-MP1 (order 128), and the kit's rule that no run
+starts on a machine that owes a stop (orders 129 and 130), under the owner's answer to MC4-002 of
+2026-11-12: every runtime provider Conduit ships carries out a stop it still owes on a machine
+before it starts any run there, and its contract says so. A63-RP1 is order 127. Since order 127,
+A63-RP1 also wires the kit's gate and leads each run's process group with a guard, so no run
+outlives the provider; A63-RP2 keeps the external drainer of owed stops and the separate
+operating-system users; registry packages are A63-RPN.
+
 ## What `main` has now
 
 Evidence below is the tree at that commit, not the presence of an order file or its commit title.
@@ -84,8 +93,9 @@ H1 gates suite qualification only. Every crate has its own Cargo.lock, pinned to
 | A63-VM | vectors | Machine reports, placement and enrollment suite; stdio, no gate | PRV-014/015, ENR-002/004–010 | A63-H1, 049a-1, 049b, admin C; safety cases after SV1 | M, 400–600 | lane 8 | after dependencies |
 | A63-VP | vectors | Exact bytes for each claimed URL scheme | PRV-017 | A63-H1; safety cases after SV1 | S, 200–350 | lane 8 | non-safety cases after H1 |
 | A63-VS | vectors | Store contract suite | SEC-005/006/019/022 | A63-H1; safety cases after SV1 | S, 200–350 | lane 8 | non-safety cases after H1 |
-| A63-RP1 | provider | Process operations and running repeated-run case | PRV-007–012/019/027 | A63-RK1 | L, 650–850 | lane 8 | after RK1 |
-| A63-RP2 | provider | Connect kit gate, recovery, owed stops and OS principals | PRV-021/022/025/028 | A63-RP1, A63-RK2, 081, A63-OUS | L, 600–850 | lane 8 | after dependencies |
+| A63-RP1 | provider | Process operations, the kit's gate, a guard per run, running repeated-run case (order 127) | PRV-007–012/019/022/025/027/028 | A63-RK1, A63-RK2, orders 129 and 130 | L, 650–850 | lane 8 | dispatched as order 127 |
+| A63-RP2 | provider | External drainer of owed stops after retirement, separate OS principals | PRV-021/025 | A63-RP1, 081, A63-OUS | M, 400–650 | lane 8 | after dependencies |
+| A63-RPN | provider | Registry packages (npm over stdio) in the local-process provider, as DL16's runner runs them | PRV-007/012, MAN-010 | A63-RP1 | M, 400–600 | lane 8 | after RP1 |
 | A63-MP1 | provider | Local machine report with id and placement | PRV-014/015, ENR-002 | — | M, 300–450 | lane 8 | now |
 | A63-MP2 | provider | Activated machine contract qualification | ENR-002/007/008, PRV-014/015 | A63-MP1, 049a-1, 049b, admin C qualification settled | L, 550–750 | lane 8 | after dependencies |
 | A63-PS | provider | Local-directory source, file scheme | PRV-016/017 | — | M, 300–450 | lane 8 | now |

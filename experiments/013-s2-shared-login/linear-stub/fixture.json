@@ -1,0 +1,16 @@
+[
+  {
+    "identifier": "SYN-1",
+    "title": "Synthetic first issue",
+    "description": "Synthetic mention of SYN-2 stays text.",
+    "state": "Todo",
+    "updatedAt": "2026-01-01T00:00:00Z"
+  },
+  {
+    "identifier": "SYN-2",
+    "title": "Synthetic second issue",
+    "description": null,
+    "state": "In Progress",
+    "updatedAt": "2026-01-01T00:00:00Z"
+  }
+]

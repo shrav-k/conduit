@@ -4,6 +4,10 @@ This is S1's fixture project with independently packaged Claude Code and Codex T
 reach inputs are false on each Agent template. `turn-a` and `turn-b` authorize the root
 Interface to request explicit model turns; setup itself starts none.
 
+The `s1` Fleet owns both Agents (FLEET-002). Submission sets up the Fleet before its
+Agents, and Agent setup uses root’s `s1` default Conduit (ACC-033, FLEET-005).
+`root-workspace` remains the explicit route to the Resource-owning Pool.
+
 The checked-in Agent digests pin the metadata-only archives in
 [the contract fixtures](../../../conformance/fixtures/agents/agent-claude-code/README.md), so
 [the registration vector](../../../conformance/language/registration/live-agents/case.yaml)

@@ -17,6 +17,10 @@ struct Held {
     indexes: Indexes,
     contexts: Value,
     scope: String,
+    // Freeze the input schemas governing instance destinations, even if the template
+    // is later removed. LIF-021 needs these as well as the Type's config schema.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    instance_inputs: BTreeMap<String, Value>,
 }
 #[derive(Debug)]
 struct Fault {
@@ -574,7 +578,13 @@ impl Builder<'_> {
         object["state"] = json!("registered");
         object["metadata"] = document.get("metadata").cloned().unwrap_or(json!({}));
         object["metadata"]["name"] = json!(name);
-        object["held"] = serde_json::to_value(&h).map_err(|e| e.to_string())?;
+        let mut instance_held = h.clone();
+        instance_held.instance_inputs =
+            serde_json::from_value(inputs.clone()).map_err(|e| e.to_string())?;
+        instance_held
+            .instance_inputs
+            .retain(|name, _| argument_values.get(name).is_some());
+        object["held"] = serde_json::to_value(&instance_held).map_err(|e| e.to_string())?;
         object["_inputs"] = inputs;
         object["_argument_values"] = argument_values;
         for key in ["owner", "placement", "runtime", "consumer", "target"] {
@@ -676,6 +686,7 @@ struct References<'a> {
     core: &'a str,
     unresolved: Option<&'a RefCell<Vec<Fault>>>,
     template_entries: Option<&'a BTreeSet<String>>,
+    collected: Option<&'a RefCell<BTreeSet<String>>>,
 }
 // Schemas may govern one value through several applicable branches. Apply only
 // the reference rewrites each branch made to the original value; never treat a
@@ -791,7 +802,7 @@ impl References<'_> {
                 && name.ends_with("reference.v1")
                 && !["qualified-reference.v1", "template-reference.v1"].contains(&name)
             {
-                return match self.resolve(value, fixed_kind(name), pool, authored) {
+                let resolved = match self.resolve(value, fixed_kind(name), pool, authored) {
                     Err(f)
                         if f.rule == "OBJ-009"
                             && f.text.contains("unresolved reference")
@@ -801,7 +812,14 @@ impl References<'_> {
                         Ok(value.clone())
                     }
                     result => result,
-                };
+                }?;
+                if let Some(collected) = self.collected
+                    && ["Agent", "Resource"].contains(&resolved["kind"].as_str().unwrap_or(""))
+                    && let Some(id) = resolved["id"].as_str()
+                {
+                    collected.borrow_mut().insert(id.to_owned());
+                }
+                return Ok(resolved);
             }
             let (scope, s) = h
                 .environment
@@ -823,15 +841,37 @@ impl References<'_> {
                 depth + 1,
             )?;
         }
-        for key in ["anyOf", "oneOf"] {
+        // SCH-001 / OBJ-021: follow the applicators at this instance location.
+        // allOf applies every branch; disjunctions apply only matching branches.
+        for key in ["allOf", "anyOf", "oneOf"] {
             for branch in schema[key].as_array().into_iter().flatten() {
-                if h.valid_in(root, branch, value, self.core)
-                    .map_err(|e| fault("SCH-015", e))?
+                if key == "allOf"
+                    || h.valid_in(root, branch, value, self.core)
+                        .map_err(|e| fault("SCH-015", e))?
                 {
                     let resolved =
                         self.schema(h, root, branch, value, pool, authored, depth + 1)?;
                     overlay(&mut result, value, resolved);
                 }
+            }
+        }
+        if let Some(condition) = schema.get("if") {
+            let matches = h
+                .valid_in(root, condition, value, self.core)
+                .map_err(|e| fault("SCH-015", e))?;
+            if matches {
+                let resolved = self.schema(h, root, condition, value, pool, authored, depth + 1)?;
+                overlay(&mut result, value, resolved);
+            }
+            if let Some(branch) = schema.get(if matches { "then" } else { "else" }) {
+                let resolved = self.schema(h, root, branch, value, pool, authored, depth + 1)?;
+                overlay(&mut result, value, resolved);
+            }
+        }
+        for (key, branch) in items(schema, "dependentSchemas") {
+            if value.as_object().is_some_and(|map| map.contains_key(&key)) {
+                let resolved = self.schema(h, root, &branch, value, pool, authored, depth + 1)?;
+                overlay(&mut result, value, resolved);
             }
         }
         if let Some(map) = result.as_object_mut() {
@@ -878,11 +918,26 @@ impl References<'_> {
         }
         if let Some(array) = result.as_array_mut()
             && let Some(original) = value.as_array()
-            && let Some(sub) = schema.get("items")
         {
-            for (current, original) in array.iter_mut().zip(original) {
-                let resolved = self.schema(h, root, sub, original, pool, authored, depth + 1)?;
-                overlay(current, original, resolved);
+            let prefix = schema["prefixItems"].as_array();
+            for (index, (current, original)) in array.iter_mut().zip(original).enumerate() {
+                // items applies only after prefixItems (JSON Schema 2020-12).
+                if let Some(sub) = prefix
+                    .and_then(|p| p.get(index))
+                    .or_else(|| schema.get("items"))
+                {
+                    let resolved =
+                        self.schema(h, root, sub, original, pool, authored, depth + 1)?;
+                    overlay(current, original, resolved);
+                }
+                if let Some(sub) = schema.get("contains")
+                    && h.valid_in(root, sub, original, self.core)
+                        .map_err(|e| fault("SCH-015", e))?
+                {
+                    let resolved =
+                        self.schema(h, root, sub, original, pool, authored, depth + 1)?;
+                    overlay(current, original, resolved);
+                }
             }
         }
         Ok(result)
@@ -1009,6 +1064,7 @@ fn resolve_instance(
         core,
         unresolved: None,
         template_entries: None,
+        collected: None,
     };
     let kind = o["kind"].as_str().unwrap_or("").to_owned();
     let slot = o["nested"]["slot"].as_str().unwrap_or("").to_owned();
@@ -1371,6 +1427,7 @@ fn template_diagnostics(
             core,
             unresolved: Some(&unresolved),
             template_entries: in_entry.then_some(&entries),
+            collected: None,
         };
         if let Err(f) = refs.schema(scope, schema, schema, value, None, true, 0) {
             report(path, f);
@@ -1499,11 +1556,20 @@ pub(crate) fn register(
     }
     let mut pool_authority = true;
     for doc in &project.documents {
-        if doc["kind"] != "Resource" || doc.get("from").is_none() {
+        if (doc["kind"] != "Resource" && doc["kind"] != "Agent") || doc.get("from").is_none() {
             continue;
         }
+        let family = if doc["kind"] == "Agent" {
+            "Fleet"
+        } else {
+            "Pool"
+        };
+        let reference = doc["owner"]
+            .as_str()
+            .map(|n| json!({"kind":family,"name":n}))
+            .unwrap_or_else(|| doc["owner"].clone());
         if let Some(pool) =
-            crate::access::object(&t.state, &doc["owner"]).filter(|p| p["kind"] == "Pool")
+            crate::access::object(&t.state, &reference).filter(|p| p["kind"] == family)
             && pool["state"] != "retired"
         {
             pool_authority &= t
@@ -1702,6 +1768,7 @@ pub(crate) fn prepare(
         indexes,
         contexts: resolution.reply["contexts"].clone(),
         scope: "project".into(),
+        instance_inputs: BTreeMap::new(),
     };
     let mut b = Builder {
         context,
@@ -1788,6 +1855,7 @@ pub(crate) fn prepare(
         core: &context.core_package,
         unresolved: None,
         template_entries: None,
+        collected: None,
     };
     for template in &b.templates {
         b.diagnostics
@@ -2125,6 +2193,80 @@ fn reject(
     end_request(t, evidence, request, None, reason, context)?;
     t.reply = json!({"accepted":false,"reason":reason,"diagnostics":diagnostics});
     Ok(())
+}
+
+/// OBJ-009 / LIF-021: collect references through the same governing schemas as resolution.
+/// In particular, an author's ordinary kind/id configuration map is not a reference.
+pub(crate) fn instance_references(
+    object: &Value,
+    all: &[Value],
+    context: &Context,
+) -> Result<BTreeSet<String>> {
+    let collected = RefCell::new(BTreeSet::new());
+    let refs = References {
+        objects: all,
+        core: &context.core_package,
+        unresolved: None,
+        template_entries: None,
+        collected: Some(&collected),
+    };
+    let published = publication_object(object, context)?;
+    let (environment, scope, ty) = crate::schemas::operation(
+        &published,
+        object["type"].as_str().ok_or("missing Type")?,
+        &context.core_package,
+    )?;
+    let type_held = Held {
+        environment,
+        scope,
+        indexes: BTreeMap::new(),
+        contexts: json!({}),
+        instance_inputs: BTreeMap::new(),
+    };
+    let inspect = |h: &Held, schema: &Value, value: &Value| -> Result<()> {
+        refs.schema(h, schema, schema, value, None, false, 0)
+            .map(|_| ())
+            .map_err(|f| f.text)
+    };
+    inspect(&type_held, &ty["spec"]["schema"], &object["config"])?;
+    if let Some(held) = object.get("held") {
+        let h: Held = serde_json::from_value(held.clone()).map_err(|e| e.to_string())?;
+        for input in h.instance_inputs.values() {
+            for pointer in list(input, "to") {
+                if let Some(value) = object.pointer(&pointer) {
+                    inspect(&h, &input["schema"], value)?;
+                }
+            }
+        }
+        for (_, applied) in items(object, "requirements") {
+            let (rh, requirement, _) = h
+                .select(
+                    applied["requirement"]
+                        .as_str()
+                        .ok_or("missing Requirement")?,
+                    "Requirement",
+                    &context.core_package,
+                )
+                .map_err(|f| f.text)?;
+            for (name, input) in items(&requirement["spec"], "inputs") {
+                if let Some(value) = applied["arguments"].get(&name) {
+                    inspect(&rh, &input["schema"], value)?;
+                }
+            }
+        }
+    }
+    // These standard fields and nested targets are reference positions by definition,
+    // independently of any author-defined configuration schema (OBJ-013, CON-001).
+    for value in [object.get("placement"), object.get("runtime")]
+        .into_iter()
+        .flatten()
+        .chain(items(object, "conduits").iter().map(|(_, c)| &c["target"]))
+    {
+        if let Some(id) = crate::access::id(value).as_str() {
+            collected.borrow_mut().insert(id.to_owned());
+        }
+    }
+    Ok(collected.into_inner())
 }
 
 /// Adapt frozen registration contexts to the schema publisher's view, without changing

@@ -1746,22 +1746,7 @@
       },
       "expect": {
         "reply": {
-          "permitted": true,
-          "request": {
-            "consumer": "00000000-0000-4000-8000-000000000109",
-            "caller": "00000000-0000-4000-8000-000000000109",
-            "conduit": "00000000-0000-4000-8000-000000000900",
-            "target": "00000000-0000-4000-8000-000000000003",
-            "operation": "@core#set-up.v1",
-            "arguments": {
-              "instance": {
-                "kind": "Agent",
-                "name": "agent-b"
-              }
-            },
-            "filters": [],
-            "restrictionMode": "mediated"
-          }
+          "reason": "refused"
         },
         "records": [
           {
@@ -1772,11 +1757,18 @@
             "time": "2026-11-09T12:06:00Z",
             "data": {
               "dispatched": false,
-              "caller": "00000000-0000-4000-8000-000000000109",
-              "consumer": "00000000-0000-4000-8000-000000000109",
-              "conduit": "00000000-0000-4000-8000-000000000900",
-              "target": "00000000-0000-4000-8000-000000000003",
-              "operation": "@core#set-up.v1"
+              "reason": "refused"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000007013",
+            "specversion": "1.0",
+            "source": "urn:conduit:first-build",
+            "type": "request-ended",
+            "time": "2026-11-09T12:06:00Z",
+            "data": {
+              "dispatched": false,
+              "reason": "refused"
             }
           }
         ],
@@ -1784,9 +1776,7 @@
         "stateUnchanged": true,
         "required_promises": [
           "OPS-023",
-          "ACC-002",
-          "ACC-003",
-          "ACC-036"
+          "ACC-033"
         ]
       }
     },

@@ -944,21 +944,22 @@ fn invoke_inner(
         let Some(i) = i else {
             return reject(t, a, c, &route, "invalid", "OPS-029", None, None);
         };
-        if route["arguments"].get("revision").is_some()
-            && t.state.invocations[i]["contract"]["spec"]
-                .get("changes")
-                .is_none()
+        // REV-010/OPS-031 validate whether this reconciliation stores anything.
+        if let Some((reason, rule)) =
+            crate::revisions::preflight(&t.state, &t.state.invocations[i], &route["arguments"], c)?
         {
-            return reject(t, a, c, &route, "invalid", "OPS-031", None, None);
+            return reject(t, a, c, &route, reason, rule, None, None);
         }
         if t.state.invocations[i]["state"] != "unknown" {
             return reject(t, a, c, &route, "conflict", "OPS-030", None, None);
         }
-        if t.state.invocations[i]["contract"]["spec"]
-            .get("changes")
-            .is_some()
+        let old = &t.state.invocations[i];
+        if ["set-up.v1", "retire.v1", "open.v1", "close.v1"]
+            .iter()
+            .any(|op| old["operation"] == c.qualified(op))
+            && crate::lifecycle::busy(&t.state, old.get("object").unwrap_or(&old["target"]), None)
         {
-            return Err("control reconciliation requires REV-010 lifecycle work".into());
+            return reject(t, a, c, &route, "conflict", "REV-014", None, None);
         }
         Some(i)
     } else {
@@ -1096,6 +1097,12 @@ fn invoke_inner(
         vec![],
     ));
     if let Some(reconciled) = reconciled {
+        if t.state.invocations[reconciled]["contract"]["spec"]
+            .get("changes")
+            .is_some()
+        {
+            crate::revisions::reconcile(t, a, c, i, reconciled)?;
+        }
         let args = &route["arguments"];
         let outcome = if args["occurred"] == true {
             "succeeded"
@@ -1424,6 +1431,9 @@ pub(crate) fn cancel(
         evidence,
         cursor: 0,
     };
+    if t.state.invocations[i].get("cascade").is_some() {
+        return crate::cascade::cancel(t, &mut a, c, i);
+    }
     if t.state.invocations[i].get("setup").is_some()
         || t.state.invocations[i].get("retirement").is_some()
     {

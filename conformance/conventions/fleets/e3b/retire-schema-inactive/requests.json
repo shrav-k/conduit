@@ -1,0 +1,251 @@
+{
+  "requests": [
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "cascade.retire-with-agents.v1",
+          "arguments": {}
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "7d051b21-445b-5ade-9a82-7bb540de1b55",
+            "735084be-177a-50ca-8a6c-a69905335b40",
+            "55899f75-9e1f-5fd8-be0e-10abb297275f",
+            "4bbb597e-2b5b-564e-8b35-c269483d3dfe",
+            "ed091fbf-dbc2-50fe-8758-5ce301392543",
+            "13c4dcd0-ba1b-561b-8bdc-2b15a64866c6",
+            "42acb855-7204-525e-a015-b5c499027c39",
+            "0e945276-5e21-5985-8c8e-1720d6ea036c",
+            "ec10c390-45f6-504f-bc1b-04d6a0ced8b9",
+            "b45f8083-f1fb-578c-a872-8f059b78b434",
+            "f05b7a30-711c-5098-ad28-2bbdd477007f",
+            "957cb6d0-13ca-5b73-a20f-2d997c113ac4",
+            "2fd7400c-ab2b-532f-a7a5-0af9bba12660",
+            "14211f5e-8c2d-59e5-8177-0609fc23dec2",
+            "6cefe279-547a-5b67-9f3c-53e9603bc7ac",
+            "c48049d7-1269-588f-8ab9-93d11d9ef05f",
+            "e65c7991-1ae0-59df-ba5d-47f95b5a0f73",
+            "4ed0047c-7221-5850-a1e6-5347565ad5e0",
+            "9d57c2c7-3ca7-5aba-b56f-75c291d02bf1",
+            "1ad68c4a-4aee-58a2-9682-7cc1336c42cb",
+            "4dc91eef-96d7-5710-8f42-1d8928e59dad",
+            "02677e76-1e5c-500c-a79c-63f06e4cc520",
+            "a85f4867-3dd0-54af-aa4c-33f90238bf9d",
+            "40c1d12f-4ab6-57a8-9cab-c9344109a4f8",
+            "a21fe408-f8cf-5979-9add-40dc6efe3f31",
+            "bcfe4866-e65d-5067-982e-5d2daa592b27",
+            "eff2dcb6-34e2-5ab5-be65-8606afc16e0a",
+            "9562fd4f-3ec5-59fb-8bf5-62c0df05db08",
+            "18519e56-b3df-5f56-a840-7c310dc49535",
+            "ff0a9393-b009-5f4a-9501-469caf2d306a",
+            "370c246d-fc36-51c1-802f-ad683d360dde",
+            "e683a8f9-fcf0-5600-9810-93dbb06370b1",
+            "ba7e95a8-3ea3-5055-a2ae-4439a376fd13",
+            "cbe0b813-7985-5d22-a8ab-40cddfaade7b",
+            "a32036de-a3d7-5897-b193-261a742b2d11",
+            "d2be8d3d-6b18-5c8a-8b6b-dee2a5fb5aae",
+            "aa9d1621-a42a-503b-b408-8689f3b7c40f",
+            "e6cd61b4-69c8-5d33-ae41-0c9a35fbcbff",
+            "f8602010-feb0-5a7c-b498-6ea732e436d4",
+            "60a28fa1-f481-512c-9bf0-d6ac4a6936f2",
+            "98bff6c6-5137-57ac-9f37-78d67227911b",
+            "c473bafd-4dda-5edb-adb4-2201a81b5df9",
+            "98c31232-da1b-521a-b7f2-45ecced37075",
+            "522ca421-91d4-5050-9ef6-9bc407d70cd1",
+            "336c2d67-ea85-5a49-8cd2-c8d4d51e230d",
+            "ed46308e-ff86-5359-b51b-8a8938a58b1f",
+            "6b872cd1-118d-5263-b3ae-21f1f1c934ee",
+            "de243b26-0bcf-5cf0-b249-43e5566c3aa8",
+            "5656e6ed-76b9-5965-8e9f-17f85e990aaf",
+            "1ece213f-c868-5d8f-add4-c42ae7387eef",
+            "2ad199d7-4e55-5e9d-ad1f-d0963b49e630",
+            "31fa0f5e-2fa0-5ce7-9003-552587a458ed",
+            "7f1acc2c-023d-555a-9adc-eb34e11783a5",
+            "fb91bd68-998c-512a-88b8-eaee6739555a",
+            "1fe91f70-b7a6-53b5-a6bd-c4c53c3e7eae",
+            "0222f0db-fd25-5980-94d0-9a47f73b2fb6",
+            "4f6aa3b8-100f-5201-8414-dfa3dc3724d8",
+            "7caed89f-0122-5927-bd07-3f50e54b87d0",
+            "cb00359a-eca8-5c64-8d51-89adb3bd502d",
+            "7b0c536f-8268-5fb9-a3a4-bd92c205a10f",
+            "2ebfe988-4171-5c28-8492-c1a0dc1bc07e",
+            "1e320bc2-aabf-5562-b13c-d6a04e8e13a7",
+            "ddfcd5e4-1b47-5179-94cd-5433de3f9e58",
+            "ebe71e2a-cbd6-5163-af97-7a92110fb854",
+            "b9b76445-643f-5fbb-9242-561282298478",
+            "df7fee3b-ceb3-59e5-afcb-296320487474",
+            "a735ae90-88df-5a50-a61e-c0438565a9ce",
+            "319fa077-074d-55a5-955d-7db5a9a1c689",
+            "d27a2ebd-4d35-5f20-9133-cbb61cfeaafe",
+            "8ccd7bdf-30c7-52c6-b572-b222fc7d73f6",
+            "ca66112e-be3e-585c-9e34-92f099186c5e",
+            "26b5ba75-a1fc-5f36-bb50-393857e4b710",
+            "74e0b260-a2e6-5e88-9fdd-af582e025235",
+            "ff353f75-48bc-55f9-9149-4fd056b083d8",
+            "d5274ae8-7958-5498-9940-5d7749c5c8a6",
+            "657fcd9a-6d69-55ea-b638-ea9fb1a2be7a",
+            "fd06faf5-0b5e-5e2a-a665-8edc6ab6aad6",
+            "a346d6f2-d5c0-56fb-a4a5-7ceeef0147b4",
+            "2d06b5f8-3e71-54e8-9871-fbab2137bb3d",
+            "e9ae4e55-f1fa-52fe-ba7a-691af0ad030f"
+          ],
+          "revisions": [
+            "retire-schema-inactive-0-0",
+            "retire-schema-inactive-0-1",
+            "retire-schema-inactive-0-2",
+            "retire-schema-inactive-0-3",
+            "retire-schema-inactive-0-4",
+            "retire-schema-inactive-0-5",
+            "retire-schema-inactive-0-6",
+            "retire-schema-inactive-0-7",
+            "retire-schema-inactive-0-8",
+            "retire-schema-inactive-0-9",
+            "retire-schema-inactive-0-10",
+            "retire-schema-inactive-0-11",
+            "retire-schema-inactive-0-12",
+            "retire-schema-inactive-0-13",
+            "retire-schema-inactive-0-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "patches": [
+        {
+          "append": {
+            "kind": "Conduit",
+            "id": "ffd49523-3ce6-5192-91c5-4d2abe8550df",
+            "name": "cascade",
+            "local_name": "cascade",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000005",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "capability": "@core#fleet-management.v1",
+            "operations": [
+              "@core#retire-with-agents.v1"
+            ]
+          }
+        },
+        {
+          "name": "agent-a",
+          "set": {
+            "config": {
+              "peer": {
+                "kind": "Agent",
+                "id": "00000000-0000-4000-8000-000000000112"
+              },
+              "peers": [
+                {
+                  "kind": "Agent",
+                  "id": "00000000-0000-4000-8000-000000000112"
+                }
+              ],
+              "candidates": [
+                {
+                  "role": "data",
+                  "target": {
+                    "kind": "Agent",
+                    "id": "00000000-0000-4000-8000-000000000112"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "id": "00000000-0000-4000-8000-000000008803",
+          "target": "00000000-0000-4000-8000-000000000116",
+          "object": "00000000-0000-4000-8000-000000000109",
+          "management": true,
+          "operation": "@core#set-up.v1",
+          "state": "in-progress",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005"
+        }
+      ],
+      "contract_updates": [
+        {
+          "target": "00000000-0000-4000-8000-000000000109",
+          "kind": "Type",
+          "name": "claude-code.v1",
+          "set": {
+            "schema": {
+              "type": "object",
+              "if": {
+                "required": [
+                  "missing"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "peer": {
+                    "$ref": "@core#agent-reference.v1"
+                  }
+                }
+              },
+              "else": true,
+              "dependentSchemas": {
+                "missing": {
+                  "properties": {
+                    "peer": {
+                      "$ref": "@core#agent-reference.v1"
+                    }
+                  }
+                }
+              },
+              "properties": {
+                "peers": {
+                  "prefixItems": [
+                    true
+                  ],
+                  "items": {
+                    "$ref": "@core#agent-reference.v1"
+                  }
+                },
+                "candidates": {
+                  "contains": {
+                    "properties": {
+                      "role": {
+                        "const": "peer"
+                      },
+                      "target": {
+                        "$ref": "@core#agent-reference.v1"
+                      }
+                    },
+                    "required": [
+                      "role",
+                      "target"
+                    ]
+                  },
+                  "minContains": 0
+                }
+              },
+              "not": {
+                "required": [
+                  "missing"
+                ],
+                "properties": {
+                  "peer": {
+                    "$ref": "@core#agent-reference.v1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

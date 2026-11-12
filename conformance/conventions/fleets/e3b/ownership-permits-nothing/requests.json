@@ -1,0 +1,273 @@
+{
+  "requests": [
+    {
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "self.inspect.v1",
+          "arguments": {
+            "object": {
+              "kind": "Agent",
+              "name": "agent-a"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "d033214d-57c0-5be4-8949-ed30fdf4f69b",
+            "fff71874-7d4b-54e8-a95d-09f222954440",
+            "11bacd2f-79c6-50e7-8204-a6fdb3aec7a2",
+            "b559b008-81ad-5e32-93a2-4743a1437ace",
+            "e8a7b2cd-0989-5e4b-b0e3-1399da8a0530",
+            "e00fd317-bf78-587a-9527-41db6f7d68b5",
+            "208a3734-068c-5e8a-aa35-e3cae621fe01",
+            "bbb63f24-fc07-51f8-a79a-613cb1fb0aa3",
+            "9e40c6f3-246d-52a5-9525-b32c0c8c8cf3",
+            "5393a73c-8804-5687-af92-52410ec3e1b7",
+            "f5f23438-5203-5422-bd6d-d277d4f440bb",
+            "f9020d03-453c-570f-8fd8-9f694f9a573b",
+            "696ff45c-0378-5c91-a98a-dee2cf0d0df6",
+            "82470c9b-bb98-5d41-aede-cbe0612620a0",
+            "d8e0d3b5-f91b-528e-ac31-55b93949dcb6",
+            "2541d109-d1df-5914-ae04-a8f01b277d0c",
+            "916dec41-4b1b-5bce-b470-4d248ad94172",
+            "489f3728-ff85-5c51-980d-84a6cf8b6bc1",
+            "912abbc6-39ad-5d23-b586-dd3e14e0b2a4",
+            "0c594115-ebcc-5d86-9109-8f22b76ef850",
+            "8c732f73-a0f5-5f28-94f0-ffeffe51c02a",
+            "034bd626-e937-5e63-93e6-bc7efd497029",
+            "bd413804-eb04-5989-9f6c-db2cee77ffaf",
+            "ce268f13-6838-5cdb-a618-f49fe4d5389a",
+            "a9a64d40-18b7-5741-aa7c-b20b43538f48",
+            "5e0f2158-3a2c-5648-8adb-5c9d5a8306ac",
+            "e53e82f2-2ad9-509a-98e0-c113f2e068f2",
+            "87a377d2-5348-5666-a72a-aec21eed5bee",
+            "654f3652-d738-54eb-926c-2cbf68bde2ab",
+            "1a6c88d0-3174-5fb0-ba00-26e917ca674f",
+            "9ea2a4d4-0f21-5d80-8a68-f76ea848b0e1",
+            "93ff07f5-f7e9-5f99-b18c-e8cc08a2e2a1",
+            "a17a9e6b-5ea4-5618-aac1-c0d0e7807259",
+            "288d1462-8ffc-5b18-9457-60d611317a72",
+            "28866e44-fc99-51d6-bbeb-603f97409f8a",
+            "a3e97c89-22b3-5eeb-b744-7fbc439308c4",
+            "f213eabf-c2ed-58c4-ad4f-69a51b81bbef",
+            "867295e0-aaaf-50f3-9415-cf51d0cd8301",
+            "22ef120c-20a6-5eb8-95b0-16a8c5692a65",
+            "f43647b0-c135-50cd-bd47-e45b819a167c",
+            "a638315a-80f4-5f54-b01a-1ff552662955",
+            "b6f35a10-c29a-5909-b65f-bdbb80a69270",
+            "27259dbd-bf23-5b26-88ac-66fffbfe4747",
+            "77bb38e2-0099-5ed9-932b-49c1ded30a43",
+            "b785763c-c85e-5ce3-8792-76e2263ce103",
+            "e3fff08f-7386-5bfb-9a28-bec2d7c15c5f",
+            "d5cbe77d-c85b-5f20-9ce8-038621750eee",
+            "a6ae50e1-b67f-5522-ab18-17657e3dabe1",
+            "50ec8c57-e56d-5f8f-bf04-f4b0e2d4a347",
+            "a3734a76-ee05-5192-a34c-b9c0c0819c43",
+            "877ab290-dcc8-51df-a0e1-733bc99bee11",
+            "8a47e276-2da6-54c0-a70a-753f66051967",
+            "3e568063-4359-5031-8a6b-6bed67ec788a",
+            "374fabdd-349b-50af-8d9a-d1a50bb649c3",
+            "8ba01fda-bdbd-5025-a050-ad18cad9cbec",
+            "fae35262-8007-5927-bbd1-b358844dc382",
+            "abbd2544-11f6-500e-91b9-719227ed64f7",
+            "89658ca7-2ecf-5e0d-9c6c-ddf07551dc55",
+            "62ef2788-7fb8-525f-82a3-0b9d89fe1a0c",
+            "a1500358-31bf-5070-99bf-5d868931251d",
+            "314a4546-2354-5e28-826a-7d0c65912d30",
+            "b124ac62-5883-5a81-b6f4-ee52dfbf4338",
+            "c78cf6ec-9d1b-564d-9245-3e4e18fa8e90",
+            "615b112d-8c29-5955-aa91-268eadbd72c1",
+            "a8600d51-3040-54dc-9520-9d5b60a6bfa5",
+            "78061663-43a7-5e24-a5dc-f1fbde8ac029",
+            "35703cfe-9f82-5b00-a348-77647d6ab655",
+            "f665ae31-0f4f-557a-9eb2-017a28cb93ae",
+            "e1cbda3f-ae4f-501a-869f-90b151517ce0",
+            "5503c1fc-e9dc-576f-9ef5-87cf22f7de11",
+            "70d15c6b-0eb9-5fd4-8b7e-46ae7640a51e",
+            "9591bf60-7797-5bb5-b57e-58781c2cfd20",
+            "43e47283-f115-5ba5-b2d5-b60f7460a8b8",
+            "3438ea50-3032-5411-9fcd-6e7097a19bb1",
+            "4ffefd5d-9bcf-52a0-803e-99c1d8be979c",
+            "956d7e59-ece8-5d65-a91e-437ea2e045ed",
+            "5ea73814-3dd1-572f-8e24-e7a78521d45a",
+            "bddce6dc-dc61-5cbd-975d-0df7889c89d6",
+            "e4298e63-623e-51f8-8596-6a850e0a719b",
+            "7f586016-d6d7-594c-96af-345cb1f6429d"
+          ],
+          "revisions": [
+            "041b-ownership-permits-nothing-0-0",
+            "041b-ownership-permits-nothing-0-1",
+            "041b-ownership-permits-nothing-0-2",
+            "041b-ownership-permits-nothing-0-3",
+            "041b-ownership-permits-nothing-0-4",
+            "041b-ownership-permits-nothing-0-5",
+            "041b-ownership-permits-nothing-0-6",
+            "041b-ownership-permits-nothing-0-7",
+            "041b-ownership-permits-nothing-0-8",
+            "041b-ownership-permits-nothing-0-9",
+            "041b-ownership-permits-nothing-0-10",
+            "041b-ownership-permits-nothing-0-11",
+            "041b-ownership-permits-nothing-0-12",
+            "041b-ownership-permits-nothing-0-13",
+            "041b-ownership-permits-nothing-0-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "patches": [
+        {
+          "append": {
+            "kind": "Conduit",
+            "id": "6870e0f5-25ca-5468-b533-78a43d2b51f4",
+            "name": "self",
+            "local_name": "self",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000109",
+            "target": "00000000-0000-4000-8000-000000000109",
+            "capability": "@core#fleet-management.v1",
+            "operations": [
+              "@core#inspect.v1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "call": {
+        "kind": "access",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000109"
+          },
+          "tool": "self.set-up.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "agent-a"
+            }
+          }
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "fbef7338-e75e-5ee9-b1b5-71b95e8acf28",
+            "7b845f7e-7ee1-5f6c-82cf-fa2eab86d196",
+            "258be921-b586-54ce-8bc2-d044ca909d9c",
+            "17c40c34-973e-5e9c-a16f-59571dbe9bbd",
+            "56aeed65-87cf-5658-a2a7-bff64e5db797",
+            "488efb91-ed0f-531a-83fd-bc7dc9b5cea7",
+            "2dee0379-cf97-5b56-8ff0-6ac8300d9b90",
+            "13f6788f-a8f4-52c0-a943-6fcf7dc38e90",
+            "de48e0fe-42a5-5c0a-8054-0a2a96b91b0b",
+            "65676772-590b-5f44-a3e2-523dc8a7d196",
+            "3f866f59-21ca-5200-ac49-d5093180d7ee",
+            "f061c007-9416-5c5f-ac1d-a021a5d84556",
+            "fc74b9bf-b13f-5f4d-a5bf-a64e8ad486b9",
+            "57e7b285-580a-5979-ba32-7fda585fda7d",
+            "2a61d219-900f-55f4-b236-cb1aa88f40f7",
+            "4ca75f7b-c1cc-5edd-903d-6ac707f8b1a4",
+            "d79331c0-246d-5403-ae42-ec32d30aaf73",
+            "3d31022f-f468-5056-9ba0-51d40a90b514",
+            "4e6588a1-7894-5886-80bf-16b9a34c6f1d",
+            "5d464874-2b07-584b-bb4e-9d0a55b4859c",
+            "bd89c555-7362-5d0c-8bc9-62aef7ecdd48",
+            "4a391e4a-313c-5290-8c9f-20382ba022a9",
+            "0e97e98f-8961-5d2d-bd07-4d3af0cd9cd5",
+            "de86a6c0-fb64-58b3-acc1-273ae259430c",
+            "b8843a5f-2546-576d-9dbc-ac68d9c9aecc",
+            "cc91db07-2e7c-5e12-883d-a07885b6d3e8",
+            "c4092638-7125-524d-8159-eee2fe68d448",
+            "cacceb56-2f75-5bd9-9059-ebe326019cba",
+            "a14972bf-f30e-5e2a-8190-f59fa917b97d",
+            "54529ec8-2fde-57be-b683-c89fc5f68a8b",
+            "1629e694-56ed-55bd-bf1a-a12a0d18def4",
+            "e7fdec92-9f3f-5068-baa0-eeee2e7c1596",
+            "7c517a64-a189-5253-a931-7bd3b3d656ce",
+            "a2e1a03e-d5d4-5d67-8d7a-b211d93b6c67",
+            "4aaf07c2-690e-5cd2-a894-f1854df45f29",
+            "399a4abd-1d3f-54ca-95c4-bc992978f5bd",
+            "cd0d6990-5605-5ed6-9d61-5c252c2c3d78",
+            "e3a8734f-18ca-51eb-84d6-c94173a02956",
+            "63f58653-6257-5036-9478-c6d1cdd96cbe",
+            "64899d1c-be0e-567a-b68e-3084cfdbb3b1",
+            "d39747bb-8659-5dc5-b9a6-a2cfebf684ef",
+            "0d62e2e1-38a1-551a-a485-84fd4182f748",
+            "f8d8d399-3381-5b8a-b6ca-7e1cb9584edf",
+            "bfd17e5f-28a0-578d-bec0-c97e053256fa",
+            "eeca4858-debd-5c86-92fd-97dde8a1f8b0",
+            "0fd3fd84-1062-52ea-969e-8d29bbd403ba",
+            "b5566723-65ea-503f-98ae-6f2391e6be20",
+            "a2d14dd1-c921-5565-af89-dd12372aafe9",
+            "ca709c35-8130-5c1e-afb3-51eaabfbd791",
+            "059db140-3e11-5ecc-977b-42e1a4c67da3",
+            "061fe189-860a-5544-a044-eb2859b018fa",
+            "aa8424dd-a200-562d-853a-9dc01ce75758",
+            "705e702f-be7e-5060-afbd-fbac7a019fcf",
+            "9f4e692a-b762-5aa5-9f1d-36dd69392adb",
+            "2290f8a9-fbcc-58e0-80e9-75b4d0f39ea4",
+            "f48ba89e-422c-5b06-90fc-18583a85065e",
+            "fc7dfd26-4b9b-52b3-8173-9dd4964f292a",
+            "e4906dff-5437-5f6f-b1b3-3221e9f71f70",
+            "b61f1d51-fcb3-54b3-b14b-c6bff74fb706",
+            "8a65d8f8-54e0-5544-8100-c74861538f98",
+            "9c585f48-0d3c-5bb3-97f5-4b8911a7eecc",
+            "d7ea10ed-4a75-55be-8326-601566d526e3",
+            "548daedb-43f1-5993-a055-f93af57d62b5",
+            "fda82b84-7f19-551b-b0d9-454f271cfcd6",
+            "9124375c-8bf0-5571-9956-a5a97f33d154",
+            "a447cfac-85c5-5b4e-96a9-ca1948de06d5",
+            "65fcb0a7-94f2-5ffa-90d3-8b868c08c7fd",
+            "b81404e7-4c60-5754-95ba-a27222ad600c",
+            "31aab699-b46e-5816-8b6b-d86b9f7137e5",
+            "085b1f04-7660-508b-83cc-0f91a70e1060",
+            "3f84243e-e283-5e2b-b1ba-0cf8d4d91d8b",
+            "843fa1ee-a01c-5a50-9f95-f7384d542f33",
+            "92e2a761-d292-53d5-9785-bc153dc72b64",
+            "e1e6051f-eaa6-5b40-9245-468845da355e",
+            "04f5a584-a1aa-5c08-8eb7-e4b854bec99d",
+            "5d0e1c1e-c716-5b48-a866-189db88995b8",
+            "fe59447c-bce4-50e0-8d90-ec929386df21",
+            "632a3655-2006-5fea-b0a6-b8120ff6ce38",
+            "5653f63f-6d2b-5dad-81ee-94ff9a827c9b",
+            "e825aede-6376-5cb3-a084-01f9f8edec86"
+          ],
+          "revisions": [
+            "041b-ownership-permits-nothing-1-0",
+            "041b-ownership-permits-nothing-1-1",
+            "041b-ownership-permits-nothing-1-2",
+            "041b-ownership-permits-nothing-1-3",
+            "041b-ownership-permits-nothing-1-4",
+            "041b-ownership-permits-nothing-1-5",
+            "041b-ownership-permits-nothing-1-6",
+            "041b-ownership-permits-nothing-1-7",
+            "041b-ownership-permits-nothing-1-8",
+            "041b-ownership-permits-nothing-1-9",
+            "041b-ownership-permits-nothing-1-10",
+            "041b-ownership-permits-nothing-1-11",
+            "041b-ownership-permits-nothing-1-12",
+            "041b-ownership-permits-nothing-1-13",
+            "041b-ownership-permits-nothing-1-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "patches": []
+    }
+  ]
+}

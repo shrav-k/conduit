@@ -1,0 +1,142 @@
+{
+  "requests": [
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "cascade.retire-with-agents.v1",
+          "arguments": {}
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "bddb34d0-d3ab-5062-860e-d5900105d0db",
+            "2885a539-348f-5eb7-a013-f0a71e41dbbf",
+            "ee6a8dcd-76ab-5a39-b122-2994c2bd29e8",
+            "20c1a492-4936-571b-9690-a378063f9d85",
+            "1b7706e3-20ba-5ec1-a23e-97fe858b672c",
+            "4ff3b6b3-0173-5b10-b5f3-93448ea18f9b",
+            "66e9bc8a-a100-5009-a87c-92cb0c861b62",
+            "2e38fa57-3743-50c8-960f-f45011c3ed8d",
+            "8cf50031-d776-5e6d-8f27-ce8ae114c5cd",
+            "c6d3ac9b-10d4-5d6b-96da-b1cbb4b6529a",
+            "17954af5-b7ec-5e6c-a21a-695d0633e471",
+            "44b342de-8ba0-5e03-bd1e-a2118afe4854",
+            "aa04aabe-c88f-51db-a499-07becd1add7e",
+            "7d2cf43f-c489-5a17-a0d6-bc6036677294",
+            "24a764d2-e304-50df-94dc-c42d439949aa",
+            "8c45f8f6-cace-5d23-82c6-2762a8b455a2",
+            "6a3d7bf4-b261-5dbd-9c41-8b833bf2365a",
+            "2ef68341-661d-58a5-b624-aad394330b58",
+            "e9c764bb-7596-5a61-9b9d-c364fa176546",
+            "ba374add-8c59-5c56-8716-f5ec5b53c33f",
+            "94fa473c-f7f4-55cf-92a9-9b562aeb2505",
+            "cac0d649-a4f3-5517-b400-2e80fc319252",
+            "8c12f453-0357-5325-a694-5311abc22a62",
+            "a471c955-7555-5698-a971-a26048155219",
+            "7416810c-153e-5803-b5c0-7ac430f8429a",
+            "38fe789e-09b0-5f50-852f-526492ac1ee4",
+            "4d2f4d07-11fb-56ca-8c87-c3152f8f919d",
+            "28884863-9573-579b-a2a6-4428e4c1c4ac",
+            "114ac4be-4c18-54fa-b164-4eda1c169c9f",
+            "79be5714-8b6f-5eb5-a9eb-33ba529da46e",
+            "6dcdbfbf-f8ff-5580-b561-25c766b5bb83",
+            "31cf324c-c4be-5055-a69d-368c01fd9532",
+            "00278633-4d8a-5762-865f-2a9aaabf1022",
+            "1f3bf90c-50e9-5f5d-a785-a987fe613522",
+            "d03c4b43-8683-5695-8ee0-de99333082ae",
+            "cc153fcd-0d70-5c54-ad01-7cc09798ac03",
+            "ff8300bb-c782-5171-a00d-e08bdbb47138",
+            "7d57d08a-82ae-5170-a99c-64d5d2f0205f",
+            "d4c36317-7db2-5db0-aee7-164023ebfec9",
+            "dcccfd1f-c15a-52ab-ad3c-eccba7bb9c64",
+            "526912fd-27aa-5dde-a2c8-01d1c606ab35",
+            "7c9506bd-a458-5aaa-b231-7cb084d567ff",
+            "e7cf855b-e9f5-538f-92ff-30bdfe525ebb",
+            "f08ddf4b-590e-59ed-9322-cc5c8f819789",
+            "b20bec85-c580-5a2d-8c1b-9093163f7929",
+            "5b38cb9d-79d4-5e11-a5c5-aad4df240eca",
+            "df63cd60-96e6-56a8-991d-6efc8bfa0192",
+            "84609b6d-1fba-58a6-a8a5-9b006e053459",
+            "e2a15ba3-9c07-5ae8-9c95-e8176e840a04",
+            "193353f3-b47f-5195-88e9-fcbda4c8a1ec",
+            "0a02ce42-83ab-58a1-9f1e-8fea4e1a595f",
+            "0e6eda73-9b2a-5626-ab87-1c5418a158aa",
+            "b5c37788-3d56-5470-a40c-6141336740ff",
+            "d4103e8b-8889-57be-8b19-4cde812736b0",
+            "1cfae2db-8743-56a2-b8e5-45af2d92d750",
+            "9f5c6d67-537c-51f1-80a0-fb5f438d4959",
+            "2cce055b-2670-5762-9cfc-1f21fbc730ae",
+            "f037de74-979b-5af9-9fe5-211308ff0c5f",
+            "b95afaf0-331b-5e51-8762-97c347d87f59",
+            "0e4480f8-7665-5686-ac79-9e528c0778dc",
+            "70950061-6ff2-5e16-b7c5-2e6b7241df96",
+            "2584a910-ba76-56ee-952a-f59b8836d815",
+            "f82e5dd2-7128-5e94-92ea-41e7eda13134",
+            "121481c2-c355-5852-b328-b04ae01e5fc4",
+            "8fda543d-6ab0-5c03-bbaf-34feba6347d1",
+            "dfe8d80a-1565-54ec-ba82-074df8c2b2c3",
+            "d65afeca-522f-5106-9dfa-9f61a08573ff",
+            "2c43a19e-a03f-5117-bd1c-437124ef4527",
+            "325eec58-9584-5f58-9faf-f49e906c0efb",
+            "9974a2ff-1cec-54ef-9015-0f042b8b81c1",
+            "4e88c143-60c7-527a-a074-29dc8d1a1718",
+            "014dc2fd-0f37-54f4-aa9b-60d6c91af382",
+            "56b0f053-8741-5e79-b2bd-2c069fb7aa2c",
+            "a086c07f-f281-53d3-9b8f-3fc2bd5f46e1",
+            "3658949b-bd7f-5058-b05e-13e8dbd3a54e",
+            "2181ce58-f731-5549-8af6-f02ecf105ff6",
+            "41f6c1ee-042c-58e9-8f6d-237abf121d1f",
+            "92c50c0c-ab68-589e-8233-d1e39806aceb",
+            "2439fa27-32ea-532c-ba33-8e332d03d7ff",
+            "0f50e058-823b-5745-a183-4e0b05001171"
+          ],
+          "revisions": [
+            "041b-retire-with-agents-0-0",
+            "041b-retire-with-agents-0-1",
+            "041b-retire-with-agents-0-2",
+            "041b-retire-with-agents-0-3",
+            "041b-retire-with-agents-0-4",
+            "041b-retire-with-agents-0-5",
+            "041b-retire-with-agents-0-6",
+            "041b-retire-with-agents-0-7",
+            "041b-retire-with-agents-0-8",
+            "041b-retire-with-agents-0-9",
+            "041b-retire-with-agents-0-10",
+            "041b-retire-with-agents-0-11",
+            "041b-retire-with-agents-0-12",
+            "041b-retire-with-agents-0-13",
+            "041b-retire-with-agents-0-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "patches": [
+        {
+          "append": {
+            "kind": "Conduit",
+            "id": "ffd49523-3ce6-5192-91c5-4d2abe8550df",
+            "name": "cascade",
+            "local_name": "cascade",
+            "state": "ready",
+            "open": true,
+            "consumer": "00000000-0000-4000-8000-000000000005",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "capability": "@core#fleet-management.v1",
+            "operations": [
+              "@core#retire-with-agents.v1"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

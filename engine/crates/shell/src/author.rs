@@ -121,7 +121,7 @@ fn route(directory: &Path, object: &Value, operation: &str) -> Result<String> {
         .iter()
         .find(|o| o["kind"] == object["kind"] && o["name"] == object["name"]);
     let owner = target
-        .filter(|o| o["kind"] == "Resource" && o.get("spec").is_none())
+        .filter(|o| (o["kind"] == "Resource" || o["kind"] == "Agent") && o.get("spec").is_none())
         .and_then(|o| {
             objects
                 .iter()
@@ -146,7 +146,7 @@ fn route(directory: &Path, object: &Value, operation: &str) -> Result<String> {
                         })
                     })
             })
-            .ok_or_else(|| format!("{operation} for {}/{}: no root management route to owning Pool {}; open a root Conduit to that Pool offering {operation}", object["kind"].as_str().unwrap_or("?"), object["name"].as_str().unwrap_or("?"), owner["name"].as_str().unwrap_or("?")))?;
+            .ok_or_else(|| format!("{operation} for {}/{}: no root management route to owning container {}; open a root Conduit to that container offering {operation}", object["kind"].as_str().unwrap_or("?"), object["name"].as_str().unwrap_or("?"), owner["name"].as_str().unwrap_or("?")))?;
         let local = path["local_name"]
             .as_str()
             .or_else(|| path["nested"]["name"].as_str())

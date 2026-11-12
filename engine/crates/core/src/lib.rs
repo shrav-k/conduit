@@ -4,12 +4,14 @@
 
 pub mod access;
 pub mod archives;
+mod cascade;
 pub mod lifecycle;
 pub mod packages;
 pub mod records;
 pub mod registration;
 pub mod requests;
 mod retirement;
+mod revisions;
 pub mod schemas;
 
 use serde::{Deserialize, Serialize};

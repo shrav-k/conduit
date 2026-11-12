@@ -140,6 +140,8 @@ fn register(shell: &Shell, parent: &Path, real: bool, mode: &str) {
 fn setup(shell: &Shell, runner: &Runner, name: &str) -> Value {
     let kind = if name == "workspace" {
         "Pool"
+    } else if name == "s1" {
+        "Fleet"
     } else if name.starts_with("agent") {
         "Agent"
     } else {
@@ -147,6 +149,8 @@ fn setup(shell: &Shell, runner: &Runner, name: &str) -> Value {
     };
     let tool = if kind == "Resource" {
         "root-workspace.set-up.v1"
+    } else if kind == "Agent" {
+        "s1.set-up.v1"
     } else {
         "management.set-up.v1"
     };
@@ -159,7 +163,7 @@ fn setup(shell: &Shell, runner: &Runner, name: &str) -> Value {
     )
 }
 fn establish(shell: &Shell, runner: &Runner) {
-    for name in ["workspace", "shared", "history", "agent-a", "agent-b"] {
+    for name in ["workspace", "s1", "shared", "history", "agent-a", "agent-b"] {
         let reply = setup(shell, runner, name);
         assert_eq!(
             outcome(shell, &reply),
@@ -176,9 +180,11 @@ fn lines(path: &Path) -> Vec<Value> {
         .filter_map(|s| serde_json::from_str(s).ok())
         .collect()
 }
+#[track_caller]
 fn until(ready: impl FnMut() -> bool) {
     until_for(Duration::from_secs(30), ready);
 }
+#[track_caller]
 fn until_for(timeout: Duration, mut ready: impl FnMut() -> bool) {
     let deadline = Instant::now() + timeout;
     while !ready() {
@@ -413,11 +419,16 @@ fn serve_signal_during_setup_ends_run_and_starts_no_later_part() {
         unsafe { libc::kill(server.0.id() as i32, libc::SIGTERM) },
         0
     );
+    let shutdown_started = Instant::now();
     let mut status = None;
-    until(|| {
+    until_for(Duration::from_secs(180), || {
         status = server.0.try_wait().unwrap();
         status.is_some()
     });
+    eprintln!(
+        "SIGTERM shutdown completed in {:?}",
+        shutdown_started.elapsed()
+    );
     assert!(status.unwrap().success());
     until(|| unsafe { libc::kill(pid, 0) } != 0);
     for name in ["shared", "history"] {

@@ -314,19 +314,27 @@ fn routing<'a>(
             | "purge.v1",
         ) => Some(mgmt),
         Some("set-up.v1" | "retire.v1") => match named {
-            Some(o) if o["kind"] == "Resource" => {
+            Some(o)
+                if (o["kind"] == "Resource" || o["kind"] == "Agent") && o.get("spec").is_none() =>
+            {
                 owner(state, o).filter(|p| p["state"] != "retired")
             }
             _ => Some(mgmt),
         },
         Some("inspect.v1") => match named {
-            Some(o) if o["kind"] == "Resource" && o.get("spec").is_none() => owner(state, o)
-                .filter(|p| p["state"] != "retired")
-                .or(Some(mgmt)),
+            Some(o)
+                if (o["kind"] == "Resource" || o["kind"] == "Agent") && o.get("spec").is_none() =>
+            {
+                owner(state, o)
+                    .filter(|p| p["state"] != "retired")
+                    .or(Some(mgmt))
+            }
             _ => Some(mgmt),
         },
         Some("retire-with-resources.v1") => object(state, &path["target"])
             .filter(|o| o["kind"] == "Pool" && o["state"] != "retired"),
+        Some("retire-with-agents.v1") => object(state, &path["target"])
+            .filter(|o| o["kind"] == "Fleet" && o["state"] != "retired"),
         Some("open.v1" | "close.v1") => Some(management(state, "access", context)?),
         Some("reconcile.v1") => {
             let invocation = state
@@ -339,7 +347,7 @@ fn routing<'a>(
                     Some(_) if v["management"] == true => object(state, &v["target"])
                         .filter(|p| p["state"] != "retired")
                         .or(Some(mgmt)),
-                    Some(o) if o["kind"] == "Resource" => owner(state, o)
+                    Some(o) if o["kind"] == "Resource" || o["kind"] == "Agent" => owner(state, o)
                         .filter(|p| p["state"] != "retired")
                         .or(Some(mgmt)),
                     _ => Some(mgmt),
@@ -509,11 +517,16 @@ fn evaluate_path(
         {
             return Ok(Verdict::reason("refused", "ACC-054"));
         }
-        for doc in values(&request.arguments, "documents")
-            .filter(|d| d["kind"] == "Resource" && d.get("from").is_some())
-        {
-            if let Some(pool) = fixed_object(state, &doc["owner"], "Pool")
-                .filter(|p| p["kind"] == "Pool" && p["state"] != "retired")
+        for doc in values(&request.arguments, "documents").filter(|d| {
+            (d["kind"] == "Resource" || d["kind"] == "Agent") && d.get("from").is_some()
+        }) {
+            let family = if doc["kind"] == "Agent" {
+                "Fleet"
+            } else {
+                "Pool"
+            };
+            if let Some(pool) = fixed_object(state, &doc["owner"], family)
+                .filter(|p| p["kind"] == family && p["state"] != "retired")
                 && !current_path(state, &instance["id"], pool, op)
             {
                 return Ok(Verdict::reason("refused", "ACC-033"));
@@ -525,6 +538,10 @@ fn evaluate_path(
         && !current_path(state, &instance["id"], pool, op)
     {
         return Ok(Verdict::reason("refused", "ACC-033"));
+    }
+    // LIF-034 also protects the container named implicitly by a cascade.
+    if crate::cascade::handles(op, context) && target["first_start"] == true {
+        return Ok(Verdict::reason("refused", "LIF-034"));
     }
     if named.is_some_and(|o| {
         o["first_start"] == true
@@ -678,10 +695,25 @@ fn evaluate_path(
     {
         return Ok(Verdict::reason("invalid", "FST-006"));
     }
-    if !defer
-        && target["state"] != "ready"
-        && target["resolved_implementations"][op]["source"] != "engine"
-    {
+    // CON-024 classifies the operation by its management capability, not its runner.
+    let management_verb = context
+        .core_environment
+        .scopes
+        .values()
+        .flat_map(|scope| scope.contracts.values())
+        .filter(|doc| {
+            doc["kind"] == "Capability"
+                && [
+                    "object-management.v1",
+                    "pool-management.v1",
+                    "fleet-management.v1",
+                    "access-control.v1",
+                ]
+                .iter()
+                .any(|name| doc["metadata"]["name"] == *name)
+        })
+        .any(|doc| values(&doc["spec"], "operations").any(|operation| operation == op));
+    if !defer && target["state"] != "ready" && !management_verb {
         return Ok(Verdict::reason("unavailable", "CON-024"));
     }
     if !defer

@@ -1,0 +1,292 @@
+{
+  "requests": [
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "@apiVersion",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "own"
+                },
+                "from": "@core#fleet-manage-own",
+                "consumer": {
+                  "kind": "Agent",
+                  "name": "agent-a"
+                },
+                "target": {
+                  "kind": "Fleet",
+                  "name": "s1"
+                }
+              }
+            ]
+          }
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "985bf40d-0383-5a27-89aa-034cc0ea5494",
+            "3ccfb4bf-6cad-57d6-83bb-9eb85ebe123f",
+            "43558166-0059-5c48-bb91-8ece34e3e195",
+            "45291bb3-a5e9-5f4a-9cfe-9a9738d6dd54",
+            "03dd83c6-f1e8-5dd6-8704-f2c2b82ed8f2",
+            "b06a9af3-1393-53ee-8666-c170cf7482e7",
+            "25aa0e26-a270-5b78-b301-33da34617da9",
+            "aa3f3a7e-91b0-5655-8ae9-1e829505a30a",
+            "7daac4f9-c173-5f75-9d78-90bacf1296fe",
+            "86553fea-babb-5b65-a256-633dfae0d6ee",
+            "3152b2ae-a7d2-510d-a3f2-91972b6f8f68",
+            "5287917f-3805-5434-859e-b4ffd1a18190",
+            "b303de10-813b-5122-b384-e976fc034d0f",
+            "4fd81a39-6205-5a25-841d-a4e72b9a699d",
+            "0c722570-0174-55b1-bb28-c67e82aaed8b",
+            "b0b99d2b-65cc-526f-9b6e-14d8ccebb578",
+            "0a0e0292-5703-553e-a3fe-0561df51f156",
+            "d6e1cf36-e1db-512d-8157-8c772fe6afc9",
+            "68a4f0e3-3da8-5805-a612-7d21d9d62481",
+            "9d5714de-42df-5589-a913-5e9ad67cdd1c",
+            "ed6c35a2-755e-59e2-90f9-ad8111b41e37",
+            "fe790a83-660e-5cfc-ba1b-606ffeb7714a",
+            "4f6abe3a-659f-565d-be7e-db1ff962e10d",
+            "814d68dd-827f-5186-8f29-118b1a607e76",
+            "9eb54bab-1249-5a6b-8b72-8a220f6e5379",
+            "07584343-a543-53f5-8fe6-7016024aede5",
+            "6b6787f5-48fd-50f6-82c0-1be8f7f7f815",
+            "fe5dc68b-e80b-5641-8fa4-0a8149aa5a0a",
+            "f2318668-49fb-5cbe-affe-b24d61931a44",
+            "9c8056aa-bbf4-518f-a56c-e5caa5fdeec0",
+            "c6bfb209-9514-53ca-b9c7-ce2bda5d8727",
+            "831a54f7-763a-528e-9c0d-cf2af01f325e",
+            "a2c37893-dd4a-5f1c-94d7-80774c04210e",
+            "720e4a41-4026-5c2c-be7c-4e1960ff10b8",
+            "08642c2e-f449-5963-895c-27f5f8c6e307",
+            "83d26f3c-8fa1-5c83-84ef-9e80369601a0",
+            "4c2224d4-65cd-572e-8f6e-469f242a4291",
+            "c8222a53-6fa4-5a02-bb90-e1b93d69cb18",
+            "da7a58e4-e637-580b-b88c-f1f5a08c295c",
+            "36d77cf8-db6f-5d0f-a2e1-ea5a292b5f88",
+            "2904c582-55c2-57d3-bbc3-ba247bae8dbb",
+            "ead6be89-cf64-5862-9768-93d7ff49abc5",
+            "72d83b8c-036c-5d19-afda-96886210468a",
+            "fb59770b-599d-5804-a1ed-943d571a7f25",
+            "b2b168db-d8e6-52c6-8725-04830861ba55",
+            "0ed4b1b5-323c-5a06-8c3d-8af84a8b4cb1",
+            "7288da42-f5d6-58e6-a5c5-6423093a2e12",
+            "729a7f04-1734-5f72-b2be-738aeec78cd8",
+            "e1bcb5b8-323c-566d-a153-84484581bca0",
+            "2d9e1677-2ed6-5afa-9054-a99d972d91e3",
+            "f0951c8a-276b-53e1-bc71-52f2e7c0035d",
+            "13d1f523-7ff7-5898-bf90-d99ade6a053e",
+            "8c60904a-377a-5c3a-b34b-ae8923a16ee8",
+            "e6bc7b1c-d538-56eb-b9bb-006124ea425e",
+            "5cd55cab-d138-593b-b596-02dc48ec535f",
+            "579ee31c-5f1e-5f82-b9e8-72c343c1710b",
+            "a854bc51-a404-50b6-8399-13aff1e68792",
+            "c9910905-9c6a-5b73-bad5-421458a32299",
+            "d196a6a1-8414-5d70-ae21-4edaf1d083e1",
+            "41c4796a-221c-5845-92e4-3e6f79ed5dae",
+            "378989e7-005b-5e09-b14c-974f9c72bef5",
+            "b1deaa3f-407e-5d44-bff9-923f9e91de5a",
+            "ab6598fa-b8af-5005-9fc2-44b49c842ef1",
+            "88fb196c-2119-5e13-a89a-aba597ab3b35",
+            "29003594-9620-5ad4-9a16-8c2a03f9cc13",
+            "926a6de6-cb98-5674-b64f-0f11a3f782b3",
+            "901c8df0-8279-5439-9ef3-2472ada1c1aa",
+            "55407360-c778-57d8-9529-cb09e31f0ae8",
+            "214975f7-abb1-5a53-8c7d-ff42c3616378",
+            "9c3ba6ae-a7f3-5175-8ad5-5ce4a6bc4a25",
+            "87a1e642-3843-5ddc-ac82-3e8cbb1f307a",
+            "1836eb15-f28c-5cae-9eb1-8ae245cbf391",
+            "125b7076-9c04-5b63-ac87-c14d2d0fdad5",
+            "8ab73c8b-5fc2-570b-a59a-a01ff3feb5aa",
+            "ed398984-f810-55f3-b175-590aa827ca46",
+            "913c39eb-b713-5b7f-83f4-23bb7105c592",
+            "939ac7a8-1c06-5f43-8bf2-bc8eaeb70d75",
+            "e4f72168-8580-53f0-9a80-34b51f679196",
+            "3aea0d4f-7834-5032-81be-d2a599750bd2",
+            "defd2bbf-4d00-54f5-8251-d08b83d7babf"
+          ],
+          "revisions": [
+            "041b-manages-agent-own-fleet-0-0",
+            "041b-manages-agent-own-fleet-0-1",
+            "041b-manages-agent-own-fleet-0-2",
+            "041b-manages-agent-own-fleet-0-3",
+            "041b-manages-agent-own-fleet-0-4",
+            "041b-manages-agent-own-fleet-0-5",
+            "041b-manages-agent-own-fleet-0-6",
+            "041b-manages-agent-own-fleet-0-7",
+            "041b-manages-agent-own-fleet-0-8",
+            "041b-manages-agent-own-fleet-0-9",
+            "041b-manages-agent-own-fleet-0-10",
+            "041b-manages-agent-own-fleet-0-11",
+            "041b-manages-agent-own-fleet-0-12",
+            "041b-manages-agent-own-fleet-0-13",
+            "041b-manages-agent-own-fleet-0-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "patches": [
+        {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "set": {
+            "state": "registered",
+            "open": false
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000111",
+          "set": {
+            "state": "registered",
+            "open": false
+          }
+        }
+      ]
+    },
+    {
+      "call": {
+        "kind": "invoke",
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "own"
+          }
+        },
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "e462d2c0-eb8d-556c-bc27-1feed033cb4c",
+            "1bb5ccf8-eb8e-5e0a-a52e-9c8e563b1507",
+            "c48208df-ab57-547c-a86f-2ac39d8b0cda",
+            "97695053-09d9-5f23-a883-c8daafebf88e",
+            "e6e276a3-4fbc-5866-aa79-b7735b57726c",
+            "06d3e66e-360d-5ab1-8afa-8aea2539a35b",
+            "059f4699-392f-5ff5-bd58-1264775cd870",
+            "7dcee888-31d6-5480-81de-3c4e5ab9ab1a",
+            "abce8672-9db6-5ce2-9b56-4c2768217235",
+            "f6af0f28-8358-5ed3-9d62-e02de6e277da",
+            "1df01ee3-68c1-5a8c-a01a-24ae2e301bd8",
+            "e2af60c1-d8b1-56c6-90d9-7ff7aea95250",
+            "01ed393a-413b-54ab-83e0-92239372ccd6",
+            "77141088-cbae-5fe4-b742-f846b2f994bb",
+            "7db94e6e-8174-56b6-bcf7-6efcc3a46782",
+            "a9539283-2665-5828-a5b0-7719a07ca8a7",
+            "86834759-b588-5c31-b71a-cdeb27f390d8",
+            "72792acd-fc79-55f8-8877-175325ab77c5",
+            "3ced653b-4d51-5981-a2a1-c439748d7065",
+            "be694ab4-049c-5e4a-8df2-6cdb149a2c4a",
+            "2f4679a4-e9d7-5a10-bb55-5745215dbc78",
+            "968a1baf-e07f-5de2-b131-728457588d8d",
+            "aa9c50c5-f126-52c1-8115-b922bd89efd7",
+            "cd5d0a8c-a098-5182-bd72-18c5182ddf1e",
+            "65b7a7c3-a48c-59f9-a187-6fffce30f89e",
+            "6ac893ac-1d5b-56c6-8ade-f0d871b381eb",
+            "67fd0b25-ef8c-55a1-8b84-d759dfc48aab",
+            "379e93e5-9ed2-52af-b1ec-0e66d18140eb",
+            "90d7eefd-74bb-5b99-abb1-f9259085fe7a",
+            "f904f606-1eec-508e-a2c0-62a1d2f667da",
+            "90ae6b99-c306-505b-a88f-4b5703d8725d",
+            "1d60691e-820d-5ad5-8049-2bb1466fb5fe",
+            "86fa65ff-19ee-53df-826f-2615f32d67b3",
+            "c1c589db-3f92-5cdd-8595-cf1dbcdf46fc",
+            "d0496ec0-11bc-54a9-b824-9268bcfe54e5",
+            "c5caea5e-4671-5696-9588-daf761bfbb31",
+            "6b8a47ad-cdda-5c2d-982e-0c547c3900f8",
+            "a1bf8da8-f43a-54b2-b561-1b1d9179df56",
+            "5a4e038b-d30d-589f-8e8b-c424bb8f4ac5",
+            "98ef5ec4-e4d4-5c5b-be43-7141b8502556",
+            "541c3d6a-315f-526a-842b-904d108c2052",
+            "8ba15c64-abcb-54ab-a3f1-0b8907c40d64",
+            "9b4b4bfa-25ae-544d-aa80-43bf9e92e55a",
+            "9998999e-d1bd-5610-bd04-72ca296803ab",
+            "71d22285-fcf8-566c-9e9c-a99997304391",
+            "4dd86fe8-04a7-5675-89e5-e92c8c6d1d44",
+            "e530606e-d7cc-51c5-899e-ab340a646a74",
+            "098e0325-f474-5e42-a76c-d3f84a57c536",
+            "70d034ff-cdb6-5d52-8c29-9a996b7965b0",
+            "0e3b135d-2d9c-5874-a1f7-49782f12e566",
+            "09a946d4-af81-5653-8ae7-cfacb4c3a477",
+            "1bef2d38-73a2-533a-8139-65c076b20c6b",
+            "f26e581c-c44d-54f6-80da-13a1ce7515b7",
+            "6bcd1ef5-5f76-5adb-b003-809d476d1d78",
+            "eb7b0b86-f5d5-555a-855e-2c3000ef1712",
+            "71dff390-6164-57f8-b065-ce37593a7060",
+            "d40d473b-1fa1-5815-aa99-e355e9ca78c1",
+            "c28f6478-c11a-5e66-92f2-f1c5a4e73c71",
+            "a13327cb-f4c0-5e52-aa52-147e0a31fb6b",
+            "8423f64c-8dec-5340-a61d-95a42206bb7a",
+            "92d0b53b-c2de-5a99-8fa1-9b29f88cb12c",
+            "40d74fb5-73d1-513c-8240-ea2481f6868d",
+            "38e1ade2-55d1-5978-9b65-7ef0d1a59882",
+            "2b0be8f4-3ada-57ce-b0ab-9a1aee960cda",
+            "0a9c779c-4198-569e-ba5d-86663bcdcf57",
+            "85b6774a-8785-517e-8121-02e306184c05",
+            "f6848eea-ba11-5bb4-8cab-0c204ff1aba3",
+            "188fcbe3-ca0c-525a-b73c-44eb332e6d0e",
+            "a1922f86-b8e9-50f3-bb80-73b3ba613e3d",
+            "05c3f8c6-608b-5eb3-b7ef-b730f69f9cac",
+            "06bce3b4-164b-5c03-81ce-6d1405570caf",
+            "b7be4b7f-8037-5192-87e7-6608ccd25c40",
+            "57ab323a-1367-50b0-971a-b2e4372b1d05",
+            "b55d77d0-355e-51bc-9bc8-0d55e4c6988a",
+            "85f55dab-3610-5048-b914-41ccac90f14b",
+            "fc6d77eb-f907-5479-893b-b25b09d18bf0",
+            "37205a46-7974-5e86-8b1d-f9387228c9ae",
+            "9001de69-cd92-52c3-a733-250eff563ddf",
+            "ad377537-9f02-539d-94fb-fb9e75737ae9",
+            "bd010053-d14b-56b0-8d02-9f4d8f44141a"
+          ],
+          "revisions": [
+            "041b-manages-agent-own-fleet-1-0",
+            "041b-manages-agent-own-fleet-1-1",
+            "041b-manages-agent-own-fleet-1-2",
+            "041b-manages-agent-own-fleet-1-3",
+            "041b-manages-agent-own-fleet-1-4",
+            "041b-manages-agent-own-fleet-1-5",
+            "041b-manages-agent-own-fleet-1-6",
+            "041b-manages-agent-own-fleet-1-7",
+            "041b-manages-agent-own-fleet-1-8",
+            "041b-manages-agent-own-fleet-1-9",
+            "041b-manages-agent-own-fleet-1-10",
+            "041b-manages-agent-own-fleet-1-11",
+            "041b-manages-agent-own-fleet-1-12",
+            "041b-manages-agent-own-fleet-1-13",
+            "041b-manages-agent-own-fleet-1-14"
+          ],
+          "suffixes": [
+            "e3b01",
+            "e3b02",
+            "e3b03"
+          ]
+        }
+      },
+      "patches": []
+    },
+    {
+      "call": {
+        "kind": "list-tools",
+        "identity": {
+          "kind": "instance",
+          "id": "00000000-0000-4000-8000-000000000109"
+        }
+      },
+      "patches": []
+    }
+  ]
+}

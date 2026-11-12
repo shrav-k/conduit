@@ -37,14 +37,14 @@
             "name": "admin",
             "local_name": "admin",
             "consumer": "00000000-0000-4000-8000-000000000112",
-            "target": "00000000-0000-4000-8000-000000000003",
-            "capability": "@core#object-management.v1",
+            "target": "00000000-0000-4000-8000-000000000116",
+            "capability": "@core#fleet-management.v1",
             "operations": [
               "@core#set-up.v1"
             ],
             "state": "ready",
             "open": true,
-            "from": "@core#root-management"
+            "from": "@core#fleet-manage-own"
           }
         },
         {

@@ -1,0 +1,652 @@
+[
+  {
+    "name": "ACC-033 4A and FLEET-005: Agent setup through root Fleet default",
+    "kind": "input",
+    "cases": [
+      "s1-whole",
+      "setup-base",
+      "setup-close",
+      "setup-close-in-flight",
+      "setup-hook-failed",
+      "setup-hook-succeeded",
+      "setup-hook-unknown",
+      "setup-restore",
+      "setup-restore-current-template",
+      "setup-restore-missing-template",
+      "setup-restore-retired-target"
+    ],
+    "paths": [
+      "/steps/10/input/request/tool",
+      "/steps/11/input/request/tool",
+      "/steps/12/input/request/tool",
+      "/steps/13/input/request/tool",
+      "/steps/15/input/request/tool",
+      "/steps/18/input/request/tool",
+      "/steps/3/input/request/tool",
+      "/steps/52/input/request/tool",
+      "/steps/9/input/request/tool"
+    ],
+    "operation": "replace",
+    "before": "management.set-up.v1",
+    "after": "s1.set-up.v1"
+  },
+  {
+    "name": "ACC-033 4A: management cannot set up an Agent; report refused",
+    "kind": "flip",
+    "cases": [
+      "access-routing"
+    ],
+    "paths": [
+      "/steps/7/expect/reply/reason"
+    ],
+    "operation": "add",
+    "after": "refused"
+  },
+  {
+    "name": "ACC-033 4A: no permitted route is returned for management-only Agent setup",
+    "kind": "expectation",
+    "cases": [
+      "access-routing"
+    ],
+    "paths": [
+      "/steps/7/expect/records/0/data/caller",
+      "/steps/7/expect/records/0/data/conduit",
+      "/steps/7/expect/records/0/data/consumer",
+      "/steps/7/expect/records/0/data/operation",
+      "/steps/7/expect/records/0/data/reason",
+      "/steps/7/expect/records/0/data/target",
+      "/steps/7/expect/records/1/data/dispatched",
+      "/steps/7/expect/records/1/data/reason",
+      "/steps/7/expect/records/1/id",
+      "/steps/7/expect/records/1/source",
+      "/steps/7/expect/records/1/specversion",
+      "/steps/7/expect/records/1/time",
+      "/steps/7/expect/records/1/type",
+      "/steps/7/expect/reply/permitted",
+      "/steps/7/expect/reply/request/arguments/instance/kind",
+      "/steps/7/expect/reply/request/arguments/instance/name",
+      "/steps/7/expect/reply/request/caller",
+      "/steps/7/expect/reply/request/conduit",
+      "/steps/7/expect/reply/request/consumer",
+      "/steps/7/expect/reply/request/filters",
+      "/steps/7/expect/reply/request/operation",
+      "/steps/7/expect/reply/request/restrictionMode",
+      "/steps/7/expect/reply/request/target",
+      "/steps/7/expect/required_promises/1",
+      "/steps/7/expect/required_promises/2",
+      "/steps/7/expect/required_promises/3"
+    ]
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (1)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/invocation_facts/0/caller",
+      "/steps/1/expect/invocation_facts/0/sender",
+      "/steps/1/expect/invocation_facts/1/caller",
+      "/steps/1/expect/invocation_facts/1/sender"
+    ],
+    "operation": "remove",
+    "before": "00000000-0000-4000-8000-000000000112"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (2)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/invocation_facts/0/id",
+      "/steps/1/expect/invocation_facts/1/serving",
+      "/steps/1/expect/invocation_facts/1/setup_parent"
+    ],
+    "operation": "remove",
+    "before": "00000000-0000-4000-8000-000000010201"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (3)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/invocation_facts/0/state",
+      "/steps/1/expect/reply/_meta/io.github.shrav-k.conduit~1outcome"
+    ],
+    "operation": "remove",
+    "before": "unknown"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (4)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/invocation_facts/1/id"
+    ],
+    "operation": "remove",
+    "before": "00000000-0000-4000-8000-000000010204"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (5)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/invocation_facts/1/state"
+    ],
+    "operation": "remove",
+    "before": "succeeded"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (6)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/object_facts/1/open"
+    ],
+    "operation": "replace",
+    "before": true,
+    "after": false
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (7)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/object_facts/1/state"
+    ],
+    "operation": "replace",
+    "before": "ready",
+    "after": "registered"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (8)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-no-access",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/reply/_meta/io.github.shrav-k.conduit~1reason"
+    ],
+    "operation": "add",
+    "after": "refused"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (9)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-no-access",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/required_promises/0"
+    ],
+    "operation": "replace",
+    "before": "ACC-005",
+    "after": "ACC-033"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (10)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-no-access",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/required_promises/1"
+    ],
+    "operation": "remove",
+    "before": "OPS-022"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (11)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender",
+      "setup-sender-no-access",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/required_promises/2"
+    ],
+    "operation": "remove",
+    "before": "LIF-027"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (12)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender-no-access"
+    ],
+    "paths": [
+      "/steps/1/expect/reply/_meta/io.github.shrav-k.conduit~1outcome"
+    ],
+    "operation": "remove",
+    "before": "failed"
+  },
+  {
+    "name": "ACC-033 4A: sender has only management, no setup or child dispatch (13)",
+    "kind": "expectation",
+    "cases": [
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/steps/1/expect/invocation_facts/0/caller",
+      "/steps/1/expect/invocation_facts/1/caller"
+    ],
+    "operation": "remove",
+    "before": "00000000-0000-4000-8000-000000000005"
+  },
+  {
+    "name": "ACC-033 4A, REC-002: S1 setup records retain the Fleet route (1)",
+    "kind": "expectation",
+    "cases": [
+      "s1-whole"
+    ],
+    "paths": [
+      "/steps/11/expect/records/0/data/conduit",
+      "/steps/11/expect/records/1/data/conduit",
+      "/steps/11/expect/records/12/data/conduit",
+      "/steps/11/expect/records/13/data/conduit",
+      "/steps/11/expect/records/14/data/conduit",
+      "/steps/12/expect/records/0/data/conduit",
+      "/steps/12/expect/records/1/data/conduit",
+      "/steps/12/expect/records/12/data/conduit",
+      "/steps/12/expect/records/13/data/conduit",
+      "/steps/12/expect/records/14/data/conduit",
+      "/steps/52/expect/records/0/data/conduit",
+      "/steps/52/expect/records/1/data/conduit",
+      "/steps/52/expect/records/7/data/conduit",
+      "/steps/52/expect/records/8/data/conduit",
+      "/steps/52/expect/records/9/data/conduit"
+    ],
+    "operation": "replace",
+    "before": "00000000-0000-4000-8000-000000000006",
+    "after": "00000000-0000-4000-8000-000000000140"
+  },
+  {
+    "name": "ACC-033 4A, REC-002: S1 setup records retain the Fleet route (2)",
+    "kind": "expectation",
+    "cases": [
+      "s1-whole"
+    ],
+    "paths": [
+      "/steps/11/expect/records/0/data/target",
+      "/steps/11/expect/records/1/data/target",
+      "/steps/11/expect/records/13/data/target",
+      "/steps/11/expect/records/14/data/target",
+      "/steps/12/expect/records/0/data/target",
+      "/steps/12/expect/records/1/data/target",
+      "/steps/12/expect/records/13/data/target",
+      "/steps/12/expect/records/14/data/target",
+      "/steps/52/expect/records/0/data/target",
+      "/steps/52/expect/records/1/data/target",
+      "/steps/52/expect/records/8/data/target",
+      "/steps/52/expect/records/9/data/target"
+    ],
+    "operation": "replace",
+    "before": "00000000-0000-4000-8000-000000000003",
+    "after": "00000000-0000-4000-8000-000000000116"
+  },
+  {
+    "name": "ACC-033: sender refusal coverage cites Fleet routing",
+    "kind": "metadata",
+    "cases": [
+      "setup-sender",
+      "setup-sender-no-access",
+      "setup-sender-onward"
+    ],
+    "paths": [
+      "/promises/6"
+    ],
+    "operation": "add",
+    "after": "ACC-033"
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage change-retirement",
+    "kind": "fixture",
+    "cases": [
+      "change-retirement"
+    ],
+    "paths": [
+      "conformance/conventions/changes/retirement/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 29405,
+      "sha256": "a660291e3b569e8b6d630756dcbd079d6c569240cc10bfecabe516d36e6fbef6"
+    },
+    "after": {
+      "bytes": 29389,
+      "sha256": "3c81bd9e491c2205390a0b2e3d4c4ca1d710ee8dd582daf6f96770c6c802353f"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage change-t4",
+    "kind": "fixture",
+    "cases": [
+      "change-t4"
+    ],
+    "paths": [
+      "conformance/conventions/changes/t4/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 33571,
+      "sha256": "39753e2ce37da2708b64d0e93f44dec7f5ac047207e296d3b3a8391ba01f5af1"
+    },
+    "after": {
+      "bytes": 33547,
+      "sha256": "4aa0b0459351e9a04946f74946d0ffca5e9510e7701357d2f8c92d8ad136717e"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-hook-failed",
+    "kind": "fixture",
+    "cases": [
+      "setup-hook-failed"
+    ],
+    "paths": [
+      "conformance/conventions/setup/hook-failed/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 4169,
+      "sha256": "33a8c53d2a15d1fefc7028928a500e5d9ae337ed147da5391e4ab3f28d230af0"
+    },
+    "after": {
+      "bytes": 4161,
+      "sha256": "4231cd8fd1d065883ef1e8d753d8f8b711b97aaaf68aaeb1f00edec9f421ce84"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-hook-succeeded",
+    "kind": "fixture",
+    "cases": [
+      "setup-hook-succeeded"
+    ],
+    "paths": [
+      "conformance/conventions/setup/hook-succeeded/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 4169,
+      "sha256": "33a8c53d2a15d1fefc7028928a500e5d9ae337ed147da5391e4ab3f28d230af0"
+    },
+    "after": {
+      "bytes": 4161,
+      "sha256": "4231cd8fd1d065883ef1e8d753d8f8b711b97aaaf68aaeb1f00edec9f421ce84"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-hook-unknown",
+    "kind": "fixture",
+    "cases": [
+      "setup-hook-unknown"
+    ],
+    "paths": [
+      "conformance/conventions/setup/hook-unknown/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 4169,
+      "sha256": "33a8c53d2a15d1fefc7028928a500e5d9ae337ed147da5391e4ab3f28d230af0"
+    },
+    "after": {
+      "bytes": 4161,
+      "sha256": "4231cd8fd1d065883ef1e8d753d8f8b711b97aaaf68aaeb1f00edec9f421ce84"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-optional",
+    "kind": "fixture",
+    "cases": [
+      "setup-optional"
+    ],
+    "paths": [
+      "conformance/conventions/setup/optional/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 6209,
+      "sha256": "f957dc4d401ef952295112d795021f354429087e497d20e50c9717b83110e973"
+    },
+    "after": {
+      "bytes": 6209,
+      "sha256": "69c30e4fbd949542f0e32d97812454b301e4e9798c7167de9b82b99c77666fec"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-review-hook-refused",
+    "kind": "fixture",
+    "cases": [
+      "setup-review-hook-refused"
+    ],
+    "paths": [
+      "conformance/conventions/setup/review-hook-refused/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 4451,
+      "sha256": "efebd74fea70b36c4c83fc961b0b35c4775afce0bfd31cc2917b863e0e6cb16f"
+    },
+    "after": {
+      "bytes": 4885,
+      "sha256": "3f18acbb25bc8814b3bc05b9172cc99fd2c475a6b144d72673078bd70a507fa6"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-review-hook-refused-no-effect",
+    "kind": "fixture",
+    "cases": [
+      "setup-review-hook-refused-no-effect"
+    ],
+    "paths": [
+      "conformance/conventions/setup/review-hook-refused-no-effect/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 4479,
+      "sha256": "dc9b0f2d49dfd90ccd7040e41e0ca5a3a322aeffa1c458addf3105720a8a7024"
+    },
+    "after": {
+      "bytes": 4913,
+      "sha256": "e4c77fff40c16f6e5d2d21558cfe669418c3da87fe5b2182aaec4a667aac8c22"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-review-hook-unavailable",
+    "kind": "fixture",
+    "cases": [
+      "setup-review-hook-unavailable"
+    ],
+    "paths": [
+      "conformance/conventions/setup/review-hook-unavailable/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 4451,
+      "sha256": "efebd74fea70b36c4c83fc961b0b35c4775afce0bfd31cc2917b863e0e6cb16f"
+    },
+    "after": {
+      "bytes": 4885,
+      "sha256": "3f18acbb25bc8814b3bc05b9172cc99fd2c475a6b144d72673078bd70a507fa6"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-review-hook-unavailable-no-effect",
+    "kind": "fixture",
+    "cases": [
+      "setup-review-hook-unavailable-no-effect"
+    ],
+    "paths": [
+      "conformance/conventions/setup/review-hook-unavailable-no-effect/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 4479,
+      "sha256": "dc9b0f2d49dfd90ccd7040e41e0ca5a3a322aeffa1c458addf3105720a8a7024"
+    },
+    "after": {
+      "bytes": 4913,
+      "sha256": "e4c77fff40c16f6e5d2d21558cfe669418c3da87fe5b2182aaec4a667aac8c22"
+    }
+  },
+  {
+    "name": "ACC-033, CON-024: move Agent setup and retirement to Fleet; preserve optional setup coverage setup-review-relative-provider",
+    "kind": "fixture",
+    "cases": [
+      "setup-review-relative-provider"
+    ],
+    "paths": [
+      "conformance/conventions/setup/review-relative-provider/requests.json"
+    ],
+    "operation": "replace",
+    "before": {
+      "bytes": 6895,
+      "sha256": "c155047c10545f9d024c3cc1e401fc637a415f237b58a4606959f55fa89bb683"
+    },
+    "after": {
+      "bytes": 6887,
+      "sha256": "ff8d2627cc7aafeb5cfa1d942535afee7d0b5386f0ac9e9544453eee2850f9ad"
+    }
+  },
+  {
+    "name": "ACC-033, LIF-020, LIF-021, CON-024, REV-010, REV-014, OPS-036, ACC-029: Fleet vectors",
+    "kind": "added",
+    "cases": [
+      "fleets-bound-fleet-target",
+      "fleets-list-fleet",
+      "fleets-list-pool",
+      "fleets-manages-agent-own-fleet",
+      "fleets-ownership-permits-nothing",
+      "fleets-partial-authority-no-count",
+      "fleets-reconcile-control",
+      "fleets-retire-conflict",
+      "fleets-retire-dependencies",
+      "fleets-retire-overlap",
+      "fleets-retire-with-agents",
+      "fleets-retire-with-agents-authority",
+      "fleets-retire-with-agents-partial",
+      "fleets-retire-with-resources",
+      "fleets-routing",
+      "fleets-routing-retired",
+      "fleets-setup-registered"
+    ],
+    "paths": [
+      ""
+    ],
+    "operation": "add"
+  },
+  {
+    "name": "REV-010, CTR-006, LIF-032, LIF-021, OBJ-009: review regression vectors",
+    "kind": "added",
+    "cases": [
+      "fleets-reconcile-whole-config",
+      "fleets-agent-template-lifecycle",
+      "fleets-retire-ordinary-data",
+      "fleets-retire-schema-reference"
+    ],
+    "paths": [
+      ""
+    ],
+    "operation": "add"
+  },
+  {
+    "name": "OPS-036: forbid count and paging disclosures in both list replies: count",
+    "kind": "expectation",
+    "cases": [
+      "fleets-partial-authority-no-count"
+    ],
+    "paths": [
+      "/steps/1/expect/absent/0",
+      "/steps/2/expect/absent/0"
+    ],
+    "operation": "add",
+    "after": "/reply/structuredContent/count"
+  },
+  {
+    "name": "OPS-036: forbid count and paging disclosures in both list replies: total",
+    "kind": "expectation",
+    "cases": [
+      "fleets-partial-authority-no-count"
+    ],
+    "paths": [
+      "/steps/1/expect/absent/1",
+      "/steps/2/expect/absent/1"
+    ],
+    "operation": "add",
+    "after": "/reply/structuredContent/total"
+  },
+  {
+    "name": "OPS-036: forbid count and paging disclosures in both list replies: cursor",
+    "kind": "expectation",
+    "cases": [
+      "fleets-partial-authority-no-count"
+    ],
+    "paths": [
+      "/steps/1/expect/absent/2",
+      "/steps/2/expect/absent/2"
+    ],
+    "operation": "add",
+    "after": "/reply/structuredContent/cursor"
+  },
+  {
+    "name": "OPS-036: forbid count and paging disclosures in both list replies: position",
+    "kind": "expectation",
+    "cases": [
+      "fleets-partial-authority-no-count"
+    ],
+    "paths": [
+      "/steps/1/expect/absent/3",
+      "/steps/2/expect/absent/3"
+    ],
+    "operation": "add",
+    "after": "/reply/structuredContent/position"
+  },
+  {
+    "name": "LIF-021, OBJ-009: an unused optional input adds no reference dependency",
+    "kind": "added",
+    "cases": [
+      "fleets-retire-unused-input"
+    ],
+    "paths": [
+      ""
+    ],
+    "operation": "add"
+  },
+  {
+    "name": "REV-010, OBJ-016, CTR-006, LIF-021, OBJ-021, SCH-001: round 3 array and schema-applicator regressions",
+    "kind": "added",
+    "cases": [
+      "fleets-reconcile-array-element",
+      "fleets-retire-schema-applicators",
+      "fleets-retire-schema-inactive"
+    ],
+    "paths": [
+      ""
+    ],
+    "operation": "add"
+  }
+]

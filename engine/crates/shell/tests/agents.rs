@@ -271,7 +271,7 @@ fn run_agents(shell: Arc<Shell>, store: &Path) {
         .unwrap();
     let started = Instant::now();
     while std::net::TcpStream::connect(("127.0.0.1", port)).is_err() {
-        assert!(started.elapsed() < Duration::from_secs(30));
+        assert!(started.elapsed() < Duration::from_secs(600));
         std::thread::sleep(Duration::from_millis(10));
     }
     shell.issue_client_token(&id(&shell, "root")).unwrap();

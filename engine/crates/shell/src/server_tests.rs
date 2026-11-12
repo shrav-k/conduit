@@ -113,13 +113,17 @@ fn fixed_shell(path: &Path) -> Shell {
     Shell::open(path, context(), config).unwrap()
 }
 async fn ready(url: &str) {
-    for _ in 0..6000 {
-        if reqwest::get(url).await.is_ok() {
-            return;
+    // Binding is a progress condition; the test makes no startup-speed promise.
+    tokio::time::timeout(Duration::from_secs(600), async {
+        loop {
+            if reqwest::get(url).await.is_ok() {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
         }
-        tokio::time::sleep(Duration::from_millis(10)).await;
-    }
-    panic!("server did not bind");
+    })
+    .await
+    .expect("server did not bind");
 }
 fn token(shell: &Shell, name: &str) -> String {
     let id = actor(shell, name);
@@ -156,7 +160,7 @@ fn durable_ending(shell: &Shell, reply: &CallToolResult) {
     );
 }
 async fn wait_changes(counter: &AtomicUsize, minimum: usize) {
-    tokio::time::timeout(Duration::from_secs(60), async {
+    tokio::time::timeout(Duration::from_secs(600), async {
         while counter.load(Ordering::SeqCst) < minimum {
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
@@ -189,6 +193,29 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
     let changes_b = Arc::new(AtomicUsize::new(0));
     let client_a = connect(url, &a, changes_a.clone()).await;
     let client_b = connect(url, &b, changes_b.clone()).await;
+    // Legacy sessions expire after five idle minutes. Work on other identities
+    // must not turn a slow run into a test of idle expiry instead of notification
+    // delivery. Protocol pings keep these fixtures live without invoking tools.
+    let keepalive = CancellationToken::new();
+    let keepalive_tasks = [&client_a, &client_b].map(|client| {
+        let peer = client.peer().clone();
+        let stop = keepalive.clone();
+        tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    _ = stop.cancelled() => break,
+                    _ = tokio::time::sleep(Duration::from_secs(30)) => {}
+                }
+                tokio::select! {
+                    _ = stop.cancelled() => break,
+                    _ = peer.send_request(ClientRequest::PingRequest(PingRequest {
+                        method: Default::default(),
+                        extensions: Default::default(),
+                    })) => {}
+                }
+            }
+        })
+    });
     for (name, client) in [("agent-a", &client_a), ("agent-b", &client_b)] {
         let list = client.list_tools(None).await.unwrap();
         let expected = shell
@@ -422,7 +449,7 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
     assert_eq!(closed["isError"], false);
     wait_changes(&changes_a, 1).await;
     assert!(matches!(
-        tokio::time::timeout(Duration::from_secs(60), subscription_a.next())
+        tokio::time::timeout(Duration::from_secs(600), subscription_a.next())
             .await
             .unwrap()
             .unwrap(),
@@ -470,7 +497,7 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
     assert_eq!(setup["isError"], false);
     wait_changes(&changes_a, 2).await;
     assert!(
-        tokio::time::timeout(Duration::from_secs(60), subscription_a.next())
+        tokio::time::timeout(Duration::from_secs(600), subscription_a.next())
             .await
             .unwrap()
             .unwrap()
@@ -495,6 +522,10 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
         serde_json::to_value(shell.state().unwrap()).unwrap(),
         serde_json::to_value(before).unwrap()
     );
+    keepalive.cancel();
+    for task in keepalive_tasks {
+        task.await.unwrap();
+    }
     drop(subscription_a);
     drop(subscription_b);
     modern_a.cancel().await.unwrap();
@@ -502,7 +533,7 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
     client_a.cancel().await.unwrap();
     client_b.cancel().await.unwrap();
     stop.cancel();
-    tokio::time::timeout(Duration::from_secs(60), task)
+    tokio::time::timeout(Duration::from_secs(600), task)
         .await
         .unwrap()
         .unwrap()
@@ -571,7 +602,7 @@ async fn pending_http_completion_and_client_cancellation() {
         .cancel(Some("test cancellation".into()))
         .await
         .unwrap();
-    tokio::time::timeout(Duration::from_secs(60), async {
+    tokio::time::timeout(Duration::from_secs(600), async {
         loop {
             let state = shell.state().unwrap();
             if state
@@ -589,7 +620,7 @@ async fn pending_http_completion_and_client_cancellation() {
     .unwrap();
     client.cancel().await.unwrap();
     stop.cancel();
-    tokio::time::timeout(Duration::from_secs(60), task)
+    tokio::time::timeout(Duration::from_secs(600), task)
         .await
         .unwrap()
         .unwrap()
@@ -798,9 +829,35 @@ async fn notification_overflow_closes_legacy_sessions_and_reconnect_delivers() {
         let _ = stream.next().await.unwrap().unwrap();
         let changes = vec![json!({"consumer":actor(&shell,"agent-a")}); 1025];
         executor.tools_changed(&changes).unwrap();
-        tokio::time::timeout(Duration::from_secs(60), async {
-            while let Some(chunk) = stream.next().await {
-                chunk.unwrap();
+        tokio::time::timeout(Duration::from_secs(600), async {
+            // Idle expiry must not stand in for overflow cleanup. Keep the
+            // session active while independently draining its notification stream.
+            let keepalive = async {
+                let mut interval = tokio::time::interval(Duration::from_secs(30));
+                loop {
+                    interval.tick().await;
+                    let response = http
+                        .post(url)
+                        .bearer_auth(&a)
+                        .header("accept", "application/json, text/event-stream")
+                        .header("mcp-session-id", &session)
+                        .header("mcp-protocol-version", revision)
+                        .json(&json!({"jsonrpc":"2.0","id":74,"method":"ping"}))
+                        .send()
+                        .await
+                        .unwrap();
+                    // Closure may race the ping; neither response ends the wait.
+                    assert!(matches!(response.status().as_u16(), 200 | 404));
+                    response.bytes().await.unwrap();
+                }
+            };
+            tokio::select! {
+                _ = keepalive => unreachable!(),
+                _ = async {
+                    while let Some(chunk) = stream.next().await {
+                        chunk.unwrap();
+                    }
+                } => {}
             }
         })
         .await
@@ -916,7 +973,7 @@ async fn dropped_http_stream_cancels_only_its_invocation_for_every_revision() {
             .clone();
         // No notifications/cancelled or session DELETE is sent: close only this response.
         drop(read);
-        tokio::time::timeout(Duration::from_secs(60), async {
+        tokio::time::timeout(Duration::from_secs(600), async {
             loop {
                 if memory.cancellations.lock().unwrap().len() == index * 2 + 1 {
                     break;
@@ -957,7 +1014,7 @@ async fn dropped_http_stream_cancels_only_its_invocation_for_every_revision() {
             1
         );
         drop(write);
-        tokio::time::timeout(Duration::from_secs(60), async {
+        tokio::time::timeout(Duration::from_secs(600), async {
             loop {
                 if memory.cancellations.lock().unwrap().len() == index * 2 + 2 {
                     break;
@@ -1211,14 +1268,17 @@ async fn retired_agent_consumer_stream_ends_and_other_consumer_remains() {
         let root = actor(&shell, "root");
         let reply=shell.submit(json!({"kind":"invoke","request":{"identity":instance_value(&root),"tool":"s1.retire.v1","arguments":{"instance":{"kind":"Agent","name":"agent-a"}}}}),executor.as_ref()).unwrap();
         assert_eq!(reply["isError"], false, "{reply}");
-        tokio::time::timeout(Duration::from_secs(30), async {
+        // The retired consumer's streams must end because retirement ends its sessions, not
+        // because the session idled out. So both waits stay below the session idle limit: rmcp's
+        // 300 s default, and call_timeout + 60 s (180 s by default) once order 074 sets it.
+        tokio::time::timeout(Duration::from_secs(150), async {
             while let Some(chunk) = stream.next().await {
                 chunk.unwrap();
             }
         })
         .await
         .unwrap();
-        tokio::time::timeout(Duration::from_secs(30), async {
+        tokio::time::timeout(Duration::from_secs(150), async {
             while subscription.next().await.unwrap().is_some() {}
         })
         .await

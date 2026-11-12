@@ -57,6 +57,13 @@ jobs:
       - name: python3 tools/check_rulings.py
         if: ${{ !cancelled() }}
         run: python3 tools/check_rulings.py
+      # A repository variable supplies optional private names without a secret or a name
+      # written into the workflow. Check tracked bytes without echoing the matched values.
+      - name: python3 tools/check_private_paths.py
+        if: ${{ !cancelled() }}
+        env:
+          CONDUIT_PRIVATE_NAMES: ${{ vars.CONDUIT_PRIVATE_NAMES }}
+        run: python3 tools/check_private_paths.py
       - name: python3 -m unittest discover -s tools/tests
         if: ${{ !cancelled() && hashFiles('tools/tests/**/*.py') != '' }}
         run: python3 -m unittest discover -s tools/tests
@@ -101,7 +108,8 @@ jobs:
     name: rust (${{ matrix.dir }})
     needs: rust-dirs
     runs-on: ubuntu-latest
-    # The engine's release build and tests run for tens of minutes on a standard runner.
+    # The engine builds its test archive here; separate runners execute its shards.
+    # The other directories keep their existing test command.
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -140,8 +148,26 @@ jobs:
       - name: cargo clippy --all-targets -- -D warnings
         if: ${{ !cancelled() && matrix.build && matrix.lint }}
         run: cargo clippy --all-targets -- -D warnings
+      - name: Install the pinned nextest runner
+        if: ${{ !cancelled() && matrix.dir == 'engine' }}
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.140
+      # Compile engine tests once, then move their executables to the shard runners.
+      - name: cargo nextest archive --release
+        if: ${{ !cancelled() && matrix.dir == 'engine' }}
+        run: cargo nextest archive --release --archive-file nextest-archive.tar.zst
+      - name: Upload the engine test archive
+        if: ${{ success() && matrix.dir == 'engine' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-nextest
+          path: engine/nextest-archive.tar.zst
+          if-no-files-found: error
+          compression-level: 0 # nextest already compresses the archive
+          retention-days: 1
       - name: cargo test --release
-        if: ${{ !cancelled() && matrix.build }}
+        if: ${{ !cancelled() && matrix.build && matrix.dir != 'engine' }}
         run: cargo test --release
       # Saved even when a check failed, so that the next run need not rebuild the dependencies.
       - name: Save the cargo cache
@@ -155,19 +181,87 @@ jobs:
             ${{ matrix.dir }}/target/
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
-  # One result for every Rust directory, under one name that does not change as directories are
-  # added.
+  # Count partitions are disjoint and together run every enabled test, without retries.
+  # The measured run had 9,098 summed test seconds; four partitions held 1,876 to 2,987
+  # each. One indivisible test took 658 seconds, limiting the benefit of more runners.
+  engine-tests:
+    name: engine tests (${{ matrix.shard }}/4)
+    needs: rust-dir
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the toolchain that rust-toolchain.toml pins
+        run: rustup toolchain install --no-self-update --profile minimal
+      - name: Install the pinned nextest runner
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.140
+      - name: Download the engine test archive
+        uses: actions/download-artifact@v4
+        with:
+          name: engine-nextest
+          path: engine
+      # Extract into the same checkout layout as the build: tests use compiled-in paths
+      # to conduit as well as source paths to spec/ and conformance/.
+      - name: Run this engine shard
+        run: >-
+          cargo nextest run --archive-file nextest-archive.tar.zst
+          --extract-to "$GITHUB_WORKSPACE/engine" --workspace-remap "$GITHUB_WORKSPACE/engine"
+          --partition count:${{ matrix.shard }}/4
+
+  # nextest does not run doctests. Reuse the build cache and keep them a separate result.
+  engine-doc:
+    name: engine doctests
+    needs: rust-dir
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the toolchain that rust-toolchain.toml pins
+        run: rustup toolchain install --no-self-update --profile minimal
+      - name: Restore the engine build cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            engine/target/
+          key: cargo-${{ runner.os }}-engine-${{ hashFiles('engine/Cargo.lock', 'engine/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-engine-
+      - name: cargo test --release --doc
+        run: cargo test --release --doc
+
+  # One result for all Rust directories, all engine shards and the doctests. A skipped
+  # or cancelled dependency fails this gate as well, so its stable name stays useful.
   rust:
     name: rust
-    needs: [rust-dirs, rust-dir]
+    needs: [rust-dirs, rust-dir, engine-tests, engine-doc]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Every Rust directory passed
+      - name: Every Rust check passed
         env:
           DIRS: ${{ needs.rust-dirs.result }}
           CHECKS: ${{ needs.rust-dir.result }}
+          SHARDS: ${{ needs.engine-tests.result }}
+          DOCTESTS: ${{ needs.engine-doc.result }}
         run: |
-          echo "rust directories: $DIRS; rust checks: $CHECKS"
-          test "$DIRS" = success && test "$CHECKS" = success
+          echo "rust directories: $DIRS; rust checks: $CHECKS; shards: $SHARDS; doctests: $DOCTESTS"
+          test "$DIRS" = success && test "$CHECKS" = success && test "$SHARDS" = success && test "$DOCTESTS" = success

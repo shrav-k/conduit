@@ -122,6 +122,7 @@ python3 tools/check_rulings.py       # ruling ledger, status lines and undated d
 python3 tools/set_names.py --check   # the names under spec/, engine/, conformance/ and packages/ agree with spec/names.yaml
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
+python3 tools/check_private_paths.py # tracked files contain no private paths or configured names
 git diff --check                     # whitespace errors
 (cd engine && cargo test --release)   # the first build: loader, core, vectors and shell
 ```
@@ -147,6 +148,7 @@ What each check needs:
   ran", and it exits with status 3 when N is 0. It never reports a check it did not run. Its
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
+- `check_private_paths.py` needs Python 3 and Git; `CONDUIT_PRIVATE_NAMES` optionally lists private names, separated by commas.
 - `cargo test --release` in `engine/` needs Rust through rustup, which installs on
   first use the toolchain that `engine/rust-toolchain.toml` pins. Run it from inside
   the directory, so that the pin applies. For a change to its code, run

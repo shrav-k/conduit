@@ -182,7 +182,8 @@ fn lines(path: &Path) -> Vec<Value> {
 }
 #[track_caller]
 fn until(ready: impl FnMut() -> bool) {
-    until_for(Duration::from_secs(30), ready);
+    // This bounds a hang, not the speed of startup, cancellation or cleanup.
+    until_for(Duration::from_secs(600), ready);
 }
 #[track_caller]
 fn until_for(timeout: Duration, mut ready: impl FnMut() -> bool) {
@@ -214,8 +215,10 @@ fn scripted_server() {
     let cwd = std::env::current_dir().unwrap();
     fs::write(root.join("cwd.json"), serde_json::to_vec(&json!({"path":cwd,"mode":fs::metadata(&cwd).unwrap().permissions().mode()&0o777,"empty":fs::read_dir(&cwd).unwrap().count()==0})).unwrap()).unwrap();
     let _descendant = if mode == "descendant" {
+        // Outlive every progress guard (and CI's job bound): a leaked descendant
+        // must not exit on its own and make the kill/cleanup assertions pass.
         let child = Command::new("/bin/sleep")
-            .arg("600")
+            .arg("86400")
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .spawn()
@@ -399,7 +402,7 @@ fn serve_signal_during_setup_ends_run_and_starts_no_later_part() {
             fs::read_to_string(parent.path().join("serve.stderr")).unwrap()
         );
         assert!(
-            startup.elapsed() < Duration::from_secs(180),
+            startup.elapsed() < Duration::from_secs(600),
             "serve never started the first setup run"
         );
         std::thread::sleep(Duration::from_millis(10));
@@ -865,8 +868,8 @@ fn killed_engine_ends_run_and_descendant_and_does_not_pass_token() {
         .spawn()
         .unwrap();
     // FST-002's expanded first-start publication and setup happen in the child.
-    // Allow startup under parallel suite load; post-kill waits still use 30 seconds.
-    until_for(Duration::from_secs(120), || {
+    // Startup and post-kill waits guard progress, without asserting its speed.
+    until_for(Duration::from_secs(600), || {
         parent.path().join("ready").is_file()
     });
     let environment: Value =

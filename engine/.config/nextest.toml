@@ -1,0 +1,51 @@
+# Pin the runner in CI; this is also the version used to check this configuration.
+nextest-version = "0.9.140"
+
+[test-groups.shell-sensitive]
+max-threads = 1
+
+[profile.default]
+# A slow test stays visible without being killed. A failed test is never retried.
+slow-timeout = { period = "60s" }
+retries = 0
+fail-fast = false
+
+[[profile.default.overrides]]
+# These tests kill children, wait for process cleanup, or observe asynchronous delivery.
+# Ignored subprocess fixtures are invoked by their parent test and need no separate slot.
+filter = '''
+package(conduit-shell) & (
+  test(=tests::killed_after_commit_before_send) |
+  test(=tests::killed_after_send_before_completion_commit) |
+  test(=tests::http::authentication_waiting_for_commit_does_not_block_async_worker) |
+  (binary(=runner) & (
+    test(=deferred_setup_and_dispatch_reenter_the_completion_executor) |
+    test(=runner_exit_observes_owned_runs_as_stopped) |
+    test(=serve_signal_during_setup_ends_run_and_starts_no_later_part) |
+    test(=plain_wire_environment_workdir_records_and_restart) |
+    test(=deadlines_exit_repair_write_and_cancel) |
+    test(=cancel_setup_initializing_starts_no_later_part) |
+    test(=killed_engine_ends_run_and_descendant_and_does_not_pass_token) |
+    test(=dropping_runner_during_initialize_ends_group_with_shell_still_open)
+  )) |
+  binary(=serve) |
+  (binary(=cli) & (
+    test(=real_npm_register_completes_setup_and_ends_runs_on_exit) |
+    test(=serve_management_commands_and_fixed_audience) |
+    test(=root_defaults_allow_startup_setup_and_inspection_while_serving)
+  )) |
+  (binary(=agents) & test(=live_s1_scripted_agents_call_engine_with_distinct_run_identities))
+)
+'''
+test-group = "shell-sensitive"
+
+[[profile.default.overrides]]
+# These two tests check actual deadlines or async responsiveness. Reserve the runner's
+# full thread budget so other tests cannot starve the assertions that must stay strict.
+filter = '''
+package(conduit-shell) & (
+  test(=tests::http::authentication_waiting_for_commit_does_not_block_async_worker) |
+  (binary(=runner) & test(=deadlines_exit_repair_write_and_cancel))
+)
+'''
+threads-required = "num-test-threads"

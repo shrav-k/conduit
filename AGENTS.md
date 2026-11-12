@@ -20,6 +20,8 @@ the `build-base` branch, which is not yet published, and must not read this bran
 4. [docs/AUDIT.md](docs/AUDIT.md): the state of the work, what waits for the owner, what is known
    to be open, and the action items.
 5. [ROADMAP.md](ROADMAP.md): the order of the work, and every experiment and probe.
+6. For a coordinator taking over: [the handover](docs/implementation/HANDOVER.md), then
+   [the full review](docs/guides/full-review.md) the owner asked for.
 
 ## The goal
 

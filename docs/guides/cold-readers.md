@@ -1,18 +1,22 @@
 # Instructions for cold readers
 
 For the owner's collaborators reading Conduit as the first build leaves it. Not binding: the
-[specification](../../spec/README.md) alone binds. These instructions were written on
-2026-11-10 for the **Read** row of the [roadmap](../../ROADMAP.md#the-order-of-the-work),
-after step 3. As of that date, increments 1 to 3 are done and increment 4 is in progress:
-both author runs completed T1 to T7 with real clients but failed the owner's bar for
-authoring work. Simplification is being settled before it is built and S1 rerun. A read before step 3
-is finished can help, but the build may still change the text. Record which text you read.
+[specification](../../spec/README.md) alone binds. Written on 2026-11-10 for the **Read** row of
+the [roadmap](../../ROADMAP.md#the-order-of-the-work), after step 3, and brought up to date on
+2026-11-12. Increments 1 to 3 are done. Increment 4 is open: both author runs completed T1 to T7
+with real clients but failed the owner's bar for authoring work. The simplification is ruled and
+written into `spec/` as batch 1; its build is in progress, and S1's rerun follows on it. A read before
+step 3 is finished can help, but the build may still change the text. Record which text you read.
+
+For a full review of the repository and of the progress so far, follow
+[the full review's instructions](full-review.md) instead.
 
 ## What to read
 
 Begin with [for the next reader](../AUDIT.md#for-the-next-reader). It sets the scope, the
-reading order and known open points. Its [convergence rule and definition of unsafe](../AUDIT.md)
-remain in the audit; use them when judging safety and readiness. Follow this order:
+reading order and known open points. Judge safety and readiness by the tracker's
+[convergence rule and definition of unsafe](../AUDIT.md#how-to-use-this-document). Follow this
+order:
 
 1. The top [README](../../README.md), for what Conduit is and what exists.
 2. [spec/README.md](../../spec/README.md), then
@@ -34,9 +38,9 @@ A passing vector tests its stated slice; it does not prove that the whole promis
 
 ## What is known to be open
 
-Use the [audit's known open points](../AUDIT.md) as the index, rather than reporting an acknowledged limit again
-without a new situation. Its status statements have not all caught up with the build. As of
-2026-11-10:
+Use the [tracker's known open points](../AUDIT.md#known-to-be-open) as the index, rather than
+reporting an acknowledged limit again without a new situation. Its status statements may lag the
+build. As of 2026-11-12:
 
 - The engine, vectors and a runnable shell exist. Use the
   [roadmap's step 3](../../ROADMAP.md#the-order-of-the-work), the
@@ -47,19 +51,28 @@ without a new situation. Its status statements have not all caught up with the b
   example, increment 2 settled the reserved root `$defs` copy-key question and the two plain
   protocol-error cases. Check the settlement before raising the old question again.
 - The [real-client closeout](../proposals/first-build/increment-3/closeout-results-2026-11-10.md)
-  records T1, T2 and T7 and carries unshown checks forward. Access is mediated; Codex's home
-  instructions still leak, and separate homes and the sign-in flow of
-  [ruling 49](../proposals/ruling-49/README.md) are pending work. A ruling is not evidence that
-  its specification or implementation changes have been made.
-- [IN_FORCE.md](../../IN_FORCE.md) lists accepted language decisions as *spec pending* until
-  they are written into the specification. The [language-shape investigation](../proposals/language-shape/README.md)
-  and the owner's [Project direction](../proposals/owner-direction/2026-11-10-projects.md)
-  precede that writing. Do not read a proposed short form or Project model as an existing rule.
+  records T1, T2 and T7 and carries unshown checks forward. Access is mediated, and Codex's home
+  instructions still leak (finding 3-07). The sign-in flow of
+  [ruling 49](../proposals/ruling-49/README.md) is in `spec/` (orders 038a and 038c), but neither
+  it nor each Agent's separate home is built: their orders, 050, 048a, 048b and 051b, are not yet
+  written. A ruling is not evidence that its specification or implementation changes have been
+  made.
+- [IN_FORCE.md](../../IN_FORCE.md) lists a decision as *spec pending*, naming its batch or
+  order, until it is written into the specification. Batch 1 (orders 036a to 038c) wrote the
+  short form, the Fleet family, refusals, pending actions, sign-in and enrollment, after the
+  [language-shape investigation](../proposals/language-shape/README.md) and the owner's
+  [Project direction](../proposals/owner-direction/2026-11-10-projects.md); batch 2 is not
+  on `main`. Do not read a proposal that `spec/` does not hold as an existing rule, nor a written
+  promise as built: the [contents](../../spec/README.md#contents) show which files have no
+  vectors yet, among them `sections.yaml` and `pending.yaml`.
 - The [increment 4 log](../proposals/first-build/log-increment-4.md) distinguishes the fixes
   from orders 025 to 028 from open findings. In particular, 4-06 is settled as parallel model
-  work within the parent Agent's access, 4-03 retains SUB-010's submission rule, and 4-08's
-  explicit refusals are ruled but await promises. Turn deadlines (4-12) closed on 2026-11-12; the form of ended
-  conditions (4-17) remains open; both measured author runs failed the bar for authoring work.
+  work within the parent Agent's access; 4-03 retains SUB-010's submission rule, and relative
+  values stay ([ruling 52's later answer](../proposals/ruling-52/README.md#later-answers),
+  2026-11-12); 4-08's explicit refusals are promises (ACC-056, IFC-050, OPS-023). Turn deadlines
+  (4-12) closed on 2026-11-12, and order 070 removed the whole-state copies of 4-18 except
+  registration's four. The form of ended conditions (4-17) remains open. Both measured author
+  runs failed the bar for authoring work.
 
 The deliberate limits of v0, including the two delegation limits, remain in the
 [specification's limits](../../spec/README.md#limits-of-this-version). No round so far was

@@ -108,3 +108,21 @@ owner accepted leaving them as they are.
 - Ruling 73: point 3, on who keeps a Resource's credential and which Interface receives the return
   (C1, C2); and Claude's and Codex's routes across machines (C3, C5).
 - Ruling 74: points 2 and 3. S1 writes no own-tools line, and the switch is gone (B1).
+
+## Later answers
+
+2026-11-12: the coordinator put three points that change no decision of this ruling. The owner:
+"Agree with all decisions except need more info on 2", where 2 was another question.
+
+- **D4's reach.** D4 covers only S4, S5, S6 and S9, the scenarios of D3. Of their runs, the only
+  one with a real client is S4's lost-response replay on a second account. S3, S7, S8 and S10 keep
+  their real-client runs on the second accounts ([ruling 72](../ruling-72/README.md), point 2, and
+  D2).
+- **A1's two limits.** The fence covers Conduit's own dispatch, not a server's onward call to
+  another service: each hop handles its own idempotency, as with Stripe's idempotency keys. A call
+  to a remote server that never answers stays unknown, or is recorded as having occurred, and the
+  Agent's way on is a new request. Order 077 writes both into the specification.
+- **B3's timing.** In a smoke test of Conduit's own runs of work orders, Claude Code wrote inside
+  its slot's `.git` with no prompt, as [ruling 70](../ruling-70/README.md) allows. The dedicated
+  macOS user stays where B3 puts it, before a coordinator Agent drives workers. Until then,
+  `main`'s branch protection ([ruling 74](../ruling-74/README.md), point 1) is the guard.

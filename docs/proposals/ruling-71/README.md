@@ -61,3 +61,9 @@ to remedy the situation".
 ChatGPT Codex allowance ran out overnight, the workers should pause or switch to the owner's OpenAI
 API key with a cap. The owner chose the API key, capped at about $50 for that night: "b". Codex
 reads the key from the environment through a provider entry, and it is never written to a file.
+
+2026-11-12: the owner was asked what the workers do when the ChatGPT Codex allowance runs out:
+pause until it resets, use the owner's API key with a cap, or buy credits. The coordinator
+recommended the API key with a weekly cap. The owner: "3 just pause and let me know". When the
+allowance runs out, the workers pause and the coordinator tells the owner (point 6). The API key
+of 2026-11-11 was for that night only.

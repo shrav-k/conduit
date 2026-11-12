@@ -69,6 +69,12 @@ kept, and the owner answered that everything stands. Items 11 to 14 stand as dec
 | 26 | **The https listener admits a token by its audience alone** (order 079), as IFC-042 says, without the plan's extra placement clause | The plan's clause would have narrowed ruled behavior | [Order 079](../../work-orders/079-shell-https-address.md) |
 | 27 | **A run the provider reports running, with no bridge proving it, stays unknown** (order 080), the cautious reading of IFC-017; the tension with PRV-009 is a finding | Setup does not succeed on an unverified session | [Order 080](../../work-orders/080-shell-runtime-provider-calls.md) |
 | 28 | **A newly admitted node starts `Ready: Unknown`** (order 049a1), the cautious reading of PLC-023 | The node is unavailable until its first report | [Order 049a1](../../work-orders/049a1-build-enrollment-core.md) |
+| 29 | **Records promise what the engine does and can detect** (order 082, MC7b-001): REC-003 and REC-006 narrowed, with DL8 stating which losses outside the engine it tells | A loss or alteration outside the engine that it cannot detect is a stated limit, not a broken promise; tamper evidence stays a possible feature of a v1 provider | [Order 082](../../work-orders/082-spec-records-and-installs.md); REC-003, REC-006, DL8 |
+
+On 2026-11-12 the coordinator put items 15 to 28 to the owner, recommending each be kept, and
+item 29 apart, recommending it be kept with the missing limit sentence added to `spec/README.md`.
+The owner answered "Agree with all decisions except need more info on 2", where 2 was a question
+not on this list. Items 15 to 29 stand as decided.
 
 ## What the owner ruled, for reference
 

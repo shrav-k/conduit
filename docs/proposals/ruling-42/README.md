@@ -269,3 +269,17 @@ Source: [C0](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf
 - log-secrets, 14: TPL-018 says a hook dispatched again "may" run against a new run: where an earlier stop failed, the run may still be reported running, and PRV-007 then asks for none.
 - log-secrets, 15: SEC-023's `when` says "as after the engine restarts, on its machine or on another" for the ruling's "restarts or fails over"; failover is not a term of the definitions.
 - log-secrets, 16: The head comment of `secrets.yaml` keeps its summary of what `spec/README.md` left open at ruling 41, marked as of that time, and its line for ruling 42 says what changed in that list without quoting `spec/README.md`, which another group edits.
+
+## Later answers
+
+2026-11-12: model checking found that a run whose stop did not succeed may still run beside a
+later instance, a replacement among them (MC4-002 of
+[experiment 012](../../../experiments/012-model-checking/README.md)). The coordinator recommended
+two things that change nothing of D11. The specification states the overlap as a limit, as order
+081 writes it. Every runtime provider that Conduit ships carries out a stop it still owes on a
+machine before it starts any run there, as the kubelet does, and its contract says so, as PRV-021
+already allows. The coordinator advised against refusing a replacement while the earlier instance
+exists, as a StatefulSet does, and against the engine keeping the stops it owes after the instance
+is removed, which would amend D11. The owner: "Agree with all decisions except need more info on
+2", where 2 was another question. Both stand: the stated limit, and the shipped providers'
+owed stop. D11 is unchanged.

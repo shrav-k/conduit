@@ -103,7 +103,8 @@ rerun, one that could move S1's author counts.
 
 Ruling 58 point 1 accepts every coordinator decision, editor choice and work-order decision
 logged before ruling 57, except review-list items 15 to 19 and increment 4's open decisions.
-Those exceptions and choices logged after the cutoff stay open to the owner to strike. Ruling
+The owner reviewed items 15 to 19 on 2026-11-12, and they stand; findings 4-01 and 4-11 stay
+open until S1's bar is judged. Choices logged after the cutoff stay open to the owner to strike. Ruling
 67 is the coordinator's under explicit delegation. Acceptance does not prevent a later reader
 from challenging a decision (ruling 39 point 6).
 
@@ -129,8 +130,8 @@ Only the owner settles these questions; later-stage questions below retain their
 | What | Where it is recorded |
 | --- | --- |
 | A20: v0 authorization's cross-path, issuer-independence and provider-scope questions, after the bypass probe A7 | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings), [A7](../ROADMAP.md#experiments-and-probes) |
-| C6 to C12 after the S1 rerun | [Ruling 62](proposals/ruling-62/README.md) |
-| Review-list items 15 to 19 and increment 4's open decisions, excepted by ruling 58 point 1 | [Review list](proposals/first-build/to-review-with-the-owner.md), [increment 4](proposals/first-build/log-increment-4.md) |
+| After the S1 rerun: S1's bar, with findings 4-01 and 4-11, and C6 to C12 | [Ruling 71](proposals/ruling-71/README.md), points 2 and 3; [increment 4](proposals/first-build/log-increment-4.md); [ruling 62](proposals/ruling-62/README.md) |
+| The Windows computer's decisions, on which the owner asked for more information on 2026-11-12: M2-1 the machine provider (SSH, or Tailscale as ruling 50's words name it), M2-2 the run user, M2-3 TLS at the engine's https address, M2-4's lockdown of the distro (the owner gave Ubuntu-24.04 as Conduit's distro), M2-5 when the computer is Conduit's (on demand, a schedule, or rented capacity) and M2-7 WSL's memory cap; and the labels of the second Claude and ChatGPT subscriptions, which the owner is to give | [The providers' plan](implementation/PROVIDERS.md), [ruling 76's later answers](proposals/ruling-76/README.md#later-answers); [ruling 75](proposals/ruling-75/README.md), D2, and [ruling 72](proposals/ruling-72/README.md), point 2 |
 | Readiness G8: close open questions or put them outside builders' scope; G11: owner's sign-off | [Readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) |
 
 ## Known to be open
@@ -174,7 +175,7 @@ Do not report these again unless there is something new:
 - MAN-010 cannot bind a repeated named argument, and no promise binds its several values through `isRepeated`; waits for S7 and A63. PLC-024 needs a portable record field for its cause (A39). OPS-028's late onward request rule stays in v0, is tested in E20, and is revisited with local enforcement (A65). [Round 6's four open points](proposals/reaudit/round-6/design-critique.md#the-four-open-points) records them.
 - Round 6's integration left: directory-based replacement, now tied to S1's edit-cycle measurement; INS-010's destination comparison; and no checker rule for SEC-005. Its root-copy-key collision is settled by [2-02](proposals/first-build/README.md#2-02); escaped `$ref` copies are covered by e05-escaping. [Integration](proposals/reaudit/round-6/log-integration.md#left-for-a-decision) keeps the older list.
 - The protocol watch list: issue 3003 asks whether an `isError` result must conform to `outputSchema` (IFC-025's reading); the tasks extension is “Beta, to Core”, where breaking changes are allowed (IFC-016). These are the recorded observations, not a fresh protocol check. [MCP recheck](guides/cold-readers.md#what-to-watch).
-- Increment 4: 4-12, turns exceeding the deadline and the meaning of one reconcile answer for nested work; 4-17, whether and how ended conditions appear; 4-18, core commits copying the whole state and their measured cost. [Finding log](proposals/first-build/log-increment-4.md).
+- Increment 4: 4-17, whether and how ended conditions appear; 4-18, core commits copying the whole state and their measured cost. [Finding log](proposals/first-build/log-increment-4.md).
 - Round 5 changed 22 interface promises and added 2 without a subsequent protocol recheck; changed 101 promises and added 3 without a complete cold read. [Known after round 5](proposals/reaudit/round-5/README.md#known-after-the-round). Text changed by round 6 and later rulings has not been read cold in full.
 - S1 safety tagging: the plan counted 74 manifest cases with no `safety_rows` and 38 with an empty list; these were historical counts, not a safety classification. Order 030 found 21 distinct tags and only four naming proposed traces. Safety vectors beyond S1's proposed rows remain undefined, and `spec/` has no safety field. [Order 030](implementation/WORK_ORDERS.md#order-030), [G5](implementation/INDEPENDENT_BUILDS.md#readiness-gate), [proposed traces](../conformance/s1-safety-cases.md).
 - The adjacent S1 safety boundaries: the old -32602 no-effect assumption (since corrected by increment 2 decision 8a after work order 018), IFC-046 wire resends versus repeats, and filtered-replay variants of 6-1-02 needing Conduit-aware fixtures. [Plan](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/proposals/first-build/increment-2/plan.md), [plain-errors check](proposals/first-build/increment-2/decisions.md#evidence-for-decision-8a), [decision 8a](proposals/first-build/increment-2/decisions.md).
@@ -215,6 +216,14 @@ The independent check read the published protocol on each of the three; the edit
 what they read. Round 5's own decisions that the owner may want to read first are in
 [its record](proposals/reaudit/round-5/README.md#known-after-the-round), where V2-15 is now
 reversed by ruling 44.
+- Order 082's remaining questions, the coordinator's to settle as defects, logged for the owner
+  to strike: what an engine owes when it cannot store invocation state, tombstones, provenance or
+  installed packages (with existing outcomes, failing the request rather than acting unrecorded);
+  whether records restored from a copy older than a purge may be returned (root runs the purge
+  again); and races across addresses, between two Types claiming one client ID or an install and a
+  project's registration. The limit on outside loss stands, as the owner kept it on 2026-11-12
+  ([what the promises on records cover](../spec/README.md#what-the-promises-on-records-cover);
+  [order 082's Record](work-orders/082-spec-records-and-installs.md#record)).
 
 ## Purpose
 

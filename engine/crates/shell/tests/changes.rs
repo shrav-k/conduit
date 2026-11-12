@@ -167,6 +167,21 @@ fn replace_nested(shell: &Shell, executor: &dyn Executor, name: &str) {
         "access.close.v1",
         json!({"conduit":path["name"]}),
     ));
+    // ACC-053 / LIF-041: restoration is an explicit lift, then registration.
+    let stone = shell
+        .state()
+        .unwrap()
+        .tombstones
+        .values()
+        .find(|stone| stone["object"]["id"] == path["id"])
+        .unwrap()["id"]
+        .clone();
+    success(invoke(
+        shell,
+        executor,
+        "access.lift.v1",
+        json!({"id":stone}),
+    ));
     let v = success(invoke(
         shell,
         executor,

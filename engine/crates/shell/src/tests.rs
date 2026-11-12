@@ -279,7 +279,7 @@ fn established(path: &Path) -> Shell {
             .unwrap()
             .clone();
         if let Some(capture) = step["capture"].as_object() {
-            let value = serde_json::to_value(&t).unwrap();
+            let value = capture_value(&t);
             for (k, p) in capture {
                 symbols.insert(
                     k.clone(),
@@ -294,6 +294,12 @@ fn established(path: &Path) -> Shell {
     shell.evidence.lock().unwrap().clear();
     *shell.trace.lock().unwrap() = None;
     shell
+}
+// LIF-040 / ACC-053: expose the same opaque tombstone captures as the portable runner.
+fn capture_value(transition: &conduit_core::Transition) -> Value {
+    let mut value = serde_json::to_value(transition).unwrap();
+    value["tombstones"] = json!(transition.state.tombstones.values().collect::<Vec<_>>());
+    value
 }
 fn actor(shell: &Shell, name: &str) -> String {
     shell
@@ -354,7 +360,7 @@ fn s1_whole_through_store_loop_and_scripted_executor() {
         assert!(!trace.is_empty());
         for transition in trace {
             let step = &steps[index];
-            let actual = serde_json::to_value(&transition).unwrap();
+            let actual = capture_value(&transition);
             if let Some(captures) = step["capture"].as_object() {
                 for (name, pointer) in captures {
                     symbols.insert(
@@ -1454,12 +1460,17 @@ fn first_start_presents_final_lists_and_unbuilt_operations_name_their_orders() {
         .map(|t| t["name"].as_str().unwrap())
         .collect();
     assert_eq!(names, expected);
+    // ACC-053 / OPS-029: lift is built; an unbounded unknown ID is invalid before dispatch.
+    let lift = shell.submit(json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":root},"tool":"access.lift.v1","arguments":{"id":"00000000-0000-4000-8000-000000009999"}}}), &MissingExecutor).unwrap();
+    assert_eq!(
+        lift["_meta"][format!("{}reason", shell.context.meta_prefix)],
+        "invalid"
+    );
+    assert_eq!(
+        lift["structuredContent"]["diagnostics"][0]["ruleId"],
+        "OPS-029"
+    );
     for (tool, arguments, order) in [
-        (
-            "access.lift.v1",
-            json!({"id":"00000000-0000-4000-8000-000000009999"}),
-            "042",
-        ),
         (
             "management.answer.v1",
             json!({"action":"00000000-0000-4000-8000-000000009999","answer":"dismissed"}),

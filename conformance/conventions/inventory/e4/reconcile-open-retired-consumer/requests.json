@@ -1,0 +1,189 @@
+{
+  "requests": [
+    {
+      "invocations": [
+        {
+          "id": "c9e48f7d-a521-59b1-ab69-40b535d5cf28",
+          "state": "unknown",
+          "object": "$subject",
+          "management": true,
+          "target": "00000000-0000-4000-8000-000000000004",
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000007",
+          "operation": "github.com/shrav-k/conduit/core#open.v1",
+          "arguments": {
+            "conduit": "subject"
+          },
+          "opening_provenance": {
+            "actor": "00000000-0000-4000-8000-000000000005",
+            "sentBy": "00000000-0000-4000-8000-000000000005",
+            "invocation": "c9e48f7d-a521-59b1-ab69-40b535d5cf28",
+            "openedThrough": [
+              "00000000-0000-4000-8000-000000000007"
+            ]
+          }
+        },
+        {
+          "id": "$setup",
+          "operation": "github.com/shrav-k/conduit/core#set-up.v1",
+          "object": "$a",
+          "state": "succeeded"
+        }
+      ],
+      "call": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "baa71410-35e2-598f-9123-a5947bd096c4",
+            "367ab545-022b-5d3c-9233-44f662ed54de",
+            "4f802e64-d13c-58d4-be60-f2ac5f7f7b9d",
+            "cfedf92f-221f-50c6-bf10-5867d20ce168",
+            "c4f13bdf-9618-5c02-b6a9-2a82cee031c3",
+            "4d6bc912-be81-5a4f-a0ce-90526244679f",
+            "63bde746-6f14-526d-b6b0-6eb5f145db3d",
+            "f3d7751e-1511-5853-ad82-39551ba4a07c",
+            "00656559-b258-52e5-a2b5-a1886aa0218d",
+            "e3dee673-9afc-56b8-b792-243d964ece19",
+            "76b25ece-c532-547b-8839-dc631e4f503a",
+            "b49a12ea-12fb-5ed4-a096-87cc6db64137",
+            "19c1b910-eb87-5efa-923d-bca3d89f8883",
+            "3d5a2399-902f-5f16-a4d6-da676c0d50f9",
+            "101c16b5-b315-530e-838a-db71cc83bb30",
+            "620260f4-65c4-5d93-8114-85b45cbfdcab",
+            "251ac557-1dd3-5a11-8000-7b35c4d7bf60",
+            "924dfca2-a1c5-5b65-a80a-bad4b3a3e7a1",
+            "1aed2ba0-3e49-5d56-8549-57272548d5bf",
+            "132db070-c55a-5ad4-b0a0-0ae607a4bf18",
+            "6bff020d-754a-5a83-8c03-f6e4af7a900f",
+            "ba7d79a6-83a4-5158-be50-9fc49f9769fa",
+            "3adf1e7e-d987-5a6f-bdb5-40e150772504",
+            "ecaa4638-9505-5018-86aa-d2dc43066274",
+            "056cfb87-5f1e-5367-9595-f37d62421019",
+            "c42eb072-3a6f-5f79-a6c9-6285797df3a1",
+            "25da471b-a706-5448-b436-3b83d76c1275",
+            "f2a7f085-e895-57c0-be4e-2ecf0ed2df3c",
+            "a8abab35-5fd1-554c-b54e-f77ae393a117",
+            "61346809-32c5-55e8-8516-e1057127e174",
+            "28b3d123-798c-5476-ba93-1b254a4aca7d",
+            "b60422ba-408a-5a07-8b11-50026fc8bf8a",
+            "f989791d-5d4e-5b8a-b932-72b14c5b1691",
+            "ba72229d-63e7-55f5-ab29-de5d5d0f28a8",
+            "fdbdd616-2062-571a-ae06-5972379974d2",
+            "40d1a6c7-1bba-544c-ac56-71dbb9842d7e",
+            "d6b1df23-3ae1-52a1-b6d9-8e44281e7fc1",
+            "c5a27cb3-da34-5fb4-9a5b-03920ce3f923",
+            "320264c4-b296-5df3-8810-3ec1e3c82576",
+            "8347dbe0-e22f-5681-b7e7-0e23eb2129c7",
+            "45f38db4-1ab4-515e-8161-2da36c83f52c",
+            "a84bf92b-db15-5112-aa6f-6dbc88349ebd",
+            "16b35fa3-2533-555a-9ba0-6be0690678dc",
+            "5937f811-4800-5aa3-afd4-44eb9d3fec8d",
+            "66bb85e7-ddc3-5173-92ed-64f492cb17e6",
+            "b1e71df5-5a58-5eb6-a2c4-d17d27f859ef",
+            "c7ec779b-421e-5239-8b23-281259097ee4",
+            "ccd2b39b-e398-5543-a5bd-70e4ad41d3e8",
+            "f61d5ff6-b7d1-5253-9aae-c9a49c8a2df3",
+            "eb7f3155-0b5b-5926-b76d-6356a7bc1172",
+            "1fd17897-66eb-5562-8f11-090d01747c03",
+            "760361a8-a4b1-5144-b234-99a6a6001df4",
+            "3caa439d-c065-5afd-92b7-5ba84ced67e1",
+            "6a26af4a-fd5d-500b-a61b-6eef425fac14",
+            "eb925e24-cad6-54d1-8343-f7b8b55bae63",
+            "684dd886-97ca-559e-9b81-5f379a2f0135",
+            "c1808179-5e9f-50da-97dc-d17c9e068b21",
+            "76d41ce9-257c-5844-a0f2-8f14977b84bb",
+            "1b655e4f-bb53-5e65-ad23-49ba59b6f198",
+            "59e66b7f-44e9-53ec-bba5-0ca0e7977496",
+            "d577985a-1513-5af3-89a2-d0dd1edaf9c6",
+            "0072ef69-af53-53dd-9312-ef5baed8a660",
+            "7eaed650-7436-5975-a09b-cc441edc8a75",
+            "be2ba5af-c418-5ecc-a975-b98cbf6981c6",
+            "61f0d643-4dcb-509e-81fe-912080e2d2c6",
+            "e306d3d5-b7df-56ce-97f8-7ce587afa081",
+            "8e00848e-fbaf-540c-aa63-42e8c0f9c9fd",
+            "e01f02dd-f7a4-5d93-85cf-8d3c6da4441c",
+            "56acdd99-5494-571c-b165-901dbfbb12e6",
+            "2eac8d12-6571-5528-92ca-0908cd0855df",
+            "585cb498-b098-5387-b46a-f9ea63b1217e",
+            "c214e35d-b3de-50f7-ae6e-8d4e38640151",
+            "4654e69e-8aa0-551a-b41a-647ffe2c26b3",
+            "dbdd7e80-5b8f-5e7f-96c0-18df3060068e",
+            "53d4f674-27a5-512e-85fc-7e175ef9138c",
+            "1e0afd8a-cd22-5826-b08c-a4126fec5965",
+            "618378a0-46b6-5a25-a34c-0c1a38975c0b",
+            "e0fbea71-a45c-5fff-b926-1afaf46cfa3b",
+            "edf6da73-23f3-59ed-ad8a-1776ecf1cbaa",
+            "bbe65c6b-238a-5221-9e29-c11bf8b3ea02",
+            "089d6789-87c0-5bae-a396-f4f439323047",
+            "cf5ec06c-4a15-5ec7-8e8b-b383af195dc5",
+            "3978d5e5-fa06-56a1-9410-29b184ae4531",
+            "a9b61088-f3b0-5140-bcf2-b21b2c846abd",
+            "bec6cafb-4c06-51a5-bd3d-ee49751cc3b4",
+            "d8bebdcb-48fe-59e9-baac-51877bf0d59a",
+            "fbb278da-a128-5d85-a14e-10a70d996da0",
+            "80b3ed5c-7b3e-593b-b80e-bc400b75b555",
+            "156d34a8-a733-57c1-b722-97a296effbbd",
+            "74b76c1b-c434-5ff4-ad72-774c7b3f104f",
+            "3810a3d1-cef0-5bff-99fe-a3d5faabf260",
+            "fd4a03c5-a77e-569e-a852-69bf894abd2a",
+            "53c18128-be1d-5dcd-bf69-79d2ba732c2c",
+            "80f992a7-4cc5-58f6-a531-7223a0b22ef9",
+            "1f376444-57ec-5ab8-9a5d-768db0ed8017",
+            "94c55d67-66cc-57b2-b829-13fb3d9602a8"
+          ],
+          "revisions": [
+            "review-e4-reconcile-open-retired-consumer-seed-3-0",
+            "review-e4-reconcile-open-retired-consumer-seed-3-1",
+            "review-e4-reconcile-open-retired-consumer-seed-3-2",
+            "review-e4-reconcile-open-retired-consumer-seed-3-3",
+            "review-e4-reconcile-open-retired-consumer-seed-3-4",
+            "review-e4-reconcile-open-retired-consumer-seed-3-5",
+            "review-e4-reconcile-open-retired-consumer-seed-3-6",
+            "review-e4-reconcile-open-retired-consumer-seed-3-7",
+            "review-e4-reconcile-open-retired-consumer-seed-3-8",
+            "review-e4-reconcile-open-retired-consumer-seed-3-9",
+            "review-e4-reconcile-open-retired-consumer-seed-3-10",
+            "review-e4-reconcile-open-retired-consumer-seed-3-11",
+            "review-e4-reconcile-open-retired-consumer-seed-3-12",
+            "review-e4-reconcile-open-retired-consumer-seed-3-13",
+            "review-e4-reconcile-open-retired-consumer-seed-3-14",
+            "review-e4-reconcile-open-retired-consumer-seed-3-15"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003",
+            "r0004",
+            "r0005",
+            "r0006",
+            "r0007",
+            "r0008",
+            "r0009",
+            "r0010",
+            "r0011",
+            "r0012",
+            "r0013",
+            "r0014",
+            "r0015"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "group.retire.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Agent",
+              "name": "a"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

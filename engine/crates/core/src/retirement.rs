@@ -117,6 +117,20 @@ fn close_ends(
         .cloned()
         .collect();
     for p in paths {
+        let v = t.state.invocations[i].clone();
+        let cause = t
+            .state
+            .tombstones
+            .values()
+            .find(|x| x["object"]["id"] == *id)
+            .map(|x| json!({"tombstone":x["id"]}))
+            .or_else(|| {
+                access::object(&t.state, id)?
+                    .get("retirement_tombstone")
+                    .map(|stone| json!({"tombstone":stone}))
+            })
+            .unwrap_or_else(|| json!({"invocation":v["id"]}));
+        crate::inventory::make(t, c, &p, &v, &a.evidence.time, cause)?;
         if let Some(o) = t
             .state
             .objects
@@ -147,6 +161,7 @@ pub(crate) fn remove(
     i: usize,
     id: &Value,
 ) -> Result<()> {
+    access::keep_bound_targets(&mut t.state, c);
     close_ends(t, a, c, i, id, true)?;
     t.state.objects.retain(|o| o["id"] != *id);
     event(t, a, c, i, id, "removed", json!({}))
@@ -188,6 +203,12 @@ pub(crate) fn execute(
         return stop(t, a, c, i, o);
     }
     let v = t.state.invocations[i].clone();
+    // LIF-040: retrying shutdown is not another retirement, even after a lift.
+    let tombstone = if o["state"] != "retired" {
+        crate::inventory::make(t, c, o, &v, &a.evidence.time, json!({"invocation":v["id"]}))?
+    } else {
+        None
+    };
     let lost = access::object(&t.state, &o["placement"]).is_some_and(|n| n["state"] == "retired");
     let shutdown = if lost { "unknown" } else { "pending" };
     t.state.invocations[i]["retirement_of"] = o["id"].clone();
@@ -200,6 +221,10 @@ pub(crate) fn execute(
     object["state"] = json!("retired");
     object["shutdown"] = json!(shutdown);
     object["retirement"] = v["id"].clone();
+    // LIF-040: late consumer closures keep the cause even if the parent stone was lifted.
+    if let Some(tombstone) = tombstone {
+        object["retirement_tombstone"] = tombstone;
+    }
     event(
         t,
         a,

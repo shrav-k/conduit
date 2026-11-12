@@ -3607,7 +3607,9 @@
         "LIF-009",
         "LIF-029",
         "CON-004",
-        "ACC-005"
+        "ACC-005",
+        "LIF-040",
+        "ACC-053"
       ]
     },
     {
@@ -3733,7 +3735,9 @@
       "promises": [
         "LIF-009",
         "INS-020",
-        "CON-004"
+        "CON-004",
+        "LIF-040",
+        "ACC-053"
       ]
     },
     {
@@ -4180,7 +4184,9 @@
         "SUB-008",
         "FST-007",
         "FLEET-005",
-        "ACC-044"
+        "ACC-044",
+        "LIF-040",
+        "ACC-053"
       ]
     },
     {
@@ -4226,7 +4232,9 @@
         "LIF-009",
         "INS-020",
         "IFC-012",
-        "IFC-038"
+        "IFC-038",
+        "LIF-040",
+        "ACC-053"
       ],
       "safety_rows": []
     },
@@ -4703,7 +4711,9 @@
       "case": "conventions/fleets/e3a/root-closes-own/case.yaml",
       "promises": [
         "ACC-024",
-        "CON-002"
+        "CON-002",
+        "LIF-040",
+        "ACC-053"
       ],
       "safety_rows": [
         "root-closes-own"
@@ -5111,6 +5121,454 @@
       "safety_rows": [
         "S1-reconcile"
       ]
+    },
+    {
+      "id": "e4-as-after-close",
+      "case": "conventions/inventory/e4/as-after-close/case.yaml",
+      "promises": [
+        "LIF-040",
+        "LIF-041",
+        "ACC-053"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-inventory",
+      "case": "conventions/inventory/e4/inventory/case.yaml",
+      "promises": [
+        "LIF-013",
+        "ACC-044"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-inventory-pool-holder",
+      "case": "conventions/inventory/e4/inventory-pool-holder/case.yaml",
+      "promises": [
+        "LIF-013",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-inventory-tombstones",
+      "case": "conventions/inventory/e4/inventory-tombstones/case.yaml",
+      "promises": [
+        "LIF-013",
+        "LIF-040"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-inventory-template",
+      "case": "conventions/inventory/e4/inventory-template/case.yaml",
+      "promises": [
+        "LIF-013"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-register-replacement",
+      "case": "conventions/inventory/e4/tombstone-register-replacement/case.yaml",
+      "promises": [
+        "LIF-041",
+        "ACC-053",
+        "LIF-009"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-second-key",
+      "case": "conventions/inventory/e4/tombstone-second-key/case.yaml",
+      "promises": [
+        "LIF-041"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-instance",
+      "case": "conventions/inventory/e4/tombstone-instance/case.yaml",
+      "promises": [
+        "LIF-040",
+        "LIF-041",
+        "ACC-053"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-replaced-consumer",
+      "case": "conventions/inventory/e4/tombstone-replaced-consumer/case.yaml",
+      "promises": [
+        "LIF-040",
+        "LIF-041",
+        "ACC-053"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-purge",
+      "case": "conventions/inventory/e4/tombstone-purge/case.yaml",
+      "promises": [
+        "REC-004",
+        "LIF-040",
+        "LIF-041"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-order",
+      "case": "conventions/inventory/e4/tombstone-order/case.yaml",
+      "promises": [
+        "LIF-041",
+        "OPS-023"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-part",
+      "case": "conventions/inventory/e4/tombstone-part/case.yaml",
+      "promises": [
+        "LIF-041",
+        "ACC-005",
+        "OPS-022"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-lift-root",
+      "case": "conventions/inventory/e4/lift-root/case.yaml",
+      "promises": [
+        "ACC-053",
+        "REC-002",
+        "REV-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-lift-bound",
+      "case": "conventions/inventory/e4/lift-bound/case.yaml",
+      "promises": [
+        "ACC-053",
+        "ACC-029"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-lift-uncovered",
+      "case": "conventions/inventory/e4/lift-uncovered/case.yaml",
+      "promises": [
+        "ACC-053"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-lift-operation-missing",
+      "case": "conventions/inventory/e4/lift-operation-missing/case.yaml",
+      "promises": [
+        "ACC-053"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-lift-unknown",
+      "case": "conventions/inventory/e4/lift-unknown/case.yaml",
+      "promises": [
+        "ACC-053",
+        "OPS-029"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-lift-root-consumer",
+      "case": "conventions/inventory/e4/lift-root-consumer/case.yaml",
+      "promises": [
+        "ACC-053",
+        "ACC-054"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-lift-pass-on",
+      "case": "conventions/inventory/e4/lift-pass-on/case.yaml",
+      "promises": [
+        "ACC-030",
+        "ACC-053"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-access-bound",
+      "case": "conventions/inventory/e4/reconcile-access-bound/case.yaml",
+      "promises": [
+        "ACC-055",
+        "OPS-030"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-access-root",
+      "case": "conventions/inventory/e4/reconcile-access-root/case.yaml",
+      "promises": [
+        "ACC-055",
+        "OPS-030"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-sender-own",
+      "case": "conventions/inventory/e4/reconcile-sender-own/case.yaml",
+      "promises": [
+        "ACC-055",
+        "OPS-030"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-sender-other",
+      "case": "conventions/inventory/e4/reconcile-sender-other/case.yaml",
+      "promises": [
+        "ACC-055"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-sender-hook",
+      "case": "conventions/inventory/e4/reconcile-sender-hook/case.yaml",
+      "promises": [
+        "ACC-055",
+        "OPS-008"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-sender-fleet",
+      "case": "conventions/inventory/e4/reconcile-sender-fleet/case.yaml",
+      "promises": [
+        "ACC-055"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-provenance-open",
+      "case": "conventions/inventory/e4/provenance-open/case.yaml",
+      "promises": [
+        "ACC-044"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-provenance-setup-parts",
+      "case": "conventions/inventory/e4/provenance-setup-parts/case.yaml",
+      "promises": [
+        "ACC-044",
+        "ACC-005"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-provenance-onward",
+      "case": "conventions/inventory/e4/provenance-onward/case.yaml",
+      "promises": [
+        "ACC-044",
+        "ACC-036"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-provenance-engine",
+      "case": "conventions/inventory/e4/provenance-engine/case.yaml",
+      "promises": [
+        "ACC-044",
+        "FST-002"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-closed-with-target",
+      "case": "conventions/inventory/e4/closed-with-target/case.yaml",
+      "promises": [
+        "LIF-040",
+        "CON-008"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-bound-kept-id",
+      "case": "conventions/inventory/e4/bound-kept-id/case.yaml",
+      "promises": [
+        "ACC-053",
+        "ACC-029"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-inventory-reading",
+      "case": "conventions/inventory/e4/inventory-reading/case.yaml",
+      "promises": [
+        "LIF-013",
+        "ACC-044"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-inventory-from-first-start",
+      "case": "conventions/inventory/e4/inventory-from-first-start/case.yaml",
+      "promises": [
+        "LIF-013",
+        "ACC-044",
+        "FST-002"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-lift-children-uncovered",
+      "case": "conventions/inventory/e4/lift-children-uncovered/case.yaml",
+      "promises": [
+        "ACC-053",
+        "LIF-040"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-visibility",
+      "case": "conventions/inventory/e4/tombstone-visibility/case.yaml",
+      "promises": [
+        "LIF-040",
+        "OPS-036"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-node-readmit-no-tombstone",
+      "case": "conventions/inventory/e4/node-readmit-no-tombstone/case.yaml",
+      "promises": [
+        "LIF-040",
+        "LIF-041"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-inventory-scope",
+      "case": "conventions/inventory/e4/inventory-scope/case.yaml",
+      "promises": [
+        "LIF-013"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-pool-administrators",
+      "case": "conventions/inventory/e4/pool-administrators/case.yaml",
+      "promises": [
+        "LIF-013",
+        "ACC-033"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-retirement-lift-reconcile-cause",
+      "case": "conventions/inventory/e4/retirement-lift-reconcile-cause/case.yaml",
+      "promises": [
+        "LIF-040",
+        "ACC-053",
+        "LIF-028"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-tombstone-replaced-owner",
+      "case": "conventions/inventory/e4/tombstone-replaced-owner/case.yaml",
+      "promises": [
+        "LIF-040",
+        "OPS-036"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-open-retired-consumer",
+      "case": "conventions/inventory/e4/reconcile-open-retired-consumer/case.yaml",
+      "promises": [
+        "ACC-044",
+        "LIF-028",
+        "CON-031"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-open-replaced-subject",
+      "case": "conventions/inventory/e4/reconcile-open-replaced-subject/case.yaml",
+      "promises": [
+        "ACC-044",
+        "ACC-033",
+        "LIF-040",
+        "LIF-041"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-bound-removal-lift",
+      "case": "conventions/inventory/e4/bound-removal-lift/case.yaml",
+      "promises": [
+        "ACC-053",
+        "ACC-055",
+        "LIF-040"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-bound-removal-reconcile",
+      "case": "conventions/inventory/e4/bound-removal-reconcile/case.yaml",
+      "promises": [
+        "ACC-053",
+        "ACC-055",
+        "LIF-040"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-access-opening-operations",
+      "case": "conventions/inventory/e4/reconcile-access-opening-operations/case.yaml",
+      "promises": [
+        "ACC-030",
+        "ACC-055",
+        "OPS-030"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-bound-removal-lift-register-replacement",
+      "case": "conventions/inventory/e4/bound-removal-lift-register-replacement/case.yaml",
+      "promises": [
+        "ACC-030",
+        "ACC-053",
+        "ACC-055",
+        "LIF-009",
+        "LIF-040"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-pool-bound-removal-lift",
+      "case": "conventions/inventory/e4/pool-bound-removal-lift/case.yaml",
+      "promises": [
+        "ACC-029",
+        "ACC-030",
+        "ACC-053",
+        "ACC-055",
+        "LIF-040"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-pool-bound-removal-reconcile",
+      "case": "conventions/inventory/e4/pool-bound-removal-reconcile/case.yaml",
+      "promises": [
+        "ACC-029",
+        "ACC-030",
+        "ACC-053",
+        "ACC-055",
+        "LIF-040"
+      ],
+      "safety_rows": []
     }
   ],
   "s1_coverage": [

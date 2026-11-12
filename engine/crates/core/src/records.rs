@@ -324,7 +324,20 @@ pub(crate) fn execute(
                 packages.push(json!({"address":snapshot.address,"version":snapshot.version,"digest":snapshot.digest}));
             }
         }
-        outputs = json!({"objects":objects,"packages":packages,"tombstones":[]});
+        let tombstones: Vec<_> = if container["from"] == c.qualified("management") {
+            view.tombstones
+                .values()
+                .filter(|stone| {
+                    args.get("kind")
+                        .is_none_or(|kind| *kind == stone["object"]["kind"])
+                        && crate::inventory::visible(view, &v["caller"], stone, c)
+                })
+                .cloned()
+                .collect()
+        } else {
+            vec![]
+        };
+        outputs = json!({"objects":objects,"packages":packages,"tombstones":tombstones});
         t.decisions.push(decision(
             "list-inspectable-items",
             &["OPS-036", "ACC-033", "LIF-012", "LIF-040"],
@@ -355,6 +368,7 @@ pub(crate) fn execute(
             "nested",
             "open",
             "retirement",
+            "retirement_tombstone",
         ] {
             declared.as_object_mut().unwrap().remove(field);
         }
@@ -431,6 +445,12 @@ pub(crate) fn execute(
             .cloned()
             .collect();
         outputs = json!({"id":o["id"],"revision":o["revision"],"packages":o.get("packages").cloned().unwrap_or_else(|| json!([{ "address":c.core_package,"version":c.builtin.as_ref().and_then(|b| b.manifest.as_ref()).map(|m|m["version"].clone()).unwrap_or(Value::Null)}])),"declared":declared,"status":status,"records":records,"recordGaps":t.state.record_gaps,"recordsComplete":t.state.record_gaps.is_empty()});
+        if o.get("spec").is_none() && o["kind"] != "Conduit" {
+            outputs["inventory"] = crate::inventory::read(&t.state, &o, c)?;
+        }
+        if let Some(provenance) = o.get("provenance") {
+            outputs["provenance"] = provenance.clone();
+        }
         // LIF-012: templates have no lifecycle state. inspect.v1 permits status
         // to be absent, but requires state whenever it is present.
         if o.get("spec").is_some() {
@@ -441,7 +461,7 @@ pub(crate) fn execute(
             "inspect-object",
             &[
                 "LIF-012", "LIF-013", "REC-002", "REC-005", "REC-006", "OBJ-009", "NAM-009",
-                "CON-022",
+                "CON-022", "ACC-044",
             ],
             &["DL8"],
             json!({}),

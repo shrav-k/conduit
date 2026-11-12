@@ -170,7 +170,7 @@ async fn wait_changes(counter: &AtomicUsize, minimum: usize) {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn root_reaches_list_and_the_lift_stub_over_mcp() {
+async fn root_reaches_list_and_lift_unknown_id_over_mcp() {
     let temp = temporary();
     let shell = Arc::new(fixed_shell(temp.path()));
     server::preflight(&shell).unwrap();
@@ -219,7 +219,7 @@ async fn root_reaches_list_and_the_lift_stub_over_mcp() {
         durable_ending(&shell, &reply);
     }
 
-    // OPS-005: the stub returns unavailable and records exactly one request ending.
+    // ACC-053 / OPS-029: an unbounded unknown ID is invalid, with one durable ending.
     let before = shell.state().unwrap().records.len();
     let reply = server::client(
         temp.path(),
@@ -232,20 +232,19 @@ async fn root_reaches_list_and_the_lift_stub_over_mcp() {
     assert_eq!(reply["isError"], true);
     assert_eq!(
         reply["_meta"][format!("{}reason", shell.context.meta_prefix)],
-        "unavailable"
+        "invalid"
     );
-    assert!(reply["content"].as_array().unwrap().iter().any(|item| {
-        item["text"]
-            .as_str()
-            .is_some_and(|text| text.contains("not built yet, order 042"))
-    }));
+    assert_eq!(
+        reply["structuredContent"]["diagnostics"][0]["ruleId"],
+        "OPS-029"
+    );
     let state = shell.state().unwrap();
     let endings: Vec<_> = state.records[before..]
         .iter()
         .filter(|record| record["type"] == "request-ended")
         .collect();
     assert_eq!(endings.len(), 1);
-    assert_eq!(endings[0]["data"]["reason"], "unavailable");
+    assert_eq!(endings[0]["data"]["reason"], "invalid");
 
     stop.cancel();
     tokio::time::timeout(Duration::from_secs(60), task)
@@ -569,6 +568,24 @@ async fn s1_http_consumers_authority_records_and_private_t7_changes() {
         .unwrap();
     assert_eq!(result.is_error, Some(false));
     durable_ending(&shell, &result);
+    // ACC-053 / LIF-041: the root client explicitly lifts before restoring the slot.
+    let stone = shell
+        .state()
+        .unwrap()
+        .tombstones
+        .values()
+        .find(|stone| stone["object"]["id"] == conduit["id"])
+        .unwrap()["id"]
+        .clone();
+    let lifted = server::client(
+        temp.path(),
+        None,
+        Some("access.lift.v1"),
+        json!({"id":stone}),
+    )
+    .await
+    .unwrap();
+    assert_eq!(lifted["isError"], false);
     let restored = server::client(
         temp.path(),
         None,

@@ -1984,6 +1984,21 @@ pub(crate) fn prepare(
     if b.diagnostics.iter().any(|d| d["level"] == "error") {
         return reject(t, b.diagnostics, evidence, request, context);
     }
+    let mut matching_state = b.state.clone();
+    matching_state.objects.extend(resolved.iter().cloned());
+    for object in &resolved {
+        if let Some(stone) = crate::inventory::matching(&matching_state, object) {
+            b.diagnostics.push(crate::inventory::diagnostic(
+                &b.state,
+                &json!(request.caller),
+                stone,
+                context,
+            ));
+        }
+    }
+    if b.diagnostics.iter().any(|d| d["level"] == "error") {
+        return reject(t, b.diagnostics, evidence, request, context);
+    }
     // Nothing has been published before this point. The caller receives only this commit.
     let mut registered = b
         .templates
@@ -2008,6 +2023,7 @@ pub(crate) fn prepare(
     }
     b.state.objects.append(&mut b.templates);
     b.state.objects.extend(resolved);
+    crate::access::keep_bound_targets(&mut b.state, context);
     for object in &registered {
         let record=b.allocation.record(&mut b.state,context,"object-change",json!({"target":object["id"],"caller":request.caller,"consumer":request.sender,"conduit":request.conduit,"operation":request.operation,"action":"registered","state":"registered"}))?;
         t.records.push(record);
@@ -2169,9 +2185,12 @@ fn reject(
 ) -> Result<()> {
     diagnostics.sort_by_key(Value::to_string);
     diagnostics.dedup();
-    let invalid = diagnostics
-        .iter()
-        .any(|d| d["level"] == "error" && d["ruleId"] != "OBJ-002" && d["ruleId"] != "OBJ-025");
+    let invalid = diagnostics.iter().any(|d| {
+        d["level"] == "error"
+            && d["ruleId"] != "OBJ-002"
+            && d["ruleId"] != "OBJ-025"
+            && d["ruleId"] != "LIF-041"
+    });
     let reason = if invalid { "invalid" } else { "conflict" };
     let mut promises = diagnostics
         .iter()
@@ -2524,6 +2543,14 @@ pub(crate) fn replacement(
             return Ok(json!({"rule":rule,"message":message}));
         }
     }
+    let mut matching_state = b.state.clone();
+    matching_state.objects.extend(resolved.iter().cloned());
+    if let Some(stone) = resolved
+        .iter()
+        .find_map(|o| crate::inventory::matching(&matching_state, o))
+    {
+        return Ok(json!({"rule":"LIF-041","tombstone":stone}));
+    }
     let object = resolved.first().ok_or("replacement produced no object")?;
     let result = json!({"object":{"kind":object["kind"],"name":object["name"],"id":object["id"]},"diagnostics":[]});
     let p = b
@@ -2534,6 +2561,8 @@ pub(crate) fn replacement(
         .unwrap();
     p["slots"][slot][name] = json!({"kind":object["kind"],"id":object["id"]});
     b.state.objects.extend(resolved);
+    // ACC-053 / ACC-055: replacement bounds must survive removal of their targets.
+    crate::access::keep_bound_targets(&mut b.state, context);
     a.cursor = b.allocation.cursor;
     t.state = b.state;
     Ok(result)

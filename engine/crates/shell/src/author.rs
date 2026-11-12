@@ -51,20 +51,14 @@ fn outcome(reply: &Value) -> Value {
         })
 }
 
-/// CLI-only supplement: inspect.v1 has no defined consumer-Conduit inventory.
-pub fn inspection_row(objects: &[Value], object: &Value, reply: Value) -> Value {
+/// LIF-013: render the authorized inventory returned by inspect.v1.
+pub fn inspection_row(_objects: &[Value], object: &Value, reply: Value) -> Value {
     let mut row = json!({"object":{"kind":object["kind"],"name":object["name"]},"result":reply});
     if row["result"]["isError"] == false
-        && object.get("spec").is_none()
-        && object["kind"] != "Conduit"
+        && let Some(inventory) = row["result"]["structuredContent"].get("inventory").cloned()
     {
-        row["consumedConduits"] = json!(objects.iter().filter(|p| {
-            p["kind"] == "Conduit" && p.get("spec").is_none()
-                && reference(&p["consumer"]) == &object["id"]
-        }).map(|p| {
-            let target = objects.iter().find(|o| &o["id"] == reference(&p["target"]));
-            json!({"name":p["name"],"target":target.map(|o| json!({"kind":o["kind"],"name":o["name"],"id":o["id"]})).unwrap_or_else(|| p["target"].clone()),"open":p["open"] == true})
-        }).collect::<Vec<_>>());
+        row["consumedConduits"] = json!(inventory["consumes"].as_array().into_iter().flatten().map(|entry| json!({"name":entry["conduit"]["name"],"target":entry["target"],"open":entry["state"] == "ready"})).collect::<Vec<_>>());
+        row["inventory"] = inventory;
     }
     if row["result"]["isError"] == false
         && let Some(past) = object.get("past_conditions")

@@ -722,9 +722,12 @@ instance set up through it with `call`.
 
 `conduit inspect --store DIR` works while serving as root MCP inspection requests, and locally
 when the store is not held. Its instance rows include a CLI-only `consumedConduits` list beside
-`result`: declared and standalone Conduits with name, target and open boolean. This inventory
-uses a read-only state snapshot, as the author commands do; it is not atomic with concurrent
-changes. The operation's result and specification are unchanged.
+`result`: declared and standalone Conduits with name, target and open boolean, projected from
+the authorized `inspect.v1` result's `inventory.consumes` (LIF-013). The inventory also returns
+incoming Conduits, opening provenance and visible Conduit tombstones, with scope for Interfaces
+and Agents and administrators for Pools. Templates and Conduits have no inventory. Enumeration
+and route selection use a read-only snapshot, and each request rechecks authority; inspection
+across multiple objects is not atomic with concurrent changes.
 
 ```sh
 engine/target/release/conduit install --store /tmp/conduit-live-store \

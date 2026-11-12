@@ -930,6 +930,28 @@
               },
               "stored_record_facts": {
                 "type": "array"
+              },
+              "tombstone_facts": {
+                "type": "array"
+              },
+              "absent_tombstones": {
+                "type": "array"
+              },
+              "tombstones": {
+                "type": "array"
+              },
+              "tombstone_count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "objectIds": {
+                "type": "object"
+              },
+              "inventory_facts": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array"
+                }
               }
             },
             "required": []
@@ -971,7 +993,6 @@
                 "expect": {
                   "required": [
                     "reply",
-                    "records",
                     "external_intents",
                     "required_promises"
                   ],
@@ -984,6 +1005,22 @@
                     {
                       "required": [
                         "stateUnchanged"
+                      ]
+                    }
+                  ],
+                  "allOf": [
+                    {
+                      "anyOf": [
+                        {
+                          "required": [
+                            "records"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "record_facts"
+                          ]
+                        }
                       ]
                     }
                   ]

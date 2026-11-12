@@ -7,7 +7,9 @@
   ],
   "promises": [
     "ACC-024",
-    "CON-002"
+    "CON-002",
+    "LIF-040",
+    "ACC-053"
   ],
   "profile": "first-build",
   "initial": {
@@ -665,6 +667,50 @@
             }
           }
         ]
+      },
+      "capture": {
+        "stone-root": "/tombstones/0/id"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "610c0cde-f02a-59ab-8468-8a45832178e1",
+            "cb15540b-4ff3-5231-9d9f-ca09add07430",
+            "1322ea05-7ee4-53f3-9270-76bd8f6e5186",
+            "b88f67d4-5c5e-5b50-bc5a-a85643d17507",
+            "862161a6-6c68-5f4b-8585-6e585c1ad59a",
+            "916ec1ce-a55b-5571-82d7-b263ee14d6f3",
+            "60c9d810-c6e7-53d5-9c2b-95595fed3856",
+            "b63a6e9f-d025-5887-ad16-99c038e5478a",
+            "74001323-f7b5-594f-bd60-9b2a4a9e6191",
+            "7e9f4a77-b818-5d62-b89e-24de53c6e15d",
+            "492c1709-238f-58b3-b8f6-c198d01c40f7",
+            "853cd236-c25c-5eba-a9e5-58151f58b2f8"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.lift.v1",
+          "arguments": {
+            "id": "$stone-root"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false,
+          "structuredContent": {
+            "remaining": []
+          }
+        },
+        "tombstone_count": 0
       }
     }
   ]

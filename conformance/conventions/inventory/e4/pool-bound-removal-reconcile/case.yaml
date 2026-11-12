@@ -1,0 +1,923 @@
+{
+  "id": "e4-pool-bound-removal-reconcile",
+  "title": "Bounded reconciliation covers a removed Pool target after unbounded lift and serialized restart",
+  "layers": [
+    "convention",
+    "interface"
+  ],
+  "promises": [
+    "ACC-029",
+    "ACC-030",
+    "ACC-053",
+    "ACC-055",
+    "LIF-040"
+  ],
+  "profile": "first-build",
+  "initial": {
+    "recipe": "snapshot",
+    "file": "initial"
+  },
+  "files": {
+    "initial": "../../../../fixtures/root-system-state.json",
+    "fixture": "../fixture.json",
+    "manifest": "../manifest.json",
+    "documents": "../documents.json",
+    "requests": "../bound-removal-reconcile/requests.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "register-project",
+        "file": "fixture",
+        "evidence": {
+          "time": "2026-11-11T12:00:00Z",
+          "ids": [
+            "aafcda11-14ad-5c5a-ba5c-d0a1600cebb3",
+            "989875c3-7854-55eb-8803-e254c011f86c",
+            "51ad0863-3e6a-5987-b63d-6c3cdefe3fd2",
+            "0d1fbcdc-0c2e-56a0-8b81-138386eefd56",
+            "8da1ca00-9117-5481-8d85-c215fcf199db",
+            "eb9a8359-84a0-5ea4-823d-261c248523d5",
+            "2a179504-a785-5453-8e10-e87cd341ed7e",
+            "9d7a975f-3b0b-5d61-966a-f5b9c6c29575",
+            "8ac2ded3-9977-5af1-a719-3c816911249e",
+            "99cfe16a-1dfc-521c-9735-daca1cb86bc0",
+            "8b569f10-09d3-5eae-b183-e20bbd4b80a9",
+            "4a4f7f35-7130-5231-8fc8-c97120c138ed",
+            "f94e864e-1905-586d-9fb1-30c691ba9aae",
+            "6beb926d-5e74-5fec-8b13-1d1235171c9b",
+            "bf675fc6-6aa7-5b0a-9c44-8c8191ff606f",
+            "dfba39ba-dfef-5c52-8c65-6edce4ebe5d6",
+            "d9581753-6f60-5e6e-a8fb-36d02b95ab94",
+            "f4d348d5-358d-5428-98d6-c4d7e1fbfa5b",
+            "2a3336cb-0764-5084-95ed-1eb1b265ff02",
+            "63ee04cb-218e-5d32-b59a-78bb29e9b429",
+            "85d6fdbb-0c4c-54b0-bdb2-82166c83b8a8",
+            "98485d7b-26fe-5192-8ebb-865ab857c3de",
+            "4471148d-86ae-55b6-bd5a-19e7629b36b1",
+            "4c9ab226-e46f-5e8f-ad53-a9c5d40cf673",
+            "58a85193-cb23-5225-849a-388192862d7c",
+            "65eb6f19-63c6-5ecb-a62e-4afbdc20e61a",
+            "fa36e856-c0e4-5788-ae23-be87a82a7d79",
+            "eff415c1-4338-5bd5-b4d4-64abe6ce6e8d",
+            "fea10c26-e43e-587e-95fe-dfb0e3061a24",
+            "cf0c20c7-281e-580c-9ab2-28f6a224df83",
+            "c46eb95a-0a7d-562d-be37-aef8347f37c5",
+            "2ebf0f38-8e80-5dc2-a1a6-3edada54eb08",
+            "c1040648-9f03-50eb-91bf-2af32e099b2f",
+            "44bc2d6d-e7ea-5e06-8658-9b485eef1807",
+            "9de88d3e-4290-5b03-ab89-17e35c7cb069",
+            "a840de8f-6cf6-5ae7-800e-3c8d56a9b7ba",
+            "b42c1ade-b480-5f7e-b1c4-2f2e05b0eb65",
+            "31bc6fee-44b9-5840-b6e9-b56ab6870cbf",
+            "5eccd7aa-0216-5673-8d84-9810f83d1c76",
+            "840577dc-6311-5751-a6bc-c9503d60a1bb",
+            "ddb3ab2a-795d-5561-bf9b-1060804a0f8b",
+            "31aead14-48e3-54a7-acf2-5799c495c579",
+            "55958ebb-2700-53d6-aaae-9ce4cf018657",
+            "648687c3-40f7-561e-8885-68177d8dd104",
+            "dde6446c-cfc1-5d1b-8e5f-4e0504a762e9",
+            "05b2837c-90fb-5b58-98cd-9ea18409bab8",
+            "998f6342-a176-5c2d-a839-216f748907ed",
+            "282b3368-ecae-53bf-9a6a-eea519095141",
+            "a60525e8-13b5-5099-9ca5-62a5217e416a",
+            "087bb328-f4ad-5456-88d7-c39e7bb8de83",
+            "d9b69237-0efc-5138-93bf-533b7bce5f46",
+            "66e3f1a3-26e8-5d71-8033-000efa609c25",
+            "c94319a3-0244-5054-9156-6f1ea53d6ac9",
+            "d0aac046-370f-5af5-b2c6-e88633948d6f",
+            "1285cf35-d4d1-557f-821f-a4b0c56f4872",
+            "a4539d85-507a-5cc7-9a06-973758afdfd5",
+            "e48e8e6f-9b57-5eb3-b8b3-8b845d63999a",
+            "616a536c-cdc4-548e-8ad4-fff6fa6211cf",
+            "b303cd49-223d-5121-85f0-9490b14af423",
+            "d3edaf17-278c-55bd-9e47-d20b5a2d92ce",
+            "3a72ab21-3dda-5536-98e6-9fb845cc99d0",
+            "9d46f79c-8842-5402-a710-16cc8cb9e42c",
+            "4e0e8143-85e5-5611-8cf4-60a4a43bc00a",
+            "7beed573-cf15-5dca-8954-1719bc0cdb04",
+            "2e31609c-8938-55bb-a899-9c8b8df93f40",
+            "7a7b0251-716f-5709-890f-66e4a9729809",
+            "8d721487-08e3-5652-9151-83031e637db7",
+            "2c635ec7-1bea-5793-b65d-bb08cb1568e0",
+            "b5d6ca18-a02c-5d1d-b955-188a4058c0af",
+            "a4576869-4cf7-5b49-9545-23f48ec993b5",
+            "81fc1ad1-c3da-5598-bca5-cbf4a88f873e",
+            "d9f31b3f-7d7b-5a0e-93df-70953f230bfb",
+            "aa8a3d09-0413-5495-8e4e-caee11c5de60",
+            "3281e597-e15a-5a9d-877d-cdd5686ac7b9",
+            "faa2752a-f3f5-56c8-92f3-b9c804febde1",
+            "75462186-f7b8-5319-bae0-2e79dda32fe9",
+            "397b5b3a-4e30-57d1-824a-f11c22339a8d",
+            "e682e589-3ed6-536f-b5c0-bc590e0f9b44",
+            "49096c3c-d442-546f-b403-0f2ea6a2143c",
+            "b5042d52-fd5c-5308-8c68-df044479d569",
+            "a70833c7-f7ff-5797-bd22-b6b20a996131",
+            "bc5c32c3-e009-5e26-8906-c9857f3b747b",
+            "39370d2a-35e6-57b9-8088-62b0e8a066f7",
+            "cf59952a-2074-590c-8695-7316c00c1b0a",
+            "67e8bd91-ec18-5907-b887-2603eb674303",
+            "68766fa9-35d3-5433-beda-cb9fd8882840",
+            "bb70fc20-6a49-557d-b083-d7578be5490f",
+            "7481ec7c-62df-5725-98bf-c7078e9c0054",
+            "3a82eb82-5004-545b-91cd-3229fb8d5adc",
+            "aec85c46-eafa-5bbf-8d5e-5da6d4f7c906",
+            "8d4eff42-d425-5f03-a75b-fbccc8e71b8a",
+            "0f7115c2-a7ae-565e-8c68-fb8a97167c88",
+            "bb27fd65-9c47-5eed-9018-a066d1a75194",
+            "6d961cdb-dd2c-5dcf-93d2-c2431492fe96",
+            "eca93051-7134-5900-a3a1-6ad951bb2761",
+            "a31481e0-48fc-5058-84ce-b20c61e444f2",
+            "1a1adc91-e5bf-512f-87b6-86e61b7b784f",
+            "9dda357f-a3d5-5782-aa88-556297fd113a",
+            "33b186f1-adf5-5034-ac3f-106fee5d34ea",
+            "7b7f19d8-4c00-54c9-aa3c-9d0654b935fb",
+            "33186331-c9df-57ab-8fbb-086e9e45fc01",
+            "93b13874-685e-53bb-929a-4f15e558d0b1",
+            "1e767585-85d2-5dff-a03a-138673bd7fb2",
+            "14c6c0b5-1467-54df-a75b-9cddb30c5129",
+            "6bdae460-e05c-5898-888b-3c8b5cf25c8a",
+            "a52e69b5-1dd6-5956-9fa0-adb21320fd54",
+            "03d5d517-ad28-5830-85cc-e9c2dc5c133f",
+            "e87ff15d-258c-568b-92ad-c73d65a4ca4c",
+            "91d72bf3-69c6-5748-80a0-5084cd147873",
+            "b893f6d6-7917-52bf-859d-41122e56b8fe",
+            "07d051bf-a988-521c-b468-059f4cbcfd31",
+            "5f2fe930-d914-5853-b0e4-ac6aea7aa385",
+            "e4b347ed-3663-50f8-910a-a9e645635d4f",
+            "80751a06-3c6b-5477-8284-fe2218923df4",
+            "6646b293-4685-56f8-9be1-6d223375c434",
+            "01bcb359-ef4f-5122-a571-0b18bea03422",
+            "2e460787-975d-59a3-86e6-0346873b7cc8",
+            "d5ea9dd3-393a-535e-b83a-fb57f6478a9e",
+            "3833650f-5079-5250-bc4e-694e63587ef4",
+            "acdd5ec8-6c96-5f7c-af32-74651301d072",
+            "291df6c5-4143-5687-a371-0b2825de13a3",
+            "b1ae8208-d7d2-5aeb-b265-8657d3b3a458",
+            "23bbf586-e5ab-5dfe-8871-25c9ad055942",
+            "9c7dbf6e-7a30-5002-a436-4687c0064890",
+            "13de9c8b-cfee-5d0f-9eb3-819985350170",
+            "deeee64a-cfac-5513-b20d-e48f29938a65",
+            "4e6b8e78-545c-599b-89da-b8925463d78b",
+            "07644330-872b-5282-8112-c86d2ed9cd54",
+            "62bfe6b9-c5ab-5924-bd54-ce7560473673",
+            "9c01ec9e-14e9-59b5-9b7a-4f3e3257f7ad",
+            "cd4bdc1b-3021-538a-9911-19fa1e2dfc8f",
+            "71e9024a-363b-55ac-9a5a-1d7be557e36e",
+            "9721159c-77a5-5e60-9fd2-0e52893d9da2",
+            "38c36e0f-7877-524e-889a-fb1ef3ba4b64",
+            "d0651c82-3490-52c4-87cc-e42d550ec393",
+            "e9da8e9c-90a6-5948-a53a-0d73fbfc5f6a",
+            "212c3c68-d888-5009-909a-8740ca3aa02e",
+            "33f598f6-7a3f-54d6-b61f-c40c953117a5",
+            "08c3ed30-332e-582e-8be6-e08115cf2dd5",
+            "0844a820-9c06-5982-8d89-e4045af17630",
+            "36927e24-ebaa-5bc2-a554-697e900a7de6",
+            "174b115f-769b-5994-9d76-4686d5e20929",
+            "61ba0e8b-c902-5f20-92bc-9463b20a9680",
+            "d3e73213-2151-58e3-acc3-a1b272f888d6",
+            "bdb8ebe3-708b-5f57-810b-5034cb9c672d",
+            "24a64eb7-5c35-5010-9bd8-a40367a09d87",
+            "f9022587-d923-59f7-8122-34abe4a8a0ad",
+            "614e737a-5f62-5b1e-a5c8-d7b4e339e26f",
+            "1b8ba7b8-e5d1-50cf-a54f-ed36433a1141",
+            "44ac3cc3-ac5f-5614-b7ed-62de2c705489"
+          ],
+          "revisions": [
+            "wo042-registration-0",
+            "wo042-registration-1",
+            "wo042-registration-2",
+            "wo042-registration-3",
+            "wo042-registration-4",
+            "wo042-registration-5",
+            "wo042-registration-6",
+            "wo042-registration-7",
+            "wo042-registration-8",
+            "wo042-registration-9",
+            "wo042-registration-10",
+            "wo042-registration-11",
+            "wo042-registration-12",
+            "wo042-registration-13",
+            "wo042-registration-14",
+            "wo042-registration-15",
+            "wo042-registration-16",
+            "wo042-registration-17",
+            "wo042-registration-18",
+            "wo042-registration-19",
+            "wo042-registration-20",
+            "wo042-registration-21",
+            "wo042-registration-22",
+            "wo042-registration-23",
+            "wo042-registration-24",
+            "wo042-registration-25",
+            "wo042-registration-26",
+            "wo042-registration-27",
+            "wo042-registration-28",
+            "wo042-registration-29",
+            "wo042-registration-30",
+            "wo042-registration-31",
+            "wo042-registration-32",
+            "wo042-registration-33",
+            "wo042-registration-34",
+            "wo042-registration-35",
+            "wo042-registration-36",
+            "wo042-registration-37",
+            "wo042-registration-38",
+            "wo042-registration-39",
+            "wo042-registration-40",
+            "wo042-registration-41",
+            "wo042-registration-42",
+            "wo042-registration-43",
+            "wo042-registration-44",
+            "wo042-registration-45",
+            "wo042-registration-46",
+            "wo042-registration-47",
+            "wo042-registration-48",
+            "wo042-registration-49",
+            "wo042-registration-50",
+            "wo042-registration-51",
+            "wo042-registration-52",
+            "wo042-registration-53",
+            "wo042-registration-54",
+            "wo042-registration-55",
+            "wo042-registration-56",
+            "wo042-registration-57",
+            "wo042-registration-58",
+            "wo042-registration-59",
+            "wo042-registration-60",
+            "wo042-registration-61",
+            "wo042-registration-62",
+            "wo042-registration-63",
+            "wo042-registration-64",
+            "wo042-registration-65",
+            "wo042-registration-66",
+            "wo042-registration-67",
+            "wo042-registration-68",
+            "wo042-registration-69"
+          ],
+          "suffixes": [
+            "b0000",
+            "b0001",
+            "b0002",
+            "b0003",
+            "b0004",
+            "b0005",
+            "b0006",
+            "b0007",
+            "b0008",
+            "b0009",
+            "b0010",
+            "b0011",
+            "b0012",
+            "b0013",
+            "b0014",
+            "b0015"
+          ]
+        },
+        "request": {
+          "sender": "00000000-0000-4000-8000-000000000005",
+          "caller": "00000000-0000-4000-8000-000000000005",
+          "conduit": "00000000-0000-4000-8000-000000000006",
+          "target": "00000000-0000-4000-8000-000000000003",
+          "operation": "@core#register.v1"
+        }
+      },
+      "expect": {
+        "reply": {
+          "accepted": true
+        },
+        "state": {
+          "started": true
+        },
+        "external_intents": [],
+        "required_promises": [
+          "SUB-001"
+        ],
+        "record_facts": [
+          {
+            "type": "access-decision"
+          },
+          {
+            "type": "invocation-dispatched"
+          },
+          {
+            "type": "object-change"
+          },
+          {
+            "type": "invocation-ended"
+          },
+          {
+            "type": "request-ended"
+          }
+        ]
+      },
+      "capture": {
+        "viewer": "/objectIds/Interface/viewer",
+        "outsider": "/objectIds/Interface/outsider",
+        "a": "/objectIds/Agent/a",
+        "b": "/objectIds/Agent/b",
+        "store": "/objectIds/Pool/store",
+        "shared": "/objectIds/Resource/shared",
+        "subject": "/objectIds/Conduit/subject",
+        "twin": "/objectIds/Conduit/twin"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "bec09894-81b5-5301-95d5-a068fb9b81c6",
+            "17e9dfff-d3f2-532e-b56a-00251334da21",
+            "0282aa61-bbfa-524b-b70a-48bbce967056",
+            "aa56d892-7d44-5923-8076-f4cbf6875c62",
+            "1ac0867a-7fb9-54cd-bca9-7a4e811a3ae0",
+            "a9539459-bf81-531d-94c2-1158db30b4fd",
+            "7686e012-ada4-5584-9d84-d0526c338a69",
+            "9b10a33a-99ee-5f9f-9e83-35177da87d77",
+            "1f7a702e-3aea-5f77-908c-ccd1c78d5118",
+            "8dae8035-9075-592c-915f-7efb58d6df0c",
+            "4a80d40f-5e9a-5cff-bcfc-974e5abf50dc",
+            "adc9abf5-2771-5d1c-b92d-42acb1c5398e",
+            "1c91b8c0-2cbb-5a7a-8c2c-098df8dbb397",
+            "892415a7-9e3d-5653-8db2-48bb90534c72",
+            "40ab7b6e-8ebf-5e32-bf62-35d5574e0112",
+            "66e3c94b-0317-5c32-9ebe-cc305c29bb67",
+            "6c85683a-edab-5581-81f8-8e7189507110",
+            "570fc0f4-b97a-5e9d-821e-d22da6c1cbe2",
+            "1694df0a-e602-58a0-aa5e-f83f83570e32",
+            "3546f23c-af8f-5cd8-b56d-cc508ba70806"
+          ],
+          "revisions": [
+            "review-e4-bound-removal-reconcile-1-0",
+            "review-e4-bound-removal-reconcile-1-1",
+            "review-e4-bound-removal-reconcile-1-2",
+            "review-e4-bound-removal-reconcile-1-3"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.register.v1",
+          "arguments": {
+            "documents": [
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "pool-bound"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#access-control.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#lift.v1",
+                    "github.com/shrav-k/conduit/core#reconcile.v1",
+                    "github.com/shrav-k/conduit/core#open.v1",
+                    "github.com/shrav-k/conduit/core#close.v1"
+                  ],
+                  "requirements": {
+                    "bound": {
+                      "requirement": "github.com/shrav-k/conduit/core#bound.v1",
+                      "arguments": {
+                        "operations": [
+                          "example.org/e4#ping.v1"
+                        ],
+                        "pools": [
+                          {
+                            "kind": "Pool",
+                            "name": "other"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "pool-target-bound"
+                },
+                "spec": {
+                  "capability": "github.com/shrav-k/conduit/core#access-control.v1",
+                  "operations": [
+                    "github.com/shrav-k/conduit/core#lift.v1",
+                    "github.com/shrav-k/conduit/core#reconcile.v1",
+                    "github.com/shrav-k/conduit/core#open.v1",
+                    "github.com/shrav-k/conduit/core#close.v1"
+                  ],
+                  "requirements": {
+                    "bound": {
+                      "requirement": "github.com/shrav-k/conduit/core#bound.v1",
+                      "arguments": {
+                        "operations": [
+                          "example.org/e4#ping.v1"
+                        ],
+                        "targets": [
+                          {
+                            "kind": "Pool",
+                            "name": "other"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "pool-authority"
+                },
+                "from": "pool-bound",
+                "consumer": {
+                  "kind": "Interface",
+                  "name": "viewer"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "access"
+                },
+                "as": "pool-access"
+              },
+              {
+                "apiVersion": "github.com/shrav-k/conduit/v0",
+                "kind": "Conduit",
+                "metadata": {
+                  "name": "delegation"
+                },
+                "from": "pool-target-bound",
+                "consumer": {
+                  "kind": "Agent",
+                  "name": "b"
+                },
+                "target": {
+                  "kind": "Resource",
+                  "name": "access"
+                },
+                "as": "delegate"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "f3a04dce-2996-515a-8449-7a929e05d53e",
+            "74af6480-f96a-52b1-8d57-2cc4090fdf69",
+            "3bcddac7-d288-598c-9c92-4ea1e8623b2d",
+            "2059a58f-6eb6-5c77-bfaf-def9054243c0",
+            "ec602019-5680-5b73-a55d-76060b1d7a51",
+            "e2fbcbf6-f1b9-586c-b967-fb6b752c72a8",
+            "a581f7d6-8f5d-5670-983a-7ba1eaa94680",
+            "cfc1ab4d-c86b-5150-a65b-2bde508643cb",
+            "aaca8dcd-d6c6-5464-a5e7-63faebd35026",
+            "3f80417a-7ede-513a-9481-d969dede7c63",
+            "4858267e-da7b-5fdf-8b5f-f96c70f6d59d",
+            "e4630771-cc6a-5411-9911-d9557d60b803",
+            "5426ed44-76e4-5af8-a4e7-01c131f9159e",
+            "7ee59d4c-bca1-59c6-be9f-bb5459ee0ce7",
+            "11d40bac-7a20-5a7f-b56f-facd95bc928d",
+            "1bb95720-9849-5dd3-97ac-978c86023a1c",
+            "022b68ad-fb5e-5922-9799-5f163326b845",
+            "24f43232-b468-543b-b6f6-41240a7e2b6f",
+            "465c23f8-5347-5b23-b522-e45d36ea1a06",
+            "1e5994ca-6280-5690-9b9d-95d3e7b08afd"
+          ],
+          "revisions": [
+            "review-e4-bound-removal-reconcile-2-0",
+            "review-e4-bound-removal-reconcile-2-1",
+            "review-e4-bound-removal-reconcile-2-2",
+            "review-e4-bound-removal-reconcile-2-3"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "pool-authority"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "6a44aed2-c03f-522a-9275-4ee12bf79917",
+            "f3bb41c7-7a7a-55f1-98d0-fb74e6b818d2",
+            "bf877bc9-49ad-5ad6-b3c5-cb734c9a0cd3",
+            "f41a14a0-7e97-5da7-8ac0-afda5ff17a62",
+            "a5f07fdf-e8aa-5d86-9858-deb806e17648",
+            "67b6f394-15e4-5fe6-a690-d4eaf5275c9e",
+            "34d36cb3-3054-5927-9152-88f0241e78ff",
+            "6bf3b7c4-2960-56e5-b633-ce4cbc74f7fc",
+            "e1c4a358-44ee-5c99-91d2-dd40223295a1",
+            "e6fb4f0c-9fed-5803-93a3-bad9485e10be",
+            "dd42c343-0880-58c6-a778-3ce42d5e221d",
+            "cdd7dcb3-e40b-563a-8e69-6a349da1fa02",
+            "5c49254e-fdda-5cf9-bf12-767dd1bcd6be",
+            "18f686c7-0a83-5245-aefc-cc98b0c9899f",
+            "e84ee569-4e30-514e-86cb-4f5ba0bafa42",
+            "352fb63e-b607-5afb-8e2d-f5ca3d9bf3aa",
+            "f8273985-0158-5300-83aa-4292cda27f0a",
+            "2628b31b-c024-5d4f-b6ac-061b9175c11d",
+            "0a8345e7-8825-51d4-ad7e-bb8189df9bc0",
+            "d12a8b68-edaa-5b31-8b10-4b9bc1968ab3"
+          ],
+          "revisions": [
+            "review-e4-bound-removal-reconcile-3-0",
+            "review-e4-bound-removal-reconcile-3-1",
+            "review-e4-bound-removal-reconcile-3-2",
+            "review-e4-bound-removal-reconcile-3-3"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.open.v1",
+          "arguments": {
+            "conduit": "delegation"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "b3e09ef3-3e91-5b82-a728-6cff31be1fc5",
+            "e6b9557f-cceb-5dc2-9ff6-123bd0f9525a",
+            "dd4fefd0-4f69-5a7e-9323-09c001d855d3",
+            "ab7c2d77-52f4-5bd2-bfc2-2ce40f5905f5",
+            "45721569-2868-5e5a-9e30-457609f5c45e",
+            "f3cb24e9-48f2-548f-90e1-6b541fcc88ae",
+            "aeb4c998-fc95-5e8d-a63b-016348c1861a",
+            "8bd39d11-3a82-597a-ab5c-225eed48f035",
+            "959c38f4-3599-5295-87ab-32cc69e0e3b4",
+            "efd6a09a-c069-58e3-958f-81c974521712",
+            "c5cb0844-0f40-55d0-bd4a-0c44174d7591",
+            "f815316a-26bf-5f8e-b879-0a3f1d71b5a1",
+            "8baa97ec-0705-5af5-a780-3defaf3a5f7a",
+            "d45554a2-a140-5de8-abfa-debd38563ec1",
+            "84352f02-5696-5863-acbc-608fb36b1b73",
+            "604085e5-6feb-5264-ad00-abad1bb8ed1d",
+            "582825f7-7ff2-577b-aa82-150c73adef8d",
+            "0853b0f9-6338-512d-a1ae-7ab647c80b50",
+            "a33b70ea-d267-5dc9-a0e4-15067e5cf3b2",
+            "b08ba4f5-0a76-5c24-85f0-6ca8944c991b"
+          ],
+          "revisions": [
+            "review-e4-bound-removal-reconcile-4-0",
+            "review-e4-bound-removal-reconcile-4-1",
+            "review-e4-bound-removal-reconcile-4-2",
+            "review-e4-bound-removal-reconcile-4-3"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.close.v1",
+          "arguments": {
+            "conduit": "delegation"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      },
+      "capture": {
+        "delegationStone": "/tombstones/0/id",
+        "delegationFact": "/tombstones/0"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "70a31945-0733-5ca6-a9f7-b2190eae2df1",
+            "b19d41ec-2cbf-5262-ba13-37ec2bb2f234",
+            "3aa00f4c-d2f2-5853-b578-fabe11071c28",
+            "fca553d1-128f-570b-9afd-2e512d6f12fa",
+            "8f78583f-f1c7-56df-9b80-2c20fdc21163",
+            "491952cf-3c2b-5fe3-a358-b90932515c7e",
+            "ec36ee6d-19cc-5a07-809b-3dbc1cc92738",
+            "c8617bdb-3bc1-5769-a135-72ea1d640f79",
+            "c824a665-7170-5b20-a5d4-f133637e40c9",
+            "885bd497-4de4-5960-b67d-c7ce02d381a5",
+            "a3f33851-b7c7-5c69-9207-00c4cb559e01",
+            "f7de0cef-1660-51f8-b2a6-388a15c49224",
+            "464183d2-ccc9-5043-a9c2-9bfe91a082f0",
+            "f58fa9be-90fe-5187-8087-2f2c9606d405",
+            "90d292f0-3203-5564-a629-c6413428d120",
+            "9fc1e184-4654-5a40-bda2-584ffa3aae3b",
+            "51ac2478-2540-518a-bf35-0c6cbc21aa2a",
+            "39a192e4-cefd-5119-ae76-d3bec98a4e7b",
+            "a799d7e9-ecad-516a-8810-ef88653bb784",
+            "a0aacb97-349e-544a-948a-e3cb0e66a096"
+          ],
+          "revisions": [
+            "review-e4-bound-removal-reconcile-5-0",
+            "review-e4-bound-removal-reconcile-5-1",
+            "review-e4-bound-removal-reconcile-5-2",
+            "review-e4-bound-removal-reconcile-5-3"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "management.retire.v1",
+          "arguments": {
+            "instance": {
+              "kind": "Pool",
+              "name": "other"
+            }
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      },
+      "capture": {
+        "poolStone": "/tombstoneIds/Pool/other"
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "b99840a7-1f41-5e22-8f94-e5bb5349fba3",
+            "87827c7b-568a-531b-a157-fea75c0f7dc6",
+            "bb7b972e-f46e-5af5-9186-a5d5ae382632",
+            "a63b7fa4-af96-5474-8d92-20806424b45f",
+            "b0538103-f08c-50a3-847b-d97fa9eabdb3",
+            "426726b6-3636-5240-94e6-38389a92395d",
+            "444f1502-8073-526e-93b0-6f78477e59d7",
+            "ea3654ad-37fd-5885-afe1-5a1ffb0696df",
+            "df929b67-f2eb-5cb5-b8d1-27e190b794a6",
+            "47bc2cb4-fdc5-5004-8ba8-b8651c52d797",
+            "a253d81b-8121-553e-9999-ea6912c1cede",
+            "c6212f42-0b6c-5355-ad1e-51cd3c29ee99",
+            "765cdf85-7e67-5b1d-9865-ececc53e41e0",
+            "6d20d73a-fc67-5c4f-91aa-0737f8c4a1a0",
+            "ad48a131-6753-50cb-9df9-63a2d4afcad0",
+            "ad457199-3138-52c6-a56c-bf879f4abf1d",
+            "89da7308-366d-5c6e-b9d2-84783149e58f",
+            "7b78e764-60f8-58bd-acdf-1e421fa959dd",
+            "bfb40d16-31d4-55c2-9e29-fea93207711b",
+            "0aa749e8-0204-5353-9970-ce59b880393d"
+          ],
+          "revisions": [
+            "review-e4-bound-removal-reconcile-6-0",
+            "review-e4-bound-removal-reconcile-6-1",
+            "review-e4-bound-removal-reconcile-6-2",
+            "review-e4-bound-removal-reconcile-6-3"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.lift.v1",
+          "arguments": {
+            "id": "$poolStone"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "restore-state",
+        "records_purged": true
+      },
+      "expect": {
+        "state": {
+          "started": true
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "68634243-ea6c-53d2-991a-585bdd15f93a",
+            "a244b2fd-8e55-5975-971d-5fb2d20554bd",
+            "4ea0dbfe-8c5a-5235-bc85-e1acf20f9864",
+            "4635bda4-07be-5da0-8391-499d150ab657",
+            "913d93b1-7250-5067-8a16-6066670ba10c",
+            "4c783d72-24b2-5afe-ade6-01958c7b35b8",
+            "16905fdb-0d0e-5b8d-99b4-ddf805f32a1d",
+            "520b261f-1b3f-5e97-b58c-45b5ef31153b",
+            "a1bd5415-2cd9-588b-a41d-6127c357c89e",
+            "124a8c0d-0e65-527d-b3e9-2a6bc8d3e35d",
+            "615a5424-cbba-5c1a-aedf-a1fc01aa3392",
+            "d657b178-4feb-59b2-8c68-fc83291ffb72",
+            "bc43f0d4-64d0-5478-8627-20444ba8ae9b",
+            "6198c783-8f3a-591e-83b6-7d635e3a4a11",
+            "e198ff89-9044-52a1-9de0-78ef08d94bb5",
+            "717d7235-c76c-577e-ab63-99a0376a37f0",
+            "6b43a29f-ead7-571b-a026-3a716879d184",
+            "23e60301-7630-5604-86dd-c86b4c56da51",
+            "c237a8b1-7319-5129-8b45-89d6cbfbfeb4",
+            "1297f5d7-1026-56fd-b861-5c81ebc7d4f7"
+          ],
+          "revisions": [
+            "review-e4-bound-removal-reconcile-8-0",
+            "review-e4-bound-removal-reconcile-8-1",
+            "review-e4-bound-removal-reconcile-8-2",
+            "review-e4-bound-removal-reconcile-8-3"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "00000000-0000-4000-8000-000000000005"
+          },
+          "tool": "access.lift.v1",
+          "arguments": {
+            "id": "$delegationStone"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        },
+        "tombstone_count": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "lifecycle-fixture",
+        "file": "requests",
+        "index": 0
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        }
+      }
+    },
+    {
+      "input": {
+        "kind": "invoke",
+        "evidence": {
+          "time": "2026-11-12T12:00:00Z",
+          "ids": [
+            "371cb5d0-ff05-5217-b5c0-95ed42e08383",
+            "48e650e1-b13a-50a8-a7b4-4ae5eee17d4e",
+            "78dd4f42-ca4c-5530-9d2d-f5982eb3a115",
+            "dfee11f4-2a73-5e89-884f-b31f130fe7ce",
+            "746b03df-1672-5627-9894-50f50ce9e20d",
+            "3b8fed18-080a-5390-b115-7583dec65ba8",
+            "61c79145-706d-5781-b459-43d57af4b64c",
+            "dfc7849b-5609-5461-acf9-b4ae4dd1722c",
+            "efcf51e7-c593-5e8c-b117-9a76b5b5c826",
+            "3d18b061-fbda-5a26-850f-39277cf440b7",
+            "ddc07e4a-28c1-5b64-9189-0e9105168576",
+            "c11a64bd-d16e-57a0-9574-68828f5ebc19",
+            "116336fe-2e1b-5da6-b432-1b065d9fcbf8",
+            "8b3c3e3d-2d79-5e64-930f-1aab2a19f7ab",
+            "7af67939-8a73-5d7d-8d6e-a44669f6556d",
+            "1ec5b2e1-ce78-511b-8adf-57e5ae95a79e",
+            "f9a51e4b-a451-5990-a4a4-af40c6411a4b",
+            "a1bb0f12-112d-51d6-ba83-73241f6827a6",
+            "93b9a9b1-6db0-5b1c-8bbd-7e3575e56aa9",
+            "10007d31-2ba7-57e8-9f7d-bcb2672b67c2"
+          ],
+          "revisions": [
+            "review-e4-bound-removal-reconcile-10-0",
+            "review-e4-bound-removal-reconcile-10-1",
+            "review-e4-bound-removal-reconcile-10-2",
+            "review-e4-bound-removal-reconcile-10-3"
+          ],
+          "suffixes": [
+            "r0000",
+            "r0001",
+            "r0002",
+            "r0003"
+          ]
+        },
+        "request": {
+          "identity": {
+            "kind": "instance",
+            "id": "$viewer"
+          },
+          "tool": "pool-access.reconcile.v1",
+          "arguments": {
+            "invocation": "9964ef71-b629-5ac2-a391-6a80b225b250",
+            "occurred": true,
+            "checked": "lift externally confirmed"
+          }
+        }
+      },
+      "expect": {
+        "reply": {
+          "isError": false
+        },
+        "invocation_facts": [
+          {
+            "id": "9964ef71-b629-5ac2-a391-6a80b225b250",
+            "state": "succeeded"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -112,3 +112,25 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target --exclude-dir=dist
 The provider's shell scripts stay POSIX, since the tests run them on macOS too (order 140's
 Record). `target/` and `dist/` stay ignored and unstaged. Report each choice you make as your own.
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), from base 0e95028: the worker (818 s) and a fresh
+verifier (135 s), which found nothing to change in one round. The provider's ledger, owner lock,
+markers, generation reservations, part, `known_hosts`, key and logs now live in a 0700
+subdirectory per instance of the operator's `durableDir`, named by the SHA-256 of the
+`CONDUIT_STATE_DIR` value, with `state-dir` recorded at the first start after an empty ledger;
+the runs' `stderr/` stays in `CONDUIT_STATE_DIR`. The refusals name each place and the expected
+path; the old layout is refused; a missing ledger reads as an error; and the constructor, given
+no state directory, touches nothing under it, for order 146's drainer. On the Mac, with two test
+threads: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` clean, all 42 tests
+pass, and two archive builds give the same digest
+(`sha256:0e83b0088edaa00bd74dedd5a0f280a8bc4b48f764630ac7c8634393299899d3`). The lane
+coordinator's review found nothing to change.
+
+The worker's findings: the provider is not given its own instance ID, so the subdirectory is named
+from `CONDUIT_STATE_DIR`'s value, which PRV-029 makes unique to the instance; and writing an empty
+ledger wherever `state-dir` is absent would erase a ledger an operator moved in from the old
+layout, so an existing valid ledger is kept and an invalid one refused. Its own choices: a
+`src/durable.rs` module with a non-cloneable owner lock for order 146; symbolic-link durable
+directories and special permission bits refused; unreadable old-layout entries refused.

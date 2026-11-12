@@ -3,6 +3,7 @@
 mod backend;
 pub mod codec;
 pub mod config;
+pub mod durable;
 pub mod ssh;
 mod storage;
 pub use backend::{SshBackend, Staged, parse_state};

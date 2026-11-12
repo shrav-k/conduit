@@ -53,6 +53,7 @@ pub fn config(root: &Path, remote: &Path) -> Config {
             host_key: format!("ssh-ed25519 {}", STANDARD.encode(blob)),
         }],
         private_key: key,
+        durable_dir: root.parent().unwrap().to_path_buf(),
         base: remote.to_str().unwrap().into(),
         run_path: "/usr/bin:/bin".into(),
         max_lifetime: Duration::from_secs(60),
@@ -448,7 +449,9 @@ impl Executor for Fake {
     }
 }
 pub struct Fixture {
-    pub root: tempfile::TempDir,
+    pub _root: tempfile::TempDir,
+    pub durable: PathBuf,
+    pub state: PathBuf,
     pub remote: tempfile::TempDir,
     pub backend: SshBackend,
     pub fake: Arc<Fake>,
@@ -471,19 +474,34 @@ impl Fixture {
             .unwrap();
         fs::set_permissions(root.path(), fs::Permissions::from_mode(0o700)).unwrap();
         let remote = tempfile::tempdir().unwrap();
-        let mut config = config(root.path(), remote.path());
+        let state = root
+            .path()
+            .join("instances/00000000-0000-4000-8000-000000000145");
+        fs::create_dir_all(&state).unwrap();
+        fs::set_permissions(&state, fs::Permissions::from_mode(0o700)).unwrap();
+        let durable_dir = root.path().join("durable space %");
+        fs::create_dir(&durable_dir).unwrap();
+        fs::set_permissions(&durable_dir, fs::Permissions::from_mode(0o700)).unwrap();
+        let durable = provider_ssh_runtime::durable::instance_directory(&durable_dir, &state);
+        fs::create_dir(&durable).unwrap();
+        fs::set_permissions(&durable, fs::Permissions::from_mode(0o700)).unwrap();
+        let mut config = config(&durable, remote.path());
         config.prefix = prefix.into();
         config.run_limit = limit;
         let fake = Arc::new(Fake::default());
         let backend = SshBackend::with_executor(
-            root.path(),
+            &durable,
+            Some(&state),
             config.clone(),
+            None,
             PathBuf::from("/synthetic/ssh"),
             fake.clone(),
         )
         .unwrap();
         Self {
-            root,
+            _root: root,
+            durable,
+            state,
             remote,
             backend,
             fake,
@@ -500,7 +518,7 @@ impl Fixture {
     pub fn directory(&self, id: &str) -> PathBuf {
         let name =
             provider_ssh_runtime::instance_key(&format!("{}\0{id}", context().machine.hostname));
-        let marker = fs::read(self.root.path().join("markers").join(name))
+        let marker = fs::read(self.durable.as_path().join("markers").join(name))
             .ok()
             .and_then(|b| serde_json::from_slice::<serde_json::Value>(&b).ok());
         // Once the marker is gone, cleanup assertions inspect the entire parent.
@@ -518,7 +536,7 @@ impl Fixture {
         )
     }
     pub fn diagnostics(&self) -> String {
-        fs::read_to_string(self.root.path().join("diagnostics.log")).unwrap()
+        fs::read_to_string(self.durable.as_path().join("diagnostics.log")).unwrap()
     }
 }
 impl Drop for Fixture {

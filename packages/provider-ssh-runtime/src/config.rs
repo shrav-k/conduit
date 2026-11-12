@@ -18,6 +18,7 @@ pub struct MachineConfig {
 pub struct Config {
     pub machines: Vec<MachineConfig>,
     pub private_key: PathBuf,
+    pub durable_dir: PathBuf,
     pub base: String,
     pub run_path: String,
     pub max_lifetime: Duration,
@@ -67,6 +68,7 @@ impl Config {
             .map_err(|_| "SSH_RUNTIME_MACHINES")?;
         let mut config = Self {
             machines,
+            durable_dir: required(&mut get, "SSH_RUNTIME_DURABLE_DIR")?.into(),
             private_key: required(&mut get, "SSH_RUNTIME_PRIVATE_KEY")?.into(),
             base: required(&mut get, "SSH_RUNTIME_BASE")?,
             run_path: required(&mut get, "SSH_RUNTIME_PATH")?,
@@ -120,6 +122,9 @@ impl Config {
             })
         {
             return Err("SSH_RUNTIME_MACHINES");
+        }
+        if option_path(self.durable_dir.to_str().ok_or("SSH_RUNTIME_DURABLE_DIR")?).is_err() {
+            return Err("SSH_RUNTIME_DURABLE_DIR");
         }
         if option_path(self.private_key.to_str().ok_or("SSH_RUNTIME_PRIVATE_KEY")?).is_err() {
             return Err("SSH_RUNTIME_PRIVATE_KEY");

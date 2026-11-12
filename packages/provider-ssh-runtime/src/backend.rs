@@ -1,6 +1,7 @@
 use crate::{
     codec::{self, quote},
     config::Config,
+    durable::{self, OwnerLock},
     instance_key,
     ssh::{self, Executor, Master, Output},
     storage::{atomic_write, private_directory, private_file},
@@ -13,10 +14,7 @@ use std::{
     collections::BTreeMap,
     fs::{self, File, OpenOptions},
     io::Write,
-    os::{
-        fd::AsRawFd,
-        unix::fs::{OpenOptionsExt, PermissionsExt},
-    },
+    os::unix::fs::{OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::Duration,
@@ -47,14 +45,15 @@ struct Connection {
 struct Inner {
     config: Config,
     root: PathBuf,
+    state: Option<PathBuf>,
     ssh: PathBuf,
     part: String,
     sockets: PathBuf,
     connections: BTreeMap<String, AsyncMutex<Connection>>,
     diagnostics: Mutex<File>,
     marker_lock: Mutex<()>,
-    _owner: File,
-    _temporary: Option<tempfile::TempDir>,
+    _owner: OwnerLock,
+    _temporary: tempfile::TempDir,
     executor: Arc<dyn Executor>,
 }
 #[derive(Clone)]
@@ -94,49 +93,74 @@ fn io<T>(r: std::io::Result<T>) -> Result<T> {
     r.map_err(|_| Unavailable)
 }
 impl SshBackend {
-    pub fn new(root: &Path, config: Config) -> Result<Self> {
+    pub fn new(
+        root: &Path,
+        state: Option<&Path>,
+        config: Config,
+        owner: Option<OwnerLock>,
+    ) -> Result<Self> {
         let ssh = ssh::find_ssh().inspect_err(|_| {
             eprintln!("SSH-R refuses startup: program ssh on PATH");
         })?;
-        Self::with_executor(root, config, ssh, Arc::new(ssh::ProcessExecutor))
+        Self::with_executor(
+            root,
+            state,
+            config,
+            owner,
+            ssh,
+            Arc::new(ssh::ProcessExecutor),
+        )
     }
     pub fn with_executor(
         root: &Path,
+        state: Option<&Path>,
         config: Config,
+        owner: Option<OwnerLock>,
         ssh: PathBuf,
         executor: Arc<dyn Executor>,
     ) -> Result<Self> {
         if let Err(name) = config.validate() {
-            eprintln!("SSH-R refuses startup: setting {name}");
-            return Err(Unavailable);
+            let message = if name == "SSH_RUNTIME_PRIVATE_KEY" {
+                format!("setting {name} must lie in {}", root.display())
+            } else {
+                format!("setting {name}")
+            };
+            return Err(durable::refusal(message));
         }
-        io(private_directory(root))?;
+        durable::validate_directory(&config.durable_dir, state)?;
+        let owner = match owner {
+            Some(owner) => owner,
+            None => OwnerLock::acquire(root)?,
+        };
         let root = io(root.canonicalize())?;
-        let owner = io(OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(false)
-            .mode(0o600)
-            .custom_flags(libc::O_NOFOLLOW)
-            .open(root.join("owner.lock")))?;
-        // SAFETY: a live descriptor, held for the backend's lifetime; no blocking.
-        if unsafe { libc::flock(owner.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
-            eprintln!("SSH-R refuses startup: owner.lock");
-            return Err(Unavailable);
+        let durable = io(config.durable_dir.canonicalize())?;
+        if root.parent() != Some(durable.as_path())
+            || state.is_some_and(|s| {
+                root.file_name() != durable::instance_directory(&durable, s).file_name()
+            })
+        {
+            return Err(durable::refusal(format!(
+                "durable instance subdirectory {}",
+                root.display()
+            )));
         }
+        owner.check(&root, state)?;
         let key_ok = fs::symlink_metadata(&config.private_key)
-            .is_ok_and(|m| m.is_file() && m.permissions().mode() & 0o777 == 0o600)
+            .is_ok_and(|m| m.is_file() && m.permissions().mode() & 0o7777 == 0o600)
             && config
                 .private_key
                 .canonicalize()
                 .is_ok_and(|p| p.starts_with(&root));
         if !key_ok {
-            eprintln!("SSH-R refuses startup: setting SSH_RUNTIME_PRIVATE_KEY");
-            return Err(Unavailable);
+            return Err(durable::refusal(format!(
+                "setting SSH_RUNTIME_PRIVATE_KEY must be a regular mode 0600 file in {}",
+                root.display()
+            )));
         }
         io(private_directory(&root.join("markers")))?;
-        io(private_directory(&root.join("stderr")))?;
+        if let Some(state) = state {
+            io(private_directory(&state.join("stderr")))?;
+        }
         io(private_directory(&root.join("generations")))?;
         let part = match fs::read_to_string(root.join("part")) {
             Ok(part)
@@ -160,18 +184,12 @@ impl SshBackend {
             known.push_str(&format!("{} {}\n", m.hostname, m.host_key));
         }
         io(atomic_write(&root, "known_hosts", known.as_bytes()))?;
-        let candidate = root.join("ssh");
-        let (sockets, temporary) = if candidate.as_os_str().len() + 19 < 80 {
-            io(private_directory(&candidate))?;
-            (candidate, None)
-        } else {
-            let dir = io(tempfile::Builder::new()
-                .prefix("sshr-")
-                .permissions(fs::Permissions::from_mode(0o700))
-                .tempdir())?;
-            io(private_directory(dir.path()))?;
-            (dir.path().to_path_buf(), Some(dir))
-        };
+        let temporary = io(tempfile::Builder::new()
+            .prefix("sshr-")
+            .permissions(fs::Permissions::from_mode(0o700))
+            .tempdir())?;
+        io(private_directory(temporary.path()))?;
+        let sockets = temporary.path().to_path_buf();
         if sockets.as_os_str().len() + 19 >= 80 {
             return Err(Unavailable);
         }
@@ -204,6 +222,7 @@ impl SshBackend {
         Ok(Self(Arc::new(Inner {
             config,
             root,
+            state: state.map(Path::to_path_buf),
             ssh,
             part,
             sockets,
@@ -1064,11 +1083,17 @@ done
         }
         words.push("--".into());
         words.extend(staged.command.clone());
-        let log = self.0.root.join("stderr").join(format!(
-            "{}-{}.log",
-            self.marker_name(context, instance),
-            staged.generation
-        ));
+        let log = self
+            .0
+            .state
+            .as_ref()
+            .ok_or_else(|| self.error("run requires CONDUIT_STATE_DIR"))?
+            .join("stderr")
+            .join(format!(
+                "{}-{}.log",
+                self.marker_name(context, instance),
+                staged.generation
+            ));
         let stderr = self.local_io(private_file(&log), "run stderr file cannot be created")?;
         if cancel.is_cancelled() {
             return self.refusal("start cancelled before send");

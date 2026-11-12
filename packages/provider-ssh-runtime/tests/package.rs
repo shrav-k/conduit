@@ -146,4 +146,10 @@ fn every_item_environment_place_is_required_and_scalar_man_017() {
         assert!(schema["properties"][name].get("default").is_some());
     }
     assert_eq!(schema["properties"]["runLimit"]["default"], 62);
+    assert_eq!(
+        manifest["implementations"]["provider"]["environment"]["SSH_RUNTIME_DURABLE_DIR"],
+        "/durableDir"
+    );
+    assert_eq!(schema["properties"]["durableDir"]["pattern"], "^/");
+    assert!(schema["properties"]["durableDir"].get("default").is_none());
 }

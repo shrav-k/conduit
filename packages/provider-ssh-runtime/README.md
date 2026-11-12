@@ -1,6 +1,6 @@
 # SSH runtime provider
 
-Work orders 137 and 140 build `example.org/conduit/provider-ssh-runtime` 0.1.0. Its only Type,
+Work orders 137, 140 and 145 build `example.org/conduit/provider-ssh-runtime` 0.1.0. Its only Type,
 `ssh-runtime.v1`, offers `runtime-provider.v1`; the non-plain `provider` item implements
 `run.v1`, `stop.v1` and `inspect-run.v1`. It depends by path only on the
 [runtime-provider kit](../runtime-provider-kit/README.md). SSH-M is a separate provider.
@@ -38,7 +38,7 @@ contents travel only through `/bin/sh -s` stdin, never in local or remote argume
 resolved on the provider's PATH once at startup, then invoked by absolute path with an empty
 environment and all configuration files disabled. Its ed25519 host keys are pinned.
 
-The first start durably makes a random 64-bit part in the provider's state directory. Units
+The first start durably makes a random 64-bit part in the durable instance subdirectory. Units
 are `<prefix><part>-<SHA-256(instance-ID)>.service`; remote directories are
 `<base>/<part>/runs/<hash>/<generation>/` and `<base>/<part>/state/<hash>/`. Another provider's
 part is never swept. Each staging reserves a random 16-character hex generation in the local state,
@@ -60,7 +60,7 @@ For a run that never starts these files remain until removal or the next sweep.
 The gate holds identity in memory. The provider's state holds no copy of
 these values: it holds a private key path, the operator-installed private key, pinned public
 host keys, markers, generation reservations, the ledger and diagnostics. Run stderr goes continuously into a private
-0600 local `stderr/<marker>-<generation>.log` file and persists until the operator removes it;
+0600 local `CONDUIT_STATE_DIR/stderr/<marker>-<generation>.log` file, removed with the instance;
 a run can itself print credentials there. Diagnostics never include values or subprocess output.
 
 Every run has the lifetime the kit supplies (at most maxLifetime), enforced remotely by
@@ -100,7 +100,7 @@ A failed master backs off at 2, 4, 8, 16, then 32 seconds; calls during the back
 once. Each machine has one owned foreground master, no ssh agent and no shared control socket.
 
 A durable marker precedes staging. Inventory reads markers only and remains complete when
-all machines are off. One owner.lock excludes a second provider in the same state directory.
+all machines are off. One owner.lock excludes a second provider in the same durable instance subdirectory.
 ledger.json atomically retains the kit's records and owed stops. The kit drains at startup,
 before well-formed calls and each drainInterval. Recovery stops every marker/ledger run because
 old channels cannot survive provider restart; an incomplete inventory prevents serving.
@@ -114,8 +114,8 @@ machines. The kit cancels and waits for stage/start/gate opening, closes the gat
 no launch may follow a confirmed stop. Inspection is unknown while unreachable or stop is owed.
 
 Decision D's external stop-drainer that outlives provider retirement is **not built**. A stop
-still owed on retirement is carried out only if the provider starts again in the same state
-directory. Until then RuntimeMaxSec is the only end of that run, and the run directory of a
+still owed on retirement is carried out only if the provider starts again using the same durable
+instance subdirectory. Until then RuntimeMaxSec is the only end of that run, and the run directory of a
 run that never started stays on the remote. Failed staging and start attach the same named,
 value-free reason written on stderr and in 0600 diagnostics.log through `Unavailable::because`.
 The kit includes it after `staging failed:` or `start did not complete:`, with its existing
@@ -128,8 +128,12 @@ reached after staging does name the owed instance and machine, as the race test 
 
 ## Startup configuration
 
-The provider uses CONDUIT_STATE_DIR as provided by the engine, a private absolute directory
-(mode 0700, no symlink). Configuration is read once, from the item's environment. Missing or
+The engine supplies CONDUIT_STATE_DIR (PRV-029), which it removes with the provider instance.
+The required `durableDir` / `SSH_RUNTIME_DURABLE_DIR` is outside that lifecycle: under the
+admin's decision of 2026-11-12 for PRV-021, it retains owed stops and the identity of the remote
+part after provider retirement. The operator creates this directory at mode 0700, owned by the
+provider's user, and removes it only after all owed stops and remote material have been cleaned.
+It has no default. Configuration is read once, from the item's environment. Missing or
 malformed bindings refuse startup and name the binding, without printing its value. Each
 config property below maps to `SSH_RUNTIME_<BINDING>` (no new CONDUIT_ configuration names).
 The manifest maps those properties to the item environment. Only the three tool paths and
@@ -141,7 +145,8 @@ are required even for direct launches.
 | Config property | Binding suffix | Meaning / suggested default |
 | --- | --- | --- |
 | machines | MACHINES | Required JSON string containing a nonempty array of the objects below; no default |
-| privateKey | PRIVATE_KEY | Absolute key path inside this state directory; regular file, mode 0600; no default |
+| durableDir | DURABLE_DIR | Absolute operator-owned durable directory, mode 0700, outside the engine store; no default |
+| privateKey | PRIVATE_KEY | Absolute key path inside the durable instance subdirectory; regular file, mode 0600; no default |
 | base | BASE | Absolute remote base, only A-Za-z0-9/._-, no dot/dotdot components; no default |
 | path | PATH | Remote run PATH; no default |
 | runLimit | RUN_LIMIT | Per-machine staging/running limit, 1–62, default 62 |
@@ -163,10 +168,66 @@ machine name, host is its SSH destination, port is 1–65535, user must be `cond
 host_key is `ssh-ed25519 <base64-public-key>` without a comment. No key is generated by this
 provider. Numeric settings are whole seconds/counts, at most 2147483647; the gate's full bound
 must fit that many milliseconds. Paths in SSH -o values are double-quoted for SSH's parser,
-with % doubled, and cannot start with ~. State paths with quotes, backslashes or newlines are
-refused. Control sockets stay below 80 bytes in a 0700 directory inside state where it fits,
-otherwise a private temporary directory (removed with its owner). Stale sockets are removed
+with % doubled, and cannot start with ~. Durable paths with double quotes, backslashes, CR, LF or NUL are
+refused. Control sockets always use a private mode 0700 temporary directory (removed with its
+owner), below the 80-byte socket-path limit; the hashed durable path is too long. Stale sockets are removed
 before connecting. Keep this directory private from other local principals.
+
+## Durable local layout
+
+Each provider instance has one mode 0700 subdirectory under `durableDir`, named by the
+lowercase hexadecimal SHA-256 of the exact bytes of its supplied CONDUIT_STATE_DIR value,
+without a trailing newline. Do not canonicalize, trim, collapse slashes or remove a trailing
+slash before hashing. For example, an operator can pipe `printf '%s' "$CONDUIT_STATE_DIR"`
+to `sha256sum` (or `shasum -a 256` on macOS), and use its first field as the subdirectory name.
+Create that subdirectory at mode 0700 and install the configured `privateKey` there at mode
+0600 before the first start. The provider can also create the subdirectory. The engine gives
+no provider instance ID directly; PRV-029's unique, never-reused path identifies it here.
+
+| Place | Contents |
+| --- | --- |
+| Durable instance subdirectory: `owner.lock` | Exclusive ownership for the server or future drainer; different instances have different locks |
+| `state-dir` | Exact original CONDUIT_STATE_DIR bytes, without a newline |
+| `ledger.json` | Atomically written kit records, including owed stops |
+| `markers/` | Durable run inventory, including unstarted material to sweep |
+| `generations/` | Generation reservations, never reused while retained |
+| `part` | Random remote part identity, retained across restarts |
+| `known_hosts` | Pinned public host keys |
+| Configured `privateKey` | Operator-installed private key inside this subdirectory |
+| `diagnostics.log` | Provider diagnostics, without run output or credential values |
+| Drainer's log (order 146) | Reserved for the external drainer in this same subdirectory; not created by this order |
+| CONDUIT_STATE_DIR: `stderr/` | Run standard-error files only; may contain run-printed credentials and disappear with instance removal |
+| Private temporary socket directory | SSH control sockets, always outside both state directories |
+
+Startup opens or creates the durable subdirectory, takes `owner.lock`, then checks `state-dir`.
+For a fresh subdirectory it atomically writes `ledger.json` as `[]` before atomically writing
+`state-dir`. An existing valid ledger without `state-dir`, after an interrupted initialization
+or an explicit migration, is retained rather than overwritten. Invalid ledgers refuse startup.
+A different `state-dir` value, or `state-dir` present without `ledger.json`, refuses startup.
+FileStore treats a missing ledger as an error, never an empty set of obligations.
+
+Startup refuses a missing, relative, SSH-option-incompatible, non-directory, symlink,
+foreign-owned or non-0700 `durableDir`. It also refuses one inside CONDUIT_STATE_DIR or its
+parent, including that parent itself: another instance's removal must not delete durable
+state. Containment uses canonical paths (including macOS's `/var` to `/private/var` alias),
+while the subdirectory hash always uses the raw supplied value. Refusals name the configuration
+place; a private-key refusal names the expected durable instance subdirectory.
+
+There is no automatic migration from orders 137/140. With the provider stopped, create the
+computed subdirectory and move every existing `ledger.json`, `markers/`, `generations/`, `part`
+and `known_hosts` from CONDUIT_STATE_DIR into it, preserving contents and private modes; move
+the private key and diagnostics there too and update `privateKey`. Startup names every old
+layout entry it finds and refuses until they are moved. Keep `stderr/` in CONDUIT_STATE_DIR.
+Never discard a ledger or change the old part: owed stops and old staged material still need
+cleanup. A migrated ledger is retained on initialization; `state-dir` is then written for the
+supplied value. Never run two owners during a move.
+
+The backend constructor accepts the durable subdirectory, an optional engine state directory,
+and an optional already-held `OwnerLock`. Without an engine state directory it reads, creates
+and canonicalizes nothing there; it opens existing durable state for a future drainer even
+after the engine state directory and its parent are removed. Only the server makes `stderr/`
+and checks containment and the old layout. Order 146 builds the drainer; this order provides
+its durable storage and ownership boundary.
 
 ## The owner's ruling-77 setup
 
@@ -203,9 +264,9 @@ These are unit observations, not S10/WSL evidence; see
 
 | Field | Disposition and evidence |
 | --- | --- |
-| (a) Own operations/custom code | Observed in source and fake tests: src/backend.rs implements RuntimeBackend, durable markers, generation reservations and cleanup, run admission, contact, sweep and start/stop/state; src/ssh.rs owns subprocesses/master/session and SSH argv; src/codec.rs encodes shell/stdin/environment; src/config.rs validates startup; src/storage.rs atomically commits the ledger; src/main.rs serves; src/bin/package.rs archives; src/lib.rs exports the interface. This is an implementation inventory, not a counted S10 result. |
+| (a) Own operations/custom code | Observed in source and fake tests: src/backend.rs implements RuntimeBackend, durable markers, generation reservations and cleanup, run admission, contact, sweep and start/stop/state; src/ssh.rs owns subprocesses/master/session and SSH argv; src/codec.rs encodes shell/stdin/environment; src/config.rs validates startup; src/durable.rs owns instance binding and locking; src/storage.rs atomically commits the ledger; src/main.rs serves; src/bin/package.rs archives; src/lib.rs exports the interface. This is an implementation inventory, not a counted S10 result. |
 | (b) Delegation | Observed mapping: kit owns MCP/admission/gate/lifecycle/owed stops (shared work counted once with local-process and future Docker); OpenSSH owns authentication, host pinning and transport; systemd owns exec, cgroup stop, lifetime and stop-post cleanup. Real OpenSSH/systemd behavior is untested here. |
-| (c) Persistent state | Observed: provider OS user owns local owner.lock, part, known_hosts, markers, permanent generation reservations, ledger.json, diagnostics.log, stderr logs and operator key; remote shared user owns part/runs and persistent part/state. Inventory, atomic ledger and owed-stop restart tests cover local recovery. Retirement has no external drainer; restart in the same state directory is required. Remote files, modes and staging are tested by a fake executing scripts in a temporary directory. |
+| (c) Persistent state | Observed: provider OS user owns durableDir and each hashed subdirectory with owner.lock, state-dir, part, known_hosts, markers, permanent generation reservations, ledger.json, diagnostics.log and operator key; only stderr logs stay in the engine state directory. The operator controls durable-directory removal. Remote shared user owns part/runs and persistent part/state. Inventory, atomic ledger and owed-stop restart tests cover local recovery. Retirement has no external drainer yet; reopening the same durable subdirectory is required. Remote files, modes and staging are tested by a fake executing scripts in a temporary directory. |
 | (d) Operator setup/recovery | Untested on the Windows computer: install keys, pin hosts, configure the table and the remote setup above; route the gate on the engine's machine. Manual recovery after retirement: restart the provider with the same state and configuration to retry held stops, including unacknowledged launches. If the state is lost, an operator must inventory/stop that part's remote units and remove run files; persistent state is deliberately retained. No setup script or independent supervisor is shipped. |
 
 ## Build and unit checks

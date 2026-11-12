@@ -164,6 +164,15 @@ pub struct FakeBackend {
     pub block: AtomicBool,
     pub fail_stage: AtomicBool,
     pub fail_start: AtomicBool,
+    pub pause_next_stage: AtomicBool,
+    pub stage_entered: Notify,
+    pub resume_stage: Notify,
+    pub staged_drops: Arc<AtomicUsize>,
+    pub pause_next_start: AtomicBool,
+    pub resume_start: Notify,
+    pub pause_next_state: AtomicBool,
+    pub state_entered: Notify,
+    pub resume_state: Notify,
     pub pause_next_stop: AtomicBool,
     pub stop_entered: Notify,
     pub resume_stop: Notify,
@@ -171,6 +180,14 @@ pub struct FakeBackend {
     pub contexts: Mutex<Vec<CallContext>>,
     pub runs: Mutex<BTreeMap<String, (RunRecord, Option<DuplexStream>)>>,
     pub staged_valid: AtomicBool,
+}
+pub struct Staged {
+    drops: Arc<AtomicUsize>,
+}
+impl Drop for Staged {
+    fn drop(&mut self) {
+        self.drops.fetch_add(1, Ordering::SeqCst);
+    }
 }
 impl FakeBackend {
     fn note(&self, context: &CallContext) {
@@ -189,7 +206,7 @@ impl FakeBackend {
 }
 #[async_trait]
 impl RuntimeBackend for FakeBackend {
-    type Staged = ();
+    type Staged = Staged;
     fn declaration(&self) -> Declaration {
         Declaration {
             registry_types: vec!["oci".into()],
@@ -215,8 +232,8 @@ impl RuntimeBackend for FakeBackend {
         &self,
         context: &CallContext,
         input: &RunInput,
-        _: &CancellationToken,
-    ) -> Result<()> {
+        cancel: &CancellationToken,
+    ) -> Result<Staged> {
         self.note(context);
         let expected = run_args();
         let valid = input
@@ -238,22 +255,37 @@ impl RuntimeBackend for FakeBackend {
             && input.package_arguments["ordinary"] == "public";
         self.staged_valid.store(valid, Ordering::SeqCst);
         if self.fail_stage.load(Ordering::SeqCst) {
-            Err(Unavailable)
-        } else {
-            Ok(())
+            return Err(Unavailable);
         }
+        let staged = Staged {
+            drops: self.staged_drops.clone(),
+        };
+        if self.pause_next_stage.swap(false, Ordering::SeqCst) {
+            self.stage_entered.notify_one();
+            tokio::select! {
+                _ = self.resume_stage.notified() => {},
+                _ = cancel.cancelled() => return Err(Unavailable),
+            }
+        }
+        Ok(staged)
     }
     async fn start(
         &self,
         context: &CallContext,
         instance: &str,
-        _: (),
+        _staged: Staged,
         cancel: &CancellationToken,
         _: Duration,
     ) -> Result<Channel> {
         self.note(context);
         self.starts.fetch_add(1, Ordering::SeqCst);
         self.entered.notify_one();
+        if self.pause_next_start.swap(false, Ordering::SeqCst) {
+            tokio::select! {
+                _ = self.resume_start.notified() => {},
+                _ = cancel.cancelled() => return Err(Unavailable),
+            }
+        }
         if self.block.load(Ordering::SeqCst) {
             cancel.cancelled().await;
             return Err(Unavailable);
@@ -294,6 +326,10 @@ impl RuntimeBackend for FakeBackend {
     }
     async fn state(&self, context: &CallContext, instance: &str) -> Result<RunState> {
         self.note(context);
+        if self.pause_next_state.swap(false, Ordering::SeqCst) {
+            self.state_entered.notify_one();
+            self.resume_state.notified().await;
+        }
         if self.unknown.load(Ordering::SeqCst) {
             return Ok(RunState::Unknown);
         }

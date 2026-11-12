@@ -8,6 +8,334 @@ use std::{
 };
 use support::*;
 
+const SECOND_ID: &str = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+
+fn second_run_args() -> serde_json::Value {
+    let mut value = run_args();
+    value["instance"] = json!(SECOND_ID);
+    value
+}
+
+fn owed_stop_refusal(result: &rmcp::model::CallToolResult, instances: &[&str]) {
+    outcome(result, "failed");
+    let wire = serde_json::to_value(result).unwrap();
+    let message = wire["content"][0]["text"].as_str().unwrap();
+    for instance in instances {
+        assert!(message.contains(instance));
+    }
+    assert!(message.contains(&machine().hostname));
+    assert!(message.contains("start may be tried again once those stops are carried out"));
+    assert!(result.structured_content.is_none());
+}
+
+async fn machine_owed_stop_blocks_new_run(unsaved: bool) {
+    let h = Harness::new().await;
+    h.backend.seed(ID);
+    h.store.save(&record(ID)).await.unwrap();
+    h.store.fail_save.store(unsaved, Ordering::SeqCst);
+    h.backend.unavailable.store(true, Ordering::SeqCst);
+    outcome(&h.call("stop.v1", args()).await, "unknown");
+    // The same instance retains its existing unknown answer.
+    outcome(&h.call("run.v1", run_args()).await, "unknown");
+    let refused = h.call("run.v1", second_run_args()).await;
+    owed_stop_refusal(&refused, &[ID]);
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 0);
+    assert!(!h.backend.staged_valid.load(Ordering::SeqCst));
+    assert!(h.gate.handles.lock().unwrap().is_empty());
+    let records = h.store.load().await.unwrap();
+    assert!(records.len() == 1 && records[0].instance == ID);
+    assert!(records[0].owed_stop != unsaved);
+    // Keep writes failing through the refusal, then let the next call drain and start.
+    h.store.fail_save.store(false, Ordering::SeqCst);
+    h.backend.unavailable.store(false, Ordering::SeqCst);
+    outcome(&h.call("run.v1", second_run_args()).await, "succeeded");
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 1);
+    assert!(h.backend.staged_valid.load(Ordering::SeqCst));
+    assert!(!h.backend.runs.lock().unwrap().contains_key(ID));
+    assert!(h.store.load().await.unwrap().iter().all(|r| !r.owed_stop));
+    h.close().await;
+}
+
+#[tokio::test]
+async fn durable_machine_owed_stop_blocks_new_run_until_drained() {
+    machine_owed_stop_blocks_new_run(false).await;
+}
+
+#[tokio::test]
+async fn memory_only_machine_owed_stop_blocks_new_run_until_drained() {
+    machine_owed_stop_blocks_new_run(true).await;
+}
+
+// B has already loaded its ledger when A publishes a new stop intent. Exercise both
+// an in-progress stop and a completed failure, with durable and memory-only intent.
+async fn stop_published_during_state_lookup_blocks_start(unsaved: bool, in_progress: bool) {
+    let h = Harness::new().await;
+    h.backend.pause_next_state.store(true, Ordering::SeqCst);
+    let peer = h.client.peer().clone();
+    let run = tokio::spawn(async move {
+        peer.call_tool(call("run.v1", second_run_args()))
+            .await
+            .unwrap()
+    });
+    h.backend.state_entered.notified().await;
+    h.store.fail_save.store(unsaved, Ordering::SeqCst);
+    h.backend.unavailable.store(true, Ordering::SeqCst);
+    h.backend.pause_next_stop.store(true, Ordering::SeqCst);
+    let peer = h.client.peer().clone();
+    let stop = tokio::spawn(async move { peer.call_tool(call("stop.v1", args())).await.unwrap() });
+    h.backend.stop_entered.notified().await;
+    let records = h.store.load().await.unwrap();
+    assert!(records.iter().any(|r| r.instance == ID && r.owed_stop) != unsaved);
+    let stop = if in_progress {
+        Some(stop)
+    } else {
+        h.backend.resume_stop.notify_one();
+        outcome(&stop.await.unwrap(), "unknown");
+        None
+    };
+    h.backend.resume_state.notify_one();
+    let refused = tokio::time::timeout(Duration::from_secs(3), run)
+        .await
+        .unwrap()
+        .unwrap();
+    owed_stop_refusal(&refused, &[ID]);
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 0);
+    assert!(!h.backend.staged_valid.load(Ordering::SeqCst));
+    assert!(h.gate.opens.load(Ordering::SeqCst) == 0);
+    let records = h.store.load().await.unwrap();
+    assert!(records.iter().all(|r| r.instance != SECOND_ID));
+    assert!(records.iter().any(|r| r.instance == ID && r.owed_stop) != unsaved);
+    if let Some(stop) = stop {
+        h.backend.resume_stop.notify_one();
+        outcome(&stop.await.unwrap(), "unknown");
+    }
+    h.store.fail_save.store(false, Ordering::SeqCst);
+    h.backend.unavailable.store(false, Ordering::SeqCst);
+    outcome(&h.call("run.v1", second_run_args()).await, "succeeded");
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 1);
+    h.close().await;
+}
+
+#[tokio::test]
+async fn new_durable_stop_during_state_lookup_blocks_start() {
+    for in_progress in [true, false] {
+        stop_published_during_state_lookup_blocks_start(false, in_progress).await;
+    }
+}
+
+#[tokio::test]
+async fn new_memory_only_stop_during_state_lookup_blocks_start() {
+    for in_progress in [true, false] {
+        stop_published_during_state_lookup_blocks_start(true, in_progress).await;
+    }
+}
+
+async fn stop_published_during_staging_blocks_start(unsaved: bool) {
+    let h = Harness::new().await;
+    h.backend.seed(ID);
+    h.store.save(&record(ID)).await.unwrap();
+    h.backend.pause_next_stage.store(true, Ordering::SeqCst);
+    let peer = h.client.peer().clone();
+    let run = tokio::spawn(async move {
+        peer.call_tool(call("run.v1", second_run_args()))
+            .await
+            .unwrap()
+    });
+    tokio::time::timeout(Duration::from_secs(3), h.backend.stage_entered.notified())
+        .await
+        .unwrap();
+    assert!(h.backend.staged_drops.load(Ordering::SeqCst) == 0);
+    h.store.fail_save.store(unsaved, Ordering::SeqCst);
+    h.backend.unavailable.store(true, Ordering::SeqCst);
+    // Completing the stop before releasing staging proves that staging holds no admission.
+    let stopped = tokio::time::timeout(Duration::from_secs(3), h.call("stop.v1", args()))
+        .await
+        .expect("staging delayed another instance's stop");
+    outcome(&stopped, "unknown");
+    assert!(!run.is_finished());
+    assert!(h.backend.stops.load(Ordering::SeqCst) == 1);
+    let records = h.store.load().await.unwrap();
+    assert!(records.iter().any(|r| r.instance == ID && r.owed_stop) != unsaved);
+    // Permit B's stopped record to be saved; A's memory-only obligation stays in memory.
+    h.store.fail_save.store(false, Ordering::SeqCst);
+    h.backend.resume_stage.notify_one();
+    let refused = tokio::time::timeout(Duration::from_secs(3), run)
+        .await
+        .unwrap()
+        .unwrap();
+    owed_stop_refusal(&refused, &[ID]);
+    assert!(h.gate.opens.load(Ordering::SeqCst) == 0);
+    assert!(h.gate.handles.lock().unwrap().is_empty());
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 0);
+    assert!(h.backend.launches.load(Ordering::SeqCst) == 0);
+    assert!(!h.backend.runs.lock().unwrap().contains_key(SECOND_ID));
+    assert!(h.backend.staged_drops.load(Ordering::SeqCst) == 1);
+    assert!(h.backend.stops.load(Ordering::SeqCst) == 1);
+    let records = h.store.load().await.unwrap();
+    assert!(
+        records
+            .iter()
+            .any(|r| { r.instance == SECOND_ID && r.state == RunState::Stopped && !r.owed_stop })
+    );
+    assert!(records.iter().any(|r| r.instance == ID && r.owed_stop) != unsaved);
+    h.backend.unavailable.store(false, Ordering::SeqCst);
+    h.close().await;
+}
+
+#[tokio::test]
+async fn durable_stop_during_staging_refuses_start_and_discards_staged_material() {
+    stop_published_during_staging_blocks_start(false).await;
+}
+
+#[tokio::test]
+async fn memory_only_stop_during_staging_refuses_start_and_discards_staged_material() {
+    stop_published_during_staging_blocks_start(true).await;
+}
+
+#[tokio::test]
+async fn starts_on_same_machine_share_admission() {
+    let h = Harness::new().await;
+    h.backend.pause_next_start.store(true, Ordering::SeqCst);
+    let peer = h.client.peer().clone();
+    let run = tokio::spawn(async move {
+        peer.call_tool(call("run.v1", second_run_args()))
+            .await
+            .unwrap()
+    });
+    tokio::time::timeout(Duration::from_secs(3), h.backend.entered.notified())
+        .await
+        .unwrap();
+    outcome(
+        &tokio::time::timeout(Duration::from_secs(3), h.call("run.v1", run_args()))
+            .await
+            .expect("start delayed another instance's start"),
+        "succeeded",
+    );
+    assert!(!run.is_finished());
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 2);
+    h.backend.resume_start.notify_one();
+    outcome(
+        &tokio::time::timeout(Duration::from_secs(3), run)
+            .await
+            .unwrap()
+            .unwrap(),
+        "succeeded",
+    );
+    h.close().await;
+}
+
+#[tokio::test]
+async fn same_machine_stop_waits_for_in_progress_start_then_proceeds() {
+    let h = Harness::new().await;
+    h.backend.seed(ID);
+    h.store.save(&record(ID)).await.unwrap();
+    h.backend.pause_next_start.store(true, Ordering::SeqCst);
+    let peer = h.client.peer().clone();
+    let run = tokio::spawn(async move {
+        peer.call_tool(call("run.v1", second_run_args()))
+            .await
+            .unwrap()
+    });
+    tokio::time::timeout(Duration::from_secs(3), h.backend.entered.notified())
+        .await
+        .unwrap();
+    let loads = h.store.loads.load(Ordering::SeqCst);
+    let peer = h.client.peer().clone();
+    let stop = tokio::spawn(async move { peer.call_tool(call("stop.v1", args())).await.unwrap() });
+    // The stop has read both its drain and instance records. With this synchronous fake
+    // store it then runs to the admission await before yielding to this test.
+    eventually(|| h.store.loads.load(Ordering::SeqCst) >= loads + 2).await;
+    assert!(!stop.is_finished());
+    assert!(h.backend.stops.load(Ordering::SeqCst) == 0);
+    assert!(h.backend.launches.load(Ordering::SeqCst) == 0);
+    assert!(h.store.load().await.unwrap().iter().all(|r| !r.owed_stop));
+    h.backend.resume_start.notify_one();
+    outcome(
+        &tokio::time::timeout(Duration::from_secs(3), run)
+            .await
+            .unwrap()
+            .unwrap(),
+        "succeeded",
+    );
+    outcome(
+        &tokio::time::timeout(Duration::from_secs(3), stop)
+            .await
+            .unwrap()
+            .unwrap(),
+        "succeeded",
+    );
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 1);
+    assert!(h.backend.launches.load(Ordering::SeqCst) == 1);
+    assert!(h.backend.stops.load(Ordering::SeqCst) == 1);
+    assert!(!h.backend.runs.lock().unwrap().contains_key(ID));
+    assert!(h.backend.runs.lock().unwrap().contains_key(SECOND_ID));
+    assert!(
+        h.store
+            .load()
+            .await
+            .unwrap()
+            .iter()
+            .any(|r| { r.instance == ID && r.state == RunState::Stopped && !r.owed_stop })
+    );
+    h.close().await;
+}
+
+#[tokio::test]
+async fn machine_owed_stop_preserves_already_running_repeat() {
+    let h = Harness::new().await;
+    let first = h.call("run.v1", second_run_args()).await;
+    outcome(&first, "succeeded");
+    h.backend.unavailable.store(true, Ordering::SeqCst);
+    outcome(&h.call("stop.v1", args()).await, "unknown");
+    let repeated = h.call("run.v1", second_run_args()).await;
+    outcome(&repeated, "succeeded");
+    assert!(first.structured_content == repeated.structured_content);
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 1);
+    assert!(
+        h.store
+            .load()
+            .await
+            .unwrap()
+            .iter()
+            .any(|r| r.instance == ID && r.owed_stop)
+    );
+    h.backend.unavailable.store(false, Ordering::SeqCst);
+    h.close().await;
+}
+
+#[tokio::test]
+async fn owed_stop_on_another_machine_does_not_block_new_run() {
+    let h = Harness::new().await;
+    h.backend.unavailable.store(true, Ordering::SeqCst);
+    let mut elsewhere = args();
+    elsewhere["machine"]["hostname"] = json!("other-machine");
+    outcome(&h.call("stop.v1", elsewhere).await, "unknown");
+    outcome(&h.call("run.v1", second_run_args()).await, "succeeded");
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 1);
+    assert!(h.store.load().await.unwrap().iter().any(|r| {
+        r.instance == ID && r.context.machine.hostname == "other-machine" && r.owed_stop
+    }));
+    h.backend.unavailable.store(false, Ordering::SeqCst);
+    h.close().await;
+}
+
+#[tokio::test]
+async fn machine_owed_stop_refusal_names_every_owed_instance() {
+    let h = Harness::new().await;
+    let third_id = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+    h.backend.unavailable.store(true, Ordering::SeqCst);
+    outcome(&h.call("stop.v1", args()).await, "unknown");
+    let mut third = args();
+    third["instance"] = json!(third_id);
+    outcome(&h.call("stop.v1", third).await, "unknown");
+    owed_stop_refusal(&h.call("run.v1", second_run_args()).await, &[ID, third_id]);
+    assert!(h.backend.starts.load(Ordering::SeqCst) == 0);
+    assert!(!h.backend.staged_valid.load(Ordering::SeqCst));
+    assert!(h.gate.handles.lock().unwrap().is_empty());
+    h.backend.unavailable.store(false, Ordering::SeqCst);
+    h.close().await;
+}
+
 #[tokio::test]
 async fn discovery_extension_and_exact_tools() {
     let h = Harness::new().await;
@@ -283,6 +611,8 @@ async fn blocked_start_does_not_delay_unrelated_stop(interval: bool) {
         .unwrap();
     h.backend.seed(OTHER);
     let mut other = record(OTHER);
+    other.context.machine.hostname = "other-machine".into();
+    h.backend.runs.lock().unwrap().get_mut(OTHER).unwrap().0 = other.clone();
     other.owed_stop = interval;
     h.store.save(&other).await.unwrap();
 
@@ -291,6 +621,7 @@ async fn blocked_start_does_not_delay_unrelated_stop(interval: bool) {
     } else {
         let mut input = args();
         input["instance"] = json!(OTHER);
+        input["machine"]["hostname"] = json!("other-machine");
         let stopped = tokio::time::timeout(Duration::from_secs(3), h.call("stop.v1", input))
             .await
             .expect("unrelated stop blocked behind start");

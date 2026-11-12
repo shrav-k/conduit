@@ -92,3 +92,14 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, stacked on order 129's last commit (74b1c85): the worker and a fresh
+verifier (240 s), which found nothing to change in one round. The per-machine lock is now
+read-write: a stop publishes its obligation under the write side; `run.v1` checks again right
+before the backend's `start` and holds the read side across that call only, never across staging,
+so a stop waits at most for start calls already in progress on its machine. A refusal there leaves
+nothing behind: no gate, no child, the candidate saved as stopped. The two earlier tests that put
+the other instance on the same machine now put it on another. The lane coordinator ran the kit's
+tests on the result: 72 passed.

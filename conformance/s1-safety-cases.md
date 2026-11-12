@@ -31,9 +31,8 @@ Add two adjacent publication checks: a handle becomes a wire string (IFC-011, IF
 a Type control narrowed to maximum 50 is published as `allOf` of the contract's maximum 100
 and that narrowing, accepting 50 and rejecting 75 (IFC-033, TPL-011). A missing control is
 omitted, and a call to its would-be tool is invalid under TPL-013, not a permission to invoke
-it. These are small E05 variants, not controls added to the base S1 project. The known root
-`$defs` collision in section 6 must be decided before its rejection/acceptance vector has a
-normative expected answer.
+it. These are small E05 variants, not controls added to the base S1 project. IFC-033 reserves
+root `$defs` keys of the form of contract copies, so using one has a decided rejection expectation.
 
 ### The remaining safety traces
 
@@ -42,7 +41,7 @@ new reference syntax. Every actual vector uses the full address from the names f
 
 | Vector | Inputs | Expected decision and observations | Requiring promises |
 | --- | --- | --- | --- |
-| bootstrap | Empty state, assigned IDs, canonical machine report and first-start event | Exactly five ready objects and two open root Conduits; no other run/model intent; protected-name/retirement follow-ups conflict/refuse as appropriate | FST-001, FST-002, FST-003, FST-005, OBJ-025, LIF-034 |
+| bootstrap | Empty state, assigned IDs, canonical machine report and first-start event | Exactly five ready objects and three open declared root Conduits, to `management`, `access` and `system`; no other run/model intent; protected-name/retirement follow-ups conflict/refuse as appropriate | FST-001, FST-002, FST-003, FST-005, OBJ-025, LIF-034 |
 | S1-register-set | Preinstalled draft package snapshots; all project files in several permutations, then a variant with an unresolved instance target | Accepted permutations make equivalent objects and nested-source mappings modulo generated IDs/names; invalid variant publishes none | SUB-001, SUB-002, SUB-003, OBJ-009, INS-016 |
 | S1-duplicate | Same-submission duplicate kind/name; separate request reusing an existing kind/name; cross-kind name duplicate in one project | First invalid under SUB-004; existing-name clash conflict under OBJ-025 with OBJ-002 detail; cross-kind project duplicate invalid under NAM-027; no partial changes | SUB-004, OBJ-002, OBJ-025, NAM-027, SUB-003 |
 | S1-archive-escape | Actual archive variants with absolute path, `..` segment and outside link, alongside a valid root manifest | Reject each unsafe archive under MAN-014 before exposing any member outside the extraction boundary; no registered objects | MAN-014, MAN-013, PKG-022 |
@@ -59,21 +58,23 @@ new reference syntax. Every actual vector uses the full address from the names f
 | S1-restore | Close A's declaration, set A up without replacing it, then explicitly register nested replacement, then set up | Missing slot conflicts; no implicit recreation; new slot has a new registered ID; root opens it only on later setup; B remains unchanged | LIF-008, LIF-009, LIF-029, CON-004, ACC-005 |
 | S1-authority-unreadable | Identity exists but Conduit state cannot be read; give invalid arguments too; repeat with existence itself unreadable | Unavailable, no dispatch, examine/report no argument or object details; caller omitted when existence cannot be established | ACC-037, OPS-023, REC-002 |
 | S1-reason-order | Requests simultaneously lack access and have invalid arguments; authorized request has invalid input and stale expected ID | Refused first, with no object diagnostics; authorized variant invalid before conflict; unreadable request invalid before access | OPS-023, OPS-033, IFC-025 |
-| S1-plain-ends | Plain read/write completions: success, isError, no result, input_required, -32602 and -32021 | Success -> succeeded; ordinary error/-32021 -> failed for reads, unknown for writes; no result/input_required -> unknown; -32602 -> failed by the current table; preserve content and isError conventions | IFC-010, IFC-025, OPS-001, OPS-005 |
+| S1-plain-ends | Plain read/write completions: success, isError, no result, input_required, -32602 and -32021 | Success -> succeeded; ordinary error/-32021 -> failed for reads, unknown for writes; no result/input_required -> unknown; -32602 -> failed only for an operation stating no `effect`, not a control and starting no model work, and unknown for any other; preserve content and isError conventions | IFC-010, IFC-025, OPS-001, OPS-005 |
 | S1-key-scope | Authorized effectful requests with same key/contents/caller/sender/target; independently change content, sender, original caller through one shared broker, or target, holding all other fields fixed; no-key and defaulted-equal input variants | Successful repeat no dispatch; changed content conflicts; different sender, caller and target cases each dispatch with distinct invocation IDs, as does each no-key request; defaults compare equal; in-progress repeat conflicts with invocation ID | OPS-008, OPS-009, OPS-010, OPS-011, OPS-026, OPS-032 |
 | S1-unknown-write | Dispatch keyed plain write, lose result, repeat with same content/key, restart core from stored state and repeat | Unknown remains unknown, no new plain call; even deduplicates mark cannot authorize plain retry; no automatic retry after restart | OPS-012, OPS-013, OPS-018, IMP-007 |
-| S1-reconcile | Unknown write, authorized root reconcile with what it checked, then repeat; compare unauthorized Agent and already-ended invocation | Evidence-based succeeded/failed, never guessed from a timeout; unauthorized refused; nonunknown conflict; no fabricated outputs after reconciliation | OPS-014, OPS-030, ACC-033, OPS-009 |
+| S1-reconcile | Unknown write, authorized root reconcile with what it checked, then repeat; compare unauthorized Agent and already-ended invocation | Evidence-based succeeded, or failed only once every attempt is fenced; reconciliation to failed before the fence conflicts under OPS-030; never guessed from a timeout; unauthorized refused; nonunknown conflict; no fabricated outputs after reconciliation | OPS-014, OPS-030, ACC-033, OPS-009 |
 | S1-purge | Root purges records before a time, then repeats an old keyed write; compare non-root purge | Record purge recorded; invocation index survives, so effect not repeated; non-root refused | REC-004, REC-003, OPS-008, OPS-009, ACC-032 |
 | S1-records | Run allowed/refused/invalid/conflict/unknown cases; include provider-run completion and lifecycle changes; simulate an unreadable range | Validate each applicable record against record.v1, causal IDs and per-source order; access before dispatch; no identity material; gaps explicit | REC-001, REC-002, REC-005, REC-006, ACC-002, PRV-024 |
 | E08-broker | Variant Resource with a trusted approved-reviewer operation and its own management Conduit; caller has broker access only; feed simulated trusted onward registration | Direct management request refused; onward request uses broker's Conduit and original caller, not caller authority; filter carried to management unavailable; trusted adapter's approval check is separate provider evidence | ACC-030, ACC-016, ACC-017, ACC-015, IFC-020 |
 | E11-replace | Submitted local Type/Operation/item and template; make old instance; replace template with current revision and edited contracts/manifest/item; make new instance; retry equal replacement and stale revision | New instance resolves new project digest/item; old keeps old ones; equal replace no revision advance, stale revision conflicts; omit handed-over local contract and replacement invalid | SUB-008, SUB-009, NAM-009, NAM-022, INS-020, PKG-005, REV-002, REV-004, NAM-028 |
 | E12-name-reuse | Inspect Resource and capture ID; retire/remove it (or use never-setup variant); register new Resource with same name under a non-retired Pool; inspect/set-up with old expectedId using an actor with the applicable owning-Pool authority but no management access, and an actor lacking that Pool authority | Pool-authorized actor's stale expected-ID request conflicts with both IDs, changes nothing; resolved-ID-as-address invalid; actor lacking the applicable owning-Pool authority refused before ID details; new object not reached by old stored references/credentials | ACC-033, LIF-037, LIF-031, OBJ-010, IFC-022, OPS-023 |
 
-The -32602 safety assumption is already recorded as open by the repository; the plain-ends
-vector follows current IFC-010 rather than claiming that the protocol proves no partial
-effect. The wire resend cases in IFC-046 likewise remain separate from an application repeat.
-No study result closes those known questions. Filtered replay variants from round 6's finding
-6-1-02 are adjacent boundaries: read-only success is redispatched on a caller repeat under
-OPS-024; success with effect and outputs conflicts under OPS-034; success with effect and no
-outputs returns its outcome under OPS-009, with no filter call. They require Conduit-aware
-fixture implementations, since the S1 plain item supports no filters.
+IFC-010 reads -32602 as any other plain error: failed only for an operation that states no
+`effect`, is not a control and starts no model work, and unknown for any other. IFC-046's
+wire resend is within one attempt: after -32020 only that same class of operation is sent
+again, and a revision error allows a resend only at a revision both sides support.
+Filtered replay variants from finding 6-1-02 are adjacent boundaries: read-only success is
+redispatched under OPS-024; success with an effect and outputs or plain content conflicts
+under OPS-034; success with an effect and no outputs or plain content returns its outcome
+under OPS-009, with no filter call. A plain implementation supports no filter: only an
+onward request can carry one (ACC-017), and OPS-023 puts OPS-034's conflict before ACC-015's
+unavailability; a read that OPS-024 would dispatch reports unavailable under ACC-015.

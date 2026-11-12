@@ -186,39 +186,58 @@
     succeeded; and either no filter applies to the request, and (the operation declares no
     outputs and is not implemented by a plain server, or the engine still keeps the
     invocation's outputs and any plain content), or a filter applies to it, and
-    the operation declares no outputs and is not one that OPS-024 dispatches again: its contract
+    the operation declares no outputs, is not implemented by a plain server and is not one
+    that OPS-024 dispatches again: its contract
     states an `effect`, it is a control, or its contract is marked `startsModelWork: true`.
   then: >-
     The request is a repeat, not a new request. Nothing is dispatched, and the result is that
     invocation's: the outcome succeeded, its outputs and any plain content.
   observable: >-
-    For this promise and OPS-034, the content of a succeeded plain invocation counts as outputs that
+    For this promise and OPS-034, the content of a succeeded plain invocation counts as
+    outputs that
     must be kept, whether or not the operation declares outputs. The engine keeps and gives that
     content again unchanged, together with any declared outputs, for as long as DL10 keeps them.
     After it no longer keeps the content, a repeat reports conflict under OPS-034, and is never
-    dispatched to recover it. A reconciliation supplies no content. The implementation receives no
-    further call for the invocation, and the result holds the outputs that the invocation returned
-    and the engine's ID for it, under IFC-025. Two requests have the same contents when they name
-    the same operation and their arguments are equal under SCH-007, judged after the defaults are
+    dispatched to recover it. A reconciliation supplies no content. The implementation
+    receives no
+    further call for the invocation, and the result holds the outputs that the invocation
+    returned
+    and the engine's ID for it, under IFC-025. Two requests have the same contents when they
+    name
+    the same operation and their arguments are equal under SCH-007, judged after the
+    defaults are
     filled in under OPS-026: that of an input that was left out, and that of a property that is
     absent from a map that was supplied. A request that supplies `{}` for an input whose schema
-    gives a property a `default`, and one that supplies the map with that default written out, have
-    the same contents. The engine keeps the outputs of an invocation that succeeded for as long as
+    gives a property a `default`, and one that supplies the map with that default written
+    out, have
+    the same contents. The engine keeps the outputs of an invocation that succeeded for as
+    long as
     DL10 of the implementation-defined list says, and keeps none of one whose outcome a
-    reconciliation set, since `reconcile.v1` takes none. An operation that declares no outputs and
+    reconciliation set, since `reconcile.v1` takes none. An operation that declares no
+    outputs and
     is not implemented by a plain server has none to lose: a repeat of an invocation of it that
     succeeded is answered so, with no `structuredContent`, unless OPS-024 dispatches it again.
     IFC-033 omits `outputSchema` for such an operation: the protocol makes it optional, a client
-    that sees one may prefer the structured result, and an empty map would hide the content. Where a
-    filter applies to the repeat, that answer gives only the outcome already recorded, and no filter
-    judges it, under ACC-008. A repeat of an invocation that has not ended reports conflict under
-    OPS-032, and so, under OPS-034, does one of an invocation that succeeded, of an operation that
-    declares outputs, where no filter applies to the repeat and the engine does not keep them, or
-    where a filter applies to it and OPS-024 does not dispatch it. A repeat of an invocation that
-    succeeded, of an operation whose contract states no `effect`, that is not a control and whose
-    contract is not marked `startsModelWork: true`, to which a filter applies, is dispatched as a
-    new attempt under OPS-024, so that its filters decide afresh; a repeat of one whose outcome is
-    unknown is OPS-012, and of one that failed OPS-024. A repeat is a request through a Conduit, and
+    that sees one may prefer the structured result, and an empty map would hide the content.
+    Where a
+    filter applies to the repeat, that answer gives only the outcome already recorded, and
+    no filter
+    judges it, under ACC-008. A repeat of an invocation that has not ended reports conflict
+    under
+    OPS-032, and so, under OPS-034, does one of an invocation that succeeded, of an
+    operation that
+    declares outputs or is implemented by a plain server, where no filter applies to the
+    repeat and the engine does not keep them, or
+    where a filter applies to it and OPS-024 does not dispatch it. A repeat of an invocation
+    that
+    succeeded, of an operation whose contract states no `effect`, that is not a control and
+    whose
+    contract is not marked `startsModelWork: true`, to which a filter applies, is dispatched
+    as a
+    new attempt under OPS-024, so that its filters decide afresh; a repeat of one whose
+    outcome is
+    unknown is OPS-012, and of one that failed OPS-024. A repeat is a request through a
+    Conduit, and
     the access decision is made for it like any other, under ACC-036: a repeat sent through a
     Conduit that has been closed reports refused under ACC-011.
   vectors: []
@@ -291,7 +310,12 @@
     unknown occurred or that it did not. The actor is the consumer of an open Conduit that lists
     `reconcile.v1`, to the target that ACC-033 names for reconciling that invocation.
   then: >-
-    The invocation's outcome becomes succeeded or failed accordingly.
+    Recording that the effect occurred makes the invocation's outcome succeeded. Recording
+    that it did not occur makes the outcome failed only once the invocation is fenced;
+    before then OPS-030 reports conflict and nothing is dispatched. An attempt is fenced
+    once no copy of its dispatch remains in flight, or the implementation confirms that the
+    attempt can no longer act. An invocation is fenced only when every attempt is fenced.
+    This applies also to a deduplicating implementation.
   observable: >-
     A record states the new outcome, the actor that reconciled it and what the actor checked.
     The earlier record that the outcome was unknown is kept. An actor with no such Conduit
@@ -307,8 +331,9 @@
     for other families or a retired owner, as ACC-033 states. Where the instance that the
     invocation was dispatched to, or that an invocation of a management verb named, no longer
     exists, the target is `management`, and the reconciliation records the outcome and stores
-    nothing, as ACC-033 states. A request that names an invocation whose outcome is not unknown
-    reports conflict, under OPS-030. One that names an ID which the engine gave to no invocation
+    nothing, as ACC-033 states. A request that names an invocation whose outcome is not
+    unknown, or records that the effect did not occur before the invocation is fenced,
+    reports conflict under OPS-030. One that names an ID which the engine gave to no invocation
     reports invalid, under OPS-029. What the reconciliation of a setup, an open, a retirement or
     a close changes beside the outcome is LIF-028, and what that of a control changes is
     REV-010. Where a setup or a retirement of unknown outcome asked for a run or for its stop,
@@ -320,9 +345,39 @@
     of an invocation dispatched to an instance on a machine that is cut off may be out of date
     until the machine is back and the run is inspected, under PRV-009: the work may still run to
     its end there, under OPS-027, and a gate closes a server's stream only where the server
-    answers with one, under PRV-025, so an effect may land after the actor has recorded that it
-    did not occur. OPS-031 says which input of `reconcile.v1` makes a request invalid where it
-    does not belong. ACC-055 further limits reconciliation through bounded access and through
+    answers with one, under PRV-025, so the fence prevents recording failed meanwhile. An
+    implementation that has answered or whose process has ended may still have its own
+    request on its way to another service, whose effect can land after failed is recorded
+    and be applied again by the repeat that OPS-024 dispatches; the fence covers Conduit's
+    own dispatch, and each hop handles its own idempotency. An answer that ends an
+    attempt's call at the implementation fences it: a result, an error or a JSON-RPC error,
+    including one that arrives after the outcome became unknown, which changes no outcome
+    under OPS-013. A response that leaves work running fences nothing: creating a task under
+    IFC-016 is not its answer, which is what the task ended with under IFC-010, and an
+    `input_required` result is no fence. An error after which the call is sent once more
+    under IFC-046 fences nothing until that call is answered. Stopping waiting under
+    OPS-007, DL3 or DL10, a dropped connection or cancellation with no confirmation under
+    OPS-027, and recovery of an in-progress invocation under IMP-007 fence nothing; another
+    event described here must fence the attempt. An attempt sent to a run is fenced once the
+    engine's own runner has seen its process end, or the runtime provider reports it
+    `stopped` under PRV-009 in a report made after dispatch. A report about a machine that
+    is cut off fences nothing until the machine is back and the run is inspected, under
+    PRV-025 and OPS-027. Declaring a node lost fences nothing: a run left on a machine that
+    comes back may still run, under PLC-017. A server reached by `remote` has no run. The
+    implementation's result confirming failed under OPS-027 is confirmation that nothing was
+    done, under OPS-003; no other form of confirmation that the attempt can no longer act is
+    defined here. A task reported cancelled under IFC-016 is no result under IFC-010, and
+    alone confirms no fence. An invocation or part whose implementation is `engine` is
+    fenced once it has ended; a setup, retirement, open or close is fenced only once every
+    part it dispatched is fenced, under LIF-028 and OPS-022. A hook is reconciled as an
+    invocation of its own, under OPS-021. An attempt that none of these events fences, such
+    as one sent to a plain server reached by `remote` that never answered, is never fenced:
+    its invocation can be recorded as having occurred, or stays unknown under OPS-013,
+    and the Agent's way on is a new request.
+    Becoming fenced records no outcome, wakes nothing and reconciles nothing: an actor still
+    reconciles the invocation. OPS-031 says which input of `reconcile.v1` makes a request
+    invalid where it does not belong. ACC-055 further limits reconciliation through bounded
+    access and through
     Pools or Fleets for holders other than root.
   vectors: []
 
@@ -337,7 +392,9 @@
     The effect is applied more than once.
   observable: >-
     Inspecting what the effect changes shows it applied at most once for that idempotency key,
-    in every ordering of those events.
+    in every ordering of those events. Across a reconciliation and a repeat, the fence of
+    OPS-014 keeps a new attempt from meeting an earlier dispatch still in flight. The limit
+    for an implementation's own request to another service is the one OPS-014 states.
   vectors: []
 
 
@@ -464,7 +521,10 @@
     The repeat is dispatched as a new attempt. An invocation counts as dispatched through the
     Conduit of its latest attempt.
   observable: >-
-    The implementation receives a further call. The invocation's state is then in progress, and
+    A failed outcome recorded by a reconciliation was recorded only once every attempt was
+    fenced, under OPS-014, so the new attempt cannot meet an earlier dispatch still on its
+    way. The implementation receives a further call. The invocation's state is then in
+    progress, and
     afterwards the outcome of the new attempt. The records of the earlier attempt are kept. Like
     any dispatch, the new attempt needs the request to be permitted under ACC-001. Where the
     invocation succeeded, the new attempt is made so that the filters that apply to the repeat
@@ -664,17 +724,26 @@
   level: must
   when: >-
     An actor asks to reconcile an invocation whose outcome is not unknown: it is in progress, or
-    it has ended with the outcome succeeded or failed.
+    it has ended with the outcome succeeded or failed; or asks to record that the effect did
+    not occur for an invocation whose outcome is unknown and that is not fenced under
+    OPS-014.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-
-    The invocation's state is as it was, and no record of a reconciliation is added. A second
+    The invocation's state is as it was, and no record of a reconciliation is added. The
+    error diagnostic has `ruleId` OPS-030 under IFC-050. For an invocation that is not yet
+    fenced its message says so, explains what would fence its attempts under OPS-014, and
+    says that recording that the effect occurred needs no fence. A request made again later
+    is decided afresh under OPS-025. Where no event can fence an attempt, as for a remote
+    server that never answers under OPS-014, the invocation stays unknown unless recorded
+    as having occurred; the Agent's way on is a new request. A second
     reconciliation of one invocation reports conflict in this way, whichever way the first
     recorded the effect, unless a new attempt dispatched since, under OPS-024, has ended
     unknown: a reconciliation settles the outcome of the invocation's latest attempt, and a
     later attempt whose outcome is unknown is reconciled in its turn, under OPS-014. One that
     names an ID which the engine gave to no invocation reports invalid, under OPS-029. Where the
-    actor is not permitted under OPS-014, OPS-023 gives refused first.
+    actor is not permitted under OPS-014 or ACC-055, OPS-023 gives refused first; invalid
+    under OPS-029 or OPS-031 also precedes this conflict.
   vectors: []
 
 - id: OPS-031
@@ -755,7 +824,8 @@
   level: must
   when: >-
     A request arrives that matches, as OPS-009 describes a match, the request of an invocation
-    that succeeded, of an operation that declares outputs, where no filter applies to the
+    that succeeded, of an operation that declares outputs or is implemented by a plain
+    server, where no filter applies to the
     request and the engine does not keep those outputs, or where a filter applies to it and the
     operation is not one that OPS-024 dispatches again: its contract states an `effect`, it is a
     control, or its contract is marked `startsModelWork: true`.
@@ -778,9 +848,15 @@
     outputs were made, as one that permits a read only before a time that has since passed does,
     so the engine cannot tell that it permits them now. Nor is the operation dispatched again
     for the filter to decide, since a new attempt could apply its effect a second time, under
-    OPS-018. Only an operation that declares outputs reaches this promise: a repeat of an
-    invocation of one that declares none, and that succeeded, is answered from its outcome under
-    OPS-009, or dispatched as a new attempt under OPS-024. A repeat is decided like any other
+    OPS-018. Plain content counts as outputs here under OPS-009, even where the operation
+    declares none, so a filtered repeat of a plain success reports this conflict unless
+    OPS-024 dispatches it. CON-022 admits no filter on a Conduit to a plain implementation,
+    which supports none under PKG-020: only an onward request can carry one under ACC-017.
+    ACC-015 makes that filter unavailable for dispatch, but OPS-023 puts this conflict
+    before that unavailability; a read that OPS-024 would dispatch reports unavailable under
+    ACC-015. An operation that declares no outputs and is not implemented by a plain server
+    is answered from its outcome under
+    OPS-009, or dispatched  under OPS-024. A repeat is decided like any other
     request, under ACC-036: one sent through a Conduit that has been closed reports refused
     under ACC-011, which OPS-023 puts first.
   vectors: []

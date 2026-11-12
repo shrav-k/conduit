@@ -151,10 +151,13 @@
     request in `io.github.shrav-k.conduit/restriction`, whether the engine or the implementation
     found it, as IFC-025 states. A filter judges only a call that an implementation receives,
     under IFC-019, so a repeat to which a filter applies and that is not dispatched gives no
-    outputs: one of an invocation that succeeded, of an operation that declares no outputs, is
+    outputs or plain content: one of an invocation that succeeded, of an operation that
+    declares no outputs and is not implemented by a plain server, is
     answered from that outcome under OPS-009 even where the filter would forbid a call now, and
     any other reports conflict, under OPS-032 or OPS-034, or is answered with the state unknown,
-    under OPS-012. A repeat to which a filter applies, of an invocation that succeeded, of an
+    under OPS-012. A filtered repeat of a plain success reports conflict under OPS-034
+    before ACC-015's unavailability, in OPS-023's order, unless OPS-024 would dispatch it. A
+    repeat to which a filter applies, of an invocation that succeeded, of an
     operation whose contract states no `effect`, that is not a control and whose contract is not
     marked `startsModelWork: true`, is dispatched as a new attempt, under OPS-024, so that its
     filters decide afresh.

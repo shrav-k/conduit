@@ -81,14 +81,17 @@
 #     none (IFC-025). A repeat
 #     of an invocation that has not ended reports conflict with the engine's ID for it
 #     (OPS-032). A repeat of one that succeeded is answered from what the engine keeps, and
-#     nothing is dispatched (OPS-009), unless the operation declares outputs that the engine
-#     no longer keeps, when it reports conflict (OPS-034), or a filter applies to the repeat.
+#     nothing is dispatched (OPS-009), unless the engine no longer keeps the result of an
+#     operation that declares outputs or is plain, when it reports conflict (OPS-034), or a
+#     filter applies to the repeat.
 #     Then an operation that states no `effect`, is not a control and starts no model work, as
 #     IFC-033 tells them, is dispatched again as a new attempt, so that its filters decide
 #     afresh; any other reports conflict in place of giving the outputs kept, where it declares
-#     outputs (OPS-034), and is answered from its outcome, where it declares none (OPS-009).
+#     outputs or is plain (OPS-034), and is answered from its outcome, where it declares none
+#     and is not plain (OPS-009).
 #     A repeat that is not dispatched is judged by no filter, so where one applies the repeat
-#     gives only an outcome already recorded. A Conduit applies no filter where the engine
+#     gives no kept outputs or plain content, and gives only an outcome already recorded or
+#     reports conflict (OPS-034). A Conduit applies no filter where the engine
 #     implements an operation it lists (CON-022), and a request for an operation of
 #     the core package that carries a filter reports unavailable (MAN-012, ACC-015).
 #   - The operations of `runtime-provider.v1`, `machine-provider.v1` and `package-source.v1`
@@ -499,13 +502,16 @@ metadata:
     and the owning Fleet for an Agent, and `management` for an Interface, a Pool or a Fleet. Where the Pool that owns a Resource is
     retired, `management` authorizes in its place, and so it does where the instance of the invocation
     no longer exists: the reconciliation then records the outcome and stores nothing, and names no
-    `revision`. A request that names an invocation whose outcome is not unknown reports conflict,
-    and one whose ID names no invocation reports invalid. Recording that a setup or an open occurred
+    `revision`. A request that names an invocation whose outcome is not unknown, or records that
+    the effect did not occur before the invocation is fenced under OPS-014, reports conflict under
+    OPS-030; one whose ID names no invocation reports invalid. Recording that a setup or an open
+    occurred
     gives it the outcome succeeded and makes the instance ready or the Conduit open, unless the instance
     or the Conduit's consumer has been retired. Recording that a retirement or a close occurred confirms
     the shutdown, and the instance is removed. An actor tells whether a run is running from the instance's
-    condition `Running`. Recording that the effect did not occur gives the outcome failed and changes
-    nothing else. Where a control of an instance that exists and is not retired took effect, `revision`
+    condition `Running`. Recording that the effect did not occur gives the outcome failed only once
+    the invocation is fenced under OPS-014, and changes nothing else. Where a control of an
+    instance that exists and is not retired took effect, `revision`
     is required, and the values that the control was sent are stored at the pointers of its `changes`.
     A reconciliation that stores nothing names no `revision`: one that does reports invalid.
 
@@ -534,7 +540,8 @@ spec:
     - occurred
     - checked
   effect: >-
-    Changes the invocation's outcome from unknown to succeeded or failed. Where a setup or an open
+    Changes the invocation's outcome from unknown to succeeded, or to failed only once the
+    invocation is fenced under OPS-014. Where a setup or an open
     is recorded as having occurred, sets the state of the instance or the Conduit to ready, unless
     the instance or the Conduit's consumer is retired. Where a retirement or a close is, confirms
     the shutdown, which removes the instance. For a control that took effect on an instance that exists

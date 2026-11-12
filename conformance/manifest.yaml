@@ -5073,6 +5073,44 @@
         "SUB-005"
       ],
       "safety_rows": []
+    },
+    {
+      "id": "requests-reconcile-fenced",
+      "case": "conventions/requests/reconcile-fenced/case.yaml",
+      "promises": [
+        "OPS-014",
+        "OPS-030",
+        "OPS-013",
+        "OPS-024",
+        "OPS-025"
+      ],
+      "safety_rows": [
+        "S1-reconcile"
+      ]
+    },
+    {
+      "id": "requests-reconcile-unconfirmed-cancel",
+      "case": "conventions/requests/reconcile-unconfirmed-cancel/case.yaml",
+      "promises": [
+        "OPS-014",
+        "OPS-030",
+        "OPS-027"
+      ],
+      "safety_rows": [
+        "S1-reconcile"
+      ]
+    },
+    {
+      "id": "requests-reconcile-unfenced-restart",
+      "case": "conventions/requests/reconcile-unfenced-restart/case.yaml",
+      "promises": [
+        "OPS-014",
+        "OPS-030",
+        "IMP-007"
+      ],
+      "safety_rows": [
+        "S1-reconcile"
+      ]
     }
   ],
   "s1_coverage": [
@@ -7439,7 +7477,8 @@
       "vectors": [
         "requests-unknown-write",
         "requests-cancellation",
-        "requests-restart-interrupted"
+        "requests-restart-interrupted",
+        "requests-reconcile-fenced"
       ]
     },
     {
@@ -7447,7 +7486,10 @@
       "vectors": [
         "requests-reconcile-true",
         "requests-reconcile-false",
-        "requests-restart-interrupted"
+        "requests-restart-interrupted",
+        "requests-reconcile-fenced",
+        "requests-reconcile-unconfirmed-cancel",
+        "requests-reconcile-unfenced-restart"
       ]
     },
     {
@@ -7530,13 +7572,15 @@
         "requests-aware-malformed",
         "requests-failed-read-repeat",
         "requests-aware-capability-extension",
-        "requests-aware-capability-undeclared"
+        "requests-aware-capability-undeclared",
+        "requests-reconcile-fenced"
       ]
     },
     {
       "promise": "OPS-025",
       "vectors": [
-        "requests-reason-reconsidered"
+        "requests-reason-reconsidered",
+        "requests-reconcile-fenced"
       ]
     },
     {
@@ -7553,7 +7597,8 @@
         "requests-cancellation",
         "requests-cancel-confirmed",
         "setup-cancel",
-        "setup-review-pool-cancel"
+        "setup-review-pool-cancel",
+        "requests-reconcile-unconfirmed-cancel"
       ]
     },
     {
@@ -7583,7 +7628,10 @@
         "requests-reconcile-invalid",
         "requests-restart-interrupted",
         "requests-reconcile-revision-in-progress",
-        "requests-reconcile-revision-succeeded"
+        "requests-reconcile-revision-succeeded",
+        "requests-reconcile-fenced",
+        "requests-reconcile-unconfirmed-cancel",
+        "requests-reconcile-unfenced-restart"
       ]
     },
     {
@@ -7614,7 +7662,8 @@
         "requests-unknown-write",
         "requests-cancellation",
         "requests-repair-read-success",
-        "requests-restart-interrupted"
+        "requests-restart-interrupted",
+        "requests-reconcile-unfenced-restart"
       ]
     },
     {

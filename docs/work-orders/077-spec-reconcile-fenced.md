@@ -581,3 +581,19 @@ Report:
 - each check's last line.
 
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 and 12. The first worker, on the Windows computer, ran about 5.5 hours and was
+stopped when the owner paused that computer; its partial work was checkpointed, rebased onto main
+and continued on the Mac for three more rounds, with the owner's acceptance of the fence's two
+limits (ruling 75's later answer of 2026-11-12: the fence covers Conduit's own dispatch, not a
+server's onward call; a remote call that never answers stays unknown and the way on is a new
+request). Round 3's verifier found no fault in scope but one out-of-scope vector from order 041b,
+fleets/e3b/reconcile-control, that reconciled an attempt to failed without a fence. The admin
+decided to keep that vector's purpose (who may reconcile) by establishing the fence first, and
+extended the scope to it; round 4's worker found the repair also needed the vector's companion
+requests.json, kept to the stated scope, and prepared a patch that passed every vector in a copy.
+The admin applied it as an admin-side fix (ruling 71): the attempt is fenced by an observed late
+answer before the original reconcile. On the rebased tree all 446 vectors pass, the vector delta
+shows 123 declared changes and none undeclared, and the repository checks pass.

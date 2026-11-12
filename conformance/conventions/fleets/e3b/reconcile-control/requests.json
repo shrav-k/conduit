@@ -747,18 +747,12 @@
     },
     {
       "call": {
-        "kind": "invoke",
-        "request": {
-          "identity": {
-            "kind": "instance",
-            "id": "00000000-0000-4000-8000-000000000005"
-          },
-          "tool": "management.reconcile.v1",
-          "arguments": {
-            "invocation": "00000000-0000-4000-8000-000000008805",
-            "occurred": false,
-            "checked": "owner retired"
-          }
+        "kind": "complete",
+        "invocation": "00000000-0000-4000-8000-000000008805",
+        "attempt": 1,
+        "completion": {
+          "kind": "protocol-error",
+          "code": -32602
         },
         "evidence": {
           "time": "2026-11-11T12:00:00Z",
@@ -893,7 +887,8 @@
           },
           "arguments": {
             "setting": true
-          }
+          },
+          "attempt": 1
         }
       ]
     }

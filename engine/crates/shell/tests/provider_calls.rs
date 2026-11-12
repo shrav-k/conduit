@@ -58,6 +58,9 @@ struct Fixture {
 }
 impl Fixture {
     fn new(mode: &str) -> Self {
+        Self::with_initialize_timeout(mode, Duration::from_secs(5))
+    }
+    fn with_initialize_timeout(mode: &str, initialize_timeout: Duration) -> Self {
         assert!(std::env::var_os("CARGO_MANIFEST_DIR").is_some());
         let temp = tempfile::tempdir().unwrap();
         fs::write(temp.path().join("mode"), mode).unwrap();
@@ -73,7 +76,7 @@ impl Fixture {
                     },
                     pass_environment: vec!["CARGO_MANIFEST_DIR".into()],
                     call_timeout: Duration::from_secs(5),
-                    initialize_timeout: Duration::from_secs(5),
+                    initialize_timeout,
                     ..Config::default()
                 },
             )
@@ -242,6 +245,7 @@ fn scripted_runtime_provider() {
                 count_file: Some(directory.join("gate-count")),
                 get_events: false,
                 delay_first: false,
+                block_initialize: mode == "blocked-initialize",
             };
             gate = Some(runtime.block_on(Gate::start(options)));
             recorded["params"]["arguments"]["identity"]["environment"] = json!(
@@ -292,6 +296,7 @@ fn scripted_runtime_provider() {
                                 count_file: Some(directory.join("bad-gate-count")),
                                 get_events: false,
                                 delay_first: false,
+                                block_initialize: false,
                             })));
                         }
                         if let Some(gate) = &gate {
@@ -584,18 +589,126 @@ fn runtime_provider_inspection_repairs_ended_session_and_refuses_changed_unprove
 fn runtime_provider_cancelled_setup_sends_nothing_and_starts_no_bridge() {
     let fixture = Fixture::new("success");
     let invocation = "cancelled-provider-setup";
+    let state = fixture.shell.state().unwrap();
+    let subject = id(&fixture.shell, "a");
+    let provider = id(&fixture.shell, "provider");
+    let runtime = state.objects.iter().find(|o| o["id"] == provider).unwrap();
+    let machine = &state
+        .objects
+        .iter()
+        .find(|o| o["kind"] == "Resource" && o["name"] == "local" && o.get("spec").is_none())
+        .unwrap()["status"];
+    let schema = &fixture.shell.context.core_environment.scopes["core"].contracts["run.v1"]["spec"]
+        ["inputSchema"]["properties"]["identity"]["properties"];
+    let identity = fixture
+        .shell
+        .materialize_provider_identity(&json!({
+            "materializeFor":subject,
+            "environmentNames":schema["environment"]["required"],
+            "fileNames":schema["files"]["required"]
+        }))
+        .unwrap()
+        .unwrap();
+    let intent = json!({
+        "kind":"provider-call", "subject":subject, "provider":provider,
+        "operation":format!("{}#run.v1",fixture.shell.context.core_package),
+        "invocation":invocation, "caller":id(&fixture.shell,"root"),
+        "config":runtime["config"], "revision":runtime["revision"],
+        "inputs":{
+            "instance":subject, "machine":machine,
+            "item":{"command":[std::env::current_exe().unwrap(),"--exact","scripted_runtime_provider","--ignored","--nocapture"]},
+            "environment":{"VISIBLE":"own-only"}, "packageArguments":{}
+        }
+    });
     fixture
         .runner
         .cancel_setup_parts(&json!({"invocation":invocation}))
         .unwrap();
     let before = log(fixture.temp.path()).len();
-    fixture.runner.provider_call(&json!({"kind":"provider-call","subject":id(&fixture.shell,"a"),"provider":id(&fixture.shell,"provider"),"operation":format!("{}#run.v1",fixture.shell.context.core_package),"invocation":invocation,"inputs":{}}),None).unwrap();
+    fixture
+        .runner
+        .provider_call(&intent, Some(&identity))
+        .unwrap();
     // Queue a normal inspection/setup after cancellation, proving the runner remains usable.
     assert_eq!(outcome(&fixture.shell, &fixture.setup()), "succeeded");
     let messages = log(fixture.temp.path());
     assert!(!messages[before..].iter().any(|m| m["params"]["_meta"]
         [format!("{}invocation", fixture.shell.context.meta_prefix)]
         == invocation));
+    assert_eq!(
+        messages
+            .iter()
+            .filter(|m| m["params"]["name"] == "run.v1")
+            .count(),
+        1
+    );
+    assert_eq!(groups(&fixture).len(), 2);
+    assert!(
+        !fixture
+            .runner
+            .diagnostics()
+            .iter()
+            .any(|d| d.contains("no https"))
+    );
+}
+
+#[test]
+fn runtime_provider_cancel_during_bridge_initialize_ends_group_without_stopping_provider_run() {
+    // Keep the initialization deadline longer than the cancellation assertion's bound.
+    let fixture = Fixture::with_initialize_timeout("blocked-initialize", Duration::from_secs(30));
+    let before_groups = groups(&fixture);
+    let ticket = fixture
+        .shell
+        .begin(
+            json!({
+                "kind":"invoke", "request":{
+                    "identity":{"kind":"instance","id":id(&fixture.shell,"root")},
+                    "tool":"s1.set-up.v1",
+                    "arguments":{"instance":{"kind":"Agent","name":"a"}}
+                }
+            }),
+            &fixture.runner,
+        )
+        .unwrap();
+    deadline(|| {
+        fs::read_to_string(fixture.temp.path().join("gate-count"))
+            .ok()
+            .is_some_and(|count| count == "1")
+    });
+    let bridge_group = *groups(&fixture)
+        .iter()
+        .find(|group| !before_groups.contains(group))
+        .unwrap();
+    assert_eq!(unsafe { libc::kill(-bridge_group, 0) }, 0);
+    fixture
+        .runner
+        .cancel_setup_parts(&json!({"invocation":ticket.invocation().unwrap()}))
+        .unwrap();
+    let end = Instant::now() + Duration::from_secs(10);
+    while unsafe { libc::kill(-bridge_group, 0) } == 0 {
+        assert!(Instant::now() < end, "cancelled bridge group did not end");
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    deadline(|| {
+        fs::read_dir(fixture.temp.path().join("store/http-bridges"))
+            .unwrap()
+            .next()
+            .is_none()
+    });
+    assert_eq!(fixture.runner.running_count(), 1);
+    let messages = log(fixture.temp.path());
+    assert_eq!(
+        messages
+            .iter()
+            .filter(|m| m["params"]["name"] == "run.v1")
+            .count(),
+        1
+    );
+    assert!(!messages.iter().any(|m| m["params"]["name"] == "stop.v1"));
+    assert_eq!(
+        fs::read_to_string(fixture.temp.path().join("gate-count")).unwrap(),
+        "1"
+    );
 }
 
 fn assert_private(fixture: &Fixture) {

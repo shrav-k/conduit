@@ -83,6 +83,7 @@ pub struct GateOptions {
     pub count_file: Option<std::path::PathBuf>,
     pub get_events: bool,
     pub delay_first: bool,
+    pub block_initialize: bool,
 }
 impl Gate {
     pub async fn start(options: GateOptions) -> Self {
@@ -205,6 +206,9 @@ impl Gate {
                                 });
                         let value: Value = serde_json::from_slice(&body).unwrap_or(Value::Null);
                         let initialize = value["method"] == "initialize";
+                        if initialize && options.block_initialize {
+                            std::future::pending::<()>().await;
+                        }
                         if options.delay_first {
                             if value["id"] == 3 {
                                 second_seen.store(true, Ordering::SeqCst);

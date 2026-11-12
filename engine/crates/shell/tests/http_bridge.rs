@@ -52,6 +52,7 @@ fn options(cert: String, key: String, sse: bool) -> GateOptions {
         count_file: None,
         get_events: false,
         delay_first: false,
+        block_initialize: false,
     }
 }
 async fn line(lines: &mut tokio::io::Lines<BufReader<tokio::process::ChildStdout>>) -> String {
@@ -62,6 +63,21 @@ async fn line(lines: &mut tokio::io::Lines<BufReader<tokio::process::ChildStdout
         .unwrap()
 }
 const INIT: &str = r#"{ "jsonrpc" : "2.0", "id": 1, "method":"initialize", "params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1"}} }"#;
+#[tokio::test]
+async fn bridge_initial_stdin_eof_exits_successfully_without_a_session() {
+    let authority = TestAuthority::new();
+    let temp = tempfile::tempdir().unwrap();
+    files(temp.path(), &authority);
+    let mut child = spawn(temp.path(), "https://127.0.0.1:1/mcp");
+    drop(child.stdin.take());
+    let result = tokio::time::timeout(Duration::from_secs(10), child.wait_with_output())
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(result.status.code(), Some(0));
+    assert!(result.stdout.is_empty());
+}
+
 #[tokio::test]
 async fn bridge_preserves_bytes_headers_credentials_after_directory_removal_and_deletes() {
     for sse in [false, true] {

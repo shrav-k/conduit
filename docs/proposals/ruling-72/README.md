@@ -48,3 +48,17 @@ can just use that distro I use tor nothing else". Item 3 is recorded in
 [ruling 71](../ruling-71/README.md#later-answers). So Ubuntu-24.04, the computer's default distro,
 is Conduit's distro, and the other Windows decisions wait for the owner, who asked for more
 information.
+
+2026-11-12, later: the owner wrote "Windows computer is up again, let's discuss the best options".
+The coordinator put the Windows computer's decisions again, each with a recommendation and its
+reason. The owner's whole answer: "Let's try your recommended setup for now, we can modify later if
+need be". M2-1 to M2-4 are [ruling 77](../ruling-77/README.md). M2-5, when the computer is
+Conduit's, answers point 3 and changes no decision: the computer is Conduit's whenever it is on and
+the owner has not paused it. The owner says "pause" whenever the owner wants the computer back, and
+"resume" after. On a
+pause, the coordinator checkpoints and stops the work running there, and starts nothing there until
+the owner resumes it: Kubernetes' cordon and uncordon, with the owner as the operator. The
+coordinator read "Windows computer is up again", with this answer, as the resume after the pause of
+2026-11-11; the owner may strike that reading. With interop
+off ([ruling 77](../ruling-77/README.md), point 4), the owner then stops the distro with
+`wsl --terminate Ubuntu-24.04`. M2-7 needs no ruling: WSL keeps its default memory limit.

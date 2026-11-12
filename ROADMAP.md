@@ -1,31 +1,30 @@
 # Roadmap
 
-Not binding. The specification in [spec/](spec/README.md) alone binds, and this page states no
-rule of the language and defines no behavior: it cites promises and action items by their IDs.
+Not binding. The specification in [spec/](spec/README.md) alone binds. This page states no rule
+of the language and defines no behavior: it cites promises and action items by their IDs.
 
-This is the experiment program that ruling 9 accepted and later rulings amended, among them 16,
-40, 41, 44 and 45. It moved here from the [plan audit](docs/AUDIT.md) under A72 (ruling 45).
-The owner rules the order of the work, and the coordinator updates the states in the pull
-request that changes the work. Action items keep the plan audit's numbers, and an experiment's
-or a probe's row on this page is its only row; every other action item has its row in the plan
-audit's [action items](docs/AUDIT.md#action-items) or, if ruling 39 moved it there as done or
-superseded, in its [history](docs/archive/plan-audit-history.md#completed-and-superseded-action-items).
+This is the experiment program of ruling 9, as later rulings amended it, among them 16, 40, 41,
+44 and 45. It moved here from the [plan audit](docs/AUDIT.md) under A72 (ruling 45). The owner
+rules the order of the work; the coordinator updates the states in the pull request that changes
+the work. Action items keep the plan audit's numbers. An experiment's or a probe's only row is on
+this page; every other action item's row is in the plan audit's
+[action items](docs/AUDIT.md#action-items) or, if ruling 39 moved it there as done or superseded,
+in its [history](docs/archive/plan-audit-history.md#completed-and-superseded-action-items).
 
 ## The order of the work
 
-Steps 1 to 8 are the order that ruling 9 accepted, as later rulings amended it: step 4 and S10
-came with the provider layer of ruling 40, and what rulings 44 and 45 added is written inside
-step 3. The steps keep their present numbers. Ruling 9's work in parallel and the rows added
-since carry no number, so no step number shifts. A step's state is done, now (it may run
-today), next or later. Each item keeps its own row and state, in the
+Steps 1 to 8 are ruling 9's order as amended: step 4 and S10 came with ruling 40's provider
+layer, and what rulings 44 and 45 added is inside step 3. Ruling 9's work in parallel and the
+rows added since carry no number, so no step number shifts. A step's state is done, now (it may
+run today), next or later. Each item keeps its own row and state, in the
 [register](#experiments-and-probes) below or in the plan audit.
 
 | Step | Work | Items | Needs | State |
 | --- | --- | --- | --- | --- |
 | 1 | Shared foundations, in series: the layer decisions (A48), the form of the specification and of a promise (A47), then the defect re-triage (A42). | A48, A47, A42 | — | done: A42's triage is done, and A42 stays in progress until its done-when, G7, is met |
 | 2 | The language and shared conventions, each ruled, checked and swept. | Ruled batches and questions: A51, A13, A41, A52, A53, A54, A12, A16, A25, A35. Writing the specification: A32, A33, A62, A64, A11, A29. Questions and repairs: A17, A20, A21, A24, A27 | The owner, for A20 and A21 ([waiting for the owner](docs/AUDIT.md#waiting-for-the-owner)) | done as a step, as the coordinator's note: every area is written as promises (A33), and ruling 44 put the build next. Its items are not done: some questions and repairs are still to settle, the vectors begin in step 3 (A39), model checks come in step 6, and the next sweep is the read after step 3 |
-| In parallel | Throughout, what needs no engine, or only real accounts and elapsed time: the native probes; since ruling 45, the baseline for S1 and the probe of a real client; the keychain's daemon case; the experiment across two machines, which prepares S3; and, since ruling 48, the work orders that Codex workers carry out. Since ruling 58, the condensation of the repository's records (A80). | A70, A71, A4, A5, A6, A7, A8, A10, A22, A74, A77, A80 | No engine; real accounts and elapsed time for the native probes; real machines for A74 | now: each row of the [register](#experiments-and-probes) gives its own state |
-| 3 | Tracer, in series: S1 alone through every method, to fix the file formats for scenarios, vectors and promises, on the first provider of each contract. Ruling 44 makes this the first build (A68), with the vectors for the safety cases first and the author measurements of D22 of round 6 on every run. Ruling 45 puts first the strict loader in Rust (A43), which validates the documents under `spec/schemas/examples/` against the schemas (X4 of pull request 10); then come the core on S1 (A38), the vectors (A39) and the first provider of each contract (A63). The probe of 1Password with no person present (A73) runs beside it once the first providers start. Ruling 46 settles its nature: one codebase, a pure core and a thin shell that makes it runnable and is the first slice of the reference engine (A50), built in four increments that [the first build](docs/implementation/FIRST_BUILD.md#increments) pre-registers, with its success criteria and measures. Ruling 48 has Codex workers carry out the increments as [work orders](docs/implementation/WORK_ORDERS.md), runs A4 before increment 3, and sends the work orders through Conduit itself after Fleet authority (batch 2), as ruling 61, B12, settles (A78). | A68, A43, A38, A39, A63, A73, A50, A78, A79 | The engine's built-in providers (ruling 46); Codex installed and signed in, for increment 3 | now: increments 1 to 3 are done; [the first-build register](docs/proposals/first-build/README.md) links their findings and dated evidence.<br>Increment 4 remains in progress: both author runs failed the bar; simplification, then the S1 rerun under [its measurement plan](docs/proposals/first-build/increment-4/measurement-plan.md), precede Fleet authority. |
+| In parallel | Throughout, what needs no engine, or only real accounts and elapsed time: the native probes; since ruling 45, the baseline for S1 and the probe of a real client; the keychain's daemon case; the experiment across two machines, which prepares S3; since ruling 48, the work orders that Codex workers carry out; and since ruling 58, the condensation of the repository's records (A80). | A70, A71, A4, A5, A6, A7, A8, A10, A22, A74, A77, A80 | No engine, except A5 and A6, whose rows say what they now need; real accounts and elapsed time for the native probes; real machines for A74 | now: each row of the [register](#experiments-and-probes) gives its own state |
+| 3 | Tracer, in series: S1 alone through every method, on the first provider of each contract, to fix the file formats for scenarios, vectors and promises. Ruling 44 makes it the first build (A68): the safety cases' vectors first, and the author measurements of D22 of round 6 on every run. Ruling 45 puts first the strict loader in Rust (A43), which validates `spec/schemas/examples/` against the schemas (X4 of pull request 10); then the core on S1 (A38), the vectors (A39) and the first provider of each contract (A63), with the probe of 1Password with no person present (A73) beside them once the first providers start. Ruling 46: one codebase, a pure core and a thin shell that makes it runnable and is the first slice of the reference engine (A50), in four increments that [the first build](docs/implementation/FIRST_BUILD.md#increments) pre-registers with their success criteria and measures. Ruling 48: Codex workers carry out the increments as [work orders](docs/implementation/WORK_ORDERS.md), and A4 runs before increment 3; the work orders go through Conduit itself (A78), as ruling 61, B12, settles: root's orders 1 to 3 since 2026-11-11, on authority through Fleets (041b) and Agents that run code (050a; ruling 70), and a coordinator Agent's orders 4 and 5 after appointment (batch 2). | A68, A43, A38, A39, A63, A73, A50, A78, A79 | The engine's built-in providers (ruling 46); Codex installed and signed in, for increment 3 | now: increments 1 to 3 are done; [the first-build register](docs/proposals/first-build/README.md) links their findings and dated evidence.<br>Increment 4 remains in progress: both author runs failed the bar; simplification, then the S1 rerun under [its measurement plan](docs/proposals/first-build/increment-4/measurement-plan.md), precede Fleet authority. |
 | Read | The next read by cold readers, on the text as the build leaves it, with reports under `docs/proposals/reaudit/round-7/` ([where findings go](docs/AUDIT.md#for-the-next-reader)). | A59, A61 | Step 3 | later |
 | 4 | Second providers: a second implementation of each provider contract, on a different existing tool, and S10 (A63). | A63 | Step 3 | later |
 | 5 | Fan-out, in parallel: S2 to S9, one scenario per session, with one integrator. S3 runs on at least two real machines. | A50; A74, A81 prepares S3; A82 beside S2 | Step 3; the same codebase as S1 (ruling 46) | later |
@@ -38,29 +37,29 @@ today), next or later. Each item keeps its own row and state, in the
 
 ### Open in the order
 
-Nothing is open in the order. Ruling 46 settled the one question that was: S2 to S9 run on the
-same codebase as S1, whose shell is the first slice of the reference engine (A50).
+Nothing is open. Ruling 46 settled the one question that was: S2 to S9 run on S1's codebase,
+whose shell is the first slice of the reference engine (A50).
 
 ## Experiments and probes
 
-The register. Every experiment and probe, planned, running or done, has one row here, and that
-row is the item's only row. A probe of the plan audit is written with its earlier name, as in
-"probe E10 of the plan audit"; its first wording is in the
+The register: one row for every experiment and probe, planned, running or done, and that row is
+the item's only row. A probe of the plan audit keeps its earlier name, as in "probe E10 of the
+plan audit"; its first wording is in the
 [history of the plan audit](docs/archive/plan-audit-history.md#standing-probes-and-comparisons),
-whose statuses are as ruling 39 left them. Round 6's evidence cases and measurements are cases
-of the scenarios, [placed below](#round-6s-evidence-and-measurements); E17 of round 6 runs
-early, as A71. Of the five experiments that pull request 10 proposed, X1, X3 and X5 are A73, A70
-and A71 below, X2 is among what was dropped, and X4, a validator in Rust of the example
-documents, is the strict loader A43, the first piece of the first build in
-[step 3](#the-order-of-the-work). Results go in the item's own directory under
-[experiments/](experiments/README.md), which this table links and does not summarize.
+with the statuses ruling 39 left. Round 6's evidence cases and measurements are cases of the
+scenarios, [placed below](#round-6s-evidence-and-measurements); round 6's E17 runs early, as A71.
+Of pull request 10's five experiments, X1, X3 and X5 are A73, A70 and A71, X2 was dropped
+(below), and X4, a validator in Rust of the example documents, is the strict loader A43, the
+first piece of the first build in [step 3](#the-order-of-the-work). Results go in the item's own
+directory under [experiments/](experiments/README.md), which this table links and does not
+summarize.
 
 | Item | Question it settles | Needs | Feeds | Done when | State | Source |
 | --- | --- | --- | --- | --- | --- | --- |
-| A70 | The baseline for S1, before the tracer: what do S1's tasks take, set up and then changed as the chapter on change and repair of D08 of round 6 does, with the tools people use today, a coding agent's own permission settings and its configuration of MCP servers, and a Compose file? It counts what the S1 row of [round 6's table](#round-6s-evidence-and-measurements) counts: duplicated credentials, per-agent changes of access, inspection effort, provider-specific code and steps of recovery | No engine | The bar that the first build's author measurements (A68; D22 of round 6) are compared with | Dated results in [007-s1-baseline](experiments/007-s1-baseline/README.md), on the tasks and measures of [the first build](docs/implementation/FIRST_BUILD.md#the-tasks), each counted as defined there before it runs, which the first build's author measurements are then compared with | done on 2026-11-09: [results](experiments/007-s1-baseline/results-2026-11-09.md) | Ruling 45 (X3 of pull request 10, from `allocmemory`) |
-| A71 | What a real client shows its model, before the engine exists: a real coding agent reaches, over loopback Streamable HTTP with a bearer token, a stub in Rust of the engine's presented server that answers as IFC-012, IFC-013, IFC-025 and IFC-038 prescribe. The cases: a tool of a Conduit closed after a `list_changed` notification, called from a cached list; a call to a tool never presented; a tool failure; an unknown outcome; and, added on 2026-11-09 from the review of A70, a Conduit opened mid-session. Each case is run headless and, where it can be, interactive; the protocol revision each client negotiates is recorded; Claude Code's discovery cache and Codex's cached catalog (`startup_readiness`) are each tried on and off; the stub states a `ttlMs`; and each client reads its token from a file by its header helper, including after a 401. What the client receives, what it passes to its model and what the model does next, the refusal of a call included, are recorded apart. A work order builds the stub; the admin session runs the clients | No engine | E17 of round 6, in S2, run early; it overlaps A4 and A6 | Dated results under `experiments/`, for E17 in S2 | done on 2026-11-09: [dated results](experiments/008-real-client/results-2026-11-09.md), 68 runs, classified by a work order and reviewed by the admin; the [later-turn follow-up](experiments/008-real-client/results-2026-11-09-later-turn.md) ran 12 two-turn sessions that day, its worker classifications reviewed by the admin before merge | Ruling 45 (X5 of pull request 10, from `allocmemory`); E17 of round 6; A6 |
-| A4 | Native launch and identity: can native Agents be launched with private configuration and a Conduit endpoint? Claude Code and Codex are started with separate configuration homes and a per-Agent Conduit token, the identity of IFC-042 and not a login to a model. Since ruling 48 it runs before increment 3, isolating each client by the flags of A70, and records for each: the wrapper that lets the runner reach it (PRV-007), which flags keep the owner's configuration out, its working directory, how its header helper reads the token file, and which login it used | Real accounts | If not, no real Agent exists until the owned loop; how a native Agent obtains and presents its token (A11, IFC-042); see A71 | Results recorded for Claude Code and Codex | done on 2026-11-09: [results](experiments/009-native-launch/results-2026-11-09.md), including two failed Codex attempts and the observations still unshown | Probe E1 of the plan audit |
-| A5 | Four accounts for 48 hours: do two Claude and two Codex subscriptions coexist under one macOS user? | Four accounts, 48 hours | If they collide, Agents need separate OS users or containers; the later two-Claude, two-Codex account check | Refresh and logout behavior recorded per account | open | Probe E2 of the plan audit |
+| A70 | The baseline for S1, before the tracer: what do S1's tasks take, set up and then changed as D08 of round 6's chapter on change and repair does, with the tools people use today (a coding agent's own permission settings and MCP configuration, and a Compose file)? It counts what the S1 row of [round 6's table](#round-6s-evidence-and-measurements) counts | No engine | The bar that the first build's author measurements (A68; D22 of round 6) are compared with | Dated results in [007-s1-baseline](experiments/007-s1-baseline/README.md), on the tasks and measures of [the first build](docs/implementation/FIRST_BUILD.md#the-tasks), each counted as defined there before it runs | done on 2026-11-09: [results](experiments/007-s1-baseline/results-2026-11-09.md) | Ruling 45 (X3 of pull request 10, from `allocmemory`) |
+| A71 | What a real client shows its model, before the engine exists: a real coding agent reaches, over loopback Streamable HTTP with a bearer token, a Rust stub of the engine's presented server that answers as IFC-012, IFC-013, IFC-025 and IFC-038 prescribe. The cases: a tool of a Conduit closed after a `list_changed` notification, called from a cached list; a call to a tool never presented; a tool failure; an unknown outcome; and, added on 2026-11-09 from A70's review, a Conduit opened mid-session. Each case runs headless and, where it can, interactive; each client's negotiated protocol revision is recorded; Claude Code's discovery cache and Codex's cached catalog (`startup_readiness`) are each tried on and off; the stub states a `ttlMs`; each client reads its token from a file by its header helper, including after a 401. What the client receives, what it passes its model and what the model does next, a refused call included, are recorded apart. A work order builds the stub; the admin session runs the clients | No engine | E17 of round 6, in S2, run early; it overlaps A4 and A6 | Dated results under `experiments/`, for E17 in S2 | done on 2026-11-09: [dated results](experiments/008-real-client/results-2026-11-09.md), 68 runs, classified by a work order and reviewed by the admin; the [later-turn follow-up](experiments/008-real-client/results-2026-11-09-later-turn.md) ran 12 two-turn sessions that day, its worker classifications reviewed by the admin before merge | Ruling 45 (X5 of pull request 10, from `allocmemory`); E17 of round 6; A6 |
+| A4 | Native launch and identity: can native Agents be launched with private configuration and a Conduit endpoint? Claude Code and Codex start with separate configuration homes and a per-Agent Conduit token, the identity of IFC-042, not a login to a model. Since ruling 48 it runs before increment 3, isolating each client by A70's flags, and records for each the wrapper that lets the runner reach it (PRV-007), the flags that keep the owner's configuration out, its working directory, how its header helper reads the token file, and the login it used | Real accounts | If not, no real Agent exists until the owned loop; how a native Agent obtains and presents its token (A11, IFC-042); see A71 | Results recorded for Claude Code and Codex | done on 2026-11-09: [results](experiments/009-native-launch/results-2026-11-09.md), including two failed Codex attempts and the observations still unshown | Probe E1 of the plan audit |
+| A5 | Four accounts for 48 hours: do two Claude and two Codex subscriptions coexist under one macOS user? | Four accounts, 48 hours; the sign-in chain (050, 048a, 048b, 051b), since the second accounts are signed in only through Conduit's Interface ([ruling 72's later answer](docs/proposals/ruling-72/README.md#later-answers)) | If they collide, Agents need separate OS users or containers; the later two-Claude, two-Codex account check | Refresh and logout behavior recorded per account | open | Probe E2 of the plan audit |
 | A6 | Mediation, including a lost response: does a small proxy holding one provider login serve two Agents with different allowlists? | The engine: S2's and S4's runs | Whether the idempotency key, then called operation identity, survives clients that send none: D02 and E09 of round 6, in S4; see A71 | A trace exists for discovery, invocation, refresh and a lost response | open: its traces come from the engine's runs, by the admin's decision of 2026-11-11, logged for the owner to strike: discovery, invocation and refresh (as the shared key's rotation) from [S2](experiments/013-s2-shared-login/README.md), and the lost response from [S4](experiments/015-s4-partial-setup/README.md) | Probe E3 of the plan audit |
 | A7 | Bypass, and the honest v0 security claim: what can a native Agent bypass? An Agent is told to reach data it is denied, and every path that works is recorded. A70's T3 is partial evidence: Codex's read-only shell reads any file the user can, its login brings apps that no file declares, and Claude Code's messaging and scheduling tools need no permission; on the engine's own runner, an Agent can also read another run's token file (IFC-022) | Real accounts | The honest security claim; A20, the owner's ruling on the scope of authorization | The claim is a promise | open | Probe E4 and disagreement D5 of the plan audit |
 | A10 | Messaging and a next-turn notice: does messaging progress without wake, through history tools and a next-turn notice given through an Agent's hooks? | Real accounts | Whether automatic wake moves into v0 | A two-Agent exchange is recorded with the human prompts it needed | open | Probe E5 of the plan audit |
@@ -68,8 +67,8 @@ documents, is the strict loader A43, the first piece of the first build in
 | A22 | The keychain with no person present: does the macOS keychain work unattended, from a daemon, a rebuilt unsigned binary and a locked session? | No engine; a Mac, and a real background daemon for the case still open | The keychain store of A63, and the custody of credentials | Results recorded | in progress: [Experiment 005](experiments/005-macos-keychain/README.md) recorded results on 2026-11-06, in the user's logged-in session; a real background daemon is untested (A63) | Probe E10 of the plan audit |
 | A73 | 1Password with no person present: can an item be read with no prompt answered, by a service account and by the desktop app's session, on a throwaway account and vault? | The first providers started (A63); [Experiment 005's safety rules](experiments/005-macos-keychain/README.md#safety); the owner's approval before the case that needs the desktop app | The 1Password store of A63 | Dated results under `experiments/`, for the service account and for the desktop app's session, with each measure defined before it runs | open: runs later, beside step 3, once the first providers start | Ruling 45 (X1 of pull request 10, from `allocmemory`), which put it under A63 |
 | A74 | Across two machines, with no engine: do the mechanisms under S3 hold on real machines? Among hypotheses H1 to H10 of [section 11 of the multi-machine proposal](docs/proposals/multi-machine/README.md#11-an-experiment-across-two-machines): a call without the engine's proof refused at a gate, a removed instance's credential refused, a stream after a silent cut, an OCI digest kept, dispatch at most once between two stand-ins and a gate behind NAT | Two real machines on one network and, for H10, a third behind NAT | S3 (step 5), which needs an engine; A64; A40 | Dated results in `experiments/006-across-machines/`, stating for each hypothesis what was measured | open: no one has started it | Ruling 43, which accepted the multi-machine proposal |
-| A77 | Work orders: when Codex workers carry out the work under the admin session's orders, is the work as good, and does the admin session spend less? | Codex signed in | How the rest of the program is run (ruling 48) | Each order's row in [work orders](docs/implementation/WORK_ORDERS.md#the-record): the order, verifier findings, admin corrections and recorded times; reviewed after five orders | in progress as of 2026-11-11: each merged order is a row of [the record](docs/implementation/WORK_ORDERS.md#the-record), covering 001 to 036k and 060 to 066; [lessons](docs/implementation/WORK_ORDERS.md#what-this-round-taught) are recorded, but admin time was not recorded, so no complete spend comparison is available | Ruling 48 |
-| A78 | Work orders through Conduit after Fleet authority (batch 2): each worker an Agent of the `conduit-core` Fleet, fixed worker and tree slots set up once by root; orders 1 to 3 dispatched by root, orders 4 and 5 by a coordinator Agent of that Fleet appointed by root, granting each tree through the Fleet's Conduits and driving workers through turns root opened; one queue per Fleet; no slot retires | Agents that run code (ruling 70, order 050a) and authority through Fleets (041b) for root's orders 1 to 3; appointment (batch 2) for orders 4 and 5 | S1 in daily use; findings of the first build | Five orders run through Conduit, each friction logged as a finding of the first build | open: brought forward by ruling 70 on 2026-11-11; awaits 041b and 050a | Ruling 48, amended by [ruling 61, B12](docs/proposals/ruling-61/README.md); [ruling 70](docs/proposals/ruling-70/README.md) |
+| A77 | Work orders: when Codex workers carry out the work under the admin session's orders, is the work as good, and does the admin session spend less? | Codex signed in | How the rest of the program is run (ruling 48) | Each order's row in [work orders](docs/implementation/WORK_ORDERS.md#the-record): the order, verifier findings, admin corrections and recorded times; reviewed after five orders | in progress as of 2026-11-12: [the record](docs/implementation/WORK_ORDERS.md#the-record) has a row for each of 001 to 036k and 060 to 066, and later merged orders keep their Record in their own file under `docs/work-orders/` until a condensation (A80) carries it there; [lessons](docs/implementation/WORK_ORDERS.md#what-this-round-taught) are recorded, but admin time was not recorded, so no complete spend comparison is available | Ruling 48 |
+| A78 | Work orders through Conduit after Fleet authority (batch 2): each worker an Agent of the `conduit-core` Fleet, fixed worker and tree slots set up once by root; orders 1 to 3 dispatched by root, orders 4 and 5 by a coordinator Agent of that Fleet appointed by root, granting each tree through the Fleet's Conduits and driving workers through turns root opened; one queue per Fleet; no slot retires | Agents that run code (ruling 70, order 050a) and authority through Fleets (041b) for root's orders 1 to 3; appointment (batch 2) for orders 4 and 5 | S1 in daily use; findings of the first build | Five orders run through Conduit, each friction logged as a finding of the first build | in progress: order 042 is root's first order through Conduit (2026-11-11), its `.v2` Agents installed from order 076's branch; orders 4 and 5 await appointment (batch 2) | Ruling 48, amended by [ruling 61, B12](docs/proposals/ruling-61/README.md); [ruling 70](docs/proposals/ruling-70/README.md) |
 | A79 | Does S1 in the short form translate into canonical documents today's loader and core accept, and how many lines does its author write in flow and block YAML? | Today's loader, core and shipped S1 fixtures | Ruling 55's translation rules and increment 4's simplification | All task states checked in both styles; dated counts with limits in [experiment 011](experiments/011-short-form-spike/README.md) | done on 2026-11-10: [results](experiments/011-short-form-spike/results-2026-11-10.md), 0 exact states passed / 14 failed (`as` unsupported); 14 diagnostic probes without `as` passed; paper totals 55 flow / 97 block, not an author run; follow-up on 2026-11-11: [paper count](experiments/023-paper-count/results-2026-11-11.md), design input for flow style and CLI, not the bar | Ruling 55; work order 031; work order 073 |
 | A81 | Does a Codex browser login complete when its redirect is carried back from another machine, through the person's Interface or an SSH forward, and is the account check then right? | The Windows computer; Codex 0.167 or later; order 038c's return, or an SSH forward by hand before it | Ruling 75 C5: Codex's browser login everywhere | A dated trace of one carried login per route, the account checked, no code recorded | open: before S3's sign-ins | Ruling 75 |
 | A82 | Does a Resource's browser login, Linear's OAuth, complete through Conduit's Interface, with the return carried to the Interface that received the sign-in, the token kept by the provider package and the account checked? | The primary Linear account and its test workspace; a Linear OAuth application the owner registers (S2-LOG-O); the provider package S2-LOG-P; orders 048a, 048b and 051b | Ruling 72's later answer of 2026-11-12 (every login tested through the Interface); ruling 75 C1, C2, C6 and C7 | A dated trace of one login, the account checked with one read, no code or token recorded (S2-LOG) | open: after 048a, 048b and 051b | Ruling 72 |
@@ -91,26 +90,25 @@ documents, is the strict loader A43, the first piece of the first build in
 
 - Check this page first: the [order of the work](#the-order-of-the-work), the
   [register](#experiments-and-probes), the [scenarios](#scenarios) and
-  [round 6's cases](#round-6s-evidence-and-measurements). One idea may already be filed under an
+  [round 6's cases](#round-6s-evidence-and-measurements). An idea may already be filed under an
   action item, a scenario or a case of round 6. A proposal names the row it serves, or says that
   it is new and what it feeds.
-- Each experiment states, before it runs, what it must show and how each of its measures is
-  counted (ruling 45).
-- A new item gets the next A-number of the plan audit when it is accepted, and its row here.
+- Each experiment states, before it runs, what it must show and how each measure is counted
+  (ruling 45).
+- A new item gets the plan audit's next A-number when it is accepted, and its row here.
 - A directory under `experiments/` takes the next unused number, counting the numbers this page
   holds (006 for A74). No number is reused.
-- Whoever starts an item writes `in progress` in its State, with the branch or the pull request
-  that carries the work.
+- Whoever starts an item writes `in progress` in its State, with the branch or pull request that
+  carries the work.
 - A probe of a real secret store follows
   [Experiment 005's safety rules](experiments/005-macos-keychain/README.md#safety), and a case
-  that needs a person's session comes to the owner before it runs.
+  that needs a person's session goes to the owner before it runs.
 - The [experiments index](experiments/README.md) gives the rules every experiment follows.
 
 ## The experiment program
 
-Accepted 2026-11-05 (ruling 9), and amended by later rulings, among them 16, 40, 41, 44 and 45.
-Its order is
-[the order of the work](#the-order-of-the-work) above.
+Accepted on 2026-11-05 (ruling 9) and amended since, as the top of this page says. Its order is
+[the order of the work](#the-order-of-the-work).
 
 **Claim to prove:** the [layered claim](docs/AUDIT.md#layered-claim), with the provider layer of
 ruling 40. The language fully determines what a set of documents means; the shared conventions
@@ -118,8 +116,8 @@ hold as invariants, on one machine and across several; everything else is a type
 provider or the conformance document. And every provider can be swapped: each provider contract
 has at least two implementations, built on different existing tools, that pass the same vectors.
 
-**What v0 must pass.** Ruling 47 lists the experiments that v0, the reference engine, must pass
-before the owner judges whether to publish it (A75): [the required experiments](docs/proposals/ruling-47/README.md#when-to-publish).
+**What v0 must pass.** Ruling 47 lists [the experiments](docs/proposals/ruling-47/README.md#when-to-publish)
+that v0, the reference engine, must pass before the owner judges whether to publish it (A75).
 The other probes are observational and do not block publication.
 
 | Method | What it shows | Action |
@@ -150,33 +148,24 @@ The other probes are observational and do not block publication.
 | S10 | S1 and S2 again with every provider swapped: another secret store, another runtime, another package source ([pre-registration](experiments/021-s10-swapped-providers/README.md)) | Provider contracts (ruling 40) | 4 |
 
 The scenarios exercise every layer, so they run on the reference engine with its standard
-library of types (A50) and the first providers (A63). The acceptance scenario is S1 and S2
-passing there. The independent builds inform the owner's judgment without gating v0
-([ruling 47](docs/proposals/ruling-47/README.md#when-to-publish)). Running them with real Claude and Codex Agents, and the two-Claude, two-Codex account
-check, are later gates. Step 3 runs S1 through the core and its shell, which grows
-into the reference engine on which S2 to S9 run (ruling 46).
-
-The vocabulary is no longer a last step: ruling 16 moved it up, and it was decided and applied
-with the rework.
-
-Independence rules for the builds, accepted (ruling 11) and detailed in
-[independent builds](docs/implementation/INDEPENDENT_BUILDS.md): each builder is a fresh session
-that did not write the language; its only inputs are the specification and the vectors; it
-cannot see the other engine, the reference engine's source, or anything else in this repository;
-and the owner or a neutral harness compares the results.
+library of types (A50) and the first providers (A63). Step 3 runs S1 through the core and its
+shell, which grows into the reference engine on which S2 to S9 run (ruling 46). The acceptance
+scenario is S1 and S2 passing there. The independent builds inform the owner's judgment without
+gating v0 ([ruling 47](docs/proposals/ruling-47/README.md#when-to-publish)); their independence
+rules (ruling 11) are in [independent builds](docs/implementation/INDEPENDENT_BUILDS.md). Running
+the scenarios with real Claude and Codex Agents, and the two-Claude, two-Codex account check, are
+later gates.
 
 ### Round 6's evidence and measurements
 
-Every E and D in this section is round 6's.
-
-Ruling 44 put round 6's evidence cases, E01 to E20, and the qualification tables of its D01 and
-D02 into this program, with D05, D08 to D10, D15, D16, D19 and D20 as measurements. Each case is
-described in
+Every E and D in this section is round 6's. Ruling 44 put its evidence cases, E01 to E20, and
+the qualification tables of D01 and D02 into this program, with D05, D08 to D10, D15, D16, D19
+and D20 as measurements. Each case is described in
 [the critique](docs/proposals/reaudit/round-6/design-critique.md#proposed-evidence-for-the-next-stage);
 the assertion given here is what the specification requires since round 6's decisions, or the
-question the case settles. None has been run. Every run also records the author measurements of
-D22: the files edited, the concepts met, the grants made by hand, the adapters written and the
-steps of recovery that need a person.
+question the case settles. None has been run. Every run also records D22's author measurements:
+the files edited, the concepts met, the grants made by hand, the adapters written and the steps
+of recovery that need a person.
 
 | Scenario | Evidence cases | Measurements and qualification |
 | --- | --- | --- |

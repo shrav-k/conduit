@@ -14,6 +14,7 @@ agent only that it is there.
 | [A second machine](second-machine.md) | Manual test-only setup of Windows with Linux under WSL2; managed and peer modes are ruled but enrollment is pending | S3, A74 |
 | [Docker](docker.md) | The second runtime | S10 |
 | [Cold readers](cold-readers.md) | The owner's collaborators: what to read, what is known to be open and how to report a finding | The Read row after step 3; instructions dated 2026-11-10 |
+| [Full review](full-review.md) | The next coordinator: how to review the repository and the progress so far, where to look, and what to hand the owner | The handover of 2026-11-12 |
 | [Moving to ConduitLang](move-to-conduitlang.md) | The GitHub organization, npm scope, domains and identifiers of the public name | Ruling 65; ruling 47's namespace |
 
 Menu names and commands in the setup guides are as the coordinator understood them on

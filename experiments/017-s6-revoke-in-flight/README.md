@@ -29,6 +29,8 @@ Pre-registered on 2026-11-11 by work order 102. Accepted by the owner on 2026-11
 counting rules and planned vectors, with the answers under "Open for the owner" applied. Ruling
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
+Its order-level plan is [plan.md](plan.md), written by work order 118; the plan changes nothing accepted here.
+
 ## Question
 
 What happens when access is revoked and a Resource is retired while requests are in flight?

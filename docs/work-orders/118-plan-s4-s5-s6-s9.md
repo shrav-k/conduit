@@ -329,3 +329,31 @@ grep -rn -E "[[:space:]]+$" $D
 Report each gap as a finding, each order you propose and each estimate as one of your own
 choices, and each difference from the state of the work above as a finding. Do not stage
 anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, beside orders 117, 119 and 120, from base 31acd73: the worker in 20
+minutes (1218 s) and a fresh verifier in 7 minutes (401 s); then a second worker round in 4
+minutes (260 s) and a fresh verifier in 10 minutes (576 s). Neither verifier's sandbox could run
+the unit suite; the lane coordinator ran every check of "Done when" on the result, all clean.
+
+- **Round one** found one must and one should. The must: S4's and S9's plans relied on a late
+  terminal reply to establish 077's fence, but the shell drops a response after its timeout
+  (`runner.rs`, from line 1031) and order 077 leaves the shell out of scope. Round two adds
+  S4-LATE, a proposed shell order that forwards late ordinary and hook completions to the core,
+  shared by S9. The should: deduplication is across all attempts of one idempotency key, with
+  attempt numbers only as evidence.
+- **Round two's verifier** found one must left: S5's lost-reply control branch needs the same
+  delivery path. The lane coordinator fixed it in S5's plan: S5-WIRE now depends on S4-LATE, adds
+  no second path, and carries a no-effect lost-reply regression (reconciliation conflicts before
+  the late reply; the outcome stays unknown once the reply establishes the fence; explicit
+  `occurred: false` then records failed without changing the stored configuration). The critical
+  path now joins S4-LATE before S5-WIRE.
+
+The result is four plans, `plan.md` in experiments 015 (S4), 016 (S5), 017 (S6) and 020 (S9), and
+one sentence in each README's Status. Lane work that can start now: `SCR`, the shared scripted
+client (L, under experiment 015), and the scenario servers S4-SRV1, S4-SRV2, S5-SRV, S6-SRV and
+S9-SRV on lane 8. The core and shell orders (S4-TASK1, S4-TASK2, S4-LATE, S4-SET, S4-REC; S5-C1
+to S5-C3 and S5-WIRE; S6-ACCESS, S6-DUTY and S6-WIRE; S9-CORE and S9-CUT) are proposals to the
+admin, after the pin. Each plan's split goes to a fresh skeptic before any order in it is
+dispatched.

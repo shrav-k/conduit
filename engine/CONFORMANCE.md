@@ -395,14 +395,27 @@ processes, failure exits and partial submission summaries.
 ## Enrollment
 
 Order 049a1 implements the three root enrollment verbs, scripted provider endings, the private
-panel projection, expiry and provider reports. Only root may invoke these verbs. Refusal
+panel projection, expiry and provider reports. Hostname comparisons trim and lowercase under
+PLC-026, including local protection, duplicate-report rejection and node triple matching.
+Admission keeps the checked identity and evidence separate from the descriptive labels last
+reported before acceptance succeeds; only those descriptive labels and the enrollment's bound
+labels are fixed on the new node (ENR-010). The panel resolves join attribution from recorded
+provider/id membership even when a later report omits or changes its enrollment field; check 1
+still uses the latest report's attribution (ENR-004, ENR-006). Only root may invoke these verbs. Refusal
 succeeds when all removals succeed or none is needed, fails when any removal fails, and is
 unknown otherwise; failed/unknown removals are never claimed as removals or retried.
 
 Non-local nodes bind the whole provider/id/hostname triple. Ready reasons are
 NoReportSinceAdmission, MachineReachable, MachineUnreachable, MachineOmitted,
 MachineReportedPending, AwaitingReportAfterRecovery and ProviderRetired. Their messages
-name the cause under PLC-023. A gone report currently counts as unreachable without
+name the cause under PLC-023. An unavailable node also makes its instances' conditions
+Unknown with reason NodeUnavailable (PLC-023, OBS-003), retaining each condition's source
+and last successful observation time, and retaining the instances' lifecycle states. Previously
+unobserved instances have an Unknown Running condition with no lastHeartbeatTime. This
+applies to unreachable reports, omission, provider retirement and recovery. A reachable node
+alone does not turn an instance's stale observation back into a current one; a new observation
+is needed. Instances placed on local or another reachable node are unchanged.
+A gone report currently counts as unreachable without
 retirement; PLC-024's gone handling waits for scenario S3. LabelsDrift is True while any
 reported label differs from the fixed labels, with each differing key in its message; a matching
 report removes it. Reports never change local. Runtime machine inputs for non-local nodes

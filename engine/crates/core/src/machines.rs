@@ -44,6 +44,15 @@ fn report_machines(s: &State) -> &[Value] {
         .map(Vec::as_slice)
         .unwrap_or(&[])
 }
+// PLC-026 applies to comparisons, without rewriting provider-reported values.
+fn canonical_hostname(value: &Value) -> Option<String> {
+    value.as_str().map(|s| s.trim().to_lowercase())
+}
+fn same_hostname(left: &Value, right: &Value) -> bool {
+    canonical_hostname(left)
+        .zip(canonical_hostname(right))
+        .is_some_and(|(left, right)| left == right)
+}
 fn node_for<'a>(s: &'a State, provider: &Value, id: &Value, c: &Context) -> Option<&'a Value> {
     s.objects.iter().find(|o| {
         o["type"] == c.qualified("node.v1")
@@ -51,8 +60,8 @@ fn node_for<'a>(s: &'a State, provider: &Value, id: &Value, c: &Context) -> Opti
             && (o["status"]["machine"]["provider"] == *provider && o["status"]["machine"]["id"] == *id
                 // PLC-026: local represents its hostname alone, without a provider id.
                 || o["name"] == "local" && (
-                    s.machine_report.as_ref().is_some_and(|r| r["provider"] == *provider) && report_machines(s).iter().any(|m|m["id"] == *id && m["hostname"] == o["status"]["hostname"])
-                    || s.enrollments.iter().filter(|e| e["provider"] == *provider).flat_map(|e|e["machines"].as_array().into_iter().flatten()).any(|m|m["id"] == *id && m["hostname"] == o["status"]["hostname"])
+                    s.machine_report.as_ref().is_some_and(|r| r["provider"] == *provider) && report_machines(s).iter().any(|m|m["id"] == *id && same_hostname(&m["hostname"], &o["status"]["hostname"]))
+                    || s.enrollments.iter().filter(|e| e["provider"] == *provider).flat_map(|e|e["machines"].as_array().into_iter().flatten()).any(|m|m["id"] == *id && same_hostname(&m["hostname"], &o["status"]["hostname"]))
                 ))
     })
 }
@@ -182,10 +191,12 @@ fn checks(
             && !s.objects.iter().any(|n| {
                 node_type.is_some_and(|ty| n["type"] == *ty)
                     && n["state"] != "retired"
-                    && n["status"]["hostname"] == *hostname
+                    && same_hostname(&n["status"]["hostname"], hostname)
             })
             && !report_machines(s).iter().any(|n| {
-                n["state"] == "pending" && n["id"] != m["id"] && n["hostname"] == *hostname
+                n["state"] == "pending"
+                    && n["id"] != m["id"]
+                    && same_hostname(&n["hostname"], hostname)
             }),
         "hostname is local's, a live node's, or another pending machine's",
     );
@@ -204,7 +215,8 @@ fn checks(
         4,
         labels.is_some_and(|l| {
             *l == expected
-                && l.get("kubernetes.io/hostname") == Some(hostname)
+                && l.get("kubernetes.io/hostname")
+                    .is_some_and(|label| same_hostname(label, hostname))
                 && ["kubernetes.io/os", "kubernetes.io/arch"].iter().all(|k| {
                     l.get(*k)
                         .and_then(Value::as_str)
@@ -490,7 +502,9 @@ pub(crate) fn execute(
         if !e["accepting"].is_object() {
             e["accepting"] = json!({});
         }
-        e["accepting"][v["id"].as_str().unwrap()] = m;
+        // The checked identity/evidence stays fixed; descriptive labels may be
+        // corrected by a later report before admission completes (ENR-010).
+        e["accepting"][v["id"].as_str().unwrap()] = json!({"machine":m,"labels":m["labels"]});
         emit(
             t,
             a,
@@ -760,9 +774,20 @@ fn admit_node(
 ) -> Result<()> {
     let e = t.state.enrollments[ei].clone();
     let invocation = t.state.invocations[i]["id"].clone();
-    let m = e["accepting"]
+    let acceptance = e["accepting"]
         .get(invocation.as_str().unwrap())
         .ok_or("ENR-007: admission has no checked machine snapshot")?;
+    let m = &acceptance["machine"];
+    let mut labels = e["labels"].as_object().cloned().unwrap_or_default();
+    for key in [
+        "kubernetes.io/hostname",
+        "kubernetes.io/os",
+        "kubernetes.io/arch",
+    ] {
+        if let Some(value) = acceptance["labels"].get(key) {
+            labels.insert(key.into(), value.clone());
+        }
+    }
     let id = a.next(&mut t.state)?;
     let hostname = m["hostname"].as_str().unwrap();
     let short = hostname.split('.').next().unwrap();
@@ -798,7 +823,7 @@ fn admit_node(
         .revisions
         .first()
         .ok_or("admission needs a revision")?;
-    let mut node = json!({"id":id,"revision":revision,"kind":"Resource","name":name,"from":c.qualified("node"),"type":c.template("node")?["spec"]["type"],"state":"ready","config":{},"owner":system(&t.state,c),"placement":id,"status":{"hostname":hostname,"machine":{"provider":e["provider"],"id":m["id"],"hostname":hostname},"enrollment":e["id"],"labels":m["labels"]}});
+    let mut node = json!({"id":id,"revision":revision,"kind":"Resource","name":name,"from":c.qualified("node"),"type":c.template("node")?["spec"]["type"],"state":"ready","config":{},"owner":system(&t.state,c),"placement":id,"status":{"hostname":hostname,"machine":{"provider":e["provider"],"id":m["id"],"hostname":hostname},"enrollment":e["id"],"labels":labels}});
     condition(
         &mut node,
         "Ready",
@@ -883,6 +908,89 @@ pub(crate) fn omit_nodes(s: &mut State, time: &str, reason: &str, cause: &str, c
             condition(n, "Ready", "Unknown", reason, cause, time, false);
         }
     }
+    unobserve_instances(s, time, c);
+}
+// PLC-023 / OBS-003: losing the node makes every observation on its
+// instances unknown, without changing lifecycle or last successful times.
+fn unobserve_instances(s: &mut State, time: &str, c: &Context) {
+    let unavailable = s
+        .objects
+        .iter()
+        .filter(|n| {
+            n["type"] == c.qualified("node.v1")
+                && n["name"] != "local"
+                && !n["status"]["conditions"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .any(|v| v["type"] == "Ready" && v["status"] == "True")
+        })
+        .map(|n| {
+            (
+                n["id"].clone(),
+                n["status"]["conditions"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .find(|v| v["type"] == "Ready")
+                    .map(|v| v["message"].as_str().unwrap_or("").to_owned())
+                    .unwrap_or_default(),
+            )
+        })
+        .collect::<Vec<_>>();
+    for object in &mut s.objects {
+        if object["type"] == c.qualified("node.v1") {
+            continue;
+        }
+        let Some((node, cause)) = unavailable
+            .iter()
+            .find(|(id, _)| access::id(&object["placement"]) == id)
+        else {
+            continue;
+        };
+        if !object["status"].is_object() {
+            object["status"] = json!({});
+        }
+        if !object["status"]["conditions"].is_array() {
+            object["status"]["conditions"] = json!([]);
+        }
+        if object["status"]["conditions"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+        {
+            condition(
+                object,
+                "Running",
+                "Unknown",
+                "NodeUnavailable",
+                &format!("PLC-023 OBS-003: node {node} is unavailable; {cause}"),
+                time,
+                false,
+            );
+        }
+        let mut past = vec![];
+        for observation in object["status"]["conditions"].as_array_mut().unwrap() {
+            if observation["status"] != "Unknown" {
+                past.push(json!({"condition":observation,"endedAt":time}));
+                observation["lastTransitionTime"] = json!(time);
+            }
+            observation["status"] = json!("Unknown");
+            observation["reason"] = json!("NodeUnavailable");
+            observation["message"] = json!(format!(
+                "PLC-023 OBS-003: node {node} is unavailable; {cause}"
+            ));
+        }
+        if !past.is_empty() {
+            if !object["past_conditions"].is_array() {
+                object["past_conditions"] = json!([]);
+            }
+            object["past_conditions"]
+                .as_array_mut()
+                .unwrap()
+                .extend(past);
+        }
+    }
 }
 pub(crate) fn retired(
     t: &mut Transition,
@@ -940,7 +1048,13 @@ pub(crate) fn machine_report(
     let ms = outputs["machines"].as_array().cloned().unwrap_or_default();
     let unique = |key: &str| {
         ms.iter()
-            .map(|m| m[key].as_str().unwrap_or(""))
+            .map(|m| {
+                if key == "hostname" {
+                    canonical_hostname(&m[key]).unwrap_or_default()
+                } else {
+                    m[key].as_str().unwrap_or("").to_owned()
+                }
+            })
             .collect::<BTreeSet<_>>()
             .len()
             == ms.len()
@@ -952,7 +1066,8 @@ pub(crate) fn machine_report(
     t.decisions.push(decision(
         "machine-report",
         &[
-            "ENR-004", "ENR-010", "PLC-023", "PLC-026", "PRV-005", "PRV-014", "OPS-007", "REC-001",
+            "ENR-004", "ENR-010", "PLC-023", "PLC-026", "OBS-003", "PRV-005", "PRV-014", "OPS-007",
+            "REC-001",
         ],
         &["DL5", "DL8"],
         json!({"used":use_report,"outcome":outcome}),
@@ -962,17 +1077,44 @@ pub(crate) fn machine_report(
         t.reply = json!({"used":false});
         return Ok(());
     }
+    // Preserve the last labels reported during acceptance even if a later
+    // report omits the machine. Identity and checked evidence never change.
+    for e in &mut t.state.enrollments {
+        if e["provider"] == pid
+            && let Some(accepting) = e["accepting"].as_object_mut()
+        {
+            for acceptance in accepting.values_mut() {
+                if let Some(m) = ms.iter().find(|m| m["id"] == acceptance["machine"]["id"]) {
+                    acceptance["labels"] = m["labels"].clone();
+                }
+            }
+        }
+    }
     for m in &ms {
         if m["state"] == "pending"
-            && let Some(e) = t.state.enrollments.iter_mut().find(|e| {
+            && let Some(ei) = t.state.enrollments.iter().position(|e| {
                 e["id"] == m["enrollment"] && e["provider"] == pid && live(e, &a.evidence.time)
             })
         {
+            // Remember the actual latest join separately from the report's
+            // optional attribution. Earlier memberships remain history.
+            for e in &mut t.state.enrollments {
+                if e["provider"] == pid {
+                    for joined in e["machines"].as_array_mut().unwrap() {
+                        if joined["id"] == m["id"] {
+                            joined["currentJoin"] = json!(false);
+                        }
+                    }
+                }
+            }
+            let e = &mut t.state.enrollments[ei];
+            let mut machine = m.clone();
+            machine["currentJoin"] = json!(true);
             let joined = e["machines"].as_array_mut().unwrap();
             if let Some(old) = joined.iter_mut().find(|v| v["id"] == m["id"]) {
-                *old = m.clone();
+                *old = machine;
             } else {
-                joined.push(m.clone());
+                joined.push(machine);
             }
             drop_action(e);
         }
@@ -985,7 +1127,7 @@ pub(crate) fn machine_report(
         let matching = ms.iter().find(|m| {
             triple["provider"] == pid
                 && triple["id"] == m["id"]
-                && triple["hostname"] == m["hostname"]
+                && same_hostname(&triple["hostname"], &m["hostname"])
         });
         match matching {
             Some(m) if m["state"] != "pending" => {
@@ -1056,6 +1198,7 @@ pub(crate) fn machine_report(
             }
         }
     }
+    unobserve_instances(&mut t.state, &a.evidence.time, c);
     t.state.machine_report = Some(json!({"provider":pid,"outputs":outputs}));
     t.reply = json!({"used":true});
     Ok(())
@@ -1089,11 +1232,45 @@ pub fn panel(s: &State, time: &str) -> Value {
             v
         })
         .collect::<Vec<_>>();
-    let machines = report_machines(s).iter().filter(|m|m["state"] == "pending").map(|m| {
-        let e = s.enrollments.iter().find(|e|e["id"] == m["enrollment"] && e["provider"] == s.machine_report.as_ref().unwrap()["provider"] && e["machines"].as_array().is_some_and(|ms|ms.iter().any(|v|v["id"] == m["id"])));
-        let mut v = json!({"hostname":m["hostname"],"id":m["id"],"labels":m["labels"],"evidence":m.get("evidence").cloned().unwrap_or(json!([])),"checks":checks(s,e,Some(m),s.objects.iter().find(|p| s.machine_report.as_ref().is_some_and(|r|r["provider"] == p["id"]) && p["state"] != "retired"),time)});
-        if let Some(e) = e {v["enrollment"] = e["id"].clone();}v
-    }).collect::<Vec<_>>();
+    let machines = report_machines(s)
+        .iter()
+        .filter(|m| m["state"] == "pending")
+        .map(|m| {
+            let provider = &s.machine_report.as_ref().unwrap()["provider"];
+            let joins = || {
+                s.enrollments.iter().rev().filter(|e| {
+                    e["provider"] == *provider
+                        && e["machines"]
+                            .as_array()
+                            .is_some_and(|ms| ms.iter().any(|v| v["id"] == m["id"]))
+                })
+            };
+            let e = joins()
+                .find(|e| {
+                    e["machines"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|v| v["id"] == m["id"] && v["currentJoin"] == true)
+                })
+                // Older snapshots have no marker; use only recorded memberships.
+                .or_else(|| joins().find(|e| e["id"] == m["enrollment"]))
+                .or_else(|| joins().next());
+            let p = s
+                .objects
+                .iter()
+                .find(|p| p["id"] == *provider && p["state"] != "retired");
+            let mut view = json!({
+                "hostname":m["hostname"], "id":m["id"], "labels":m["labels"],
+                "evidence":m.get("evidence").cloned().unwrap_or(json!([])),
+                "checks":checks(s, e, Some(m), p, time)
+            });
+            if let Some(e) = e {
+                view["enrollment"] = e["id"].clone();
+            }
+            view
+        })
+        .collect::<Vec<_>>();
     json!({"enrollments":enrollments,"machines":machines})
 }
 
@@ -1259,7 +1436,7 @@ mod tests {
             t
         }
         fn invoke(&mut self, op: &str, args: Value, key: Option<&str>) -> Transition {
-            let mut v = json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":self.s.objects[4]["id"]},"tool":format!("{}.{op}",if op=="retire.v1" {"root-system"} else {"management"}),"arguments":args}});
+            let mut v = json!({"kind":"invoke","request":{"identity":{"kind":"instance","id":self.s.objects[4]["id"]},"tool":format!("{}.{op}",if matches!(op, "retire.v1" | "inspect.v1") {"root-system"} else {"management"}),"arguments":args}});
             if let Some(key) = key {
                 v["key"] = json!(key);
             }
@@ -1443,6 +1620,206 @@ mod tests {
         h.call(json!({"kind":"recover"}));
         assert_eq!(node(&h.s)["reason"], "AwaitingReportAfterRecovery");
         assert_eq!(h.s.objects[1], local);
+    }
+    #[test]
+    fn node_loss_invalidates_instance_observations_in_inspection() {
+        for ending in ["unreachable", "omitted", "recover"] {
+            let mut h = Harness::new();
+            // This fixture's system Conduit lists register/retire only.
+            h.s.objects
+                .iter_mut()
+                .find(|o| o["name"] == "root-system")
+                .unwrap()["operations"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!(h.c.qualified("inspect.v1")));
+            let p = h.provider();
+            let (e, _) = h.open(json!({}), json!(["fingerprint"]));
+            let mut m = Harness::machine(&e, "m1", Harness::fingerprint());
+            h.report(&p, json!([m]));
+            let call = h.accept(&e, "aB+/xyz", None);
+            let admitted = h.end_accept(&call);
+            let node = admitted.reply["structuredContent"]["node"]["id"].clone();
+            m["state"] = json!("reachable");
+            h.report(&p, json!([m]));
+            let mut instance = h.s.objects[2].clone();
+            instance["id"] = json!("00000000-0000-4000-8000-000000099999");
+            instance["name"] = json!("observed");
+            instance["placement"] = node;
+            instance["status"] = json!({});
+            crate::lifecycle::observe_run(&mut instance, "running", "2026-11-11T11:59:00Z")
+                .unwrap();
+            instance["status"]["conditions"].as_array_mut().unwrap().push(json!({
+                "type":"Healthy", "status":"True", "source":"urn:fixture:health",
+                "lastHeartbeatTime":"2026-11-11T11:58:00Z", "lastTransitionTime":"2026-11-11T11:58:00Z"
+            }));
+            let observed = instance["status"]["conditions"].clone();
+            let lifecycle = instance["state"].clone();
+            let reference = json!({"kind":"Resource","name":"observed"});
+            h.s.objects.push(instance.clone());
+            instance["id"] = json!("00000000-0000-4000-8000-000000099998");
+            instance["name"] = json!("unobserved");
+            instance["status"] = json!({});
+            h.s.objects.push(instance.clone());
+            instance["id"] = json!("00000000-0000-4000-8000-000000099997");
+            instance["name"] = json!("unaffected");
+            instance["placement"] = h.s.objects[1]["id"].clone();
+            instance["status"]["conditions"] = observed.clone();
+            h.s.objects.push(instance.clone());
+            match ending {
+                "recover" => {
+                    h.call(json!({"kind":"recover"}));
+                }
+                "omitted" => {
+                    h.report(&p, json!([]));
+                }
+                _ => {
+                    m["state"] = json!(ending);
+                    h.report(&p, json!([m]));
+                }
+            }
+            let t = h.invoke("inspect.v1", json!({"object":reference}), None);
+            let status = &t.reply["structuredContent"]["status"];
+            assert_eq!(status["state"], lifecycle, "{}", t.reply);
+            for (i, old) in observed.as_array().unwrap().iter().enumerate() {
+                let current = &status["conditions"][i];
+                assert_eq!(current["status"], "Unknown", "{ending}: {}", t.reply);
+                assert_eq!(current["lastHeartbeatTime"], old["lastHeartbeatTime"]);
+                assert_eq!(current["source"], old["source"]);
+                assert_eq!(current["reason"], "NodeUnavailable");
+                assert!(current["message"].as_str().unwrap().contains("OBS-003"));
+            }
+            let t = h.invoke(
+                "inspect.v1",
+                json!({"object":{"kind":"Resource","name":"unobserved"}}),
+                None,
+            );
+            assert_eq!(
+                t.reply["structuredContent"]["status"]["conditions"][0]["status"],
+                "Unknown"
+            );
+            assert!(
+                t.reply["structuredContent"]["status"]["conditions"][0]
+                    .get("lastHeartbeatTime")
+                    .is_none()
+            );
+            assert_eq!(
+                h.s.objects
+                    .iter()
+                    .find(|o| o["name"] == "unaffected")
+                    .unwrap(),
+                &instance
+            );
+        }
+    }
+    #[test]
+    fn admission_fixes_last_reported_labels_but_keeps_checked_identity() {
+        let mut h = Harness::new();
+        let p = h.provider();
+        let (e, _) = h.open(json!({"labels":{"site":"bound"}}), json!(["fingerprint"]));
+        let mut m = Harness::machine(&e, "m1", Harness::fingerprint());
+        m["labels"]["site"] = json!("bound");
+        h.report(&p, json!([m]));
+        let call = h.accept(&e, "aB+/xyz", None);
+        m["labels"]["kubernetes.io/os"] = json!("corrected");
+        m["labels"]["kubernetes.io/arch"] = json!("arm64");
+        // A later report cannot replace the enrollment's bound labels or
+        // change the identity/evidence that passed ENR-006.
+        m["labels"]["site"] = json!("unbound");
+        m["labels"]["extra"] = json!("ignored");
+        m["evidence"] = json!([]);
+        h.report(&p, json!([m]));
+        h.report(&p, json!([]));
+        h.end_accept(&call);
+        let node = h.s.objects.iter().find(|o| o["name"] == "worker").unwrap();
+        assert_eq!(
+            node["status"]["labels"],
+            json!({"kubernetes.io/hostname":"worker.example","kubernetes.io/os":"corrected","kubernetes.io/arch":"arm64","site":"bound"})
+        );
+        assert_eq!(node["status"]["machine"]["id"], "m1");
+        assert_eq!(h.s.enrollments[0]["fingerprintCompared"], true);
+    }
+    #[test]
+    fn panel_retains_join_when_report_omits_or_changes_attribution() {
+        let mut h = Harness::new();
+        let p = h.provider();
+        let (e, _) = h.open(json!({}), json!(["fingerprint"]));
+        let mut m = Harness::machine(&e, "m1", Harness::fingerprint());
+        h.report(&p, json!([m]));
+        for attribution in [None, Some(json!("not-a-joined-enrollment"))] {
+            m.as_object_mut().unwrap().remove("enrollment");
+            if let Some(value) = attribution {
+                m["enrollment"] = value;
+            }
+            h.report(&p, json!([m]));
+            let view = panel(&h.s, "2026-11-11T12:00:00Z");
+            assert_eq!(view["machines"][0]["enrollment"], e);
+            let failures = view["machines"][0]["checks"].as_array().unwrap();
+            assert!(failures.iter().any(|f| f["check"] == 1));
+            assert!(!failures.iter().any(|f| f["check"] == 2));
+            assert!(view["enrollments"][0].get("action").is_none());
+        }
+    }
+    #[test]
+    fn hostname_comparisons_are_canonical_for_reports_admission_and_local() {
+        let mut h = Harness::new();
+        let p = h.provider();
+        let (e, _) = h.open(json!({}), json!(["fingerprint"]));
+        let mut m = Harness::machine(&e, "m1", Harness::fingerprint());
+        let mut duplicate = m.clone();
+        duplicate["id"] = json!("other");
+        duplicate["hostname"] = json!("WORKER.EXAMPLE");
+        duplicate["labels"]["kubernetes.io/hostname"] = duplicate["hostname"].clone();
+        let t = h.report(&p, json!([m, duplicate]));
+        assert_eq!(t.reply["used"], false);
+        assert!(h.s.machine_report.is_none());
+        // Check 3 also protects a candidate against a different pending id
+        // using a case variant, independently of duplicate-report rejection.
+        h.s.machine_report = Some(json!({"provider":p,"outputs":{"machines":[duplicate]}}));
+        let failures = checks(
+            &h.s,
+            Some(&h.s.enrollments[0]),
+            Some(&m),
+            provider(&h.s, &h.c),
+            "2026-11-11T12:00:00Z",
+        );
+        assert!(failures.iter().any(|f| f["check"] == 3));
+        h.s.machine_report = None;
+        m["hostname"] = json!(
+            h.s.objects[1]["status"]["hostname"]
+                .as_str()
+                .unwrap()
+                .to_uppercase()
+        );
+        m["labels"]["kubernetes.io/hostname"] = m["hostname"].clone();
+        h.report(&p, json!([m]));
+        let t = h.accept(&e, "aB+/xyz", None);
+        assert_eq!(
+            t.reply["_meta"][format!("{}reason", h.c.meta_prefix)],
+            "conflict"
+        );
+        assert!(t.reply.to_string().contains("check 3"));
+        assert!(t.external_intents.is_empty());
+        let t = h.invoke("refuse-machine.v1", json!({"machine":"m1"}), None);
+        assert_eq!(
+            t.reply["_meta"][format!("{}reason", h.c.meta_prefix)],
+            "conflict"
+        );
+        assert!(t.external_intents.is_empty());
+        m = Harness::machine(&e, "m1", Harness::fingerprint());
+        h.report(&p, json!([m]));
+        let call = h.accept(&e, "aB+/xyz", None);
+        h.end_accept(&call);
+        m["hostname"] = json!("WORKER.EXAMPLE");
+        m["labels"]["kubernetes.io/hostname"] = m["hostname"].clone();
+        m["state"] = json!("reachable");
+        h.report(&p, json!([m]));
+        let n = h.s.objects.iter().find(|o| o["name"] == "worker").unwrap();
+        assert_eq!(n["status"]["conditions"][0]["status"], "True");
+        assert!(same_hostname(
+            &json!(" Worker.Example "),
+            &json!("worker.example")
+        ));
     }
     #[test]
     fn headless_minima_and_comparison_exception() {
@@ -1707,11 +2084,26 @@ mod tests {
             panel(&h.s, "2026-11-11T12:00:00Z")["machines"][0]["enrollment"],
             second
         );
+        h.report(
+            &p,
+            json!([Harness::machine(&first, "m1", Harness::fingerprint())]),
+        );
+        let mut without_attribution = Harness::machine(&first, "m1", Harness::fingerprint());
+        without_attribution
+            .as_object_mut()
+            .unwrap()
+            .remove("enrollment");
+        h.report(&p, json!([without_attribution]));
+        assert_eq!(
+            panel(&h.s, "2026-11-11T12:00:00Z")["machines"][0]["enrollment"],
+            first
+        );
+        // Expiry preserves the recorded attribution.
         let evidence = h.evidence("2026-11-11T13:00:00Z");
         h.call(json!({"kind":"clock","evidence":evidence}));
         let view = panel(&h.s, "2026-11-11T13:00:00Z");
         assert_eq!(view["enrollments"], json!([]));
-        assert_eq!(view["machines"][0]["enrollment"], second);
+        assert_eq!(view["machines"][0]["enrollment"], first);
         assert!(
             view["machines"][0]["checks"]
                 .as_array()

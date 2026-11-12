@@ -68,7 +68,8 @@ each changed Rust crate, a pinned toolchain, Cargo.lock, ignored output and pack
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | S2-F | server | Ship O3's restriction contracts | CON-018, IFC-019 | — | S, 150–220 lines | lane 8 | now |
 | S2-L1 | server | Local Linear stub and aware implementation | IFC-019/020, SEC-019 | S2-F | L, 550–800 lines | lane 8 | after S2-F |
-| S2-L2 | server | Separate adapter crate and unchanged plain qualification | CON-022, IFC-007/019 | S2-F, S2-L1 stub protocol freeze only | L, 550–800 lines | lane 8 | after interfaces freeze, not all L1 |
+| S2-L2 | server | Separate adapter crate, reading only; the plain row runs in S2's runs | CON-022, IFC-007/019 | S2-F, S2-L1 stub protocol freeze only | L, about 1,200–1,600 lines | lane 8 | order 139 |
+| S2-PL | package | Package and admit the plain server chosen for the runs | PKG-020, MAN-010/017 | the plain server's choice, with the owner | S, 150–300 lines | lane 8 | after that choice |
 | SEC-D1 | core | Secret decisions/records; V4 and S10 V1 safety | SEC-006–018, SEC-023/024 | PIN, 042, S0b, SV1 | L, 650–900 lines | admin | after dependencies |
 | SEC-D2 | shell | Execute reads; deliver private values to runs | SEC-010–020, PRV-011/022/026 | SEC-D1, DSP | L, 650–900 lines | admin | after SEC-D1 and DSP on main |
 | SEC-D3a | shell | Secret-bearing remote connection headers | SEC-013/014/018 | SEC-D2 | L, 550–800 lines | admin | after SEC-D2 |
@@ -96,11 +97,34 @@ secret markers only. Ship container-runnable binaries/items for Docker; S3-PATH 
 
 **S2-L2.** Separate adapter crate under `packages/scenario-s2-linear-adapter/`, so D01 counts each
 implementation apart. Wait only for S2-F and L1's stub protocol/fixture interface, not L1's
-completed aware implementation; the local Linear stub remains with L1. Include Docker-runnable
-binaries/items and coordinate S3-PATH manifests. Pin the unchanged plain
-server separately, recording its supported operations and honest unsupported-filter verdict.
-Qualify identical reads across all three, restriction cases across adapter/aware only. No
-fork of the plain server or provider implementation; no portable vectors. Checks G/P, D01/D05 matrix.
+completed aware implementation; the local Linear stub remains with L1. Containers and machines
+are listed, not built, as S2-L1's are. **The adapter, as this plan defines it** (the lane
+coordinator's reading of the admin's decision below, logged for the owner to strike): the least
+that an author writes to put Linear's own API behind Conduit for D01's task, reading, with S2's
+restriction, calling the service's GraphQL itself; it offers `issue-reading.v1` only (read and
+list, since TPL-004 needs both). S7's README reads an adapter as new code around unchanged
+upstream code; that reading for S2 would wrap the plain server and wait for its choice. Each
+row's own tests qualify its restriction cases against the stub; S2-H or the runs compare
+identical reads across the rows. No fork of the plain server or provider implementation; no
+portable vectors. Checks G/P, D01/D05 matrix.
+
+**The plain row (the admin's decision, 2026-11-12, logged for the owner to strike).** It runs only
+in the owner's S2 runs, against the test workspace; S2-L2 is the adapter alone. No open-source
+Linear MCP server found on 2026-11-12 runs unchanged against the stub. Most fix Linear's address
+in their code.
+[`@universal-mcp-toolkit/server-linear` 0.1.2](https://github.com/Markgatcha/universal-mcp-toolkit/tree/66293855dd03390ccaa038026e81ad12649046c0/servers/linear)
+(MIT) reads its address from `LINEAR_API_URL`, but sends the key as a bearer token, which the
+stub refuses and which [Linear's documentation](https://linear.app/developers/graphql) gives only
+for OAuth tokens, not personal keys, and asks for teams and issue filters that the stub does not
+serve. PyPI's
+[`adelaidasofia-linear-mcp` 0.3.2](https://github.com/adelaidasofia/linear-mcp/tree/37fa4b592ad2b802fe507068404b7d76be4277e4)
+(MIT) also reads its address from the environment, but reads and writes files under the user's
+`~/.claude`, and asks for issue fields the stub does not serve. A
+stub changed to suit either would be less faithful to the real API. This changes none of S2's
+pass conditions: P1–P6 do not name the plain server, D01 keeps its three rows and S2-T2 its three
+implementations, in the runs. It does move the plain package from S2-L2 to S2-PL: the contracts
+package's README, inside its pinned archive, still gives it to S2-L2, and that sentence is
+superseded here rather than edited, which would change the pinned digest.
 
 **SEC-D1.** Core read workflow modules, lifecycle/requests/records integration and private
 read-result boundary, plus conformance fixtures/assertions where needed. Hot: core requests.rs,
@@ -163,9 +187,22 @@ unkeyed calls or scripted evidence for P2. No engine/runner/index edits or new v
 [service](../../docs/guides/1password-and-linear.md) and [Docker](../../docs/guides/docker.md)
 guides subject to the accepted answers. Runs write dated evidence beside README, from empty
 `<lab>` directories, pinning all inputs before timing. Run gate: PIN, B2-S/C/H, 050 and its
-entire sign-in chain, 052b, SEC-D, FLT-D0/1/2, S2-H/O, A63-KC and passing tagged safety vectors;
+entire sign-in chain, 052b, SEC-D, FLT-D0/1/2, S2-H/O, A63-KC, S2-PL (below) and passing tagged
+safety vectors;
 the isolated profile also needs A63-DR, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77). FLT-D3 is S8-only, not this run gate. Measure every README cell, outage and manual repair;
 keep fresh-author/coordinator evidence apart. No production edits; checks are README P1–P6 and M0/M1.
+
+**The plain server for the runs** is chosen before them, with the owner, since it runs under the
+owner's account against the test workspace, unconfined on the Mac as the engine's own runner
+starts it (the admin's requirements, 2026-11-12). It must have an OSI-approved license; be pinned
+by exact version and archive digest; have its source read, and its dependencies' for telemetry or
+update checks, for every network destination other than Linear's API and every file it writes,
+and be disqualified by any; send the personal key in the bare `Authorization` form that Linear
+documents; take the key by an environment variable or an argument; and be reached by a command
+or a package over stdio. A server with Linear's address fixed in its code is acceptable here,
+since the runs use the real API. **S2-PL** then packages and admits it: an item marked `plain`
+with its `tools` map (PKG-020), its own Operation, Capability and Type contracts, and the key
+bound through `environment` (MAN-010, MAN-017).
 
 ## Shared with other plans
 
@@ -225,6 +262,9 @@ with S3-L1/L2/RET1 in core, SEC-D2/D3a/D3b and FLT-D2 with S3-RET2 in shell. D0 
 **Ruling 77:** isolated S2-R3/R4 wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename, to terminate TLS at the engine's HTTPS address.
 Every runtime-provider run receives that address through DSP/079, including a local Docker run.
 O1–O5 stand and no other S2 work waits on this setup.
+
+**The plain server:** chosen with the owner before S2's runs, under the requirements above; the
+admin's decision that the plain row runs only there is logged here for the owner to strike.
 
 ## Limits
 

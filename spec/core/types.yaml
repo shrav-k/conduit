@@ -17,7 +17,8 @@
 # (CTR-004). Each lists under `requires` the operations of the capabilities it offers, and
 # the engine implements each of those operations, with no selection (TPL-004). No core
 # type states `records`, so the records about its instances keep neither inputs nor outputs
-# (CTR-004, REC-002). No core type offers a provider capability: the engine's own runner,
+# (CTR-004, REC-002), except install.v1's confirmed client IDs under REC-002.
+# No core type offers a provider capability: the engine's own runner,
 # machine provider and fetching serve where no provider does (PRV-003), and the engine
 # implements no `get-secret.v1` (SEC-020).
 # Standing: draft specification; see spec/README.md for status and coverage.

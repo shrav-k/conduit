@@ -116,8 +116,8 @@ metadata:
     FLEET-005. Authorized against `management`; registering a Resource into a Pool that already exists
     also needs an open Conduit to that Pool that lists this operation. `objects` lists every template
     and instance the request added, nested instances among them, and says of each nested instance
-    which nested instantiation made it. A registration that is rejected is not dispatched, reports
-    invalid, and its result still carries `diagnostics`. A registration fetches and installs no package:
+    which nested instantiation made it. Except for CTR-013's client-ID conflict, a registration that is rejected is not dispatched,
+    reports invalid, and its result still carries `diagnostics`. A registration fetches and installs no package:
     one whose manifest lists a package that is not installed at the version and digest the manifest
     gives is rejected, and a diagnostic names each such package. A project that holds a contract or
     lists an implementation, and whose manifest states no `address`, is rejected, and so is one whose
@@ -142,6 +142,11 @@ metadata:
     own behalf (ACC-057). Only root registers root-consumed Conduits (ACC-054). Registering a Pool
     or Fleet also makes and opens root's default Conduit (FLEET-005), reported among objects. A matching
     tombstone reports conflict after access and invalid checks (LIF-041).
+    A submitted project's Type whose login states a client ID also stated by a Type held at
+    another address reports conflict under CTR-013, after access and validity in OPS-023's
+    order and before dispatch. This includes installed packages and submissions a template or
+    instance holds; no confirmation is accepted. The diagnostic names CTR-013, the shared
+    client ID and both Types.
 spec:
   inputSchema:
     type: object
@@ -202,6 +207,11 @@ metadata:
     revision does not advance. `revision` among the outputs is the template's revision after
     the request, which is the one it had where nothing changed. Authorized against
     `management`.
+    A submitted project's Type whose login states a client ID also stated by a Type held at
+    another address reports conflict under CTR-013, after access and validity in OPS-023's
+    order and before dispatch. This includes installed packages and submissions a template or
+    instance holds; no confirmation is accepted. The diagnostic names CTR-013, the shared
+    client ID and both Types.
 spec:
   inputSchema:
     type: object
@@ -297,6 +307,8 @@ metadata:
     carries targetOwnTools in the same form, for every consumer including root. It shows one hop
     of own tools reach, disclosing that value and pointer in the target's configuration and no
     other part (CTR-014, LIF-013).
+    The optional output logins holds the logins its object's Type states, present where that
+    Type states signIn (CTR-013).
 spec:
   inputSchema:
     type: object
@@ -310,6 +322,10 @@ spec:
   outputSchema:
     type: object
     properties:
+      logins:
+        type: array
+        minItems: 1
+        items: {$ref: github.com/shrav-k/conduit/core#sign-in-login.v1}
       id:
         $ref: github.com/shrav-k/conduit/core#id.v1
       revision:
@@ -600,6 +616,14 @@ metadata:
     that is already installed. A package is installed only by this operation: registering a
     project installs none of the packages its manifest lists, and `fetch` in an item of
     `packages` is the value an installation of that item gives here.
+    The optional output logins lists each package Type stating signIn by its qualified
+    reference in type and its logins (CTR-013). Sharing a client ID with a Type held at
+    another address, including a held submission's Type, reports conflict unless
+    confirmClientIds confirms it. That optional input lists shared client IDs; only root gives
+    it, and a request from another caller giving it reports refused. A confirmation of an ID
+    shared with no such Type reports invalid. These decisions precede dispatch in OPS-023's
+    order. Each diagnostic names CTR-013 and its cause, and for sharing the client ID and both
+    Types. REC-002 records only the confirmed client IDs as inputs.
 spec:
   inputSchema:
     type: object
@@ -608,10 +632,25 @@ spec:
       version: {$ref: github.com/shrav-k/conduit/core#version.v1}
       digest: {$ref: github.com/shrav-k/conduit/core#digest.v1}
       fetch: {type: string, format: uri-reference, minLength: 1}
+      confirmClientIds:
+        type: array
+        items: {type: string, minLength: 1}
     required: [address, version, digest]
   outputSchema:
     type: object
     properties:
+      logins:
+        type: array
+        items:
+          type: object
+          properties:
+            type: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
+            logins:
+              type: array
+              minItems: 1
+              items: {$ref: github.com/shrav-k/conduit/core#sign-in-login.v1}
+          required: [type, logins]
+          additionalProperties: false
       diagnostics:
         type: array
         items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
@@ -1301,7 +1340,8 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: sign-in.v1
-  description: Sign in an instance for the configured expected account (PND-010, PND-011, IFC-049).
+  description: >-
+    Sign in an instance for the configured expected account (PND-010, PND-011, IFC-049).
     Only an Interface on its own behalf, through the owning Fleet for an Agent or owning Pool for
     a Resource; Resources are root-only, and other Interfaces sign in Agents of scoped Fleets only.
     account-hook runs first; the expected account succeeds; no account or another account proceeds
@@ -1309,6 +1349,17 @@ metadata:
     then is undone and the invocation fails with the action still pending. Failed undo holds model
     work. Missing URL capability returns
     -32021. No held request resumes and no later hook runs after DL18.
+    The optional request _meta signInLogin asks for one stated login; an unknown name reports
+    invalid before any part, with the stated names. Without one the hook chooses. Before any
+    part, a fixed port shared with a login an in-progress sign-in may start reports
+    unavailable, naming the port and only a visible pending action (PND-010). The hook's URL
+    must match exactly one stated login and the asked-for one; the engine writes the message
+    (IFC-049). Only the receiving Interface's tools/call retry in its bound session and
+    invocation may carry signInReturn under PND-013; its checked value reaches only the
+    initiating hook's waiting program and is never kept. A return on a first request, another
+    operation or tasks/update reports invalid after access and before dispatch, with a
+    diagnostic naming PND-013 and the key and no value. Decisions follow OPS-023. Polling and
+    the account check continue after a return, delivered, undelivered or refused.
 spec:
   inputSchema:
     type: object
@@ -1334,9 +1385,18 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: sign-in-hook.v1
-  description: Begin the client login and return URL-mode elicitation to the engine inside sign-in.v1
+  description: >-
+    Begin the client login and return URL-mode elicitation to the engine inside sign-in.v1
     or setup (CTR-013, PND-011). No consumer calls it and no model work starts. Codes go only to
     the engine panel (PND-004). It does not prove completion; account-hook checks that.
+    Start one of its Type's stated logins, the one signInLogin asks for where present, or fail
+    with a diagnostic naming PND-010 and why; give its URL under IFC-049. On the engine's
+    retry carrying signInReturn and the hook call's own requestState, give the value only to
+    the program waiting on that login: for redirect, a request to the relayed redirect_uri
+    port and path on its own machine's loopback; for page, the program's input (PND-013).
+    Contact no other host. Succeed where the program took it; otherwise fail with a diagnostic
+    naming PND-013 and the cause, holding no return value, code, state, URL value,
+    error_description or error_uri.
 spec:
   effect: Begin the instance client login.
 ---

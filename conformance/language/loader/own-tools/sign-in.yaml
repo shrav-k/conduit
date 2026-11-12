@@ -22,7 +22,15 @@
       ]
     },
     "signIn": {
-      "account": "/account"
+      "account": "/account",
+      "logins": [
+        {
+          "name": "device",
+          "return": "device",
+          "authorization": "https://example.org/device",
+          "clientId": "placeholder-own-tools-device"
+        }
+      ]
     },
     "requires": [
       "github.com/shrav-k/conduit/core#sign-in-hook.v1",

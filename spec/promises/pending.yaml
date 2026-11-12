@@ -88,7 +88,8 @@
     record of a request. Inspection or export of answer records through a tool also withholds
     code and fingerprint values; storing them with the answer never authorizes returning them
     on the wire. The panel can display the full recorded evidence to a person permitted to
-    inspect the answer.
+    inspect the answer. A return is neither evidence nor a prompt. PND-013 alone governs it,
+    and only signInReturn carries it.
   vectors: []
 
 - id: PND-009
@@ -125,8 +126,8 @@
     A request raises or answers an action.
   then: >-
     Its record names the action's ID. The recorded answer holds the kind, the evidence shown
-    and the answer with actor, invocation and time. No record holds a prompt; a request
-    record holds no code or fingerprint value (PND-004).
+    and the answer with actor, invocation and time. No record holds a prompt or a return;
+    a request record holds no code or fingerprint value (PND-004).
   observable: >-
     Raising adds no record type of its own. Computed setup actions add none. Pending state
     and answered state used to prevent repeated answers survive a purge of records under
@@ -142,8 +143,9 @@
     mode elicitation outside sign-in.v1; or its contract reports a missing or lapsed login.
   then: >-
     A sign-in action is raised for the instance, with expiry. Evidence names the expected
-    account, method, device user code where relevant, triggering request and attempts with
-    their results, subject to PND-004. Until answered, operations that start model work on
+    account, the login started by name and return, device user code where relevant, triggering
+    request and attempts with their results, subject to PND-004. Each return attempt lists its
+    via, time and result, never its value. Until answered, operations that start model work on
     that instance are not dispatched and report unavailable with the action ID in
     io.github.shrav-k.conduit/pendingAction.
   observable: >-
@@ -166,6 +168,13 @@
     expectedId follows LIF-037. The Type must state signIn with a string expected account,
     otherwise the permitted request reports invalid. A Conduit whose consumer is not an
     Interface cannot be opened listing sign-in.v1; the open reports refused.
+    Before dispatching any part, a signInLogin naming no login the Type states reports invalid,
+    with a diagnostic naming PND-010 and the stated login names. Before dispatching any part,
+    the request reports unavailable where an in-progress sign-in.v1 invocation may start a
+    login stating a fixed port that a login this request may start also states. The diagnostic
+    names PND-010 and the port, and names the other invocation's pending action only where
+    the caller may see it (PND-002). A request may start its asked-for login or, without one,
+    any of its Type's logins. These decisions follow OPS-023's order.
   observable: >-
     The engine first dispatches account-hook.v1 as a part, before sign-in-hook.v1. If that
     check succeeds with the expected account, compared ignoring ASCII case, sign-in.v1
@@ -178,6 +187,14 @@
     block. Decline or cancel received on a retry ends failed. DL18 ending without completion
     ends unknown and no hook runs later. The operation starts no model work and resumes no
     held request. Missing URL capability uses -32021 with requiredCapabilities, not invalid.
+    The engine passes the asked-for name to sign-in-hook.v1 (IFC-006), which starts that login
+    or fails with a diagnostic naming PND-010 and why it could not. Without a name the hook
+    chooses among the Type's logins. A plain hook gets no Conduit keys (IFC-007), hence no
+    name; its URL for another login fails IFC-049's match. This includes asking for a device
+    code where the account permits it. The return goes only through the Interface that
+    received the sign-in: only its retry in the session and invocation bound by requestState
+    (IFC-049) carries a return under PND-013. Polling continues under PND-011, and the account
+    check alone decides completion.
   vectors: []
 
 - id: PND-011
@@ -204,6 +221,76 @@
     the account after its run and connections and before its setup hook, in TPL-012's order;
     no account or a different account raises the action under PND-005, and a different
     account is undone by a sign-out-hook.v1 part before setup proceeds.
+  vectors: []
+
+- id: PND-013
+  layer: convention
+  level: must
+  when: >-
+    An Interface's retry of sign-in.v1 carries signInReturn.
+  then: >-
+    IFC-049's requestState checks come first: a retry they reject carries no return anywhere.
+    A retry that declines or cancels ends failed under PND-010 and passes on no value.
+    Otherwise the engine checks these in order, refusing the return with the named reason:
+    first, the relayed login's return is redirect or page, it states carried: true, and its
+    sign-in-hook.v1 implementation carries Conduit's keys (IFC-007), else not-accepted;
+    second, no return has been passed on for this invocation, else already-returned;
+    third, value is at most 8192 bytes and all printable ASCII, else malformed;
+    fourth, for redirect, value parses once as an absolute URL with no user information,
+    fragment or repeated parameter, else malformed; its scheme is http, its host is loopback
+    (localhost, 127.0.0.1 and [::1] count as one), and its port and path are the relayed
+    redirect_uri's, else address-mismatch; its state equals the relayed state, else
+    state-mismatch; its iss equals the login's issuer where both are present, else
+    issuer-mismatch. The issuer check applies only where both are present. A page return is
+    the page's opaque code. Every refused return has a diagnostic naming PND-013, the failed
+    check and its cause, with none of the value. Failure uses no return, and a later value
+    still may pass. Once a value is passed to the hook it is used, whatever the hook reports;
+    a return carrying error is passed on too.
+  observable: >-
+    The engine rebuilds a redirect value as the relayed redirect_uri with a query containing
+    only code, state, iss and scope, and on an error error, error_description and error_uri
+    (RFC 6749 section 4.1.2, RFC 9207). It retries the sign-in-hook.v1 call that started the
+    login, carrying that call's own requestState, accept in inputResponses for its URL
+    elicitation, and signInReturn {value}. This retry is a part of sign-in.v1 and recorded as
+    that call is (PND-011), holding neither the value nor signInReturn in its record. Only
+    the package and login that started it receive it. The implementation gives it only to
+    the program waiting on that login: for redirect, as a request to the relayed
+    redirect_uri's port and path at loopback on its own machine; for page, as program input.
+    It contacts no other host, succeeds where the program took the value, and fails otherwise.
+    The result answering the Interface retry, another InputRequiredResult or the final
+    result, holds signInLogin with returned: delivered where the hook reports the program
+    took the value; undelivered where it was passed on and the hook failed, with a diagnostic
+    naming PND-013 and the hook's cause, the return used all the same; or refused with reason
+    naming the failed check. A return carrying error adds error: its RFC 6749 registered
+    error code, or other for an unregistered code, never error_description or error_uri.
+    Polling continues under PND-011. Undelivered ends nothing; the person may decline or
+    cancel (PND-010). No diagnostic holds a return, code, state, URL value, error_description
+    or error_uri. The value appears in no result, structuredContent, response _meta,
+    notification, diagnostic, log or record. It is none of the values REC-002 keeps. The
+    engine holds it in memory only until the hook retry ends; restart loses it.
+    signInReturn on a first sign-in.v1 request, any other operation's request, or a tasks/update
+    is not a return: after access and before dispatch the request reports invalid in
+    OPS-023's order, with a diagnostic naming PND-013 and the key, holding no value. For
+    tasks/update this is IFC-016's error for a task request that does not proceed, with
+    reason invalid. A return travels only on a tools/call retry whose requestState IFC-049
+    accepts. After DL18 no return is passed on and no hook runs; IFC-049 rejects the expired
+    requestState before these checks.
+    State stops blind injection and cross-site request forgery. Iss, where the login states
+    issuer, stops authorization-server mix-up (RFC 9207, RFC 9700 section 4.4); without it
+    Conduit stops no mix-up and the program relies on its own defenses. PKCE with S256 stops
+    anyone else redeeming a code. The stated login stops a look-alike page and, where the
+    URL carries a client ID, a Type claiming another Type's client. A device URL names no
+    client: only its stated verification page is checked, where the person types the code
+    (RFC 8628 section 5.4). The account check stops a code minted for another account by
+    someone who saw the URL (RFC 9700 section 4.5). It alone stops that attack, so no login
+    returning anything is without it (CTR-013).
+    An Interface carries a return only from a loopback listener it opened for that one login,
+    or what the person typed, never model output. It opens a listener only where it knows it
+    does not run on the machine of the node signInLogin names: on that machine the program's
+    own listener takes the redirect, and a second could take its request or prevent its bind.
+    Where it cannot tell, or cannot bind the port, it opens none and asks the person to paste.
+    Its listener answers only a request matching path, Host and state and stops after that
+    request or at DL18. The engine cannot tell where a return came from (spec/README.md).
   vectors: []
 
 - id: PND-006

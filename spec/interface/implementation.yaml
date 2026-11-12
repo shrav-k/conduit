@@ -151,7 +151,9 @@
     `io.github.shrav-k.conduit/filters` holds is IFC-018. A contract of a submitted
     project is named by its qualified reference, `address#name`, with the address its manifest
     states, under SUB-008. A provider call is not a request, and the keys it carries are those
-    PRV-005 names.
+    PRV-005 names. A sign-in-hook.v1 call also holds
+    `io.github.shrav-k.conduit/signInLogin`, {name}, where the person asked for a login, and
+    on PND-013's retry `io.github.shrav-k.conduit/signInReturn`, {value}.
   vectors: []
 
 - id: IFC-007
@@ -1359,8 +1361,13 @@
     once and shows the action only at root's panel (ENR-003). With that capability tools/call
     may return InputRequiredResult with resultType input_required and exactly one
     inputRequests entry: elicitation/create with mode url, message and url. The message
-    names the instance or enrollment, expected account where applicable and what follows,
-    but holds no code, fingerprint or part of an enrollment action. The URL is HTTPS only,
+    for enrollment names the enrollment and what follows, but holds no code, fingerprint
+    or part of an enrollment action. For sign-in the engine writes the message: it names the
+    instance, its Type and package, its node, the URL's host, the expected account and what
+    the person brings back, if anything; for device it says the code is in the engine's
+    panel. For carried: false it says to open the URL in a browser on that node's machine.
+    No text from the hook is relayed. No message holds a code or fingerprint.
+    The URL is HTTPS only,
     contains no credential or personal data and is not pre-authenticated. No tool content,
     structuredContent or record holds it. Every command action and any enrollment action
     carrying a secret is shown only in the engine's own panel, never relayed (ENR-003).
@@ -1387,4 +1394,27 @@
     prompts/get support the protocol's InputRequiredResult; this specification exposes the
     URL action by tools/call. Codes and fingerprints go only to the engine's panel and
     recorded answer (PND-004); no pending machine evidence is relayed (PND-008).
+    A sign-in-hook.v1 URL matches exactly one login the instance's Type states, and the one
+    asked for where present (PND-010). Its origin and path equal authorization; it has no
+    user information, fragment or repeated parameter. For device it is authorization itself,
+    with no query, code or client. For redirect, page and service, client_id equals clientId,
+    response_type is code, and redirect_uri is for redirect http:// with the stated host,
+    one stated port (or 1024 to 65535 for any) and stated path, without query; for page and
+    service it is the stated page. For redirect and page, code_challenge_method is S256,
+    code_challenge is 43 base64url-alphabet characters (RFC 7636), and state is at least 22
+    RFC 3986 unreserved characters. A URL failing a check is not relayed: sign-in.v1 ends
+    failed with a diagnostic naming IFC-049, the check and field, holding no URL value,
+    code or state. The engine never opens, fetches or follows a relayed URL.
+    `io.github.shrav-k.conduit/signInLogin` optionally holds {name} in an Interface's
+    sign-in.v1 request _meta, asking for that login. In each sign-in.v1 InputRequiredResult
+    and its final result it holds {name, return, node, acceptsReturn} for the relayed login:
+    node names the instance's node as object.v1 names an object; acceptsReturn is true
+    exactly where PND-013's first check passes. After a retry carrying a return it also holds
+    returned and, where PND-013 gives them, reason or error. It is in the result's own _meta,
+    never in its input request, which holds only mode, message and url.
+    `io.github.shrav-k.conduit/signInReturn` holds {value, via} in an Interface's retry _meta,
+    via being listener or paste, and {value} in the engine's sign-in-hook.v1 retry (IFC-006).
+    It appears in no result, notification or record. PND-013 alone accepts it, only from
+    the Interface that received the sign-in, in its bound session and invocation. No Agent
+    receives a sign-in's URL, login metadata or return (PND-002, IFC-016).
   vectors: []

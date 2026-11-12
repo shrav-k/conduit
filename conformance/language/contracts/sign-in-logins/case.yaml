@@ -1,0 +1,808 @@
+{
+  "id": "contracts-sign-in-logins",
+  "layers": [
+    "language"
+  ],
+  "promises": [
+    "CTR-013",
+    "SUB-005"
+  ],
+  "title": "Literal Type logins, four return kinds and their closed schema",
+  "profile": "first-build",
+  "initial": {
+    "recipe": "empty"
+  },
+  "files": {
+    "agent.json": "agent.json",
+    "resource.json": "resource.json",
+    "missing-logins.json": "missing-logins.json",
+    "empty-logins.json": "empty-logins.json",
+    "unknown-return.json": "unknown-return.json",
+    "redirect-no-client.json": "redirect-no-client.json",
+    "redirect-no-carried.json": "redirect-no-carried.json",
+    "redirect-host.json": "redirect-host.json",
+    "redirect-port.json": "redirect-port.json",
+    "authorization-http.json": "authorization-http.json",
+    "authorization-query.json": "authorization-query.json",
+    "device-no-client.json": "device-no-client.json",
+    "device-carried.json": "device-carried.json",
+    "service-no-page.json": "service-no-page.json",
+    "page-issuer.json": "page-issuer.json",
+    "unlisted-member.json": "unlisted-member.json",
+    "authorization-empty-host.json": "authorization-empty-host.json",
+    "authorization-port-only.json": "authorization-port-only.json",
+    "issuer-empty-host.json": "issuer-empty-host.json",
+    "issuer-port-only.json": "issuer-port-only.json",
+    "page-empty-host.json": "page-empty-host.json",
+    "page-port-only.json": "page-port-only.json",
+    "service-empty-host.json": "service-empty-host.json",
+    "service-port-only.json": "service-port-only.json",
+    "page-fragment.json": "page-fragment.json",
+    "service-fragment.json": "service-fragment.json",
+    "hosted-page-queries.json": "hosted-page-queries.json"
+  },
+  "steps": [
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "agent.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1,
+        "manifest": false
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "resource.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1,
+        "manifest": false
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "missing-logins.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "type-spec.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "required",
+            "contract": "type-spec.v1",
+            "pointer": "/properties/signIn/required",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "empty-logins.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "type-spec.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "minItems",
+            "contract": "type-spec.v1",
+            "pointer": "/properties/signIn/properties/logins/minItems",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "unknown-return.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "enum",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/return/enum",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "redirect-no-client.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "required",
+            "contract": "sign-in-login.v1",
+            "pointer": "/required",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "redirect-no-carried.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "required",
+            "contract": "sign-in-login.v1",
+            "pointer": "/allOf/2/then/required",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "redirect-host.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "enum",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/redirect/properties/host/enum",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "redirect-port.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "minimum",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/redirect/properties/ports/anyOf/1/items/minimum",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "authorization-http.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/authorization/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "authorization-query.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/authorization/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "device-no-client.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "required",
+            "contract": "sign-in-login.v1",
+            "pointer": "/required",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "device-carried.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "carried",
+            "contract": "sign-in-login.v1",
+            "pointer": "/allOf/2/else/properties/carried",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "service-no-page.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "required",
+            "contract": "sign-in-login.v1",
+            "pointer": "/allOf/1/then/required",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "page-issuer.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "issuer",
+            "contract": "sign-in-login.v1",
+            "pointer": "/allOf/0/else/properties/issuer",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "unlisted-member.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "additionalProperties",
+            "contract": "sign-in-login.v1",
+            "pointer": "/additionalProperties",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "authorization-empty-host.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/authorization/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "authorization-port-only.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/authorization/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "issuer-empty-host.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/issuer/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "issuer-port-only.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/issuer/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "page-empty-host.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/page/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "page-port-only.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/page/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "service-empty-host.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/page/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "service-port-only.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/page/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "page-fragment.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/page/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "service-fragment.json"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "diagnostics": [
+          {
+            "ruleId": "SUB-005",
+            "level": "error"
+          }
+        ],
+        "diagnostic_facts": [
+          {
+            "index": 0,
+            "message_contains": [
+              "sign-in-login.v1"
+            ],
+            "keyword_location": true,
+            "keyword": "pattern",
+            "contract": "sign-in-login.v1",
+            "pointer": "/properties/page/pattern",
+            "root_schema": "contract.v1"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "kind": "load",
+        "files": [
+          "hosted-page-queries.json"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "diagnostics": [],
+        "document_count": 1,
+        "manifest": false
+      }
+    }
+  ]
+}

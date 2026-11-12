@@ -1,0 +1,61 @@
+{
+  "apiVersion": "github.com/shrav-k/conduit/v0",
+  "kind": "Type",
+  "metadata": {
+    "name": "signed-resource.v1"
+  },
+  "spec": {
+    "family": "Resource",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "account"
+      ]
+    },
+    "requires": [
+      "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+      "github.com/shrav-k/conduit/core#account-hook.v1",
+      "github.com/shrav-k/conduit/core#sign-out-hook.v1"
+    ],
+    "signIn": {
+      "account": "/account",
+      "logins": [
+        {
+          "name": "page",
+          "return": "page",
+          "authorization": "https://example.org/resource/authorize",
+          "clientId": "placeholder-resource-page",
+          "page": "https://example.org/code?flow=page",
+          "carried": true
+        },
+        {
+          "name": "service",
+          "return": "service",
+          "authorization": "https://example.org/resource/authorize",
+          "clientId": "placeholder-resource-service",
+          "page": "https://example.org/complete?flow=service"
+        },
+        {
+          "name": "local",
+          "return": "redirect",
+          "authorization": "https://example.org/resource/authorize",
+          "clientId": "placeholder-resource-local",
+          "redirect": {
+            "host": "[::1]",
+            "ports": "any",
+            "path": "/done"
+          },
+          "carried": false
+        }
+      ]
+    }
+  }
+}

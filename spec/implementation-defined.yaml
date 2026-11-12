@@ -244,7 +244,8 @@
   subject: A URL action's wait
   document: >-
     How long sign-in.v1 and other URL actions wait for a person's completion within their
-    invocation, including polling across retries or task updates (IFC-049). Accept does not
+    invocation, including polling across retries or task updates (IFC-049) and the return
+    (PND-013). Accept does not
     complete a sign-in. The wait is finite; on its end the invocation ends unknown and no
     later hook runs. The wait is distinct from the pending action's expiry (DL19).
 - id: DL19

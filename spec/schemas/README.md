@@ -41,7 +41,7 @@ alone, and every `$ref` keeps its target, so the tools of `register.v1` and `rep
 | [envelope.yaml](envelope.yaml) | `api-version.v1`, `envelope.v1`, `template-metadata.v1`, `instance-metadata.v1`, `contract-metadata.v1` | `apiVersion`, what every document carries, and `metadata` |
 | [templates.yaml](templates.yaml) | `template.v1`, `template-spec.v1`, `pool-template-spec.v1`, `conduit-template-spec.v1`, `template-input.v1`, `implementation-map.v1`, `template-controls.v1` | A template document; the `spec` of an Interface, Agent or Resource template, of a Pool template, and of a Conduit template, and the type-only Fleet branch; each non-Fleet spec has the closed list of places an input's destination may reach; an input; the `implementation` map; a template's `controls` |
 | [instances.yaml](instances.yaml) | `instance.v1`, `template-reference.v1`, `declared-conduit.v1`, `pool-entry.v1` | An instance document of each family, with the standard argument `runtime` of an Agent and a Resource; the four forms of the value of `from`; the two nested instantiations |
-| [contracts.yaml](contracts.yaml) | `contract.v1`, `type-spec.v1`, `capability-spec.v1`, `operation-spec.v1`, `requirement-spec.v1`, `applied-requirement.v1` | A contract document of each of the five kinds, and a requirement applied to a Conduit. `operation-spec.v1` carries `inputSchema` and `outputSchema`, with the root CTR-012 allows, the three hints of CTR-002, and a control's `changes`; `type-spec.v1` holds `signIn` and `toolsDirectory`, and states that a Pool type offers `pool-management.v1` |
+| [contracts.yaml](contracts.yaml) | `contract.v1`, `type-spec.v1`, `sign-in-login.v1`, `capability-spec.v1`, `operation-spec.v1`, `requirement-spec.v1`, `applied-requirement.v1` | A contract document of each of the five kinds, and a requirement applied to a Conduit. `operation-spec.v1` carries `inputSchema` and `outputSchema`, with the root CTR-012 allows, the three hints of CTR-002, and a control's `changes`; `sign-in-login.v1` describes each literal login; `type-spec.v1` holds `signIn` and `toolsDirectory`, and states that a Pool type offers `pool-management.v1` |
 | [schema.yaml](schema.yaml) | `schema.v1` | A schema under the profile, with the three forms of a `$ref`. It is the `spec` of a Schema contract and the value of every `schema` key |
 | [manifest.yaml](manifest.yaml) | `manifest.v1`, `implementation-item.v1`, `server-package.v1`, `server-remote.v1` | The manifest of a project and of a package; one implementation item; and the Package and the Remote of the Model Context Protocol Registry's server.json, schema 2025-12-11, the Remote limited to Streamable HTTP |
 | [values.yaml](values.yaml) | `name.v1`, `export-name.v1`, `contract-name.v1`, `address.v1`, `qualified-reference.v1`, `selection.v1`, `pointer.v1`, `destination.v1`, `version.v1`, `digest.v1`, `id.v1`, `revision.v1`, `labels.v1` | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions, digests, an opaque revision and a label selector |
@@ -285,13 +285,21 @@ that `run.v1` holds the names of `identity` that `spec/names.yaml` fixes, its fi
 them. It does not do
 anything else the table leaves to an engine.
 
-## Sign-in declarations
+## Logins a Type states
 
-The optional `type-spec.v1` member `signIn` holds a required `account` pointer (CTR-013).
-The schema checks that closed shape and the three core hooks under `requires`. The engine
-checks that the place and every member on its path are required by the Type's `schema` and
-that the place is confined to string or null. These rules relate values in one document,
-the pointer and the Type's own `schema`.
+The optional type-spec.v1 member signIn holds exactly the required account pointer and a
+non-empty logins list of sign-in-login.v1 (CTR-013). That schema checks literal values, the
+four return kinds, their required and forbidden members, HTTPS authorization without query,
+fragment or user information, nonempty HTTPS hosts for authorization, page and issuer,
+hosted redirect pages without fragments (queries are allowed), loopback redirect hosts, ports
+and paths, and carried and issuer where allowed. It rejects every unlisted member. A device
+login states its clientId too, though its relayed verification URL carries none (RFC 8628
+section 3.1).
+
+CTR-013 adds cross-document checks: the required configuration path confined to string or
+null, the three required hook selections, distinct login names, no URL matching two logins
+under IFC-049, and client IDs shared across addresses, including held submissions. The account
+must be attested by the service; configuration or a person's account claim does not suffice.
 
 The optional `toolsDirectory` member holds exactly a required `directory` pointer and is
 allowed only for family Agent (CTR-014); the schema checks both rules. The engine checks the

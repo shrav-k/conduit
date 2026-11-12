@@ -26,10 +26,10 @@ everything the promises say it exports, and everything first start needs.
 | [results.yaml](results.yaml) | 12 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition, a record, an inventory, a tombstone, opening provenance and a trust domain |
 | [templates.yaml](templates.yaml) | The 17 templates: first-start objects and Conduits, defaults, scoped administration and explicit cascades |
 
-The package also exports the 51 Schema contracts under [spec/schemas](../schemas/README.md),
+The package also exports the 52 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 146 documents, 76 of them Schema contracts,
+its inputs with them. In all the package exports 147 documents, 77 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -46,6 +46,9 @@ bindings for 049a and provider contract edits for 049b under
 The six enrollment Operation contracts are live. The operation tables below distinguish
 active capability bindings from the bindings staged for 049a and 049b.
 Only the contracts and lists present under spec/ are active.
+
+The sign-in build handoff for 048a is also under
+[038c-staged](../../docs/work-orders/038c-staged/); it separates the return built after 048b.
 
 ## Names
 
@@ -477,6 +480,17 @@ wire messages. The engine shows them in its own panel and records them with the 
 The URL exchange is IFC-049: integrity-protected requestState, retries that poll, and
 URL capability errors -32021. No completion notification drives a hook.
 
+A Type states literal logins in signIn.logins under CTR-013, exported as sign-in-login.v1.
+Their package or submission digest pins them. Client IDs shared with Types held at another
+address require root's confirmation at install; registration and replacement report conflict
+without confirmation. Installation shows each Type's logins, and inspection shows its object's
+Type's logins. REC-002 records the confirmed client IDs and no other install input.
+The person may ask for a login with signInLogin; fixed-port logins are serialized (PND-010).
+The URL matches that stated login, and the engine writes the message (IFC-049). Only the
+receiving Interface's bound tools/call retry carries signInReturn to the initiating hook,
+under PND-013. The return is checked, passed at most once and never kept; polling and the
+account check still decide completion. A plain hook and carried: false accept no return.
+
 ## First start
 
 At first start (FST-001, FST-002) the engine instantiates five documents, which are written out
@@ -612,7 +626,8 @@ its binding and labels are fixed when made (PLC-008, ENR-010).
 | `declared-conduit.v1` | Schema of a document's part | OBJ-014 |
 | `pool-entry.v1` | Schema of a document's part | OBJ-014, POOL-009 |
 | `contract.v1` | Schema of a document | CTR-001 |
-| `type-spec.v1` | Schema of a document's part | CTR-004; `signIn` and its three hooks, CTR-013; Agent `toolsDirectory`, CTR-014 |
+| `type-spec.v1` | Schema of a document's part | CTR-004; `signIn`, its logins and its three hooks, CTR-013; Agent `toolsDirectory`, CTR-014 |
+| `sign-in-login.v1` | Schema of one literal login a Type states | CTR-013 |
 | `capability-spec.v1` | Schema of a document's part | CTR-003 |
 | `operation-spec.v1` | Schema of a document's part | CTR-002, CTR-006, CTR-009, CTR-012 |
 | `requirement-spec.v1` | Schema of a document's part | CTR-005 |

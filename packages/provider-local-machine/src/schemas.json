@@ -1,0 +1,88 @@
+{
+  "operations": {
+    "list-machines.v1": {
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "machines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "hostname": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 63
+                },
+                "labels": {
+                  "$ref": "#/$defs/labels.v1"
+                },
+                "state": {
+                  "enum": [
+                    "reachable",
+                    "unreachable",
+                    "gone"
+                  ]
+                }
+              },
+              "required": [
+                "hostname",
+                "labels",
+                "state"
+              ]
+            }
+          }
+        },
+        "required": [
+          "machines"
+        ]
+      }
+    },
+    "place.v1": {
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "instance": {
+            "$ref": "#/$defs/id.v1"
+          },
+          "nodeSelector": {
+            "$ref": "#/$defs/labels.v1"
+          }
+        },
+        "required": [
+          "instance",
+          "nodeSelector"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 63
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "labels.v1": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "maxLength": 317,
+        "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?[A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 63,
+        "pattern": "^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$"
+      }
+    },
+    "id.v1": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -1,0 +1,29 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: local-machine.v1
+  description: >-
+    Reports exactly one machine on Unix: the OS hostname, trimmed and lowercased;
+    names longer than 63 characters fail without truncation. Reports only reachable,
+    never pending or gone. Requires its own CONDUIT_STATE_DIR (PRV-029), mode 0700,
+    with a mode 0600 Ed25519 seed. The provider-scoped id is sha256: plus lowercase
+    SHA-256 of the public key; it survives restarts and changes with a new key.
+    Enrollment is not served until MP2. D15: custom hostname normalization, selectors,
+    MCP and key persistence in src/; hostname and randomness delegated to OS APIs,
+    signing-key derivation to ring; persistent seed in the instance state directory,
+    retained across stop/restart and removed by the runner on unregistration;
+    operator supplies that private directory, with no credentials or gate setup,
+    and preserves it on recovery. See README.md for the inventory and test evidence.
+spec:
+  family: Resource
+  offers: [github.com/shrav-k/conduit/core#machine-provider.v1]
+  requires: []
+  implementation:
+    github.com/shrav-k/conduit/core#list-machines.v1: '#provider'
+    github.com/shrav-k/conduit/core#place.v1: '#provider'
+  records:
+    inputs: false
+    outputs: false
+  schema:
+    type: object
+    additionalProperties: false

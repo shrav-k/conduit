@@ -1,0 +1,10 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/provider-local-machine
+version: 0.1.0
+exports: [local-machine.v1]
+implementations:
+  provider:
+    implements:
+    - github.com/shrav-k/conduit/core#list-machines.v1
+    - github.com/shrav-k/conduit/core#place.v1
+    command: [bin/provider-local-machine]

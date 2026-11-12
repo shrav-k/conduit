@@ -133,3 +133,27 @@ git status --porcelain --ignored $D | grep -E "target/|dist/" | grep -v '^!!'
 and no real hostname goes into a README or a snapshot. Report the key's algorithm and the `id`'s
 derivation as your own choices, and, as a finding, that an engine whose hostname is set by
 configuration (DL5) would not match the OS hostname this provider reports. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base b451e4a: the worker and a fresh verifier (358 s), then a
+second worker round (234 s) and a fresh verifier (298 s). The result is
+`packages/provider-local-machine/`: the Type `local-machine.v1`, its MCP server, `list-machines.v1`
+reporting the one machine with its canonical hostname, its three labels and a stable `id` from a
+key written atomically in its state directory, `place.v1` by selector, the package builder, and
+tests that validate its YAML against `spec/schemas/`.
+
+Round one's must (Rust's `loongarch64` reported in place of Go's `loong64`) was fixed in round
+two. Round two's verifier left one must: little-endian MIPS hosts reported `mips` and `mips64`
+in place of Go's `mipsle` and `mips64le` (PRV-014 asks for Go's GOARCH spellings). **The lane
+coordinator fixed it, an admin-side fix at the admin's word (a small finding, ruling 71),** with
+explicit tests for both endiannesses. A fresh reader checked the mapping against Go's list and
+found two shoulds, which the coordinator also applied: big-endian ARM gives `armbe` and
+`arm64be`, and `riscv32` and `wasm32`/`wasm64` give Go's `riscv` and `wasm`. The crate's fmt,
+clippy and 12 tests pass.
+
+The worker's findings, for the admin: the engine's first-start report
+(`engine/crates/shell/src/lib.rs`, near lines 678 to 686) has the same mapping gaps (LoongArch,
+little-endian MIPS, big-endian ARM); PRV-015 says the provider names a machine by its `id`, while
+`place.v1`'s output schema gives `hostname`, which this provider keeps; and an engine whose
+hostname is set by configuration (DL5) would not match the OS hostname this provider reports.

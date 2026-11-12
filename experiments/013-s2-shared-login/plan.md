@@ -103,7 +103,13 @@ coordinator's reading of the admin's decision below, logged for the owner to str
 that an author writes to put Linear's own API behind Conduit for D01's task, reading, with S2's
 restriction, calling the service's GraphQL itself; it offers `issue-reading.v1` only (read and
 list, since TPL-004 needs both). S7's README reads an adapter as new code around unchanged
-upstream code; that reading for S2 would wrap the plain server and wait for its choice. Each
+upstream code. **The two readings are one definition (the admin's decision, 2026-11-12, logged for
+the owner to strike):** the rulings use "adapter" for the glue an author writes to put an existing
+tool or service behind Conduit, as in [ruling 44](../../docs/proposals/ruling-44/README.md#what-follows)'s
+"the adapters written" and [ruling 75](../../docs/proposals/ruling-75/README.md#the-decisions)'s
+"SQLite search behind counted adapters" for S8, where the existing thing is SQLite; for S2 the
+existing thing is Linear's API, so the adapter calls its GraphQL itself, and for S7 it is upstream
+code, so the adapter wraps it. Each
 row's own tests qualify its restriction cases against the stub; S2-H or the runs compare
 identical reads across the rows. No fork of the plain server or provider implementation; no
 portable vectors. Checks G/P, D01/D05 matrix.

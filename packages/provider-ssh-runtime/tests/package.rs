@@ -4,6 +4,52 @@ use serde::Deserialize;
 use serde_json::{Map, Value, json};
 use std::{collections::BTreeMap, fs, path::Path};
 
+#[test]
+fn archive_contains_both_executables_and_is_byte_identical_twice() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let package = || {
+        let result = std::process::Command::new(env!("CARGO_BIN_EXE_package"))
+            .output()
+            .unwrap();
+        assert!(result.status.success(), "packaging failed");
+        fs::read(root.join("dist/provider-ssh-runtime.tar.gz")).unwrap()
+    };
+    let first = package();
+    assert!(
+        first == package(),
+        "archive bytes changed between packaging runs"
+    );
+    let mut archive = tar::Archive::new(flate2::read::GzDecoder::new(first.as_slice()));
+    let mut found = Vec::new();
+    for entry in archive.entries().unwrap() {
+        use std::io::Read;
+        let mut entry = entry.unwrap();
+        let name = entry.path().unwrap().to_string_lossy().into_owned();
+        for (expected, binary) in [
+            (
+                "bin/provider-ssh-runtime",
+                env!("CARGO_BIN_EXE_provider-ssh-runtime"),
+            ),
+            (
+                "bin/provider-ssh-runtime-drain",
+                env!("CARGO_BIN_EXE_provider-ssh-runtime-drain"),
+            ),
+        ] {
+            if name == expected {
+                assert_eq!(entry.header().mode().unwrap(), 0o755);
+                let mut bytes = Vec::new();
+                entry.read_to_end(&mut bytes).unwrap();
+                assert!(
+                    bytes == fs::read(binary).unwrap(),
+                    "archive executable differs from built binary"
+                );
+                found.push(name.clone());
+            }
+        }
+    }
+    assert_eq!(found.len(), 2);
+}
+
 fn documents(path: &Path) -> Vec<Value> {
     serde_yaml::Deserializer::from_str(&fs::read_to_string(path).unwrap())
         .map(|doc| Value::deserialize(doc).unwrap())

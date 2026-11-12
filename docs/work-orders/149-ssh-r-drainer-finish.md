@@ -71,3 +71,16 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target --exclude-dir=dist
 
 The provider's shell scripts stay POSIX, since the tests run them on macOS too. `target/` and
 `dist/` stay ignored and unstaged. Report each choice you make as your own. Do not stage anything.
+
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), stacked on order 146's last commit (37baa97): the
+worker (505 s) and a fresh verifier (151 s), then a second worker round (410 s) and a fresh verifier
+(156 s). Round one's must: a failed third launch could leave a newer drainer's announcement behind
+and make every drainer exit. Round two's: an obsolete announced waiter could take the released
+lock and erase a newer running drainer's announcement. **The generation design was dropped:** each
+round of orders 146 and 149 found another race between drainers handing over, so
+[order 150](150-ssh-r-one-drainer.md) replaced the launch generations, announcements and handoff
+lock with one drainer per subdirectory, at the admin's word. Nothing of this order's machinery
+remains on `main`.

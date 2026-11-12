@@ -36,20 +36,50 @@ fn serve() -> Result<(), &'static str> {
     let gate = config.gate.clone();
     let root =
         provider_ssh_runtime::durable::instance_directory(&config.durable_dir, Path::new(&state));
-    let backend = Arc::new(
-        SshBackend::new(&root, Some(Path::new(&state)), config, None)
-            .map_err(|_| "SSH backend state, owner.lock or ssh")?,
-    );
     let store = Arc::new(FileStore::new(&root));
     tokio::runtime::Runtime::new()
         .map_err(|_| "Tokio runtime")?
         .block_on(async {
-            let server = RuntimeServer::new(backend, store, Arc::new(TlsGate::new(gate)), options)
+            let owner =
+                provider_ssh_runtime::startup::prepare(&config, Path::new(&state), &root, || {
+                    let launch = provider_ssh_runtime::startup::Launch::new(
+                        &std::env::current_exe()?,
+                        &root,
+                        Path::new(&state),
+                        |name| std::env::var_os(name),
+                    );
+                    launch.spawn()
+                })
                 .await
-                .map_err(|_| "kit recovery")?;
-            server
-                .serve_stdio()
-                .await
-                .map_err(|_| "kit transport or cleanup")
+                .map_err(|_| "owner.lock, state-dir or provider-ssh-runtime-drain")?;
+            let service = async {
+                let backend = Arc::new(
+                    provider_ssh_runtime::startup::configured_backend(&root, &config, || {
+                        SshBackend::new(&root, Some(Path::new(&state)), config.clone(), Some(owner))
+                    })
+                    .map_err(|_| "SSH backend state, owner.lock, ssh or drainer-config")?,
+                );
+                let server =
+                    RuntimeServer::new(backend, store, Arc::new(TlsGate::new(gate)), options)
+                        .await
+                        .map_err(|_| "kit recovery")?;
+                server
+                    .serve_stdio()
+                    .await
+                    .map_err(|_| "kit transport or cleanup")
+            };
+            let keeper = provider_ssh_runtime::startup::keep_alive(&root, || {
+                provider_ssh_runtime::startup::Launch::new(
+                    &std::env::current_exe()?,
+                    &root,
+                    Path::new(&state),
+                    |name| std::env::var_os(name),
+                )
+                .spawn()
+            });
+            tokio::select! {
+                result = service => result,
+                _ = keeper => unreachable!("drainer keeper runs for the provider's lifetime"),
+            }
         })
 }

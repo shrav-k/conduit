@@ -90,3 +90,23 @@ grep -rn -E "[[:space:]]+$" $D --exclude-dir=target --exclude-dir=dist
 
 The provider's shell scripts stay POSIX, since the tests run them on macOS too. `target/` and
 `dist/` stay ignored and unstaged. Report each choice you make as your own. Do not stage anything.
+
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), stacked on order 149's last commit (f803d96): the
+worker (648 s) and a fresh verifier (125 s), which found nothing to change in one round. At most one
+drainer exists per subdirectory: it holds `drainer.lock` for its whole life, releasing it before the
+owner lock on every exit, and the provider, for its whole life, tries `drainer.lock` once a second
+and starts a drainer wherever it is free, so a drainer that dies is replaced within a poll. The
+provider writes its configuration, paths and references only, to `drainer-config` after its backend
+starts, and the drainer reads it each time it takes the owner lock. The launch generations,
+announcements, `handoff.lock` and `drainer-order` of orders 146 and 149 are removed. On the Mac,
+with two test threads: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` clean,
+all 63 tests pass, and two archive builds give the same digest
+(`sha256:8f3639aac01afa7feb11006b129077e4d136ea44ef61afea729ebdcd250431ab`). The lane coordinator's
+review found nothing to change.
+
+The worker's own choices: `drainer-config` as JSON in the schema's names and types, validated by
+the configuration's own parser; a keep-alive task beside the provider's startup, service and
+shutdown; an ordered guard that releases the two locks in order, also on cancellation.

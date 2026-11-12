@@ -107,10 +107,66 @@ metadata:
     machines. The kit cancels and waits for stage/start/gate opening, closes the gate, then stops;
     no launch may follow a confirmed stop. Inspection is unknown while unreachable or stop is owed.
 
-    Decision D's external stop-drainer that outlives provider retirement is **not built**. A stop
-    still owed on retirement is carried out only if the provider starts again using the same durable
-    instance subdirectory. Until then RuntimeMaxSec is the only end of that run, and the run directory of a
-    run that never started stays on the remote. Failed staging and start attach the same named,
+    At most one external stop-drainer waits or works in each durable subdirectory. Immediately
+    after owner.lock and the state-dir check, before the private key, part, known_hosts or kit
+    recovery can refuse startup, the provider tries drainer.lock without blocking. If free, it
+    releases it at once and starts the sibling `bin/provider-ssh-runtime-drain`; a failed start
+    refuses startup, naming it. If held, a drainer is alive or about to be, so none is started.
+    Throughout initialization, service and shutdown the provider repeats this check once a second,
+    logging a failed replacement start to diagnostics.log and retrying at the next poll. A drainer
+    killed while the provider runs, or one that dies before taking its lock, is replaced within
+    a poll after the kernel releases the lock.
+
+    The drainer starts a new session with setsid, /dev/null as stdin and both outputs appended to
+    mode 0600 drainer.log. Its environment contains only PATH; the durable subdirectory and original
+    CONDUIT_STATE_DIR bytes are its two arguments. It leaves the engine runner's process group by
+    design (DL16), and survives that group's kill. Stopping the engine's whole service cgroup or
+    rebooting also ends the drainer; owed stops then wait for the provider's next start. It starts
+    no run, serves no call and opens no gate.
+
+    Once SshBackend::new succeeds, and before RuntimeServer::new, the provider atomically writes
+    mode 0600 drainer-config in the subdirectory. It holds only the configuration schema's places:
+    paths, references and settings, including the private key's path, never secret values (SEC-001).
+    A provider whose backend refuses startup leaves the previous configuration in place; a failed
+    write refuses startup, naming drainer-config, after the drainer has started.
+
+    The drainer tries drainer.lock without blocking; if held, it exits at once. It holds that lock
+    for its whole life, including the wait for owner.lock, draining, the retirement watch and yield.
+    It waits for owner.lock using nonblocking flock and Tokio timers, logging and retrying errors;
+    only a missing subdirectory or ledger ends that wait. Each time it takes owner.lock it reads
+    drainer-config afresh and builds its backend from that configuration, so a drainer already
+    waiting serves with the newest accepted configuration. A missing or invalid drainer-config is
+    logged by name and ends the drainer. On every exit, including cancellation, the attempt and
+    backend (and thus SSH masters) drop first, then drainer.lock, then owner.lock. Yield instead
+    releases only owner.lock, keeping drainer.lock until the same drainer serves again.
+
+    Once it owns owner.lock it removes stale yield, reads the ledger afresh and uses the kit's
+    drain_owed_stops. Missing subdirectory or ledger is logged and ends the drainer; an unreadable
+    ledger is a failed attempt. Failures wait drainInterval, capped at five minutes, then double
+    up to that cap.
+    At maxLifetime + stopTimeout since its latest owner-lock acquisition it cancels any attempt
+    still in flight and makes one last attempt, then retains any remaining obligation for the
+    provider's next start. The last attempt retains the backend's SSH command bounds and can be
+    interrupted by yield. Each attempt rereads the ledger.
+
+    A starting provider writes yield on every owner-lock poll and waits at most ten seconds before
+    initialize. On giving up it removes yield and refuses, naming owner.lock. The drainer checks
+    yield at least once a second, including during attempts, backoff and the retirement watch;
+    it drops the in-flight attempt and backend (killing its SSH masters) before releasing owner.lock.
+    The kit saves each stop's intent before trying it. After yielding it waits eleven seconds,
+    then tries owner.lock again; a held lock returns it to waiting, even for a brief sweep owner.
+    No server or second drainer works beside the current owner.
+
+    When nothing is owed, including an instance that never ran a run, or after the final attempt,
+    the drainer watches for retirement for at most one minute. Retirement means symlink_metadata
+    finds the original CONDUIT_STATE_DIR path absent while its parent still exists; a moved or
+    unmounted store does not count. This path need not exist at drainer startup and is never
+    canonicalized. If retired, nothing is owed on a fresh ledger read, and state-dir still holds
+    those original bytes, it removes the private key and known_hosts from the durable subdirectory.
+    The ledger and markers stay for the operator. Otherwise it exits retaining key material for
+    the next provider start. A provider retired while no drainer watched keeps its key until
+    order 147's sweep, or the operator, removes it.
+    Failed staging and start attach the same named,
     value-free reason written on stderr and in 0600 diagnostics.log through `Unavailable::because`.
     The kit includes it after `staging failed:` or `start did not complete:`, with its existing
     stop suffix for start, after checking for sensitive values and bounding it to one line.
@@ -134,8 +190,9 @@ metadata:
     Each mode 0700 subdirectory is named by lowercase hex SHA-256 of the exact supplied
     CONDUIT_STATE_DIR bytes, without a newline or canonicalization. It holds owner.lock,
     state-dir (those exact bytes), ledger.json (including owed stops), markers/, generations/,
-    part, known_hosts, the configured privateKey, diagnostics.log and the future drainer's log
-    (order 146). Only run stderr files stay in CONDUIT_STATE_DIR/stderr/; these can contain
+    part, known_hosts, the configured privateKey, diagnostics.log, drainer.log, drainer-config,
+    drainer.lock and the yield signal.
+    Only run stderr files stay in CONDUIT_STATE_DIR/stderr/; these can contain
     run-printed credentials and are removed with the instance. SSH control sockets always
     use a private temporary directory, since the durable path is too long.
     Startup creates or opens the subdirectory, locks owner.lock, then checks state-dir.

@@ -19,6 +19,11 @@ fn run() -> Result<()> {
         binary.is_file(),
         "build provider-ssh-runtime with cargo build --release --bins first"
     );
+    let drainer = binary.with_file_name(provider_ssh_runtime::startup::DRAINER);
+    ensure!(
+        drainer.is_file(),
+        "build provider-ssh-runtime-drain with cargo build --release --bins first"
+    );
     let gzip = GzBuilder::new()
         .mtime(0)
         .operating_system(255)
@@ -28,6 +33,11 @@ fn run() -> Result<()> {
         (
             format!("bin/{}", provider_ssh_runtime::BINARY),
             fs::read(binary)?,
+            0o755,
+        ),
+        (
+            format!("bin/{}", provider_ssh_runtime::startup::DRAINER),
+            fs::read(drainer)?,
             0o755,
         ),
         (

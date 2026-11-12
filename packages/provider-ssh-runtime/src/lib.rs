@@ -3,8 +3,10 @@
 mod backend;
 pub mod codec;
 pub mod config;
+pub mod drainer;
 pub mod durable;
 pub mod ssh;
+pub mod startup;
 mod storage;
 pub use backend::{SshBackend, Staged, parse_state};
 pub use config::Config;

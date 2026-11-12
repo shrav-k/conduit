@@ -75,6 +75,8 @@ Rust checks mean `cargo test --release`, `cargo clippy --all-targets -- -D warni
 | S7-NO | owner | Set up author-owned repository and npm scope | README Q4 | outside author identified | owner step | owner | before S7-N |
 | S7-N | run | External TypeScript/npm publication check, T7 | README P6 | S7-R, S7-NO | about 1 hour | lane 10 | after dependencies; the owner confirms D4's reading |
 
+Each account signs in through Conduit's Interface login flow, as ruling 72's later answer asks; [S2's plan](../013-s2-shared-login/plan.md#logins-through-the-interface-ruling-72s-later-answer) lists where each is first tested.
+
 **S7-H1.** Changes only a Rust harness crate under this experiment, with lockfile, pinned
 toolchain and ignored output. Captures synthetic argv in order and qualifies `mcp-remote` first
 against pinned npm bytes and a disposable upstream stub H1 itself builds under

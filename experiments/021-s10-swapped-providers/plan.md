@@ -151,7 +151,7 @@ prepares a disposable HTTPS Git repository and its credential (A63-GS claims git
 and signs every replacement home into its labelled second subscription through Conduit.
 1Password waits for A73 and its approvals. The timing interpretation of “or else” is
 provisional under admin A4, not automatic permission to choose file when the probe is late.
-No vectors. Checks: exact versions/nonsecret setup and account/panel observations recorded apart.
+No vectors. Checks: exact versions/nonsecret setup and account/panel observations recorded apart. Each account signs in through Conduit's Interface login flow, as ruling 72's later answer asks; [S2's plan](../013-s2-shared-login/plan.md#logins-through-the-interface-ruling-72s-later-answer) lists where each is first tested.
 
 **S10-R1 / S10-R2.** Coordinator with owner performs the twelve accepted replays: R1 first,
 secret-only, Docker-only, Git-only and all-swapped configurations × S1/S2; R2 all-swapped × S1/S2.

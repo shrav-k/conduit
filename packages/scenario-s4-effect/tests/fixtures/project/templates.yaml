@@ -1,0 +1,17 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata: {name: effect-plain}
+spec:
+  type: example.org/conduit/scenario-s4-effect#effect-plain.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata: {name: effect-keyed}
+spec:
+  type: example.org/conduit/scenario-s4-effect#effect-keyed.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata: {name: effect-ledger}
+spec:
+  type: example.org/conduit/scenario-s4-effect#effect-ledger.v1

@@ -1,0 +1,86 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: apply-effect.v1
+spec:
+  inputSchema: {"type":"object","properties":{"label":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{0,62}$"}},"required":["label"],"additionalProperties":false}
+  outputSchema: {"type":"object","properties":{"record":{"type":"string"}},"required":["record"],"additionalProperties":false}
+  effect: "Appends one effect, two entries, to the scenario ledger."
+  deduplicates: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: start-model-work.v1
+spec:
+  inputSchema: {"type":"object","properties":{"label":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{0,62}$"}},"required":["label"],"additionalProperties":false}
+  outputSchema: {"type":"object","properties":{"record":{"type":"string"}},"required":["record"],"additionalProperties":false}
+  startsModelWork: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: read-effects.v1
+spec:
+  inputSchema: {"type":"object","properties":{"label":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{0,62}$"}},"required":[],"additionalProperties":false}
+  outputSchema:
+    type: object
+    additionalProperties: false
+    required: [version, label, records, calls, invalidLines]
+    properties:
+      version: {"const":1}
+      label: {"anyOf":[{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{0,62}$"},{"type":"null"}]}
+      records: {"type":"array","items":{"type":"object","properties":{"record":{"type":"string"},"operation":{"enum":["apply-effect.v1","start-model-work.v1"]},"label":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{0,62}$"},"parts":{"type":"array","items":{"type":"integer","enum":[1,2]},"uniqueItems":true},"state":{"enum":["whole","partial"]}},"required":["record","operation","label","parts","state"],"additionalProperties":false}}
+      calls: {"type":"array","items":{"type":"object","properties":{"call":{"type":"string","pattern":"^[a-z0-9-]+$"},"mode":{"enum":["complete","partial-error"]},"operation":{"enum":["apply-effect.v1","start-model-work.v1"]},"label":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{0,62}$"},"instance":{"anyOf":[{"type":"string"},{"type":"null"}]},"caller":{"anyOf":[{"type":"string"},{"type":"null"}]},"key":{"anyOf":[{"type":"string"},{"type":"null"}]},"invocation":{"anyOf":[{"type":"string"},{"type":"null"}]},"attempt":{"type":"integer","minimum":1},"parts":{"type":"array","items":{"type":"object","properties":{"record":{"type":"string"},"part":{"type":"integer","enum":[1,2]}},"required":["record","part"],"additionalProperties":false}},"deduplicated":{"type":"boolean"},"reply":{"enum":["released","dropped","cancelled","none"]},"answer":{"anyOf":[{"type":"null"},{"type":"object","properties":{"result":{"type":"object","properties":{"content":{"type":"array","items":{"type":"object","properties":{"type":{"const":"text"},"text":{"type":"string"}},"required":["type","text"],"additionalProperties":false}},"structuredContent":{"type":"object","properties":{"record":{"type":"string"}},"required":["record"],"additionalProperties":false},"isError":{"const":false},"_meta":{"type":"object","properties":{"io.github.shrav-k.conduit/outcome":{"const":"succeeded"}},"required":["io.github.shrav-k.conduit/outcome"],"additionalProperties":false}},"required":["content","structuredContent","isError"],"additionalProperties":false}},"required":["result"],"additionalProperties":false},{"type":"object","properties":{"error":{"type":"object","properties":{"code":{"const":-32021},"message":{"type":"string"},"data":{"type":"object","properties":{"requiredCapabilities":{"type":"object","properties":{"elicitation":{"type":"object","properties":{"form":{"type":"object","properties":{},"required":[],"additionalProperties":false}},"required":["form"],"additionalProperties":false}},"required":["elicitation"],"additionalProperties":false}},"required":["requiredCapabilities"],"additionalProperties":false}},"required":["code","message","data"],"additionalProperties":false}},"required":["error"],"additionalProperties":false}]}},"required":["call","mode","operation","label","instance","caller","key","invocation","attempt","parts","deduplicated","reply","answer"],"additionalProperties":false}}
+      invalidLines: {"type":"array","items":{"type":"integer","minimum":1}}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: effect-writing.v1
+spec:
+  operations: ["#apply-effect.v1"]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: model-work.v1
+spec:
+  operations: ["#start-model-work.v1"]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: effect-reading.v1
+spec:
+  operations: ["#read-effects.v1"]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: effect-plain.v1
+spec:
+  family: "Resource"
+  schema: {"type":"object","properties":{"ledger":{"type":"string"},"control":{"anyOf":[{"type":"string"},{"type":"null"}]},"mode":{"enum":["complete","partial-error"]}},"required":["ledger","control","mode"],"additionalProperties":false}
+  offers: ["#effect-writing.v1","#model-work.v1"]
+  implementation: {"#apply-effect.v1":"#plain","#start-model-work.v1":"#plain"}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: effect-keyed.v1
+spec:
+  family: "Resource"
+  schema: {"type":"object","properties":{"ledger":{"type":"string"},"control":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["ledger","control"],"additionalProperties":false}
+  offers: ["#effect-writing.v1"]
+  implementation: {"#apply-effect.v1":"#keyed"}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: effect-ledger.v1
+spec:
+  family: "Resource"
+  schema: {"type":"object","properties":{"ledger":{"type":"string"}},"required":["ledger"],"additionalProperties":false}
+  offers: ["#effect-reading.v1"]
+  implementation: {"#read-effects.v1":"#reader"}

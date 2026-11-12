@@ -312,3 +312,23 @@ IFC-006 gives an implementation no sending instance, so the keyed server scopes 
 invocation's ID (decision 6); the loader's verdict on an operation marked `startsModelWork: true`
 on a Resource, since model work is an Agent's (decision 2); and that a peer's cancellation can
 still drop an answer after the server's check (decision 6). Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base 2689cbc: the worker (1,422 s) and a fresh verifier (418 s),
+which found nothing to change in one round. The result: `packages/scenario-s4-effect/`, plain
+servers whose partial effect writes ledger entry one and answers -32021, for an effect operation
+and for one that starts model work without effect, a keyed server that deduplicates across the
+attempts of a scoped key, an independent ledger reader, and barriers that extend SCR1's
+handshake with atomic release files. All 15 integration tests pass; the archive is the same,
+byte for byte, when built twice (`sha256:2d68bf8aa742fd8502abbeb96e63c9ba22cbb1f1514869b0ad98c2bee909354b`);
+and the installation check passed: the pinned engine's `init`, `serve` on a loopback port,
+`install` of the archive and `submit` of the fixture project, dispatching nothing. The worker
+counts 666 lines of implementation, 161 of declarations and 959 of tests. The lane coordinator's
+review found nothing to change.
+
+The worker's findings: IFC-006 gives a server the target instance but not the sending one, though
+OPS-008 scopes a key by its sender, so the invocation stands in for it; a Resource here offers an
+operation that starts model work, which is an Agent's by definition; and a peer's cancellation
+arriving after the server checks for it can still make rmcp discard an answer it released, which
+the README states.

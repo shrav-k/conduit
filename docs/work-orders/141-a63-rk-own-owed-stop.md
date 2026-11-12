@@ -117,3 +117,19 @@ git status --porcelain --ignored $D | grep -E "target/" | grep -v '^!!'
 
 `target/` stays ignored and unstaged. Report each choice you make as your own. Do not stage
 anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base f266adf: the worker (606 s) and a fresh verifier (173 s),
+which found nothing to change in one round. A drain now cancels an instance's flight (its token
+and serial) without advancing its epoch, so only `stop.v1` and shutdown advance it, and a start
+whose owed stop a drain carries out proceeds. Where a start's own state is unknown and stops are
+owed, it answers `unknown`, "run may still be running", naming every owed stop of its instance and
+on its machine, each with its machine, and that the start may be tried again once they are carried
+out; another instance's owed stop still fails the start where its own state can be read. The
+kit's README states the three cases and cites PRV-019, PRV-021 and PRV-030. The kit's 88 tests
+pass on the Mac, and `provider-local-process` and `provider-ssh-runtime` build and pass unchanged.
+The lane coordinator's review found nothing to change.
+
+The worker's finding: PRV-021's sentence that a start finding a stop owed fails names no split by
+instance; the admin's next spec order puts the three cases into it.

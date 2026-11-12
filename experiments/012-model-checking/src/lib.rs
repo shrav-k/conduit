@@ -3,6 +3,7 @@ pub mod access;
 pub mod controls;
 pub mod gates;
 pub mod harness;
+pub mod lifecycle;
 pub mod mc2;
 pub mod operations;
 pub mod placement;

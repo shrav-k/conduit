@@ -103,3 +103,18 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer, stacked on order 111's last commit (d347244): the
+worker, then a fresh verifier in 3 minutes (196 s); one round, with no fault found. It closed
+the four checks:
+- a hook is bound to the setup or retirement that dispatched it, with two controls;
+- LIF-010's unavailable observation is now reachable, so the accounting stays at 47 modelled
+  slices and 11 static decisions;
+- the shutdown is checked while a retirement is active;
+- a negative reconciliation of the latest retirement is reached.
+
+All 52 MC6 searches finished within their limits, the largest 72,666 states. MC6-001 and
+MC6-002 are unchanged. The lane coordinator merged orders 111 and 114 together, joined the crate
+with MC7a's work on main, and reran it under the pinned toolchain with the repository's checks.

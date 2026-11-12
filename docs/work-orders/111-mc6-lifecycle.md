@@ -227,3 +227,32 @@ grep -rn -E "[[:space:]]+$" --exclude-dir=target --include='*.md' --include='*.r
 ```
 
 `target/` stays ignored and unstaged. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer, from a fixed base, with the worker designing the model
+under this order's checklist and readings.
+
+The first verifier found four musts in the model's own checks:
+- INS-020 compared a definition with itself;
+- the order of hook and stop was not enforced;
+- removal after a confirmed shutdown was not required;
+- retirement at dispatch was not required.
+
+A second round of 14 minutes (825 s) fixed them. A fresh verifier in 6 minutes (347 s) found
+four more, also in the model's checks, and order 114 closed those, stacked on this order's last
+commit.
+
+**What it found in the promises:**
+- **MC6-001, a contradiction.** `retire-hook.v1` says a failed hook "keeps the shutdown pending".
+  But OPS-022 makes a retirement whose hook failed, and whose stop succeeded, end unknown, and
+  LIF-024 then reports the shutdown unknown. The first trace on Correct/Removal/Base has 92
+  actions. The opposite reading, the control HookPending, breaks LIF-024 instead.
+- **MC6-002, a contradiction.** LIF-019 forbids retiring an object that refers to a removed
+  instance. Yet CON-008 and LIF-017 close the Conduits whose consumer it was, and closing a
+  Conduit retires it. The first trace has 147 actions. The opposite reading, the control
+  PreserveReferences, breaks CON-008 instead.
+- **The unfenced control** reproduces MC2-001 for hooks, which ruling 75 A1 settles.
+
+The admin's order 081 takes MC6-001 and MC6-002 into the specification, and cites this README's
+section "MC6 findings, traces and limits".

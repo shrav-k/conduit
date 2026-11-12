@@ -1,0 +1,10 @@
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/conduit/scenario-s2-linear-restrictions
+version: 0.1.0
+exports:
+- read-issue.v1
+- list-issues.v1
+- update-issue.v1
+- issue-reading.v1
+- issue-writing.v1
+- issue-scope.v1

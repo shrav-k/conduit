@@ -1,0 +1,199 @@
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: read-issue.v1
+  description: >-
+    Read one issue by its exact, case-sensitive Linear identifier. An absent issue
+    in scope has a failed outcome. Return only identifier, title, description,
+    state and updatedAt, as issue-scope.v1 specifies; this projection applies even
+    without a filter. No model work starts and nothing outside the call changes.
+spec:
+  idempotentHint: true
+  openWorldHint: true
+  inputSchema:
+    type: object
+    properties:
+      issue:
+        type: string
+        pattern: '^[A-Z]+-[0-9]+$'
+        not: {pattern: '[^A-Z0-9-]'}
+    required: [issue]
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      issue:
+        type: object
+        properties:
+          identifier:
+            type: string
+            pattern: '^[A-Z]+-[0-9]+$'
+            not: {pattern: '[^A-Z0-9-]'}
+          title: {type: string}
+          description: {type: [string, 'null']}
+          state: {type: string}
+          updatedAt: {type: string, format: date-time}
+        required: [identifier, title, description, state, updatedAt]
+        additionalProperties: false
+    required: [issue]
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: list-issues.v1
+  description: >-
+    List at most limit distinct issues, sorted by identifier in ascending ASCII
+    order, after applying every filter. Missing issues are omitted. With
+    issue-scope.v1, select only identifiers in its issues input before taking the
+    limit. Return only the issue projection below, with no total count or cursor;
+    this projection applies even without a filter. No model work starts and
+    nothing outside the call changes.
+spec:
+  idempotentHint: true
+  openWorldHint: true
+  inputSchema:
+    type: object
+    properties:
+      limit: {type: integer, minimum: 1}
+    required: [limit]
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      issues:
+        type: array
+        items:
+          type: object
+          properties:
+            identifier:
+              type: string
+              pattern: '^[A-Z]+-[0-9]+$'
+              not: {pattern: '[^A-Z0-9-]'}
+            title: {type: string}
+            description: {type: [string, 'null']}
+            state: {type: string}
+            updatedAt: {type: string, format: date-time}
+          required: [identifier, title, description, state, updatedAt]
+          additionalProperties: false
+    required: [issues]
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: update-issue.v1
+  description: >-
+    Set the supplied title and/or description on one issue by its exact,
+    case-sensitive identifier; leave an omitted field unchanged. A null
+    description clears it. Change no team, parent, relation or other field that
+    moves the issue. The service may advance updatedAt as a consequence of the
+    edit. An absent issue in scope has a failed outcome. Return the issue as it
+    stands after the change, only in the projection below, even without a filter.
+    No model work starts.
+spec:
+  effect: >-
+    Changes only the named issue's supplied title and description, with the
+    service's consequent updated time; never changes its team, parent or placement.
+  idempotentHint: false
+  openWorldHint: true
+  inputSchema:
+    type: object
+    properties:
+      issue:
+        type: string
+        pattern: '^[A-Z]+-[0-9]+$'
+        not: {pattern: '[^A-Z0-9-]'}
+      title: {type: string}
+      description: {type: [string, 'null']}
+    required: [issue]
+    anyOf:
+    - required: [title]
+    - required: [description]
+    additionalProperties: false
+  outputSchema:
+    type: object
+    properties:
+      issue:
+        type: object
+        properties:
+          identifier:
+            type: string
+            pattern: '^[A-Z]+-[0-9]+$'
+            not: {pattern: '[^A-Z0-9-]'}
+          title: {type: string}
+          description: {type: [string, 'null']}
+          state: {type: string}
+          updatedAt: {type: string, format: date-time}
+        required: [identifier, title, description, state, updatedAt]
+        additionalProperties: false
+    required: [issue]
+    additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: issue-reading.v1
+spec:
+  operations: ['#read-issue.v1', '#list-issues.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: issue-writing.v1
+spec:
+  operations: ['#update-issue.v1']
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: issue-scope.v1
+  description: >-
+    S2 package filter, applied by the target's implementations, not by the engine.
+    F1: Judge every call independently from the filters sent with that call
+    (IFC-018/019). Two Conduits with different arguments are judged apart. Use
+    the call's own arguments and the filter's current inputs on every call,
+    never an earlier answer: changed authorization data is seen at once.
+    F2: For read-issue.v1 and update-issue.v1, forbid an issue outside issues,
+    judged by exact case-sensitive identifier from the arguments before any
+    lookup. Refusal never depends on whether that issue exists. An issue in
+    scope that does not exist has a failed outcome, not a refusal. For
+    list-issues.v1, return only existing issues whose identifiers are in issues,
+    never more, whatever the service holds; apply scope before limit.
+    F3: Every returned issue contains exactly identifier, title, description,
+    state and updatedAt. Description is text or null for no description; state
+    is the service's state name and updatedAt its RFC 3339 updated time. Never
+    return relations, parent, sub-issues or comments. Mentions of other issues
+    inside title or description are content, not references, and remain unchanged.
+    F4: Forbid a call received at or after deadline, judged by the implementation's
+    own clock at receipt. Compare instants across offsets. Judge the deadline
+    once: a call allowed at receipt completes even if the deadline passes while
+    it runs. This includes repeated reads, dispatched again under OPS-024 and
+    judged afresh. S2-H may set the implementation's clock for qualification.
+    F5: Carry this filter on any onward request serving the call: name the served
+    invocation under IFC-020 so the engine carries its filters under ACC-017.
+    An onward recipient applies the filter to its own call, including its own
+    receipt time. This contract neither requires nor claims an onward request.
+    F6: Forbidden means perform nothing of the call and answer in IFC-026's
+    form, in place of an outcome: refused under io.github.shrav-k.conduit/reason
+    in the result's _meta, the received filter item (requirement and arguments)
+    under io.github.shrav-k.conduit/restriction, and isError: true. Return no
+    issue output and no io.github.shrav-k.conduit/outcome. Cannot apply is only
+    IFC-019's case of an argument for an input the supported requirement version
+    does not declare; answer unavailable in the same form, performing nothing.
+    The scope, projection and receipt-time rules F1-F4 are this package's own
+    grounds, not additional core rules. No other package-specific refusal or
+    cannot-apply ground is defined here.
+spec:
+  inputs:
+    issues:
+      schema:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          type: string
+          pattern: '^[A-Z]+-[0-9]+$'
+          not: {pattern: '[^A-Z0-9-]'}
+    deadline:
+      schema: {type: string, format: date-time}

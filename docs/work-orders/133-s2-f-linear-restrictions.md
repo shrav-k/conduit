@@ -138,3 +138,17 @@ Use synthetic identifiers only, with no real workspace or team name.
 `target/` and `dist/` stay ignored and unstaged; run `cargo run --release --bin package` twice and
 report the digest. Report each name and each schema field you chose as your own
 choice, and anything `spec/` leaves open as a finding. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Mac, from base d3f9815: the worker, then a fresh verifier (234 s), which
+found nothing to change in one round. The result is `packages/scenario-s2-linear-restrictions/`:
+the operations `read-issue.v1`, `list-issues.v1` and `update-issue.v1`; the capabilities
+`issue-reading.v1` and `issue-writing.v1`; the filter `issue-scope.v1`, with its clauses written
+as package behavior; the README mapping D05's cases; tests of the YAML against `spec/schemas/`; and
+a deterministic archive, `sha256:6380ce0e6a7db56712f457fd3a56aa7a6802ce3e019c56a3433eda440feac43e`,
+which S2-L1 and S2-L2 pin. The lane coordinator ran its tests on the result: 6 passed.
+
+The worker's findings: S2's G2 stays a deliberate contract gap (no core promise supplies issue
+scope, a deadline, an issue's projection or the service's state); and D05's onward-call case
+stays unexercised unless S2-L1 or S2-L2 makes and qualifies an onward request.

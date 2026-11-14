@@ -649,7 +649,15 @@ async fn backend_guard_enforces_lifetime_and_inventory_finds_orphans() {
     );
     // No server, gate, cancellation, or ledger exists in this test: the guard is the bound.
     gone(&pids).await;
-    assert!(backend.state(&context(), ID).await.unwrap() == RunState::Stopped);
+    // The backend proves the group gone only once its last member is reaped, and a task of the
+    // backend collects the guard. Until then it answers running or unknown, so wait for stopped.
+    timeout(WAIT, async {
+        while backend.state(&context(), ID).await.unwrap() != RunState::Stopped {
+            sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("the backend never proved the run's group gone");
     backend.stop(&context(), ID).await.unwrap();
     drop(channel);
     assert!(!root.path().join("runs").join(instance_key(ID)).exists());

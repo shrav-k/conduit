@@ -1,4 +1,6 @@
 #![cfg(unix)]
+#[path = "support/settle.rs"]
+mod settle;
 #[allow(dead_code)]
 mod support;
 use provider_ssh_runtime::{Config, FileStore, SshBackend, drainer, durable::OwnerLock, startup};
@@ -59,6 +61,7 @@ impl Retired {
             )
             .unwrap(),
         );
+        released(&root);
         Self {
             _root: home,
             _remote: remote,
@@ -101,6 +104,7 @@ impl Retired {
         let (worker, log) = self.worker();
         let handle = tokio::spawn(worker);
         drop(owner);
+        released(&self.root);
         (handle, log)
     }
     fn worker(&self) -> (impl Future<Output = ()> + Send + 'static, Log) {
@@ -172,6 +176,15 @@ fn publish(
 fn drainer_held(f: &Retired) -> bool {
     !startup::poll_drainer(&f.root, || Ok(())).unwrap()
 }
+/// True once drainer.lock can be taken; waits out a forked child's copy (support/settle.rs).
+fn drainer_free(f: &Retired) -> bool {
+    settle::settled(|| if drainer_held(f) { Err(()) } else { Ok(()) }).is_ok()
+}
+/// Returns once owner.lock, which the test has just released, can be taken again. Under a
+/// paused clock the drainer's retries take no real time, so it must not start before then.
+fn released(root: &std::path::Path) {
+    drop(settle::settled(|| OwnerLock::acquire(root)).unwrap());
+}
 
 #[tokio::test(start_paused = true)]
 async fn waiting_drainer_survives_provider_restart_and_reads_new_machine_configuration() {
@@ -208,6 +221,7 @@ async fn waiting_drainer_survives_provider_restart_and_reads_new_machine_configu
         .await
         .unwrap();
     drop(owner);
+    released(&f.root);
     advance(Duration::from_secs(1)).await;
     assert!(poll_once(worker.as_mut()).await.is_pending());
     assert!(!f.owed().await);
@@ -261,7 +275,7 @@ async fn rejected_backend_keeps_previous_config_and_write_failure_refuses_after_
             ))
     );
     assert_eq!(starts, 2);
-    assert!(OwnerLock::try_existing(&f.root).unwrap().is_some());
+    assert!(settle::settled(|| OwnerLock::acquire(&f.root)).is_ok());
     assert_eq!(f.fake.live_masters.load(Ordering::SeqCst), 0);
 }
 
@@ -344,7 +358,7 @@ async fn missing_or_invalid_config_is_named_and_exit_releases_drainer_before_own
             },
             |message| {
                 if message == "drainer.lock released before owner.lock" {
-                    assert!(!drainer_held(&f));
+                    assert!(drainer_free(&f));
                     assert!(OwnerLock::try_existing(&f.root).unwrap().is_none());
                     assert_eq!(f.fake.live_masters.load(Ordering::SeqCst), 0);
                     released = true;
@@ -355,7 +369,7 @@ async fn missing_or_invalid_config_is_named_and_exit_releases_drainer_before_own
         worker.await;
         assert!(released);
         assert_eq!(named, case != "valid");
-        assert!(OwnerLock::try_existing(&f.root).unwrap().is_some());
+        assert!(settle::settled(|| OwnerLock::acquire(&f.root)).is_ok());
     }
 }
 
@@ -461,7 +475,7 @@ async fn waiter_retries_owner_lock_errors_and_exits_only_when_ledger_disappears(
     tick(1).await;
     worker.await.unwrap();
     assert!(contains(&log, "ledger.json gone"));
-    assert!(!drainer_held(&f));
+    assert!(drainer_free(&f));
     drop(owner);
 }
 
@@ -490,7 +504,7 @@ async fn killed_waiting_draining_or_yielding_is_replaced_once_at_next_start_and_
         assert_eq!(f.fake.stops_in_flight.load(Ordering::SeqCst), 0);
         assert_eq!(f.fake.live_masters.load(Ordering::SeqCst), 0);
         assert!(f.owed().await);
-        assert!(!drainer_held(&f));
+        assert!(drainer_free(&f));
         drop(owner);
         let mut starts = 0;
         let mut replacement = None;
@@ -514,6 +528,7 @@ async fn killed_waiting_draining_or_yielding_is_replaced_once_at_next_start_and_
         assert_eq!(starts, 1);
         f.fake.stop_hold.store(false, Ordering::SeqCst);
         drop(owner);
+        released(&f.root);
         tick(2).await;
         assert!(!f.owed().await, "{phase}");
         tick(60).await;
@@ -793,6 +808,7 @@ async fn yields_cancel_stop_and_masters_before_next_owner_then_waits_and_resumes
         .unwrap();
     f.fake.stop_hold.store(false, Ordering::SeqCst);
     drop(owner);
+    released(&f.root);
     tick(3).await;
     assert!(!f.owed().await);
     tick(60).await;
@@ -803,13 +819,14 @@ async fn yields_cancel_stop_and_masters_before_next_owner_then_waits_and_resumes
 async fn giving_up_removes_yield_and_stale_yield_does_not_stop_next_drainer() {
     let f = Retired::new();
     let (worker, log) = f.spawn().await;
-    let owner = OwnerLock::acquire(&f.root).unwrap();
+    let owner = settle::settled(|| OwnerLock::acquire(&f.root)).unwrap();
     tokio::task::yield_now().await;
     let start = Instant::now();
     assert!(OwnerLock::acquire_provider(&f.root).await.is_err());
     assert_eq!(start.elapsed(), Duration::from_secs(10));
     assert!(!f.root.join("yield").exists());
     drop(owner);
+    released(&f.root);
     fs::write(f.root.join("yield"), b"stale").unwrap();
     tick(2).await;
     assert!(contains(&log, "nothing owed"));
@@ -841,7 +858,7 @@ async fn retry_wait_is_capped_at_five_minutes() {
     assert_eq!(gaps, [1, 2, 4, 8, 16, 32, 64, 128, 256, 300]);
     worker.abort();
     assert!(worker.await.unwrap_err().is_cancelled());
-    assert!(OwnerLock::try_existing(&f.root).unwrap().is_some());
+    assert!(settle::settled(|| OwnerLock::acquire(&f.root)).is_ok());
 }
 
 #[tokio::test(start_paused = true)]

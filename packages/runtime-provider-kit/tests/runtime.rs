@@ -1020,6 +1020,12 @@ async fn secrets_and_identity_never_enter_records_logs_or_answers_even_at_trace(
             .with_writer(move || writer.clone())
             .finish();
         let _subscriber = tracing::subscriber::set_default(subscriber);
+        // While one dispatcher is registered, tracing-core takes a new callsite's interest from
+        // the default of the thread that reaches it first. Other tests reach the server's
+        // callsites on threads with no subscriber, which caches them as never enabled, and this
+        // thread then captures nothing. With a second dispatcher registered, every callsite asks
+        // all of them, so this capture sees each event whichever thread came first.
+        let _every_callsite = tracing::Dispatch::new(tracing::subscriber::NoSubscriber::default());
         tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
@@ -1078,6 +1084,11 @@ async fn secrets_and_identity_never_enter_records_logs_or_answers_even_at_trace(
     thread.join().unwrap();
     let logs = logs.0.lock().unwrap();
     assert!(!logs.is_empty(), "capture must exercise logging");
+    // rmcp 3.9.0 logs each request it receives at debug: a capture without that line is partial.
+    assert!(
+        String::from_utf8_lossy(&logs).contains("received request"),
+        "capture must see rmcp's request line"
+    );
     for marker in markers() {
         assert!(
             !String::from_utf8_lossy(&logs).contains(&marker),

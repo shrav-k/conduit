@@ -20,12 +20,6 @@ use std::{
 mod settle;
 use settle::settled;
 
-/// Returns once `owner.lock` under `root`, which the test has just released, can be taken
-/// again. The construction that follows stays a single attempt, so nothing else is retried.
-fn released(root: &Path) {
-    drop(settled(|| provider_ssh_runtime::durable::OwnerLock::acquire(root)).unwrap());
-}
-
 fn places() -> BTreeMap<String, String> {
     let mut bytes = b"\0\0\0\x0bssh-ed25519\0\0\0\x20".to_vec();
     bytes.extend([41u8; 32]);
@@ -195,15 +189,18 @@ fn persistent_part_owner_lock_and_short_socket_fallback_without_network() {
     );
     drop(first);
     assert!(!socket.exists());
-    released(&durable);
-    let second = SshBackend::with_executor(
-        &durable,
-        Some(&state),
-        config,
-        None,
-        "/synthetic/ssh".into(),
-        executor.clone(),
-    )
+    // A child that another test thread forked while `first` held the lock shares that lock until it
+    // execs, so the second backend may be refused for a moment: retry it (support/settle.rs).
+    let second = settled(|| {
+        SshBackend::with_executor(
+            &durable,
+            Some(&state),
+            config.clone(),
+            None,
+            "/synthetic/ssh".into(),
+            executor.clone(),
+        )
+    })
     .unwrap();
     assert_eq!(part, second.part());
     assert!(!executor.0.load(Ordering::SeqCst));
@@ -332,8 +329,8 @@ async fn durable_initialization_is_ordered_and_missing_ledger_is_an_error() {
     assert_eq!(fs::read(l.root.join("ledger.json")).unwrap(), b"[]");
     assert!(!l.root.join("state-dir").exists());
     fs::remove_dir(l.root.join(".state-dir.new")).unwrap();
-    released(&l.root);
-    let backend = l.start().unwrap();
+    // The refused starts above each took the lock; retry until no forked child still shares it.
+    let backend = settled(|| l.start()).unwrap();
     assert_eq!(
         fs::read(l.root.join("state-dir")).unwrap(),
         l.state.as_os_str().as_encoded_bytes()

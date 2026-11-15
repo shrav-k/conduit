@@ -458,3 +458,114 @@ In `engine/`:
 Report the totals passed and failed. Tests that bind loopback ports may fail in your sandbox; if
 they do, say so, and the admin reruns them. Under load, timing-sensitive shell tests have failed and
 then passed with two test threads (finding 4-18); if you rerun so, say so. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), stacked on order 079's last commit (`4c8dc763`,
+`wo/079-shell-https-address`). The prompt also carried the admin's input on the other end of the
+bridge, the runtime-provider kit's gate (order 126): one live session per run, a fresh `initialize`
+and no old session ID after a restart, 400 without a session and 404 for an ended one, and the
+gate's 401 and 202 answers. It ran two rounds and is not merged. Both are checkpointed on
+`wo/080-shell-runtime-provider-calls`, as `eb9275d2` and `80841bc7`.
+
+Round 1: the worker (40735 s) and a fresh verifier (326 s). The run log shows the runner's SSH
+connection timing out once after the remote start, then the same base again; the worker exited 0.
+The worker reported that the shell's suite, run on one test thread, passed 111, failed 0 and
+ignored 5. Its one full workspace run, on two threads, passed 163, failed 1 and ignored 1. The
+failure was order 079's HTTPS host and origin test, which got 404 where it expected 200; that test
+passed a targeted rerun and the final serial shell run. It ran on Linux only. The verifier asked
+for changes, with three musts and one should. The musts were in
+`engine/crates/shell/src/http_bridge.rs`: a BOM-prefixed server-sent event stream lost its first
+data field; a bare `data` field was ignored, which dropped a newline; and the end of stdin before
+the first message exited 1, not 0. The should was about the setup-cancellation test in
+`engine/crates/shell/tests/provider_calls.rs`. Its call had no identity, so it was never sent, and
+the test passed whether or not cancellation worked. It also never cancelled a bridge that was
+already starting.
+
+Round 2: the worker (2510 s) and a fresh verifier (483 s). The worker fixed the four findings. The
+bridge now strips a leading BOM across chunk boundaries, appends a line feed for a colonless `data`
+field and exits 0 when stdin ends before the first message. The cancellation test now gets a
+materialized identity and runnable inputs. A new test cancels setup while the bridge's
+initialization is blocked, then checks that the bridge's group ends, its directory is removed and
+the provider receives no stop. The focused suites passed 16, failed 0 and ignored 1. The full
+suites did not finish. The complete shell runs were interrupted after 33 and after 30 passes. The
+workspace run hit its 300-second bound after 18 passes. None of these runs reported a failure. The
+verifier asked for changes again, with the three musts below.
+
+The branch serves the core's provider calls for `run.v1`, `stop.v1` and `inspect-run.v1` through
+the provider's own run on the engine's runner. It asks `server/discover` first on each provider
+run. It sends `tools/call` with exactly PRV-005's `_meta` keys and with Conduit's extension
+declared, and reads the result as IFC-009 and OPS-007 say. Order 049a1 was not in its tree, so no
+machine calls are sent; a `list-machines.v1` call is tested directly. Each provider run gets a fresh
+X509-SVID (`tls.crt` and `tls.key`) issued from the store's root. Each bridge gets its own engine
+certificate and an ES256 token toward the run's gate. A new process, `conduit __http-bridge <url>`
+(`engine/crates/shell/src/http_bridge.rs`), carries the MCP stream between stdio and Streamable
+HTTP at revision 2026-07-28. Before it sends any byte, it checks through rustls, against the
+store's root alone, that whatever answers proves the instance. To the run table it is one more
+local process. reqwest now uses rustls with the `ring` provider, which `install_crypto_provider`
+installs, and `engine/Cargo.lock` holds no aws-lc-rs or OpenSSL crate. The DL13 and DL16 rows of
+`engine/CONFORMANCE.md`, two other sentences in it and one sentence of `engine/README.md` now say
+what is served. Compared with 079's commit, the branch changes 15 files (3168 insertions, 14
+deletions), including new test files. It has not been tested on macOS.
+
+The workers' step-8 findings for the log:
+- The core's reports cannot carry proof-refusal or missing-extension reasons.
+- When a provider reports `running` and no bridge proves the instance, `Running` becomes Unknown,
+  against PRV-009.
+- PRV-026 (running a provider again before a call) is not built.
+- Instance dispatch still reads no `server/discover` (IFC-037) and, over Streamable HTTP, no
+  `tools/list` (IFC-001).
+- The gate forwards a repeated `initialize` to the run's persistent stdio server. The bridge always
+  sends a fresh one, so for servers that cannot be initialized twice the gate must answer a
+  repeated initialization itself.
+- A static review found that the kit keeps cancelled request IDs and refuses their reuse with 409.
+  This was not tested.
+- IFC-026 gives no reason form for provider calls.
+
+### The last verifier's findings
+
+Round 2's verifier gave this verdict: "Changes required: three verified faults remain. Read-only
+static checks and four focused unit tests passed; full-suite validation remains incomplete." Line
+numbers are those of the branch at `80841bc7`.
+
+- **must**, decision "Step 5: carry Streamable HTTP messages without rejecting valid transport
+  framing.", `engine/crates/shell/src/http_bridge.rs:228`. Problem: An empty-data SSE priming
+  event terminates the bridge before initialization or a later response arrives. Evidence: Lines
+  235–237 append LF for `data:`; lines 226–228 then execute `data.pop()` and `self.emit(&data)?`.
+  For `id: 0\ndata:\n\n`, emit receives empty bytes and its JSON parser fails at line 141.
+  [MCP 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#sending-messages-to-the-server)
+  recommends these empty-data priming events. The executable bridge tests explicitly negotiate
+  that revision. Fix: Ignore empty transport events after removing the final data newline, while
+  preserving empty fields within nonempty JSON data. Add regressions with priming events preceding
+  initialization and subsequent messages.
+- **must**, decision "Step 5: exit successfully at stdin EOF.",
+  `engine/crates/shell/src/http_bridge.rs:351`. Problem: EOF after the initialization line remains
+  unobserved while the initialization response is pending, so the bridge can hang indefinitely.
+  Evidence: The code awaits `bridge.post(first, true).await?` before reaching the next stdin read
+  at line 358. The client config sets only `connect_timeout` at line 320, which does not bound
+  waiting for the response body. The order states, at
+  docs/work-orders/080-shell-runtime-provider-calls.md:282, "At the end of stdin the bridge sends
+  DELETE for its session and exits 0." The new EOF test closes stdin without sending an
+  initialization line, so it misses this case. Fix: Observe stdin EOF during initialization while
+  keeping subsequent messages unsent until initialization completes. Exit successfully and delete
+  any assigned session. Add an executable regression that sends initialization, blocks its
+  response, and then closes stdin.
+- **must**, decision "Step 5 and IFC-001: honor the carried MCP revision; only Mcp-Param headers
+  are explicitly deferred.", `engine/crates/shell/src/http_bridge.rs:126`. Problem: The bridge
+  omits mandatory baseline HTTP headers, so a conforming 2026-07-28 endpoint can reject its calls.
+  Evidence: The request builder at lines 126–138 adds Authorization, Accept, session and
+  protocol-version headers; post adds Content-Type at lines 257–260. Neither adds `Mcp-Method` or
+  `Mcp-Name`.
+  [MCP 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http#standard-request-headers)
+  requires Mcp-Method for every request and Mcp-Name for tools/call. engine/CONFORMANCE.md:44
+  identifies this as the carried revision and defers only Mcp-Param headers. The gate fixture does
+  not validate these mandatory headers. Fix: Derive and send the mandatory method/name headers,
+  including the standard encoding for names that require it. Add a fixture that rejects missing or
+  mismatched headers. Report any conflict with the ordered transport design under step 8.
+
+### Next
+
+Round 3 runs from round 2's verifier report, with the same admin input on the gate's session rules,
+on the Mac or on the Windows computer under its dedicated run user. Then come the tests on the Mac,
+a rebase onto `s3/m2` (where order 079 has merged, so it drops out of this branch) and the merge
+into `s3/m2`.

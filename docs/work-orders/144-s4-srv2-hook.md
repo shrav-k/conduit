@@ -362,27 +362,123 @@ setup made through a filtered Conduit cannot run it. Do not stage anything.
 
 ## Record
 
-**Not merged; stopped at the lane's checkpoint (2026-11-12).** Run on 2026-11-12 on the Mac, from
-base 7e963b1: the worker (1,087 s) and a fresh verifier (382 s), then a second worker round (283 s)
-and a fresh verifier (391 s). The branch `wo/144-s4-srv2-hook` holds both rounds. Round two's
-worker reports all 14 release tests passing, the archive the same twice, and the installation
-check passing on its loopback port. Round one's must was fixed in round two: the control refused a
-call giving only `revision`, which REV-006 allows; its should, a reader that accepted malformed
-event payloads, was fixed too.
+**Not merged: stopped at Lane SP's checkpoint (#262, 2026-11-12).** The order ran on 2026-11-12 on
+the Mac, from the lane's dispatch, on base `main` `7e963b1a`, in two rounds. Round one had the
+worker (1,087 s) and a fresh verifier (382 s). Round two had a second worker round (283 s) and a
+fresh verifier (391 s). On that base, the branch `wo/144-s4-srv2-hook` holds a commit of round
+one's worker output, one of round two, and this Record.
 
-Round two's verifier left two musts, so a finishing order is the next step, stacked on this
-branch:
+Round one's worker reported all 13 package tests passing and `cargo fmt --check` and clippy clean.
+Two archive builds gave one digest. The installation check passed on loopback port 38144: `install`
+returned no diagnostics and `submit` succeeded at registration. Round one's verifier ran the
+document, name, private-path, whitespace and form-validation checks, and they passed. It did not
+rerun the full Cargo or installation checks in its read-only sandbox. It found one must and one
+should:
 
-1. **Required IFC-006 metadata:** the control and the reader accept a call with no Conduit ID
-   (`src/lib.rs`, near line 83), and the test helper omits it. Require a non-empty Conduit ID for
-   both, supply it in the helper, and test a missing and a malformed one, keeping the
-   revision-only control case.
-2. **Losing the control directory:** a call waiting at a barrier whose control directory is
-   removed polls for ever instead of recording `control-lost` and dropping (`src/barrier.rs`,
-   near line 69). Tell an unpublished release from a missing or unreadable directory, route the
-   loss through `control-lost` and a drop, and test removing the directory after `.reached`.
+- must: the control refused a call that gives only `revision`, which REV-006 allows (`src/lib.rs`,
+  line 136);
+- should: the reader accepted malformed event payloads and returned values outside its declared
+  output schema without listing those lines as invalid (`src/ledger.rs`, line 129).
 
-The worker's findings: rmcp drops a late answer after the engine cancels a hook call, so it cannot
-reach S4-LATE (kept in S4-LATE's plan); a cancellation arriving after the server's check can still
-discard an answer, so `released` does not prove delivery; and the hook applies no filter, so a
-setup through a filtered Conduit cannot run it.
+Round two's worker reports fixing both findings:
+
+- The handler accepts a revision-only call and checks `blockedBy` only where it is given. A test
+  shows success, `isError` false and the ledger's bytes unchanged.
+- The reader checks the fields and values of each of the six v1 event kinds. It reports a malformed
+  event's line number and keeps earlier evidence. This is tested through the library, the MCP
+  operation and the `readback` subcommand, against the output schema.
+
+The worker also reports:
+
+- all 14 release tests passing, and fmt and clippy clean;
+- two archive builds with one digest,
+  `sha256:6a82da0195c9e63dd246d0cc6ecd144162649a90b8e073e624242dfe85b3c78e`;
+- the installation check passing again on port 38144: `install` returned `diagnostics: []` and
+  `submit` returned `{"outcome":"succeeded","step":"registration"}`;
+- `tools/check_docs.py`, `tools/set_names.py --check` and `tools/check_schemas.py` with no errors.
+
+Round two's verifier did not raise round one's findings again. It found two musts, listed below.
+Its read-only checks passed. Like round one's verifier, it did not rerun the full release and
+installation checks.
+
+The branch adds `packages/scenario-s4-hook/`, a stand-alone Unix crate at version 0.1.0 that uses
+`rmcp = "=3.9.0"`. It holds the library `scenario_s4_hook`, the binary, and a `package` binary that
+writes the fixed-content archive `dist/scenario-s4-hook.tar.gz` and its digest. Its
+`contracts.yaml` holds the order's six contracts at `example.org/conduit/scenario-s4-hook`.
+
+- **Items.** The `hook` item serves `setup-hook.v1` and the control `set-blocked-by.v1`. The
+  `reader` item serves `read-hook-ledger.v1`. Both read their configuration from each call's
+  `_meta` (IFC-006).
+- **An attempt.** It writes `received`, then waits at `before-apply` where a `control` directory is
+  given. A regular file at `blockedBy` blocks it; this is T1's repairable cause, and the file is
+  never opened. Then it asks an optional gate, writes its `effect` and `ended` lines, and waits at
+  `before-reply` before it answers. That last wait is E20's lost-reply control.
+- **Barriers.** They use the `.reached`, `.release` and `.acknowledged` handshake with atomic
+  renames. The server polls every 5 ms and never times out.
+- **Ledger and reader.** The ledger is a JSON Lines file of mode 0600, appended under `flock` with
+  `fsync`. The reader, which is also the `readback` subcommand, reports each attempt's work, effect
+  and reply, and lists by number the lines it cannot parse.
+- **Interface for S9-SRV.** The README freezes the ledger, the readback and this interface as v1.
+  Round one's report names the library's interface: `HookServer`, `serve_hook`, `serve_reader`,
+  `Gate`, `GateVerdict`, `ledger::{Call, append, receive, readback, new_id}` and
+  `barrier::{Verdict, validate_directory, publish, wait}`.
+- **Size.** Round two counts 717 lines of implementation and packaging, 288 of manifests,
+  contracts, fixture and configuration, 192 of embedded schemas and 929 of tests. That is 2,126 in
+  all, above the order's 1,100 to 1,500, beside a 147-line README and a 1,518-line lockfile.
+
+The worker's own choices:
+
+- release verdicts are JSON strings;
+- call IDs are built from the process's ID, its start time in nanoseconds and a counter;
+- the readback's fields are `attempts`, `work`, `effect.state`, `reply` and `invalidLines`;
+- a missing ledger is an error;
+- the embedded discovery schemas use their own copy of the revision schema, checked against the
+  contracts;
+- the reader checks the six documented v1 event kinds, and the readback's common fields leave out
+  any further event field.
+
+Round one's worker also reported two process deviations. Its first reference reads were too large
+and were cut short. Its installation wrapper once used `set -e` against a literal prohibition, and
+it then removed it. It printed no environment value.
+
+The worker's findings, kept in both rounds:
+
+- rmcp drops the answer to a request its peer has cancelled. So where the engine cancels a hook call
+  it stopped waiting for, the late terminal answer cannot reach S4-LATE. The cancellation test
+  records `cancelled` and no `released`, and S4's plan keeps this, in its S4-LATE paragraph, as a
+  finding from the order's drafting.
+- A cancellation that arrives after the server's check can still discard an answer, so `released`
+  does not prove delivery.
+- The hook answers `unavailable` to any filter, so a setup through a filtered Conduit cannot run it.
+
+### The last verifier's findings
+
+Round two's verdict: "Changes required: two faults remain. Read-only checks passed; full release and
+installation checks were not rerun. No files changed."
+
+- **must**, decision 6 and 9 — required IFC-006 metadata, `packages/scenario-s4-hook/src/lib.rs:83`.
+  Problem: The control accepts calls missing their required Conduit ID. The test helper also omits
+  that metadata. Evidence: Validation checks conduit only when
+  `meta.get(format!("{PREFIX}{key}")).is_some()` (lines 83–89). IFC-006 requires conduit metadata
+  “when the request came through a Conduit” (spec/interface/implementation.yaml:135–136), and
+  OPS-020 says “A control needs an open Conduit” (spec/conventions/operations.yaml:377). A read-only
+  wire probe confirmed that a revision-only control call without conduit metadata returns succeeded
+  with isError false. tests/mcp.rs:204–209 omits conduit from every request. Fix: Require a nonempty
+  conduit ID for control and reader requests. Supply it in the test helper and test missing and
+  malformed values, preserving the revision-only control qualification.
+- **must**, decision 5 — handshake I/O failures record control-lost and drop,
+  `packages/scenario-s4-hook/src/barrier.rs:69`. Problem: Losing the control directory while waiting
+  leaves the call polling forever instead of recording control-lost. Evidence: The polling guard is
+  `NotFound && release.symlink_metadata().is_err()`. Removing or renaming the directory after
+  `.reached` makes both lookups fail with NotFound, repeatedly taking the sleep branch without
+  reaching the control-lost handler at lines 79–81. Decision 5 requires: “A file it cannot write or
+  read ... acts as drop and writes control-lost” (docs/work-orders/144-s4-srv2-hook.md:153–154). This
+  also occurs when the ledger remains accessible outside the removed directory. Fix: Distinguish an
+  unpublished release from a missing or inaccessible control directory. Route directory loss through
+  control-lost/drop, and add a regression that removes the directory after observing `.reached`.
+
+### Next
+
+The handover's next step is a finishing order stacked on this branch, run in the lane once the lane
+restarts at the S1 rerun's pin (ruling 78, point 1). It fixes the two musts above, keeping the
+revision-only control case, and a fresh verifier checks it.

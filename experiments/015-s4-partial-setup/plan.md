@@ -208,12 +208,14 @@ Since ruling 76 an author changes configuration by editing the project and runni
 the counted repair is: edit `blockedBy` in the project, then `apply`, whose plan uses
 `set-blocked-by.v1` because the Type offers it. The plan-and-apply reference does not yet do that:
 it shows a changed control value as a difference and infers no control call from a file edit
-([its README](../../docs/implementation/plan-and-apply/README.md), near lines 214 and 215, where
+([its README](../../docs/implementation/plan-and-apply/README.md), in the paragraph that ends "No
+control call is inferred from a file edit here.", under [Replacement, removal and
+cascades](../../docs/implementation/plan-and-apply/README.md#replacement-removal-and-cascades), where
 069b's reference stops). Until plan and apply turn a changed value into a call of the control the
 Type offers, M2 counts the author's direct call of the control through Conduit, and the gap is a
-finding for plan and apply. Removing the file outside Conduit stays an environment step. The orders split: S4-SRV1b takes the plain partial task
-and S4-SRV2b the onward request and E20's test, so that each order stays buildable; neither can be
-reached before S4-TASK2 or S4-LATE.
+finding for plan and apply. Removing the file outside Conduit stays an environment step. The orders
+split: S4-SRV1b takes the plain partial task and S4-SRV2b the onward request and E20's test, so that
+each order stays buildable; neither can be reached before S4-TASK2 or S4-LATE.
 
 **S4-RUN / S4-ACCOUNT / S4-E09.** Pin engine/packages/client/protocol and qualify all vector and
 wire tests before timing. Two separate author packs/runs preserve M0–M3, all faults/requests,

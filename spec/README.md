@@ -350,11 +350,12 @@ An existing closed Conduit stays closed until an explicit permitted opening.
 
 Plan and apply are tooling composed of existing requests. The plan is printed and recorded;
 nothing runs automatically. In v0 the command is the approval. Every dangerous act needs a
-named flag, counted when used: `--reopen`, `--recreate`, `--prune`, `--replace`, `--adopt`,
-and the cascade flags `--with-resources` and `--with-agents`. Each cascade is one command,
-printed and counted under one flag: register its Conduit, open it, call the cascade operation,
+named flag, recorded with the plan when used: `--reopen`, `--recreate`, `--prune`,
+`--replace`, `--adopt`, and the cascade flags `--with-resources` and `--with-agents`. Each
+cascade is one command under one flag, printed and recorded with the plan: register its
+Conduit, open it, call the cascade operation,
 close the Conduit, then root lifts its own tombstone. The `--withhold` flag belongs
-with the withhold behavior in batch 2. Narrowing never waits. A plan prints and counts every
+with the withhold behavior in batch 2. Narrowing never waits. A plan prints and records every
 widening, including one caused by moving a package pin or changing a reusable template's
 operations (PKG-031). A package should keep a standard template's operations across releases;
 the plan still checks the operations that actually resolve. A plan prints, beside each Agent

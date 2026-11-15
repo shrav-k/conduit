@@ -436,7 +436,7 @@
     Authors can write `from: <address>#read` without copying an operation list. INS-013
     resolves the template at the pinned version under NAM-010. Comparing releases shows
     whether a standard template's operation list changed. This is a recommendation, not a
-    rejection rule; a plan prints and counts any widening of the resolved Conduit operations
+    rejection rule; a plan prints and records any widening of the resolved Conduit operations
     before apply, including widening through a pin change.
   vectors: []
 

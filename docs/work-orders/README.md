@@ -17,6 +17,12 @@ have left the tree; their results, decisions and observations are in
 | [067](067-condense-work-orders.md) | Move merged orders into their record |
 | [151](151-private-names-and-secret-scan.md) | Private names and secrets checked before anything private is committed (the full review's order 2) |
 | [152](152-ci-engine-shards-stand-alone.md) | The engine's CI stands alone, and CI builds every crate (the full review's order 3) |
+| [153](153-model-account-checked.md) | the model-checking account, checked by a tool |
+| [154](154-plan-apply-reference-corrected.md) | the plan-and-apply reference corrected against spec/ |
+| [155](155-increment-4-log.md) | increment 4's log: the dogfood frictions and the Records' findings |
+| [156](156-runner-stopped-after-end.md) | the runner reports a run stopped only once it has seen it end |
+| [158](158-fresh-author-wording.md) | wording the fresh author reads at the pin: flags recorded with the plan, and CTR-013's citation corrected |
+| [159](159-a5-stage-0-client-facts.md) | the two client facts order 050 needs (A5's stage 0) |
 
 ## Shared and staged files
 

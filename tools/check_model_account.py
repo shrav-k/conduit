@@ -56,6 +56,17 @@ def promises_in(data):
     return []
 
 
+def yaml_kind(value):
+    """Name what a YAML file held where a diagnostic must say what it found."""
+    if value is None:
+        return "empty or null"
+    for kind, name in ((bool, "a boolean"), ((int, float), "a number"), (str, "a string"),
+                       (list, "a list"), (dict, "a mapping")):
+        if isinstance(value, kind):
+            return name
+    return f"a {type(value).__name__}"
+
+
 def catalogue_classes(text):
     classes = {}
     section = None
@@ -119,8 +130,54 @@ def main(root, argv):
         classes = {}
 
     manifest = load(MANIFEST)
-    cases = manifest.get("cases", []) if isinstance(manifest, dict) else []
-    covered = {identifier for case in cases for identifier in case.get("promises", [])}
+    if isinstance(manifest, dict) and "cases" in manifest:
+        error(MANIFEST, "still has cases; since work order 071 a case entry belongs in the "
+              "index.yaml of the directory holding its case directory")
+    covered = set()
+    case_count = 0
+    for path in sorted((root / "conformance").rglob("index.yaml")):
+        if not path.is_file():
+            continue
+        path = path.relative_to(root)
+        previous_errors = len(errors)
+        index = load(path)
+        if len(errors) != previous_errors:
+            continue
+        if not isinstance(index, dict):
+            error(path, f"is {yaml_kind(index)}, not a mapping; make it a mapping whose cases is a "
+                  "list of case entries")
+            continue
+        if "cases" not in index:
+            error(path, "has no cases key; add cases, a list of case entries")
+            continue
+        cases = index["cases"]
+        if not isinstance(cases, list):
+            error(path, f"cases is {yaml_kind(cases)}, not a list; make cases a list of case entries")
+            continue
+        for position, case in enumerate(cases, 1):
+            fault = None
+            if not isinstance(case, dict):
+                fault = (f"is {yaml_kind(case)}, not a mapping; make each case a mapping with a "
+                         "promises list")
+            elif "promises" not in case:
+                fault = "has no promises key; give each case a promises list of promise IDs"
+            elif not isinstance(case["promises"], list):
+                fault = (f"promises is {yaml_kind(case['promises'])}, not a list; make promises a "
+                         "list of promise IDs")
+            else:
+                for item, identifier in enumerate(case["promises"], 1):
+                    if not isinstance(identifier, str):
+                        fault = (f"promises item {item} is {yaml_kind(identifier)}, not a string; "
+                                 "write each promise ID as a string")
+                        break
+            if fault:
+                error(path, f"case {position} {fault}")
+                break
+        else:
+            case_count += len(cases)
+            covered.update(identifier for case in cases for identifier in case["promises"])
+    if not case_count:
+        error("conformance", "no index.yaml with cases found, so no static row can be checked against a case")
     account = load(ACCOUNT)
     if not isinstance(account, list):
         error(ACCOUNT, "expected a list of rows")
@@ -230,7 +287,7 @@ def main(root, argv):
         print(f"  {standing}: {count}")
     unsupported = [row for row in rows if row.get("standing") == "static" and row["id"] not in covered
                    and not (isinstance(row.get("outside"), list) and any(outside_exists(p) for p in row["outside"]))]
-    print(f"Static rows with no manifest case and no outside evidence: {len(unsupported)}")
+    print(f"Static rows with no conformance case and no outside evidence: {len(unsupported)}")
     for message in errors:
         print(message)
     print(f"Errors: {len(errors)}")

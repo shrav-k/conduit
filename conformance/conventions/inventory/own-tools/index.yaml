@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "id": "inventory-own-tools-holder",
+      "case": "conventions/inventory/own-tools/holder/case.yaml",
+      "promises": [
+        "LIF-013"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "inventory-own-tools-null",
+      "case": "conventions/inventory/own-tools/null/case.yaml",
+      "promises": [
+        "LIF-013",
+        "CTR-014"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "inventory-own-tools-string",
+      "case": "conventions/inventory/own-tools/string/case.yaml",
+      "promises": [
+        "LIF-013",
+        "CTR-014"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

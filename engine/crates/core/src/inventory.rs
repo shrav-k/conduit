@@ -317,7 +317,7 @@ fn own_tools(o: &Value, c: &Context) -> Result<Value> {
         o["type"].as_str().ok_or("Agent Type absent")?,
         &c.core_package,
     )?;
-    let Some(pointer) = ty["spec"]["toolsDirectory"].as_str() else {
+    let Some(pointer) = ty["spec"]["toolsDirectory"]["directory"].as_str() else {
         return Ok(json!({"stated":false}));
     };
     let directory = o["config"].pointer(pointer).and_then(Value::as_str);

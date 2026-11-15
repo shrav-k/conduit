@@ -214,3 +214,22 @@ the new files and runs `python3 tools/check_private_paths.py` and `git diff --ca
 the pull request, the admin shows the engine build, the four engine shards and the doctests
 passing. A fresh Codex verifier and a fresh read-only Opus reader read the result before it
 merges ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `71c725bc`, in two rounds: the worker (1,277 s) and a
+fresh Codex verifier (263 s), which found one must: the control fixture's `inputSchema` neither
+declared nor required `revision`, so the project had a CTR-006 fault beside the CTR-014 rule it
+was meant to isolate; then the worker's second round (763 s) and a fresh verifier (261 s), which
+found nothing. The inventory now reads the pointer inside `toolsDirectory`, the engine checks
+CTR-014's three rules on the place at resolution, and six cases, in the `index.yaml` pieces of
+their directories, would have caught both faults. The coordinator then rebased the two checkpoint
+commits onto `main` `42c64e24`, which holds order 163's list of expected failures.
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran the engine's
+tests (the runner printed 500 cases passed, 494 on `main` plus 6, with order 163's empty list),
+clippy, fmt, the pieces tool, the vector delta (6 changes, 0 undeclared) and the docs, names and
+private-path checks, and both fix-removal checks, each failing three cases. It found no must. Its
+two shoulds are left to a follow-up order: the CTR-014 diagnostics name the Type, the place and
+the rule but not the control's input and pointer that reach the place, nor the extra types the
+place admits; and the engine does not check CTR-006's rules on a listed control at resolution,
+which increment 4's log now records as 4-36.

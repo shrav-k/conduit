@@ -596,6 +596,42 @@ impl Catalog {
                         ),
                     ));
                 }
+                if d["kind"] == "Type"
+                    && let Some(pointer) = d["spec"]["toolsDirectory"]["directory"].as_str()
+                {
+                    let name = &d["metadata"]["name"];
+                    if let Err(cause) = binding_parts(
+                        &env,
+                        vec![BindingPart {
+                            scope: scope.clone(),
+                            root: d["spec"]["schema"].clone(),
+                            schema: d["spec"]["schema"].clone(),
+                            secret: false,
+                        }],
+                        &pointer_tokens(pointer),
+                        core,
+                        true,
+                    ) {
+                        diagnostics.push(diag(
+                            "CTR-014",
+                            format!("{scope}: Type {name} toolsDirectory {pointer}: {cause}"),
+                        ));
+                    }
+                    for control in strings(&d["spec"], "controls") {
+                        let (target, control_name) =
+                            resolve_name(&env, &indexes, scope, control, "Operation", core)
+                                .map_err(|(_, why)| why)?;
+                        if items(&indexes[&target][&control_name]["spec"], "changes")
+                            .filter_map(|(_, p)| p.as_str())
+                            .any(|p| pointers_reach(p, pointer))
+                        {
+                            diagnostics.push(diag(
+                                "CTR-014",
+                                format!("{scope}: Type {name} toolsDirectory {pointer}: rule (c): control {control} changes the place, a pointer inside it or a pointer over it"),
+                            ));
+                        }
+                    }
+                }
                 diagnostics.extend(env.check_document(scope, d, core)?);
             }
             for (address, _) in items(&manifest(p), "packages") {
@@ -1086,6 +1122,23 @@ struct BindingPart {
     secret: bool,
 }
 
+fn pointer_tokens(pointer: &str) -> Vec<String> {
+    pointer
+        .strip_prefix('/')
+        .map(|p| {
+            p.split('/')
+                .map(|s| s.replace("~1", "/").replace("~0", "~"))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn pointers_reach(a: &str, b: &str) -> bool {
+    let a = pointer_tokens(a);
+    let b = pointer_tokens(b);
+    a.starts_with(&b) || b.starts_with(&a)
+}
+
 fn branches(
     env: &Environment,
     part: BindingPart,
@@ -1181,17 +1234,21 @@ fn binding(
         }],
         tokens,
         core,
+        false,
     )
+    .ok()
 }
 fn binding_parts(
     env: &Environment,
     parts: Vec<BindingPart>,
     tokens: &[String],
     core: &str,
-) -> Option<bool> {
+    own_tools: bool,
+) -> std::result::Result<bool, &'static str> {
+    const REQUIRED: &str = "rule (a): the schema does not require the place and every member on its path in every branch";
     let mut alternatives = vec![vec![]];
     for part in parts {
-        let expanded = branches(env, part, core, &BTreeSet::new())?;
+        let expanded = branches(env, part, core, &BTreeSet::new()).ok_or(REQUIRED)?;
         alternatives = alternatives
             .iter()
             .flat_map(|a| expanded.iter().map(|b| [a.clone(), b.clone()].concat()))
@@ -1207,7 +1264,7 @@ fn binding_parts(
                     .iter()
                     .any(|p| strings(&p.schema, "required").any(|n| n == head))
             {
-                return None;
+                return Err(REQUIRED);
             }
             let mut subs = vec![];
             for p in parts {
@@ -1217,7 +1274,7 @@ fn binding_parts(
                 }
                 for (pattern, sub) in items(&p.schema, "patternProperties") {
                     if conduit_loader::formats::ecma_regex(pattern)
-                        .ok()?
+                        .map_err(|_| REQUIRED)?
                         .find(head)
                         .is_some()
                     {
@@ -1235,21 +1292,25 @@ fn binding_parts(
                 }));
             }
             if subs.is_empty() {
-                return None;
+                return Err(REQUIRED);
             }
-            nullable |= binding_parts(env, subs, tail, core)?;
+            nullable |= binding_parts(env, subs, tail, core, own_tools)?;
         } else {
-            if parts.iter().any(|p| p.secret) {
+            if !own_tools && parts.iter().any(|p| p.secret) {
                 continue;
             }
             let mask = binding_mask(&parts);
-            if mask & 48 != 0 {
-                return None;
+            if mask & if own_tools { !9 } else { 48 } != 0 {
+                return Err(if own_tools {
+                    "rule (b): the place admits a type other than string or null in a branch"
+                } else {
+                    "the place admits an array or object"
+                });
             }
             nullable |= mask & 1 != 0;
         }
     }
-    Some(nullable)
+    Ok(nullable)
 }
 /// null, boolean, number, string, array, object. Conjuncts only narrow the set.
 fn binding_mask(parts: &[BindingPart]) -> u8 {
@@ -1356,6 +1417,31 @@ fn file_reference(base: &UriRef<&str>, reference: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn own_tools_control_pointers_compare_decoded_reference_tokens() {
+        for (a, b) in [
+            ("/tools/directory", "/tools/directory"),
+            ("/tools/directory/child", "/tools/directory"),
+            ("/tools", "/tools/directory"),
+            ("", "/tools/directory"),
+            ("/a~1b/~0c", "/a~1b"),
+            ("/a~01b/child", "/a~01b"),
+        ] {
+            assert!(pointers_reach(a, b), "{a} must reach {b}");
+            assert!(pointers_reach(b, a), "{b} must reach {a}");
+        }
+        for (a, b) in [
+            ("/dir", "/directory"),
+            ("/tools/a", "/tools/b"),
+            ("/a~1b", "/a"),
+            ("/a~01b", "/a~1b"),
+        ] {
+            assert!(!pointers_reach(a, b), "{a} must not reach {b}");
+            assert!(!pointers_reach(b, a), "{b} must not reach {a}");
+        }
+        assert!(pointer_tokens("").is_empty());
+        assert_eq!(pointer_tokens("/"), [""]);
+    }
     fn compare_defaults(earlier: &Project, later: &Project) -> Vec<Value> {
         let scopes = [("old", earlier), ("new", later)]
             .into_iter()

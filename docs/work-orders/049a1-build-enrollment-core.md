@@ -648,8 +648,49 @@ Do not stage anything.
 
 ## Record
 
-2026-11-12, verifier repair round. The admin supplied the following coordinator decision,
-logged for the owner to strike, to settle overlapping acceptances (ENR-006, ENR-007,
+Run on 2026-11-11 (rounds 1 and 2) and 2026-11-12 (rounds 3 to 5), by its checkpoint commits, from
+`main`'s `c8e9aa20` (order 038b's merge, #180), on which all five rounds built. This order names the
+side branch `s3/m2` as its tree, and `s3/m2` was moved to that same commit as round 1 began. It has
+since taken in later work from `main` and order 079 (#213), and rebasing onto it conflicts in
+`conformance/manifest.yaml` and the shell's `server.rs`. The run logs and reports are kept on the
+Mac and do not say which machine ran each round. Rounds 1 and 2 ran under one runner. Rounds 3, 4
+and 5 each continued from the previous verifier's report. Order 080, order 071's pieces and order
+047's clock were not in the tree. So `runner.rs` is unchanged, the manifest stays whole, and the
+order adds its own clock input. The workers took 39391 s in all and the verifiers 3241 s.
+
+Round 1 (worker 15267 s, verifier 782 s). The worker built the order. It reported the 17 new cases
+and all 430 portable cases passing. Its final full engine run gave 189 passed, 0 failed, 3 ignored.
+An earlier full run had one HTTP notification timeout, in the shell's
+`s1_http_consumers_authority_records_and_private_t7_changes`, and that test then passed alone and in
+the final run, which used two test threads. The verifier ran the prebuilt binaries (28 core tests,
+430 portable cases) and found four musts and a should:
+- an unreachable or omitted node left its instances' observations current (PLC-023, OBS-003);
+- admission fixed labels from the report before the accept call, not from the last one reported
+  (ENR-010);
+- the panel dropped a machine's actual join when a later report omitted or changed its enrollment;
+- hostnames were compared raw, not trimmed and lowercased (PLC-026);
+- the should: two overlapping acceptances that both succeed could each create a node, and this
+  needs the coordinator's reading.
+
+Round 2 (worker 5665 s, verifier 581 s). The worker fixed the four musts, added four unit
+regressions and extended one. It left the overlap waiting for the coordinator's reading. Engine:
+193 passed, 0 failed, 3 ignored. The verifier kept the should and found three musts, the last one
+against round 1's first fix:
+- enrollment changes caused by root's requests were recorded without their caller and invocation
+  (REC-002);
+- after its node became unavailable, a successful keyed repeat answered unavailable instead of
+  returning its kept result (OPS-009, PLC-023);
+- a run or inspection that ended after node loss could restore `Running=True` (PLC-023, OBS-003).
+
+Round 3 (worker 5682 s, verifier 681 s). The worker fixed the three musts and added four
+regressions. Engine: 197 passed, 0 failed, 3 ignored. It asked again for the overlap reading and got
+no answer. The verifier found two musts:
+- the gate still refused to retire a Resource that was never set up on an unavailable node, though
+  that retirement dispatches nothing (LIF-025, TPL-009);
+- two overlapping successful acceptances still published two live nodes for one machine.
+
+Before round 4, the admin added the coordinator's decision to that second finding's fix. The
+decision is logged for the owner to strike and settles overlapping acceptances (ENR-006, ENR-007,
 PLC-026):
 
 > One machine has at most one live node, as Kubernetes registers one Node per name.
@@ -660,11 +701,99 @@ PLC-026):
 > first did (OPS-009) and publishes nothing new. A machine whose node was removed, or
 > declared lost, can be accepted again.
 
-The core applies this decision by provider Resource and machine id. It records provider
-endings as they arrive, holds later successful acceptance endings until earlier acceptances settle,
-and checks for a live node atomically before publication. Regression tests cover both
-completion orders, one successful admission and one conflict, one live node, and the
-successful request's repeat. The ENR promises need this serialization and conflict rule
-written by the admin's next specification order; this repair changes no specification.
-PLC-023's retirement gate now follows the work required: no prior setup needs no dispatch
-(LIF-025, TPL-009); after setup, only a new hook or stop needs node availability.
+Round 4 (worker 5981 s, verifier 673 s). The core applies this decision by provider Resource and
+machine id. It records provider endings as they arrive and holds later successful acceptance
+endings until earlier acceptances settle. Before publication it checks atomically for a live node.
+Regression tests cover both completion orders (one successful admission, one conflict, one live
+node) and the successful request's repeat. The worker reported that both main regressions failed
+before the fix and passed after it. PLC-023's retirement gate now follows the work required: with
+no prior setup nothing is dispatched (LIF-025, TPL-009), and after setup only a new hook or stop
+needs node availability. Engine: 201 passed, 0 failed, 3 ignored. This repair changes no
+specification. The verifier found two musts:
+- setup still answered unavailable whenever an external implementation existed, even when nothing
+  would be dispatched (TPL-012);
+- the core did not stop a Conduit from listing machine-provider operations, so a direct `enroll.v1`
+  or `list-machines.v1` tool call could return and keep the private outputs (PRV-004, ENR-003,
+  ENR-004).
+
+Round 5 (worker 6796 s, verifier 524 s). The worker made setup's gate depend on the work required,
+both in request preflight and in lifecycle advance. It now rejects provider capabilities and core
+provider operations at a Conduit's registration and instantiation, and in authorization, opening
+and publication. This touched `access.rs` and `schemas.rs`, which the steps do not name, and the
+worker reported both. It added five regressions. Engine: 206 passed, 0 failed, 3 ignored. All 430
+portable cases, the spike's 9 tests and the tools' 41 passed, and every check of the order exited 0.
+The verifier's verdict: "Changes required: one must and one should. Existing binaries passed 45
+core tests and all 430 portable cases. Tree unchanged."
+
+What the branch does:
+- **Patches.** It applies 038b's two staged patches, `049a.patch` and `049b.patch`, to
+  `spec/core/` and `tools/check_schemas.py`.
+- **Root's verbs.** Enrollment is built in a new `engine/crates/core/src/machines.rs` (3167 lines
+  with its unit tests). Root's `enroll-machine.v1`, `admit-machine.v1` and `refuse-machine.v1` call
+  the machine provider in force through `enroll.v1`, `accept-machine.v1` and `remove-machine.v1`.
+  Registration checks PRV-013's machine-provider half.
+- **Privacy.** No URL is relayed. Typed fingerprints are removed from stored arguments and
+  observable surfaces. Join actions, messages and reported evidence are kept out of records and,
+  since round 5, out of tool results.
+- **Admission.** ENR-006's eight checks run against the last machine report used. Hostnames are
+  compared trimmed and lowercased, and the fingerprint character for character. Admission creates a
+  system-owned node with fixed labels, and a machine has at most one live node.
+- **Refusal.** It succeeds when every removal succeeded or none was needed, fails when any removal
+  failed, and is unknown otherwise.
+- **Node status.** A node's `Ready` starts Unknown (`NoReportSinceAdmission`) and then follows the
+  reports: `MachineReachable`, `MachineUnreachable`, `MachineOmitted`, `MachineReportedPending`,
+  `AwaitingReportAfterRecovery` or `ProviderRetired`. `LabelsDrift` is the labels condition. While
+  a non-local node is unavailable, its instances' observations are Unknown, and only work that
+  would be dispatched is refused (PLC-023).
+- **Records, expiry and recovery.** Enrollment changes and provider calls are recorded, and since
+  round 3 the enrollment changes caused by requests and by the provider's retirement carry REC-002's
+  attribution. Enrollments expire. Recovery ends interrupted invocations as unknown. One identical
+  empty machine report adds 777 bytes to the state.
+- **Cases.** There are 17 new cases: 14 under `conformance/conventions/enrollment/` and 3 under
+  `conformance/conventions/nodes/`, with a scripted machine-provider fixture. The only existing
+  expectations changed are root's operation lists, which gain the three verbs at ten places in eight
+  cases and in the root-system snapshot, and root's tool list in one shell test. Round 1's vector
+  delta: 254 changes, no flip, none undeclared.
+- **Size.** Against `c8e9aa20`, round 5's checkpoint changes 76 files, 20901 lines added and 75
+  removed.
+
+The worker's findings, kept for the admin's next specification order:
+- `run.v1`, `stop.v1` and `inspect-run.v1` describe the machine by hostname and labels without its
+  provider-scoped id. The build sends the id for non-local nodes only.
+- PLC-023 does not say what a represented machine reported `pending` means. The build reads it as
+  omitted.
+- `record.v1`'s policy could keep `enroll.v1`'s `message`, which may restate the action, and the
+  evidence in machine reports. The build withholds both, as documented under DL8.
+- PRV-027 and LIF-036 still describe last-reported labels, against ENR-010, and DL18 gives every URL
+  wait an unknown ending, against IFC-049.
+- The ENR promises need the one-live-node rule above.
+- `spec/README.md` still says 413 vectors; the tree has 430.
+
+At merge, `IN_FORCE.md`'s line on the two patches is updated and both patch files are removed.
+`tools/check_private_paths.py` was not in the tree, so that check did not run.
+
+### The last verifier's findings
+
+- Severity **must**; decision: Order 049a1, step 13: update PRV-014’s coverage row. File:
+  `conformance/manifest.yaml:4971`. Problem: PRV-014 still lists only the existing cases; the
+  explicitly required enrollment coverage update is missing. Evidence:
+  docs/work-orders/049a1-build-enrollment-core.md:473 says “add the new cases to the s1_coverage
+  rows of PLC-026 and PRV-014”. conformance/manifest.yaml:4971 identifies PRV-014, but its vectors
+  remain “first-start” and “s1-whole”. None of the 17 new cases declares PRV-014. Fix: Declare
+  PRV-014 on relevant machine-report cases and their manifest entries, then add those cases to its
+  s1_coverage row.
+- Severity **should**; decision: Order 049a1, step 12: admit-accept-failed demonstrates the failure
+  diagnostic. File: `conformance/conventions/enrollment/admit-accept-failed/case.yaml:599`.
+  Problem: The failure step never asserts its required diagnostic, so the portable vector would
+  pass if that diagnostic disappeared. Evidence: docs/work-orders/049a1-build-enrollment-core.md:457
+  requires “the invocation ends failed with its diagnostic”. The expectation at case.yaml:599 checks
+  only outcome “failed”, external_intents [] and object_count 10. The file contains no diagnostic
+  assertion; the runner’s projection at engine/crates/conformance/src/lib.rs:319 checks only
+  supplied fields. Fix: Assert an ENR-007 diagnostic and message text identifying the failed
+  provider call.
+
+### Next
+
+As the handover's queue puts it: fix both findings (ruling 71, point 4) and have a fresh verifier
+check them, then rebase onto `s3/m2` and merge there. The one-live-node rule needs its ENR text from
+the admin's next specification order, and SSH-M follows.

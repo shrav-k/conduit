@@ -62,9 +62,13 @@ shell still completes with `missing`, and the core decides what that means.
    seconds, a constant, as the npm helper waits at most 5 seconds for its exit status
    (`:813-814`). If the send fails or the 5 seconds pass, the task still completes with
    `missing`. It also pushes one fixed line onto `errors`, which `Runner::diagnostics`
-   (`:239-243`) returns. The line names the invocation's ID and no other value:
+   (`:239-243`) returns. Each line names the invocation's ID and no other value (ruling 52). For
+   a send that failed:
+   `the call of invocation <ID> passed its deadline and its cancellation could not be sent`.
+   For a send not done within the 5 seconds:
    `the call of invocation <ID> passed its deadline and its cancellation was not seen sent within 5 seconds`.
-   It does not say the cancellation was never sent: once the wait ends, rmcp may still write it.
+   The second does not say the cancellation was never sent: once the wait ends, rmcp may still
+   write it. (The coordinator amended this decision after the order ran; see the Record.)
 4. **What stays.**
    - A call that ends before its deadline sends no cancellation, whether it was answered or
      failed (a closed transport, a malformed reply, a refresh answered with an error). Its
@@ -81,7 +85,8 @@ shell still completes with `missing`, and the core decides what that means.
    - A caller's cancellation, setup cancellation and order 156's stops do not change. The core,
      the vectors, `spec/` and `lib.rs` do not change.
 5. **One test** in `engine/crates/shell/tests/runner.rs`,
-   `dispatch_deadline_cancels_the_call_before_reporting_it_missing`. It loops over two modes of
+   `dispatch_deadline_cancels_the_held_request_before_the_next_call` (renamed after the order
+   ran; see the Record). It loops over two modes of
    the `scripted_server` fixture (`:209-326`), as `deadlines_exit_repair_write_and_cancel`
    (`:772-871`) does. For each mode it opens the shell with
    `Config { call_timeout: Duration::from_secs(1), ..Config::default() }`, calls
@@ -105,7 +110,8 @@ shell still completes with `missing`, and the core decides what that means.
      `id`, and `params.reason` equal to `call deadline exceeded`;
    - that line comes before the second `tools/call`. The second invocation begins only after the
      reply has returned, and the run reads its standard input from one pipe, in order. So this
-     shows that the cancellation was written before the call was reported missing;
+     shows that the cancellation was sent, and before the next call on the run. That it was
+     sent before the call was reported missing rests on the code order in `runner.rs`;
    - `tools/call` appears twice, and `tools/list` appears once in `repair-list-hang` and never in
      `hang`, so nothing was sent again.
 
@@ -121,8 +127,8 @@ shell still completes with `missing`, and the core decides what that means.
    - it waits at most 5 seconds for the send, then reports missing with the original invocation
      and attempt;
    - it never resends a write and does not read a later answer;
-   - a cancellation not seen sent within 5 seconds leaves a fixed diagnostic that names the
-     invocation.
+   - a cancellation whose send failed, or was not seen done within 5 seconds, leaves one of
+     decision 3's two fixed diagnostics, each naming only the invocation.
 
    The row's evidence names the new test. Nothing else in the file changes.
 
@@ -168,3 +174,47 @@ git diff --check
 The admin then shows the engine build, the four engine shards and the doctests passing on the
 pull request, on Linux. Do not stage anything. Report each choice you make as your own, and every
 check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `f37d76c0`: the worker (1,043 s) and a fresh Codex verifier
+(189 s), which found nothing to change in one round but did not rerun the build or the tests. At a
+dispatch's deadline, `Inner::dispatch_later` now takes the request still outstanding from
+`requests`, sends `notifications/cancelled` for it through its peer with the reason `call deadline
+exceeded`, and waits at most 5 seconds (`DEADLINE_CANCEL_TIMEOUT`) for the send before it completes
+the call `missing`. A call that ends before its deadline sends nothing. `notify_cancel` gained an
+optional reason, which a caller's cancellation leaves out, so what it puts on the wire is unchanged.
+A send not seen left one fixed line in `diagnostics()`. The fixture gained a `repair-list-hang`
+mode, and one test covered both the held `tools/call` and a refresh's held `tools/list`. DL10's row
+in `engine/CONFORMANCE.md` says what the deadline now does. With `main`'s `runner.rs` the test
+failed at `tests/runner.rs:827` (`:839` once the rename's comment was added; the second test then
+fails at `:900`): the wire held no cancellation.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran the runner tests
+twice (15 passed, 2 ignored), clippy and fmt, and the check with the fix removed, which failed at
+the new test. It found no must. Its four shoulds were applied before merge:
+
+- The test showed less than its name claimed: the reader's mutant, which sent the cancellation only
+after the missing report, still passed it. The test is renamed
+`dispatch_deadline_cancels_the_held_request_before_the_next_call`. Its comment, decision 5 and
+DL10's evidence now say that it shows the cancellation sent, and before the next call on the run.
+That it comes before the missing report rests on the code order at `runner.rs:1151-1187`, where
+`dispatch_later` awaits the bounded send before it calls `shell.complete`. - No test reached the
+diagnostic. A new fixture mode, `hang-closed-stdin`, records the held `tools/call`, closes its
+standard input and sleeps without exiting. In
+`dispatch_deadline_reports_a_cancellation_that_could_not_be_sent`, the deadline's write fails, the
+outcome is `unknown`, and `diagnostics()` holds exactly the could-not-be-sent line below. With that
+line's push removed, the test fails at `tests/runner.rs:900`. - At the coordinator's word, outside
+the order's scope, `engine/.config/nextest.toml` lists both tests, and order 156's three `shutdown_`
+tests, in the `shell-sensitive` group's `binary(=runner)` list. - One line for both cases made a
+send that failed at once read as a timeout (ruling 52). The coordinator amended decision 3: a send
+that failed leaves `the call of invocation <ID> passed its deadline and its cancellation could not
+be sent`, and a send not done within 5 seconds keeps the original line. Each names only the
+invocation. DL10's row and decision 6's last bullet say the same.
+
+After these fixes the runner tests passed twice (16 passed, 2 ignored), and clippy, fmt and the
+documentation checks were clean. The focused command in "Done when" now runs two tests.
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2): it reran the runner
+tests twice (16 passed, 2 ignored), clippy and fmt, and found no must; its one wording point, on the
+line numbers above, was applied.

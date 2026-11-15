@@ -36,6 +36,8 @@ use uuid::Uuid;
 type Attempt = (String, u64);
 type Responses = Arc<Mutex<HashMap<RequestId, Value>>>;
 
+const DEADLINE_CANCEL_TIMEOUT: Duration = Duration::from_secs(5);
+
 /// The lifetime pipe is held by the engine only. The guard kills its whole process group
 /// on EOF, including when the engine is killed without running destructors.
 pub(crate) struct ProcessGroup {
@@ -424,7 +426,7 @@ impl Executor for Arc<Inner> {
         let request = self.requests.lock().unwrap().get(&key).cloned();
         if let Some((peer, id)) = request {
             self.handle.spawn(async move {
-                let _ = notify_cancel(&peer, id).await;
+                let _ = notify_cancel(&peer, id, None).await;
             });
         }
         Ok(Execution::Done)
@@ -1101,11 +1103,14 @@ impl Transport<RoleClient> for Wire {
     }
 }
 
-async fn notify_cancel(peer: &Peer<RoleClient>, id: RequestId) -> Result<()> {
-    let notification = serde_json::from_value(
-        json!({"method":"notifications/cancelled","params":{"requestId":id}}),
-    )
-    .map_err(|_| "cancellation encoding failed")?;
+async fn notify_cancel(peer: &Peer<RoleClient>, id: RequestId, reason: Option<&str>) -> Result<()> {
+    let mut params = json!({"requestId":id});
+    if let Some(reason) = reason {
+        params["reason"] = json!(reason);
+    }
+    let notification =
+        serde_json::from_value(json!({"method":"notifications/cancelled","params":params}))
+            .map_err(|_| "cancellation encoding failed")?;
     peer.send_notification(notification)
         .await
         .map_err(|_| "cancellation send failed".into())
@@ -1142,13 +1147,36 @@ impl Inner {
                 }
                 this.call(&run, &key, intent["call"].clone()).await
             })
-            .await
-            .ok()
-            .and_then(std::result::Result::ok)
-            .unwrap_or_else(|| json!({"kind":"missing"}));
-            if let Some((_, id)) = this.requests.lock().unwrap().remove(&key) {
+            .await;
+            let request = this.requests.lock().unwrap().remove(&key);
+            if let Some((peer, id)) = request {
                 run.responses.lock().unwrap().remove(&id);
+                if completion.is_err() {
+                    let unsent = match tokio::time::timeout(
+                        DEADLINE_CANCEL_TIMEOUT,
+                        notify_cancel(&peer, id, Some("call deadline exceeded")),
+                    )
+                    .await
+                    {
+                        Ok(Ok(())) => None,
+                        Ok(Err(_)) => Some(format!(
+                            "the call of invocation {} passed its deadline and its cancellation could not be sent",
+                            key.0
+                        )),
+                        Err(_) => Some(format!(
+                            "the call of invocation {} passed its deadline and its cancellation was not seen sent within 5 seconds",
+                            key.0
+                        )),
+                    };
+                    if let Some(line) = unsent {
+                        this.errors.lock().unwrap().push(line);
+                    }
+                }
             }
+            let completion = completion
+                .ok()
+                .and_then(std::result::Result::ok)
+                .unwrap_or_else(|| json!({"kind":"missing"}));
             let executor = this
                 .completion_executor
                 .lock()
@@ -1189,7 +1217,7 @@ impl Inner {
             .unwrap()
             .insert(key.clone(), (peer.clone(), id.clone()));
         if self.cancelled_attempts.lock().unwrap().contains(key) {
-            notify_cancel(&peer, id.clone()).await?;
+            notify_cancel(&peer, id.clone(), None).await?;
         }
         let response = handle.await_response().await;
         self.requests.lock().unwrap().remove(key);

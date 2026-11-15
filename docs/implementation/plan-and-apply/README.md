@@ -33,8 +33,9 @@ are implementation work for order 052a (O8 below).
 invocation or saved-plan prerequisite ([ruling 76, point 5](../../proposals/ruling-76/README.md)).
 `--withhold` belongs to batch 2 ([ruling 61, B11](../../proposals/ruling-61/README.md)).
 This reference does not define install, render, init, sign-in, answer, pending, list or fleet
-commands. Installation happens beforehand; plan reads installed release identities. Obtaining
-their contents for resolution remains open point O7; installation alone does not supply that input.
+commands, apart from the copy `conduit install` keeps in the package cache (O7). Installation
+happens beforehand; plan reads installed release identities with `list.v1`, and each release's
+contents from the cache.
 
 Both commands are requests of a serving engine, `conduit serve`, as root, like
 [today's author commands](../../../engine/README.md#change-a-serving-project). Neither starts
@@ -46,17 +47,17 @@ only [core operations](../../../spec/core/operations.yaml), adding no operation 
 ## Read, compare, print, keep, send
 
 1. Read the manifest and its documents, translate sectioned documents (SCT-003, SCT-004), and
-   resolve against package contents matching the installed release identities, where those contents
-   are available. Their CLI-side source is unspecified (O7); list and inspect do not supply them.
+   resolve against the contents of each pinned release read from the package cache by digest
+   (O7); list and inspect do not supply them.
    Compute each Agent's `ownTools` member from its Type's contract and resolved configuration;
    this needs the package's contents, as any resolution does (O7). Print it where the text grammar
    below requires it. Inspection results and their verification are unchanged.
    Check every place governed by `secret-reference.v1` locally during translation and resolution,
    before printing any step (SEC-001). A literal or bare name stops the plan with status 2:
    print `plan`, then `stop KIND/NAME place=POINTER SEC-001` for each invalid place, then
-   `stopped`. Each stop names the document and the place by its JSON Pointer; no line holds any
-   part of the value (SEC-003). This plan has no step, `detail` or `difference` line; nothing is
-   kept or sent. A valid value is a reference to a Resource, never the secret itself. Print,
+   `flags []`, then `stopped`. Each stop names the document and the place by its JSON Pointer;
+   no line holds any part of the value (SEC-003). This plan has no step, `detail` or `difference`
+   line; nothing is kept or sent. A valid value is a reference to a Resource, never the secret itself. Print,
    keep in `.conduit/state.yaml` and compare it like any other reference: as written, `{kind, name}`,
    with the ID it resolves to as inspection shows it (OBJ-009, SEC-004). Where the schema allows
    null, as for S1's `apiKey`, null is not a reference.
@@ -71,14 +72,16 @@ only [core operations](../../../spec/core/operations.yaml), adding no operation 
 3. Compare desired translation, last applied definitions/IDs and observed definitions/IDs.
    Print every difference, including drift, control changes, operation contracts, implementation
    maps, nested entries and declared Conduits, including package-provided ones. Comparisons that
-   require package contents are conditional on that input (O7); do not infer equality from identities
+   require package contents read them from the cache (O7); do not infer equality from identities
    alone. Compare actual resolved operations even when standard templates should keep their lists
-   (PKG-031). If required contents are unavailable, print the unresolved input and stop before
-   sending changes, with status 2.
+   (PKG-031). A package not installed, or an archive not in the cache, stops the plan with status 2,
+   as rows 1 and 2 say. The [difference table](#the-difference-table) decides each difference.
 4. Build the deterministic plan below, or a stopped plan with reasons. `plan` prints it and exits:
    it sends only `list.v1` and `inspect.v1`, writes no local files, and sends no mutation.
-5. `apply` prints the identical plan before any change. If stopped, exit without recording or
-   sending changes. Otherwise durably keep its exact text and digest before sending step 1.
+5. `apply` prints the identical plan before any change. If stopped, print `not sent 1..N` when
+   the plan has N steps, then exit without recording or sending anything: no step was sent,
+   narrowing included. A stopped plan with no step prints no such line. Otherwise durably keep
+   its exact text and digest before sending step 1.
    Persist each request's arguments and key before sending, and its result immediately afterwards.
    Failure to keep this state stops sending. No request is sent after a local persistence error.
 6. Send the numbered steps in order, waiting for each result. Print `result N OUTCOME JSON` after each, with JSON the safe projection of its returned
@@ -102,6 +105,68 @@ A reference in arguments is `{kind, name}`, never an actor-supplied `{kind, id}`
 Inspection and dispatch are separate requests, not an atomic snapshot. IDs defeat name swaps;
 revision inputs defeat template changes. Open and setup accept no expected revision or definition
 digest. The residual same-ID race is open point O2 below, not an invented engine precondition.
+
+## The difference table
+
+Step 3 compares three values at each place of each object: the file's, from its translation
+resolved against package contents read from the cache; the ledger's, from the kept state with
+the journal of this working copy's interrupted apply, if any; and the engine's, from list and
+inspect. A place is a JSON Pointer into the object's document as the file translates it or,
+where only its resolution differs, into its resolved definition. A setting is a JSON Pointer
+into an instance's configuration, as a control's `changes` writes it.
+
+Read the rows in order: the first whose condition holds decides. Check rows 1 to 6 first;
+row 5 alone looks ahead, and decides only where a step of this plan would reach the object,
+so that it never hides a stop of the rows below. Rows 7 to 16 compare an object's presence
+and lifecycle; rows 17 to 26 compare each place of an object that the ledger and the engine
+hold under one ID and the file holds by name. Each row gives one action: nothing, create,
+update in place, replace, remove, or a stop that names its cause. The last row stops on any
+difference that no other row names, so planning is total by construction. Where the places of
+one object fall under several rows, the plan prints every stop they give; with no stop, the
+object is replaced where any of those rows replaces it, and otherwise each row's action is
+taken. An inline template `N--t`, while N is in the engine and row 7, 14 or 15 decides N, and a
+member that row 14's cascade retires, take no row of their own after row 6. The row that acts on
+them decides them, and rows 1 to 6 still apply to them first, as row 5 says of a cascade. Any other
+object that another object's row acts on, such as an incident Conduit that a replacement makes
+again, keeps its own row. The plan prints every stop that either row gives, so replacing an endpoint
+never takes over a Conduit another actor changed (row 10; safety case 5). Where neither row stops,
+the row that acts on it decides it.
+
+An object that neither the file nor the ledger holds, and that the engine did not make, is
+outside the project: no row applies to it, and the plan reads it only for bounds and outside
+Conduits (row 26). An object that only the ledger holds is gone already: nothing is sent for
+it, and the next kept state leaves it out. Lines that report what stays, such as the
+retained-pin `difference` line and case 07's `remains ready` line, are printed as now.
+
+| # | Difference | What the plan does | Decided by |
+| --- | --- | --- | --- |
+| 1 | A package the manifest pins is not installed at that version with that digest, as `list.v1` reports | Stop: `stop Package/ADDRESS version=VERSION digest=sha256:HEX installed=no requires=conduit-install PKG-006`. Where that version is installed with another digest: `installed=sha256:OTHER`, no `requires=`, and PKG-025, since installing it would conflict | PKG-006, PKG-021, PKG-025 |
+| 2 | The archive of a package the manifest pins, of a package that an archive's manifest lists, through every dependency, other than the core package (NAM-009), or of a release an object holds that row 19 compares, is not in the package cache, or its cached bytes do not hash to its digest | Stop: `stop Package/ADDRESS version=VERSION digest=sha256:HEX archive=absent requires=conduit-install PKG-004`, or `archive=mismatch`. Installing that archive again fills the cache and changes nothing in the engine (PKG-027) | O7; PKG-004, PKG-027 |
+| 3 | A relative `fetch`, or a program given as a relative path | Stop, as O1 says: `stop KIND/NAME place=POINTER SUB-010`, with `Manifest/-` as the subject in the project's manifest | O1; SUB-010 |
+| 4 | A literal or a bare name at a place that `secret-reference.v1` governs | Stop, as O5 says: `stop KIND/NAME place=POINTER SEC-001`, with no step, `detail` or `difference` line | O5; SEC-001, SEC-003 |
+| 5 | An object with an unreconciled invocation, or an instance with a setting reported unknown, that a step of this plan would reach: a step that the rows below give it, read as though this row did not hold, or would give under the flag that one of their stops requires, or a step that another object's row sends to it, as a cascade does | Stop while the invocation is unreconciled or the setting is reported unknown, as "Stops, unknown outcomes and repeats" says: `stop KIND/NAME unreconciled=ID OPS-013`, or `stop KIND/NAME setting=POINTER state=unknown REV-009`, and print beside it every stop that the rows below give the object. Apply sends no reconciliation and no control. Where no step would reach the object, this row does not decide it: the first row below whose condition holds does, as for any other object, whether that is row 17's nothing, row 19's retained-pin line or a stop such as row 27's. Beside that row's decision the plan prints the same cause as a `difference` line: `difference KIND/NAME unreconciled=ID OPS-013`, or `difference KIND/NAME setting=POINTER state=unknown REV-009` | OPS-012 to OPS-014, REV-009, LIF-013; ruling 78 point 5 |
+| 6 | An object the engine made: root's first-start objects, or a FLEET-005 default | Nothing is sent to it, and no later row closes, replaces or adopts it. A default closes only when its Pool or Fleet retires (CON-008), which the plan prints under `affects`. Where the file holds a document of its kind and name: `stop KIND/NAME made-by=engine ACC-024` for a Conduit, or with OBJ-002 for another object; no flag permits it | ACC-024, FLEET-005, CON-008, OBJ-002; safety case 13 |
+| 7 | A retired instance whose shutdown is unconfirmed: one this working copy retired, or one the file holds that this working copy did not retire | A further retirement under the flag that permitted the retirement, which this command names again (LIF-026); never `unregister.v1` (LIF-017). Without the flag: `stop KIND/NAME state=retired requires=FLAG NAME LIF-026`. For an instance that `--prune` named, once it is removed, `unregister.v1` of its inline template `N--t` follows under the same flag, as row 15 says. Where the file holds an instance that this working copy did not retire, because another actor retired it or its node was declared lost (PLC-017, PLC-024): `stop KIND/NAME state=retired LIF-024`, with no `requires=`. No later row decides it; once its shutdown is confirmed, row 11 does (safety case 3) | LIF-024, LIF-026, LIF-017 |
+| 8 | An instance this working copy registered that is still registered: an earlier apply stopped before its setup or open | Where no place of it differs from the file's: inspect and verify it, then set it up or open it under the flag its registration carried, as the journal shows. Where that was a flag this command does not name: `stop KIND/NAME state=registered requires=FLAG NAME LIF-013`. Where a place differs, rows 17 to 26 decide it | LIF-013, LIF-037, TPL-012 |
+| 9 | In the file; absent from the ledger and the engine; no tombstone matches it | Create: register; then, for an instance, inspect, then set up or open, with no flag (cases 01 and 02) | SCT-003, LIF-037, TPL-012 |
+| 10 | In the file and in the engine under its kind and name, where the ledger has no entry for it or holds another ID, or, for a template, another revision | Stop: `stop KIND/NAME id=ID requires=--adopt NAME OBJ-002`, with `revision=REVISION` after `id=` for a template that another actor replaced. With `--adopt`, take it into the ledger as "Approval and command readings under ruling 76" says; the rows below then decide it | OBJ-002, LIF-037; safety case 5 |
+| 11 | In the file and absent from the engine, and a tombstone matches its registration or its open | Lift it with no further flag where "Which tombstones apply lifts with no further flag" allows. Otherwise stop: `stop KIND/NAME tombstone=ID requires=--reopen NAME LIF-041` for a Conduit, `--recreate NAME` for another instance, and `tombstone=(KIND/OLD)` for a tombstone this apply would make, as for a renamed Conduit. With the flag: lift it, register, inspect, then open or set up (case 08) | LIF-040, LIF-041, ACC-053; ruling 76 point 1; cases 08 and 09; safety cases 1 to 4 |
+| 12 | In the file and the ledger; absent from the engine; no tombstone matches it | Stop: `stop KIND/NAME absent=engine requires=--recreate NAME LIF-040`, or `--reopen NAME` for a Conduit. With the flag: register, inspect, then set up or open | LIF-040 |
+| 13 | In the ledger and the engine, absent from the file: a Conduit | Close it, with no flag; its tombstone stays (case 07). A renamed Conduit is this row and row 11 | ruling 76 point 1; CON-008 |
+| 14 | In the ledger and the engine, absent from the file: a Pool or Fleet that owns members | Its cascade under `--with-resources NAME` or `--with-agents NAME`, printed as "Replacement, removal and cascades" shows. Without the flag: `stop Pool/NAME absent=file requires=--with-resources NAME LIF-020`, or the Fleet form. Members that the file also leaves out take no row of their own. Once each is removed, `unregister.v1` of its inline template follows under the same flag | LIF-020; ruling 59 A3 |
+| 15 | In the ledger and the engine, absent from the file: another instance | `--prune NAME`, then its retirement, then, once it is removed, `unregister.v1` of its inline template `N--t` under the same flag. Without the flag: `stop KIND/NAME absent=file requires=--prune NAME LIF-035`. A renamed instance is this row and row 9 | ruling 76 point 1; SCT-006, LIF-035 |
+| 16 | In the ledger and the engine, absent from the file: a template that is not inline, or an inline template `N--t` whose instance N the engine no longer holds | `--prune NAME`, then `unregister.v1` at its revision, carrying `expectedId`. Without the flag: `stop KIND/NAME absent=file requires=--prune NAME INS-020` | INS-020 |
+| 17 | A place where the file's value is the engine's | Nothing, whatever the ledger holds | this table |
+| 18 | A project template whose document differs from the engine's, or that refers to a package whose pin moved, or to a contract document or an implementation item of the project that changed | Update in place: `replace.v1` at its inspected revision, with the project's contracts and manifest, class `replaces`. It changes no instance, so it takes no flag of its own; where the plan replaces its inline instance, the step carries that `--replace` (cases 05 and 06). Rows 19 to 26 decide each instance | SUB-008, SUB-009, INS-020, SCT-006 |
+| 19 | An object whose held pin is not the one the file's resolution gives, where row 18 does not replace it and its resolved meaning and execution would not differ under the file's release | Nothing: it keeps its pins, and the plan prints its retained-pin `difference` line, as cases 05 to 09 do | NAM-009 to NAM-011 |
+| 20 | A nested instance, a declared Conduit or a Pool entry's Resource, whose template, named by its `from`, changed, while the instance that holds it is not replaced | Close it, or retire it through its Pool; list and lift the tombstone that leaves where the new one would match it; then `register-replacement.v1`, which gives it a new name and ID; then inspect, and open or set up. The close or retirement, the lift, the registration and the open or setup carry `--replace NAME`, naming the nested instance as inspection shows it, or no flag for a declared Conduit whose access narrows as row 21 says. Without the flag: `stop KIND/NAME place=/from requires=--replace NAME LIF-009` | LIF-009, LIF-041; ruling 76 points 1 and 2 |
+| 21 | A Conduit whose access after the change is within its access before: the same consumer and target, its resolved operations a subset, and each requirement kept with the same arguments, except that requirements may be added and each list of a `bound.v1` (`pools`, `targets`, `operations`) may shrink | Close, list, lift its tombstone, register, inspect, open, with no flag (case 04, Agent B's Conduit). A change of `as` alone is one | ruling 76 point 1; ACC-029, LIF-041 |
+| 22 | Any other change to a Conduit: its consumer, target, operations, requirements or their arguments, its `from` or its template | Replace it under `--replace NAME` by the same steps (case 04, Agent A's Conduit). A change the planner cannot show to narrow is widening. Without the flag: `stop Conduit/NAME place=POINTER requires=--replace NAME OBJ-011` | ruling 76 point 1; OBJ-011 |
+| 23 | A setting whose value in the engine is not the ledger's: a control changed it | Where the file's value is the ledger's, send nothing for it and print `difference KIND/NAME setting=POINTER changed-by=control REV-007`. Stop instead, with `stop KIND/NAME setting=POINTER changed-by=control REV-007`, where the plan would replace the instance for another difference, which would revert the control's value, or where the file holds a third value. No flag permits that stop; writing the engine's value into the file settles it | REV-007 |
+| 24 | A Pool or Fleet that owns members, whose definition the file changed | Stop: `stop KIND/NAME place=POINTER LIF-020`. No flag permits it, since replacing it would retire its members | LIF-020 |
+| 25 | A setting whose value the file changed, where the engine's value is the ledger's | Replace the instance as row 26 says; apply never sends a control. Without `--replace NAME`: `stop KIND/NAME setting=POINTER control=OPERATION requires=--replace NAME OBJ-011`, one line for each setting. `control=` names a control the instance has, one its Type lists that its template's `controls` map, where it has one, also lists (TPL-010, TPL-013), and whose `changes` holds that pointer. It is given only while the instance is ready, since a control is not dispatched otherwise (CON-024). Calling that control is the author's other remedy. Where the instance has no control whose `changes` holds that pointer, or it is not ready, the line has no `control=` item, and `--replace NAME` is the only remedy | OBJ-011, OPS-020, REV-007, TPL-013, CON-024; decision D67 |
+| 26 | Another instance whose definition would differ: its `from`, `owner`, `description` or `annotations`; its resolved definition other than its configuration, `placement` and `runtime`; or a pin of a package it uses, where row 19 does not hold | Replace it under `--replace NAME`, as "Replacement, removal and cascades" says: its incident Conduits are made again under the same flag; the plan prints the bounds that cease to cover it and the loss of an Agent's sign-in; and a Conduit outside the file whose consumer or target it is stops the plan, as "Approval and command readings under ruling 76" says. An owner change is a replacement, never a move. Without the flag: `stop KIND/NAME place=POINTER requires=--replace NAME OBJ-011`, with `pin=ADDRESS@VERSION` in place of `place=` for a moved pin, one line for each | OBJ-011, INS-020, FLEET-002, NAM-010, ACC-029 |
+| 27 | Any other difference | Stop, naming the field: `stop SUBJECT place=POINTER rule=none -`. No flag permits it; a later order adds a row for it. In v0 it takes, among others, a changed `placement` or `runtime` (safety case 12), `apiVersion`, and the manifest's `address`. `state=STATE` takes the place of `place=` for a lifecycle state that no row above decides | this table |
 
 ## Approval and command readings under ruling 76
 
@@ -146,6 +211,11 @@ Reading adopted here: every narrowing step precedes every widening step. Access 
 as a whole, is a subset of access before apply or a subset of the access requested by the files.
 For T4 close both project Conduits, restore B's read, then open A's write: no intermediate state
 lets both write. Register inert documents between these phases where dependencies need them.
+Where a plan closes or retires anything, it first sends every template step, before the first
+close or retirement: `replace.v1` for each template it replaces, then, where it adds templates,
+one `register.v1` holding them. A template step changes no access and no existing instance
+(INS-020), so a template the engine rejects stops the plan before anything is closed or retired.
+Cases 05 and 06 replace `shared--t` at step 1 and retire `shared` at step 2.
 Root defaults added during registration count as added access and must follow all narrowings.
 The one-time Conduit that a cascade flag permits is the one stated exception to both narrowing
 before widening and the subset rule: the plan prints its opening, use and closure
@@ -159,6 +229,8 @@ narrowings, when any required flag is missing. This does not defer an independen
 narrowing behind a prompt: no execution starts for an invalid command. A plan containing only
 flag-free narrowings is valid without flags, under ruling 76 point 1. Do not run a narrowing subset whose
 removal could invalidate the wider plan that the command purported to approve.
+This holds for every stop the difference table gives, and a narrowing so waits only until the
+command is run again, with the missing flag or without the change that needs it.
 Order ties by phase, then dependency, then kind/name in byte order. In the golden cases a batched
 registration preserves the written documents' order; independent setup orders Pool, Resource,
 Fleet, Agent, Interface and then name. Reads immediately precede the activation they verify.
@@ -214,14 +286,16 @@ under the new release, under `--replace` naming it (INS-020).
 **Everything else.** Every other object keeps the pins it holds (NAM-009 to NAM-011). While it
 holds an old pin, every plan prints its retained-pin `difference` line.
 
-**Contents needed.** The comparison needs the contents of both releases (O7).
+**Contents needed.** The comparison reads both releases' archives from the cache (O7).
 
 A nested instance is different (LIF-009). For a declared Conduit or a Pool entry's Resource,
-print `management.register-replacement.v1 ParentKind/parent expected=ID neither flag=... LIF-009`,
-with `nested=member` in the detail. It generates a new name and ID; show its later references as
-`Kind/(step N).object expected=(step N)`. It lifts no tombstone, and any matching tombstone must
-already have been lifted by an independently permitted step. Old retired nested names remain
-occupied until removed. The local name of a declared Conduit remains unchanged.
+print `management.register-replacement.v1 ParentKind/parent expected=ID neither flag=--replace NAME LIF-009`,
+or `flag=-` for a declared Conduit whose access narrows as row 21 says, with `nested=member`
+in the detail. It generates a new name and ID; show its later references as
+`Kind/(step N).object expected=(step N)`. Before it, the plan lifts the tombstone that its own
+close or retirement of the nested instance left, where the new one would match it (LIF-041),
+under the same flag (row 20). Old retired nested names remain occupied until removed. The
+local name of a declared Conduit remains unchanged.
 
 A tombstone made outside this apply needs `--reopen` (Conduit) or `--recreate` (other instance)
 under the rule below, even if a line was renamed or records purged (LIF-040, LIF-041).
@@ -229,12 +303,14 @@ An interrupted apply's own journal may establish the same apply and cause; other
 the named flag.
 
 - **Which tombstones apply lifts with no further flag.** Apply lifts a tombstone this command
-  caused, with no further flag, only when the same command makes the same object again under
+  caused, with no further flag, when the same command makes the same object again under
   the same kind and name: the object a `--replace` names and its incident Conduits (cases 04,
-  05 and 06), or a retained Conduit closed and made again because its resolved operations narrow
-  (ruling 76 point 1; case 04, steps 2 and 5). Every other tombstone a registration or open would
-  match needs `--reopen` (Conduit) or `--recreate` (another instance), naming the object to be
-  made. This includes an outside tombstone and one this apply leaves by closing a dropped
+  05 and 06), or a retained Conduit closed and made again because its access narrows as row 21
+  says (ruling 76 point 1; case 04, steps 2 and 5). Apply also lifts with no further flag a
+  tombstone that this command left by closing or retiring a nested instance that it makes
+  again by `register-replacement.v1` under a new name (row 20). Every other tombstone a
+  registration or open would match needs `--reopen` (Conduit) or `--recreate` (another instance),
+  naming the object to be made. This includes an outside tombstone and one this apply leaves by closing a dropped
   Conduit or by `--prune`, including Conduits a pruned instance's retirement closes under
   CON-008. Reopening still takes a flag
   ([ruling 76, What it amends](../../proposals/ruling-76/README.md#what-it-amends)).
@@ -290,6 +366,10 @@ Print every Conduit retirement closes (CON-008), including outside the file. An 
 a replacement, never a move (FLEET-002). Print the loss of an Agent's sign-in on replacement,
 not a promise to preserve it. A changed control value (REV-007) is a shown difference, never
 reverted by this planner, under any flag. No control call is inferred from a file edit here.
+An author's edit to a setting is a replacement under `--replace`, and while the instance is
+ready its stop names a control that covers the setting (rows 23 and 25). Whether apply may
+send the control instead is the owner's, asked with finding 4-01 after the S1 rerun
+([decision D67](../../proposals/full-review/decisions.md#the-experiments-documents-and-the-register)).
 
 Dropping a Pool/Fleet that still owns members stops unless the appropriate cascade flag names it
 (LIF-020). Each cascade is one command, counted under that one flag (ruling 59 A3, plan C8/C13).
@@ -342,6 +422,9 @@ results and unattempted steps. Never send a request again on this command's own 
 ([seventh convention](../../../spec/README.md#what-this-is)). A new plan reads actual inventory
 and the partial journal; successful steps are not undone or sent again merely to reach the next
 one. Failed attempts require a new explicit command and a newly journaled attempt number.
+The difference table makes planning total, not applying atomic. A step can still fail after
+earlier steps succeeded; apply then stops, prints `not sent N..M`, exits 1 and rolls nothing
+back, and the next plan starts from what the engine shows.
 
 For unknown, show the invocation ID from the result or LIF-013's `unreconciled`, the affected
 objects and the steps withheld. Refuse a plan that would mutate, replace or reactivate an affected
@@ -428,6 +511,28 @@ Full arguments are journaled only in safe form.
 Affects lines follow all steps, then differences, then flags sorted by flag and operand.
 The last line is `ready`, `no changes`, or `stopped`.
 
+```text
+stop SUBJECT CAUSE... [requires=REMEDY] PROMISE
+```
+
+SUBJECT is `KIND/NAME` for an object, `Package/ADDRESS` for a package, or `Manifest/-` for the
+project's manifest. CAUSE is one or more `key=value` items, as the row of the difference table
+gives them. The keys are `place`, `setting`, `pin`, `control`, `tombstone`, `id`, `revision`,
+`absent`, `state`, `unreconciled`, `made-by`, `changed-by`, `installed`, `archive`, `version`,
+`digest` and `rule`. `requires=` gives the flag and its operand that would permit the step, or
+`conduit-install`; it is absent where nothing would. PROMISE is the promise that decides, or
+`-` where none does.
+
+A plan prints one stop line for each cause. Stop lines follow the steps and their `detail`
+lines and come before `affects`, sorted by subject and then by the whole line, in byte order.
+The `difference` lines of rows 5 and 23 take the same form, with `difference` in place of `stop`
+and no `requires=`; the retained-pin line of row 19 and case 07's `remains ready` line keep
+their present form.
+
+A stopped plan has one form, case 09's: `plan`, its steps and their `detail` lines, its stop
+lines, any `affects` and `difference` lines, its `flags` line, then `stopped`. A stop of row 4
+still prints no step, `detail` or `difference` line, but prints `flags []` before `stopped`.
+
 | Class | Meaning |
 | --- | --- |
 | adds | Registers a previously absent object, including any root default made within registration; prints all such defaults. |
@@ -481,12 +586,11 @@ hashed plan text; saved journals retain it through their safe result references.
 Inspection `view` and list `tombstones` results use
 the compact notation below
 for declared/package/inventory projections; omitted records are irrelevant safe projections,
-not invented empty record lists. All nine cases assume the planner is separately supplied with
-the repository's fixture package contents matching every listed address/version/digest, including
-transitive dependencies. Schemas, defaults, operation contracts and implementation maps come from
-those fixture contents. This is an explicit paper-case input assumption, not a claim that list or
-inspect returns package contents or that the CLI can obtain them today (O7). The compact `engine`
-notation lists identities only; it does not encode this additional content input.
+not invented empty record lists. All nine cases assume the person's package cache holds the
+archive of every listed address, version and digest, put there by the install commands under
+"S1 commands and counts under ruling 76" (T1, T2 and T5); the core package is built in. Schemas,
+defaults, operation contracts and implementation maps come from those archives. The compact
+`engine` notation lists identities only, and the cache is the planner's other input (O7).
 
 `engine` has `base: first-start`, installed `packages` and `objects`, `tombstones`, `unknown: []`.
 Base means the complete first-start objects/defaults from the core, with no project objects.
@@ -551,7 +655,7 @@ or catch-all approval or control-takeover flag is part of batch 1.
 | 12 | Placement with two nodes | Left out: second-node enrollment follows the rerun. Do not invent replacement placement behavior. |
 | 13 | Change a first-start/default root Conduit | ACC-024: refuse before sending closure. Ordinary root-consumed Conduits follow replacement rules. |
 | 14 | Generated-name collision | Translator's SCT-013, not a planner golden case here. |
-| 15 | Value at a secret-reference place | Check locally during translation/resolution before any step (SCT-014, SEC-001). A literal or bare name stops with status 2: `plan`, one `stop KIND/NAME place=POINTER SEC-001` per invalid place, then `stopped`; no value or part of it, step, detail or difference, and nothing kept or sent (SEC-003). A valid Resource reference is printed, kept in `.conduit/state.yaml` and compared as written, `{kind, name}`, with its resolved ID as inspection shows it (OBJ-009, SEC-004); permitted null, as for S1's `apiKey`, is not a reference. |
+| 15 | Value at a secret-reference place | Check locally during translation/resolution before any step (SCT-014, SEC-001). A literal or bare name stops with status 2: `plan`, one `stop KIND/NAME place=POINTER SEC-001` per invalid place, then `flags []`, then `stopped`; no value or part of it, step, detail or difference, and nothing kept or sent (SEC-003). A valid Resource reference is printed, kept in `.conduit/state.yaml` and compared as written, `{kind, name}`, with its resolved ID as inspection shows it (OBJ-009, SEC-004); permitted null, as for S1's `apiKey`, is not a reference. |
 | 16 | Caller has only Pool authority | Engine inspection LIF-013/ACC-033, not this root CLI: no Agent inspection, no hidden counts; full inventory of inspectable objects. |
 | 17 | Setup raises sign-in | Setup returns pendingAction; ruling 76 point 4 continues apply, prints action IDs for the panel and answers nothing (TPL-012, PND-005, PND-011). |
 | 18 | Pin downgrade | Same resolved diff and replace permission as upgrade; no special downgrade bypass. |
@@ -584,7 +688,8 @@ The specification is not amended here.
 
 O5: Decided. Check every place governed by `secret-reference.v1` locally during translation and
 resolution before printing any step (SEC-001). A literal or bare name stops with status 2:
-`plan`, one `stop KIND/NAME place=POINTER SEC-001` for each invalid place, then `stopped`.
+`plan`, one `stop KIND/NAME place=POINTER SEC-001` for each invalid place, then `flags []`,
+then `stopped`.
 No line holds any part of the value (SEC-003); there is no step, detail or difference, and
 nothing is kept or sent. A valid value is a reference to a Resource, never the secret itself:
 print, keep in `.conduit/state.yaml` and compare it like any other reference, as written,
@@ -592,16 +697,34 @@ print, keep in `.conduit/state.yaml` and compare it like any other reference, as
 null, as for S1's `apiKey`, is not a reference. Public absolute paths use the fingerprint defined
 above, so their edits do not collide in plan keys.
 
-O7: Open. Package contents are a missing planner input. `list.v1` exposes installed package identities
-as address/version/digest (OPS-036); `inspect.v1` reads a template or instance and lists the packages
-it holds (LIF-013). Neither operation supplies installed package archives or manifests. Translation
-and resolution (SCT-003), and contract/implementation comparisons on pin changes (PKG-031), need
-contents beyond those identities. No verified CLI-side source for those contents is defined here;
-do not assume access to the engine's private store or add a read operation. Resolution and those
-comparisons remain conditional on separately supplied matching contents; without them the plan
-prints the missing input and stops with status 2. The nine paper cases assume fixture contents
-are supplied as described above. The admin must settle the input/disclosure before a builder can
-implement these rules for arbitrary installed releases.
+O7: Decided. The planner reads package contents from the person's package cache, keyed by the
+archive's digest, as Go's module cache, Terraform's provider cache and npm's cache are. This
+needs no engine operation and discloses nothing new: the pin already names the bytes (PKG-004).
+
+`conduit install ARCHIVE#HEX` keeps a copy of the archive in the cache under HEX once the bytes
+hash to HEX, whatever `install.v1` then answers: a copy named by its digest is never wrong.
+Nothing else writes the cache; plan and apply only read it. The cache belongs to the person
+on that machine and lies outside every project and its `.conduit/`, so every working copy
+shares it. Order 052a fixes its directory with O8's context data. It holds archives only: no
+credential, and nothing from the engine's store.
+
+The planner reads the archive of each package the manifest pins, of each package that an
+archive's manifest lists, through every dependency, and of each release an object holds that
+the comparison of row 19 needs. It hashes the bytes it read and uses them only where the hash
+is the digest. Rows 1 and 2 of the difference table give the stops.
+
+The planner never fetches: not a pin's `fetch`, not through a package-source provider, and not
+from the engine's store. A package that the person installed with `conduit install` on this
+machine after the cache existed, from any of their working copies, is in the cache, since
+every working copy shares it. A miss is only a package that no `conduit install` of theirs on
+this machine has kept: one installed from another machine, one a provider fetched, or one
+installed before the cache existed. Running `conduit install` with its archive fills the
+cache and changes nothing in the engine (PKG-027).
+
+The core package has no archive (NAM-009): the planner uses the core contents of its own build,
+as the engine does. So a CLI of another version than the serving engine stops with status 2
+before it sends any request, naming both versions; order 052a fixes how the CLI learns the
+serving engine's version, with O8's context data.
 
 O8: Open. Ruling 76 point 3 fixes how commands choose the engine: `conduit serve` records the engine
 it serves as the person's current context, and `--store` overrides it. Order 052a still needs
@@ -613,7 +736,8 @@ additional context command is proposed here. Context data stays outside the proj
 This schedule uses the current engine context and the current project directory throughout.
 `conduit serve` is harness work and records that context before the tasks; it is excluded, as in
 [experiment 023](../../../experiments/023-paper-count/results-2026-11-11.md#the-counts).
-Init and install are listed only for accounting; their behavior is outside this reference.
+Init and install are listed only for accounting; their behavior is outside this reference,
+apart from the copy `conduit install` keeps in the package cache (O7).
 Plan is optional and absent from the task schedule. T3 reads declarations without a command;
 its golden plan demonstrates a no-op, rather than a required inspection step.
 
@@ -692,6 +816,8 @@ Ruling 76 changed the hashed plan text of cases 04, 07, 08 (successful restorati
 (stopped restoration). The `ownTools` lines changed case 01's plan text. Each changed digest
 was re-derived with Python `hashlib.sha256` from the exact UTF-8 plan bytes; their paths, request
 keys and later ledger/journal references changed with them.
-Cases 02, 03, 05 and 06 keep their plan digests: command spelling, source citations and case
-order are outside the hash. No package, file or path fingerprint digest changed. Case 09 now
-precedes case 08 in the documented sequence so all nine cases form one applied/kept chain.
+Sending templates first changed the plan text of cases 05 and 06, and their digests were
+re-derived the same way. Cases 02 and 03 keep their plan digests: command spelling, source
+citations and case order are outside the hash. No package, file or path fingerprint digest
+changed. Case 09 now precedes case 08 in the documented sequence so all nine cases form one
+applied/kept chain.

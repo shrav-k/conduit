@@ -103,12 +103,12 @@ applied:
   - sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
   - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
-  - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
+  - sha256:4322e82635da43bfafe2f1ab371dbcfc6e5e8a610fb2ea8bea30b0f90cded1d8
   journals:
     sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
     sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
-    sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
+    sha256:4322e82635da43bfafe2f1ab371dbcfc6e5e8a610fb2ea8bea30b0f90cded1d8: safe:case:05-t5/requests
 engine:
   base: first-start
   packages:
@@ -192,10 +192,10 @@ engine:
   unknown: []
 printed: |
   plan
-  1 team.retire.v1 Resource/shared expected=00000000-0000-4000-8000-000000000120 narrows flag=--replace shared LIF-035
-  2 management.replace.v1 Resource/shared--t expected=00000000-0000-4000-8000-000000000102 replaces flag=--replace shared INS-020
+  1 management.replace.v1 Resource/shared--t expected=00000000-0000-4000-8000-000000000102 replaces flag=--replace shared INS-020
   detail document={"apiVersion":"github.com/shrav-k/conduit/v0","kind":"Resource","metadata":{"name":"shared--t"},"spec":{"config":{"root":{"pathSha256":"009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4"}},"type":"example.org/s1/filesystem#local-directory.v1"}}
   detail filesystem=0.2.1 digest=sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614 root-sha256=009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4 revision=r2
+  2 team.retire.v1 Resource/shared expected=00000000-0000-4000-8000-000000000120 narrows flag=--replace shared LIF-035
   3 management.list.v1 Tombstone/* expected=- neither flag=- LIF-040
   4 access.lift.v1 Tombstone/shared expected=(step 3) neither flag=- ACC-053
   detail lifts-caused=[agent-a--project,agent-b--project]
@@ -217,8 +217,8 @@ printed: |
   difference history holds filesystem=0.1.0; history grants retain filesystem=0.1.1 NAM-010
   flags [--replace shared]
   ready
-  result 1 succeeded {"invocation":"00000000-0000-4000-8000-000000000916","outcome":"succeeded"}
-  result 2 succeeded {"diagnostics":[{"level":"note","message":{"text":"Unused package example.org/s1/agents; submission accepted."},"ruleId":"NAM-008"},{"level":"note","message":{"text":"Unused package example.org/s1/history; submission accepted."},"ruleId":"NAM-008"}],"outcome":"succeeded","revision":"r3"}
+  result 1 succeeded {"diagnostics":[{"level":"note","message":{"text":"Unused package example.org/s1/agents; submission accepted."},"ruleId":"NAM-008"},{"level":"note","message":{"text":"Unused package example.org/s1/history; submission accepted."},"ruleId":"NAM-008"}],"outcome":"succeeded","revision":"r3"}
+  result 2 succeeded {"invocation":"00000000-0000-4000-8000-000000000916","outcome":"succeeded"}
   result 3 succeeded {"outcome":"succeeded","packages":[{"address":"example.org/s1/filesystem","digest":"sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614","version":"0.1.1"},{"address":"example.org/s1/agents","digest":"sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71","version":"0.2.0"},{"address":"example.org/s1/filesystem","digest":"sha256:200de7c103aa560201dab8821e974088ce470e76c859c86aa01605cdf72d2160","version":"0.1.0"},{"address":"example.org/s1/history","digest":"sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69","version":"0.1.0"},{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}],"tombstones":[{"by":"00000000-0000-4000-8000-000000000005","cause":{"invocation":"00000000-0000-4000-8000-000000000916"},"id":"00000000-0000-4000-8000-000000000320","object":{"id":"00000000-0000-4000-8000-000000000120","kind":"Resource","name":"shared"},"owner":{"id":"00000000-0000-4000-8000-000000000101","kind":"Pool","name":"team"},"time":"2026-11-11T00:00:00Z"},{"by":"00000000-0000-4000-8000-000000000005","capability":"example.org/s1/filesystem#directory.v1","cause":{"tombstone":"00000000-0000-4000-8000-000000000320"},"consumer":{"id":"00000000-0000-4000-8000-000000000106","kind":"Agent","name":"agent-a"},"id":"00000000-0000-4000-8000-000000000321","localName":"project","object":{"id":"00000000-0000-4000-8000-000000000121","kind":"Conduit","name":"agent-a--project"},"operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1","example.org/s1/filesystem#file.write.v1"],"provenance":{"actor":"00000000-0000-4000-8000-000000000005","invocation":"00000000-0000-4000-8000-000000002121","openedThrough":["00000000-0000-4000-8000-000000000007"],"sentBy":"00000000-0000-4000-8000-000000000005"},"target":{"id":"00000000-0000-4000-8000-000000000120","kind":"Resource","name":"shared"},"time":"2026-11-11T00:00:00Z"},{"by":"00000000-0000-4000-8000-000000000005","capability":"example.org/s1/filesystem#directory.v1","cause":{"tombstone":"00000000-0000-4000-8000-000000000320"},"consumer":{"id":"00000000-0000-4000-8000-000000000108","kind":"Agent","name":"agent-b"},"id":"00000000-0000-4000-8000-000000000322","localName":"project","object":{"id":"00000000-0000-4000-8000-000000000122","kind":"Conduit","name":"agent-b--project"},"operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1"],"provenance":{"actor":"00000000-0000-4000-8000-000000000005","invocation":"00000000-0000-4000-8000-000000002122","openedThrough":["00000000-0000-4000-8000-000000000007"],"sentBy":"00000000-0000-4000-8000-000000000005"},"target":{"id":"00000000-0000-4000-8000-000000000120","kind":"Resource","name":"shared"},"time":"2026-11-11T00:00:00Z"}]}
   result 4 succeeded {"outcome":"succeeded","remaining":[]}
   result 5 succeeded {"diagnostics":[{"level":"note","message":{"text":"Unused package example.org/s1/agents; submission accepted."},"ruleId":"NAM-008"},{"level":"note","message":{"text":"Unused package example.org/s1/history; submission accepted."},"ruleId":"NAM-008"}],"objects":[{"id":"00000000-0000-4000-8000-000000000123","kind":"Resource","name":"shared"},{"id":"00000000-0000-4000-8000-000000000124","kind":"Conduit","name":"agent-a--project"},{"id":"00000000-0000-4000-8000-000000000125","kind":"Conduit","name":"agent-b--project"}],"outcome":"succeeded"}
@@ -229,14 +229,14 @@ printed: |
   result 10 succeeded {"outcome":"succeeded","view":["Conduit","agent-a--project","00000000-0000-4000-8000-000000000124","r1","registered",{"as":"project","consumer":{"kind":"Agent","name":"agent-a"},"from":"example.org/s1/filesystem#read-write","resolved":{"capability":"example.org/s1/filesystem#directory.v1","operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1","example.org/s1/filesystem#file.write.v1"]},"target":{"kind":"Resource","name":"shared"}},[{"address":"example.org/s1/filesystem","digest":"sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614","version":"0.2.1"}]]}
   result 11 succeeded {"invocation":"00000000-0000-4000-8000-000000002124","outcome":"succeeded"}
 recorded:
-  path: .conduit/plans/a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade.txt
-  digest: sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade
+  path: .conduit/plans/351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f.txt
+  digest: sha256:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f
   text: |
     plan
-    1 team.retire.v1 Resource/shared expected=00000000-0000-4000-8000-000000000120 narrows flag=--replace shared LIF-035
-    2 management.replace.v1 Resource/shared--t expected=00000000-0000-4000-8000-000000000102 replaces flag=--replace shared INS-020
+    1 management.replace.v1 Resource/shared--t expected=00000000-0000-4000-8000-000000000102 replaces flag=--replace shared INS-020
     detail document={"apiVersion":"github.com/shrav-k/conduit/v0","kind":"Resource","metadata":{"name":"shared--t"},"spec":{"config":{"root":{"pathSha256":"009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4"}},"type":"example.org/s1/filesystem#local-directory.v1"}}
     detail filesystem=0.2.1 digest=sha256:f01c1a0a4bc864cb3593f8fd9f29e76ba25987be30e367f1e9033491cacd5614 root-sha256=009c6483fb688c0c413a1ad1477ae1f9d92f495c528145ab083db3168c73c9b4 revision=r2
+    2 team.retire.v1 Resource/shared expected=00000000-0000-4000-8000-000000000120 narrows flag=--replace shared LIF-035
     3 management.list.v1 Tombstone/* expected=- neither flag=- LIF-040
     4 access.lift.v1 Tombstone/shared expected=(step 3) neither flag=- ACC-053
     detail lifts-caused=[agent-a--project,agent-b--project]
@@ -259,17 +259,6 @@ recorded:
     flags [--replace shared]
     ready
 requests:
-- tool: team.retire.v1
-  arguments:
-    instance:
-      kind: Resource
-      name: shared
-    expectedId: 00000000-0000-4000-8000-000000000120
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:1
-  flag: --replace shared
-  result:
-    outcome: succeeded
-    invocation: 00000000-0000-4000-8000-000000000916
 - tool: management.replace.v1
   arguments:
     template:
@@ -294,7 +283,7 @@ requests:
         example.org/s1/history:
           version: 0.1.0
           digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:2
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:1
   flag: --replace shared
   result:
     outcome: succeeded
@@ -308,9 +297,20 @@ requests:
       level: note
       message:
         text: Unused package example.org/s1/history; submission accepted.
+- tool: team.retire.v1
+  arguments:
+    instance:
+      kind: Resource
+      name: shared
+    expectedId: 00000000-0000-4000-8000-000000000120
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:2
+  flag: --replace shared
+  result:
+    outcome: succeeded
+    invocation: 00000000-0000-4000-8000-000000000916
 - tool: management.list.v1
   arguments: {}
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:3
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:3
   flag: null
   result:
     outcome: succeeded
@@ -404,7 +404,7 @@ requests:
 - tool: access.lift.v1
   arguments:
     id: 00000000-0000-4000-8000-000000000320
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:4
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:4
   flag: null
   result:
     outcome: succeeded
@@ -454,7 +454,7 @@ requests:
         example.org/s1/history:
           version: 0.1.0
           digest: sha256:e946746509490be49cbcc07d41ff5fed24a6e6c8b377bf423c77f79c02502f69
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:5
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:5
   flag: --replace shared
   result:
     outcome: succeeded
@@ -483,7 +483,7 @@ requests:
       kind: Resource
       name: shared
     expectedId: 00000000-0000-4000-8000-000000000123
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:6
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:6
   flag: null
   result:
     outcome: succeeded
@@ -496,7 +496,7 @@ requests:
       kind: Resource
       name: shared
     expectedId: 00000000-0000-4000-8000-000000000123
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:7
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:7
   flag: null
   result:
     outcome: succeeded
@@ -506,7 +506,7 @@ requests:
       kind: Conduit
       name: agent-b--project
     expectedId: 00000000-0000-4000-8000-000000000125
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:8
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:8
   flag: null
   result:
     outcome: succeeded
@@ -521,7 +521,7 @@ requests:
       kind: Conduit
       name: agent-b--project
     expectedId: 00000000-0000-4000-8000-000000000125
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:9
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:9
   flag: --replace shared
   result:
     outcome: succeeded
@@ -532,7 +532,7 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000124
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:10
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:10
   flag: null
   result:
     outcome: succeeded
@@ -547,7 +547,7 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000124
-  idempotencyKey: plan:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade:1:11
+  idempotencyKey: plan:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f:1:11
   flag: --replace shared
   result:
     outcome: succeeded
@@ -627,12 +627,12 @@ kept:
   - sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7
   - sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66
   - sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241
-  - sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2
-  - sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade
+  - sha256:4322e82635da43bfafe2f1ab371dbcfc6e5e8a610fb2ea8bea30b0f90cded1d8
+  - sha256:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f
   journals:
     sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7: safe:case:01-t1/requests
     sha256:697d48279efb1bb076bde628857bd8969a3b6702bd64ac07e4f127f695388f66: safe:case:02-t2/requests
     sha256:c3b9934ccdb46f8bc6e50b550b1a563774c8c0062d089d36bacaa6d5d27c6241: safe:case:04-t4/requests
-    sha256:6040897a880f758ed49031be6fd2b6cfbd7378316e02febc87b819b423af5bd2: safe:case:05-t5/requests
-    sha256:a5a8504c38faea7f70985cab32743458e1065f03534d600437a4878e58c33ade: safe:case:06-t6/requests
+    sha256:4322e82635da43bfafe2f1ab371dbcfc6e5e8a610fb2ea8bea30b0f90cded1d8: safe:case:05-t5/requests
+    sha256:351bea0d6d4ce16f63560186537f7b701426ec25dd92cfccbf8eac63c0efc38f: safe:case:06-t6/requests
 exit: 0

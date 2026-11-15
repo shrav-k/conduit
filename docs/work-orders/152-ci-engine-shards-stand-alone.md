@@ -63,3 +63,15 @@ Change only `.github/workflows/checks.yml`, and, where decision 4 needs it, file
 The admin then shows, on the pull request, the new engine job, the four shards, the doctests and
 both nested crates passing. Do not stage anything. Report each choice you make as your own, and
 every check's last line.
+
+## Record
+
+Run on 2026-11-14 on the Mac from `main` `b1aacc08`: the worker (216 s) and a fresh Codex verifier
+(164 s), which found nothing to change in one round. The engine builds in its own job,
+`engine build` (fmt, clippy, the nextest archive), and the four engine shards and the doctests
+need only it, so no package or experiment can skip them; the `rust` gate needs every Rust job and
+fails on any that failed, was skipped or was cancelled. Discovery lists `Cargo.toml` one or two
+levels under `packages/` and `experiments/`, skips `target/` and, by `cargo locate-project
+--workspace`, any workspace member: 19 entries, among them the two nested crates, whose release
+tests passed unchanged (14 and 17 tests). A fresh read-only Opus reader verified the order before
+it merged (ruling 79, point 2) and found nothing to change.

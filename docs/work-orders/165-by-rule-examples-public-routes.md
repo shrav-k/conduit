@@ -245,3 +245,35 @@ stages the new files, runs `python3 tools/check_private_paths.py` and `git diff 
 and shows the engine build, the four engine shards and the doctests passing on the pull request.
 Do not stage anything. In your report, give each choice you made as your own, the count of each
 class, and every check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `f37d76c0`: the worker (1,193 s) and a fresh Codex
+verifier (205 s), which found nothing to change in one round.
+`engine/crates/shell/tests/by_rule.rs` sends the 41 by-rule files and two valid sets, each to a
+fresh engine as root, by `register.v1` and `install.v1` through `Shell::submit`, and compares their
+classes with `tests/expected/by-rule-outcomes.txt`, 43 lines written from its first run. Among the
+41 files, 26 are `named`, 2 `other`, none `scaffold`, 8 `accepted` and 5 `error`;
+`valid/files-package` is `accepted` and `valid/equal-defaults` is `error`. Experiment 026 holds
+A83's pre-registration of Part E's engine run and its results of 2026-11-15, and the experiments'
+index and `ROADMAP.md` gain A83's rows, with A83 at the end of step 3's Items. None of the eight
+rules the review expected to be unnamed is `named`, PKG-030 is `named`, both PLC-025 files are
+`accepted`, and SEC-002 has no example. A fresh read-only Opus reader then verified the order
+(ruling 79, point 2). It reran the by-rule test with two test threads (1 passed, the 43 lines
+matching), clippy, fmt, the order's two greps and the roadmap, docs, names, private-path and
+rulings checks, but not the whole engine suite. It found one must and four shoulds. The must: the
+results file's two `other` rows said the missing object was one that no example writes out, but the
+excluded `valid/project` writes out the Agent `reviewer-1`, and it and other examples write out the
+Conduit template `directory-read`; the README's paraphrase also misquoted `spec/schemas/README.md`.
+The coordinator's fix rewrote both rows and the paraphrase. It opened the results file with its
+not-binding line and its limit, as results 007, 008, 011 and 023 do, and dropped two sentences on
+the worker's process. It noted under the by-rule table that the command's counts cover all 43 sets.
+In the test, every setup failure now names the set and the step, the first start's reply is
+checked, and the messages for a malformed line and for differences give the line's form and the
+rule for changing a line. The fourth should, the engine defect the run exposed, is row 4-35 of
+[increment 4's log](../proposals/first-build/log-increment-4.md): `valid/equal-defaults` and five
+by-rule sets end in an internal embedding error from `Shell::submit`, not a client result. No line
+of the table changed, and the by-rule test passed again (1 passed).
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2) and found no must; its
+wording point on row 4-35 was applied as it gave it.

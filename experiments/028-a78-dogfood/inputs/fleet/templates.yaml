@@ -1,0 +1,76 @@
+# Templates of the conduit-core Fleet for stage 1 of A78 (ruling 70; ruling 61 B12), from
+# engine/examples/s1. setup.sh fills the @...@ values. The .v2 inputs are those of order 076's
+# branch (050a plus 076): directory, turnDeadlineSeconds, effort, accountServices and model, each
+# with a default; codex.v2 has no peerMessaging. model is left to its default (the client's).
+# Under ruling 75 B1 an Agent has its client's own tools exactly when its template names a
+# directory: worker-1 and verifier-1 name the slot.
+# The Pool for B12's tree slots. In stage 1 it holds none: the tree Resource (tree-1, the S1
+# filesystem package, which needs npm) comes back with orders 4 and 5 and their per-order grants.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: tree-pool
+spec:
+  type: github.com/shrav-k/conduit/core#pool.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: trees-admin
+spec:
+  capability: github.com/shrav-k/conduit/core#pool-management.v1
+  operations:
+  - github.com/shrav-k/conduit/core#register.v1
+  - github.com/shrav-k/conduit/core#register-replacement.v1
+  - github.com/shrav-k/conduit/core#inspect.v1
+  - github.com/shrav-k/conduit/core#set-up.v1
+  - github.com/shrav-k/conduit/core#retire.v1
+  - github.com/shrav-k/conduit/core#reconcile.v1
+---
+# The worker: the client's own tools on, because the template names a directory (ruling 75 B1),
+# unconfined in v0 (ruling 70 points 1 and 2). Account services stay off (ruling 48 point 1).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: codex-worker
+spec:
+  type: example.org/conduit/agent-codex#codex.v2
+  inputs:
+    directory:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/directory
+  config:
+    accountServices: false
+    turnDeadlineSeconds: @WORKER_DEADLINE@
+    effort: high
+---
+# The verifier: the same Agent with a shorter deadline. Nothing makes it read-only in v0; its
+# prompt says so, and the harness checks the tree after each of its turns.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: codex-verifier
+spec:
+  type: example.org/conduit/agent-codex#codex.v2
+  inputs:
+    directory:
+      schema:
+        type: string
+        minLength: 1
+      to:
+      - /config/directory
+  config:
+    accountServices: false
+    turnDeadlineSeconds: @VERIFIER_DEADLINE@
+    effort: high
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: codex-turn
+spec:
+  capability: example.org/conduit/agent-codex#conversation.v1
+  operations: [example.org/conduit/agent-codex#turn.v1]

@@ -1,0 +1,8 @@
+# The conduit-core project's manifest, from engine/examples/s1. setup.sh fills the @...@ values
+# into rendered/store/ and submits that copy; this file is not submittable as it stands.
+# Resolve only from preinstalled snapshots; setup.sh installs agent-codex before submitting.
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/conduit/agent-codex:
+    version: @CODEX_VERSION@
+    digest: sha256:@CODEX_DIGEST@

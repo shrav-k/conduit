@@ -135,16 +135,9 @@ verifier changed nothing, nothing pushed, the main checkout untouched. The Agent
 076's branch: the packages of 050a, 076 and 078 stay unmerged until 050, because NAM-024 forbids
 adding a default once `.v2` is published ([batch 1, order 050](../proposals/spec-batch-1/README.md#the-work-orders)).
 
-What worked (log):
-
-- The smoke test, on an engine with 074: six of six checks pass, after two of the harness's
-  matchers were fixed. The Agent's own tools work in the slot; `codex.v1`'s tools write nothing;
-  `claude-code.v2` runs with no prompt; a 1273-second turn keeps its session (074); a 60-second
-  deadline names itself; a background job does not hold the turn.
-- 042 is the first order run by Conduit itself: four rounds, every completed turn a valid report,
-  no guard tripped except once, in the outage's failed turn, when GitHub's refs could not be read.
-  Its first worker turn took 11966 s, inside the deadline; round 4 was clean. It merged on
-  2026-11-12 (#264), after a fix round on the plain runner for its rebase.
+What worked, the smoke test's six checks and order 042's four rounds, is recorded in
+[A78's results for order 042](../../experiments/028-a78-dogfood/results-2026-11-12.md), beside the
+engine's own records of 042's turns and [the harness's method as run](../../experiments/028-a78-dogfood/README.md).
 
 What failed or cost is logged in
 [increment 4's log](../proposals/first-build/log-increment-4.md) as findings 4-21 to 4-27, each

@@ -1,4 +1,4 @@
-# Ruling 79: Fable reviews and verifies every work order; Opus coordinates, merges and dispatches; Codex or Opus implements
+# Ruling 79: Opus verifies each work order and coordinates; Fable is kept for the owner's reviews of the whole language and design
 
 Status: in force (ruled by the owner on 2026-11-14 and 2026-11-15). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
 
@@ -20,31 +20,38 @@ reader as a second view on risky orders. When the Claude allowance runs low, dis
 and I tell you; nothing merges unread." With Fable's allowance out, the owner let orders 151 and 152
 merge on their Codex verifiers and the coordinator's read ("Merge these two now"), and then, on
 2026-11-15: "Honestly I'm ok with using fable exclusively for review and handling merge and
-dispatch with opus".
+dispatch with opus", and then: "I meant reviews of the overall language and design not each
+individual pr, do this with opus for now as well. We will have manual fable reviews of the entire
+codebase and architecture/structure".
 
-The answer changes who verifies, a decision ruling 48 gave, so it is a ruling and not a later
-answer (ruling 67).
+The answers change who verifies, a decision ruling 48 gave, so they are a ruling and not a later
+answer (ruling 67). The owner's last words settle what "reviews" meant: the whole language and
+design, not each pull request.
 
 ## The decisions
 
-1. **Fable reviews; Opus coordinates; Codex or Opus implements.** Claude Fable is used only for
-   review: full reviews, the verification of each work order, and the reads of the coordinator's
-   own fixes. The coordinator's session runs on Claude Opus: it plans, writes and dispatches the
-   orders, decides, and merges. Work orders' implementation and their test runs go to Codex
-   workers or to Claude Opus.
-2. **Every order is verified by a fresh Fable reader** once its checks pass, read-only, before it
-   merges. A fresh Codex verifier stays as a second view on risky orders. The coordinator's own
-   fixes to an order are read the same way.
-3. **When the Claude allowance runs low, dispatch stops first, and nothing merges unread.** The
-   coordinator tells the owner. An order whose worker has finished waits for its Fable read; the
-   owner may say otherwise for an order, as for orders 151 and 152.
-4. **When Fable's allowance runs out in the middle of a review,** the owner may ask for the review
+1. **Fable is kept for reviews of the whole.** Claude Fable reviews the language and the design
+   as a whole: the entire codebase, its architecture and its structure. The owner starts these
+   reviews by hand. The full review of 2026-11-14 was the first.
+2. **Opus verifies each work order, for now.** Each order, once its checks pass, is read by a
+   fresh, read-only Claude Opus reader before it merges, beside the fresh Codex verifier that reads
+   each round. The coordinator's own fixes to an order are read the same way. The owner said "for
+   now": this is a shortcut, and the owner may move the reading of each order to another model
+   later.
+3. **Opus coordinates; Codex or Opus implements.** The coordinator's session runs on Claude Opus:
+   it plans, writes and dispatches the orders, decides, and merges. Work orders' implementation
+   and their test runs go to Codex workers or to Claude Opus.
+4. **When the Claude allowance runs low, dispatch stops first, and nothing merges unread.** The
+   coordinator tells the owner. An order whose worker has finished waits for its read; the owner
+   may say otherwise for an order.
+5. **When Fable's allowance runs out in the middle of a review,** the owner may ask for the review
    to be finished on Opus, as on 2026-11-14; the record says which model ran which part.
 
 ## What it amends
 
-- **Ruling 48**, its direction that verifications are given to Codex sessions: verification is now
-  Fable's (points 1 and 2). The coordinator stays the admin session of ruling 48, now run on Opus. Codex still carries out work orders, and fresh reads by Codex still
+- **Ruling 48**, its direction that verifications are given to Codex sessions: each order is now
+  also read by a fresh Opus reader before it merges (point 2). The coordinator stays the admin
+  session of ruling 48, run on Opus (point 3). Codex still carries out work orders, and fresh reads by Codex still
   test what a reader without context can do (ruling 48, point 4; ruling 71, point 3).
 
 ## What it does not change

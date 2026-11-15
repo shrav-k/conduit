@@ -1,0 +1,1456 @@
+# Not binding: G5's account of the convention-layer promises.
+# tools/check_model_account.py checks this account.
+- id: INS-020
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::F
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 728b49a12bce94053077775cba52f78fd5c5f8dc5c20b9496ab7bde48db9b6d0
+  note: Bounded source slice; no individual finding.
+- id: TPL-009
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: d30414b6c3164febbc796ab41b1d4bae9389e4d13e06075cd3792ecdcd8d724c
+  note: Bounded source slice; no individual finding.
+- id: TPL-011
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: TPL-012
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::S
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: fdf6d2f3b75ddc9cc561906994a879ec73376e8bec62186c87545b5e212a4cde
+  note: 'MC6 partial exclusion: “LIF-021/TPL-012 cancellation (OPS-027)”; “optional setup parts” are also absent.'
+- id: TPL-013
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: TPL-017
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::H
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 9a4c1f70ce9aeebc754ed6bfab141c0d50e0c5dc03948f675fd03d8d67e0881c
+  note: 'MC6 partial exclusion: “TPL-017/ACC-018 filters”.'
+- id: TPL-018
+  class: safety
+  standing: 'gap: MC4-009'
+  model: lifecycle::H
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 69126693749bf3decd011471486608345302ea7b77465099389eb76e433b949b
+  note: 'Earlier MC4 uses TPL-018 as supporting context for MC4-009’s retire-hook restart race. Later MC6’s H holds
+    for hook eligibility/order but excludes the unknown-run case and placement/restart race; it does not resolve
+    that gap. Order 081 is to be written, not yet run. MC6 partial exclusion: “TPL-018''s run reported unknown”.'
+- id: NAM-023
+  class: safety
+  standing: static
+  note: 'MC7b: “A static decision, to be shown by vectors: target contract version.”'
+- id: NAM-026
+  class: safety
+  standing: static
+  note: 'MC7b: “A static decision, to be shown by vectors: operation absent from target capability.”'
+- id: PKG-023
+  class: safety
+  standing: static
+  note: 'MC7b: “A static decision, to be shown by vectors: invalid request/archive forms. Invalid-before-repeat
+    is supporting input to I27.”'
+- id: PKG-024
+  class: safety
+  standing: text changed, not rerun
+  was: 'gap: MC7b-002'
+  model: records::I24
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: dbbd78622343140a461d8b7de57c925880c27c5ca98ca1bfa65e4ecf841a26eb
+  note: 'Source row: “I24: failed fetch returns unavailable, dispatches no install, changes no installed package.”
+    MC7b-002: two first installs with different digests both succeed after deciding against an empty slot. I24/I25/I27/I17
+    still hold at decision time; the witness refutes no individual predicate. PKG-024/PRV-017 are supporting context
+    in the finding. Order 082 is to be taken, being drafted, not yet run.'
+- id: PKG-025
+  class: safety
+  standing: text changed, not rerun
+  was: 'gap: MC7b-002'
+  model: records::I25
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 83311847bbcff8d7ceae9f1334c80fd3f9a17f0f458e7193d6dfa35301ec0fbf
+  note: 'Source row: “I25: valid authorized different-digest installed decision conflicts with no fetch/change.”
+    MC7b-002: two first installs with different digests both succeed after deciding against an empty slot. I24/I25/I27/I17
+    still hold at decision time; the witness refutes no individual predicate. PKG-024/PRV-017 are supporting context
+    in the finding. Order 082 is to be taken, being drafted, not yet run.'
+- id: PKG-027
+  class: safety
+  standing: text changed, not rerun
+  was: 'gap: MC7b-002'
+  model: records::I27
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: d52435bb12988ac0c72bd1c21b9379d48574a063aece9f7be0906fe61bb0dafc
+  note: 'Source row: “I27: same-digest decision observes refusal/invalid priority, otherwise succeeds with no fetch/change.”
+    MC7b-002: two first installs with different digests both succeed after deciding against an empty slot. I24/I25/I27/I17
+    still hold at decision time; the witness refutes no individual predicate. PKG-024/PRV-017 are supporting context
+    in the finding. Order 082 is to be taken, being drafted, not yet run.'
+- id: PKG-029
+  class: safety
+  standing: static
+  note: 'MC7b: “A static decision, to be shown by vectors: submitted-project address collision.”'
+- id: SUB-009
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: POOL-003
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::R
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: c300ed3f7d6f006e323238d477a0bc14a697dd2baa35759bde0d8f084c264641
+  note: Bounded source slice; no individual finding.
+- id: POOL-007
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::P
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 6fc26724cf098f29696532aa6230d307ca6108171c886e7e4d8e4b13a129f08e
+  note: 'MC6: “P''s direct-member check covers the no-implicit-other-entry slice, not Pool authorization.”'
+- id: POOL-013
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::P
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 54b3e5c7dced246a4ba151cf16d691fdf3357751150bd42f3d72c4dfab55baea
+  note: Bounded source slice; no individual finding.
+- id: POOL-015
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: POOL-016
+  class: safety
+  standing: not modelled
+  note: 'MC4: “Needs a Pool and repeats placement already checked in P5”.'
+- id: POOL-017
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::R
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 84d098b2429281312a474fe8aeaf50f2cde684449660f90c7d71ab66014a15c9
+  note: Bounded source slice; no individual finding.
+- id: FLEET-004
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: FLEET-005
+  class: safety
+  standing: not modelled
+  note: 'MC3: “default grant creation and its visibility-filtered collision diagnostics are absent”.'
+- id: PLC-002
+  class: safety
+  standing: holds, not graded
+  model: placement::P5
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 826e6c3cf83e5c3c9324ac52e18082f669c21363182b66c482d72e1d39f7b07e
+  note: 'Source row: “P5, provider names placement”.'
+- id: PLC-012
+  class: safety
+  standing: static
+  note: 'MC4: “Co-location authorization is a static decision, to be shown by vectors; MC3 covers access races”.'
+- id: PLC-017
+  class: safety
+  standing: text changed, not rerun
+  was: 'ambiguity: MC4-001'
+  model: placement::P3
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: f98f28c8dc12ed45f74924ebb855a6a09804396362f3ca34650a557090756ed2
+  note: 'Source row: “P3, declaration retires placed instances with shutdown unknown”. MC4-001 leaves the lost node’s
+    own shutdown classification undecided: PLC-026 setup dispatches nothing, LIF-025 confirms never-dispatched setup,
+    and PLC-017 defaults to unknown. No refutation trace. Order 081 is to be written, not yet run.'
+- id: PLC-019
+  class: safety
+  standing: holds, not graded
+  model: placement::P7
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: d17b6079a35f8701cbd712ca8682aa94b0e25b50bf9a0b610956adda050a595b
+  note: 'Source row: “P7, registered node blocks setup”.'
+- id: PLC-020
+  class: safety
+  standing: static
+  note: 'MC4: “Node-local path interpretation is a static decision, to be shown by vectors”.'
+- id: PLC-023
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: placement::P2
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 318834bf7ade36e9f7ef7192a283eb8e4eae7e943860563c55d40922dcd54db0
+  note: 'Source row: “P2, reports determine unavailability without retirement”.'
+- id: PLC-024
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: placement::P3
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 9a40299efd898774b9f287486a4fe5b8d8bec4fdf11d209b917e414b5a83f727
+  note: 'Source row: “P3, provider gone declares loss”.'
+- id: PLC-026
+  class: safety
+  standing: text changed, not rerun
+  was: 'ambiguity: MC4-001'
+  model: placement::P8
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 630ecc1a103379e1cffef786d8ddfbab4336acde89ced0842459134a50c1d8ab
+  note: 'Source row: “P8, registration and fresh node IDs”. MC4-001 leaves the lost node’s own shutdown classification
+    undecided: PLC-026 setup dispatches nothing, LIF-025 confirms never-dispatched setup, and PLC-017 defaults to
+    unknown. No refutation trace. Order 081 is to be written, not yet run.'
+- id: PLC-027
+  class: safety
+  standing: holds, not graded
+  model: placement::P3
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 39cc15bf299c36879785b1ed60a488f7d6c78b56b88c731e20c84ed63084fe44
+  note: 'Source row: “P3, no lost-node hook, run or secret read”.'
+- id: CON-004
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::S
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: d694a334ef716e2d941aab8a0d1e80ecb517ac08b52cab80cda0b1597af2877d
+  note: Supersedes MC3’s “belongs to the lifecycle model”.
+- id: CON-008
+  class: safety
+  standing: 'contradiction: MC6-002'
+  model: lifecycle::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 55a13fbbb35d2440e94ff17f4bbe85380a09fc59f53a323afb328ac5efa7672d
+  note: 'Supersedes MC3’s “belongs to the lifecycle model”. MC6-002: closing the removed consumer’s Conduits retires
+    referrers, against literal LIF-019 (N). Correct follows CON-008/LIF-017 and refutes N; PreserveReferences keeps
+    N but refutes C. F retains the other data. Order 081 is to take the finding into the specification, not yet
+    run.'
+- id: CON-011
+  class: safety
+  standing: not modelled
+  note: 'MC3: “what an inspection shows, absent from the transition alphabet”.'
+- id: CON-013
+  class: safety
+  standing: 'property over-broad: MC3-001'
+  model: access::P
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 4d8accb4ebf1fb56b7b3ce7691b76f3d0387478bd54f8b341849199376dc77bb
+  note: 'Source row: “P (literal dispatch reading)”. Literal P demands dispatch for every authorized request, including
+    a keyed repeat on initially open c1; OPS-032 requires conflict. Control C holds in every Correct part; P holds
+    on Correct/Base without Copies. There is no separate corrected-P control and no refutation of the promise’s
+    first-request-after-opening rule.'
+- id: CON-014
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::B
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 11bbab3a1f963efd5d4864046cb5e8acff80a037e91ba07db82e217ce51dde9b
+  note: Supersedes MC3’s “belongs to the lifecycle model”.
+- id: CON-023
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 17862e4451e77be5f35949130ef67af6a391890086c4cdaa4f0e124eda10ad39
+  note: Supersedes MC3’s “belongs to the lifecycle model”.
+- id: CON-024
+  class: safety
+  standing: holds, not graded
+  model: access::N
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 687eac34520444df7afc0d91442bbf30a47449dc24bce5840ada6ae646a85d56
+  note: Bounded source slice; no individual finding.
+- id: CON-031
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 824b18bc068b21aceab8142196d20a88c23f457129cb7e9896994150312ca46e
+  note: Supersedes MC3’s “belongs to the lifecycle model”.
+- id: FST-002
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: FST-003
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: FST-007
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: PRV-002
+  class: safety
+  standing: holds, not graded
+  model: placement::P9
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 27b19a9c1cfbc0c9e2a06063ad95ce3564da9856a3d46260a69d93062211a92e
+  note: 'Source row: “P9, engine and local provider server lifecycle”.'
+- id: PRV-003
+  class: safety
+  standing: static
+  model: gates::R
+  note: 'Source row: “R: own-runner identity and secret delivery”. MC5a partial exclusion: “PRV-003''s “on no other”
+    machine, machine provider and fetching (placement and provider kinds absent)”. Graded from holds by FR-459.'
+- id: PRV-005
+  class: safety
+  standing: static
+  note: 'MC4: “Provider metadata/caller fields are a static decision, to be shown by vectors”.'
+- id: PRV-007
+  class: safety
+  standing: text changed, not rerun
+  was: 'gap: MC4-009'
+  model: placement::P1
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: ce1703479d75c4e935f319dd6be0ef9c12b5969b254cc94d1e180d6a73cf23c4
+  note: 'Source row: “P1, no run asked on an unknown inspect answer”. MC4-009: provider restart races the retire-hook
+    run call for the same ID (Correct/Base, P1 refuted). Also MC4-002: a removed old ID can overlap a later ID while
+    its stop is pending. P2 and the individual no-dispatch-on-unknown clauses hold; no aggregate exclusion is supplied.
+    Order 081 is to fix MC4-009 and state MC4-002 as ruling 42 D11’s limit, not yet run. Whether to fence the overlap
+    remains on the owner’s list.'
+- id: PRV-008
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: placement::P4
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: c3d69abb393f2dd800c936d1639807e596a7ec08829238d87a56b1aca04b7ca4
+  note: 'Source row: “P4, addressed stops and unknown answers”.'
+- id: PRV-009
+  class: safety
+  standing: holds, not graded
+  model: placement::P6
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 88a48e726ecbb486f7fcabdb5cc6b47351c18e6bc1208d14010ec2776469b2ff
+  note: 'Source row: “P6, status provenance and time”.'
+- id: PRV-010
+  class: safety
+  standing: text changed, not rerun
+  was: 'gap: MC4-009'
+  model: placement::P1
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 6a4cc6f56d5708ede461724c991be6a62f3878a070b3c036cff2337d62808c7e
+  note: 'Source row: “P1, provider restart makes no dispatch or secret read”. MC4-009: provider restart races the
+    retire-hook run call for the same ID (Correct/Base, P1 refuted). Also MC4-002: a removed old ID can overlap
+    a later ID while its stop is pending. P2 and the individual no-dispatch-on-unknown clauses hold; no aggregate
+    exclusion is supplied. Order 081 is to fix MC4-009 and state MC4-002 as ruling 42 D11’s limit, not yet run.
+    Whether to fence the overlap remains on the owner’s list.'
+- id: PRV-011
+  class: safety
+  standing: static
+  model: gates::C, R
+  note: 'Source row: “C: remote value delivery; R: local secret delivery”. Graded from holds by FR-459.'
+- id: PRV-012
+  class: safety
+  standing: static
+  note: 'MC4: “Unsupported artifact/transport rejection is a static decision, to be shown by vectors”.'
+- id: PRV-013
+  class: safety
+  standing: static
+  model: records::I13
+  note: 'Source row: “I13: package-source uniqueness by scheme and system ownership; machine-provider half outside
+    this model.” Partial exclusion from its accounting row: “machine-provider half outside this model”. Graded from
+    holds by FR-458.'
+- id: PRV-014
+  class: safety
+  standing: text changed, not rerun
+  was: 'gap: MC4-009'
+  model: placement::P1, P2
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: b0d5c113690519875cfe5d508ea6f6778a9853c08696b55b8bb8a100b3ec9874
+  note: 'Source row: “P1/P2, cut is not evidence of gone”. MC4-009: provider restart races the retire-hook run call
+    for the same ID (Correct/Base, P1 refuted). Also MC4-002: a removed old ID can overlap a later ID while its
+    stop is pending. P2 and the individual no-dispatch-on-unknown clauses hold; no aggregate exclusion is supplied.
+    Order 081 is to fix MC4-009 and state MC4-002 as ruling 42 D11’s limit, not yet run. Whether to fence the overlap
+    remains on the owner’s list.'
+- id: PRV-015
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: placement::P5
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: e897f503eac55cb1feddf782e4c9e7ba13401e7d1789954d32c0694526ebbb9b
+  note: 'Source row: “P5, M2 selected by provider”.'
+- id: PRV-017
+  class: safety
+  standing: 'gap: MC7b-002'
+  model: records::I17
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 9440cff298a473bd80d38a32619d84d42f952de5209bc939220ec001e89188e0
+  note: 'Source row: “I17: selected source and fetch arguments, digest checked before archive use on provider/https/file
+    paths.” MC7b-002: two first installs with different digests both succeed after deciding against an empty slot.
+    I24/I25/I27/I17 still hold at decision time; the witness refutes no individual predicate. PKG-024/PRV-017 are
+    supporting context in the finding. Order 082 is to be taken, being drafted, not yet run.'
+- id: PRV-018
+  class: safety
+  standing: static
+  model: gates::A
+  note: 'Source row: “A: identity rests on the presented token, never address”. Graded from holds by FR-459.'
+- id: PRV-019
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: placement::P5
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: cc0105f1709ab189c129976fa7b57f31726ad8a041b6a0bea466c33d76071738
+  note: 'Source row: “P5, runtime executes only on selected machine”.'
+- id: PRV-021
+  class: safety
+  standing: text changed, not rerun
+  was: 'gap: MC4-002'
+  model: placement::P4
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 14ad0d2208c6d3d0ff6fc8fc24c147359c82bd1fc95cb4f2e271372b7dddd33f
+  note: 'Source row: “P4, accepted stop survives restart and retirement”. MC4-002: retained stop custody holds,
+    but supplies no exclusion between removed I and later I′. MC4 P1 refutes the aggregate invariant; MC6 D checks
+    LIF-036’s extra stop without machines or later instances’ run overlap. Order 081 is to state ruling 42 D11’s
+    limit, not yet run; any fence remains for the owner.'
+- id: PRV-022
+  class: safety
+  standing: static
+  model: gates::H, C, R
+  note: 'Source row: “H: holders and public exclusion; C: identity channel; R: local identity delivery”. Graded
+    from holds by FR-459.'
+- id: PRV-023
+  class: safety
+  standing: static
+  model: gates::R
+  outside:
+  - engine/crates/shell/tests/runner.rs
+  note: 'Source row: “R: listed variables, allowed inherited environment and overrides”. Graded from holds by FR-459.'
+- id: PRV-024
+  class: safety
+  standing: static
+  model: gates::H
+  outside:
+  - engine/crates/conformance/src/records.rs
+  note: 'Source row: “H: no identity in record, inspection, observation, diagnostic, result or `_meta`”. Graded
+    from holds by FR-459.'
+- id: PRV-025
+  class: safety
+  standing: static
+  model: gates::G
+  note: 'Source row: “G: only engine proof reaches I''s gated server”. MC5a partial exclusion: “PRV-025''s silence-to-close
+    bound (time is absent)”. Graded from holds by FR-459. SSH-R''s README states PRV-025 unmet until each Agent
+    has a user of its own (ruling 77).'
+- id: PRV-026
+  class: safety
+  standing: searched
+  model: secrets::F
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 2cd2717570df781fd1a43a572629edc4c39e8c56966ab3ad723e85e453256588
+  note: 'Source row: “F: provider run and fresh read precede post-restart calls”. Graded from holds by FR-460. Searched
+    for a Conduit open or closed; no filter.'
+- id: PRV-027
+  class: safety
+  standing: holds, not graded
+  model: placement::P4
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 346134f7601091fc97ebd3bcff9095979afb9281ff56febf349bbcc24b9bac37
+  note: 'Source row: “P4, stop instance and placement machine”.'
+- id: PRV-028
+  class: safety
+  standing: text changed, not rerun
+  was: searched
+  model: gates::B
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 8295a8455424482a912a662762b3e3b481ca1b3c04c784cb489052c5235bf997
+  note: 'Source row: “B: instance certificate proved on this connection before application sends”. Graded from holds
+    by FR-459. Restates the send guard; the takeover is excluded by current()''s oracle; proof loss and reordering
+    are searched; order 081''s clause on an existing run is not checked.'
+- id: PRV-029
+  class: safety
+  standing: static
+  model: gates::R
+  outside:
+  - engine/crates/shell/src/tests.rs
+  - engine/crates/shell/tests/changes.rs
+  note: 'Source row: “R: each instance retains its own state directory after recovery”. Graded from holds by FR-459.'
+- id: PND-001
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-002
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-003
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-009
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-012
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-005
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-010
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-011
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-006
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-007
+  class: safety
+  standing: left to MC9
+  note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: SEC-004
+  class: safety
+  standing: static
+  note: 'MC5b: “Static resolved-reference record form; to be shown by vectors”.'
+- id: SEC-007
+  class: safety
+  standing: static
+  model: secrets::P
+  note: 'Source row: “P: I''s own and O''s onward requests never dispatch”. Graded from holds by FR-460.'
+- id: SEC-008
+  class: safety
+  standing: static
+  note: 'MC5b: “Static authority to open a reading Conduit; to be shown by vectors”.'
+- id: SEC-010
+  class: safety
+  standing: restated
+  model: secrets::P
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: fe3df116eeb83e3ce7d7853759e38fe5136e5564858181a597f8d72e1c5b7cf5
+  note: 'Source row: “P: own open Conduit and secret delivered for its run”. Graded from holds by FR-460.'
+- id: SEC-011
+  class: safety
+  standing: static
+  model: secrets::P
+  note: 'Source row: “P: original setup invocation and caller, also for re-reads”. Graded from holds by FR-460.'
+- id: SEC-012
+  class: safety
+  standing: searched
+  model: secrets::S
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 8b63054595ac6958691252c67d49bc0112aa0d2662e8f5d39adcdbbb7630719d
+  note: 'Source row: “S: failed reads prevent their identified work”. Graded from holds by FR-460.'
+- id: SEC-013
+  class: safety
+  standing: static
+  model: secrets::H
+  note: 'Source row: “H: setup read, connection-held header and original URL”. Graded from holds by FR-460.'
+- id: SEC-014
+  class: safety
+  standing: static
+  model: secrets::F
+  note: 'Source row: “F: no further read for I''s lasting run”. Graded from holds by FR-460.'
+- id: SEC-015
+  class: safety
+  standing: static
+  model: secrets::V
+  note: 'Source row: “V: no value in a record”. Graded from holds by FR-460.'
+- id: SEC-016
+  class: safety
+  standing: restated
+  model: secrets::S
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 946c19205afdc1991f7a1e8c0a2fb8f4bd314f05ea43a8a65216c11a93232a04
+  note: 'Source row: “S: failed dispatch recording means unavailable without dispatch”. Graded from holds by FR-460.'
+- id: SEC-017
+  class: safety
+  standing: searched
+  model: secrets::V
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: e8bef928d1160c008ee479eba03c3577f2404ba588e89d78ac9f57196b233297
+  note: 'Source row: “V: no cache substituting for a later read”. Graded from holds by FR-460.'
+- id: SEC-018
+  class: safety
+  standing: static
+  model: secrets::V
+  note: 'Source row: “V: only the identified run''s secrets/runner or connection''s header”. Graded from holds by
+    FR-460.'
+- id: SEC-020
+  class: safety
+  standing: static
+  model: secrets::P
+  note: 'Source row: “P: engine never answers a successful read or supplies its environment as secrets”. Graded
+    from holds by FR-460.'
+- id: SEC-023
+  class: safety
+  standing: searched
+  model: secrets::H
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: de7522d2ef0a622d2ed41bdcec7d5e449b6f0c153f638bb113e63816f806c57e
+  note: 'Source row: “H: current-authority re-read after value loss before HTTP”. Graded from holds by FR-460. Searched
+    for a Conduit open or closed; no filter.'
+- id: SEC-024
+  class: safety
+  standing: static
+  note: 'MC5b: “Static template rejection; to be shown by vectors”.'
+- id: LIF-001
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::L
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 0e479a3e0195891e7ef2ba30e2e0d62f3d77c304069b376c0f69e97a402caf56
+  note: Bounded source slice; no individual finding.
+- id: LIF-003
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::L
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 6d8da850e46a65b639bc02d1ed6f6031845fc86a0c8da940b7088a29b62d3054
+  note: Bounded source slice; no individual finding.
+- id: LIF-004
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::L
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: e1af525d1120eddf6ead35f60572e3c28f1a7e9c589d3f80476839cb8757b445
+  note: Bounded source slice; no individual finding.
+- id: LIF-005
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::L
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: fe018441ebeb85f4465e5a365cb1123e24c20be1557c1c824dc271afd958b5a4
+  note: Bounded source slice; no individual finding.
+- id: LIF-006
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::L
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 31930465a3658df66a38636d36c7b5157f78672209e5ece730ee94fe7786f175
+  note: Bounded source slice; no individual finding.
+- id: LIF-008
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::R
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 5ef7ece0669d8a94be390d85ccc576d5c65bbd4cc62a07db0092f1524905c9da
+  note: Bounded source slice; no individual finding.
+- id: LIF-009
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: lifecycle::R
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: f5d36e5a9eb4ccf9cd23c045e2a34b80a078c2572e693b7bad184aad9d2cedcd
+  note: Bounded source slice; no individual finding.
+- id: LIF-010
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::L
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 0ecba781a954dcec343523960d79a9ea7c7d7489f4d71aab4e6fa41cb838c84c
+  note: Bounded source slice; no individual finding.
+- id: LIF-011
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: LIF-012
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: LIF-013
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: LIF-014
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::D
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: e79dc968f6a3ecc12872884a0b176f2c6aef28346edbdf246c1ace081569df2f
+  note: Bounded source slice; no individual finding.
+- id: LIF-015
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::L
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: ce46aa17190ac4a8e847a69aacd2914155e9d9001e8dd1945612a2bef165dc46
+  note: Bounded source slice; no individual finding.
+- id: LIF-016
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::F
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: bb38f66f113635d5da866dcaa2743c38906df43346a088a33f71e58f5a93b95f
+  note: 'MC6 partial exclusion: “LIF-016 type-specific held resources”.'
+- id: LIF-017
+  class: safety
+  standing: 'contradiction: MC6-002'
+  model: lifecycle::D
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 8890be10c9cb98d6df498db0327dc96dd0788b544cec0f789aee65d3a6e8bb86
+  note: 'MC6-002: closing the removed consumer’s Conduits retires referrers, against literal LIF-019 (N). Correct
+    follows CON-008/LIF-017 and refutes N; PreserveReferences keeps N but refutes C. F retains the other data. Order
+    081 is to take the finding into the specification, not yet run.'
+- id: LIF-018
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::D
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: c1ce8b2b4649a5e09a0e8a067595742b071f5797a9c4497cd4e0e9de51e7d862
+  note: Bounded source slice; no individual finding.
+- id: LIF-019
+  class: safety
+  standing: text changed, not rerun
+  was: 'contradiction: MC6-002'
+  model: lifecycle::F, N
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: b3a8dd1c8ed370ad5b7dab0bfea724761da9ab48849baeadff9ce6ac53139a21
+  note: 'Source row: “F; N retains the literal referrer prohibition”. MC6-002: closing the removed consumer’s Conduits
+    retires referrers, against literal LIF-019 (N). Correct follows CON-008/LIF-017 and refutes N; PreserveReferences
+    keeps N but refutes C. F retains the other data. Order 081 is to take the finding into the specification, not
+    yet run.'
+- id: LIF-020
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::P
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 718816e76713abc03cdcdef659db0d2045096e2432822e18a9a09318ed03c8b3
+  note: Bounded source slice; no individual finding.
+- id: LIF-021
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::P
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 4db0fd5f52823ecef5f8fd76eabbcca3fd68686b2361a3c8aa0a314f4234f387
+  note: 'MC6 partial exclusion: “LIF-021/TPL-012 cancellation (OPS-027)”; “optional setup parts” are also absent.
+    MC6 partial exclusion: “LIF-021 cycles/Fleets”.'
+- id: LIF-022
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: LIF-023
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::L
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: ec9f44ce2375ce7c1f8f8701fa4fa36bc96594bf1e1fcfef2e57ae996e9bdfff
+  note: Bounded source slice; no individual finding.
+- id: LIF-024
+  class: safety
+  standing: text changed, not rerun
+  was: 'contradiction: MC6-001'
+  model: lifecycle::D
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 18741cdfb2ae281e84ed060fe4787c5d535d8be4ccfb93d50f7c2cb88f21a5fa
+  note: 'MC6-001: failed retire hook plus succeeded stop makes retirement/shutdown unknown under O/D; literal retire-hook
+    contract predicate V demands pending and is refuted. HookPending instead refutes D. Order 081 is to take the
+    finding into the specification, not yet run.'
+- id: LIF-025
+  class: safety
+  standing: text changed, not rerun
+  was: 'ambiguity: MC4-001'
+  model: lifecycle::D
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 526d914779e23f2712aa756a5944b34f14e488120ac3b71c743c73f9f4dccb19
+  note: 'MC4-001 leaves the lost node’s own shutdown classification undecided: PLC-026 setup dispatches nothing,
+    LIF-025 confirms never-dispatched setup, and PLC-017 defaults to unknown. No refutation trace. Order 081 is
+    to be written, not yet run.'
+- id: LIF-026
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::H
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 3f0c07dfcc4621a1a61f95f9387fd8f9d44d21fd7c010a375de739a18c942dfd
+  note: Bounded source slice; no individual finding.
+- id: LIF-027
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::B
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: ef9f27b0cc6ba2be1c9348861569d9ecca1bf61c3fa71d13a8f8820d59ab831b
+  note: Bounded source slice; no individual finding.
+- id: LIF-028
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: lifecycle::Q
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 309e7cf4c9e5fb92ed2542de7e537c5a8e52039efbfdb9f369e703d3c0e05d17
+  note: Bounded source slice; no individual finding.
+- id: LIF-029
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::R
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 1865a0915363754dca00cf30440abcc475efe9cfa76bba353e52982e2de9ff9f
+  note: Bounded source slice; no individual finding.
+- id: LIF-034
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: LIF-035
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::D
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 859d491e4e7d6930714e7ec25015c1f795700d45909da8ba9946eb5f92a4f3de
+  note: Bounded source slice; no individual finding.
+- id: LIF-036
+  class: safety
+  standing: text changed, not rerun
+  was: 'gap: MC4-002'
+  model: lifecycle::D
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: d02425c2a3fd5c62a72a18f0e5e477272adb616f7bb01ac21d8b3d865f42b2ee
+  note: 'MC4-002: retained stop custody holds, but supplies no exclusion between removed I and later I′. MC4 P1
+    refutes the aggregate invariant; MC6 D checks LIF-036’s extra stop without machines or later instances’ run
+    overlap. Order 081 is to state ruling 42 D11’s limit, not yet run; any fence remains for the owner.'
+- id: LIF-037
+  class: safety
+  standing: static
+  note: 'MC6: “A static decision, to be shown by vectors.”'
+- id: LIF-040
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::T
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: e4d9445062e074d2e8cef5322e77364551e6e2bc5f9ecc3b74fa4ec87706f6d3
+  note: 'MC6 partial exclusion: “LIF-040 inventory visibility and full tombstone field encoding”.'
+- id: LIF-041
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::T
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 815b4ed733670e59ce8bc261c9375a5117b36a91417e670dca473954ae8d2777
+  note: Bounded source slice; no individual finding.
+- id: ACC-001
+  class: safety
+  standing: holds, not graded
+  model: access::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 0c1031b3020a128aeb5740e62eb5f99456bf4f63b2f9560844519cd9825c68a4
+  note: Bounded source slice; no individual finding.
+- id: ACC-002
+  class: safety
+  standing: holds, not graded
+  model: access::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: f046dd333c550556f1e2719ff3f7f6f93e8c479500173f9c1c71b67910257056
+  note: 'Source row: “C (decision before atomic send)”.'
+- id: ACC-003
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-005
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::S
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 9f47b6290ce291de441c38d1fb1ce68aaa71cf8e90dc389e435112e7b334ce07
+  note: Supersedes MC3’s “belongs to the lifecycle model”. MC6 “carries the initiating caller with fixed unlimited
+    access”; “comparisons among narrower bounds are outside this model”.
+- id: ACC-006
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-008
+  class: safety
+  standing: not modelled
+  note: 'MC3: “filters are judged by the implementation (IFC-019); this model checks carriage only”.'
+- id: ACC-009
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-011
+  class: safety
+  standing: holds, not graded
+  model: access::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 9bcebdb4d7eed59fca576fbf2cd067e4fa68389d72c84e6d900f9beec16bd27b
+  note: Bounded source slice; no individual finding.
+- id: ACC-012
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-014
+  class: safety
+  standing: not modelled
+  note: 'MC3: “implementation restriction evaluation and its diagnostic need a filter implementation, absent here”.'
+- id: ACC-015
+  class: safety
+  standing: not modelled
+  note: 'MC3: “unsupported-filter path is outside this model; U explicitly supports the carried requirement”.'
+- id: ACC-016
+  class: safety
+  standing: holds, not graded
+  model: access::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: e3a0558d8b330f8a13ff390a1401aad76ed3c6b8793b408943368fcdfe2ecc54
+  note: 'MC3 checks caller/filter carriage, not filter evaluation: “No filter predicate or unsupported-version argument
+    is invented.”'
+- id: ACC-017
+  class: safety
+  standing: holds, not graded
+  model: access::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: a7cb20aa709cc8756a042dcf26f618a60e22ac8bd34bf8c27f3d8df8d6ea6ba8
+  note: 'Source row: “O (identity and carried filter)”. MC3 checks caller/filter carriage, not filter evaluation:
+    “No filter predicate or unsupported-version argument is invented.”'
+- id: ACC-018
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::K
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 3d1a3af0bba148b4a9a3b8695ac3871420894c834cc5e81b68696bd73bf35fe7
+  note: 'Supersedes MC3’s “belongs to the lifecycle model”. MC6 partial exclusion: “TPL-017/ACC-018 filters”.'
+- id: ACC-019
+  class: safety
+  standing: holds, not graded
+  model: access::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 96f55feb861a46cd41223d59e1b2f74b3d910ddc8bdae55bfb9bbf9bce3064c7
+  note: MC3’s T-to-U onward chain only; no long chains or secret-read exceptions modelled.
+- id: ACC-023
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-024
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-027
+  class: safety
+  standing: not modelled
+  note: 'MC3: “inspection output, absent from the transition alphabet”.'
+- id: ACC-028
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-029
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-030
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-032
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-033
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-034
+  class: safety
+  standing: 'property over-broad: MC3-002'
+  model: access::F, O, Q
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 10df05eec3b69982889bfaccb47d72a304b2e798b57863160116ebd51d4a72c4
+  note: 'Source row: “F, O”. Also MC3-004 (TargetCrash). Literal F would replace an earlier unknown end with a late
+    outcome; the qualified control Q and onward property O hold in every Correct part. Neither is a finding against
+    the promises.'
+- id: ACC-036
+  class: safety
+  standing: holds, not graded
+  model: access::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: c390ef4dadf22e2416a953d704250f9a4ee494fe465c61bd032bcdda24e015da
+  note: Bounded source slice; no individual finding.
+- id: ACC-037
+  class: safety
+  standing: holds, not graded
+  model: access::U
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 059e51deb2e9d6beac318aa0ce65cc50c46ebae9a0bec425c0258f84822761a0
+  note: 'MC3: “The unreadable window concerns Conduit state, not credential existence”; diagnostic contents are
+    excluded.'
+- id: ACC-038
+  class: safety
+  standing: not modelled
+  note: 'MC3: “inspection output naming the enforcing implementation, absent here”.'
+- id: ACC-039
+  class: safety
+  standing: holds, not graded
+  model: lifecycle::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 83890b1bc1422abd9d875c30c51935f8d14961fe0b091f610a7dbc5518b3a793
+  note: Supersedes MC3’s “belongs to the lifecycle model”. MC6 covers “direct retire-hook onward requests and direct
+    ordinary requests from the retired consumer”; “indirect invocation chains and retirement secret reads are absent”.
+- id: ACC-044
+  class: safety
+  standing: not modelled
+  note: 'MC3: “provenance, inspection, inventory and tombstone retention require a separate record model”.'
+- id: ACC-053
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-054
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-055
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-057
+  class: safety
+  standing: static
+  note: 'MC3: “a static decision, to be shown by vectors”.'
+- id: ACC-056
+  class: safety
+  standing: not modelled
+  note: 'MC3: “disclosure tiers and diagnostic contents are not represented”.'
+- id: OPS-001
+  class: safety
+  standing: holds, not graded
+  model: controls::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: e37d3fc939d8d1dec604a250a3635634fe08a4e583081c9b312dcb59f8e6db52
+  note: Bounded source slice; no individual finding.
+- id: OPS-002
+  class: safety
+  standing: holds, not graded
+  model: controls::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 2aee6edf49aa61542d2653e4007b5c34a3c2dd87464ca4a0eb0a32d73830df39
+  note: Bounded source slice; no individual finding.
+- id: OPS-003
+  class: safety
+  standing: holds, not graded
+  model: controls::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 51f8ade33d6db94b97866c2f4094df0fccde7a38b883828670739d7703786059
+  note: Bounded source slice; no individual finding.
+- id: OPS-004
+  class: safety
+  standing: holds, not graded
+  model: controls::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 0bf4082516fd6a9c3f245919c701684fc5cfdcb70a2eb99bcbd989788585c5f7
+  note: Bounded source slice; no individual finding.
+- id: OPS-005
+  class: safety
+  standing: holds, not graded
+  model: controls::N
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: a04d7437707c2215e9b950a0c8ac60c6bc2a2d904d1d65084e3aa40bdbf1b695
+  note: Bounded source slice; no individual finding.
+- id: OPS-006
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OPS-007
+  class: safety
+  standing: holds, not graded
+  model: controls::M
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 39cc85324f0ac3f386b25ada5962ad2a57fe0d30761f9c399c406d1868baf35d
+  note: Bounded source slice; no individual finding.
+- id: OPS-008
+  class: safety
+  standing: 'contradiction: MC2-001'
+  model: operations::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: b3520686c25d7ca03af27a368c1855b7479a70852f83b7762b184b01c3c6f653
+  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
+    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
+    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. MC2 exclusion:
+    “OPS-008''s complete saved fields (fixed operation/caller/target/Conduit suffice for this slice)”. Held only
+    under ruling 75 A1''s fence, which ruling 78 point 6 withdrew.'
+- id: OPS-009
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: operations::A
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: acaaa082949e038837c9378028fcc20ccc7569350beed5c205d00f8b166aa562
+  note: 'MC2: “This outcome abstraction does not establish OPS-009''s content-retention/OPS-034 cases.” MC7a’s later
+    OPS-034 entry checks its separate repeated-output slice, not all retained content.'
+- id: OPS-010
+  class: safety
+  standing: holds, not graded
+  model: operations::C
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: dfd6b918438f9df29c90a1797b62fb1e00292abe747ac37cc72f11af7316c8dc
+  note: Bounded source slice; no individual finding.
+- id: OPS-011
+  class: safety
+  standing: holds, not graded
+  model: operations::K
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 8c0d3ef62800297e1301105376ca6f01a0fb0c552e1d5923ce2bdd49da2003ee
+  note: 'Reachability witness K only: two labelled keyless requests require distinct invocation identities and separate
+    effects; no universal safety predicate for this promise.'
+- id: OPS-012
+  class: safety
+  standing: 'contradiction: MC2-001'
+  model: operations::O, W
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 32850a11a651b048a8a590121de4a3d70c840cb4c58cf36755417920d6ec8b85
+  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
+    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
+    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. Held only
+    under ruling 75 A1''s fence, which ruling 78 point 6 withdrew.'
+- id: OPS-013
+  class: safety
+  standing: holds, not graded
+  model: operations::U
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: bedd8039eb8b10cd2cc4080bfbb672d2829235c3fdcf58534e1cf79ae8c7e364
+  note: Bounded source slice; no individual finding.
+- id: OPS-014
+  class: safety
+  standing: text changed, not rerun
+  was: 'contradiction: MC2-001'
+  model: operations::W
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 49c4e0f0bbf7609b15a8ed0a0fe736ae1deb4d24872aa0462cb8012f6de4f772
+  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
+    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
+    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. Held only
+    under ruling 75 A1''s fence, which ruling 78 point 6 withdrew.'
+- id: OPS-018
+  class: safety
+  standing: text changed, not rerun
+  was: 'contradiction: MC2-001'
+  model: operations::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 51c1067059fa62961f39b73a40123ae10deff0d6325f810cf7cfabaa3cf56aca
+  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
+    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
+    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. Held only
+    under ruling 75 A1''s fence, which ruling 78 point 6 withdrew.'
+- id: OPS-019
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OPS-020
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OPS-021
+  class: safety
+  standing: 'contradiction: MC2-001'
+  model: lifecycle::H, A, A2
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 22c58befda5943708f591f98617920c148475282ee1905feadd634f18e3d43d9
+  note: 'MC6’s Unfenced control reproduces MC2-001 for hooks: A fails at 37 actions and A2 at 50; Correct holds
+    under the fenced reading. H/K also hold on Correct. Supporting OPS-014/OPS-024 require order 077, to be written,
+    not yet run. MC2 is the earlier operation-identity model. Held only under ruling 75 A1''s fence, which ruling
+    78 point 6 withdrew.'
+- id: OPS-022
+  class: safety
+  standing: 'contradiction: MC6-001'
+  model: lifecycle::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 89dcae7eb1f5a7c3bd521af9b5e9dbeff41c1976133cf874304f837706bbe875
+  note: 'MC6-001: failed retire hook plus succeeded stop makes retirement/shutdown unknown under O/D; literal retire-hook
+    contract predicate V demands pending and is refuted. HookPending instead refutes D. Order 081 is to take the
+    finding into the specification, not yet run.'
+- id: OPS-023
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OPS-024
+  class: safety
+  standing: text changed, not rerun
+  was: 'contradiction: MC2-001'
+  model: operations::O
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 70a388632ba36c9fdb4e4f7cc3d9b054ab5716bf73e49ce6a0a4911b46750bf7
+  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
+    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
+    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. MC2 excludes
+    “filters in OPS-024 (the operation is effectful)”. Held only under ruling 75 A1''s fence, which ruling 78 point
+    6 withdrew.'
+- id: OPS-026
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OPS-027
+  class: safety
+  standing: holds, not graded
+  model: controls::K
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 09ff1a760aeac4b01ee3dd26558defbb488fa618c1c23b53fa04d7528fbb2ab9
+  note: Bounded source slice; no individual finding.
+- id: OPS-028
+  class: safety
+  standing: 'contradiction: MC2-001'
+  model: lifecycle::K, A, A2
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 89acea001c5f08756ba8601089c9ed65a4daac5c0ca585ca4b20d2370b641d4e
+  note: 'MC6’s Unfenced control reproduces MC2-001 for hooks: A fails at 37 actions and A2 at 50; Correct holds
+    under the fenced reading. H/K also hold on Correct. Supporting OPS-014/OPS-024 require order 077, to be written,
+    not yet run. MC2 is the earlier operation-identity model. Held only under ruling 75 A1''s fence, which ruling
+    78 point 6 withdrew.'
+- id: OPS-029
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OPS-030
+  class: safety
+  standing: not modelled
+  note: MC2 excludes “unauthorized reconciliation”; “unknown invocation IDs” are also outside the model. Assigned
+    not modelled as order 116 directs.
+- id: OPS-032
+  class: safety
+  standing: holds, not graded
+  model: operations::A
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 634a59d7161ae7df7cb9c5764871c68cbfab9cef8d99e1bc84cc8abc0a33e3a6
+  note: Bounded source slice; no individual finding.
+- id: OPS-033
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OPS-034
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: controls::P
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 59f440605ca9164379d0f6d3a05f3a0b93e779424e7c732d567ae1e099e1aa61
+  note: Bounded source slice; no individual finding.
+- id: OPS-036
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: REV-001
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: REV-002
+  class: safety
+  standing: restated
+  model: revisions::V
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: ef85a23fcc5513f5385000b7f581113efcc3e704129779208e892fc643764386
+  note: Bounded source slice; no individual finding. Graded from holds by FR-461.
+- id: REV-003
+  class: safety
+  standing: holds, not graded
+  model: controls::A
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: f63f901c21d5929d316d052f7e0aa52ce537df2887a045ab6cdd64d7f432048d
+  note: Bounded source slice; no individual finding.
+- id: REV-005
+  class: safety
+  standing: holds, not graded
+  model: controls::F
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 9bcbc5b3fd0783f04f8444933f88a8cff0199dffcb171f9b6bda0ec7a5dc011b
+  note: Bounded source slice; no individual finding.
+- id: REV-006
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: REV-007
+  class: safety
+  standing: holds, not graded
+  model: controls::E
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 8ea0654b785434a4bf6c755b18cf1ef4aca92ddd5717a71c07360506b006545b
+  note: Bounded source slice; no individual finding.
+- id: REV-009
+  class: safety
+  standing: holds, not graded
+  model: controls::U
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: b6881882fd2c2bfe596500fbb47d2886d67db21fd49f44f8d3ab331897af5036
+  note: Bounded source slice; no individual finding.
+- id: REV-010
+  class: safety
+  standing: text changed, not rerun
+  was: holds, not graded
+  model: controls::R
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 9688e18eeb80fa4189ca22232b71b46d19f120f3dee66767e0a8f8107edefb75
+  note: MC7a supersedes MC2’s excluded control configuration storage/reconciliation slice; R holds. MC7a-002 concerns
+    the supporting unfenced OPS-014 reading, not a refutation of R.
+- id: REV-011
+  class: safety
+  standing: static
+  model: revisions::V
+  note: Bounded source slice; no individual finding. Graded from holds by FR-461.
+- id: REV-012
+  class: safety
+  standing: not modelled
+  model: revisions::J
+  note: 'Bounded source slice; no individual finding. Graded from holds by FR-461. J states less than the slice:
+    no property counts the changes stored per named revision, and by reading, the correct model applies two changes
+    that name r0 (FR-461). MC2 revisions'' rerun registers that property, expected to be refuted (the review''s
+    decision D32).'
+- id: REV-013
+  class: safety
+  standing: holds, not graded
+  model: controls::V
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 3fae6f52ca626b8edbb0a3babd72ca3413a2406c78778e8d58ee271c54682251
+  note: Bounded source slice; no individual finding.
+- id: REV-014
+  class: safety
+  standing: holds, not graded
+  model: controls::T
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 65babe44ade7aaf6e51752b1029604a64dc0f868b549aa4f4c991b513a2ccf8f
+  note: Bounded source slice; no individual finding.
+- id: REV-015
+  class: safety
+  standing: static
+  note: 'MC7a: “Static: a static decision, to be shown by vectors”.'
+- id: OBS-001
+  class: safety
+  standing: static
+  model: records::O1
+  note: 'Source row: “O1: definition, configuration and revision unchanged by observations.” Graded from holds by
+    FR-458.'
+- id: OBS-002
+  class: safety
+  standing: static
+  note: 'MC7b: “A static decision, to be shown by vectors: observation fields.”'
+- id: OBS-003
+  class: safety
+  standing: static
+  model: records::O3
+  note: 'Source row: “O3: all remote conditions unknown with last-success time or none; other node unchanged.” Graded
+    from holds by FR-458.'
+- id: OBS-004
+  class: safety
+  standing: static
+  model: records::O4
+  note: 'Source row: “O4: drift dispatches no setup, control, open or retirement.” Graded from holds by FR-458.'
+- id: OBS-006
+  class: safety
+  standing: static
+  model: records::O6
+  note: 'Source row: “O6: inspection/observation changes no effect, access or lifecycle state.” Graded from holds
+    by FR-458.'
+- id: REC-001
+  class: safety
+  standing: static
+  model: records::R1
+  note: 'Source row: “R1: every listed event category emits a corresponding retained record at creation.” Uses order
+    115’s final checks: a cached repeat keeps its request-end record without a dispatch; occurrence coverage includes
+    the admin correction to R1. Graded from holds by FR-458.'
+- id: REC-002
+  class: safety
+  standing: static
+  note: 'MC7b: “A static decision, to be shown by vectors: fields and exclusion of credentials.”'
+- id: REC-003
+  class: safety
+  standing: text changed, not rerun
+  was: 'ambiguity: MC7b-001'
+  model: records::R3
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: f06ae0f47e01253b8b9cf2aaaa51add3f884cad7b08fe233320000bfb1c33a9b
+  note: 'Source row: “R3: every existing record is unchanged except during purge.” MC7b-001: “were lost” is unclear
+    against no removal except purge. Correct/Unreadable retains saved records and faults reads; R3/R6 hold on that
+    reading. No correct-model refutation trace. Order 082 is to be taken, being drafted, not yet run.'
+- id: REC-004
+  class: safety
+  standing: static
+  model: records::R4
+  note: 'Source row: “R4: root-only strict-before purge, permanent purge evidence, saved keyed outcome/effect unaffected.”
+    Uses order 115’s final R4: exact purge evidence must appear in the source’s saved snapshot; OmitPurgeRecord
+    refutes it in 8 actions. Graded from holds by FR-458.'
+- id: REC-005
+  class: safety
+  standing: static
+  model: records::R5
+  note: 'Source row: “R5: per-source read order, with no inter-source order requirement.” Graded from holds by FR-458.'
+- id: REC-006
+  class: safety
+  standing: text changed, not rerun
+  was: 'ambiguity: MC7b-001'
+  model: records::R6
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 3d15feacb4a77651a491bf9478b8f815463ffe21d4bc577d1c3b7d8e0e44f901
+  note: 'Source row: “R6: a completed incomplete read identifies the exact gap.” MC7b-001: “were lost” is unclear
+    against no removal except purge. Correct/Unreadable retains saved records and faults reads; R3/R6 hold on that
+    reading. No correct-model refutation trace. Order 082 is to be taken, being drafted, not yet run.'
+- id: IMP-001
+  class: safety
+  standing: holds, not graded
+  model: controls::W
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 011cb07be61faba181ad9f558fe7ad4e3668d0b527c9b65f48120ede41de7258
+  note: Bounded source slice; no individual finding.
+- id: IMP-002
+  class: safety
+  standing: holds, not graded
+  model: controls::W
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: a6be1855d8c7a2b8875ae90804ad1825a00f582c14376eb702aa089ea965012e
+  note: Bounded source slice; no individual finding.
+- id: IMP-007
+  class: safety
+  standing: holds, not graded
+  model: operations::U
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 88666f1962c653f3505e4eefca2324c5a8ff69c465f123132bac14877656e13f
+  note: Bounded source slice; no individual finding.
+- id: IMP-008
+  class: safety
+  standing: holds, not graded
+  model: controls::I
+  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  digest: 69dcfe95279ba1753d285ac35e10e39964b8ac269f2aeee68d08254f7f6f9823
+  note: Bounded source slice; no individual finding.
+- id: ACC-022
+  class: not safety
+- id: CON-007
+  class: not safety
+- id: ENR-001
+  class: uncatalogued
+- id: ENR-002
+  class: uncatalogued
+- id: ENR-004
+  class: uncatalogued
+- id: ENR-006
+  class: uncatalogued
+- id: ENR-007
+  class: uncatalogued
+- id: ENR-008
+  class: uncatalogued
+- id: ENR-009
+  class: uncatalogued
+- id: ENR-010
+  class: uncatalogued
+- id: ENR-011
+  class: uncatalogued
+- id: ENR-012
+  class: uncatalogued
+- id: LIF-031
+  class: not safety
+- id: LIF-032
+  class: not safety
+- id: LIF-033
+  class: not safety
+- id: NAM-016
+  class: not safety
+- id: NAM-017
+  class: not safety
+- id: OBJ-023
+  class: not safety
+- id: OBJ-025
+  class: not safety
+- id: OPS-025
+  class: not safety
+- id: OPS-031
+  class: not safety
+- id: PKG-032
+  class: uncatalogued
+- id: PLC-011
+  class: not safety
+- id: PND-008
+  class: uncatalogued
+- id: PND-013
+  class: uncatalogued
+- id: PRV-020
+  class: not safety
+- id: PRV-030
+  class: uncatalogued
+- id: REV-004
+  class: not safety

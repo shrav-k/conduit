@@ -246,3 +246,28 @@ last line.
 `git diff --check` and `check_private_paths.py` read tracked files only, so the admin then stages
 the three new files and runs `python3 tools/check_private_paths.py` and `git diff --cached --check`,
 and shows the `docs` and `secrets` jobs passing on the pull request.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `89aa7894`: the worker (393 s), a fresh Codex verifier
+(245 s) with one must, a second worker round (107 s) and a second verifier (289 s), which found
+nothing to change. `experiments/012-model-checking/account.yaml` has a row for each of the 245
+convention-layer promises (217 safety, 14 not safety, 14 uncatalogued), and every count the tool
+prints is the one this order expected: among them 29 rows `text changed, not rerun` and 77
+`static`, 24 of which no case and no evidence outside the manifest support.
+`tools/check_model_account.py` checks the account against `spec/`, the catalogue and the manifest,
+and with `--history` against the text at `read`; the `docs` job runs it with `--history`, AGENTS.md
+lists it, and G5.md points to the file. The first verifier's must was a restart without end when
+`/usr/bin/python3` also lacks PyYAML; the second round added a one-retry guard, as
+`check_schemas.py` has, and a test of it. A fresh read-only Opus reader then verified the order
+(ruling 79, point 2): it rebuilt the account with its own script from G5's table and the spec at
+both commits, found every row matching, and found no must. Its four shoulds were applied before
+merge, and a second fresh read-only Opus reader read those fixes and found nothing to change
+(ruling 79, point 2). A model key may end in primes, so that the reruns can record properties such
+as MC6's N'; the tool compares a file's directory in its POSIX form, so that it finds the promises
+on Windows; the two amended paragraphs of G5.md are wrapped to the file's width; and a test shows
+that `--history` ignores a promise that sat only in a nested directory at `read`. The new test file
+runs 20 tests. The reader also left three points of G5.md to a later order: the new Status line
+calls the rest of the file the account of 2026-11-11 although Standings gives the new list, "What G5
+still needs" still counts 53 static rows and 11 exclusions where the account has 77 and 12, and the
+introduction cites ruling 75 E1, which ruling 78 point 3.2 amended.

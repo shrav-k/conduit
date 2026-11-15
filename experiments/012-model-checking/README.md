@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b), 111 and 114 (MC6), 112 (MC7a), and 113 and 115 (MC7b), ruling 71's proof lane.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b), 111 and 114 (MC6), 112 (MC7a), and 113 and 115 (MC7b), ruling 71's proof lane; MC2 rerun 2026-11-15 under work order 160.
 The expected verdicts below were registered before execution; later orders extend this harness.
 [G5’s account of all 217 convention-layer safety promises](G5.md) records their standings and remaining work.
 
@@ -164,6 +164,8 @@ MC2 below covers operation identity, unknown outcomes, reconciliation and revisi
 Later orders take the rest of the safety catalogue.
 
 ## MC2 operation identities: model and pre-registration
+
+2026-11-15: work order 160 changed the operation model’s code; the operation-model tables dated 2026-11-11 below report its earlier code, which git keeps.
 
 Registered 2026-11-11 under work order 105, **before any MC2 run**. This extends the
 harness rule about seeded variants: a variant may refute several properties, provided its
@@ -567,6 +569,326 @@ coverage and the candidate contradiction need the admin's follow-up outside this
 scope. The catalogue was filled in later on 2026-11-11 (work order 100). The lane
 coordinator then checked the sixteen promises this order names: each is listed in it as a
 safety promise. The original harness model and `retry.rs` tests remain unchanged and passing.
+
+## MC2 rerun under ruling 78: model and pre-registration
+
+Registered 2026-11-15 under work order 160, before any run of this order, against starting
+commit `71c725bc8495d11df289a6b12ef6ff920b38660e`. These predictions stay fixed if a run
+differs; each difference will retain its first single-thread trace and explanation.
+
+The operation model reads ruling 78 point 6, whose text is still spec pending. An unknown
+outcome is reconciled only when its effect is present, recording succeeded. No fence is
+modelled, since ruling 78 point 6 withdrew it and the record “did not occur”. E, fence events
+and witnesses, Fenced and its queue-reading guard, and the proposed FenceOnTimer,
+FenceByOtherAttempt and FenceOnSignal mutants are cut. No mutant reconciles a settled
+invocation: recording only an effect that occurred can neither dispatch again nor record a false
+outcome. Revisions and the shared harness and fault configuration stay unchanged.
+
+The implementation can answer failed only without applying anything to that invocation;
+otherwise it applies and answers succeeded. At most one failed answer is emitted in a run,
+chosen by a local implementation action arming its next dispatch, not by the sender script.
+This bound is in the operation configuration. A plain-server error under IFC-010 is not a
+separate branch: like a lost answer it leaves unknown. The engine retains received answers
+by attempt in its saved index, including late answers, which still change no outcome.
+F13 leaves unknown when a failed current attempt has an earlier unanswered attempt;
+otherwise it records failed. DiscardLate is Deduplicating under DL2’s other reading: it
+discards late answers, so those attempts stay unanswered for F13. It is expected to have the
+same verdicts: a received answer means an attempt has already applied or used the one failure;
+counting it unanswered only keeps an outcome unknown. This tests whether DL2 bears on W.
+All deduplicating variants retain the ledger’s immutable deduplication fact and branches.
+
+W keeps both checks at the outcome record and also rejects an effect landing while the
+invocation stands failed. A later dispatch ends that interval; its own effect is outside it.
+O, W, U, A and C retain their names and promises. The three correct variants are Plain,
+Deduplicating and DiscardLate. DidNotOccur differs from Plain only by permitting failed
+reconciliation on absent effects (the withdrawn record, MC2-001). DedupFailedSettles differs
+from Deduplicating only by omitting F13, reading OPS-012 as written at `632881df`; its W
+refutation is the expected gap MC2-004, to SO-B. BlindReplay, VolatileIndex, TimerFailed,
+LateReply, KeyOnly and RepeatSucceeded each retain their single defect, now from Plain.
+
+The seven parts T L R D P C M and deduplicating scope remain as above. Every property is
+searched under L and R as ruling 78 point 3.2 requires. P remains because implementation and
+engine can sit on different machines, including a remote server: this is the coordinator’s
+classification under that point, open to the owner’s strike. No extra restarted-run or
+escaped-child fault is added: implementation crash/recovery keeps its queue and permits a
+dispatch after the run that took it ended (FR-180 and FR-346).
+
+H means holds, F refuted. This is the fixed registration, including collateral refutations:
+
+| Variant | Parts | O | W | U | A | C | Named refutation |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Plain | T L R D P C M | H | H | H | H | H | none |
+| Deduplicating | T L R D P C M, scope | H | H | H | H | H | none |
+| DiscardLate | T L R D P C M | H | H | H | H | H | none |
+| DedupFailedSettles | R | H | F | H | H | H | W in R |
+| DedupFailedSettles | T L D P C M | H | H | H | H | H | none |
+| DidNotOccur | T L R D P C M | F | F | H | H | H | O in T, 7 actions; O in C, no timeout |
+| BlindReplay | T | F | H | F | H | H | O in T |
+| VolatileIndex | C | F | F | F | F | F | O in C |
+| TimerFailed | C | F | F | H | H | H | W in C |
+| LateReply | T | H | H | F | H | H | U in T |
+| KeyOnly | T | H | H | H | H | F | C in T |
+| RepeatSucceeded | T | F | H | H | F | H | A in T |
+
+DidNotOccur’s W is a queued dispatch landing after failed. BlindReplay’s U (MC2-002) and
+VolatileIndex’s U (MC2-003), A and C are retained collateral failures; VolatileIndex’s W
+comes from reusing attempt 1 after index loss and taking its old copy’s failed answer.
+TimerFailed and RepeatSucceeded also refute O by a second effect. DidNotOccur/C’s additional
+named run disables the engine timer and engine crashes, leaving only implementation crash
+and recovery; its first dispatch must land after that recovery. The shared allowed hook is
+unchanged. Each named refutation prints its first single-thread trace and length and checks
+that clearing both indexes cannot erase the failure from the ledger.
+
+All earlier enabled witnesses are expected reached, except failed reconciliation is now
+only enabled for DidNotOccur. Every variant/part also witnesses a failed answer. The three
+deduplicating variants in L and R witness F13’s case (current failed, earlier unanswered).
+Any unexpected refutation of a correct variant will be classed against the text or as an
+over-broad property. Tests assert this registration plus exactly recorded differences.
+
+Grading separately runs each property’s own mutants in T with the engine timer disabled;
+the two timer credits are A’s repeats. Failure answers remain implementation answers, not
+faults. Only each target verdict is asserted, without witnesses or collateral verdicts.
+A target refuted there is graded restated, otherwise searched:
+
+| Property | Own mutants | Expected grade |
+| --- | --- | --- |
+| O | DidNotOccur, BlindReplay, VolatileIndex | searched |
+| W | TimerFailed | searched |
+| U | LateReply | searched |
+| A | RepeatSucceeded | restated |
+| C | KeyOnly | restated |
+
+### MC2 rerun dated results, 2026-11-15
+
+Measured on this Darwin/arm64 machine with pinned Rust `1.97.1`, Stateright `0.31.0`,
+`CARGO_BUILD_JOBS=3` and Cargo offline throughout. The full release suite passed 62 unit
+tests and zero doc tests. Its counts run also passed, with two checker threads for complete
+searches and one for each first BFS refutation. Every one of the 42 full operation
+configurations exhausted its bounded state space; every enabled witness was reached.
+No evidence run hit a ceiling or timeout. The unchanged harness tests deliberately catch
+truncation panics to test its guards. Depth and seconds below are observations of this run.
+The complete counts output was saved outside the repository and read with grep.
+
+| Operation variant | Part | Unique states | Depth | Seconds | O | W | U | A | C | Reachability |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Plain | Timers | 1,482 | 22 | 0.008 | H | H | H | H | H | reached |
+| Plain | Loss | 8,448 | 24 | 0.075 | H | H | H | H | H | reached |
+| Plain | Reorder | 2,926 | 22 | 0.020 | H | H | H | H | H | reached |
+| Plain | Duplication | 12,356 | 27 | 0.128 | H | H | H | H | H | reached |
+| Plain | Partition | 4,446 | 24 | 0.031 | H | H | H | H | H | reached |
+| Plain | Crash | 37,209 | 28 | 0.340 | H | H | H | H | H | reached |
+| Plain | Lost | 5,676 | 25 | 0.035 | H | H | H | H | H | reached |
+| Deduplicating | Timers | 1,613 | 22 | 0.008 | H | H | H | H | H | reached |
+| Deduplicating | Loss | 10,306 | 25 | 0.076 | H | H | H | H | H | reached |
+| Deduplicating | Reorder | 3,500 | 22 | 0.019 | H | H | H | H | H | reached |
+| Deduplicating | Duplication | 13,861 | 27 | 0.100 | H | H | H | H | H | reached |
+| Deduplicating | Partition | 4,839 | 24 | 0.036 | H | H | H | H | H | reached |
+| Deduplicating | Crash | 84,635 | 30 | 0.709 | H | H | H | H | H | reached |
+| Deduplicating | Lost | 7,074 | 25 | 0.049 | H | H | H | H | H | reached |
+| DiscardLate | Timers | 1,613 | 22 | 0.007 | H | H | H | H | H | reached |
+| DiscardLate | Loss | 10,306 | 25 | 0.078 | H | H | H | H | H | reached |
+| DiscardLate | Reorder | 3,500 | 22 | 0.017 | H | H | H | H | H | reached |
+| DiscardLate | Duplication | 13,861 | 27 | 0.093 | H | H | H | H | H | reached |
+| DiscardLate | Partition | 4,839 | 24 | 0.039 | H | H | H | H | H | reached |
+| DiscardLate | Crash | 84,635 | 30 | 0.845 | H | H | H | H | H | reached |
+| DiscardLate | Lost | 7,074 | 25 | 0.047 | H | H | H | H | H | reached |
+| DidNotOccur | Timers | 2,272 | 22 | 0.012 | F | F | H | H | H | reached |
+| DidNotOccur | Loss | 14,524 | 24 | 0.118 | F | F | H | H | H | reached |
+| DidNotOccur | Reorder | 4,797 | 23 | 0.033 | F | F | H | H | H | reached |
+| DidNotOccur | Duplication | 20,740 | 27 | 0.182 | F | F | H | H | H | reached |
+| DidNotOccur | Partition | 6,816 | 24 | 0.051 | F | F | H | H | H | reached |
+| DidNotOccur | Crash | 117,583 | 32 | 1.148 | F | F | H | H | H | reached |
+| DidNotOccur | Lost | 11,075 | 25 | 0.075 | F | F | H | H | H | reached |
+| DedupFailedSettles | Timers | 1,613 | 22 | 0.008 | H | H | H | H | H | reached |
+| DedupFailedSettles | Loss | 10,306 | 25 | 0.085 | H | H | H | H | H | reached |
+| DedupFailedSettles | Reorder | 3,432 | 22 | 0.018 | H | F | H | H | H | reached |
+| DedupFailedSettles | Duplication | 13,861 | 27 | 0.100 | H | H | H | H | H | reached |
+| DedupFailedSettles | Partition | 4,839 | 24 | 0.039 | H | H | H | H | H | reached |
+| DedupFailedSettles | Crash | 84,635 | 30 | 0.694 | H | H | H | H | H | reached |
+| DedupFailedSettles | Lost | 7,074 | 25 | 0.047 | H | H | H | H | H | reached |
+| BlindReplay | Timers | 1,613 | 22 | 0.008 | F | H | F | H | H | reached |
+| VolatileIndex | Crash | 51,873 | 28 | 0.447 | F | F | F | F | F | reached |
+| TimerFailed | Crash | 40,476 | 28 | 0.317 | F | F | H | H | H | reached |
+| LateReply | Timers | 1,144 | 22 | 0.006 | H | H | F | H | H | reached |
+| KeyOnly | Timers | 1,545 | 22 | 0.007 | H | H | H | H | F | reached |
+| RepeatSucceeded | Timers | 1,986 | 24 | 0.012 | F | H | H | F | H | reached |
+| Deduplicating | Scope | 11,552 | 26 | 0.098 | H | H | H | H | H | reached |
+
+### MC2 rerun grading, 2026-11-15
+
+These are separate no-engine-timer runs in T. Only the own mutant’s target verdict enters
+the grade; reachability and collateral verdicts are not grading assertions.
+
+| Property | Own mutant | Unique states | Depth | Seconds | Target refuted | Grade |
+| --- | --- | --- | --- | --- | --- | --- |
+| O | DidNotOccur | 289 | 22 | 0.002 | no | searched |
+| O | BlindReplay | 289 | 22 | 0.002 | no | searched |
+| O | VolatileIndex | 289 | 22 | 0.001 | no | searched |
+| W | TimerFailed | 289 | 22 | 0.001 | no | searched |
+| U | LateReply | 289 | 22 | 0.002 | no | searched |
+| A | RepeatSucceeded | 343 | 24 | 0.002 | yes | restated |
+| C | KeyOnly | 293 | 22 | 0.002 | yes | restated |
+
+### MC2 rerun differences and regression checks
+
+There are no differences from the registration: every safety verdict, witness and grade
+matched. MC2-002 and MC2-003 are registered collateral failures here, not new differences.
+There is no refutation of a correct variant to classify. Deduplicating and DiscardLate have
+the same verdicts in every part: DL2’s late-answer choice does not bear on W in these bounds.
+
+Each requested change was made alone, tested with
+`CARGO_BUILD_JOBS=3 cargo test --release operations::tests::rerun_matches_registration`
+(offline), observed failing with status 101, then undone. The failure lines were:
+
+| Change removed | Failing assertion |
+| --- | --- |
+| Plain permits failed reconciliation on absent effects | `unrecorded registration difference Plain/Timers: OPS-018 OPS-008 OPS-012 OPS-024: at most once` |
+| Deduplicating omits F13 | `unrecorded registration difference Deduplicating/Reorder: OPS-012 OPS-014: no wrong outcome` |
+| W checks records only | `unrecorded registration difference DidNotOccur/Timers: OPS-012 OPS-014: no wrong outcome` |
+
+### MC2 rerun first single-thread BFS traces
+
+These are the first separate named-property discoveries, with one checker thread. Every
+trace’s final state still violates its target after clearing the engine index and the
+implementation’s applied index: the external ledger retains the failure. `FailNext` arms
+the implementation’s next eligible dispatch for its one failed answer.
+
+DidNotOccur/Timers: O (7 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. timer A
+3. timer engine
+4. engine Reconcile(0)
+5. delivered A -> engine [position 0]
+6. delivered engine -> implementation [position 0]
+7. delivered engine -> implementation [position 0]
+```
+
+DedupFailedSettles/Reorder: W (8 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. timer A
+3. timer engine
+4. delivered A -> engine [position 0]
+5. implementation FailNext
+6. delivered out of order engine -> implementation [position 1]
+7. delivered engine -> implementation [position 0]
+8. delivered implementation -> engine [position 0]
+```
+
+BlindReplay/Timers: O (6 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. timer A
+3. delivered engine -> implementation [position 0]
+4. timer engine
+5. delivered A -> engine [position 0]
+6. delivered engine -> implementation [position 0]
+```
+
+VolatileIndex/Crash: O (7 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. timer A
+3. delivered engine -> implementation [position 0]
+4. crashed engine
+5. recovered engine
+6. delivered A -> engine [position 0]
+7. delivered engine -> implementation [position 0]
+```
+
+TimerFailed/Crash: W (3 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered engine -> implementation [position 0]
+3. timer engine
+```
+
+LateReply/Timers: U (4 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. delivered engine -> implementation [position 0]
+3. timer engine
+4. delivered implementation -> engine [position 0]
+```
+
+KeyOnly/Timers: C (8 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. timer A
+3. delivered A -> engine [position 0]
+4. delivered engine -> implementation [position 0]
+5. delivered implementation -> engine [position 0]
+6. A Next
+7. A Next
+8. delivered A -> engine [position 0]
+```
+
+RepeatSucceeded/Timers: A (5 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. timer A
+3. delivered engine -> implementation [position 0]
+4. delivered implementation -> engine [position 0]
+5. delivered A -> engine [position 0]
+```
+
+DidNotOccur/Crash-no-timeout: O (9 actions).
+
+```text
+1. delivered A -> engine [position 0]
+2. timer A
+3. crashed implementation
+4. engine Unknown(0, ImplementationCrash)
+5. engine Reconcile(0)
+6. delivered A -> engine [position 0]
+7. recovered implementation
+8. delivered engine -> implementation [position 0]
+9. delivered engine -> implementation [position 0]
+```
+
+### MC2 rerun: what follows, and limits
+
+**MC2-004: gap in OPS-012, closed by F13’s ruled reading.** In the eight-action
+DedupFailedSettles/R trace, attempt 1 stays queued while a timeout permits attempt 2.
+Reordering delivers attempt 2 first; the implementation answers failed without an effect.
+Attempt 1 then applies. The engine receives attempt 2’s failed answer while attempt 1 has
+no answer at the engine, and records failed over a present effect. With F13 it records
+unknown instead. This finding goes to SO-B, which writes F13 into OPS-012. The full-run
+W predicate also detects an effect arriving after the failed record, until a later dispatch.
+
+DidNotOccur reproduces MC2-001 in seven actions. Its nine-action no-timeout C trace holds
+the implementation’s crash and recovery and delivers the first dispatch only afterwards,
+with no engine timeout or crash. The retained queue supplies the later-run/escaped-child
+route; no new fault was needed. The no-timeout constructor enables no engine-recovery
+witness because it permits no engine crash. Failed reconciliation is solely this withdrawn-rule
+mutant; it is not a behavior of the correct models under ruling 78 point 6.
+
+The account now has searched 7, restated 6, holds-not-graded 66, contradiction MC2-001 2,
+gap MC2-004 1, static 78 and text-changed-not-rerun 28 (9 formerly holds-not-graded).
+All other standings retain their counts. Static rows without a manifest case or outside
+evidence rise from 74 to 75 through OPS-011 alone. Read hashes and present-text digests
+were updated only for the graded rows; the history check passed.
+
+OPS-014, OPS-018 and OPS-024 wait for the order that writes ruling 78 point 6 into `spec/`;
+that order reruns this model with the ruled variants as the text. Their present text still
+holds the fence and “did not occur”, and is not credited by this ruled-reading run.
+The 2026-11-11 Fenced control held ruling 75 A1’s ruled reading; order 077’s wording was
+never modelled. This run likewise does not test that withdrawn fence wording.
+
+Here, holds means holds in this bounded model of the reading it names. It says nothing
+of an engine, of S3 or of a cut between real machines (D35). The earlier operation model’s
+remaining exclusions, small bounds, separate non-timer fault parts, serialized suffix,
+fixed caller/target, and lack of liveness or fairness claims still apply. No specification,
+engine, harness or revision model was changed, and no vector was added.
 
 ## MC3 access over time: model and pre-registration
 

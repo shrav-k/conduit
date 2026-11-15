@@ -11,13 +11,16 @@ fn marker(name: &str) -> PathBuf {
     PathBuf::from(std::env::var_os("HOME").unwrap()).join(name)
 }
 fn record(name: &str) {
+    record_value(name, "yes");
+}
+fn record_value(name: &str, value: &str) {
     writeln!(
         OpenOptions::new()
             .create(true)
             .append(true)
             .open(marker(name))
             .unwrap(),
-        "yes"
+        "{value}"
     )
     .unwrap();
 }
@@ -49,6 +52,11 @@ fn main() {
         .or_else(|| std::env::var_os("CODEX_HOME"))
         .map(PathBuf::from);
     if args.iter().any(|a| a == "status") {
+        let slow = scratch.is_none() && marker("slow-status").exists();
+        if slow {
+            record("status-started");
+            std::thread::sleep(Duration::from_secs(2));
+        }
         if scratch
             .as_ref()
             .is_none_or(|home| home.join("signed-in").exists())
@@ -58,19 +66,29 @@ fn main() {
         } else {
             println!("Not logged in");
         }
+        if slow {
+            record("status-done");
+        }
         return;
     }
     if args.iter().any(|a| a == "logout") {
         // A logout outside a scratch home would touch the everyday login.
         let home = scratch.expect("logout without a scratch home");
         record("logout-started");
+        if marker("slow-logout").exists() {
+            std::thread::sleep(Duration::from_secs(2));
+        }
         fs::remove_file(home.join("signed-in")).unwrap();
+        record("logout-done");
         return;
     }
     if !args.iter().any(|a| a == "login") {
         std::process::exit(2);
     }
-    record("login-started");
+    if args.iter().any(|a| a == "--mode=complete-and-wait") {
+        fs::write(scratch.as_ref().unwrap().join("signed-in"), "yes").unwrap();
+    }
+    record_value("login-started", &std::process::id().to_string());
     // Fail the test if the probe gives a controlling terminal or leaks its environment.
     // SAFETY: these functions only inspect the current process and null stdin.
     unsafe {

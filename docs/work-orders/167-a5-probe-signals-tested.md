@@ -267,3 +267,19 @@ you make as your own, and every check's last line.
 
 A fresh Opus reader then reads the result before it merges (ruling 79). After the merge, the admin
 runs the probe against the real clients with the owner watching, as the README says.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `f37d76c0`: the worker (477 s) and a fresh Codex
+verifier (133 s), which found nothing in one round but did not run cargo in its read-only
+sandbox. The worker ran all eight fix-removal checks, each failing as the order says.
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran
+`cargo test --release` twice (12 end-to-end and 4 library tests, both green), clippy and fmt,
+and repeated all eight fix-removal checks on a scratch copy; each failed at the line the worker
+reported. It found no must. Its two shoulds were applied before merge: the README's amendment
+note is one line, as the paragraphs around it are, and the comment stating the probe's safety
+rule ("Only the positively empty scratch home may ever receive a logout.") is back above the new
+one. The probe has not yet been rerun against the real clients; that rerun waits for the owner.
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2) and found nothing to
+change.

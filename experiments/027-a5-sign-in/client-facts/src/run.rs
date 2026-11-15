@@ -19,15 +19,15 @@ const LIMIT: usize = 64 * 1024;
 const COMMAND_LIMIT: Duration = Duration::from_secs(30);
 const TICK: Duration = Duration::from_millis(20);
 
-// Set by SIGINT, SIGTERM or SIGHUP. Every tick loop then returns an error, so Running's
-// Drop kills the client's group, TempDir removes the scratch root and main removes the report.
+// Set by SIGINT, SIGTERM or SIGHUP. Scratch commands stop immediately; everyday
+// commands finish, and the safety check and logout run even after a signal.
 static SIGNALLED: AtomicBool = AtomicBool::new(false);
 extern "C" fn on_signal(_: libc::c_int) {
     SIGNALLED.store(true, Ordering::SeqCst);
 }
 fn interrupted() -> io::Result<()> {
     if SIGNALLED.load(Ordering::SeqCst) {
-        Err(io::Error::other("signal"))
+        Err(io::Error::new(io::ErrorKind::Interrupted, "signal"))
     } else {
         Ok(())
     }
@@ -80,6 +80,21 @@ impl Options {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CommandKind {
+    Everyday,
+    Scratch,
+    Safety,
+}
+impl CommandKind {
+    fn check_running(self) -> io::Result<()> {
+        if self == Self::Scratch {
+            interrupted()?;
+        }
+        Ok(())
+    }
+}
+
 struct Context<'a> {
     executable: &'a Path,
     home_variable: &'static str,
@@ -90,8 +105,10 @@ struct Context<'a> {
     base: &'a [(String, OsString)],
 }
 impl Context<'_> {
-    fn start(&self, args: &[&str], scratch: bool) -> io::Result<Running> {
-        interrupted()?;
+    fn start(&self, args: &[&str], kind: CommandKind) -> io::Result<Running> {
+        if kind != CommandKind::Safety {
+            interrupted()?;
+        }
         let mut command = Command::new(self.executable);
         command
             .args(args)
@@ -103,7 +120,7 @@ impl Context<'_> {
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
-        if scratch {
+        if kind != CommandKind::Everyday {
             command.env(self.home_variable, &self.scratch_home);
         }
         // SAFETY: setsid is async-signal-safe; no Rust allocation or locks in the child.
@@ -119,6 +136,7 @@ impl Context<'_> {
         let child = command.spawn()?;
         let mut running = Running {
             child,
+            kind,
             output: [Vec::new(), Vec::new()],
             exit: None,
             clean: false,
@@ -137,11 +155,11 @@ impl Context<'_> {
             Err(e) => Err(e),
         }
     }
-    fn command(&self, args: &[&str], scratch: bool) -> io::Result<(Running, bool)> {
-        let mut process = self.start(args, scratch)?;
+    fn command(&self, args: &[&str], kind: CommandKind) -> io::Result<(Running, bool)> {
+        let mut process = self.start(args, kind)?;
         let start = Instant::now();
         let timed_out = loop {
-            interrupted()?;
+            kind.check_running()?;
             process.poll()?;
             if process.exit.is_some() {
                 break false;
@@ -157,8 +175,8 @@ impl Context<'_> {
         process.finish()?;
         Ok((process, timed_out))
     }
-    fn status(&self, args: &[&str], scratch: bool) -> io::Result<Value> {
-        let (process, timed_out) = self.command(args, scratch)?;
+    fn status(&self, args: &[&str], kind: CommandKind) -> io::Result<Value> {
+        let (process, timed_out) = self.command(args, kind)?;
         let mut fact = status(&process.stdout(), &process.stderr());
         fact["skipped"] = json!(false);
         fact["exit"] = exit_value(process.exit);
@@ -174,7 +192,7 @@ impl Context<'_> {
             Err(e) if e.kind() == io::ErrorKind::NotFound => {}
             Err(e) => return Err(e),
         }
-        let mut process = self.start(&all_args, true)?;
+        let mut process = self.start(&all_args, CommandKind::Scratch)?;
         let start = Instant::now();
         let mut first_url = None;
         loop {
@@ -255,6 +273,7 @@ impl Context<'_> {
 
 struct Running {
     child: Child,
+    kind: CommandKind,
     output: [Vec<u8>; 2],
     exit: Option<ExitStatus>,
     clean: bool,
@@ -356,7 +375,7 @@ impl Running {
         let mut ended = if exited { "exited" } else { "term" };
         let start = Instant::now();
         loop {
-            interrupted()?;
+            self.kind.check_running()?;
             self.poll()?;
             if self.exit.is_some() && self.gone()? {
                 self.clean = true;
@@ -374,7 +393,7 @@ impl Running {
             }
             let start = Instant::now();
             loop {
-                interrupted()?;
+                self.kind.check_running()?;
                 self.poll()?;
                 if self.exit.is_some() && self.gone()? {
                     self.clean = true;
@@ -423,6 +442,13 @@ fn client(
 ) -> Result<Value, String> {
     let name = ["claude-code", "codex"][index];
     let fault = |step: usize| format!("step {step} {name}: fault");
+    let stopped = |step: usize, error: io::Error| {
+        if error.kind() == io::ErrorKind::Interrupted {
+            format!("step {step} {name}: signal")
+        } else {
+            fault(step)
+        }
+    };
     let status_args: &[&str] = if index == 0 {
         &["auth", "status"]
     } else {
@@ -439,27 +465,51 @@ fn client(
         &["logout"]
     };
     let (v, timed_out) = context
-        .command(&["--version"], false)
-        .map_err(|_| fault(1))?;
+        .command(&["--version"], CommandKind::Everyday)
+        .map_err(|e| stopped(1, e))?;
+    interrupted().map_err(|e| stopped(1, e))?;
     let version = version(&v.stdout(), &v.stderr());
-    let step2 = context.status(status_args, false).map_err(|_| fault(2))?;
-    let step3 = context.status(status_args, true).map_err(|_| fault(3))?;
+    let step2 = context
+        .status(status_args, CommandKind::Everyday)
+        .map_err(|e| stopped(2, e))?;
+    interrupted().map_err(|e| stopped(2, e))?;
+    let step3 = context
+        .status(status_args, CommandKind::Scratch)
+        .map_err(|e| stopped(3, e))?;
     let mut step4 = skipped_login(login_args);
     let mut step5 = skipped_status();
     if step3["login"] == "no" {
-        step4 = context
-            .login(login_args_base, login_args)
-            .map_err(|_| fault(4))?;
-        step5 = context.status(status_args, true).map_err(|_| fault(5))?;
+        // A signal in step 4 still owes the empty scratch home its safety check.
+        let login_signal = match context.login(login_args_base, login_args) {
+            Ok(facts) => {
+                step4 = facts;
+                None
+            }
+            Err(e) if e.kind() == io::ErrorKind::Interrupted => Some(stopped(4, e)),
+            Err(_) => return Err(fault(4)),
+        };
+        step5 = context
+            .status(status_args, CommandKind::Safety)
+            .map_err(|_| fault(5))?;
         if step5["login"] == "yes" {
             // Only the positively empty scratch home may ever receive a logout.
-            context.command(logout_args, true).map_err(|_| fault(5))?;
+            // Name the login before even starting its scratch-only logout.
+            logouts.push(format!("step 5 {name}: scratch login found"));
+            context
+                .command(logout_args, CommandKind::Safety)
+                .map_err(|_| fault(5))?;
             step4["logged_out"] = json!(true);
-            // Recorded at once, so that a later fault cannot hide it.
             logouts.push(format!("step 5 {name}: logout"));
         }
+        if let Some(signal) = login_signal {
+            return Err(signal);
+        }
+        interrupted().map_err(|e| stopped(5, e))?;
     }
-    let step6 = context.status(status_args, false).map_err(|_| fault(6))?;
+    let step6 = context
+        .status(status_args, CommandKind::Everyday)
+        .map_err(|e| stopped(6, e))?;
+    interrupted().map_err(|e| stopped(6, e))?;
     Ok(json!({"client": name, "version": version, "steps": {
     "1": {"exit": exit_value(v.exit), "timed_out": timed_out},
     "2": step2, "3": step3, "4": step4, "5": step5, "6": step6}}))
@@ -604,6 +654,7 @@ fn execute(
         )?);
     }
     scratch.close().map_err(|_| fault())?;
+    interrupted().map_err(|_| "step 6 codex: signal".to_owned())?;
     serde_json::to_writer_pretty(&mut *output, &json!({"clients": clients}))
         .map_err(|_| "step 6 codex: output fault".to_owned())?;
     output

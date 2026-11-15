@@ -34,6 +34,11 @@ have left the tree; their results, decisions and observations are in
 | [167](167-a5-probe-signals-tested.md) | A5's probe: signals and the shim tested, and a signal never cuts a logout (follow-up to 159) |
 | [168](168-tidy-after-153-155.md) | the points orders 153 to 155 left: G5.md, the tracker, and one difference recorded |
 | [169](169-model-account-reads-index-pieces.md) | the model-checking account's tool reads the coverage index's pieces |
+| [170](170-a78-pre-registration.md) | A78's pre-registration: the claim, the pass conditions and the measures for orders 2 and 3 (the full review's order 12) |
+| [173](173-method-as-run.md) | the work-order method as run (the full review's order 27) |
+| [174](174-vector-changes-declared.md) | vector changes checked against the order's declaration (the full review's order 29) |
+| [175](175-promise-totals-checked.md) | the promise totals checked (the full review's order 32) |
+| [176](176-core-purity-enforced.md) | the core's purity enforced (the full review's order 33) |
 
 ## Shared and staged files
 

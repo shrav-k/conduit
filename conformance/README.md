@@ -112,11 +112,13 @@ cargo run --release -p conduit-conformance
 cargo test --release
 ```
 
-The executable accepts an optional repository-root path. It reports each case's pass and
-promise IDs, and fails with the case, step and mismatched expectation. Every discovered case
-runs; there is no layer filter that could silently skip conventions. The workspace test runs
-the same suite. Broken fixtures and unsupported inputs fail as harness errors, never invented
-Conduit reasons. An undecidable language case is stopped and logged for the admin in
+The executable accepts an optional repository-root path. It reports each case's pass and promise
+IDs, and fails with the case, step and mismatched expectation. A case listed in
+[expected-failures.yaml](#expected-failures) is reported apart, with its reason and error, and
+never as a pass. Every discovered case runs; there is no layer filter that could silently skip
+conventions. The workspace test runs the same suite. Broken fixtures and unsupported inputs fail
+as harness errors, never invented Conduit reasons. An undecidable language case is stopped and
+logged for the admin in
 [the open increment's log](../docs/proposals/first-build/log-increment-4.md).
 
 The runner uses `std::thread::available_parallelism()` workers unless
@@ -198,6 +200,64 @@ form. Changes on both sides fail. An entry removed inline is removed from its pi
 only if its case is gone and the piece still holds the saved form; an empty piece is
 deleted. Removing an input branch or expectation property inline fails: an order that
 retires one deletes its piece. Never merge an entry, a piece or a schema branch by hand.
+
+## Expected failures
+
+[expected-failures.yaml](expected-failures.yaml) lets a new promise enter the specification
+with a case that can fail before the first build passes it, as
+[Writing promises, rule 8](../CONTRIBUTING.md#writing-promises) requires. A changed case that
+the build does not pass yet is listed the same way. The change that makes the build pass a
+listed case removes its entry.
+
+The file always exists. It is JSON written with `serde_json`'s pretty printer and a final
+newline, as the coverage-index pieces are written. Its empty form is:
+
+```json
+{
+  "cases": []
+}
+```
+
+The root object has only `cases`, a list. Each entry has exactly two members, in this order:
+`id`, the ID of a case in the tree, and `reason`, what the build lacks and which order is to
+make the case pass. Both are nonempty strings. Entries are sorted by `id` in byte order, with
+no duplicate IDs.
+
+Before any case runs, even with a requested ID prefix, the runner reads and checks the whole
+list against every case ID. A missing or unreadable file, the wrong root or list form, a
+malformed entry, a duplicate ID, IDs out of byte order or an ID naming no case fails the run.
+Each diagnostic begins `conformance/expected-failures.yaml: `, names the entry by its ID, or by
+its position (`entry 2`) where it has no ID, says what is wrong, and then says what would fix
+it. For an ID naming no case, remove the entry or restore the case.
+
+The runner distinguishes four outcomes:
+
+| Case result | Unlisted | Listed |
+| --- | --- | --- |
+| Pass | Reported as a pass. | Fails the run; remove its entry. |
+| Failure | Fails the run with the case's error. | Reported as an expected failure, with its reason and unchanged error, never as a pass. |
+
+A panic still fails the run, whether or not the case is listed. The list excuses only a
+failure of the case's run: every listed case is still validated against the case schema and
+checked against its coverage-index entry and the known promises before any case runs. A
+fault in those checks still fails the run. A run containing only expected failures succeeds;
+the runner reports no matching cases only when there is neither a pass nor an expected failure.
+
+The executable prints its `PASS` lines first. Each expected failure then prints
+`EXPECTED FAILURE <id> (<promises joined by ", ">): <reason>`, followed by the case's error
+with every line indented by two spaces. `D19` lines follow, for passes only. The final line
+is `<n> cases passed` when there are no expected failures, and
+`<n> cases passed; <m> expected failures` otherwise. These successful runs exit 0; a failed
+run exits 1. A failed run's summary is `<n> cases passed; <k> failed`, or
+`<n> cases passed; <m> expected failures; <k> failed` when expected failures also occurred,
+followed by the failure lines. A listed case that passes gives this failure line:
+
+```text
+<id> [<promises>]: passes, but conformance/expected-failures.yaml lists it as an expected failure (<reason>); remove its entry
+```
+
+A listed case keeps its coverage-index entry. Its tags say what the case tests, not that the
+build passes it.
 
 ## Reviewing vector changes
 

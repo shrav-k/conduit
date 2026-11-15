@@ -2,6 +2,7 @@
 mod access;
 mod checks;
 mod expect;
+mod expected;
 mod packages;
 pub mod pieces;
 mod records;
@@ -48,6 +49,20 @@ pub struct CaseReport {
     pub storage: Vec<Value>,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct ExpectedFailure {
+    pub id: String,
+    pub promises: Vec<String>,
+    pub reason: String,
+    pub error: String,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct RunReport {
+    pub passed: Vec<CaseReport>,
+    pub expected_failures: Vec<ExpectedFailure>,
+}
+
 fn read_value(path: &Path) -> Result<Value> {
     let documents = read_file(path).map_err(|e| e.to_string())?;
     if documents.len() != 1 {
@@ -72,12 +87,12 @@ fn paths(directory: &Path, found: &mut Vec<PathBuf>) -> Result<()> {
 }
 
 /// Run every discovered case. Unsupported inputs and invalid assertions fail, never skip.
-pub fn run_suite(repository: &Path) -> Result<Vec<CaseReport>> {
+pub fn run_suite(repository: &Path) -> Result<RunReport> {
     run_matching(repository, "")
 }
 
 /// Run a development subset by stable ID prefix; inventory validation still covers all cases.
-pub fn run_matching(repository: &Path, prefix: &str) -> Result<Vec<CaseReport>> {
+pub fn run_matching(repository: &Path, prefix: &str) -> Result<RunReport> {
     let threads = vector_threads(std::env::var("CONDUIT_VECTOR_THREADS"))?;
     run_matching_with_threads(repository, prefix, threads)
 }
@@ -103,7 +118,7 @@ pub fn run_matching_with_threads(
     repository: &Path,
     prefix: &str,
     threads: usize,
-) -> Result<Vec<CaseReport>> {
+) -> Result<RunReport> {
     if threads == 0 {
         return Err("vector thread count must be positive".into());
     }
@@ -290,6 +305,12 @@ pub fn run_matching_with_threads(
             ));
         }
     }
+    let expected_value = read_value(&directory.join("expected-failures.yaml")).map_err(|e| {
+        format!(
+            "conformance/expected-failures.yaml: {e}; restore a readable file with one valid control document. See conformance/README.md, \"Expected failures\"."
+        )
+    })?;
+    let expected = expected::validate(&expected_value, &ids)?;
     let matching: Vec<_> = prepared
         .iter()
         .filter(|(_, case)| case.id.starts_with(prefix))
@@ -327,17 +348,29 @@ pub fn run_matching_with_threads(
     }
     completed.sort_by_key(|(index, _)| *index);
     let mut reports = vec![];
+    let mut expected_failures = vec![];
     let mut failures = vec![];
     for (index, result) in completed {
         let (_, case) = matching[index];
-        match result {
-            Ok(storage) => reports.push(CaseReport {
+        match (result, expected.get(&case.id)) {
+            (Ok(storage), None) => reports.push(CaseReport {
                 id: case.id.clone(),
                 promises: case.promises.clone(),
                 steps: case.steps.len(),
                 storage,
             }),
-            Err(error) => failures.push(format!(
+            (Err(error), Some(reason)) => expected_failures.push(ExpectedFailure {
+                id: case.id.clone(),
+                promises: case.promises.clone(),
+                reason: reason.clone(),
+                error,
+            }),
+            (Ok(_), Some(reason)) => failures.push(format!(
+                "{} [{}]: passes, but conformance/expected-failures.yaml lists it as an expected failure ({reason}); remove its entry",
+                case.id,
+                case.promises.join(", ")
+            )),
+            (Err(error), None) => failures.push(format!(
                 "{} [{}]: {error}",
                 case.id,
                 case.promises.join(", ")
@@ -345,17 +378,25 @@ pub fn run_matching_with_threads(
         }
     }
     if !failures.is_empty() {
+        let expected_count = if expected_failures.is_empty() {
+            String::new()
+        } else {
+            format!("; {} expected failures", expected_failures.len())
+        };
         return Err(format!(
-            "{} cases passed; {} failed\n{}",
+            "{} cases passed{expected_count}; {} failed\n{}",
             reports.len(),
             failures.len(),
             failures.join("\n")
         ));
     }
-    if reports.is_empty() {
+    if reports.is_empty() && expected_failures.is_empty() {
         return Err("no cases matched the requested prefix".into());
     }
-    Ok(reports)
+    Ok(RunReport {
+        passed: reports,
+        expected_failures,
+    })
 }
 
 /// Keep the frozen S1 inventory visible, including unvectorized boundaries.

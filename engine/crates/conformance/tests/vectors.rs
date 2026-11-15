@@ -2,7 +2,12 @@
 fn all_portable_cases_pass() {
     let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let reports = conduit_conformance::run_suite(&repository).unwrap_or_else(|e| panic!("{e}"));
-    let ids: std::collections::BTreeSet<_> = reports.iter().map(|r| r.id.as_str()).collect();
+    let ids: std::collections::BTreeSet<_> = reports
+        .passed
+        .iter()
+        .map(|r| r.id.as_str())
+        .chain(reports.expected_failures.iter().map(|r| r.id.as_str()))
+        .collect();
     for required in [
         "s1-whole",
         "records-replay-register",
@@ -229,7 +234,7 @@ fn one_and_four_threads_report_the_same_fields() {
     let repository = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let sequential =
         conduit_conformance::run_matching_with_threads(&repository, "access-", 1).unwrap();
-    assert!(sequential.len() >= 10);
+    assert!(sequential.passed.len() >= 10);
     let parallel =
         conduit_conformance::run_matching_with_threads(&repository, "access-", 4).unwrap();
     assert_eq!(sequential, parallel);

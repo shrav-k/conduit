@@ -237,3 +237,35 @@ the new files and runs `python3 tools/check_private_paths.py` and `git diff --ca
 the pull request, the admin shows the engine build, the four engine shards and the doctests
 passing. A fresh Codex verifier and a fresh read-only Opus reader read the result before it
 merges ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `f37d76c0`: the worker (876 s) and a fresh Codex verifier
+(245 s), which found nothing to change in one round. Its read-only sandbox kept it from rerunning
+the three tests that copy the tree and the check that they fail without the change, so it read their
+saved logs instead; it ran the four validator unit tests, the executable on the BOM case, the format
+and whitespace checks and the docs, names and private-path checkers. The order added
+`conformance/expected-failures.yaml`, empty today, and a private module, `src/expected.rs`, that
+checks the whole list against every case ID before any case runs. The runner reports a listed case
+that fails as an `ExpectedFailure`, apart from the passes and never as one, and fails the run when a
+listed case passes; `run_suite`, `run_matching` and `run_matching_with_threads` now return a
+`RunReport`. The executable prints an `EXPECTED FAILURE` line with the case's error indented beneath
+it, and with the empty list its output is unchanged to the byte (`494 cases passed`).
+`CONTRIBUTING.md` gains rule 8 under "Writing promises", and `conformance/README.md` a section,
+"Expected failures". A fresh read-only Opus reader then verified the order (ruling 79, point 2). It
+reran the crate's tests (lib 38, core_boundary 7, expected_failures 3, pieces 3, vectors 2), clippy,
+the executable, the check that the new tests fail without the change (2 failed and 1 passed, then 3
+passed once restored), the docs and private-path checkers and `git diff --check`, probed the list's
+diagnostics on a scratch copy, and found no must. This fix applied its three shoulds. Each
+diagnostic of the list now says what is wrong before the repair: the actual type of the root, of
+`cases`, of an entry or of its `id` or `reason`, the members an object lacks or has unknown, an
+empty `id` or `reason`, the earlier entry a duplicate repeats and the ID an out-of-order entry
+follows. An entry without an ID is named by its position, as `entry 2: `. The unit tests assert each
+message whole, and the README's sentence on the diagnostics says the same. The executable's test
+checks that its last line is exactly `0 cases passed; 1 expected failures`. The "Running" paragraph
+is re-wrapped to its width, with one short line where its long link is kept whole. A24's row in
+`docs/AUDIT.md` still reads open; updating it was outside this order's scope.
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2): it reran the
+conformance tests, clippy and fmt and found no must. Its two points were applied: a duplicate
+named after a later entry is now tested, and this Record names the docs check.

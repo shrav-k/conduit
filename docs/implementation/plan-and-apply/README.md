@@ -121,7 +121,7 @@ permit only the named container's printed cascade. None of the flags bypasses en
 
 ## Ordering and access
 
-The limits say: "Narrowing never waits. A plan prints and counts every widening, including one
+The limits say: "Narrowing never waits. A plan prints and records every widening, including one
 caused by moving a package pin or changing a reusable template's operations (PKG-031)" and
 "the plan still checks the operations that actually resolve"
 ([specification](../../../spec/README.md#what-the-short-forms-meaning-covers)).

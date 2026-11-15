@@ -138,3 +138,12 @@ grep -c 'counted when used' IN_FORCE.md
 
 `git status --short` lists only the six files in scope. Do not stage anything. Report each choice
 you make as your own, and every check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `89aa7894`: the worker (1096 s) and a fresh Codex verifier
+(567 s), which found nothing to change in one round. The four decisions are applied across six
+files in 25 changed lines: approvals and widening are recorded "with the plan", CTR-013 cites
+PRV-029 and the limits rather than SEC-020, and IN_FORCE.md and the two texts that copied the old
+wording follow, keeping the counting rule. A fresh read-only Opus reader then verified the order
+(ruling 79, point 2) and found nothing to change.

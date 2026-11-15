@@ -308,8 +308,9 @@
     only what account-hook reports, never the instance's state directory. Hooks are selected
     under requires and TPL-004, invoked only as parts of sign-in.v1 or setup for their caller
     and filters (PND-011), and exposed through no consumer tool. The engine starts no login
-    and holds no token it yields (SEC-020). A Resource needing browser login is implemented by
-    a package that completes it and keeps its token in its own state directory (PRV-029). The
+    and holds no token it yields (PRV-029 and the limits in spec/README.md). A Resource
+    needing browser login is implemented by a package that completes it and keeps its token in
+    its own state directory (PRV-029). The
     engine carries no return for carried: false (PND-013). The engine compares the client IDs
     of a Type's logins with every Type it holds at another address: every installed package's
     Types and every submission's Types held by a template or instance (SUB-008, PKG-029).

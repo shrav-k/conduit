@@ -146,23 +146,15 @@ What worked (log):
   Its first worker turn took 11966 s, inside the deadline; round 4 was clean. It merged on
   2026-11-12 (#264), after a fix round on the plain runner for its rebase.
 
-What failed or cost (log):
+What failed or cost is logged in
+[increment 4's log](../proposals/first-build/log-increment-4.md) as findings 4-21 to 4-27, each
+with its settlement: the network outage (4-21), the write inside a slot's `.git` (4-22), the
+leftover processes (4-23), the restart for each fresh conversation (4-24), the guard that
+tripped (4-25), the turn of hours (4-26) and the sub-agents' reach (4-27).
 
-- A brief network outage on the Mac failed 042's round-3 worker turn after 55 s: "client turn 1
-  failed: client failure: other; session cannot restart implicitly", outcome unknown. Plain
-  `codex exec` workers reconnected by themselves. The Agent's turn should survive a transient
-  network loss, or name it.
-- `claude-code.v2` wrote inside the slot's `.git` with no prompt: unconfined, as ruling 70 allows.
-- Each fresh conversation costs an engine restart: 171 to 191 s in 042's round 4.
-- In the smoke test, Codex's terminal (PTY) children escaped the run's process-group kill; the
-  harness lists and stops what a turn leaves behind.
-
-None is yet a finding in [increment 4's log](../proposals/first-build/log-increment-4.md); ruling
-70 asks that each be. Next: re-pin the dogfood engine to `main` (it is still pinned at `38c0b4f`,
-before 070), then run 046 and 047 through it; orders 4 and 5 need appointment (batch 2). The
-plan's follow-ups: a fresh conversation without a restart (`newConversation` on `turn.v1`, on
-050a's branch), and cancelling the provider call when a dispatch deadline fires, a fault fix
-before the rerun. After 050, the store is
+Next: re-pin the dogfood engine to `main` (it is still pinned at `38c0b4f`,
+before 070), then run 046 and 047 through it; orders 4 and 5 need appointment (batch 2).
+After 050, the store is
 initialized again and the owner signs each slot Agent in once.
 
 ## The second machine

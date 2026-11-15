@@ -48,7 +48,9 @@ class ModelAccountChecks(unittest.TestCase):
         self.write_account()
         self.write(model_account.CATALOGUE,
                    "## Safety promises\n\n| TST-001 | convention |\n\n## The others\n")
-        self.write_yaml(model_account.MANIFEST, {"cases": [{"promises": ["TST-001"]}]})
+        self.index_path = "conformance/language/index.yaml"
+        self.write_yaml(self.index_path, {"cases": [{"promises": ["TST-001"]}]})
+        self.write_yaml(model_account.MANIFEST, {"status": "fixture"})
         self.write(model_account.MODEL_DIR + "/sample.rs", "// Fixture module.\n")
 
     def write(self, path, text):
@@ -202,12 +204,77 @@ class ModelAccountChecks(unittest.TestCase):
         self.row = {"id": "TST-001", "class": "safety", "standing": "static", "note": "One step."}
         self.write_account()
         self.assertIn("no outside evidence: 0", self.run_check()[1])
-        self.write_yaml(model_account.MANIFEST, {"cases": []})
+        self.write_yaml(self.index_path, {"cases": [{"promises": ["TST-999"]}]})
         self.assertIn("no outside evidence: 1", self.run_check()[1])
         self.row["outside"] = ["evidence.txt"]
         self.write("evidence.txt", "Fixture evidence.\n")
         self.write_account()
         self.assertIn("no outside evidence: 0", self.run_check()[1])
+
+    def test_cases_are_read_from_nested_index_files(self):
+        self.row = {"id": "TST-001", "class": "safety", "standing": "static", "note": "One step."}
+        self.write_account()
+        self.write_yaml(self.index_path, {"cases": [{"promises": ["TST-999"]}]})
+        nested = "conformance/language/deeper/still/index.yaml"
+        self.write_yaml(nested, {"cases": [{"promises": ["TST-001"]}]})
+        status, output = self.run_check()
+        self.assertEqual(status, 0, output)
+        self.assertIn("no outside evidence: 0", output)
+        (self.root / nested).unlink()
+        status, output = self.run_check()
+        self.assertEqual(status, 0, output)
+        self.assertIn("no outside evidence: 1", output)
+
+    def test_manifest_cases_are_refused(self):
+        for cases in ([], [{"promises": ["TST-001"]}]):
+            with self.subTest(cases=cases):
+                self.write_yaml(model_account.MANIFEST, {"cases": cases})
+                self.assert_failure(
+                    "still has cases; since work order 071 a case entry belongs in the "
+                    "index.yaml of the directory holding its case directory", model_account.MANIFEST)
+
+    def test_no_index_cases_is_an_error(self):
+        for empty in (False, True):
+            with self.subTest(empty=empty):
+                for path in (self.root / "conformance").rglob("index.yaml"):
+                    path.unlink()
+                if empty:
+                    self.write_yaml(self.index_path, {"cases": []})
+                    self.write_yaml("conformance/language/deeper/index.yaml", {"cases": []})
+                status, output = self.run_check()
+                self.assertEqual(status, 1, output)
+                self.assertIn("conformance: no index.yaml with cases found, so no static row can be "
+                              "checked against a case", output.splitlines())
+
+    def test_malformed_index_names_its_file(self):
+        path = "conformance/language/malformed/index.yaml"
+        not_mapping = "not a mapping; make it a mapping whose cases is a list of case entries"
+        not_list = "not a list; make cases a list of case entries"
+        malformed = [
+            ("cases: 3\n", f"cases is a number, {not_list}"),
+            ("cases:\n", f"cases is empty or null, {not_list}"),
+            ("cases: [\n", "could not read YAML"),
+            ("null\n", f"is empty or null, {not_mapping}"),
+            ("[]\n", f"is a list, {not_mapping}"),
+            ("{}\n", "has no cases key; add cases, a list of case entries"),
+            ("cases: [3]\n",
+             "case 1 is a number, not a mapping; make each case a mapping with a promises list"),
+            ("cases: [{promises: [TST-001]}, text]\n",
+             "case 2 is a string, not a mapping; make each case a mapping with a promises list"),
+            ("cases: [{}]\n",
+             "case 1 has no promises key; give each case a promises list of promise IDs"),
+            ("cases: [{promises: 3}]\n",
+             "case 1 promises is a number, not a list; make promises a list of promise IDs"),
+            ("cases: [{promises: [TST-001, 3]}]\n",
+             "case 1 promises item 2 is a number, not a string; write each promise ID as a string"),
+        ]
+        for contents, message in malformed:
+            with self.subTest(contents=contents):
+                self.write(path, contents)
+                status, output = self.run_check()
+                self.assertEqual(status, 1, output)
+                self.assertIn(f"{path}: {message}", output.splitlines())
+                self.assertEqual(output.splitlines()[-1], "Errors: 1")
 
     def test_other_classes_and_only_direct_convention_promises(self):
         self.write_yaml("spec/interface/more.yml", [

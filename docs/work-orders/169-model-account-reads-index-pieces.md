@@ -98,3 +98,31 @@ git diff --check
 With decision 1 undone (the covered set taken from the manifest's `cases` again, the tests
 kept), `test_cases_are_read_from_nested_index_files` fails. Say so in the report, with the
 command you ran, then restore decision 1. Do not stage anything.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `71c725bc`: the worker (140 s) and a fresh Codex verifier
+(268 s), which found nothing to change in one round but could not run the whole unit suite, since
+its read-only sandbox could not create the tests' temporary fixtures. `tools/check_model_account.py`
+now takes the promises it counts as covered from every `index.yaml` under `conformance/`, at any
+depth and in sorted path order, rather than from the manifest's `cases`, which order 071 had
+removed. A manifest that still has `cases`, an index that cannot be read or has the wrong shape, and
+a tree with no index case are each an error that names its file, or `conformance` for the last. The
+count line now reads "Static rows with no conformance case and no outside evidence" and is 24 again,
+as in order 153's Record; before this order `main` printed 74 with "Errors: 0". G5.md's bullet says
+that the cases are counted from the `index.yaml` files. Four new tests cover a nested index, refused
+manifest cases, no index case and a malformed index. A fresh read-only Opus reader then verified the
+order (ruling 79, point 2). It ran the whole Python suite (78 tests passed) and every Done-when
+command. On scratch copies it undid decision 1 and each new check in turn, and a test failed each
+time. It found no must. Both of its shoulds were applied before merge.
+`test_no_index_cases_is_an_error` now requires the whole line that begins `conformance: `, so an
+error naming another path fails it. The index-shape diagnostics now say what was found and then the
+repair, such as `cases is a number, not a list; make cases a list of case entries` and `has no cases
+key; add cases, a list of case entries`. They name what was found in YAML's terms rather than
+Python's type names. The fix gave the same form to the two diagnostics about a single case, which
+had the same fault, and one about a promise ID that is not a string now names its position. The
+malformed-index test expects each new line, and two more shapes: a `cases` key with no value and a
+fault in a second case.
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2) and found no must; its
+four wording points on this Record were applied as it gave them.

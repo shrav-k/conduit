@@ -15,6 +15,8 @@ have left the tree; their results, decisions and observations are in
 | [039](039-build-local-names-and-expected-id.md) | Local names and expectedId in the build |
 | [040](040-build-fleet-and-first-start.md) | Fleet and first start in the build |
 | [067](067-condense-work-orders.md) | Move merged orders into their record |
+| [151](151-private-names-and-secret-scan.md) | Private names and secrets checked before anything private is committed (the full review's order 2) |
+| [152](152-ci-engine-shards-stand-alone.md) | The engine's CI stands alone, and CI builds every crate (the full review's order 3) |
 
 ## Shared and staged files
 

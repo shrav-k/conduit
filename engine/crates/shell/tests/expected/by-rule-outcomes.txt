@@ -1,0 +1,49 @@
+# A83 Part E: observed client-visible outcomes, one line per example set.
+# Derived with `cargo test --release -p conduit-shell --test by_rule -- --nocapture`
+# from engine/ on 2026-11-15, on main commit
+# f37d76c093f4bbd279bf9d4d4cbccd5645f51bb1 (origin/main; also this work order's base).
+# A line changes only in the pull request that changes what the engine does with that set.
+# NAME CLASS REASON RULES
+CON-016-no-input-fills-operations.yaml accepted succeeded -
+CON-028-bound-applied-twice.yaml named invalid CON-028
+CON-028-bound-on-a-target-that-is-not-access.yaml other invalid OBJ-009
+CTR-006-setting-inside-another.yaml error error -
+CTR-006-two-inputs-one-setting.yaml error error -
+CTR-009-reserved-mark-outside-the-core-package.yaml accepted succeeded -
+FST-006-instance-from-node.yaml named invalid FST-006
+IFC-033-reserved-root-defs.yaml named invalid IFC-033
+MAN-015-manifest-implementation-without-address.yaml named invalid MAN-010,MAN-015
+MAN-017-environment-place-admits-an-array.yaml named invalid MAN-017
+MAN-017-environment-place-admits-any-value.yaml named invalid MAN-017
+MAN-017-environment-place-not-required.yaml named invalid MAN-017
+MAN-017-required-argument-place-admits-null.yaml named invalid MAN-017
+MAN-018-item-binds-a-variable-of-identity.yaml named invalid MAN-018
+NAM-021-manifest-states-the-core-address.yaml named invalid NAM-021
+NAM-027-two-documents-one-name.yaml named invalid NAM-027
+NAM-028-selection-that-names-nothing.yaml named invalid NAM-028
+PKG-020-manifest-plain-runtime-provider.yaml named invalid PKG-020
+PKG-030-manifest-remote-runtime-provider.yaml named invalid PKG-030
+PLC-025-two-items-name-one-label.yaml accepted succeeded -
+PLC-025-type-and-item-name-one-label.yaml accepted succeeded -
+PLC-028-template-of-the-node-type.yaml accepted succeeded -
+POOL-005-entry-reference-outside-an-entry.yaml other invalid INS-002
+PRV-001-provider-type-of-another-family.yaml accepted succeeded -
+PRV-004-conduit-to-a-runtime-provider.yaml accepted succeeded -
+PRV-016-package-source-type-with-a-control-on-schemes.yaml error error -
+SCH-009-allof-defaults.yaml named invalid SCH-009
+SCH-009-conflicting-defaults.yaml named invalid SCH-009
+SCH-015-ref-to-a-name-that-is-not-a-schema.yaml named invalid SCH-015
+SCH-016-pattern-outside-the-interoperable-tokens.yaml named invalid SCH-016
+SCH-016-pattern-that-is-not-ecma-262.yaml named invalid SCH-016
+SCH-019-default-fails-its-schema.yaml named invalid SCH-019
+SCH-019-default-that-is-not-a-duration.yaml named invalid SCH-019
+SCH-019-default-that-is-not-a-uuid.yaml named invalid SCH-019
+SCH-019-input-default-fails-its-schema.yaml named invalid SCH-019
+SEC-001-secret-reference-beside-a-string.yaml error error -
+SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml accepted succeeded -
+SEC-024-secret-header-to-http.yaml error error -
+TPL-003-template-selects-an-operation-of-the-engine.yaml named invalid TPL-003
+TPL-004-offered-operation-without-an-implementation.yaml named invalid TPL-004
+TPL-019-two-items-that-are-run.yaml named invalid TPL-019
+valid/equal-defaults error error -
+valid/files-package accepted succeeded -

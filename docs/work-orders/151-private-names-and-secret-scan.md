@@ -27,8 +27,8 @@ most likely to carry one. This order closes that before they run.
    category only, as the three existing ones are, never with the matched text:
    - a tailnet name: a DNS name ending `.ts.net` with at least one name character before it,
      matched without regard to case;
-   - a tailnet address: an IPv4 address in 100.64.0.0/10 (100.64.0.0 to 100.127.255.255), written
-     as four dotted decimal octets;
+   - a tailnet address: an IPv4 address in the shared address space that Tailscale uses (first
+     octet 100, second octet 64 to 127), written as four dotted decimal octets;
    - an SSH key fingerprint: `SHA256:` followed by exactly 43 base64 characters that are not all
      hexadecimal digits, so that a hexadecimal digest, such as the one in
      `conformance/language/archives/digest-format/install.json`, is never flagged;
@@ -85,3 +85,31 @@ and the pinned gitleaks, run with `.gitleaks.toml` over the whole working tree w
 reports no finding. Check the workflow's YAML by loading it with `/usr/bin/python3` and PyYAML. Do
 not stage anything. Report each choice you make as your own, the gitleaks version and the checksum
 you verified, every allowlist entry with its reason, and every check's last line.
+
+## Record
+
+Run on 2026-11-14 on the Mac from `main` `b1aacc08`: the worker (487 s), a fresh Codex verifier
+(263 s) with two musts and a should, a second worker round (385 s) and a second verifier (282 s).
+`tools/check_private_paths.py` gains four built-in patterns, each with tests: tailnet DNS names,
+tailnet IPv4 addresses, SSH key fingerprints (a hexadecimal digest is never one) and Windows home
+paths, with the placeholders the home-directory pattern skips. A new `secrets` job downloads
+gitleaks 8.24.2 for Linux x64, checks it against the release's checksums before running it, and
+scans the commits a pull request or push to `main` adds, merges against their first parent
+included, with `--redact`, printing only rule and location. `.gitleaks.toml` extends the default
+rules and allowlists two lines by path, rule and the whole line: planning prose in
+`docs/implementation/PROVIDERS.md` and a synthetic key in a test of `packages/scenario-s2-linear`.
+`CONTRIBUTING.md` names the settings the repository relies on, without values. The second round
+anchored the allowlists to whole lines and added the merge diffs. The one finding left was the
+admin's: this order's own text gave the tailnet range as dotted addresses, which the new pattern
+flags; the admin reworded it. A fresh read-only Opus reader then verified the order (ruling 79,
+point 2), with one must: a Windows home path written with escaped backslashes, as a JSON export
+carries it, was not flagged. The admin finished the order: the pattern takes one or two
+backslashes, the tailnet-name pattern no longer misses names beside `_`, `-` or a file suffix, the
+tests cover more of the address range, the scan says when it did not complete, the archive's
+digest is pinned beside the release's checksums, and CONTRIBUTING.md says that no check is
+required on `main` by a setting. A second fresh Opus reader read the admin's fix and found no
+must. Its shoulds were applied before merge: the tailnet-name pattern starts a match only where a
+run of name characters begins, which keeps it linear on long runs (a test checks 200,000 of them);
+a Windows home path is flagged however many times its backslashes are escaped; a test covers every
+second octet in and out of the tailnet range; names beside `-` are tested; and CONTRIBUTING.md
+says that the admin, not a setting, waits for the three checks.

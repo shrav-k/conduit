@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -61,6 +62,65 @@ class PrivatePathChecks(unittest.TestCase):
         self.assertIn("names.txt:2: private name from CONDUIT_PRIVATE_NAMES", output)
         self.assertNotIn("Synthetic.Name+one", output)
         self.assertEqual(self.run_check(), (0, "Errors: 0\n"))
+
+    def test_new_patterns_report_only_location_and_category(self):
+        cases = [
+            (b"node.synthetic." + b"TS.NET", "tailnet name"),
+            (b"100." + b"64.0.0", "tailnet address"),
+            (b"100." + b"127.255.255", "tailnet address"),
+            (b"100." + b"64.0.1.", "tailnet address"),
+            (b"100." + b"100.100.100", "tailnet address"),
+            (b"100." + b"99.200.1", "tailnet address"),
+            (b"_host.synthetic." + b"ts.net_", "tailnet name"),
+            (b"host.synthetic." + b"ts.net.log", "tailnet name"),
+            (b" -host.synthetic." + b"ts.net", "tailnet name"),
+            (b"SHA256:" + b"G" * 41 + b"+/", "SSH key fingerprint"),
+            (b"C:\\Users\\" + b"synthetic\\file", "Windows home directory"),
+            (b"z:\\users\\" + b"synthetic", "Windows home directory"),
+            (b"C:\\\\Users\\\\" + b"synthetic", "Windows home directory"),
+            (b"C:" + b"\\" * 4 + b"Users" + b"\\" * 4 + b"synthetic", "Windows home directory"),
+        ]
+        for index, (value, category) in enumerate(cases):
+            with self.subTest(index=index):
+                self.track("planted.bin", b"\0first line\n" + value)
+                status, output = self.run_check()
+                self.assertEqual(status, 1)
+                self.assertEqual(output, f"planted.bin:2: {category}\nErrors: 1\n")
+                self.assertNotIn(value.decode(), output)
+
+    def test_digests_placeholders_and_non_tailnet_addresses_are_green(self):
+        digest = b"abcdef0123456789" * 4
+        values = [
+            digest, b"sha256:" + digest, b"SHA256:" + digest,
+            b"SHA256:" + b"a" * 43,
+            b"SHA256:" + b"G" * 42, b"SHA256:" + b"G" * 44,
+            b"100.128.0.1", b"10.0.0.1", b"100.63.255.255",
+            b"100." + b"64.256.1", b"100." + b"64.0.999",
+            b"1100." + b"64.0.1", b"100." + b"64.0.1.2",
+            b"C:\\Users\\<name>", b"C:\\\\Users\\\\<name>", b".ts.net", b"x.ts.network", b"x.ts.net-y",
+        ]
+        values.extend(b"C:\\Users\\" + name + b"\\file"
+                      for name in private_paths.PLACEHOLDER_USERS)
+        values.append(b"C:\\Users\\USER\\file")
+        self.track("examples.txt", b"\n".join(values))
+        self.assertEqual(self.run_check(), (0, "Errors: 0\n"))
+
+    def test_every_second_octet_of_the_tailnet_range_and_none_outside_it(self):
+        for second in range(256):
+            with self.subTest(second=second):
+                self.track("f.txt", b"100." + str(second).encode() + b".0.1")
+                if 64 <= second <= 127:
+                    self.assertEqual(self.run_check(), (1, "f.txt:1: tailnet address\nErrors: 1\n"))
+                else:
+                    self.assertEqual(self.run_check(), (0, "Errors: 0\n"))
+
+    def test_a_long_run_of_name_characters_is_checked_quickly(self):
+        # With no tailnet name in it, a pattern that tries a match at every character of the run
+        # takes minutes; one that starts only where a run begins takes well under a second.
+        self.track("blob.txt", b"A" * 200_000)
+        started = time.monotonic()
+        self.assertEqual(self.run_check(), (0, "Errors: 0\n"))
+        self.assertLess(time.monotonic() - started, 10)
 
     def test_working_tree_edit_is_checked_without_staging_it(self):
         self.track("edited.txt", b"clean\n")

@@ -251,6 +251,18 @@ tests exercise the implemented slice; real-client evidence is recorded separatel
 [increment 3 closeout](docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md).
 Passing these checks does not establish whole-language conformance.
 
+## Settings this repository relies on
+
+`main` is protected under [ruling 74, point 1](docs/proposals/ruling-74/README.md).
+CI passes the repository variable `CONDUIT_PRIVATE_NAMES`, a comma-separated list of private
+names never written in the tree, to `tools/check_private_paths.py`. Its seven built-in patterns
+check home-directory paths, session scratch paths, Codex login files, tailnet DNS names, tailnet
+IPv4 addresses, SSH key fingerprints and Windows home paths. The separate `secrets` check runs
+a pinned gitleaks release on the commits each pull request or push to `main` adds; its
+configuration in [.gitleaks.toml](.gitleaks.toml) extends the default secret-detection rules.
+No status check is required on `main` by a branch setting today; the admin merges a pull request
+only after its `docs`, `rust` and `secrets` checks pass.
+
 ## License and attribution
 
 Original Conduit documentation, contracts and code use the [Apache License, Version 2.0](LICENSE).

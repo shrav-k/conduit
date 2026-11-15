@@ -59,10 +59,12 @@ probes) stopped here; nothing of the lane runs, and every unfinished branch is o
   7. model checking: MC4's P1 registered again, and the models of orders 109, 110, 112 and 113
      reviewed against order 081's promises, now that 077 has merged (#263); the MC2 rerun,
      likewise unblocked; MC9 after batch 2; SV1 after 071; MX0 at the admin's word.
-- **Open for the owner:** S3's cut, heal and loss method (S3-OF, options A to C in
-  [S3's plan](../../experiments/014-s3-two-machines/plan.md)); and the plain Linear server for
-  S2's runs, chosen with the owner before them, to the requirements in
-  [S2's plan](../../experiments/013-s2-shared-login/plan.md).
+- **Answered by [ruling 78](../proposals/ruling-78/README.md), point 4:** S3-OF by option (E),
+  the Mac's own firewall under one administrator rule the owner adds once
+  ([S3's plan](../../experiments/014-s3-two-machines/plan.md)); S2's plain Linear server is the
+  coordinator's choice, to the requirements in
+  [S2's plan](../../experiments/013-s2-shared-login/plan.md), logged for the owner to strike. The
+  plans' dated amendments come with the review's orders.
 - **Waiting on others:** SSH-M on 049a1 in `s3/m2`; PRV-021's three cases in the admin's next
   spec order.
 

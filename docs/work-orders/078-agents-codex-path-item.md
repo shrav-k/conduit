@@ -292,3 +292,73 @@ Report:
 - the totals passed and failed, and each check's last line.
 
 Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Windows computer (WSL), stacked on order 076's branch at its checkpoint
+`228b5dea` (which sits on order 050a's checkpoint `bb75e294`, on `main` at `50e7cc5`): one round,
+the worker (549 s) and a fresh verifier (123 s), which found no must or should and reported no
+finding. The branch is not merged. It holds the checkpoint commits of 050a, 076 and 078; 078's own
+commit, `5f97ca38`, changes four files of `packages/agent-codex/` and no source.
+
+`conduit.yaml` gains a third item, `wrapper-v2-path`: `wrapper-v2` with `command: [agent-codex]`, a
+name with no `/`, found as the one who starts it finds programs (MAN-010), so that a runtime
+provider other than the engine's own runner can run it on the machine of the instance's node
+(PRV-019). The version stays 0.2.0 and `codex.v2`'s default stays `wrapper-v2`. `codex.v2`'s
+description now says that on the engine's own runner its own tools run as the engine's
+operating-system user, and that under another runtime provider they run on the machine of the
+instance's node, as the operating-system user and with the limits that the provider's contract
+states. The README gains a section, "The wrapper-v2-path item": what it is, why, how it is found,
+that it pins nothing and is a shortcut that stands in for MAN-010's pinned `package` item without
+being one, how a template selects it, its directory and its reach; it names no provider, machine,
+user, network or TLS arrangement. A new test, `tests/manifest.rs`, splits the `implementations:`
+map as text and checks the items' order, that `wrapper-v2`'s command is `bin/` plus
+`agent_adapter::WRAPPER`, that `wrapper-v2-path` differs from `wrapper-v2` only in its command
+line, that `agent_adapter::WRAPPER` holds no `/`, and that `contracts.yaml` does not name the new
+item.
+
+The worker's results: the package's suite, 12 passed and 0 failed. With the command changed to
+`[bin/agent-codex]` the manifest test failed with "wrapper-v2-path: item line 2 differs from
+wrapper-v2 (only command may change)", and it passed once the line was restored. `check_docs.py`,
+`set_names.py --check`, `git diff --check`, `cargo fmt --check` (after one formatting correction)
+and `cargo clippy --all-targets -- -D warnings` were clean, the order's two greps for held choices
+and absolute paths printed nothing, and nothing under `spec/` or `engine/` differs from `50e7cc5`.
+The host build's archive digest was
+`44db5db1e33076fc7a284971f733a8abe49d76f7c514d58c79c12b09f0895420`. Against the engine's release
+build, project P1 (`default-v2` and `path-v2` on `codex.v2`) was accepted with no diagnostic; P2
+(`path-v1` on `codex.v1`, selecting the new item) was refused, reason invalid, with three MAN-017
+diagnostics naming `example.org/conduit/agent-codex#wrapper-v2-path`, for `AGENT_DIRECTORY`
+(`/directory`), `AGENT_EFFORT` (`/effort`) and `AGENT_TURN_DEADLINE_SECONDS`
+(`/turnDeadlineSeconds`), each "is not a required scalar place, or required input admits null". The
+verifier reran the read-only checks and the existing manifest test binary and found the saved
+registration replies matching the report; it did not rerun the full builds or the mutation.
+
+The worker's findings, kept for later. AGT-01, step 3's answer: on Linux and macOS the wrapper finds
+`codex` on its inherited PATH, however the wrapper itself was started. The header helper's path
+differs: it comes from `current_exe()`, which on Linux reads the process's own executable link,
+independently of argv[0], and on macOS returns what `_NSGetExecutablePath` gives, without making it
+absolute or canonical. A relative launch path returned there could resolve differently when Codex
+invokes the helper from its client directory, and a symlink's spelling can also matter. Starting
+the wrapper by name alone therefore needs no source change, but a stable absolute helper path is a
+portability concern. The macOS part is from source inspection, not a run on macOS. AGT-02: the
+admin still has to log this shortcut, and the pinned `package` item it stands in for, in the
+owner's review list. The worker's own choices: one manifest integration test, which takes an item
+header as two spaces and a whitespace-free name ending in `:` and numbers body lines from one,
+excluding the header; the README section as plain paragraphs, with the earlier sentence linking to
+it; separate template files for `default-v2` and `path-v2`; and `apiVersion` read from
+`spec/names.yaml` for the temporary projects.
+
+### The last verifier's findings
+
+None: round 1's verifier reported an empty list. Its verdict, verbatim: "No verified faults in
+228b5de..5f97ca3. All six decisions are applied as written. Read-only checks passed, including the
+existing manifest test binary; saved registration replies match the report. Full builds and mutation
+testing were not rerun. The tree remains unchanged."
+
+### Next
+
+The branch merges with order 050, not yet written, as one 0.2.0 with 050a and 076, since NAM-024
+forbids adding a default once `.v2` is published and, once 0.2.0 publishes, forbids a later release
+to change `codex.v2`'s description, which this order changes. If 076's branch moves, the admin
+rebases this one. As an order built on Windows, its changed crate's tests, fmt and clippy run on the
+Mac before it merges.

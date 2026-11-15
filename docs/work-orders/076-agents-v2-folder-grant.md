@@ -80,3 +80,66 @@ Also:
 - `grep -rn "ownTools" packages/` prints nothing.
 
 Report the totals passed and failed. Do not stage anything.
+
+## Record
+
+Run on 2026-11-11 on the Mac, from order 050a's checkpoint `bb75e294` rather than from `main`, as
+the order asks: one round, a Codex worker (1083 s) and a fresh Codex verifier (266 s), which found
+no must or should finding and listed no finding at all. It did not rerun the Rust tests or the
+engine registrations in its read-only sandbox, and it noted that the worker's two Step 11 failures
+remain unresolved. The round is checkpointed on `wo/076-agents-v2-folder-grant` (`228b5dea`, on top
+of `bb75e294`) and is not merged. Because the branch carries 050a's tree, its diff against `main`
+also holds 050a's work (18 files in all, 10 of them changed by this order), and this order's own
+file is not on it: it reached `main` in #162.
+
+In both packages the `.v2` Types (`codex.v2`, `claude-code.v2`) no longer have `ownTools`: it is
+gone from their properties, from `required` and, as `AGENT_OWN_TOOLS`, from `conduit.yaml`. The
+`.v1` documents stay byte for byte. The wrapper recognizes a `.v2` Agent by
+`AGENT_TURN_DEADLINE_SECONDS`, and turns on the client's own tools exactly when the directory's
+variable is present. With a directory, Codex runs with `danger-full-access` and its shell, unified
+exec and image-viewing features, and Claude Code runs with `bypassPermissions` and Bash, Read,
+Edit, Write, Glob, Grep and WebFetch. The directory must still be absolute and an existing
+directory, and it is now canonicalized. Hosted search (Codex's `web_search`, Claude Code's
+WebSearch) needs `accountServices` true and a named directory. The contracts and READMEs say that
+the tools are on where the template names its directory, that nothing confines them in v0, and
+that limits will come from a confining runtime provider chosen with `runtime:` (ruling 75, B2). The
+sentence that called the switch temporary is gone. With `directory` null the tools and sandbox
+match `.v1`'s. The worker applied this decision by its "nearest sound reading": Codex still passes
+050a's `.v2` `--cd` and MCP timeout arguments there, and its regression test allows for them. The
+worker's own choices: an internal `v2` flag in place of `Config::own_tools`, and new tests for
+symlink canonicalization, a path that is not a directory, and an empty deadline.
+
+The worker's checks: `python3 tools/check_docs.py`, `python3 tools/set_names.py --check` and
+`git diff --check` pass. `cargo fmt --check` is clean in both packages. `cargo clippy` failed at
+first (exit 101) because sccache could not write in the sandbox, and passed with `RUSTC_WRAPPER`
+unset. With it unset, `cargo test --release` passes: 22 passed and 0 failed, by the worker's count.
+`grep -rn "ownTools" packages/` prints nothing. 050a's step 11, rerun with the new schemas, gave 2
+passed and 2 failed. In each package the valid templates are accepted with no diagnostic, but the
+template-only registrations with `turnDeadlineSeconds: 604801` are also accepted with no diagnostic.
+The worker added supplemental instance checks. After it relaxed its own evaluator to allow
+informational NAM-008 notes, they gave 4 passed and 0 failed: the valid instances are accepted, and
+the oversized deadline is rejected with INS-014, naming `turnDeadlineSeconds` and `maximum`.
+
+The worker's finding, and what it could not do, kept for later:
+
+- 076-01 (ambiguity; INS-014, MAN-017, SCH-009): step 11 expects the template-only submissions with
+  `turnDeadlineSeconds=604801` to be rejected, and both were accepted without diagnostics. INS-014
+  describes validation at instantiation, so the coordinator must reconcile the check's expectation
+  with template validation. The worker left the engine unchanged.
+- It could not read ruling 75's record, which is not on this branch, so it applied B1 and B2 from
+  the order's text. The record and the matching IN_FORCE and status updates need integration
+  outside this order's scope.
+
+### The last verifier's findings
+
+- None: the report's `findings` list is empty. Its verdict, verbatim: "No additional faults found.
+  Documentation, names, formatting, whitespace and .v1 preservation checks passed. Rust tests and
+  engine registrations were not rerun in this read-only sandbox. The worker’s two reported Step 11
+  failures remain unresolved."
+
+### Next
+
+The handover says the packages of 050a, 076 and 078 stay unmerged until order 050, because NAM-024
+forbids adding a default once `.v2` is published. They merge with 050 as one 0.2.0, and until then
+Conduit's own Agents (A78) take their packages from this branch. Finding 076-01, step 11's
+expectation against INS-014, is still open for the coordinator.

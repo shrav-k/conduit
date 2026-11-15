@@ -349,3 +349,32 @@ Do not stage anything. In your report, give:
 - the new digest and the tool that computed it;
 - every check's last line;
 - without fixing it, any other place where the reference contradicts `spec/`.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `89aa7894`: the worker (433 s) and a fresh Codex verifier
+(275 s), which found nothing to change in one round. The reference now prints `detail ownTools`
+beside each Agent a plan registers or replaces and `detail targetOwnTools` beside an open to an
+Agent whose operations include one marked `startsModelWork: true`, with an absolute `directory` as
+`{"pathSha256":"HEX"}`; case 01 gains its two lines and `CTR-014`, and its new digest,
+`sha256:ca5cd458...85f5d7` from `/usr/bin/python3`'s `hashlib.sha256`, replaced the old hex by
+script in its path, digest, 15 request keys and `kept` and in every later case's `applied` and
+`kept`. A no-op plan prints its `difference` lines; a valid secret reference is kept and compared as
+`{kind, name}` with its resolved ID, and a literal or bare name stops the plan under SEC-001 with no
+part of it printed (a permitted null is not a reference); O1, O3, O4 and O5 are decided and O2, O7
+and O8 marked open; the safety cases' heading names 052a's convergence check; and renaming, removal
+by kind and a moved package pin are stated whole. A fresh read-only Opus reader verified the order
+before it merged (ruling 79, point 2) and found nothing that blocks it, with six small points. The
+coordinator's fix applied four, in the reference only: it restored the sentence that SEC-003 and
+SEC-004 bind diagnostics and records only, so keeping a reference in local state is our choice by
+analogy; restored O1's sentence that a request handing over values rejects a relative `fetch` or
+program (SUB-010); narrowed the no-op rule to a plan with no step and no stop, so it no longer reads
+as covering a stopped plan (decision 2's wording said "no step"); and named the tombstone rule by
+its label where decision 6's wording said "the first bullet". A further fresh Opus reader read the
+fix and found nothing that blocks it. Left for the coordinator, outside this order's scope:
+`experiments/015-s4-partial-setup/plan.md` points to the reference by line number for "No control
+call is inferred from a file edit", now at another line, and should use the anchor
+`#replacement-removal-and-cascades`; the plan prints an absolute `directory` as its hash where
+`spec/README.md` says the `ownTools` member inspection would show, a deliberate difference to log
+among the decisions; and a SEC-001 stopped plan has no `flags` line while case 09's stopped plan
+prints `flags []`, so one stopped form should be chosen.

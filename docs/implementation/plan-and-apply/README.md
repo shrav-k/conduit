@@ -6,7 +6,8 @@ This is the proposed CLI reference for spec batch 1, K3, with hand-written golde
 It describes tooling, not additional language promises or engine behavior. Its five approval
 and command readings follow [ruling 76, points 1–5](../../proposals/ruling-76/README.md).
 A builder follows the specification where this reference and it differ. No program has produced
-these expected plans. A later order supplies the remaining safety cases and a cascade case.
+these expected plans. The remaining cases are listed under
+[Safety cases for 052a's convergence check](#safety-cases-for-052as-convergence-check).
 What ships to the rerun's fresh author is the rerun preparation's decision, not this reference
 ([ruling 53, point 9](../../proposals/ruling-53/README.md)).
 
@@ -47,6 +48,18 @@ only [core operations](../../../spec/core/operations.yaml), adding no operation 
 1. Read the manifest and its documents, translate sectioned documents (SCT-003, SCT-004), and
    resolve against package contents matching the installed release identities, where those contents
    are available. Their CLI-side source is unspecified (O7); list and inspect do not supply them.
+   Compute each Agent's `ownTools` member from its Type's contract and resolved configuration;
+   this needs the package's contents, as any resolution does (O7). Print it where the text grammar
+   below requires it. Inspection results and their verification are unchanged.
+   Check every place governed by `secret-reference.v1` locally during translation and resolution,
+   before printing any step (SEC-001). A literal or bare name stops the plan with status 2:
+   print `plan`, then `stop KIND/NAME place=POINTER SEC-001` for each invalid place, then
+   `stopped`. Each stop names the document and the place by its JSON Pointer; no line holds any
+   part of the value (SEC-003). This plan has no step, `detail` or `difference` line; nothing is
+   kept or sent. A valid value is a reference to a Resource, never the secret itself. Print,
+   keep in `.conduit/state.yaml` and compare it like any other reference: as written, `{kind, name}`,
+   with the ID it resolves to as inspection shows it (OBJ-009, SEC-004). Where the schema allows
+   null, as for S1's `apiKey`, null is not a reference.
    Read the working copy's kept state described below.
    Reject malformed local state rather than treating it as a new working copy.
 2. Send `management.list.v1 {}` as root. Inspect each listed object through the tool ACC-033
@@ -106,7 +119,9 @@ operands stop planning; one permission never means all objects.
 | E: plan | Plan is available and never required. Apply computes, prints and records its own plan. | Ruling 76 point 5. |
 
 The other named permissions retain these precise meanings:
-`--reopen` lifts an outside-apply Conduit tombstone before registering/opening its desired grant;
+`--reopen` lifts a Conduit tombstone that the rule "Which tombstones apply lifts with no further
+flag", under [Replacement, removal and cascades](#replacement-removal-and-cascades), leaves to a
+flag, before registering/opening its desired grant;
 `--recreate` does that for another instance; `--adopt` takes over a foreign existing object into
 this working copy's ledger only after its ID, resolved definition and held packages are printed
 and verified. Adoption does not overwrite, lift, open or set up by itself: any such act needs its
@@ -115,7 +130,8 @@ own permission. Nothing besides adopt takes over a foreign object (synthesis F6)
 endpoint, and the necessary inline-template update. It does not authorize unrelated replacements,
 outside tombstones, or retargeting outside-file Conduits. An outside-file Conduit needs its own
 named replacement permission and explicit desired definition; otherwise the plan stops.
-Neither flag-free closure nor `--prune` lifts its resulting tombstone.
+Closing a dropped Conduit without a flag, or removing an instance with `--prune`, leaves the
+resulting tombstones to the named reopening/recreation flags under the rule below.
 `--with-resources N` and `--with-agents N`
 permit only the named container's printed cascade. None of the flags bypasses engine access.
 
@@ -131,6 +147,9 @@ as a whole, is a subset of access before apply or a subset of the access request
 For T4 close both project Conduits, restore B's read, then open A's write: no intermediate state
 lets both write. Register inert documents between these phases where dependencies need them.
 Root defaults added during registration count as added access and must follow all narrowings.
+The one-time Conduit that a cascade flag permits is the one stated exception to both narrowing
+before widening and the subset rule: the plan prints its opening, use and closure
+([ruling 59 A3](../../proposals/ruling-59/README.md)).
 This is our ordering choice, from "It narrows before it widens" in the
 [accepted simplification, point 4](../../proposals/simplification/README.md).
 That proposal's make-before-retire replacement was reversed by ruling 55 A3.
@@ -183,6 +202,20 @@ instance sequence at the same package pin. The history and Agent instances are u
 Merely moving a manifest pin does not rewrite unaffected held pins (NAM-009, NAM-010): compare
 resolved meaning and execution, not manifest text alone. Print this retained-pin difference.
 
+After `conduit install` moves a package pin:
+
+**Templates.** Replace each project template that refers to the moved package, and no other,
+using `replace.v1` at its revision with the new manifest (SUB-009). Case 05 replaces `shared--t`
+alone; for the other templates SUB-009 would store no change.
+
+**Instances.** Replace each existing instance whose resolved meaning or execution would differ
+under the new release, under `--replace` naming it (INS-020).
+
+**Everything else.** Every other object keeps the pins it holds (NAM-009 to NAM-011). While it
+holds an old pin, every plan prints its retained-pin `difference` line.
+
+**Contents needed.** The comparison needs the contents of both releases (O7).
+
 A nested instance is different (LIF-009). For a declared Conduit or a Pool entry's Resource,
 print `management.register-replacement.v1 ParentKind/parent expected=ID neither flag=... LIF-009`,
 with `nested=member` in the detail. It generates a new name and ID; show its later references as
@@ -190,9 +223,53 @@ with `nested=member` in the detail. It generates a new name and ID; show its lat
 already have been lifted by an independently permitted step. Old retired nested names remain
 occupied until removed. The local name of a declared Conduit remains unchanged.
 
-A tombstone made outside this apply needs reopen (Conduit) or recreate (other instance), even
-if a line was renamed or records purged (LIF-040, LIF-041). An interrupted apply's own journal
-may establish the same apply and cause; otherwise require the outside permission.
+A tombstone made outside this apply needs `--reopen` (Conduit) or `--recreate` (other instance)
+under the rule below, even if a line was renamed or records purged (LIF-040, LIF-041).
+An interrupted apply's own journal may establish the same apply and cause; otherwise require
+the named flag.
+
+- **Which tombstones apply lifts with no further flag.** Apply lifts a tombstone this command
+  caused, with no further flag, only when the same command makes the same object again under
+  the same kind and name: the object a `--replace` names and its incident Conduits (cases 04,
+  05 and 06), or a retained Conduit closed and made again because its resolved operations narrow
+  (ruling 76 point 1; case 04, steps 2 and 5). Every other tombstone a registration or open would
+  match needs `--reopen` (Conduit) or `--recreate` (another instance), naming the object to be
+  made. This includes an outside tombstone and one this apply leaves by closing a dropped
+  Conduit or by `--prune`, including Conduits a pruned instance's retirement closes under
+  CON-008. Reopening still takes a flag
+  ([ruling 76, What it amends](../../proposals/ruling-76/README.md#what-it-amends)).
+
+A Conduit renamed in the file that keeps its consumer, target and capability is a flag-free
+close of OLD and a new Conduit whose registration matches OLD's tombstone (LIF-041). The plan
+needs `--reopen NEW`, naming the new Conduit by its generated name. With that flag, close OLD,
+list, lift that tombstone, register NEW, inspect NEW, then open NEW. Print the flag on the lift,
+register and open, as case 08 does. Without it, stop before sending anything:
+`stop Conduit/NEW tombstone=(Conduit/OLD) requires=--reopen NEW LIF-041`.
+A tombstone this apply would make is named by its object in brackets; case 09 instead gives
+an existing tombstone's ID.
+
+Any other instance renamed in the file is removal of OLD under `--prune OLD` and addition of
+NEW. NEW matches no tombstone, since another instance matches by kind and name. OLD's retirement
+closes its Conduits (CON-008) and leaves their tombstones. A Conduit the file names that matches
+one needs `--reopen` naming that Conduit, as above; for example, a Conduit with the same consumer
+and local name that now targets NEW.
+
+Removal depends on kind:
+
+- A Conduit the file drops is closed with no flag (ruling 76 point 1). Its tombstone stays;
+  adding it back takes `--reopen` (cases 07, 09 and 08).
+- Another instance takes `--prune N`, then its retirement; adding it back takes `--recreate N`.
+  The same `--prune N` permits removing its inline template `N--t` (SCT-006), as `--replace N`
+  covers that template's update. Once N's retirement has removed N, remove the template with
+  `unregister.v1` at its revision, carrying `expectedId`.
+- A dropped template that is not inline takes `--prune` naming it, then `unregister.v1` at its
+  revision, carrying `expectedId`.
+- A Pool or Fleet that owns members takes its cascade flag, as described below (LIF-020).
+- A retirement that does not succeed is recovered by a further explicit retirement under the
+  original permission (LIF-026), subject to the observed identity and lifecycle checks below.
+  Apply never sends `unregister.v1` to recover it: that request asserts shutdown settled
+  elsewhere (LIF-017), which this reference leaves to the author.
+
 An unsuccessful retirement stops this apply. The next plan freshly lists and inspects the current
 identity and lifecycle state (OPS-036, LIF-013); it does not infer retirement from a rejected
 request. Retirement starts at dispatch, and an expectedId conflict retires nothing (`retire.v1`;
@@ -231,10 +308,11 @@ flags [--with-resources team]
 ready
 ```
 
-This necessary scoped permission is an ordering exception: its temporary management access must
-open before the cascade narrows; list it explicitly, never hide it as provider work. It grants
-only retirement, not data/model operations. The global access-subset rule above cannot literally
-include this temporary permission; O3 records that limitation rather than claiming it passes.
+This necessary scoped permission is the ordering and subset-rule exception of ruling 59 A3:
+its temporary management access must open before the cascade narrows; list it explicitly,
+never hide it as provider work. It grants
+only retirement, not data/model operations. The cascade flag permits this one-time Conduit's
+opening, use and closure, all printed in the plan.
 The one-time name is a deterministic unused `cascade-TARGET` name (truncate and add a digest
 suffix on collision); it is not an engine-made default. Register it from core `retire-pool` or
 `retire-fleet`, consumer root, target the named container, `as` the one-time name. The schema of
@@ -242,8 +320,8 @@ the cascade takes no expectedId; the expected field printed at step 4 is a check
 not a new wire argument. After successful retirement CON-008 has closed/removed this Conduit
 as part of step 4.
 That is the close printed under affects: sending another close would be invalid. Step 5 reads
-its tombstone and step 6 lifts it. This is the nearest sound reading, not the literal five
-requests of C13 (O4). If the cascade does not succeed, the ordinary stop rule applies. The
+its tombstone and step 6 lifts it. This is the reading under CON-008 (O4), in place of C13's
+literal five requests. If the cascade does not succeed, the ordinary stop rule applies. The
 container's retirement can fail after its dispatch has already closed/removed the temporary
 Conduit (LIF-021, TPL-009, CON-008); failure alone does not say whether it survives.
 After any unknown outcome is reconciled, the next explicit apply first offers cleanup under
@@ -295,17 +373,20 @@ and durable journal-before-send. No timestamps enter plan text. Plan and no-op a
 Do not commit `.conduit/`; recreate/adopt deliberately for another working copy rather than
 copying its ownership ledger. Anyone who edits this state and runs apply as root can widen
 access: this ledger is not an authorization boundary. Engine permissions remain the boundary.
-Keep no absolute path, store path, credential, or value at a place governed by a secret reference.
+Keep no absolute path, store path or credential.
 Use relative file origins and typed redacted markers for those values in saved snapshots, with
 in-memory comparisons against freshly read files. For a non-secret absolute path, retain only
 `{pathSha256: HEX}`, the SHA-256 of its UTF-8 bytes, and print `root-sha256=HEX` in the plan.
 This is a CLI comparison fingerprint, not a new wire input; it makes T6 distinct without storing
-an absolute path. Never fingerprint a credential or a secret-reference value. SEC-003 and
-SEC-004 bind diagnostics and records only; applying the same protection to this local state is our privacy choice by analogy.
-For a secret reference, omit the authored value entirely rather than hashing it. No raw wire
-envelope or returned CloudEvent is persisted if it violates that policy. Keep safe
-projections of results; reread a required omitted value next time. O1/O5 record the relative-path
-and secret comparison limitations; never pretend a redacted snapshot proves equality.
+an absolute path. Never fingerprint a credential. SEC-003 and SEC-004 bind diagnostics and
+records only; applying their protection to this local state, and keeping a valid reference as
+written beside its resolved ID, is our choice by analogy. Check secret-reference places before
+printing any step (SEC-001); diagnostics hold no part of an invalid value (SEC-003). Keep a valid
+secret reference as written, `{kind, name}`, with its resolved ID as inspection shows it, and
+compare it like any other reference (OBJ-009, SEC-004). It refers to a Resource and holds no secret.
+No raw wire envelope or returned CloudEvent is persisted if it violates that policy. Keep safe
+projections of results; reread a required omitted value next time. O1 records the relative-path
+limitation; never pretend a redacted snapshot proves equality.
 
 The exact safe record in each case is `recorded: {path, digest, text}`. A null path means
 no record is written: the case still states the computed digest and exact text for review. `kept` is a compact
@@ -334,8 +415,16 @@ List reads with no single object use `Tombstone/* expected=-`; list-result tombs
 has one line per request, its primary object followed by `objects=[Kind/name,...]` detail.
 Additional deterministic lines start `detail`, `affects`, `difference`, `flags`, or `stop`.
 Detail names the from/template change, new root as its `root-sha256` fingerprint, nested member,
-resolved operation set and package identity where relevant. This distinguishes otherwise similar
-plans without disclosing prohibited values. Full arguments are journaled only in safe form.
+resolved operation set and package identity where relevant. Beside each Agent registered or
+replaced, print `detail ownTools Agent/NAME JSON CTR-014` after that step's other `detail` lines,
+one per Agent in its `objects=` list's order. Beside each Conduit opened whose target is an Agent
+and whose operations include one marked `startsModelWork: true`, print
+`detail targetOwnTools Agent/NAME JSON CTR-014` after its `operations=` line (CTR-014, LIF-013).
+JSON is the member as `inventory.v1` gives it, in sorted-key compact JSON, except that an
+absolute-path `directory` is printed as `{"pathSha256":"HEX"}`, as document lines print `root`:
+plan text holds no path (see [Kept state and privacy](#kept-state-and-privacy)).
+This distinguishes otherwise similar plans without disclosing prohibited values.
+Full arguments are journaled only in safe form.
 Affects lines follow all steps, then differences, then flags sorted by flag and operand.
 The last line is `ready`, `no changes`, or `stopped`.
 
@@ -355,7 +444,11 @@ opens are explicit widening steps. Count and print all widening steps even under
 A recreated Conduit's open is `widens` relative to its just-closed state. Permission follows
 the resolved access change across the apply: restoring B with fewer operations in T4 is
 flag-free narrowing under ruling 76 point 1, even though its open step has that class.
-No-op text is exactly `plan\nno changes\n`; a no-op leaves kept state unchanged.
+A plan with no step and no stop prints `plan`, then each `difference` line, then
+`no changes`; it has no `affects` or `flags` line. With no difference, as in case 03, it is exactly
+`plan\nno changes\n`. Every plan from case 05 on prints the retained-pin `difference` line,
+so a no-op there has at least three lines. A no-op sends nothing and writes nothing;
+a no-op leaves kept state unchanged.
 
 | Status | Both commands |
 | --- | --- |
@@ -373,7 +466,8 @@ including apply result lines after `ready`; `recorded.text` is only the precedin
 is the text hashed. A null record path means no write, not an absent expected digest. Sources use promise IDs,
 rulings and the batch plan's line numbers (052a 643–647; 052b 649–652; K3 412). Their areas are
 plan (T1–T3), grants (T4, T7 revoke/restore), replacement (T5–T6), stops (unflagged restoration).
-A later order adds cascade and the other flags' cases.
+The remaining cases are listed under
+[Safety cases for 052a's convergence check](#safety-cases-for-052as-convergence-check).
 
 `files` contains literal flow-style documents. Requests carry the complete framed documents,
 with no short form on the wire. `arguments` contains expectedId exactly where the operation
@@ -430,7 +524,12 @@ Names quoted as they stand in [names.yaml](../../../spec/names.yaml): core packa
 `jwks.json`, `engine-id`, `token`, `tls.crt`, `tls.key`. `tools/set_names.py` does not rewrite
 these quotes or the cases under docs; maintain them explicitly when the assigned names change.
 
-## Safety cases deferred to K3b
+## Safety cases for 052a's convergence check
+
+Order 069b was K3b and wrote none of these cases. The 18 safety cases below, a cascade case
+and cases for `--adopt`, `--recreate` and `--prune` have no case file and no order. They are to
+be fixed inputs of the convergence check that is order 052a's done-when
+([decision D26](../../proposals/full-review/decisions.md#the-s1-rerun-and-its-report)).
 
 Adapted from the [synthesis cases 1–18](../../proposals/language-shape/short-form/synthesis.md#golden-plan-safety-cases).
 These are specified outcomes, not results from an implementation. No interactive confirmation
@@ -439,7 +538,7 @@ or catch-all approval or control-takeover flag is part of batch 1.
 | # | Trigger | Rule and outcome |
 | --- | --- | --- |
 | 1 | Outside closure, then an edit | LIF-041 and ruling 76 point 1: stop without reopen; editing cannot lift. |
-| 2 | Grant removed/re-added under another key | LIF-041 matches consumer/local name or target/capability; stop without reopen, even when renamed. |
+| 2 | Grant removed/re-added under another key | LIF-041 matches consumer/local name or target/capability; stop without reopen, even when renamed in the same apply or a later one. |
 | 3 | Agent retired by another actor | Three-way comparison, LIF-040: stop without recreate; no unrelated apply resurrects it. |
 | 4 | Records purged | LIF-040 keeps tombstones apart from records; still stop. |
 | 5 | Another copy narrowed a grant | Drift comparison stops a stale widening; replace alone does not take over drift. |
@@ -452,36 +551,48 @@ or catch-all approval or control-takeover flag is part of batch 1.
 | 12 | Placement with two nodes | Left out: second-node enrollment follows the rerun. Do not invent replacement placement behavior. |
 | 13 | Change a first-start/default root Conduit | ACC-024: refuse before sending closure. Ordinary root-consumed Conduits follow replacement rules. |
 | 14 | Generated-name collision | Translator's SCT-013, not a planner golden case here. |
-| 15 | Value at a secret-reference place | Translator's SCT-014/SEC-003; planner/local-state privacy also omits it. |
+| 15 | Value at a secret-reference place | Check locally during translation/resolution before any step (SCT-014, SEC-001). A literal or bare name stops with status 2: `plan`, one `stop KIND/NAME place=POINTER SEC-001` per invalid place, then `stopped`; no value or part of it, step, detail or difference, and nothing kept or sent (SEC-003). A valid Resource reference is printed, kept in `.conduit/state.yaml` and compared as written, `{kind, name}`, with its resolved ID as inspection shows it (OBJ-009, SEC-004); permitted null, as for S1's `apiKey`, is not a reference. |
 | 16 | Caller has only Pool authority | Engine inspection LIF-013/ACC-033, not this root CLI: no Agent inspection, no hidden counts; full inventory of inspectable objects. |
 | 17 | Setup raises sign-in | Setup returns pendingAction; ruling 76 point 4 continues apply, prints action IDs for the panel and answers nothing (TPL-012, PND-005, PND-011). |
 | 18 | Pin downgrade | Same resolved diff and replace permission as upgrade; no special downgrade bypass. |
 
 ## Open points
 
-O1: A document-carrying request rejects relative fetch and relative program values (SUB-010;
-`replace.v1`; today's shell reference). No submitted directory is on this wire. Such a project
-cannot be applied as written. Do not silently absolutize or invent an input; S1 uses neither.
+O1: Decided for v0. A project with a relative `fetch` or a program given as a relative path
+cannot be applied and must be packaged. The plan stops with status 2, naming the document and
+the place. No submitted directory is on this wire. A request that hands over values rejects a
+relative `fetch` or program (SUB-010; `replace.v1`). Making these values absolute would change
+the digest SUB-008 takes of the manifest as handed over, and lose PRV-007's guard that a relative
+program runs only on the engine's own runner (SUB-010). Do not silently absolutize or invent an
+input; S1 uses neither.
 
-O2: LIF-037 pins identity, not definition/lifecycle revision for open/setup. F6 inspection is
+O2: Open. LIF-037 pins identity, not definition/lifecycle revision for open/setup. F6 inspection is
 possible but cannot promise atomic validation against a concurrent same-ID change. The reference
 stops on detected drift, and makes no stronger engine promise.
 
-O3: The literal global narrowing/subset condition conflicts with opening a temporary cascade
-Conduit. The ordering chapter gives the data-access interpretation; the owner/admin must decide
-whether that exception is intended before a cascade golden case claims compliance.
+O3: Answered by [ruling 59 A3](../../proposals/ruling-59/README.md). A cascade takes a flag that
+opens, uses and closes a one-time Conduit, printed in the plan. That Conduit is the one stated
+exception to narrowing before widening and to the subset rule.
 
-O4: CON-008 closes the one-time cascade Conduit as soon as its target retires. A later close.v1
-would name a removed object and be invalid (LIF-035). Printing the engine's closure within the
-cascade instead of a second request is the nearest sound reading of plan C13; the specification is not amended here.
+O4: Decided. CON-008 closes and removes the one-time cascade Conduit as soon as its target retires.
+A later close.v1 would name a removed object and be invalid (LIF-035). Printing the engine's closure within the
+cascade under `affects` instead of sending another close is the reading under CON-008.
+`spec/README.md` still lists "close the Conduit" among the cascade's requests, contradicting
+CON-008; the next specification order corrects it
+([decision D86](../../proposals/full-review/decisions.md#the-state-of-the-documents)).
+The specification is not amended here.
 
-O5: Privacy removes secret-reference values from the local baseline. A redacted snapshot cannot
-prove their equality. This planner neither adopts changed secret bindings nor reverts them: print
-a redacted unresolved difference and stop when equality would be needed. A safe, durable comparison
-method for those values is open; S1 uses null apiKey and no secret reference. Public absolute
-paths use the fingerprint defined above, so their edits do not collide in plan keys.
+O5: Decided. Check every place governed by `secret-reference.v1` locally during translation and
+resolution before printing any step (SEC-001). A literal or bare name stops with status 2:
+`plan`, one `stop KIND/NAME place=POINTER SEC-001` for each invalid place, then `stopped`.
+No line holds any part of the value (SEC-003); there is no step, detail or difference, and
+nothing is kept or sent. A valid value is a reference to a Resource, never the secret itself:
+print, keep in `.conduit/state.yaml` and compare it like any other reference, as written,
+`{kind, name}`, with its resolved ID as inspection shows it (OBJ-009, SEC-004). Where permitted,
+null, as for S1's `apiKey`, is not a reference. Public absolute paths use the fingerprint defined
+above, so their edits do not collide in plan keys.
 
-O7: Package contents are a missing planner input. `list.v1` exposes installed package identities
+O7: Open. Package contents are a missing planner input. `list.v1` exposes installed package identities
 as address/version/digest (OPS-036); `inspect.v1` reads a template or instance and lists the packages
 it holds (LIF-013). Neither operation supplies installed package archives or manifests. Translation
 and resolution (SCT-003), and contract/implementation comparisons on pin changes (PKG-031), need
@@ -492,7 +603,7 @@ prints the missing input and stops with status 2. The nine paper cases assume fi
 are supplied as described above. The admin must settle the input/disclosure before a builder can
 implement these rules for arbitrary installed releases.
 
-O8: Ruling 76 point 3 fixes how commands choose the engine: `conduit serve` records the engine
+O8: Open. Ruling 76 point 3 fixes how commands choose the engine: `conduit serve` records the engine
 it serves as the person's current context, and `--store` overrides it. Order 052a still needs
 to specify the local context's persistence/discovery and unavailable-context diagnostics. No
 additional context command is proposed here. Context data stays outside the project's kept state.
@@ -567,7 +678,7 @@ cases 03 and 09 means no file is written, although the expected plan text and di
 
 | Case | Command primary/strict | Named flag uses | Requests after printing | Plan lines | Stdout lines |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| [01-t1](cases/01-t1.yaml) | 0/1 | 0 | 15 | 35 | 50 |
+| [01-t1](cases/01-t1.yaml) | 0/1 | 0 | 15 | 37 | 52 |
 | [02-t2](cases/02-t2.yaml) | 0/1 | 0 | 7 | 20 | 27 |
 | [03-t3-noop](cases/03-t3-noop.yaml) | 0/1 | 0 | 0 | 2 | 2 |
 | [04-t4](cases/04-t4.yaml) | 1/1 | 1 | 10 | 20 | 30 |
@@ -577,9 +688,10 @@ cases 03 and 09 means no file is written, although the expected plan text and di
 | [09-t7-restore-unflagged](cases/09-t7-restore-unflagged.yaml) | 0/1 | 0 | 0 | 5 | 5 |
 | [08-t7-restore](cases/08-t7-restore.yaml) | 1/1 | 1 | 4 | 12 | 16 |
 
-Ruling 76 changes the hashed plan text only in cases 04, 07, 08 (successful restoration) and 09
-(stopped restoration). Python `hashlib.sha256` re-derived those four digests from the exact
-UTF-8 plan bytes; their paths, request keys and later ledger/journal references changed with them.
-Cases 01, 02, 03, 05 and 06 keep their plan digests: command spelling, source citations and case
+Ruling 76 changed the hashed plan text of cases 04, 07, 08 (successful restoration) and 09
+(stopped restoration). The `ownTools` lines changed case 01's plan text. Each changed digest
+was re-derived with Python `hashlib.sha256` from the exact UTF-8 plan bytes; their paths, request
+keys and later ledger/journal references changed with them.
+Cases 02, 03, 05 and 06 keep their plan digests: command spelling, source citations and case
 order are outside the hash. No package, file or path fingerprint digest changed. Case 09 now
 precedes case 08 in the documented sequence so all nine cases form one applied/kept chain.

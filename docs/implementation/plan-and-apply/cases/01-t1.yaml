@@ -10,6 +10,7 @@ sources:
 - spec-batch-1 plan lines 320, 412, 643-652
 - SCT-003
 - SCT-004
+- CTR-014
 - LIF-013
 - LIF-037
 - LIF-040
@@ -57,6 +58,8 @@ printed: |
   detail manifest={"apiVersion":"github.com/shrav-k/conduit/v0","packages":{"example.org/s1/agents":{"digest":"sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71","version":"0.2.0"},"example.org/s1/filesystem":{"digest":"sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614","version":"0.1.1"}}}
   detail objects=[Pool/team--t,Pool/team,Resource/shared--t,Resource/shared,Agent/agent-a--t,Agent/agent-a,Agent/agent-b--t,Agent/agent-b,Fleet/s1,Conduit/agent-a--project,Conduit/agent-b--project]
   detail defaults=[root->Pool/team as=team,root->Fleet/s1 as=s1] FLEET-005
+  detail ownTools Agent/agent-a {"stated":false} CTR-014
+  detail ownTools Agent/agent-b {"stated":false} CTR-014
   2 management.inspect.v1 Pool/team expected=(step 1) neither flag=- LIF-013
   3 management.set-up.v1 Pool/team expected=(step 1) neither flag=- TPL-012
   4 team.inspect.v1 Resource/shared expected=(step 1) neither flag=- LIF-013
@@ -92,8 +95,8 @@ printed: |
   result 14 succeeded {"outcome":"succeeded","view":["Conduit","agent-b--project","00000000-0000-4000-8000-000000000111","r1","registered",{"as":"project","consumer":{"kind":"Agent","name":"agent-b"},"from":"example.org/s1/filesystem#read-write","resolved":{"capability":"example.org/s1/filesystem#directory.v1","operations":["example.org/s1/filesystem#file.read.v1","example.org/s1/filesystem#directory.list.v1","example.org/s1/filesystem#file.write.v1"]},"target":{"kind":"Resource","name":"shared"}},[{"address":"example.org/s1/filesystem","digest":"sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614","version":"0.1.1"}]]}
   result 15 succeeded {"invocation":"00000000-0000-4000-8000-000000002111","outcome":"succeeded"}
 recorded:
-  path: .conduit/plans/6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0.txt
-  digest: sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
+  path: .conduit/plans/ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7.txt
+  digest: sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7
   text: |
     plan
     1 management.register.v1 Fleet/s1 expected=(step 1) adds flag=- SCT-003
@@ -111,6 +114,8 @@ recorded:
     detail manifest={"apiVersion":"github.com/shrav-k/conduit/v0","packages":{"example.org/s1/agents":{"digest":"sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71","version":"0.2.0"},"example.org/s1/filesystem":{"digest":"sha256:eaa13cfee0f2499c1f8dfaf929cdcf7632f3cd3f034d405860411c49dab80614","version":"0.1.1"}}}
     detail objects=[Pool/team--t,Pool/team,Resource/shared--t,Resource/shared,Agent/agent-a--t,Agent/agent-a,Agent/agent-b--t,Agent/agent-b,Fleet/s1,Conduit/agent-a--project,Conduit/agent-b--project]
     detail defaults=[root->Pool/team as=team,root->Fleet/s1 as=s1] FLEET-005
+    detail ownTools Agent/agent-a {"stated":false} CTR-014
+    detail ownTools Agent/agent-b {"stated":false} CTR-014
     2 management.inspect.v1 Pool/team expected=(step 1) neither flag=- LIF-013
     3 management.set-up.v1 Pool/team expected=(step 1) neither flag=- TPL-012
     4 team.inspect.v1 Resource/shared expected=(step 1) neither flag=- LIF-013
@@ -232,7 +237,7 @@ requests:
         example.org/s1/agents:
           version: 0.2.0
           digest: sha256:479ef47083c8b151eb9cabf54ee500e9ed1972e4293393dc17bbad2da6e07c71
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:1
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:1
   flag: null
   result:
     outcome: succeeded
@@ -283,7 +288,7 @@ requests:
       kind: Pool
       name: team
     expectedId: 00000000-0000-4000-8000-000000000101
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:2
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:2
   flag: null
   result:
     outcome: succeeded
@@ -295,7 +300,7 @@ requests:
       kind: Pool
       name: team
     expectedId: 00000000-0000-4000-8000-000000000101
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:3
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:3
   flag: null
   result:
     outcome: succeeded
@@ -305,7 +310,7 @@ requests:
       kind: Resource
       name: shared
     expectedId: 00000000-0000-4000-8000-000000000103
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:4
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:4
   flag: null
   result:
     outcome: succeeded
@@ -318,7 +323,7 @@ requests:
       kind: Resource
       name: shared
     expectedId: 00000000-0000-4000-8000-000000000103
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:5
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:5
   flag: null
   result:
     outcome: succeeded
@@ -328,7 +333,7 @@ requests:
       kind: Fleet
       name: s1
     expectedId: 00000000-0000-4000-8000-000000000109
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:6
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:6
   flag: null
   result:
     outcome: succeeded
@@ -341,7 +346,7 @@ requests:
       kind: Fleet
       name: s1
     expectedId: 00000000-0000-4000-8000-000000000109
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:7
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:7
   flag: null
   result:
     outcome: succeeded
@@ -351,7 +356,7 @@ requests:
       kind: Agent
       name: agent-a
     expectedId: 00000000-0000-4000-8000-000000000106
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:8
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:8
   flag: null
   result:
     outcome: succeeded
@@ -365,7 +370,7 @@ requests:
       kind: Agent
       name: agent-a
     expectedId: 00000000-0000-4000-8000-000000000106
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:9
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:9
   flag: null
   result:
     outcome: succeeded
@@ -375,7 +380,7 @@ requests:
       kind: Agent
       name: agent-b
     expectedId: 00000000-0000-4000-8000-000000000108
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:10
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:10
   flag: null
   result:
     outcome: succeeded
@@ -388,7 +393,7 @@ requests:
       kind: Agent
       name: agent-b
     expectedId: 00000000-0000-4000-8000-000000000108
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:11
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:11
   flag: null
   result:
     outcome: succeeded
@@ -398,7 +403,7 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000110
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:12
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:12
   flag: null
   result:
     outcome: succeeded
@@ -413,7 +418,7 @@ requests:
       kind: Conduit
       name: agent-a--project
     expectedId: 00000000-0000-4000-8000-000000000110
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:13
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:13
   flag: null
   result:
     outcome: succeeded
@@ -424,7 +429,7 @@ requests:
       kind: Conduit
       name: agent-b--project
     expectedId: 00000000-0000-4000-8000-000000000111
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:14
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:14
   flag: null
   result:
     outcome: succeeded
@@ -439,7 +444,7 @@ requests:
       kind: Conduit
       name: agent-b--project
     expectedId: 00000000-0000-4000-8000-000000000111
-  idempotencyKey: plan:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0:1:15
+  idempotencyKey: plan:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7:1:15
   flag: null
   result:
     outcome: succeeded
@@ -494,7 +499,7 @@ kept:
         cause: default}}, [{address: github.com/shrav-k/conduit/core, version: 0.1.0}]]
   tombstones: []
   plans:
-  - sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0
+  - sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7
   journals:
-    sha256:6bdd6bfbd979f2acd9faad689cafc57de87bc35dd642a14b683616475881f6f0: safe:case:01-t1/requests
+    sha256:ca5cd45886bb418e2603949db1be4bd0a232832e6615aba0bdd13ae3cc85f5d7: safe:case:01-t1/requests
 exit: 0

@@ -5,7 +5,8 @@ Not binding. The [specification](../../spec/README.md) alone binds. Written on 2
 coordinator's work to a new session (Claude Fable). The owner asked that session for a full
 review of the repository and of the progress so far, and expects it to decide on faults in the
 language, change the approach where it is wrong, and alter future experiments to test both. This
-brief says how to review and where to look. It does not review, and it decides nothing.
+brief says how to review and where to look. It does not review, and it decides nothing. The review
+it asked for was carried out on 2026-11-14: [its record](../proposals/full-review/README.md).
 
 It builds on [the cold readers' instructions](cold-readers.md): use their reading order and
 known-open list. For this review, its own classes and record ([what to produce](#what-to-produce))

@@ -82,8 +82,10 @@ work stopped for that checkpoint with `main` at `57813f06`:
   Lane SP checkpointed (#262).
 - Nothing runs, and the Windows computer is idle: part 2 of ruling 77's setup can run, with the
   owner's word.
-- `main`'s CI is red at times since #260: an SSH-R test fails on CI's Linux runner, and the engine
-  shards are then skipped. It is the first fix ([the handover's queue](implementation/HANDOVER.md#the-queue)).
+- `main`'s CI, red at times since #260, was fixed on 2026-11-14 (#266): three tests in three
+  provider packages now wait for what they test.
+- The [full review](proposals/full-review/README.md) of 2026-11-14 is done; its questions wait for
+  the owner, and the queue waits for the answers.
 - The dogfood engine is still pinned before order 070: re-pin it to `main` before the next order
   through Conduit.
 

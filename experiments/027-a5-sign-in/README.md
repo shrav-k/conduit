@@ -4,6 +4,8 @@ Every result of this experiment is obtained under one operating-system user. Und
 
 Stage 0 pre-registered on 2026-11-15 by work order 159; not run. No real-client result is claimed.
 
+Amended on 2026-11-15 by work order 167: how a signal stops the probe, the notice of a scratch login found, what the shim cannot catch, and the owner's browser check before the run. The steps, what is recorded, the pass conditions and the outcomes do not change.
+
 ## Four stages
 
 - **0:** Before order 050 is written: two facts about the real clients, primary accounts only, no engine, nothing signed in; no owner time unless a window opens. The coordinator tells the owner first.
@@ -145,14 +147,23 @@ The commands are those [the sign-in proposal](../../docs/proposals/sign-in/READM
   the shim's log, in its own scratch root.
 - A client's output is held in memory, at most 64 KiB per stream, then parsed and dropped. It
   is never printed, logged or written. The probe's own messages name a step and a client only.
-- It starts no model turn and completes no sign-in.
+- It starts no model turn, and it cancels every login it starts, but it cannot keep a
+  client's browser from completing one. The shim catches a client that runs `$BROWSER`, or
+  `open` or `xdg-open` found on `PATH`. A client that opens a browser through the macOS
+  API, or runs `/usr/bin/open` by its full path, opens the owner's default browser at the
+  real authorization URL. If that browser holds a session with the client's service, the
+  sign-in could complete before the probe cancels the login. So `shim_called` false does
+  not show that no browser opened: only the owner's answer does. If a sign-in completes,
+  step 5's logout in the scratch home, below, is the only guard left.
 - To cancel a login, the probe sends TERM to its process group, then KILL after 5 s.
   `group_gone` is true only once the probe has reaped the client and sees that the group is
   gone.
-- Where step 5 reports a login in a home that step 3 found empty, the probe runs
-  `claude auth logout`, or `codex logout`, in that scratch home only. It records `logged_out`,
-  and exits non-zero, naming it. It runs no logout in any other case, and never in a default
-  home.
+- Where step 5 reports a login in a home that step 3 found empty, the probe names it at
+  once (`step 5 NAME: scratch login found`, NAME being `claude-code` or `codex`). It then
+  runs `claude auth logout`, or `codex logout`, in that scratch home only, and names the
+  logout once it has run (`step 5 NAME: logout`). A signal cuts neither that status nor
+  that logout. The probe records `logged_out`, and exits non-zero. It runs no logout in any
+  other case, and never in a default home.
 - The scratch root is a new directory, with mode 0700, under the system temporary directory.
   It is removed at the end, after a fault or a SIGINT, SIGTERM or SIGHUP too.
 - Login-file references use only "the home's auth.json", with no directory before it. No
@@ -204,9 +215,13 @@ For each client, both of these hold:
 ## Running stage 0
 
 The coordinator tells the owner before the run (D80): a browser, keychain or sign-in window may
-appear, and any such window is closed without signing in. Afterwards the coordinator asks the
-owner whether such a window appeared, and records the answer as **yes** or **no** beside the
-probe's results. The probe cannot supply the owner's observation.
+appear, and any such window is closed without signing in. The coordinator also asks the
+owner to make the default browser, for the run, one that holds no Anthropic or OpenAI
+session (claude.ai, the Anthropic Console, ChatGPT or the OpenAI platform), for example a
+browser profile with no sign-ins. A client may open that browser past the shim
+([Safety](#safety)). Afterwards the coordinator asks the owner whether such a window
+appeared, and records the answer as **yes** or **no** beside the probe's results. The probe
+cannot supply the owner's observation.
 
 The admin builds and runs from [client-facts/](client-facts/):
 
@@ -216,10 +231,19 @@ target/release/client-facts --claude "$(command -v claude)" --codex "$(command -
 ```
 
 The admin runs the probe in the foreground, never in the background, with a timeout of at least
-10 minutes, so that the probe's own limits, not the timeout, end a run. On SIGINT, SIGTERM or
-SIGHUP the probe kills the process group of every client it started, removes its scratch root and
-its output file, and exits non-zero, naming the step and client. KILL leaves it no time to do
-any of that. After every run, completed or not, each of these must print nothing:
+10 minutes, so that the probe's own limits, not the timeout, end a run. On SIGINT, SIGTERM
+or SIGHUP the probe starts no further command except step 5's, as below. Step 3's status
+and step 4's login, in the scratch home, have their process group killed at once. Steps 1,
+2 and 6, in the owner's own home, run to their end or to their 30 s limit, so that no
+client is killed partway through its everyday home. If step 3 had reported no login, step
+5's status and any logout still run to their end, so that a signal never leaves a signed-in
+scratch home unchecked or its logout cut. The probe then removes its scratch root and its
+output file, and exits non-zero with `step N NAME: signal` after any step-5 notices. N is
+the step the signal cut or kept from starting, or else the step it came during; it is 4
+where the signal cut the login or kept it from starting, though step 5 then ran. A signal
+that comes once the probe has begun to write its report changes nothing: the report is
+complete and kept. KILL leaves it no time to do any of that. After every run, completed or
+not, each of these must print nothing:
 
 ```sh
 pgrep -f 'auth login|codex login'
@@ -245,13 +269,15 @@ true and null in every field it would have observed: for a status, `exit`, `time
 `waiting_at_cancel`, `exited_before_cancel`, `ended_on` and `group_gone`. A skipped login keeps
 its `login_args`, `logged_out` false and an empty `urls` list.
 
-The probe writes the same facts as a Markdown table, one row per fact and one column per client,
-headed by client and version. Exit 0 means every step ran or was skipped under the steps above,
-whatever the clients answered. A probe fault or the safety logout at step 5 exits non-zero,
-naming the step and client; every safety logout is named, even when a later step faults. If
-`browser-shim` is missing beside the probe, or is not executable, the probe faults at step 0
-before it starts a client. A fault removes a report not yet written in full; a report written in
-full is kept, as after a safety logout.
+The probe writes the same facts as a Markdown table, one row per fact and one column per
+client, headed by client and version. Exit 0 means every step ran or was skipped under the
+steps above, whatever the clients answered. A probe fault, a signal or the safety logout at
+step 5 exits non-zero, naming the step and client: `fault`, `signal`, or step 5's `scratch
+login found` and `logout`. Every scratch login found and every safety logout is named, even
+when a later step faults or a signal comes. If `browser-shim` is missing beside the probe,
+or is not executable, the probe faults at step 0 before it starts a client. A fault or a
+signal removes a report not yet written in full; a report written in full is kept, as after
+a safety logout.
 `logged_out` records that the scratch-home logout command ran, not a verified undo. The admin
 records faults and reruns rather than treating them as client evidence.
 

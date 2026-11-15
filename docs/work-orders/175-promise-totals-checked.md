@@ -219,3 +219,49 @@ each of those lines.
 
 The admin then has a fresh read-only Opus reader read the diff before it merges (ruling 79). Do
 not stage anything. Report every choice you made yourself, and the last line of every check.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `5f9fcbe8`: the worker (292 s), a fresh Codex verifier (217
+s) with two musts, a second worker round (191 s) and a second verifier (280 s) with two musts. Step
+7, `check_promises`, now returns the number of promises in each promise file and of each layer when
+it records no error, and `None` otherwise. A new step 8, `check_promise_totals`, compares them with
+what `spec/README.md` states under Contents: the sentence "519 in all: 226 of the layer `language`,
+245 of the layer `convention` and 48 of the layer `interface`", and the number in the State of each
+promise file's row, one row for each file. Each difference is one of decision 3's errors, naming the
+number stated and the number counted, and the step prints what it compared, or that it did not run
+after errors in step 7. The docstring lists step 8, and `tools/tests/test_promise_totals.py` holds
+decision 7's four tests and a regression for each finding below. With the change, the total in all
+raised by one gives "ERROR spec/README.md: states 520 promises in all, and the promise files hold
+519" and "Errors: 1"; the checker of `5f9fcbe8` passes it with "Errors: 0" (the second round
+compared with `5f9fcbe8`, not `HEAD`, which already held the first round's change). The first
+verifier's musts: stripping every pipe at the ends of a row dropped an empty last cell, so the cell
+before it supplied the State's count; and the link's pattern missed balanced brackets in a label and
+balanced parentheses in a target, so a row for a file that does not exist passed. The second round
+removes at most one pipe at each end and reads the link by the depth of its delimiters. The second
+verifier's musts: a link with a title or with its destination in angle brackets was not read as a
+link, and splitting a row at every pipe broke it at an escaped pipe in a link's label. Either way a
+row for a file that does not exist passed, and a promise file's own row was reported missing. With
+the rounds spent, the coordinator finished the order: a row is split only at a pipe with no
+backslash before it, as GitHub's tables are, and a link's destination is read bare or in angle
+brackets, with an optional title in quotes or parentheses. Each fix has a test that fails without
+it. As decision 5 directs, the sentence on the steps run without jsonschema, in the docstring,
+AGENTS.md and CONTRIBUTING.md, still leaves out steps 7 and 8.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It reran the unit tests
+under `/usr/bin/python3` (87 passed), `check_schemas.py` (step 8 compared 519 promises in 27 files,
+with 0 errors), `check_docs.py`, `check_private_paths.py`, `git diff --check` and the demonstration
+above on a copy. It removed in turn the second round's fix for an empty last cell and the
+coordinator's two fixes and saw each one's test fail, tried more rows on a copy of `spec/README.md`,
+and found no must. Its one should was applied before merge. A title or an angle-bracket destination
+that held an unbalanced parenthesis still kept the link from being read, so a row for a file that
+does not exist passed, and so did a second row for a promise file stating a wrong number. Now only
+the label is read by the depth of its brackets, and the rest of the cell is the part in parentheses.
+A bare destination's unescaped parentheses must balance, and a title in parentheses may hold none
+unescaped, as in CommonMark. The test of angle brackets and titles adds the titles `"a (b"` and
+`'x)'` and the destination `<promises/gone(.yaml>`, and each fails without the fix. Two forms are
+still not read as links, so a row written in either passes unchecked: a reference-style link, and a
+label with a bracket in a code span.
+
+A second fresh Opus reader read that last fix (ruling 79, point 2) and found no must; its one
+wording point on this Record was applied.

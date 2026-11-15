@@ -240,7 +240,7 @@ is reaped; the test waits for the stopped state. Six CI runs in a row passed.
 - **S1's bar** after the rerun, scored in two groups (ruling 78, point 2), with findings 4-01 and
   4-11 and C6 to C12 ([the tracker](../AUDIT.md#waiting-for-the-owner)).
 - **A82's application**: a Linear OAuth application the owner registers (S2-LOG-O).
-- Later, not urgent: G5's 11 exclusions, accepted or modelled; a repository and an npm scope for
+- Later, not urgent: G5's 12 exclusions, accepted or modelled; a repository and an npm scope for
   S7's outside author ([S7's plan](../../experiments/018-s7-outside-package/plan.md)); S8-A,
   accepting S8's concrete Requirement and contracts before any code
   ([S8's plan](../../experiments/019-s8-filtered-search/plan.md)); A74's unmeasured cells, and the
@@ -279,6 +279,12 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
 - A6's traces come from S2's and S4's runs ([the register](../../ROADMAP.md#experiments-and-probes)).
 - The side branch `s3/m2` for the Windows engine work, merged after the rerun's pin (log).
 - "Windows computer is up again" read as the resume after the pause of 2026-11-11 (72's later answers).
+- Order 154: a plan prints each `ownTools` member as `inventory.v1` gives it, except that an
+  absolute-path `directory` is printed as `{"pathSha256":"HEX"}`, as the plan prints a root as
+  `root-sha256=HEX`, so that plan text holds no local path
+  ([the reference](plan-and-apply/README.md#text-grammar-and-statuses)). `spec/README.md`
+  says a plan prints the member that inspection would show (CTR-014, LIF-013), and `spec/`
+  does not change. Struck, the plan prints the directory as inspection shows it.
 
 ## Standing rules learned this session
 

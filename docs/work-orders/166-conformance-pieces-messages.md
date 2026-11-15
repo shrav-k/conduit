@@ -205,3 +205,33 @@ git diff --check
 ```
 
 `git status --short` lists only the five files in scope. Do not stage anything. Report each choice you made yourself, and the last line of every check. Then the admin shows on the pull request that the engine build, the four engine shards and the doctests pass, and a fresh Opus reader reads the order and its diff before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `42c64e24`, in two rounds: the worker (607 s) and a fresh
+Codex verifier (273 s), then the worker again (342 s) and a second fresh verifier (149 s). The
+first verifier found one must: a rewrapped line of `conformance/README.md` was 94 characters, over
+the order's 89. The second round rewrapped it, and the second verifier found nothing to change, but
+did not rerun the build, the integration tests or the vectors. In `split`, every fault in the merge
+ROOT's two files now goes through `root_error`. Its message names the ROOT's file, gives the fault
+without a file name in front of it or the tree's repair, and says what a ROOT holds and how to find
+it (`git merge-base HEAD main`). `inline_schema_with` hands a fault and its repair over apart, so
+the tree's own messages do not change. A new `pieces::read_schema_pieces` is the one walk of
+`case-schema/`. The runner, the tool's `read_tree` and `baseline()` in `tests/pieces.rs` call it,
+and `one_walk_reads_pieces_and_refuses_other_files` tests it. One helper words the message for an
+emptied input `oneOf`, and both checks that reach it return it. Three unit tests pin the messages:
+`a_faulty_merge_root_names_the_root_and_its_repair`,
+`assembly_names_the_input_placeholder_and_its_repair` and
+`an_emptied_input_list_gives_one_message`. The first and the third fail without their decisions.
+The README says that nothing under `case-schema/` whose name begins with a dot is read, nor
+anything inside a folder so named. A fresh read-only Opus reader then verified the order (ruling
+79, point 2). It ran fmt, clippy on the crate and on the workspace, and the crate's tests with
+every vector, all of which passed. It also ran the tool, which printed `Nothing to move.` and
+changed nothing, and the order's searches and the documentation and private-path checks. Then it
+reverted decisions 1 and 4 on scratch copies, and their tests failed as the worker had reported. It
+found no must. Both of its shoulds were applied before merge. The ROOT test now pins the fault
+alone for each ROOT whose fault does not depend on the parser or the fixture: the missing schema,
+the missing manifest, the manifest with no cases and the schema whose `input` is `{}`. For every
+ROOT it refuses a file name in front of the fault. With `root_error`'s prefix stripping removed,
+the test now fails on the missing schema, where all 25 tests had passed. The tool's first line no
+longer calls the module pure: it says that only `pieces::read_schema_pieces` reads `case-schema/`.

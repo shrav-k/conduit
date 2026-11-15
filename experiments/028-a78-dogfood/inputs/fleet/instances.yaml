@@ -1,0 +1,70 @@
+# Instances of the conduit-core Fleet, from engine/examples/s1. setup.sh fills @SLOT_1@ with
+# the slot's absolute path. Root's default Conduit to the Fleet is made and opened at
+# registration (FLEET-005); it gives no right to use an Agent, so root holds a turn Conduit
+# to each.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Fleet
+metadata:
+  name: conduit-core
+from: github.com/shrav-k/conduit/core#fleet
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: trees
+from: tree-pool
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: worker-1
+from: codex-worker
+owner: conduit-core
+arguments:
+  directory: @SLOT_1@
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: verifier-1
+from: codex-verifier
+owner: conduit-core
+arguments:
+  directory: @SLOT_1@
+---
+# Root's explicit route to the Pool, as S1's root-workspace; tree-1 joins the Pool with orders 4 and 5.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: root-trees
+from: trees-admin
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Pool
+  name: trees
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-worker-1
+from: codex-turn
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: worker-1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: turn-verifier-1
+from: codex-turn
+consumer:
+  kind: Interface
+  name: root
+target:
+  kind: Agent
+  name: verifier-1

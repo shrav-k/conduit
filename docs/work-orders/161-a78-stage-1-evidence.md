@@ -312,3 +312,24 @@ the directory, inputs included, and runs `python3 tools/check_private_paths.py` 
 `git diff --cached --check`. The admin also shows the `docs` and `secrets` jobs passing on the pull
 request. A fresh, read-only Opus reader reads the result before it merges, beside the Codex
 verifier (ruling 79, point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `f37d76c0`. The coordinator placed the seven inputs,
+untracked, before the worker began; the export among them was made with `conduit records --store` on
+the dogfood store, with serve stopped and the pinned engine, and is by the coordinator's account
+byte-identical to the harness's final export of 042's last run. The worker (514 s) wrote the
+experiment's README and dated results, A78's State cell, one row of the experiments index and the
+handover's passage, and matched all nine turns to order 042 by inference. A fresh Codex verifier
+(158 s) found nothing in one round. The inputs' digests were unchanged. A fresh read-only Opus
+reader then verified the order (ruling 79, point 2). It reran every done-when command and every `jq`
+count, recomputed the nine durations, checked the inputs' digests and ran the private-path check on
+the new files under a temporary index. It found one must: two phrases of the handover's attributed
+facts were wrong ("Conduit's first order" for "the first order run by Conduit itself", and "merged
+locally"). The coordinator corrected both and applied its four shoulds: the measures' values beside
+the handover's facts; the plan's own angle-bracket notation taken out of the placeholder table; the
+empty tree Pool stated without implying that grants would confine the Agents' own tools; and the
+harness's step 3 covering both turn tools.
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2) and found no must; its
+wording points were applied as it gave them.

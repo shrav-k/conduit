@@ -74,8 +74,9 @@ Each part answers a fault the first round found:
 
 ## Checking what comes back
 
-1. **A verifier**: a second, fresh Codex session in a read-only sandbox, with the order, the diff
-   and a schema of its own ([the standing verifier order](../work-orders/verify.md)). It tries to
+1. **A verifier**: a fresh Codex session in a read-only sandbox for each round, and, once the
+   order's checks pass, a fresh read-only Claude Opus reader before it merges (ruling 79); each has
+   the order, the diff and a schema of its own ([the standing verifier order](../work-orders/verify.md)). It tries to
    refute each change against the decisions and the texts they cite. A reviewer reading cold found
    the first round's most consequential faults: a contradiction across nine promises, and a wrong
    claim about Codex in the coordinator's own notes.

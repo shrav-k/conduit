@@ -45,14 +45,14 @@ where this order and a finding differ, this order governs.
    settlement is given here, it replaces the draft row's settlement whole.
    - **4-21** ([FR-338](../proposals/full-review/findings/P06-dogfooding.md#fr-338)): the incident
      is "in round 3 of order 042, which ran on 2026-11-11 and 12". The Build cell says that the
-     round was run again, that the Record does not say whether the unknown turn was reconciled, and
-     that a guard tripped (4-25). Settlement: the full review's order 17 gives the `.v2` wrappers,
-     before 0.2.0 publishes, a `network` class, found by fixed substrings as the other classes are,
-     and a failed result whose class, turn number and whether the client started are fields. No
-     client text reaches a result, an error or stderr, as order 050a ruled, so no tail of error
-     events is kept. The refusal of later turns of a failed conversation stays until the S1 rerun.
-     It shaped the fresh author's recovery (4-12), and ruling 71, point 4, keeps from the
-     coordinator what could move S1's counts (D55). It is also what now stops a new turn in the
+     failed turn was run again, that the Record does not say whether the unknown turn was
+     reconciled, and that a guard tripped (4-25). Settlement: the full review's order 17 gives the
+     `.v2` wrappers, before 0.2.0 publishes, a `network` class, found by fixed substrings as the
+     other classes are, and a failed result whose class, turn number and whether the client started
+     are fields. No client text reaches a result, an error or stderr, as order 050a ruled, so no
+     tail of error events is kept. The refusal of later turns of a failed conversation stays until
+     the S1 rerun. It shaped the fresh author's recovery (4-12), and ruling 71, point 4, keeps from
+     the coordinator what could move S1's counts (D55). It is also what now stops a new turn in the
      same run from running beside a failed turn's leftover processes, so it ends no sooner than the
      full review's order 16 (4-23). In the Claude wrapper, which runs with
      `--no-session-persistence`, the refusal is the explicit answer. Whether Codex's own retry
@@ -276,3 +276,26 @@ git status --short                                                    # the two 
 Do not stage anything. In your report, give each choice you made yourself, every row you could not
 write as this order states and why, the three items of decision 5 that are not logged, and every
 check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `89aa7894`: the worker (318 s) and a fresh Codex verifier
+(230 s), which found nothing to change in one round. Increment 4's log gains rows 4-21 to 4-34:
+order 042's frictions (4-21 to 4-26), the sub-agents' reach under `codex.v2` with a directory
+(4-27), the first-start report's architecture names (4-28), the scenario orders' findings (4-29
+to 4-31), `serve`'s setups at start (4-32), sign-out at retirement (4-33) and CTR-013's layer
+(4-34). Rows 4-01 and 4-11 say what has been decided and what is left; 4-06 points at 4-27, and
+4-12 notes ruling 78's change. The handover's list of frictions is one sentence that points at
+4-21 to 4-27. The worker linked 4-33's IN_FORCE.md as `../../../IN_FORCE.md`, since this order's
+link is relative to `docs/work-orders/`, and did not log the three items decision 5 names.
+
+A fresh read-only Opus reader verified the order before it merged (ruling 79, point 2) and found
+one must and four shoulds, all applied. 4-21 now cites the Record only for what it holds ("client
+failure: other") and gives worker-1's turn, the 55 s and the full error as the coordinator's
+account; the other facts the drafts marked "(log)", in 4-21 to 4-24 and 4-26, say the same. 4-23
+adds that, for a cancelled turn, whether the wrapper's late error counts as the answer is untested.
+4-26 keeps the draft's cost sentence on a failure in the last minute. The Build cells of 4-21 and
+4-25 say the failed turn, not the round, was run again, as the Record says, and decision 2's wording
+for 4-21 above was corrected to match. Left for a follow-up outside this order's scope: the tracker
+still calls 4-06 settled without pointing at 4-27, and its list of what is known to be open does not
+cite 4-29, 4-30 and 4-34.

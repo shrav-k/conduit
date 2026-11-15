@@ -12,6 +12,8 @@ pub const CONTENT: &str = "OPS-010: different contents conflict";
 pub const KEYLESS: &str = "OPS-011: keyless stay apart";
 pub const SCOPE: &str = "OPS-008: sending instances stay apart";
 pub const RECON_OK: &str = "OPS-014 OPS-030: reconciled succeeded";
+pub const FAILED_ANSWER: &str = "OPS-003 IFC-009: failed answer";
+pub const F13_CASE: &str = "OPS-012: failed current with earlier unanswered";
 pub const RECON_FAIL: &str = "OPS-014 OPS-030: reconciled failed";
 const A: usize = 0;
 const ENGINE: usize = 1;
@@ -21,7 +23,9 @@ const IMPLEMENTATION: usize = 2;
 pub enum Variant {
     Plain,
     Deduplicating,
-    Fenced,
+    DiscardLate,
+    DidNotOccur,
+    DedupFailedSettles,
     BlindReplay,
     VolatileIndex,
     TimerFailed,
@@ -30,10 +34,12 @@ pub enum Variant {
     RepeatSucceeded,
 }
 impl Variant {
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 11] = [
         Self::Plain,
         Self::Deduplicating,
-        Self::Fenced,
+        Self::DiscardLate,
+        Self::DidNotOccur,
+        Self::DedupFailedSettles,
         Self::BlindReplay,
         Self::VolatileIndex,
         Self::TimerFailed,
@@ -41,9 +47,16 @@ impl Variant {
         Self::KeyOnly,
         Self::RepeatSucceeded,
     ];
+    fn deduplicates(self) -> bool {
+        matches!(
+            self,
+            Self::Deduplicating | Self::DiscardLate | Self::DedupFailedSettles
+        )
+    }
     pub fn target(self) -> Option<&'static str> {
         match self {
-            Self::Plain | Self::BlindReplay | Self::VolatileIndex => Some(ONCE),
+            Self::DidNotOccur | Self::BlindReplay | Self::VolatileIndex => Some(ONCE),
+            Self::DedupFailedSettles => Some(RIGHT),
             Self::TimerFailed => Some(RIGHT),
             Self::LateReply => Some(UNKNOWN),
             Self::KeyOnly => Some(CONTENT),
@@ -88,13 +101,14 @@ pub struct Request {
 pub enum Message {
     Request(Request),
     Dispatch { id: u8, contents: u8, attempt: u8 },
-    Reply { id: u8, attempt: u8 },
+    Reply { id: u8, attempt: u8, failed: bool },
 }
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Entry {
     contents: u8,
     attempt: u8,
     outcome: Outcome,
+    answered: BTreeSet<u8>,
 }
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Data {
@@ -104,6 +118,8 @@ pub struct Data {
     stage: u8,                  // A's saved script counter
     recovery_pending: bool,
     next_keyless: u8,
+    failure_armed: bool,
+    failure_used: bool,
 }
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum Event {
@@ -118,6 +134,13 @@ pub enum Event {
     },
     ReplyEmitted {
         attempt: u8,
+        failed: bool,
+    },
+    ReplyReceived {
+        attempt: u8,
+        failed: bool,
+        earlier_unanswered: bool,
+        current: bool,
     },
     Outcome {
         value: Outcome,
@@ -211,6 +234,7 @@ impl Ledger {
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Local {
     Next,
+    FailNext,
     Reconcile(u8),
     Unknown(u8, Source),
     Recover,
@@ -220,17 +244,39 @@ pub struct Operations {
     pub variant: Variant,
     pub part: Part,
     pub scope: bool,
+    engine_timer: bool,
+    implementation_only_crash: bool,
 }
 pub fn model(variant: Variant, part: Part, scope: bool) -> Harness<Operations> {
+    let mut c = mc2::configuration(part, scope);
+    c.bounds = "one caller/target; one key; c1/c2; two equal keyless requests; at most two timers; one of each enabled fault; serialized script suffix; B only in scope; at most one implementation failed answer, chosen by arming its next dispatch";
     Harness::new(
-        mc2::configuration(part, scope),
+        c,
         Operations {
             variant,
             part,
             scope,
+            engine_timer: true,
+            implementation_only_crash: false,
         },
     )
 }
+#[cfg(test)]
+fn grading_model(variant: Variant) -> Harness<Operations> {
+    let mut m = model(variant, Part::Timers, false);
+    m.protocol.engine_timer = false;
+    m.config.bounds = "grading: T; engine timer disabled; two A repeats; at most one implementation failed answer; serialized suffix; otherwise operation model bounds";
+    m
+}
+#[cfg(test)]
+fn no_timeout_model() -> Harness<Operations> {
+    let mut m = model(Variant::DidNotOccur, Part::Crash, false);
+    m.protocol.engine_timer = false;
+    m.protocol.implementation_only_crash = true;
+    m.config.bounds = "DidNotOccur/C route: no engine timeout or crash; only implementation crash/recovery; two A repeats; at most one implementation failed answer; otherwise operation model bounds";
+    m
+}
+
 impl Operations {
     fn decide(&self, s: &mut System<Self>, id: u8, value: Outcome, source: Source) {
         s.nodes[ENGINE].data.index.get_mut(&id).unwrap().outcome = value;
@@ -267,12 +313,6 @@ impl Operations {
     fn send_request(&self, c: &Config, s: &mut System<Self>, r: Request) {
         s.send(c, r.sender as usize, ENGINE, Message::Request(r));
     }
-    fn queued_dispatch(s: &System<Self>, id: u8) -> bool {
-        s.links
-            .iter()
-            .flatten()
-            .any(|m| matches!(m, Message::Dispatch { id: x, .. } if *x == id))
-    }
     fn quiescent(s: &System<Self>) -> bool {
         s.links.iter().all(Vec::is_empty)
             && s.nodes[ENGINE]
@@ -289,6 +329,7 @@ impl Protocol for Operations {
     type Local = Local;
     fn fault_allowed(&self, f: Fault, src: usize, dst: usize) -> bool {
         mc2::allowed(f, src, dst)
+            && !(self.implementation_only_crash && f == Fault::Crash && src != IMPLEMENTATION)
     }
     fn initial(&self, c: &Config) -> System<Self> {
         let n = c.nodes.len();
@@ -304,7 +345,7 @@ impl Protocol for Operations {
             cut: BTreeSet::new(),
             used: [0; 9],
             ledger: Ledger {
-                deduplicates: self.variant == Variant::Deduplicating,
+                deduplicates: self.variant.deduplicates(),
                 ..Ledger::default()
             },
         };
@@ -371,10 +412,8 @@ impl Protocol for Operations {
                                 false
                             }
                             Outcome::Unknown
-                                if !matches!(
-                                    self.variant,
-                                    Variant::Deduplicating | Variant::BlindReplay
-                                ) =>
+                                if !(self.variant.deduplicates()
+                                    || self.variant == Variant::BlindReplay) =>
                             {
                                 d.answer = Some(Answer::Unknown);
                                 false
@@ -387,7 +426,7 @@ impl Protocol for Operations {
                 };
                 if dispatch {
                     d.dispatched = true;
-                    let attempt = entry.map_or(1, |e| e.attempt + 1);
+                    let attempt = entry.as_ref().map_or(1, |e| e.attempt + 1);
                     let first_contents = s.ledger.first(id).unwrap_or(request.contents);
                     s.ledger
                         .histories
@@ -404,6 +443,7 @@ impl Protocol for Operations {
                             contents: request.contents,
                             attempt,
                             outcome: Outcome::Progress,
+                            answered: entry.map_or_else(BTreeSet::new, |e| e.answered),
                         },
                     );
                     s.send(
@@ -424,31 +464,74 @@ impl Protocol for Operations {
                 contents,
                 attempt,
             } => {
-                let fresh = s.nodes[IMPLEMENTATION].data.applied.insert(id);
-                if self.variant != Variant::Deduplicating || fresh {
-                    s.ledger
-                        .histories
-                        .entry(id)
-                        .or_default()
-                        .push(Event::Effect { contents, attempt });
+                let implementation = &mut s.nodes[IMPLEMENTATION].data;
+                let failed = implementation.failure_armed && !implementation.applied.contains(&id);
+                if failed {
+                    implementation.failure_armed = false;
+                    implementation.failure_used = true;
+                } else {
+                    let fresh = implementation.applied.insert(id);
+                    if !self.variant.deduplicates() || fresh {
+                        s.ledger
+                            .histories
+                            .entry(id)
+                            .or_default()
+                            .push(Event::Effect { contents, attempt });
+                    }
                 }
                 // Deduplicating an attempt suppresses its effect, not its reply.
                 s.ledger
                     .histories
                     .entry(id)
                     .or_default()
-                    .push(Event::ReplyEmitted { attempt });
-                s.send(c, IMPLEMENTATION, ENGINE, Message::Reply { id, attempt });
+                    .push(Event::ReplyEmitted { attempt, failed });
+                s.send(
+                    c,
+                    IMPLEMENTATION,
+                    ENGINE,
+                    Message::Reply {
+                        id,
+                        attempt,
+                        failed,
+                    },
+                );
             }
-            Message::Reply { id, attempt } => {
-                if s.nodes[ENGINE].data.index.get(&id).is_some_and(|e| {
-                    e.attempt == attempt
-                        && (e.outcome == Outcome::Progress
-                            || (e.outcome == Outcome::Unknown
-                                && self.variant == Variant::LateReply))
-                }) {
-                    self.decide(s, id, Outcome::Succeeded, Source::Reply);
-                    // The engine gives its result to the caller atomically; caller wire omitted.
+            Message::Reply {
+                id,
+                attempt,
+                failed,
+            } => {
+                if let Some(e) = s.nodes[ENGINE].data.index.get_mut(&id) {
+                    let current = e.attempt == attempt && e.outcome == Outcome::Progress;
+                    if current || self.variant != Variant::DiscardLate {
+                        e.answered.insert(attempt);
+                    }
+                    let earlier_unanswered = (1..e.attempt).any(|a| !e.answered.contains(&a));
+                    let accept_late = e.attempt == attempt
+                        && e.outcome == Outcome::Unknown
+                        && self.variant == Variant::LateReply;
+                    s.ledger
+                        .histories
+                        .entry(id)
+                        .or_default()
+                        .push(Event::ReplyReceived {
+                            attempt,
+                            failed,
+                            earlier_unanswered,
+                            current,
+                        });
+                    if current || accept_late {
+                        let outcome = if !failed {
+                            Outcome::Succeeded
+                        } else if earlier_unanswered && self.variant != Variant::DedupFailedSettles
+                        {
+                            Outcome::Unknown
+                        } else {
+                            Outcome::Failed
+                        };
+                        self.decide(s, id, outcome, Source::Reply);
+                        // Caller answers are atomic at the engine; caller wire omitted.
+                    }
                 }
             }
         }
@@ -456,6 +539,7 @@ impl Protocol for Operations {
     fn timer_enabled(&self, s: &System<Self>, node: usize) -> bool {
         (node == A && s.nodes[A].data.stage <= 1 && s.links[s.link(A, ENGINE)].len() < 2)
             || (node == ENGINE
+                && self.engine_timer
                 && s.nodes[ENGINE]
                     .data
                     .index
@@ -508,6 +592,12 @@ impl Protocol for Operations {
         }
     }
     fn local_actions(&self, s: &System<Self>, node: usize, out: &mut Vec<Local>) {
+        if node == IMPLEMENTATION
+            && !s.nodes[node].data.failure_used
+            && !s.nodes[node].data.failure_armed
+        {
+            out.push(Local::FailNext);
+        }
         if node == A && (1..=4).contains(&s.nodes[A].data.stage) && Self::quiescent(s) {
             out.push(Local::Next);
         }
@@ -520,9 +610,7 @@ impl Protocol for Operations {
         }
         for (&id, e) in &s.nodes[ENGINE].data.index {
             if e.outcome == Outcome::Unknown
-                && (self.variant != Variant::Fenced
-                    || s.ledger.effects(id) > 0
-                    || !Self::queued_dispatch(s, id))
+                && (s.ledger.effects(id) > 0 || self.variant == Variant::DidNotOccur)
             {
                 out.push(Local::Reconcile(id));
             }
@@ -534,10 +622,10 @@ impl Protocol for Operations {
                 }
                 let reply = s.links.iter().flatten().any(|m| {
                     matches!(m,
-                    Message::Reply { id: x, attempt } if *x == id && *attempt == e.attempt)
+                    Message::Reply { id: x, attempt, .. } if *x == id && *attempt == e.attempt)
                 });
                 let emitted = s.ledger.histories.get(&id).into_iter().flatten().any(
-                    |event| matches!(event, Event::ReplyEmitted { attempt } if *attempt == e.attempt),
+                    |event| matches!(event, Event::ReplyEmitted { attempt, .. } if *attempt == e.attempt),
                 );
                 if emitted && !reply {
                     out.push(Local::Unknown(id, Source::LostReply));
@@ -563,6 +651,7 @@ impl Protocol for Operations {
                     );
                 }
             }
+            Local::FailNext => s.nodes[node].data.failure_armed = true,
             Local::Recover => self.recovered(s),
             Local::Unknown(id, source) => self.decide(s, id, Outcome::Unknown, source),
             Local::Reconcile(id) => self.decide(
@@ -587,18 +676,28 @@ impl Protocol for Operations {
             },
             NamedProperty {
                 property: Property::<Harness<Self>>::always(RIGHT, |_, s| {
-                    s.ledger.histories.values().flatten().all(|e| match e {
-                        Event::Outcome {
-                            value: Outcome::Succeeded,
-                            effects_then,
-                            ..
-                        } => *effects_then > 0,
-                        Event::Outcome {
-                            value: Outcome::Failed,
-                            effects_then,
-                            ..
-                        } => *effects_then == 0,
-                        _ => true,
+                    s.ledger.histories.values().all(|events| {
+                        let mut current = Outcome::Progress;
+                        for e in events {
+                            match e {
+                                Event::Dispatch { .. } => current = Outcome::Progress,
+                                Event::Effect { .. } if current == Outcome::Failed => return false,
+                                Event::Outcome {
+                                    value,
+                                    effects_then,
+                                    ..
+                                } => {
+                                    if (*value == Outcome::Succeeded && *effects_then == 0)
+                                        || (*value == Outcome::Failed && *effects_then != 0)
+                                    {
+                                        return false;
+                                    }
+                                    current = *value;
+                                }
+                                _ => {}
+                            }
+                        }
+                        true
                     })
                 }),
                 promises: &["OPS-012", "OPS-014"],
@@ -674,7 +773,35 @@ impl Protocol for Operations {
                 promises: &["OPS-014", "OPS-030"],
             },
         ];
-        if self.variant != Variant::Fenced || self.part == Part::Loss {
+        p.push(NamedProperty {
+            property: Property::<Harness<Self>>::sometimes(FAILED_ANSWER, |_, s| {
+                s.ledger
+                    .histories
+                    .values()
+                    .flatten()
+                    .any(|e| matches!(e, Event::ReplyEmitted { failed: true, .. }))
+            }),
+            promises: &["OPS-003", "IFC-009"],
+        });
+        if self.variant.deduplicates() && matches!(self.part, Part::Loss | Part::Reorder) {
+            p.push(NamedProperty {
+                property: Property::<Harness<Self>>::sometimes(F13_CASE, |_, s| {
+                    s.ledger.histories.values().flatten().any(|e| {
+                        matches!(
+                            e,
+                            Event::ReplyReceived {
+                                failed: true,
+                                earlier_unanswered: true,
+                                current: true,
+                                ..
+                            }
+                        )
+                    })
+                }),
+                promises: &["OPS-012"],
+            });
+        }
+        if self.variant == Variant::DidNotOccur {
             p.push(NamedProperty {
                 property: Property::<Harness<Self>>::sometimes(RECON_FAIL, |_, s| {
                     s.ledger.reconciled(Outcome::Failed)
@@ -707,12 +834,14 @@ impl Protocol for Operations {
         ];
         for &(source, name) in sources {
             let enabled = match source {
-                Source::Timer => self.variant != Variant::TimerFailed,
+                Source::Timer => self.engine_timer && self.variant != Variant::TimerFailed,
                 Source::LostReply => self.part == Part::Loss,
                 Source::ImplementationCrash => self.part == Part::Crash,
                 Source::LostMachine => self.part == Part::Lost,
                 Source::Recovery => {
-                    self.part == Part::Crash && self.variant != Variant::VolatileIndex
+                    self.part == Part::Crash
+                        && !self.implementation_only_crash
+                        && self.variant != Variant::VolatileIndex
                 }
                 _ => false,
             };
@@ -835,45 +964,44 @@ mod tests {
         s.ledger.decisions.get_mut(&3).unwrap()[0].dispatched = false;
         assert!(!witness(&m, &s)); // effects must belong to dispatched scripted requests
     }
-    fn expected(v: Variant) -> Vec<&'static str> {
-        let mut e = match v {
-            Variant::Deduplicating | Variant::Fenced => vec![],
-            Variant::Plain | Variant::BlindReplay => vec![ONCE],
-            Variant::VolatileIndex => vec![ONCE, REPEAT, CONTENT],
+    const SAFETY: [&str; 5] = [ONCE, RIGHT, UNKNOWN, REPEAT, CONTENT];
+    fn registered(v: Variant, part: Part) -> Vec<&'static str> {
+        match v {
+            Variant::Plain | Variant::Deduplicating | Variant::DiscardLate => vec![],
+            Variant::DedupFailedSettles if part == Part::Reorder => vec![RIGHT],
+            Variant::DedupFailedSettles => vec![],
+            Variant::DidNotOccur => vec![ONCE, RIGHT],
+            Variant::BlindReplay => vec![ONCE, UNKNOWN],
+            Variant::VolatileIndex => vec![ONCE, RIGHT, UNKNOWN, REPEAT, CONTENT],
             Variant::TimerFailed => vec![ONCE, RIGHT],
-            Variant::LateReply => vec![ONCE, UNKNOWN],
-            Variant::KeyOnly => vec![ONCE, CONTENT],
+            Variant::LateReply => vec![UNKNOWN],
+            Variant::KeyOnly => vec![CONTENT],
             Variant::RepeatSucceeded => vec![ONCE, REPEAT],
-        };
-        e.sort();
-        e
+        }
     }
     #[test]
-    fn full_runs_match_pre_registration() {
+    fn rerun_matches_registration() {
         for v in Variant::ALL {
             let parts = match v {
-                Variant::Plain | Variant::Deduplicating | Variant::Fenced => Part::ALL.to_vec(),
+                Variant::Plain
+                | Variant::Deduplicating
+                | Variant::DiscardLate
+                | Variant::DidNotOccur
+                | Variant::DedupFailedSettles => Part::ALL.to_vec(),
                 Variant::VolatileIndex | Variant::TimerFailed => vec![Part::Crash],
                 _ => vec![Part::Timers],
             };
             for part in parts {
                 let report = check_all(model(v, part, false));
-                println!("MC2 operations {v:?}/{part:?}: {report}");
-                let mut observed = report.broken.clone();
-                observed.sort();
-                let registered = expected(v);
-                let mut accepted_observation = registered.clone();
-                if matches!(v, Variant::BlindReplay | Variant::VolatileIndex) {
-                    accepted_observation.push(UNKNOWN);
-                    accepted_observation.sort();
-                    println!(
-                        "MC2 difference {v:?}/{part:?}: preregistered unknown stays unknown H; observed F (unauthorized plain replay)"
+                println!("MC2 rerun {v:?}/{part:?}: {report}");
+                let expected = registered(v, part);
+                for property in SAFETY {
+                    assert_eq!(
+                        report.broken.contains(&property),
+                        expected.contains(&property),
+                        "unrecorded registration difference {v:?}/{part:?}: {property}"
                     );
                 }
-                assert_eq!(
-                    observed, accepted_observation,
-                    "unrecorded pre-registration difference {v:?}/{part:?}; registered {registered:?}"
-                );
                 assert!(
                     report.missing_witnesses.is_empty(),
                     "{v:?}/{part:?}: {:?}",
@@ -882,41 +1010,101 @@ mod tests {
             }
         }
         let report = assert_holds(model(Variant::Deduplicating, Part::Timers, true));
-        println!("MC2 operations Deduplicating/Scope: {report}");
+        println!("MC2 rerun Deduplicating/Scope: {report}");
+    }
+    fn retained_refutation(
+        m: Harness<Operations>,
+        target: &'static str,
+        label: &str,
+    ) -> Vec<Action<Local>> {
+        println!("MC2 rerun refutation {label}: {target}");
+        let trace = assert_refuted(m.clone(), target);
+        println!("MC2 rerun refutation {label}: {} actions", trace.len());
+        let path = stateright::Path::from_actions(&m, m.init_states().remove(0), &trace).unwrap();
+        let mut state = path.last_state().clone();
+        state.nodes[ENGINE].data.index.clear();
+        state.nodes[IMPLEMENTATION].data.applied.clear();
+        assert!(
+            !(m.property(target).condition)(&m, &state),
+            "ledger lost {label}: {target}"
+        );
+        trace
     }
     #[test]
-    fn shortest_named_refutations() {
+    fn rerun_named_refutations() {
         for v in Variant::ALL {
             if let Some(target) = v.target() {
-                let part = if matches!(v, Variant::VolatileIndex | Variant::TimerFailed) {
-                    Part::Crash
-                } else {
-                    Part::Timers
+                let part = match v {
+                    Variant::VolatileIndex | Variant::TimerFailed => Part::Crash,
+                    Variant::DedupFailedSettles => Part::Reorder,
+                    _ => Part::Timers,
                 };
-                println!("MC2 refutation {v:?}: {target}");
-                let trace = assert_refuted(model(v, part, false), target);
-                println!("MC2 refutation {v:?}: {} actions", trace.len());
-                // The external history must retain a failure even if all engine indexes vanish.
-                let m = model(v, part, false);
-                let path =
-                    stateright::Path::from_actions(&m, m.init_states().remove(0), &trace).unwrap();
-                let mut state = path.last_state().clone();
-                state.nodes[ENGINE].data.index.clear();
-                state.nodes[IMPLEMENTATION].data.applied.clear();
-                assert!(!(m.property(target).condition)(&m, &state));
-                if v == Variant::Plain {
+                let trace =
+                    retained_refutation(model(v, part, false), target, &format!("{v:?}/{part:?}"));
+                if v == Variant::DidNotOccur {
                     assert_eq!(trace.len(), 7);
                 }
                 if v == Variant::VolatileIndex {
                     assert!(trace.contains(&Action::Crash(ENGINE)));
                     assert!(trace.contains(&Action::Recover(ENGINE)));
                 }
-                if matches!(v, Variant::BlindReplay | Variant::VolatileIndex) {
-                    println!("MC2 difference refutation {v:?}: {UNKNOWN}");
-                    let trace = assert_refuted(model(v, part, false), UNKNOWN);
-                    println!("MC2 difference refutation {v:?}: {} actions", trace.len());
-                }
             }
+        }
+        let trace = retained_refutation(no_timeout_model(), ONCE, "DidNotOccur/Crash-no-timeout");
+        let crash = trace
+            .iter()
+            .position(|a| *a == Action::Crash(IMPLEMENTATION))
+            .unwrap();
+        let recovery = trace
+            .iter()
+            .position(|a| *a == Action::Recover(IMPLEMENTATION))
+            .unwrap();
+        let delivery = trace
+            .iter()
+            .position(|a| {
+                matches!(
+                    a,
+                    Action::Deliver {
+                        src: ENGINE,
+                        dst: IMPLEMENTATION,
+                        ..
+                    }
+                )
+            })
+            .unwrap();
+        assert!(crash < recovery && recovery < delivery);
+        assert!(!trace.contains(&Action::Timer(ENGINE)));
+        assert!(!trace.contains(&Action::Crash(ENGINE)));
+    }
+    #[test]
+    fn own_mutants_grade_properties() {
+        for (target, variants, restated) in [
+            (
+                ONCE,
+                vec![
+                    Variant::DidNotOccur,
+                    Variant::BlindReplay,
+                    Variant::VolatileIndex,
+                ],
+                false,
+            ),
+            (RIGHT, vec![Variant::TimerFailed], false),
+            (UNKNOWN, vec![Variant::LateReply], false),
+            (REPEAT, vec![Variant::RepeatSucceeded], true),
+            (CONTENT, vec![Variant::KeyOnly], true),
+        ] {
+            let mut refuted = false;
+            for v in variants {
+                let report = check_all(grading_model(v));
+                let broken = report.broken.contains(&target);
+                println!("MC2 grade {v:?}: {target}; refuted={broken}; {report}");
+                refuted |= broken;
+            }
+            assert_eq!(refuted, restated, "grading differs: {target}");
+            println!(
+                "MC2 grade property {target}: {}",
+                if refuted { "restated" } else { "searched" }
+            );
         }
     }
 }

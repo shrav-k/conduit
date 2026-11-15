@@ -1049,56 +1049,61 @@
   note: Bounded source slice; no individual finding.
 - id: OPS-008
   class: safety
-  standing: 'contradiction: MC2-001'
+  standing: searched
   model: operations::O
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  read: 71c725bc8495d11df289a6b12ef6ff920b38660e
   digest: b3520686c25d7ca03af27a368c1855b7479a70852f83b7762b184b01c3c6f653
-  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
-    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
-    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. MC2 exclusion:
-    “OPS-008''s complete saved fields (fixed operation/caller/target/Conduit suffice for this slice)”. Held only
-    under ruling 75 A1''s fence, which ruling 78 point 6 withdrew.'
+  note: 'Until 2026-11-15, MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds
+    as written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent
+    counterexamples. Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing
+    fence. MC2 exclusion: “OPS-008''s complete saved fields (fixed operation/caller/target/Conduit suffice
+    for this slice)”. Held only under ruling 75 A1''s fence, which ruling 78 point 6 withdrew. Rerun by work
+    order 160 on 2026-11-15 under ruling 78 point 6: O holds, graded searched.'
 - id: OPS-009
   class: safety
-  standing: text changed, not rerun
-  was: holds, not graded
+  standing: restated
   model: operations::A
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
-  digest: acaaa082949e038837c9378028fcc20ccc7569350beed5c205d00f8b166aa562
-  note: 'MC2: “This outcome abstraction does not establish OPS-009''s content-retention/OPS-034 cases.” MC7a’s later
-    OPS-034 entry checks its separate repeated-output slice, not all retained content.'
+  read: 71c725bc8495d11df289a6b12ef6ff920b38660e
+  digest: 3e0bf7a8e8eb84de41cd464e01f1d45ac55d63aba0a86d1df8787964ea12e960
+  note: 'MC2: “This outcome abstraction does not establish OPS-009''s content-retention/OPS-034 cases.” MC7a’s
+    later OPS-034 entry checks its separate repeated-output slice, not all retained content. Rerun by work
+    order 160 on 2026-11-15 under ruling 78 point 6: A holds, graded restated.'
 - id: OPS-010
   class: safety
-  standing: holds, not graded
+  standing: restated
   model: operations::C
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  read: 71c725bc8495d11df289a6b12ef6ff920b38660e
   digest: dfd6b918438f9df29c90a1797b62fb1e00292abe747ac37cc72f11af7316c8dc
-  note: Bounded source slice; no individual finding.
+  note: 'Bounded source slice; no individual finding. Rerun by work order 160 on 2026-11-15 under ruling 78
+    point 6: C holds, graded restated.'
 - id: OPS-011
   class: safety
-  standing: holds, not graded
+  standing: static
   model: operations::K
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
-  digest: 8c0d3ef62800297e1301105376ca6f01a0fb0c552e1d5923ce2bdd49da2003ee
-  note: 'Reachability witness K only: two labelled keyless requests require distinct invocation identities and separate
-    effects; no universal safety predicate for this promise.'
+  note: 'Reachability witness K only: two labelled keyless requests require distinct invocation identities
+    and separate effects; no universal safety predicate for this promise. Work order 160: no safety property,
+    only witness K; a keyless request gets its own identity in the step that receives it, which the case requests-key-scope
+    shows.'
 - id: OPS-012
   class: safety
-  standing: 'contradiction: MC2-001'
+  standing: 'gap: MC2-004'
   model: operations::O, W
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  read: 71c725bc8495d11df289a6b12ef6ff920b38660e
   digest: 32850a11a651b048a8a590121de4a3d70c840cb4c58cf36755417920d6ec8b85
-  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
-    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
-    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. Held only
-    under ruling 75 A1''s fence, which ruling 78 point 6 withdrew.'
+  note: 'Until 2026-11-15, MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds
+    as written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent
+    counterexamples. Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing
+    fence. Held only under ruling 75 A1''s fence, which ruling 78 point 6 withdrew. Rerun by work order 160
+    on 2026-11-15 under ruling 78 point 6: gap MC2-004, W refuted on OPS-012 without F13; O and W hold with
+    F13.'
 - id: OPS-013
   class: safety
-  standing: holds, not graded
+  standing: searched
   model: operations::U
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  read: 71c725bc8495d11df289a6b12ef6ff920b38660e
   digest: bedd8039eb8b10cd2cc4080bfbb672d2829235c3fdcf58534e1cf79ae8c7e364
-  note: Bounded source slice; no individual finding.
+  note: 'Bounded source slice; no individual finding. Rerun by work order 160 on 2026-11-15 under ruling 78
+    point 6: U holds, graded searched.'
 - id: OPS-014
   class: safety
   standing: text changed, not rerun
@@ -1106,10 +1111,12 @@
   model: operations::W
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 49c4e0f0bbf7609b15a8ed0a0fe736ae1deb4d24872aa0462cb8012f6de4f772
-  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
-    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
-    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. Held only
-    under ruling 75 A1''s fence, which ruling 78 point 6 withdrew.'
+  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds
+    as written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent
+    counterexamples. Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing
+    fence. Held only under ruling 75 A1''s fence, which ruling 78 point 6 withdrew. Work order 160 reran MC2
+    under ruling 78 point 6, where O and W hold; this text still holds the fence and ''did not occur'', so
+    the row waits for the order that writes that point into spec/.'
 - id: OPS-018
   class: safety
   standing: text changed, not rerun
@@ -1117,10 +1124,12 @@
   model: operations::O
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 51c1067059fa62961f39b73a40123ae10deff0d6325f810cf7cfabaa3cf56aca
-  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
-    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
-    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. Held only
-    under ruling 75 A1''s fence, which ruling 78 point 6 withdrew.'
+  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds
+    as written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent
+    counterexamples. Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing
+    fence. Held only under ruling 75 A1''s fence, which ruling 78 point 6 withdrew. Work order 160 reran MC2
+    under ruling 78 point 6, where O and W hold; this text still holds the fence and ''did not occur'', so
+    the row waits for the order that writes that point into spec/.'
 - id: OPS-019
   class: safety
   standing: static
@@ -1159,11 +1168,13 @@
   model: operations::O
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 70a388632ba36c9fdb4e4f7cc3d9b054ab5716bf73e49ce6a0a4911b46750bf7
-  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds as
-    written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent counterexamples.
-    Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing fence. MC2 excludes
-    “filters in OPS-024 (the operation is effectful)”. Held only under ruling 75 A1''s fence, which ruling 78 point
-    6 withdrew.'
+  note: 'MC2-001: O is refuted on Plain in every part; Fenced and deduplicating controls hold. W itself holds
+    as written. The finding is the unsafe combination OPS-014/OPS-024 against OPS-018, not five independent
+    counterexamples. Order 077 is to be written, not yet run; MC7a-002 and MC6’s Unfenced reproduce the missing
+    fence. MC2 excludes “filters in OPS-024 (the operation is effectful)”. Held only under ruling 75 A1''s
+    fence, which ruling 78 point 6 withdrew. Work order 160 reran MC2 under ruling 78 point 6, where O and
+    W hold; this text still holds the fence and ''did not occur'', so the row waits for the order that writes
+    that point into spec/.'
 - id: OPS-026
   class: safety
   standing: static
@@ -1192,15 +1203,17 @@
 - id: OPS-030
   class: safety
   standing: not modelled
-  note: MC2 excludes “unauthorized reconciliation”; “unknown invocation IDs” are also outside the model. Assigned
-    not modelled as order 116 directs.
+  note: 'MC2 excludes “unauthorized reconciliation”; “unknown invocation IDs” are also outside the model.
+    Assigned not modelled as order 116 directs. Work order 160 registered no mutant for it: under ruling 78
+    point 6 a reconciliation records only that the effect occurred.'
 - id: OPS-032
   class: safety
-  standing: holds, not graded
+  standing: restated
   model: operations::A
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  read: 71c725bc8495d11df289a6b12ef6ff920b38660e
   digest: 634a59d7161ae7df7cb9c5764871c68cbfab9cef8d99e1bc84cc8abc0a33e3a6
-  note: Bounded source slice; no individual finding.
+  note: 'Bounded source slice; no individual finding. Rerun by work order 160 on 2026-11-15 under ruling 78
+    point 6: A holds, graded restated.'
 - id: OPS-033
   class: safety
   standing: static
@@ -1386,11 +1399,12 @@
   note: Bounded source slice; no individual finding.
 - id: IMP-007
   class: safety
-  standing: holds, not graded
+  standing: searched
   model: operations::U
-  read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
+  read: 71c725bc8495d11df289a6b12ef6ff920b38660e
   digest: 88666f1962c653f3505e4eefca2324c5a8ff69c465f123132bac14877656e13f
-  note: Bounded source slice; no individual finding.
+  note: 'Bounded source slice; no individual finding. Rerun by work order 160 on 2026-11-15 under ruling 78
+    point 6: U holds, graded searched.'
 - id: IMP-008
   class: safety
   standing: holds, not graded

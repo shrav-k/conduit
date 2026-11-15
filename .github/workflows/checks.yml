@@ -131,6 +131,9 @@ jobs:
       - name: python3 tools/check_rulings.py
         if: ${{ !cancelled() }}
         run: python3 tools/check_rulings.py
+      - name: python3 tools/check_model_account.py --history
+        if: ${{ !cancelled() }}
+        run: python3 tools/check_model_account.py --history
       # A repository variable supplies optional private names without a secret or a name
       # written into the workflow. Check tracked bytes without echoing the matched values.
       - name: python3 tools/check_private_paths.py

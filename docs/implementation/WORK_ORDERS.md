@@ -81,7 +81,10 @@ Each part answers a fault the first round found:
    the first round's most consequential faults: a contradiction across nine promises, and a wrong
    claim about Codex in the coordinator's own notes.
 2. **The admin** runs every check itself, reads the diff and the verifier's findings, scans for
-   private paths and names, and decides what to fix, to reorder or to put to the owner.
+   private paths and names, and decides what to fix, to reorder or to put to the owner. On the pull
+   request, CI's `docs` job also checks every vector change against the declarations that the pull
+   request adds or changes, and lists each flip for the reader
+   ([reviewing vector changes](../../conformance/README.md#reviewing-vector-changes)).
 3. **One more round at most**: the admin sends the worker back once with the verifier's findings
    it accepts. If that does not settle them, the admin finishes the work itself.
 

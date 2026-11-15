@@ -267,12 +267,13 @@ It reads authored cases and fixture bytes, without running an engine or generati
 JSON is read first; YAML cases and declarations require an interpreter with PyYAML.
 Cases (`case.yaml`, `case.yml`, `case.json`) are paired by stable `id`, so moves are reported
 as renames; changed IDs are removals and additions. Steps are paired by array index.
-Each change is a JSON output line followed by a count summary. Case paths are JSON Pointers
-with zero-based step indices; the displayed `step` starts at 1. Fixture paths are relative to
-the repository, including fixtures outside this directory. All declared file aliases are checked
-as bytes, with hashes and byte counts for changed contents. Formatting-only case changes are
-ignored; metadata, initial state, inputs and captures are included. Unreadable files, duplicate
-IDs and unsupported case/fixture symlinks are reported as errors.
+Each change is a JSON output line, followed by one line per flip, declaration file lines in read
+order, then a count summary. Case paths are JSON Pointers with zero-based step indices; the
+displayed `step` starts at 1. Fixture paths are relative to the repository, including fixtures
+outside this directory. All declared file aliases are checked as bytes, with hashes and byte counts
+for changed contents. Formatting-only case changes are ignored; metadata, initial state, inputs and
+captures are included. Unreadable files, duplicate IDs and unsupported case/fixture symlinks are
+reported as errors.
 
 Flips show before and after for `expect.accepted`, `expect.stateUnchanged` and
 `expect.reply`'s `reason`, `outcome`, `accepted` and whole `tool` value, including additions or
@@ -280,7 +281,7 @@ removals of these assertions in existing cases. An absent `before` or `after` me
 value, distinct from JSON `null`. Added and removed cases get one case-level entry each.
 Other expectation changes are reported by JSON path.
 
-An order may supply `--declared FILE`, a YAML or JSON list of intended shapes:
+An order may supply `--declared FILE` more than once, each a YAML or JSON list of intended shapes:
 
 ```yaml
 - name: intended refusal change
@@ -303,9 +304,17 @@ match report paths and default to `['*']`. Both use case-sensitive `fnmatch` syn
 also matches `/`. Optional `before`/`after` constrain exact JSON values; `operation` constrains
 `add`, `remove` or `replace`. Omitted constraints match any value; unknown keys are errors.
 The first matching shape names the declaration on the change. Errors cannot be declared.
-Exit status is 0 with no flips, undeclared changes or errors; 1 otherwise, **even for declared
-flips**, which still need review. Invalid arguments, revisions or declarations exit 2.
+Exit status is 0 with no undeclared changes or errors, including declared flips; 1 with any
+undeclared change or error. Invalid arguments, revisions or declarations exit 2.
 `python3 tools/vector_delta.py --help` includes the declaration format.
+
+`--declared-changed` reads each `docs/work-orders/*-declared.yaml` that AFTER adds or changes from
+BEFORE, after any `--declared` file. On every pull request, CI's `docs` job runs
+`python3 tools/vector_delta.py HEAD^1 HEAD --declared-changed`, since fixtures may lie outside this
+directory. An order that changes a case or a case's fixture writes
+`docs/work-orders/NNN-declared.yaml`, and its pull request commits it. A declaration already on
+`main` is not read again, so a later change declares itself in a file that its own pull request
+adds or changes.
 
 ## Authored schemas and E05
 

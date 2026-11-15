@@ -48,6 +48,10 @@ have left the tree; their results, decisions and observations are in
 - [036b-staged/](036b-staged/README.md): exact patches and handoffs for later orders, including
   their vector impact. This directory stays until its consumers apply the patches.
 
-Any `*-declared.yaml` files stay with the orders that use them. None is present at this step.
+An order that changes a case or a case's fixture writes its declaration here as
+`NNN-declared.yaml`, and its pull request commits it: CI checks every vector change against
+the declarations that a pull request adds or changes
+([reviewing vector changes](../../conformance/README.md#reviewing-vector-changes)).
+Declarations stay with the orders that use them.
 While an order is in flight, its admin Record stays in its file; at merge, the admin writes
 its row serially in the record before removing that order and its own schema.

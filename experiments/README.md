@@ -40,6 +40,7 @@ expected outcomes and validation record together.
 | [021 — S10: every provider swapped](021-s10-swapped-providers/README.md) | S10: S1 and S2 again with every provider swapped. | [Pre-registered](021-s10-swapped-providers/README.md) on 2026-11-11 by work order 103; accepted by the owner under ruling 75 D. |
 | [022 — provider-contract vectors](022-provider-contracts/README.md) | A63: the harness and the suites that show each provider passing its contract. | Built on 2026-11-11 by work order 123: the harness, with no suite yet. |
 | [023 — PB: a paper count of S1 in flow style](023-paper-count/README.md) | PB: S1's tasks counted on paper in flow style against the baseline, under ruling 63 and ruling 68's R1, after ruling 71 fixed the bar's rule. | Executed 2026-11-11, on paper; [results](023-paper-count/results-2026-11-11.md). |
+| [027 — A5: sign-in and isolation](027-a5-sign-in/README.md) | A5: whether each Agent is signed in to the account it names, through the Interface, in four stages. Stage 0 probes two facts about the real clients that order 050 needs, with nothing signed in. | Stage 0 pre-registered on 2026-11-15 by work order 159; not run. |
 
 Keep draft syntax, static checks, synthetic tests and tests against live providers distinct.
 Never present an expected outcome as a result. A result that contradicts a promise is raised

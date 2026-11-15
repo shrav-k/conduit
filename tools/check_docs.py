@@ -207,6 +207,7 @@ def path_mentions():
     """
     sources = set((ROOT / "tools").glob("*.py"))
     sources.add(ROOT / "conformance/manifest.yaml")
+    sources.update((ROOT / "conformance").rglob("index.yaml"))
     for current, directories, names in os.walk(ROOT / "engine"):
         directories[:] = [name for name in directories if name not in SKIPPED]
         sources.update(Path(current) / name for name in names
@@ -216,7 +217,7 @@ def path_mentions():
         for line, text in enumerate(source.read_text(encoding="utf-8").splitlines(), 1):
             # Case paths in the coverage index are relative to conformance/, rather than
             # to the repository root. Decode JSON string escapes without needing PyYAML.
-            if source == ROOT / "conformance/manifest.yaml":
+            if source == ROOT / "conformance/manifest.yaml" or source.name == "index.yaml":
                 case = re.match(r'^\s*"case":\s*("(?:[^"\\]|\\.)*")', text)
                 if case:
                     count += 1

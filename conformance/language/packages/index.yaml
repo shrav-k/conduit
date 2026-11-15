@@ -1,0 +1,772 @@
+{
+  "cases": [
+    {
+      "id": "agents-v2-defaults",
+      "case": "language/packages/agents-v2-defaults/case.yaml",
+      "promises": [
+        "NAM-024",
+        "SCH-009",
+        "PKG-031",
+        "NAM-018",
+        "NAM-022"
+      ]
+    },
+    {
+      "id": "packages-absent-export",
+      "case": "language/packages/absent-export/case.yaml",
+      "promises": [
+        "MAN-007"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-binding-conjunction",
+      "case": "language/packages/binding-conjunction/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-binding-local-schema",
+      "case": "language/packages/binding-local-schema/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-binding-nonscalar",
+      "case": "language/packages/binding-nonscalar/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-binding-nonscalar-branch",
+      "case": "language/packages/binding-nonscalar-branch/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-binding-nullable-parent",
+      "case": "language/packages/binding-nullable-parent/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-binding-optional",
+      "case": "language/packages/binding-optional/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-binding-optional-parent",
+      "case": "language/packages/binding-optional-parent/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-binding-required-scalar",
+      "case": "language/packages/binding-required-scalar/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-build-metadata",
+      "case": "language/packages/build-metadata/case.yaml",
+      "promises": [
+        "PKG-003",
+        "PKG-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-contract-version-distinct",
+      "case": "language/packages/contract-version-distinct/case.yaml",
+      "promises": [
+        "NAM-028"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-core-no-manifest",
+      "case": "language/packages/core-no-manifest/case.yaml",
+      "promises": [
+        "NAM-020"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-core-pin",
+      "case": "language/packages/core-pin/case.yaml",
+      "promises": [
+        "NAM-021"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-core-project-address",
+      "case": "language/packages/core-project-address/case.yaml",
+      "promises": [
+        "NAM-021"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-core-snapshot",
+      "case": "language/packages/core-snapshot/case.yaml",
+      "promises": [
+        "NAM-021"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-cross-kind-duplicate",
+      "case": "language/packages/cross-kind-duplicate/case.yaml",
+      "promises": [
+        "NAM-027"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-data-not-selections",
+      "case": "language/packages/data-not-selections/case.yaml",
+      "promises": [
+        "NAM-018"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-digest-mismatch",
+      "case": "language/packages/digest-mismatch/case.yaml",
+      "promises": [
+        "PKG-021",
+        "PKG-006"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-digest-order-and-templates",
+      "case": "language/packages/digest-order-and-templates/case.yaml",
+      "promises": [
+        "SUB-008"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-digest-original",
+      "case": "language/packages/digest-original/case.yaml",
+      "promises": [
+        "SUB-008"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-duplicate-exports",
+      "case": "language/packages/duplicate-exports/case.yaml",
+      "promises": [
+        "PKG-012",
+        "SUB-005"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-encoded-fetch-path",
+      "case": "language/packages/encoded-fetch-path/case.yaml",
+      "promises": [
+        "SUB-010"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-exact",
+      "case": "language/packages/exact/case.yaml",
+      "promises": [
+        "PKG-006",
+        "PKG-003",
+        "PKG-021",
+        "NAM-014",
+        "SCH-015",
+        "SUB-008"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-fetch-is-inert",
+      "case": "language/packages/fetch-is-inert/case.yaml",
+      "promises": [
+        "PKG-006",
+        "SUB-010"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-from-needs-template",
+      "case": "language/packages/from-needs-template/case.yaml",
+      "promises": [
+        "INS-002"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-independent-manifests",
+      "case": "language/packages/independent-manifests/case.yaml",
+      "promises": [
+        "NAM-014",
+        "PKG-003"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-item-document-duplicate",
+      "case": "language/packages/item-document-duplicate/case.yaml",
+      "promises": [
+        "NAM-027"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-local-contract",
+      "case": "language/packages/local-contract/case.yaml",
+      "promises": [
+        "NAM-022",
+        "SUB-008"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-missing",
+      "case": "language/packages/missing/case.yaml",
+      "promises": [
+        "PKG-006"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-missing-selection",
+      "case": "language/packages/missing-selection/case.yaml",
+      "promises": [
+        "NAM-028"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-missing-with-fetch",
+      "case": "language/packages/missing-with-fetch/case.yaml",
+      "promises": [
+        "PKG-006"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-no-cross-scope-lookup",
+      "case": "language/packages/no-cross-scope-lookup/case.yaml",
+      "promises": [
+        "NAM-028"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-no-manifest-pin",
+      "case": "language/packages/no-manifest-pin/case.yaml",
+      "promises": [
+        "NAM-007"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-own-qualified",
+      "case": "language/packages/own-qualified/case.yaml",
+      "promises": [
+        "NAM-007"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-package-binding",
+      "case": "language/packages/package-binding/case.yaml",
+      "promises": [
+        "MAN-010",
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-package-binding-null",
+      "case": "language/packages/package-binding-null/case.yaml",
+      "promises": [
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-package-binding-optional-null",
+      "case": "language/packages/package-binding-optional-null/case.yaml",
+      "promises": [
+        "MAN-010",
+        "MAN-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-package-undeclared-binding",
+      "case": "language/packages/package-undeclared-binding/case.yaml",
+      "promises": [
+        "MAN-010"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-plain-missing-tool",
+      "case": "language/packages/plain-missing-tool/case.yaml",
+      "promises": [
+        "PKG-020"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-prerelease-mismatch",
+      "case": "language/packages/prerelease-mismatch/case.yaml",
+      "promises": [
+        "PKG-003",
+        "PKG-006"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-private-export",
+      "case": "language/packages/private-export/case.yaml",
+      "promises": [
+        "PKG-018",
+        "NAM-028"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-program-path-punctuation",
+      "case": "language/packages/program-path-punctuation/case.yaml",
+      "promises": [
+        "SUB-008",
+        "SUB-010"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-project-address-required",
+      "case": "language/packages/project-address-required/case.yaml",
+      "promises": [
+        "MAN-015"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-project-installed-address",
+      "case": "language/packages/project-installed-address/case.yaml",
+      "promises": [
+        "MAN-016"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-qualified-implementation-override",
+      "case": "language/packages/qualified-implementation-override/case.yaml",
+      "promises": [
+        "MAN-017",
+        "NAM-022",
+        "TPL-004"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-qualified-template",
+      "case": "language/packages/qualified-template/case.yaml",
+      "promises": [
+        "NAM-018",
+        "NAM-028"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-relative-fetch-directory",
+      "case": "language/packages/relative-fetch-directory/case.yaml",
+      "promises": [
+        "SUB-008",
+        "SUB-010"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-relative-fetch-values",
+      "case": "language/packages/relative-fetch-values/case.yaml",
+      "promises": [
+        "MAN-006"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-relative-program-directory",
+      "case": "language/packages/relative-program-directory/case.yaml",
+      "promises": [
+        "SUB-008",
+        "SUB-010"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-relative-program-parent-traversal",
+      "case": "language/packages/relative-program-parent-traversal/case.yaml",
+      "promises": [
+        "MAN-010",
+        "SUB-010"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-relative-program-values",
+      "case": "language/packages/relative-program-values/case.yaml",
+      "promises": [
+        "MAN-010"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-s1",
+      "case": "language/packages/s1/case.yaml",
+      "promises": [
+        "PKG-006",
+        "PKG-003",
+        "PKG-021",
+        "NAM-014",
+        "NAM-020",
+        "SUB-008"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-s1-digest-mismatch",
+      "case": "language/packages/s1-digest-mismatch/case.yaml",
+      "promises": [
+        "PKG-021",
+        "PKG-006"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-s1-missing",
+      "case": "language/packages/s1-missing/case.yaml",
+      "promises": [
+        "PKG-006"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-schema-kind",
+      "case": "language/packages/schema-kind/case.yaml",
+      "promises": [
+        "SCH-015"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-snapshot-address",
+      "case": "language/packages/snapshot-address/case.yaml",
+      "promises": [
+        "PKG-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-snapshot-instance",
+      "case": "language/packages/snapshot-instance/case.yaml",
+      "promises": [
+        "MAN-011"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-snapshot-version",
+      "case": "language/packages/snapshot-version/case.yaml",
+      "promises": [
+        "PKG-017"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-type-family",
+      "case": "language/packages/type-family/case.yaml",
+      "promises": [
+        "TPL-002"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-unused-pin",
+      "case": "language/packages/unused-pin/case.yaml",
+      "promises": [
+        "NAM-008"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "packages-version-mismatch",
+      "case": "language/packages/version-mismatch/case.yaml",
+      "promises": [
+        "PKG-003",
+        "PKG-006"
+      ],
+      "safety_rows": [
+        "snapshot-context"
+      ]
+    },
+    {
+      "id": "release-adds-default-rejected",
+      "case": "language/packages/release-adds-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "PKG-031",
+        "NAM-018",
+        "NAM-022"
+      ]
+    },
+    {
+      "id": "release-adds-optional-accepted",
+      "case": "language/packages/release-adds-optional-accepted/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "PKG-031",
+        "NAM-018",
+        "NAM-022"
+      ]
+    },
+    {
+      "id": "release-adds-recursive-default-rejected",
+      "case": "language/packages/release-adds-recursive-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-adds-referenced-default-rejected",
+      "case": "language/packages/release-adds-referenced-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-adds-schema-contract-default-rejected",
+      "case": "language/packages/release-adds-schema-contract-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-changes-default-rejected",
+      "case": "language/packages/release-changes-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-equal-default-accepted",
+      "case": "language/packages/release-equal-default-accepted/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-new-version-segment-with-default-accepted",
+      "case": "language/packages/release-new-version-segment-with-default-accepted/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023"
+      ]
+    },
+    {
+      "id": "release-removes-default-rejected",
+      "case": "language/packages/release-removes-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "release-reorders-default-rejected",
+      "case": "language/packages/release-reorders-default-rejected/case.yaml",
+      "promises": [
+        "NAM-024",
+        "PKG-023",
+        "SCH-007",
+        "SCH-009",
+        "SCH-015"
+      ]
+    },
+    {
+      "id": "state-dir-binding",
+      "case": "language/packages/state-dir-binding/case.yaml",
+      "promises": [
+        "MAN-018",
+        "TPL-004"
+      ],
+      "safety_rows": [
+        "state-dir-binding"
+      ]
+    }
+  ]
+}

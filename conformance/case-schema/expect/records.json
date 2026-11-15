@@ -1,0 +1,19 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "specversion",
+      "source",
+      "type",
+      "time",
+      "data"
+    ],
+    "properties": {
+      "data": {
+        "type": "object"
+      }
+    }
+  }
+}

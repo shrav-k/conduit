@@ -1,0 +1,187 @@
+{
+  "cases": [
+    {
+      "id": "records-authority",
+      "case": "conventions/records/authority/case.yaml",
+      "promises": [
+        "REC-001",
+        "REC-002",
+        "ACC-037",
+        "IFC-036",
+        "OPS-023"
+      ]
+    },
+    {
+      "id": "records-broker",
+      "case": "conventions/records/broker/case.yaml",
+      "promises": [
+        "ACC-030",
+        "ACC-016",
+        "ACC-017",
+        "ACC-015",
+        "IFC-020",
+        "INS-016"
+      ]
+    },
+    {
+      "id": "records-broker-filtered",
+      "case": "conventions/records/broker-filtered/case.yaml",
+      "promises": [
+        "ACC-030",
+        "ACC-016",
+        "ACC-017",
+        "ACC-015",
+        "IFC-020",
+        "INS-016"
+      ]
+    },
+    {
+      "id": "records-expected-id",
+      "case": "conventions/records/expected-id/case.yaml",
+      "promises": [
+        "LIF-037",
+        "ACC-033",
+        "OPS-023",
+        "OBJ-010",
+        "LIF-031",
+        "IFC-022",
+        "OPS-029",
+        "LIF-013"
+      ]
+    },
+    {
+      "id": "records-input-reference",
+      "case": "conventions/records/input-reference/case.yaml",
+      "promises": [
+        "REC-001",
+        "REC-002",
+        "REC-004",
+        "LIF-013",
+        "OBJ-010",
+        "OPS-008"
+      ]
+    },
+    {
+      "id": "records-inspection",
+      "case": "conventions/records/inspection/case.yaml",
+      "promises": [
+        "LIF-013",
+        "REC-001",
+        "REC-002",
+        "REC-005",
+        "NAM-009",
+        "LIF-012"
+      ]
+    },
+    {
+      "id": "records-keyed-conflict",
+      "case": "conventions/records/keyed-conflict/case.yaml",
+      "promises": [
+        "REC-002",
+        "OPS-023"
+      ]
+    },
+    {
+      "id": "records-keyed-invalid",
+      "case": "conventions/records/keyed-invalid/case.yaml",
+      "promises": [
+        "REC-002",
+        "OPS-023"
+      ]
+    },
+    {
+      "id": "records-keyed-refused",
+      "case": "conventions/records/keyed-refused/case.yaml",
+      "promises": [
+        "REC-002",
+        "OPS-023"
+      ]
+    },
+    {
+      "id": "records-lost",
+      "case": "conventions/records/lost/case.yaml",
+      "promises": [
+        "REC-006"
+      ]
+    },
+    {
+      "id": "records-purge",
+      "case": "conventions/records/purge/case.yaml",
+      "promises": [
+        "REC-001",
+        "REC-002",
+        "REC-003",
+        "REC-004",
+        "REC-006",
+        "OPS-008",
+        "OPS-012",
+        "LIF-013"
+      ]
+    },
+    {
+      "id": "records-purge-nonroot",
+      "case": "conventions/records/purge-nonroot/case.yaml",
+      "promises": [
+        "REC-004",
+        "ACC-032"
+      ]
+    },
+    {
+      "id": "records-purge-succeeded",
+      "case": "conventions/records/purge-succeeded/case.yaml",
+      "promises": [
+        "REC-001",
+        "REC-002",
+        "REC-003",
+        "REC-004",
+        "REC-006",
+        "OPS-008",
+        "OPS-012",
+        "LIF-013",
+        "OPS-009",
+        "OPS-010"
+      ]
+    },
+    {
+      "id": "records-replace",
+      "case": "conventions/records/replace/case.yaml",
+      "promises": [
+        "SUB-008",
+        "SUB-009",
+        "NAM-009",
+        "NAM-022",
+        "INS-020",
+        "REV-002",
+        "REV-004",
+        "NAM-028"
+      ]
+    },
+    {
+      "id": "records-replay-register",
+      "case": "conventions/records/replay-register/case.yaml",
+      "promises": [
+        "OPS-009",
+        "ACC-033",
+        "REC-002"
+      ]
+    },
+    {
+      "id": "records-replay-replace",
+      "case": "conventions/records/replay-replace/case.yaml",
+      "promises": [
+        "OPS-009",
+        "ACC-033",
+        "REC-002"
+      ]
+    },
+    {
+      "id": "records-unreadable",
+      "case": "conventions/records/unreadable/case.yaml",
+      "promises": [
+        "REC-003",
+        "REC-005",
+        "REC-006"
+      ]
+    }
+  ]
+}

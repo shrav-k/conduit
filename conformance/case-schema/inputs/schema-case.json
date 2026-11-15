@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "enum": [
+        "schema-case",
+        "schema-admission",
+        "schema-evaluation"
+      ]
+    },
+    "file": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "file"
+  ]
+}

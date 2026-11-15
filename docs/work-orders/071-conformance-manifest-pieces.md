@@ -437,3 +437,145 @@ Report:
 
 Your report's `vectors` is empty: this order adds none. Tests that bind loopback ports may fail
 in your sandbox. If they do, say so, and the admin reruns them. Do not stage anything.
+
+## Record
+
+Run on 2026-11-12 on the Windows computer (WSL), from `main` `a005dab0`, in two rounds, each
+checked by a fresh verifier. It is checkpointed, not merged: `wo/071-conformance-manifest-pieces`
+is at `0edadab5`. An earlier start from `defee9ba` was stopped. Its log ends at the remote start,
+and it left no report.
+
+Round 1: the worker (18578 s) and the verifier (257 s). The worker said the full native gate was
+incomplete. With the default 24 threads (`available_parallelism`), the runner and the vectors test
+ran out of memory (exits 137 and 100), so the default-thread `cmp` failed against an empty output.
+The one-thread and four-thread outputs equalled BASE's byte for byte. The worker also interrupted
+the engine's suite after `live_s1_scripted_agents_call_engine_with_distinct_run_identities` in
+`engine/crates/shell/tests/agents.rs` had run for more than 3540 s. A filtered follow-up then
+passed the 18 tests still to run. The verifier's verdict was "Changes required": the BASE
+comparison, the root checks and 17 targeted tests passed. It found two musts in
+`engine/crates/conformance/src/pieces.rs`. First, `--merge` rejected an ordinary rebase that
+changed only the inputs or only the expectations, because it took the other region's
+already-split elements for removals (line 567). Second, an error from a malformed input piece did
+not name the piece's file (line 385).
+
+Round 2: the worker (11995 s) and the verifier (273 s). The worker said it fixed both musts. The
+inputs and the expectations now recognise their split placeholders independently. Two integration
+tests in the crate's `tests/pieces.rs` run `git merge-file --theirs` for an input-only rebase and
+for an expectation-only rebase. Errors from `input_name` now name the piece and the repair. The
+worker reported 257 tests passed and 0 failed: 198 native with 3 skipped, 50 Python and 9 in the
+spike. It ran the native suite with `CONDUIT_VECTOR_THREADS=4`, `NEXTEST_TEST_THREADS=2` and
+`RUST_TEST_THREADS=2` (9846 s), and that run included the test left unfinished in round 1. Fresh
+runner outputs at one thread and at four equalled BASE's byte for byte. The 24-thread proof was
+not run again. The networked npm exercises did not run, because `CONDUIT_TEST_NPM` was unset. The
+verifier's verdict was "Changes requested: one must finding", quoted below.
+
+The worker's times, in wall seconds for the runner and then the vectors test:
+- BASE at one thread: 945.45 and 1041.21.
+- The split tree at one thread: 1025.47 and 1102.39.
+- The split tree at four threads: 379.10 and 369.58.
+- The split tree at the default 24 threads: 178.33 and 259.58. Both of these runs ran out of
+  memory.
+
+Round 2's fresh runner runs took 1071.33 s at one thread and 267.65 s at four. The worker
+recommends two changes, both outside the order's scope: `threads-required` of 4 for the vectors
+test under nextest, and `CONDUIT_VECTOR_THREADS=4` in the admin's dispatch.
+
+What the branch does: the coverage index now lives in 20 pieces, an `index.yaml` in each directory
+that holds case directories. Each piece's entries are in `id` order and keep `manifest.yaml`'s
+bytes. `manifest.yaml` lost its `cases` (5054 lines removed, none added) and keeps `status`,
+`s1_coverage` and `s1_coverage_source`. The 21 input branches and 20 expectation properties of
+`conformance/case.schema.json` moved to files under `case-schema/inputs/` and
+`case-schema/expect/`. The schema gained only the placeholders `false` and `"properties": {},`. The
+runner assembles the schema and appends any rule file under `case-schema/rules/` (none exists).
+
+The tool is the example `pieces`, built on the pure module `src/pieces.rs`. It has three modes:
+- With no flag, it moves what is left inline into the pieces. Its second run reports "Nothing to
+  move."
+- `--merge ROOT` merges what is left inline, three ways.
+- `--compare ROOT` proves the split. Its counts are: 20 pieces; 441 entries (290 with tags, 65
+  empty, 86 without `safety_rows`); 308 `s1_coverage` rows; 21 input branches; 20 expectation
+  properties.
+
+The runner reads the pieces and checks every case before running any. It then runs the cases on
+scoped threads (`CONDUIT_VECTOR_THREADS`, or `available_parallelism` when that is unset) and
+reports them in case-path order. The ten dispatch arms are in `src/steps/`, the checks every step
+passes are in `src/checks.rs`, and the expectations are in `src/expect.rs`. `conformance/README.md`
+gains "The coverage index and the case schema in pieces", with both rebase procedures.
+`spec/README.md`, `tools/set_names.py`, `tools/check_docs.py` and `tools/migrate_041a.py` were
+updated to match. `tools/vector_delta.py` reports 0 changes.
+
+The worker's own choices:
+- An order-keeping value type backed by a `Vec`, with hand-written serde.
+- `false` and an empty object as the placeholders.
+- An atomic work cursor whose results are sorted by case-path index. The shared inputs are only
+  read, so no thread needed its own copy and no stack size was set.
+- The dispatch kept under `rustfmt::skip`, so each arm stays on one line.
+
+### The last verifier's findings
+
+- **must**, decision "Step 4: removing an inline expectation property must make --merge fail.",
+  `engine/crates/conformance/src/pieces.rs:578`.
+  - Problem: "Removing every inline expectation property bypasses removal detection. A merge can
+    silently retain retired expectations while applying other schema changes."
+  - Evidence: "The order states, “an input branch or expectation property removed: the tool
+    fails” (docs/work-orders/071-conformance-manifest-pieces.md:162). However, pieces.rs:578 sets
+    split_expect from properties.is_empty(), and lines 580–583 skip every expectation removal
+    check when true. An in-memory Git merge using the documented procedure—changing one input
+    description and clearing all 20 expectation properties—produced 21 inline inputs and an empty
+    expectation map. With pieces equal to BASE, reconciliation accepts the inputs and split
+    returns successfully. The revised regression at pieces.rs:959 removes only reply while
+    retaining another property, so it misses this case."
+  - Fix: "Use a distinguishable expectation placeholder so an emptied inline map remains
+    detectable. Add a regression that removes all expectation properties while changing an
+    input, and require --merge to fail without returning changes."
+
+### Round 3, on the Mac, and the merge
+
+`main` had moved 39 commits past `a005dab0`, among them orders 042, 077 and 081, so before
+round 3 the admin merged `main` at `bd987017` into the branch. It took `main`'s
+`conformance/manifest.yaml` and `conformance/case.schema.json` whole, as the README's procedure
+says, and left one conflict in `engine/crates/conformance/src/lib.rs` for the worker.
+
+Round 3: the worker (2773 s) and a fresh Codex verifier (398 s). The worker ported `main`'s new
+expectation code into the split runner: `expect::prepare` supplies `objectIds`, `tombstoneIds` and
+`tombstones` before the expectations and captures, and `expect::check` carries `object_count`,
+`object_facts`, `invocation_facts`, `tombstone_facts`, `inventory_facts`, `tombstone_count`,
+`absent_tombstones` and a tombstone-aware `stateUnchanged`. It ran the tool's
+`--merge target/s0a/base` against an archive of `a005dab0` ("Updated 14 files"), then refreshed
+`target/s0a/base` to an archive of `bd987017`. It fixed round 2's must with a distinguishable
+expectation placeholder, `"$pieces": false`, and a Git merge-file regression that clears all 26
+expectations while changing an input. The counts are now: 21 pieces; 494 entries (293 with tags,
+115 empty, 86 without `safety_rows`); 308 `s1_coverage` rows; 21 input branches; 26 expectation
+properties. The schema gains only the placeholders `false` and `"$pieces": false`, and the
+manifest loses 5571 lines. The runner's output at one and at four threads equals `bd987017`'s byte
+for byte. The worker ran the vectors with `CONDUIT_VECTOR_THREADS=4` and the engine's suite with
+two test threads; all 494 vectors and 213 engine tests passed.
+
+The verifier found one must: an inline input branch that names no kind returned an error with no
+file and no repair. Its rounds spent, the admin finished the order. Malformed inline branches and
+properties now name the file, the branch or property, and the repair. A fresh read-only Opus reader
+then verified the whole order (ruling 79, point 2). It found no must: the port is complete and keeps
+its meaning, both earlier musts are fixed with tests that fail without them, and the runner's
+outputs at one and four threads equal the base's. Its four shoulds were applied before the merge:
+
+- Without `--merge`, an emptied expectation map or input list is refused and nothing changes,
+  whatever else is inline; it is no longer quietly turned back into the placeholder. The runner's
+  messages for a missing placeholder say how to restore it and how to retire an element.
+- A missing or mistyped input `oneOf` or expectation map names `conformance/case.schema.json` and
+  the repair. A fault in the merge ROOT's schema says it is the ROOT's.
+- Every file under `case-schema/` is a `.json` piece directly inside `inputs/`, `expect/` or
+  `rules/`, or an error. The runner and the tool no longer skip it, and the README names the files
+  so.
+- This Record.
+
+A second fresh Opus reader read those fixes and found no must. Its findings that the Record was
+wrong in two places and that the emptied-region refusal held only with nothing else inline were
+fixed before the merge. Its other shoulds are left to a follow-up order: a fault in the merge ROOT's
+own schema should give the ROOT's repair rather than the tree's, and be tested; the runner's and the
+tool's walks of `case-schema/` should be one library function with a test of their own; and the
+input-side placeholder message should be asserted.
+
+### Next
+
+Once this merges, tell the lane, when it restarts, that SV1 is unblocked. Order 157 adds its cases
+as pieces. The follow-up order above is the coordinator's to write.

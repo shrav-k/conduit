@@ -1,0 +1,98 @@
+{
+  "cases": [
+    {
+      "id": "first-start",
+      "case": "conventions/first-start/initial/case.yaml",
+      "promises": [
+        "FST-001",
+        "FST-002",
+        "FST-003",
+        "FST-005",
+        "NAM-020",
+        "PLC-008",
+        "PLC-026",
+        "PRV-014",
+        "REC-001",
+        "REC-002",
+        "REC-003",
+        "FST-007",
+        "FLEET-005",
+        "ACC-044"
+      ],
+      "safety_rows": [
+        "first-start"
+      ]
+    },
+    {
+      "id": "first-start-lifecycle-pool-target",
+      "case": "conventions/first-start/lifecycle-pool-target/case.yaml",
+      "promises": [
+        "LIF-034",
+        "ACC-033",
+        "OPS-023",
+        "REC-001",
+        "REC-002",
+        "REC-003"
+      ],
+      "safety_rows": [
+        "first-start-lifecycle-pool-target"
+      ]
+    },
+    {
+      "id": "first-start-lifecycle-protected",
+      "case": "conventions/first-start/lifecycle/case.yaml",
+      "promises": [
+        "LIF-034",
+        "REC-001",
+        "REC-002",
+        "REC-003",
+        "ACC-033",
+        "OPS-023",
+        "FST-007",
+        "FST-002",
+        "FLEET-005",
+        "ACC-044"
+      ],
+      "safety_rows": [
+        "first-start-lifecycle-protected"
+      ]
+    },
+    {
+      "id": "first-start-repeat",
+      "case": "conventions/first-start/repeat/case.yaml",
+      "promises": [
+        "FST-001",
+        "FST-005",
+        "REC-003",
+        "FST-007",
+        "FST-002",
+        "FLEET-005",
+        "ACC-044"
+      ],
+      "safety_rows": [
+        "first-start-repeat"
+      ]
+    },
+    {
+      "id": "first-start-root-system",
+      "case": "conventions/first-start/root-system/case.yaml",
+      "promises": [
+        "FST-002",
+        "FST-005",
+        "FLEET-005",
+        "ACC-044",
+        "ACC-024"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "first-start-trust-domain",
+      "case": "conventions/first-start/trust-domain/case.yaml",
+      "promises": [
+        "FST-007",
+        "FST-001"
+      ],
+      "safety_rows": []
+    }
+  ]
+}

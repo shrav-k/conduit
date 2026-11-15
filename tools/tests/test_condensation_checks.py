@@ -156,12 +156,16 @@ class CondensationChecks(unittest.TestCase):
                 '# https://example.org/docs/external.md #/spec/pointer\n')
             (root / "conformance/manifest.yaml").write_text(
                 '{\n  "case": "missing-case.yaml"\n}')
+            (root / "conformance/language").mkdir()
+            (root / "conformance/language/index.yaml").write_text(
+                '{\n  "cases": [\n    {\n      "case": "missing-piece-case.yaml"\n    }\n  ]\n}')
             (root / "engine/main.rs").write_text(
                 '// conformance/missing.yaml tools/call tools/list\n')
             with patch.object(docs, "ROOT", root), contextlib.redirect_stdout(io.StringIO()):
                 errors = docs.path_mentions()
-            self.assertEqual(len(errors), 3, errors)
+            self.assertEqual(len(errors), 4, errors)
             self.assertTrue(any("missing case path missing-case.yaml" in e for e in errors))
+            self.assertTrue(any("missing case path missing-piece-case.yaml" in e for e in errors))
             self.assertTrue(any("missing mentioned path docs/missing.md" in e for e in errors))
             self.assertTrue(any("missing mentioned path conformance/missing.yaml" in e for e in errors))
 

@@ -278,3 +278,42 @@ lines `No docs/work-orders/*-declared.yaml is added or changed from HEAD^1 to HE
 `Vector delta: 0 changes; 0 flips; 0 undeclared; 0 errors.` A fresh read-only Opus reader then
 reads the diff before it merges (ruling 79). Do not stage anything. Report each choice you make
 as your own, and every check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `5f9fcbe8`: the worker (316 s) and a fresh Codex verifier
+(229 s), which found nothing to change in one round but did not rerun the unit tests, since they
+write temporary repositories. `tools/vector_delta.py` now exits 0 when no change is undeclared and
+no error is reported, whatever the number of flips, and after the change lines prints a `Flip:` line
+for each flip that names its declaration or says `undeclared`. `--declared` may be given more than
+once, and a declaration file that cannot be read or is invalid is named on standard error. The new
+`--declared-changed` also reads each `docs/work-orders/*-declared.yaml` directly in that directory
+that AFTER adds or changes from BEFORE, and a line names each declaration file read, or says that
+none was added or changed. CI's `docs` job gains a last step that runs `python3
+tools/vector_delta.py HEAD^1 HEAD --declared-changed` on every pull request, rather than only on
+those that touch `conformance/` as row 29 of the full review's orders has it, since five fixtures
+that cases read lie under `engine/` and `spec/`. It replaces decision 2 of [order
+036k](../implementation/WORK_ORDERS.md#order-036k): a declared flip now exits 0 and is listed on a
+`Flip:` line, and CI's `docs` job runs the tool on every pull request. On order 042's merge,
+`57813f06`, with that order's declaration, the tool reports 1,521 changes, 4 flips and 0 undeclared
+and exits 0. `HELP`, the section "Reviewing vector changes" of `conformance/README.md`, line 46 of
+`docs/work-orders/README.md` and item 2 of "Checking what comes back" in
+`docs/implementation/WORK_ORDERS.md` say so. One test is renamed and three are new. A fresh
+read-only Opus reader then verified the order (ruling 79, point 2). It ran the whole Python suite
+(81 tests passed) and every Done-when command, among them the run on order 042's merge and the four
+tests of decision 7 failing against `7346a280`'s tool. On scratch copies it undid the
+deeper-directory filter, the reading of only added or changed declarations, the passing of declared
+flips and the line that says no declaration was added or changed, and a test failed each time. On a
+simulated merge commit of this pull request, the step passed, since it changes no vector; with an
+undeclared new case and flip added it failed, and it passed once a committed declaration declared
+them. It found no must. This fix applied both of its shoulds. A declaration that is a symlink is now
+refused as `symlinks are not supported as declaration files; replace the link with the file it
+points to`, after its path, rather than as a case or fixture file. A case's or fixture's symlink
+keeps its error line, and `test_declaration_error_names_its_file` asserts the new line whole. The
+sentence above on order 036k's decision 2 is the other should's. Order 036k's Record, and orders
+077, 081 and 082, which say that a declared flip exits 1, are records of other orders and stay as
+they are.
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2) and found no must. Its
+two shoulds were applied: a link that BEFORE holds no longer gets AFTER's repair advice, and two
+wording faults in this Record are mended.

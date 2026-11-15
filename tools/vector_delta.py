@@ -23,14 +23,16 @@ Changed ids are removals/additions. JSON is tried first; YAML requires PyYAML.
 All declared fixture aliases are compared as bytes, including paths outside
 conformance/ within the repository. Formatting-only case changes are ignored.
 
-Output: one JSON object per change, then a summary. Case-field paths are JSON
-Pointers (zero-based step indices); fixture paths are repository-relative.
+Output: one JSON object per change, then one line per flip, declaration file
+lines in read order, then a summary. Case-field paths are JSON Pointers
+(zero-based step indices); fixture paths are repository-relative.
 Missing before/after fields mean absence, distinct from JSON null. Fixture
 values contain byte counts and SHA-256 hashes. Errors cannot be declared.
-Exit 0: no flips, undeclared changes or errors; 1: any of these; 2: bad arguments,
-revisions or declaration file. A declared flip STILL exits 1 for review.
+Exit 0: no undeclared changes or errors, including declared flips; 1: any
+undeclared change or error; 2: bad arguments, revisions or declarations.
 
---declared accepts a YAML/JSON list of shapes, for example:
+--declared accepts a YAML/JSON list of shapes and may be repeated. Files and
+their shapes are matched in the order given. For example:
   - name: intended refusal change
     kind: flip
     cases: [s1-*]
@@ -51,6 +53,14 @@ fnmatch syntax, '*' also matches '/'). Optional operation is add/remove/replace;
 optional before/after require exact JSON values. Omitted values are unconstrained.
 For exact absence use operation: add/remove. First matching shape names the
 declaration. Unknown shape keys fail, so a typo cannot broaden a declaration.
+
+--declared-changed also reads docs/work-orders/*-declared.yaml files directly
+in that directory that AFTER adds or changes in bytes from BEFORE, after any
+--declared files, in sorted path order. Files come from each revision; WORKTREE
+uses files on disk that Git does not ignore, including untracked files.
+Unchanged, deleted and deeper declarations are not read. Each file is read
+from AFTER. Declaration lines name each file and its shape count; if no file
+is added or changed, a line says so before the summary.
 """
 
 
@@ -121,15 +131,19 @@ def _core12_loader(yaml):
     return _CORE12
 
 class Snapshot:
-    def __init__(self, root, revision, blobs):
+    def __init__(self, root, revision, blobs, pathspec="conformance/",
+                 what="case or fixture files", repair=""):
         self.root = root
         self.revision = revision
         self.blobs = blobs
+        # A symlink's refusal names the kind of file read, then any repair.
+        self.what = what
+        self.repair = repair
         self.cache = {}
         self.entries = {}
         if revision == "WORKTREE":
             names = git(root, "ls-files", "-z", "--cached", "--others",
-                        "--exclude-standard", "--", "conformance/")
+                        "--exclude-standard", "--", pathspec)
             self.paths = sorted({p.decode("utf-8") for p in names.split(b"\0") if p})
             # Tracked deletions are absent, while dangling symlinks remain reportable.
             self.paths = [p for p in self.paths
@@ -166,17 +180,21 @@ class Snapshot:
         if path not in self.cache:
             if self.revision == "WORKTREE":
                 if (self.root / path).is_symlink():
-                    raise DeltaError("symlinks are not supported as case or fixture files")
+                    raise self.symlink_refused()
                 self.cache[path] = (self.root / path).read_bytes()
             else:
                 if path not in self.entries:
                     raise DeltaError("file not present in revision")
                 mode, oid = self.entries[path]
                 if mode == "120000":
-                    raise DeltaError("symlinks are not supported as case or fixture files")
+                    raise self.symlink_refused()
                 self.prefetch([path])
                 self.cache[path] = self.blobs[oid]
         return self.cache[path]
+
+    def symlink_refused(self):
+        message = "symlinks are not supported as " + self.what
+        return DeltaError(message + "; " + self.repair if self.repair else message)
 
 
 def pointer(parts):
@@ -333,8 +351,8 @@ def compare(root, before="origin/main", after="WORKTREE"):
     return changes
 
 
-def declarations(path):
-    shapes = structured(Path(path).read_bytes())
+def declarations(path, data=None):
+    shapes = structured(Path(path).read_bytes() if data is None else data)
     if not isinstance(shapes, list):
         raise DeltaError("declarations must be a list")
     allowed = {"name", "kind", "cases", "paths", "operation", "before", "after"}
@@ -353,6 +371,27 @@ def declarations(path):
         if "operation" in shape and shape["operation"] not in ("add", "remove", "replace"):
             raise DeltaError("operation must be add, remove or replace")
     return shapes
+
+
+def changed_declarations(root, before, after):
+    pattern = "docs/work-orders/*-declared.yaml"
+    directory = pattern.split("*", 1)[0]
+    blobs = {}
+    labels = dict(what="declaration files",
+                  repair="replace the link with the file it points to")
+    # Only the AFTER side gives repair advice: a link that BEFORE holds is history, not to be changed.
+    left = Snapshot(root, before, blobs, directory, what="declaration files")
+    right = Snapshot(root, after, blobs, directory, **labels)
+    old_paths = set(left.paths)
+    for path in right.paths:
+        if not fnmatch.fnmatchcase(path, pattern) or "/" in path[len(directory):]:
+            continue
+        try:
+            data = right.read(path)
+            if path not in old_paths or left.read(path) != data:
+                yield path, data
+        except (DeltaError, OSError, UnicodeError, ValueError, RecursionError) as exc:
+            raise DeltaError(f"{path}: {exc}") from exc
 
 
 def mark_declared(changes, shapes):
@@ -377,11 +416,31 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=HELP, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("before", nargs="?", default="origin/main", help="base Git revision (default: origin/main)")
     parser.add_argument("after", nargs="?", default="WORKTREE", help="new Git revision or WORKTREE (default: WORKTREE)")
-    parser.add_argument("--declared", metavar="FILE", help="YAML/JSON declarations of intended changes")
+    parser.add_argument("--declared", metavar="FILE", action="append",
+                        help="YAML/JSON declarations of intended changes (may be repeated)")
+    parser.add_argument("--declared-changed", action="store_true",
+                        help="read docs/work-orders/*-declared.yaml files AFTER adds or changes")
     args = parser.parse_args(argv)
     try:
         root = Path(git(Path.cwd(), "rev-parse", "--show-toplevel").decode().strip())
-        shapes = declarations(args.declared) if args.declared else []
+        shapes = []
+        files_read = []
+
+        def read_declarations(path, data=None):
+            try:
+                found = declarations(path, data)
+            except (DeltaError, OSError, UnicodeError, ValueError, RecursionError) as exc:
+                raise DeltaError(f"{path}: {exc}") from exc
+            shapes.extend(found)
+            files_read.append((path, len(found)))
+
+        for path in args.declared or []:
+            read_declarations(path)
+        changed_count = 0
+        if args.declared_changed:
+            for path, data in changed_declarations(root, args.before, args.after):
+                read_declarations(path, data)
+                changed_count += 1
         changes = compare(root, args.before, args.after)
     except (DeltaError, OSError, UnicodeError, ValueError, RecursionError) as exc:
         print("vector_delta: " + str(exc), file=sys.stderr)
@@ -390,11 +449,28 @@ def main(argv=None):
     mark_declared(changes, shapes)
     for item in changes:
         print(json.dumps(item, sort_keys=True, ensure_ascii=True))
+    for item in changes:
+        if item["kind"] != "flip":
+            continue
+        before = (json.dumps(item["before"], sort_keys=True, ensure_ascii=True)
+                  if "before" in item else "absent")
+        after = (json.dumps(item["after"], sort_keys=True, ensure_ascii=True)
+                 if "after" in item else "absent")
+        declaration = ("declared by " + json.dumps(item["declaration"], sort_keys=True,
+                                                ensure_ascii=True)
+                       if item["declared"] else "undeclared")
+        print(f"Flip: {item['case']} step {item['step']} {item['path']}: "
+              f"{before} -> {after}; {declaration}.")
+    for path, count in files_read:
+        print(f"Declarations read from {path}: {count} shapes.")
+    if args.declared_changed and not changed_count:
+        print("No docs/work-orders/*-declared.yaml is added or changed "
+              f"from {args.before} to {args.after}.")
     flips = sum(c["kind"] == "flip" for c in changes)
     errors = sum(c["kind"] == "error" for c in changes)
     undeclared = sum(not c["declared"] for c in changes)
     print(f"Vector delta: {len(changes)} changes; {flips} flips; {undeclared} undeclared; {errors} errors.")
-    return int(bool(flips or undeclared or errors))
+    return int(bool(undeclared or errors))
 
 
 if __name__ == "__main__":

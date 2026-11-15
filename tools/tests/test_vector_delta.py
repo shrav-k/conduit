@@ -146,16 +146,114 @@ class VectorDeltaTests(unittest.TestCase):
                 self.write("declared.json", wrong)
                 self.assertEqual(self.run_main("HEAD", "--declared", str(self.root / "declared.json"))[0], 1)
 
-    def test_declared_flip_still_fails(self):
+    def test_declared_flip_passes_and_is_listed(self):
         case = copy.deepcopy(self.case)
         case["steps"][0]["expect"]["reply"]["reason"] = "conflict"
         self.write(self.path, case)
         self.write("declared.json", [{"name": "intended", "kind": "flip", "cases": ["s1-*"],
                                       "before": "refused", "after": "conflict"}])
         status, out, _ = self.run_main("HEAD", "--declared", str(self.root / "declared.json"))
-        self.assertEqual(status, 1)
+        self.assertEqual(status, 0)
         self.assertIn('"declared": true', out)
-        self.assertIn("1 flips; 0 undeclared", out)
+        flip = ('Flip: s1-small step 1 /steps/0/expect/reply/reason: '
+                '"refused" -> "conflict"; ')
+        self.assertIn(flip + 'declared by "intended".\n', out)
+        self.assertEqual(out.splitlines()[-1],
+                         "Vector delta: 1 changes; 1 flips; 0 undeclared; 0 errors.")
+        status, out, _ = self.run_main("HEAD")
+        self.assertEqual(status, 1)
+        self.assertIn(flip + "undeclared.\n", out)
+        (self.root / "conformance/small/source.json").unlink()
+        status, out, _ = self.run_main("HEAD", "--declared", str(self.root / "declared.json"))
+        self.assertEqual(status, 1)
+        self.assertEqual(out.splitlines()[-1],
+                         "Vector delta: 2 changes; 1 flips; 1 undeclared; 1 errors.")
+
+    def test_declared_may_be_given_more_than_once(self):
+        case = copy.deepcopy(self.case)
+        case["steps"][0]["expect"]["reply"]["reason"] = "conflict"
+        case["title"] = "new title"
+        self.write(self.path, case)
+        self.write("flip.json", [{"name": "intended", "kind": "flip", "cases": ["s1-*"],
+                                  "before": "refused", "after": "conflict"}])
+        self.write("title.json", [{"name": "title", "kind": "metadata", "cases": ["s1-*"],
+                                   "paths": ["/title"], "after": "new title"}])
+        paths = [str(self.root / name) for name in ("flip.json", "title.json")]
+        status, out, _ = self.run_main("HEAD", "--declared", paths[0], "--declared", paths[1])
+        self.assertEqual(status, 0)
+        self.assertEqual(out.splitlines()[-3:-1],
+                         [f"Declarations read from {path}: 1 shapes." for path in paths])
+        for path in paths:
+            with self.subTest(path=path):
+                self.assertEqual(self.run_main("HEAD", "--declared", path)[0], 1)
+
+    def test_declared_changed_reads_what_the_change_adds_or_changes(self):
+        case = copy.deepcopy(self.case)
+        case["steps"][0]["expect"]["reply"]["reason"] = "conflict"
+        self.write(self.path, case)
+        declaration = "docs/work-orders/999-declared.yaml"
+        self.write(declaration, [{"name": "intended", "kind": "flip", "cases": ["s1-*"],
+                                  "before": "refused", "after": "conflict"}])
+        status, out, _ = self.run_main("HEAD", "--declared-changed")
+        self.assertEqual(status, 0)
+        self.assertIn(f"Declarations read from {declaration}: 1 shapes.\n", out)
+
+        self.commit()
+        status, out, _ = self.run_main("HEAD^", "HEAD", "--declared-changed")
+        self.assertEqual(status, 0)
+        self.assertIn(f"Declarations read from {declaration}: 1 shapes.\n", out)
+        self.assertEqual(self.run_main("HEAD^", "HEAD")[0], 1)
+
+        case["title"] = "new title"
+        self.write(self.path, case)
+        title_shape = [{"name": "title", "kind": "metadata", "cases": ["s1-*"],
+                        "paths": ["/title"], "after": "new title"}]
+        self.write("docs/work-orders/old/998-declared.yaml", title_shape)
+        self.commit()
+        status, out, _ = self.run_main("HEAD^", "HEAD", "--declared-changed")
+        self.assertEqual(status, 1)
+        self.assertIn("No docs/work-orders/*-declared.yaml is added or changed "
+                      "from HEAD^ to HEAD.\n", out)
+        self.assertEqual(out.splitlines()[-1],
+                         "Vector delta: 1 changes; 0 flips; 1 undeclared; 0 errors.")
+
+        # A changed declaration is read from AFTER, even if the worktree is invalid.
+        self.write(declaration, title_shape)
+        self.commit()
+        (self.root / declaration).write_text("invalid [")
+        status, out, _ = self.run_main("HEAD~2", "HEAD", "--declared-changed")
+        self.assertEqual(status, 0)
+        self.assertIn(f"Declarations read from {declaration}: 1 shapes.\n", out)
+
+    def test_declaration_error_names_its_file(self):
+        self.write("valid.json", [{"name": "valid", "kind": "input", "cases": ["*"]}])
+        invalid = [{"name": "typo", "kind": "input", "cases": ["*"], "path": "*"}]
+        self.write("invalid.json", invalid)
+        bad_path = str(self.root / "invalid.json")
+        status, out, err = self.run_main("HEAD", "--declared", str(self.root / "valid.json"),
+                                       "--declared", bad_path)
+        self.assertEqual(status, 2)
+        self.assertIn(bad_path, err)
+        self.assertIn("unknown declaration keys", err)
+        self.assertEqual(out, "Vector delta: comparison failed.\n")
+        self.assertNotIn("Traceback", out + err)
+
+        self.write("docs/work-orders/999-declared.yaml", invalid)
+        status, out, err = self.run_main("HEAD", "--declared-changed")
+        self.assertEqual(status, 2)
+        self.assertTrue(err.startswith("vector_delta: docs/work-orders/999-declared.yaml: "))
+        self.assertEqual(out, "Vector delta: comparison failed.\n")
+        self.assertNotIn("Traceback", out + err)
+
+        link = self.root / "docs/work-orders/999-declared.yaml"
+        link.unlink()
+        link.symlink_to("../../valid.json")
+        status, out, err = self.run_main("HEAD", "--declared-changed")
+        self.assertEqual(status, 2)
+        self.assertEqual(err, "vector_delta: docs/work-orders/999-declared.yaml: symlinks are not "
+                              "supported as declaration files; replace the link with the file "
+                              "it points to\n")
+        self.assertEqual(out, "Vector delta: comparison failed.\n")
 
     def test_renamed_case_matched_by_id(self):
         new_path = "conformance/moved/case.yml"

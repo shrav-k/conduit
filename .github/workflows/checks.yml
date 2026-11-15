@@ -148,6 +148,12 @@ jobs:
       - name: git diff --check (whitespace errors the pull request adds)
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         run: git diff --check HEAD^1 HEAD
+      # Every vector change must match a declaration that the pull request adds or changes
+      # under docs/work-orders/ (the full review's FR-493, gate 5). It runs on every pull
+      # request, since some cases read fixtures under engine/ and spec/.
+      - name: python3 tools/vector_delta.py HEAD^1 HEAD --declared-changed
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        run: python3 tools/vector_delta.py HEAD^1 HEAD --declared-changed
 
   # Packages and experiments with a Cargo.toml one or two directories down, excluding target/
   # and members built by a workspace above them. The engine builds in its own job.

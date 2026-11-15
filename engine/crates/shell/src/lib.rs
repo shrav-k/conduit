@@ -29,6 +29,7 @@ pub struct Config {
     pub pass_environment: Vec<String>,
     pub initialize_timeout: Duration,
     pub call_timeout: Duration,
+    pub stop_grace: Duration,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -40,6 +41,7 @@ impl Default for Config {
             pass_environment: Vec::new(),
             initialize_timeout: Duration::from_secs(30),
             call_timeout: Duration::from_secs(120),
+            stop_grace: Duration::from_secs(10),
         }
     }
 }

@@ -1,6 +1,30 @@
 {
   "cases": [
     {
+      "id": "contracts-own-tools-control",
+      "case": "language/contracts/own-tools-control/case.yaml",
+      "promises": [
+        "CTR-014"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "contracts-own-tools-not-string",
+      "case": "language/contracts/own-tools-not-string/case.yaml",
+      "promises": [
+        "CTR-014"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "contracts-own-tools-optional",
+      "case": "language/contracts/own-tools-optional/case.yaml",
+      "promises": [
+        "CTR-014"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "contracts-sign-in-logins",
       "case": "language/contracts/sign-in-logins/case.yaml",
       "promises": [

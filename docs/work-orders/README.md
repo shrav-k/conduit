@@ -23,6 +23,13 @@ have left the tree; their results, decisions and observations are in
 | [156](156-runner-stopped-after-end.md) | the runner reports a run stopped only once it has seen it end |
 | [158](158-fresh-author-wording.md) | wording the fresh author reads at the pin: flags recorded with the plan, and CTR-013's citation corrected |
 | [159](159-a5-stage-0-client-facts.md) | the two client facts order 050 needs (A5's stage 0) |
+| [161](161-a78-stage-1-evidence.md) | A78's stage 1: its evidence and the engine's records of order 042 enter the tree (the full review's order 10) |
+| [162](162-dispatch-deadline-cancels.md) | a dispatch deadline cancels its call before the call is reported missing (the full review's order 14) |
+| [163](163-a24-at-entry.md) | A24 at entry: a new promise lands with a case that can fail (the full review's order 18) |
+| [165](165-by-rule-examples-public-routes.md) | the by-rule examples sent through the engine's public routes (the full review's order 25) |
+| [166](166-conformance-pieces-messages.md) | the conformance pieces' last messages (follow-up to 071; after 163) |
+| [167](167-a5-probe-signals-tested.md) | A5's probe: signals and the shim tested, and a signal never cuts a logout (follow-up to 159) |
+| [168](168-tidy-after-153-155.md) | the points orders 153 to 155 left: G5.md, the tracker, and one difference recorded |
 
 ## Shared and staged files
 

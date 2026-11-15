@@ -277,6 +277,7 @@ fn scripted_server() {
             "initialize" => {
                 json!({"protocolVersion":value["params"]["protocolVersion"],"serverInfo":{"name":"test","version":"1"},"capabilities":{"tools":{}}})
             }
+            "tools/list" if mode == "repair-list-hang" => continue,
             "tools/list" if mode == "repair-list-error" => {
                 println!(
                     "{}",
@@ -296,6 +297,14 @@ fn scripted_server() {
                 if mode == "hang" || mode == "cancel" {
                     held_id = value["id"].clone();
                     continue;
+                }
+                if mode == "hang-closed-stdin" {
+                    // Hold the recorded call and stay alive with standard input closed, so the
+                    // runner's next write to this run fails. The runner's stop ends the process.
+                    unsafe { libc::close(0) };
+                    loop {
+                        std::thread::sleep(Duration::from_secs(3600));
+                    }
                 }
                 if mode == "error-write" || mode.starts_with("repair") && calls == 1 {
                     println!(
@@ -767,6 +776,134 @@ fn plain_wire_environment_workdir_records_and_restart() {
     );
     assert_eq!(outcome(&shell, &retired), "succeeded", "{retired}");
     assert!(!state_dir.exists());
+}
+
+// The wire shows the deadline's cancellation sent, for the held request and with its reason, and
+// before the next call on the run. That it comes before the missing report rests on the code
+// order in `Inner::dispatch_later` (src/runner.rs:1151-1187), which awaits the send before it
+// calls `shell.complete`.
+#[test]
+fn dispatch_deadline_cancels_the_held_request_before_the_next_call() {
+    for mode in ["hang", "repair-list-hang"] {
+        let parent = tempfile::tempdir().unwrap();
+        let shell = open(
+            parent.path(),
+            Config {
+                call_timeout: Duration::from_secs(1),
+                ..Config::default()
+            },
+        );
+        register(&shell, parent.path(), false, mode);
+        let runner = new_runner(&shell);
+        assert_eq!(
+            outcome(&shell, &setup(&shell, &runner, "workspace")),
+            "succeeded"
+        );
+        assert_eq!(
+            outcome(&shell, &setup(&shell, &runner, "shared")),
+            "succeeded"
+        );
+        setup(&shell, &runner, "agent-b");
+        let (tool, args, held_method) = if mode == "hang" {
+            (
+                "project.file.write.v1",
+                json!({"path":"x","content":"y"}),
+                "tools/call",
+            )
+        } else {
+            ("project.file.read.v1", json!({"path":"x"}), "tools/list")
+        };
+        let reply = shell
+            .begin(input(&shell, "agent-b", tool, args), &runner)
+            .unwrap()
+            .wait()
+            .unwrap();
+        assert_eq!(outcome(&shell, &reply), "unknown", "{mode}: {reply}");
+
+        let second = shell
+            .begin(
+                input(
+                    &shell,
+                    "agent-b",
+                    "project.file.read.v1",
+                    json!({"path":"y"}),
+                ),
+                &runner,
+            )
+            .unwrap();
+        until(|| call_count(parent.path()) == 2);
+        let wire = lines(&parent.path().join("shared/wire.jsonl"));
+        let cancellation = wire
+            .iter()
+            .position(|v| v["method"] == "notifications/cancelled")
+            .expect("deadline must send notifications/cancelled");
+        let held = wire.iter().find(|v| v["method"] == held_method).unwrap();
+        assert_eq!(wire[cancellation]["params"]["requestId"], held["id"]);
+        assert_eq!(
+            wire[cancellation]["params"]["reason"],
+            "call deadline exceeded"
+        );
+        let calls = wire
+            .iter()
+            .enumerate()
+            .filter(|(_, v)| v["method"] == "tools/call")
+            .map(|(index, _)| index)
+            .collect::<Vec<_>>();
+        assert_eq!(calls.len(), 2, "{mode}");
+        assert!(cancellation < calls[1], "{mode}");
+        assert_eq!(
+            wire.iter().filter(|v| v["method"] == "tools/list").count(),
+            usize::from(mode == "repair-list-hang"),
+            "{mode}"
+        );
+        second.wait().unwrap();
+    }
+}
+
+// The run closed its standard input while holding the call, so the deadline's cancellation
+// cannot be written. The call is still reported missing, and one fixed line names the invocation.
+#[test]
+fn dispatch_deadline_reports_a_cancellation_that_could_not_be_sent() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(
+        parent.path(),
+        Config {
+            call_timeout: Duration::from_secs(1),
+            ..Config::default()
+        },
+    );
+    register(&shell, parent.path(), false, "hang-closed-stdin");
+    let runner = new_runner(&shell);
+    assert_eq!(
+        outcome(&shell, &setup(&shell, &runner, "workspace")),
+        "succeeded"
+    );
+    assert_eq!(
+        outcome(&shell, &setup(&shell, &runner, "shared")),
+        "succeeded"
+    );
+    setup(&shell, &runner, "agent-b");
+    let ticket = shell
+        .begin(
+            input(
+                &shell,
+                "agent-b",
+                "project.file.write.v1",
+                json!({"path":"x","content":"y"}),
+            ),
+            &runner,
+        )
+        .unwrap();
+    let invocation = ticket.invocation().unwrap().to_owned();
+    let reply = ticket.wait().unwrap();
+    assert_eq!(outcome(&shell, &reply), "unknown", "{reply}");
+    assert_eq!(
+        runner.diagnostics(),
+        [format!(
+            "the call of invocation {invocation} passed its deadline and its cancellation could not be sent"
+        )]
+    );
+    assert_eq!(call_count(parent.path()), 1);
 }
 
 #[test]

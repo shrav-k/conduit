@@ -21,8 +21,13 @@ package(conduit-shell) & (
   (binary(=runner) & (
     test(=deferred_setup_and_dispatch_reenter_the_completion_executor) |
     test(=runner_exit_observes_owned_runs_as_stopped) |
+    test(=shutdown_reports_a_run_that_traps_term_stopped_after_kill) |
+    test(=shutdown_reports_a_run_that_exits_on_term_before_the_grace) |
+    test(=shutdown_submits_nothing_for_a_group_not_seen_absent) |
     test(=serve_signal_during_setup_ends_run_and_starts_no_later_part) |
     test(=plain_wire_environment_workdir_records_and_restart) |
+    test(=dispatch_deadline_cancels_the_held_request_before_the_next_call) |
+    test(=dispatch_deadline_reports_a_cancellation_that_could_not_be_sent) |
     test(=deadlines_exit_repair_write_and_cancel) |
     test(=cancel_setup_initializing_starts_no_later_part) |
     test(=killed_engine_ends_run_and_descendant_and_does_not_pass_token) |

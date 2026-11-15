@@ -151,3 +151,23 @@ git diff --check
 The admin then shows the engine build, the four engine shards and the doctests passing on the
 pull request, on Linux. Do not stage anything. Report each choice you make as your own, and every
 check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `89aa7894`: the worker (1,263 s) and a fresh Codex
+verifier (311 s), which found nothing to change in one round but did not rerun the build or the
+tests. `Runner::drop` now calls a new once-only `Runner::shutdown`. It KILLs groups still starting,
+releases every lock, and asks each run's guard to stop with `S` on its lifetime pipe. The guard
+sends TERM to its group, then KILLs the group once the program has exited or the pipe closes. All
+runs share one `Config.stop_grace` (10 s by default, no flag). Then come KILL and up to 3 more
+seconds of polling every 10 ms. `builtin-run-stopped` is submitted only for a group whose probe
+failed with `ESRCH`. For any other group a fixed line goes to `diagnostics()`, which `Drop` prints
+with the prefix `runner: `. Three `shutdown_` tests cover a program that traps TERM, one that exits
+on it, and a zombie left in the group. In `engine/CONFORMANCE.md`, DL16's executor coverage row
+says all of this, and the retirement paragraph says that its immediate KILL is a retirement's.
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It reran the runner
+tests (14 passed), clippy and fmt, and found no must. Both of its shoulds were applied before
+merge. The guard's read loop again retries an interrupted read, as it did before, rather than
+KILLing its group. DL16's executor row now says that the guard KILLs its group on the program's
+exit only once asked to stop. The retirement paragraph is re-wrapped to its width. A second fresh
+Opus reader read those fixes and found nothing to change.

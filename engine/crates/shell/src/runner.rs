@@ -23,6 +23,7 @@ use std::{
         Arc, Mutex, Weak,
         atomic::{AtomicBool, Ordering},
     },
+    time::{Duration, Instant},
 };
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
@@ -43,6 +44,16 @@ pub(crate) struct ProcessGroup {
     lifetime: Mutex<Option<UnixStream>>,
 }
 impl ProcessGroup {
+    fn request_stop(&self) {
+        if let Some(lifetime) = self.lifetime.lock().unwrap().as_mut() {
+            let _ = lifetime.write_all(b"S");
+        }
+    }
+    fn is_absent(&self) -> bool {
+        // Only ESRCH proves absence; EPERM can mean an unreaped zombie remains.
+        (unsafe { libc::kill(-self.pid, 0) }) == -1
+            && std::io::Error::last_os_error().raw_os_error() == Some(libc::ESRCH)
+    }
     pub(crate) fn stop(&self) {
         if !self.stopped.swap(true, Ordering::SeqCst) {
             // SAFETY: a negative PID addresses only the group created for this child.
@@ -60,7 +71,7 @@ impl Drop for ProcessGroup {
 }
 
 /// Internal entry point used by conduit before opening any store or Tokio runtime.
-/// FD 3 is a read-only lifetime pipe; no credential is passed through it.
+/// FD 3 is the lifetime channel; no credential is passed through it.
 pub fn guard_main() -> Result<()> {
     let mut args = std::env::args_os().skip(2);
     let names: Vec<String> = serde_json::from_str(
@@ -80,16 +91,21 @@ pub fn guard_main() -> Result<()> {
     // The run must not keep the engine's lifetime channel open across exec.
     unsafe {
         libc::fcntl(3, libc::F_SETFD, libc::FD_CLOEXEC);
+        libc::signal(libc::SIGTERM, libc::SIG_IGN);
     }
     let mut status_pipe = lifetime
         .try_clone()
         .map_err(|_| "guard status pipe failed")?;
-    let mut child = Command::new(program)
-        .args(args)
-        .env_clear()
-        .envs(environment)
-        .spawn()
-        .map_err(|_| "run spawn failed")?;
+    let mut command = Command::new(program);
+    command.args(args).env_clear().envs(environment);
+    // SAFETY: restore the normal termination disposition in the child only.
+    unsafe {
+        command.pre_exec(|| {
+            libc::signal(libc::SIGTERM, libc::SIG_DFL);
+            Ok(())
+        });
+    }
+    let mut child = command.spawn().map_err(|_| "run spawn failed")?;
     // Only the run retains the stdio pipes. Its exit must close the MCP session promptly.
     unsafe {
         libc::close(0);
@@ -97,13 +113,43 @@ pub fn guard_main() -> Result<()> {
         libc::close(2);
     }
     // Reap the direct child while waiting for the engine's lifetime pipe to close.
+    let exited = Arc::new(AtomicBool::new(false));
+    let child_exited = exited.clone();
     std::thread::spawn(move || {
         let code = child.wait().ok().and_then(|s| s.code()).unwrap_or(-1);
+        child_exited.store(true, Ordering::SeqCst);
         let _ = status_pipe.write_all(&code.to_be_bytes());
     });
     let mut byte = [0];
+    let mut stopping = false;
     loop {
+        if stopping {
+            if exited.load(Ordering::SeqCst) {
+                break;
+            }
+            let mut pfd = libc::pollfd {
+                fd: lifetime.as_raw_fd(),
+                events: libc::POLLIN | libc::POLLHUP,
+                revents: 0,
+            };
+            // SAFETY: pfd points to one initialized descriptor for the lifetime pipe.
+            let ready = unsafe { libc::poll(&mut pfd, 1, 10) };
+            if ready == 0 {
+                continue;
+            }
+            if ready < 0 {
+                if std::io::Error::last_os_error().kind() == std::io::ErrorKind::Interrupted {
+                    continue;
+                }
+                break;
+            }
+        }
         match lifetime.read(&mut byte) {
+            Ok(1) if byte[0] == b'S' => {
+                // SAFETY: the guard ignores TERM; its program has the default disposition.
+                unsafe { libc::kill(0, libc::SIGTERM) };
+                stopping = true;
+            }
             Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
             _ => break,
         }
@@ -141,6 +187,7 @@ struct Inner {
 /// with an empty run table. Workers retain only a Weak<Shell> while waiting on I/O.
 pub struct Runner {
     inner: Arc<Inner>,
+    shutdown_diagnostics: Mutex<Vec<String>>,
     _runtime: Runtime,
 }
 impl Runner {
@@ -177,6 +224,7 @@ impl Runner {
                 errors: Mutex::new(Vec::new()),
                 completion_executor: Mutex::new(None),
             }),
+            shutdown_diagnostics: Mutex::new(Vec::new()),
             _runtime: runtime,
         })
     }
@@ -189,7 +237,9 @@ impl Runner {
     }
     /// Fixed diagnostics only: never child stderr, environment values, arguments or identity.
     pub fn diagnostics(&self) -> Vec<String> {
-        self.inner.errors.lock().unwrap().clone()
+        let mut errors = self.inner.errors.lock().unwrap().clone();
+        errors.extend(self.shutdown_diagnostics.lock().unwrap().iter().cloned());
+        errors
     }
     pub fn running_count(&self) -> usize {
         self.inner
@@ -204,32 +254,85 @@ impl Runner {
             })
             .count()
     }
-}
-impl Drop for Runner {
-    fn drop(&mut self) {
+    /// Ask every owned run to end, then record only process groups seen absent.
+    /// All runs share one grace period and one three-second confirmation period.
+    pub fn shutdown(&self) {
         // Serialize shutdown with the spawn-and-register section, so a deferred start
         // cannot register a fresh group just after shutdown's group scan.
-        let _spawns = self.inner.cancelled_setups.lock().unwrap();
-        self.inner.stopping.store(true, Ordering::SeqCst);
-        for (subject, run) in self.inner.runs.lock().unwrap().iter() {
-            run.group.stop();
-            if let Some(shell) = self.inner.shell.upgrade()
-                && shell
+        let mut runs = {
+            let _spawns = self.inner.cancelled_setups.lock().unwrap();
+            if self.inner.stopping.swap(true, Ordering::SeqCst) {
+                return;
+            }
+            let runs = std::mem::take(&mut *self.inner.runs.lock().unwrap());
+            let pending = std::mem::take(&mut *self.inner.pending_groups.lock().unwrap());
+            for group in pending.values().flatten() {
+                if !runs.values().any(|run| Arc::ptr_eq(&run.group, group)) {
+                    group.stop();
+                }
+            }
+            runs
+        };
+        let Some(shell) = self.inner.shell.upgrade() else {
+            return;
+        };
+        let deadline = Instant::now() + shell.config.stop_grace;
+        for run in runs.values() {
+            run.group.request_stop();
+        }
+        self.await_stops(&shell, &mut runs, deadline);
+        if !runs.is_empty() {
+            for run in runs.values() {
+                run.group.stop();
+            }
+            self.await_stops(&shell, &mut runs, Instant::now() + Duration::from_secs(3));
+        }
+        for subject in runs.keys() {
+            self.shutdown_diagnostics.lock().unwrap().push(format!(
+                "the run of instance {subject} was not seen to end within 3 seconds of KILL, so its stop was not recorded"
+            ));
+        }
+    }
+    fn await_stops(&self, shell: &Shell, runs: &mut BTreeMap<String, Arc<Run>>, deadline: Instant) {
+        loop {
+            runs.retain(|subject, run| {
+                if !run.group.is_absent() {
+                    return true;
+                }
+                if shell
                     .submit(
                         json!({"kind":"builtin-run-stopped","object":subject}),
                         &crate::MissingExecutor,
                     )
                     .is_err()
-            {
-                eprintln!(
-                    "runner: stopped run observation could not be persisted; inspect and set up the instance again to refresh its status"
-                );
+                {
+                    self.shutdown_diagnostics.lock().unwrap().push(
+                        "stopped run observation could not be persisted; inspect and set up the instance again to refresh its status".into(),
+                    );
+                }
+                false
+            });
+            if runs.is_empty() || Instant::now() >= deadline {
+                return;
             }
+            std::thread::sleep(
+                Duration::from_millis(10).min(deadline.saturating_duration_since(Instant::now())),
+            );
         }
-        for groups in self.inner.pending_groups.lock().unwrap().values() {
-            for group in groups {
-                group.stop();
-            }
+    }
+}
+impl Drop for Runner {
+    fn drop(&mut self) {
+        let previous = self.shutdown_diagnostics.lock().unwrap().len();
+        self.shutdown();
+        for line in self
+            .shutdown_diagnostics
+            .lock()
+            .unwrap()
+            .iter()
+            .skip(previous)
+        {
+            eprintln!("runner: {line}");
         }
     }
 }

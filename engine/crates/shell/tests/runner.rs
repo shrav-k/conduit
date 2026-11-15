@@ -14,6 +14,12 @@ use std::{
     time::{Duration, Instant},
 };
 
+static TERM_RECEIVED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+extern "C" fn record_term(_: libc::c_int) {
+    TERM_RECEIVED.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
 fn repository() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..")
 }
@@ -206,6 +212,34 @@ fn scripted_server() {
     let root = PathBuf::from(std::env::var("TEST_ROOT").unwrap());
     let mode = fs::read_to_string(root.join("mode")).unwrap();
     fs::write(root.join("pid"), std::process::id().to_string()).unwrap();
+    if mode == "trap-term" {
+        // The handler only sets an atomic flag; ordinary thread code writes the file.
+        unsafe {
+            libc::signal(
+                libc::SIGTERM,
+                record_term as *const () as libc::sighandler_t,
+            )
+        };
+        let term = root.join("term");
+        std::thread::spawn(move || {
+            while !TERM_RECEIVED.load(std::sync::atomic::Ordering::SeqCst) {
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            fs::write(term, b"TERM\n").unwrap();
+        });
+    }
+    if mode == "zombie-in-group" {
+        // Deliberately leave an unreaped child in the old group after escaping it.
+        #[allow(clippy::zombie_processes)]
+        let _zombie = Command::new("/bin/sleep")
+            .arg("0")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        assert!(unsafe { libc::setsid() } >= 0);
+    }
     // These are synthetic test processes. No token file is read or copied.
     fs::write(
         root.join("environment.json"),
@@ -365,6 +399,139 @@ fn runner_exit_observes_owned_runs_as_stopped() {
         assert_eq!(ended["endedAt"], current["lastTransitionTime"]);
         assert!(ended["endedAt"].is_string());
     }
+}
+
+fn running_condition(shell: &Shell, name: &str) -> Value {
+    let reply = invoke(
+        shell,
+        &MissingExecutor,
+        "root",
+        "root-workspace.inspect.v1",
+        json!({"object":{"kind":"Resource","name":name}}),
+    );
+    assert_eq!(outcome(shell, &reply), "succeeded");
+    reply["structuredContent"]["status"]["conditions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["type"] == "Running")
+        .unwrap()
+        .clone()
+}
+
+#[test]
+fn shutdown_reports_a_run_that_traps_term_stopped_after_kill() {
+    let parent = tempfile::tempdir().unwrap();
+    let grace = Duration::from_secs(2);
+    let shell = open(
+        parent.path(),
+        Config {
+            stop_grace: grace,
+            ..Config::default()
+        },
+    );
+    register(&shell, parent.path(), false, "trap-term");
+    let runner = new_runner(&shell);
+    establish(&shell, &runner);
+    let before = chrono::Utc::now();
+    let started = Instant::now();
+    runner.shutdown();
+    assert!(started.elapsed() >= grace);
+    for name in ["shared", "history"] {
+        assert!(parent.path().join(name).join("term").is_file());
+        let pid = fs::read_to_string(parent.path().join(name).join("pid"))
+            .unwrap()
+            .parse::<i32>()
+            .unwrap();
+        assert_eq!(unsafe { libc::kill(pid, 0) }, -1);
+        assert_eq!(
+            std::io::Error::last_os_error().raw_os_error(),
+            Some(libc::ESRCH)
+        );
+        let current = running_condition(&shell, name);
+        assert_eq!(current["status"], "False");
+        assert_eq!(current["reason"], "RunStopped");
+        let transitioned =
+            chrono::DateTime::parse_from_rfc3339(current["lastTransitionTime"].as_str().unwrap())
+                .unwrap();
+        assert!(transitioned.timestamp_millis() >= (before + grace).timestamp_millis());
+    }
+    assert!(runner.diagnostics().is_empty());
+    runner.shutdown();
+    assert!(runner.diagnostics().is_empty());
+}
+
+#[test]
+fn shutdown_reports_a_run_that_exits_on_term_before_the_grace() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(
+        parent.path(),
+        Config {
+            stop_grace: Duration::from_secs(120),
+            ..Config::default()
+        },
+    );
+    register(&shell, parent.path(), false, "normal");
+    let runner = new_runner(&shell);
+    establish(&shell, &runner);
+    let started = Instant::now();
+    runner.shutdown();
+    assert!(started.elapsed() < Duration::from_secs(60));
+    for name in ["shared", "history"] {
+        let current = running_condition(&shell, name);
+        assert_eq!(current["status"], "False");
+        assert_eq!(current["reason"], "RunStopped");
+    }
+    assert!(runner.diagnostics().is_empty());
+}
+
+// Construct before starting either fixture, so even a failed setup assertion cleans up
+// every escaped process that managed to publish its PID.
+struct EscapedFixtures(PathBuf);
+impl Drop for EscapedFixtures {
+    fn drop(&mut self) {
+        for name in ["shared", "history"] {
+            if let Ok(pid) = fs::read_to_string(self.0.join(name).join("pid"))
+                && let Ok(pid) = pid.parse::<i32>()
+            {
+                unsafe { libc::kill(pid, libc::SIGKILL) };
+            }
+        }
+    }
+}
+
+#[test]
+fn shutdown_submits_nothing_for_a_group_not_seen_absent() {
+    let parent = tempfile::tempdir().unwrap();
+    let shell = open(
+        parent.path(),
+        Config {
+            stop_grace: Duration::from_secs(1),
+            ..Config::default()
+        },
+    );
+    register(&shell, parent.path(), false, "zombie-in-group");
+    let runner = new_runner(&shell);
+    let _fixtures = EscapedFixtures(parent.path().into());
+    establish(&shell, &runner);
+    runner.shutdown();
+    let diagnostics = runner.diagnostics();
+    assert_eq!(diagnostics.len(), 2);
+    for name in ["shared", "history"] {
+        let current = running_condition(&shell, name);
+        assert_eq!(current["status"], "True");
+        assert_eq!(current["reason"], "RunRunning");
+        let expected = format!(
+            "the run of instance {} was not seen to end within 3 seconds of KILL, so its stop was not recorded",
+            id(&shell, name),
+        );
+        assert_eq!(
+            diagnostics.iter().filter(|line| **line == expected).count(),
+            1
+        );
+    }
+    runner.shutdown();
+    assert_eq!(runner.diagnostics(), diagnostics);
 }
 
 #[test]

@@ -360,3 +360,26 @@ The admin then does the following:
    - A5's State, changed to stage 0's outcome, and the "Current evidence" cell of 027's row in
      `experiments/README.md`. Under D78's rule, a probe's result merges with its row's change.
 5. `check_private_paths.py` and the pull request's secret scan pass on it.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `89aa7894`: the worker (810 s) and a fresh Codex verifier
+(416 s) with one must, a second worker round (255 s) and a second verifier (262 s), which found
+nothing to change. The order built the crate `client-facts` in `experiments/027-a5-sign-in/`: the
+probe, which runs the six steps for Claude Code and then Codex, each command in a new session
+with a cleared environment and a browser shim first on `PATH`, and writes only redacted facts, as
+JSON and a Markdown table; the shim; and a fake client for the tests. The README pre-registers
+stage 0, with A5's row in the roadmap and 027's row in the experiments index. The must: a
+redirect URL printed during the listener checks could be recorded unchecked; the second round
+checks each newly captured redirect before the cancel, and a test emits one. A fresh read-only
+Opus reader verified the order before it merged (ruling 79, point 2) and rated it ready to merge,
+with six shoulds, which the admin applied. On SIGINT, SIGTERM or SIGHUP the probe kills the client
+it started, removes its scratch root and its output file. Every safety logout is named, even when
+a later step faults, and a report written in full is kept. The probe faults at step 0 if
+`browser-shim` is missing or not executable, so no search for `open` reaches the real one. A
+skipped step writes null in every observed field. A new fake-client mode completes the login, and
+a test checks that the logout runs in the scratch home only, for both clients, and that the
+everyday status stays signed in. The README asks for a foreground run with a timeout of at least
+10 minutes and two checks after it, and says when a redirect gets `not checked`. Ten tests pass:
+four parser tests and six against the fake client. The probe has not yet been run against the
+real clients.

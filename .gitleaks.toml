@@ -1,0 +1,21 @@
+title = "Conduit secret scan"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+# Planning prose about machine-key continuity, not a credential or a secret value.
+[[rules.allowlists]]
+condition = "AND"
+paths = ['''(?:^|/)docs/implementation/PROVIDERS\.md$''']
+regexTarget = "line"
+regexes = ['''(?m)^[ \t]*Test\ canonical\ labels,\ selectors,\ key\ continuity,\ accept/remove/expiry\ and\ local\-node\ exceptions\.$''']
+
+# Synthetic credential in the early-EOF subprocess test; made only for this fixture.
+[[rules.allowlists]]
+condition = "AND"
+paths = ['''(?:^|/)packages/scenario\-s2\-linear/tests/mcp\.rs$''']
+regexTarget = "line"
+regexes = ['''(?m)^[ \t]*\.env\("S2_LINEAR_API_KEY",\ "SYNTHETIC\-EOF\-PROBE\-0001"\)$''']

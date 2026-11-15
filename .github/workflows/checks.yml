@@ -22,6 +22,80 @@ env:
   CARGO_INCREMENTAL: "0"
 
 jobs:
+  secrets:
+    name: secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Download and verify pinned gitleaks
+        shell: bash
+        run: |
+          scanner_version=8.24.2
+          scanner_archive="gitleaks_${scanner_version}_linux_x64.tar.gz"
+          scanner_checksums="gitleaks_${scanner_version}_checksums.txt"
+          scanner_dir="$RUNNER_TEMP/gitleaks"
+          mkdir -p "$scanner_dir"
+          cd "$scanner_dir"
+          release_url="https://github.com/gitleaks/gitleaks/releases/download/v${scanner_version}"
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+            "$release_url/$scanner_archive" --output "$scanner_archive"
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+            "$release_url/$scanner_checksums" --output "$scanner_checksums"
+          awk -v archive="$scanner_archive" '$2 == archive { print; found++ } END { if (found != 1) exit 1 }' \
+            "$scanner_checksums" > archive.sha256
+          sha256sum --check --strict archive.sha256
+          # The release's own checksums catch a broken download; this pin also catches a replaced asset.
+          echo "fa0500f6b7e41d28791ebc680f5dd9899cd42b58629218a5f041efa899151a8e  $scanner_archive" \
+            | sha256sum --check --strict
+          tar -xzf "$scanner_archive" gitleaks
+      - name: Scan added commits
+        shell: bash
+        env:
+          SCAN_EVENT: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+        run: |
+          if [ "$SCAN_EVENT" = pull_request ]; then
+            # The first parent is the base; include every commit the merge adds.
+            scan_range="HEAD^1..HEAD"
+          elif [[ "$PUSH_BEFORE" =~ ^0+$ ]]; then
+            # A newly created main has no previous tip: scan all reachable commits.
+            scan_range="$PUSH_AFTER"
+          else
+            scan_range="$PUSH_BEFORE..$PUSH_AFTER"
+          fi
+          # Keep raw scanner output temporary, even when redacted; print only locations.
+          # Include merge-resolution changes against each merge's first parent.
+          scanner_status=0
+          "$RUNNER_TEMP/gitleaks/gitleaks" git . --config .gitleaks.toml --redact \
+            --no-banner --log-opts="--diff-merges=first-parent $scan_range" --report-format json \
+            --report-path "$RUNNER_TEMP/gitleaks/findings.json" \
+            > "$RUNNER_TEMP/gitleaks/scan.log" 2>&1 || scanner_status=$?
+          SCANNER_STATUS="$scanner_status" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          temp = Path(os.environ["RUNNER_TEMP"]) / "gitleaks"
+          report = temp / "findings.json"
+          findings = json.loads(report.read_text()) if report.exists() else []
+          for finding in findings:
+              print(f"{finding['RuleID']} {finding['File']}:{finding['StartLine']}")
+          status = int(os.environ["SCANNER_STATUS"])
+          if status != 0 and not findings:
+              # Without -v gitleaks writes no finding text to its log, so its last line holds no secret.
+              lines = (temp / "scan.log").read_text(errors="replace").strip().splitlines()
+              print(f"gitleaks exited {status} without reporting a finding: the scan did not complete.")
+              if lines:
+                  print(f"Its last line: {lines[-1]}")
+          elif findings:
+              print(f"{len(findings)} finding(s) above; values are not printed.")
+          PY
+          exit "$scanner_status"
+
   docs:
     name: docs
     runs-on: ubuntu-latest

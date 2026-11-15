@@ -1,0 +1,315 @@
+{
+  "cases": [
+    {
+      "id": "fleets-agent-template-lifecycle",
+      "case": "conventions/fleets/e3b/agent-template-lifecycle/case.yaml",
+      "promises": [
+        "ACC-033",
+        "LIF-032"
+      ],
+      "safety_rows": [
+        "fleets-agent-template-lifecycle"
+      ]
+    },
+    {
+      "id": "fleets-bound-fleet-target",
+      "case": "conventions/fleets/e3b/bound-fleet-target/case.yaml",
+      "promises": [
+        "ACC-029",
+        "ACC-033"
+      ],
+      "safety_rows": [
+        "fleets-bound-fleet-target"
+      ]
+    },
+    {
+      "id": "fleets-list-fleet",
+      "case": "conventions/fleets/e3b/list-fleet/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "IFC-020"
+      ],
+      "safety_rows": [
+        "fleets-list-fleet"
+      ]
+    },
+    {
+      "id": "fleets-list-pool",
+      "case": "conventions/fleets/e3b/list-pool/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "IFC-020"
+      ],
+      "safety_rows": [
+        "fleets-list-pool"
+      ]
+    },
+    {
+      "id": "fleets-manages-agent-own-fleet",
+      "case": "conventions/fleets/e3b/manages-agent-own-fleet/case.yaml",
+      "promises": [
+        "ACC-033",
+        "IFC-012",
+        "FLEET-004"
+      ],
+      "safety_rows": [
+        "fleets-manages-agent-own-fleet"
+      ]
+    },
+    {
+      "id": "fleets-ownership-permits-nothing",
+      "case": "conventions/fleets/e3b/ownership-permits-nothing/case.yaml",
+      "promises": [
+        "ACC-033",
+        "ACC-001"
+      ],
+      "safety_rows": [
+        "fleets-ownership-permits-nothing"
+      ]
+    },
+    {
+      "id": "fleets-partial-authority-no-count",
+      "case": "conventions/fleets/e3b/partial-authority-no-count/case.yaml",
+      "promises": [
+        "OPS-036",
+        "ACC-033",
+        "IFC-020"
+      ],
+      "safety_rows": [
+        "fleets-partial-authority-no-count"
+      ]
+    },
+    {
+      "id": "fleets-reconcile-array-element",
+      "case": "conventions/fleets/e3b/reconcile-array-element/case.yaml",
+      "promises": [
+        "REV-010",
+        "OBJ-016",
+        "CTR-006",
+        "REV-013",
+        "REV-003"
+      ],
+      "safety_rows": [
+        "fleets-reconcile-array-element"
+      ]
+    },
+    {
+      "id": "fleets-reconcile-control",
+      "case": "conventions/fleets/e3b/reconcile-control/case.yaml",
+      "promises": [
+        "ACC-033",
+        "REV-010",
+        "REV-002",
+        "REV-011",
+        "REV-014"
+      ],
+      "safety_rows": [
+        "fleets-reconcile-control"
+      ]
+    },
+    {
+      "id": "fleets-reconcile-whole-config",
+      "case": "conventions/fleets/e3b/reconcile-whole-config/case.yaml",
+      "promises": [
+        "ACC-033",
+        "REV-010",
+        "CTR-006",
+        "REV-013",
+        "REV-003"
+      ],
+      "safety_rows": [
+        "fleets-reconcile-whole-config"
+      ]
+    },
+    {
+      "id": "fleets-retire-conflict",
+      "case": "conventions/fleets/e3b/retire-conflict/case.yaml",
+      "promises": [
+        "LIF-020",
+        "ACC-033"
+      ],
+      "safety_rows": [
+        "fleets-retire-conflict"
+      ]
+    },
+    {
+      "id": "fleets-retire-dependencies",
+      "case": "conventions/fleets/e3b/retire-dependencies/case.yaml",
+      "promises": [
+        "LIF-021",
+        "REV-014"
+      ],
+      "safety_rows": [
+        "fleets-retire-dependencies"
+      ]
+    },
+    {
+      "id": "fleets-retire-ordinary-data",
+      "case": "conventions/fleets/e3b/retire-ordinary-data/case.yaml",
+      "promises": [
+        "LIF-021",
+        "REV-014",
+        "OBJ-009",
+        "OBJ-019"
+      ],
+      "safety_rows": [
+        "fleets-retire-ordinary-data"
+      ]
+    },
+    {
+      "id": "fleets-retire-overlap",
+      "case": "conventions/fleets/e3b/retire-overlap/case.yaml",
+      "promises": [
+        "LIF-021",
+        "REV-014",
+        "LIF-024",
+        "LIF-020"
+      ],
+      "safety_rows": [
+        "fleets-retire-overlap"
+      ]
+    },
+    {
+      "id": "fleets-retire-schema-applicators",
+      "case": "conventions/fleets/e3b/retire-schema-applicators/case.yaml",
+      "promises": [
+        "LIF-021",
+        "REV-014",
+        "OBJ-009",
+        "OBJ-021",
+        "SCH-001"
+      ],
+      "safety_rows": [
+        "fleets-retire-schema-applicators"
+      ]
+    },
+    {
+      "id": "fleets-retire-schema-inactive",
+      "case": "conventions/fleets/e3b/retire-schema-inactive/case.yaml",
+      "promises": [
+        "LIF-021",
+        "REV-014",
+        "OBJ-009",
+        "OBJ-021",
+        "SCH-001"
+      ],
+      "safety_rows": [
+        "fleets-retire-schema-inactive"
+      ]
+    },
+    {
+      "id": "fleets-retire-schema-reference",
+      "case": "conventions/fleets/e3b/retire-schema-reference/case.yaml",
+      "promises": [
+        "LIF-021",
+        "REV-014",
+        "OBJ-009",
+        "OBJ-019"
+      ],
+      "safety_rows": [
+        "fleets-retire-schema-reference"
+      ]
+    },
+    {
+      "id": "fleets-retire-unused-input",
+      "case": "conventions/fleets/e3b/retire-unused-input/case.yaml",
+      "promises": [
+        "LIF-021",
+        "REV-014",
+        "OBJ-009",
+        "OBJ-019"
+      ],
+      "safety_rows": [
+        "fleets-retire-unused-input"
+      ]
+    },
+    {
+      "id": "fleets-retire-with-agents",
+      "case": "conventions/fleets/e3b/retire-with-agents/case.yaml",
+      "promises": [
+        "LIF-021",
+        "LIF-024",
+        "LIF-035",
+        "ACC-033"
+      ],
+      "safety_rows": [
+        "fleets-retire-with-agents"
+      ]
+    },
+    {
+      "id": "fleets-retire-with-agents-authority",
+      "case": "conventions/fleets/e3b/retire-with-agents-authority/case.yaml",
+      "promises": [
+        "LIF-021",
+        "ACC-033"
+      ],
+      "safety_rows": [
+        "fleets-retire-with-agents-authority"
+      ]
+    },
+    {
+      "id": "fleets-retire-with-agents-partial",
+      "case": "conventions/fleets/e3b/retire-with-agents-partial/case.yaml",
+      "promises": [
+        "LIF-021",
+        "REV-014",
+        "ACC-033"
+      ],
+      "safety_rows": [
+        "fleets-retire-with-agents-partial"
+      ]
+    },
+    {
+      "id": "fleets-retire-with-resources",
+      "case": "conventions/fleets/e3b/retire-with-resources/case.yaml",
+      "promises": [
+        "LIF-021",
+        "LIF-024",
+        "ACC-033",
+        "PRV-020",
+        "LIF-034",
+        "SCH-001"
+      ],
+      "safety_rows": [
+        "fleets-retire-with-resources"
+      ]
+    },
+    {
+      "id": "fleets-routing",
+      "case": "conventions/fleets/e3b/routing/case.yaml",
+      "promises": [
+        "ACC-033",
+        "FLEET-005"
+      ],
+      "safety_rows": [
+        "fleets-routing"
+      ]
+    },
+    {
+      "id": "fleets-routing-retired",
+      "case": "conventions/fleets/e3b/routing-retired/case.yaml",
+      "promises": [
+        "ACC-033",
+        "REV-010",
+        "CON-008"
+      ],
+      "safety_rows": [
+        "fleets-routing-retired"
+      ]
+    },
+    {
+      "id": "fleets-setup-registered",
+      "case": "conventions/fleets/e3b/setup-registered/case.yaml",
+      "promises": [
+        "CON-024",
+        "ACC-033",
+        "LIF-001"
+      ],
+      "safety_rows": [
+        "fleets-setup-registered"
+      ]
+    }
+  ]
+}

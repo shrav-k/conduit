@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "list-tools"
+    },
+    "identity": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "kind",
+    "identity"
+  ]
+}

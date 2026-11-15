@@ -1,0 +1,89 @@
+{
+  "cases": [
+    {
+      "id": "loader-depth-limit",
+      "case": "language/loader/depth/case.yaml",
+      "promises": [
+        "SUB-011"
+      ],
+      "safety_rows": [
+        "loader-depth-limit"
+      ]
+    },
+    {
+      "id": "loader-format-letter-case",
+      "case": "language/loader/format-case/case.yaml",
+      "promises": [
+        "SCH-004"
+      ],
+      "safety_rows": [
+        "loader-format-letter-case"
+      ]
+    },
+    {
+      "id": "loader-leading-bom",
+      "case": "language/loader/bom/case.yaml",
+      "promises": [
+        "SUB-005",
+        "SCH-013"
+      ],
+      "safety_rows": [
+        "loader-leading-bom"
+      ]
+    },
+    {
+      "id": "loader-own-tools",
+      "case": "language/loader/own-tools/case.yaml",
+      "promises": [
+        "CTR-014",
+        "CTR-013",
+        "SUB-005"
+      ],
+      "safety_rows": [
+        "loader-own-tools"
+      ]
+    },
+    {
+      "id": "loader-package-pin-document",
+      "case": "language/loader/package-pin/case.yaml",
+      "promises": [
+        "MAN-010"
+      ],
+      "safety_rows": [
+        "loader-package-pin-document"
+      ]
+    },
+    {
+      "id": "loader-pattern-tokens",
+      "case": "language/loader/pattern-tokens/case.yaml",
+      "promises": [
+        "SCH-016"
+      ],
+      "safety_rows": [
+        "loader-pattern-tokens"
+      ]
+    },
+    {
+      "id": "loader-schema-attribution",
+      "case": "language/loader/schema-attribution/case.yaml",
+      "promises": [
+        "SUB-005"
+      ],
+      "safety_rows": [
+        "loader-schema-attribution"
+      ]
+    },
+    {
+      "id": "loader-string-values",
+      "case": "language/loader/strings/case.yaml",
+      "promises": [
+        "SCH-012",
+        "SCH-013",
+        "SUB-005"
+      ],
+      "safety_rows": [
+        "loader-string-values"
+      ]
+    }
+  ]
+}

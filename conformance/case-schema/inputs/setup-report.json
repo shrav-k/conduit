@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "setup-report"
+    },
+    "evidence": {
+      "type": "object"
+    },
+    "invocation": {
+      "type": "string"
+    },
+    "report": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "kind",
+    "evidence",
+    "invocation",
+    "report"
+  ]
+}

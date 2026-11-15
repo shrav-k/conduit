@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "lifecycle-fixture"
+    },
+    "file": {
+      "type": "string"
+    },
+    "index": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "kind",
+    "file",
+    "index"
+  ]
+}

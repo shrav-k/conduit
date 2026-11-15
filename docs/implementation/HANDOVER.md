@@ -92,8 +92,10 @@ and [the lessons](WORK_ORDERS.md#what-this-round-taught). As practised on 2026-1
    push to `main`: the docs job (the six Python checks, the tools' unit tests, `git diff --check`);
    fmt, clippy and tests per Rust directory; the engine's tests as a nextest archive in four
    partitions; doctests. A nightly job runs the engine with npm. Order 068 built it (#198); since
-   070 (#240) an engine shard takes 1 to 8 minutes, from 12 to 38. When the `rust` job fails, the
-   engine shards are skipped ([the queue](#the-queue) gives the failure open since #260).
+   070 (#240) an engine shard takes 1 to 8 minutes, from 12 to 38. Since order 152 the engine
+   builds in its own job, `engine build`, and its four shards and doctests need only that job, so
+   a package or experiment cannot skip them; the `rust` gate still fails when any Rust job failed,
+   was skipped or was cancelled. No check is required on `main` by a branch setting.
 9. **Small findings (71 point 4).** Instead of another round, a coordinator may fix a small last
    finding and log it in the Record: the last race of 122 and 124 (#207), 128's mips byte order,
    136's redaction of a library-built error, 137 and 140's macOS fixes (#241), 141's extension

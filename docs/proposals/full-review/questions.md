@@ -1,5 +1,7 @@
 # The full review: questions for the owner
 
+Answered on 2026-11-14 by [ruling 78](../ruling-78/README.md): every question as recommended.
+
 Not binding. Part of [the full review](README.md) of 2026-11-14, at commit `2eb8f258`. The questions it puts to the owner, each with lettered options and a recommendation. The answers become one new ruling (the next number, 78 at the reviewed commit); an answer that changes no decision is added, dated, to the record it touches, as ruling 67 provides. You may answer "as recommended" for any or all of them; the [front page](README.md#the-questions) lists the recommendations in one place.
 
 ## The approach and the experiments

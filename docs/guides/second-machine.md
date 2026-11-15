@@ -119,6 +119,11 @@ or a device code.
 
 ## How S3 cuts the network
 
+Answered on 2026-11-14 by [ruling 78](../proposals/ruling-78/README.md), point 4: option (E), the
+Mac's own firewall, run by the coordinator's locked-down script under one administrator rule the
+owner adds once. S3's plan gets its dated amendment with the review's orders; the text below is
+as it stood when the question was put.
+
 S3's pre-registration ([experiment 014](../../experiments/014-s3-two-machines/README.md)) makes a
 partition with a firewall rule, set from Linux, that drops traffic to and from the Mac for a
 time, and a lost machine with `wsl --shutdown`; a coordinator script undoes both, and nothing

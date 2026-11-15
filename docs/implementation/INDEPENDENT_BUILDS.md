@@ -133,6 +133,10 @@ This updates G8 to G10 only and does not declare that the gate passes.
 | G9 | Not met | The interface and provider contracts specify identity delivery and process startup: DL12 no longer leaves each engine to choose how an implementation is started, and DL13 is narrowed to the standard forms in IFC-022, IFC-042 and PRV-022. The [cold readers' protocol guide](../guides/cold-readers.md#the-protocol) preserves the checks and unconfirmed claims; later interface changes have not had a complete fresh protocol check. Shared test implementations written from spec/ alone are still needed. | Show DL12 and DL13 leave an implementation nothing engine-specific to do; recheck the changed interface against the protocol; write shared test implementations under conformance/ from spec/ alone. |
 | G10 | Not met | The build base remains unpublished and no time-boxed pilot is recorded. The [conformance suite](../../conformance/README.md) and the first build exist, but do not constitute the independent pilot. A45 remains open. | Publish build-base with the brief as BUILD.md and the first milestone's vectors; have a fresh session follow only that milestone, time-box it, preserve its notes, discard its work, and use no further work from that session. |
 
+2026-11-14: [ruling 78](../proposals/ruling-78/README.md) closed D5/A20 and put the native probes
+(A5, A6, A7, A10, A22 and A73) outside G8's scope (point 3.3), and accepted F39, on which A17
+closes once its promise is written after the S1 rerun's pin (point 17).
+
 
 ## Comparison
 

@@ -1,6 +1,6 @@
 # Operations, outcomes and revisions — accepted
 
-Status: in force; amended by 38 (point 6); amended by 41 (items 6a, 6c, 15) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation); [OPS-001 to OPS-014](../../../spec/conventions/operations.yaml), [REV-001 to REV-015](../../../spec/conventions/revisions.yaml). This record says why.
+Status: in force; amended by 38 (point 6); amended by 41 (items 6a, 6c, 15); amended by 78 (OD2: no record that an effect did not occur) (ruled by the owner on 2026-11-05). Holds now: [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation); [OPS-001 to OPS-014](../../../spec/conventions/operations.yaml), [REV-001 to REV-015](../../../spec/conventions/revisions.yaml). This record says why.
 
 The decisions and
 rules are written as promises in the specification:

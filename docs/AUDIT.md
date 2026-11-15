@@ -57,13 +57,13 @@ report a wrong result, and any such conflict between a procedure and a safety pr
 | --- | --- |
 | Specification | Draft; [contents](../spec/README.md#contents), [coverage manifest](../conformance/manifest.yaml), 494 portable vectors. Spec batch 1 is written (orders 036a to 038c): the Fleet family and access additions with their core package and schemas, the short form, refusals, pending actions, sign-in, enrollment and a browser login's return. What is ruled but not written is the spec pending lines of [IN_FORCE.md](../IN_FORCE.md), each naming its batch or order. Builds follow the promises as written. |
 | Checks and cold reads | Six rounds, none clean; all reported findings settled. [Round 5](proposals/reaudit/round-5/README.md) and [round 6](proposals/reaudit/round-6/README.md) preserve counts, decisions and limits. Text changed since has not been read cold in full. Model checking (A40): [experiment 012](../experiments/012-model-checking/README.md) ran MC1 to MC7b on 2026-11-11, and its G5 account gives the standing of the 217 convention-layer safety promises. |
-| First build | Increments 1 to 3 done. [Increment 4](proposals/first-build/log-increment-4.md) is open: both authors completed T1 to T7 with real clients and failed the owner's authoring bar. Its simplification is written as batch 1, whose build (orders 039 on) is in progress; the S1 rerun runs on the build it pins, under ruling 71's bar. Order 070 removed finding 4-18's whole-state copies, except registration's four (the shell's library tests: 1900 s to 100 s). |
+| First build | Increments 1 to 3 done. [Increment 4](proposals/first-build/log-increment-4.md) is open: both authors completed T1 to T7 with real clients and failed the owner's authoring bar. Its simplification is written as batch 1, whose build (orders 039 on) is in progress; the S1 rerun runs on the build it pins, under ruling 71's bar, scored in two groups by [ruling 78](proposals/ruling-78/README.md), point 2. Order 070 removed finding 4-18's whole-state copies, except registration's four (the shell's library tests: 1900 s to 100 s). |
 | Secrets and machines | Present in `spec/`; [secret reasoning](proposals/secrets/README.md), [multi-machine reasoning](proposals/multi-machine/README.md). Enrollment is in `spec/` (order 038b); its core, order 049a1, for the side branch `s3/m2`, is checkpointed unmerged after five rounds. The Windows computer is the second machine (ruling 72), joined through an SSH provider and run as `conduit-run` (ruling 77); [the second-machine guide](guides/second-machine.md) gives its setup. |
 | Readiness gate | [G1 to G11](implementation/INDEPENDENT_BUILDS.md#readiness-gate). The confirmed assessment before rulings 40 to 43 met none, partly G1 and G3; it is historical, not a new assessment. Ruling 58 point 7 calls for the current assessment, coordinator's until G11. Round 6 was unsafe; the next cold read judges G7. |
 | Language defects | [First-sweep register](LANGUAGE_DEFECTS.md): 48 language, 39 convention, 30 type contract, 50 conformance-document rows. The 30 type rows wait for their contracts. Counts and historical triage remain there; current coverage is in the manifest. |
 | Independent builds | [Process](implementation/INDEPENDENT_BUILDS.md) and [brief](implementation/ENGINE_BUILD_BRIEF.md) drafted, not issued; `build-base` unpublished. The first build is separate (ruling 46). |
 | Code and evidence | [Engine](../engine/README.md), [packages](../packages/), [experiments](../experiments/README.md). The packages: the two Agent packages, A63's first providers (its row below) and S2's and S4's scenario servers. The plans of S2 to S10 and A63 are written (orders 117 to 121). Current choices and limits are in [CONFORMANCE.md](../engine/CONFORMANCE.md); no broader result is claimed. |
-| How the work runs | Codex workers carry out the [work orders](implementation/WORK_ORDERS.md) (ruling 48), dispatched by the admin session and a lane coordinator (ruling 71); some run on the Windows computer over SSH (ruling 76, point 6). Since 2026-11-11 orders also run through Conduit's own Agents (A78, ruling 70): order 042, merged on 2026-11-12, is the first. When the Codex allowance runs out, the workers pause and the owner is told (ruling 71's later answer). |
+| How the work runs | Codex workers carry out the [work orders](implementation/WORK_ORDERS.md) (ruling 48), dispatched by the admin session alone until the S1 rerun's pin ([ruling 78](proposals/ruling-78/README.md), point 1), and from the pin also by a lane coordinator (ruling 71); some run on the Windows computer over SSH (ruling 76, point 6). Since 2026-11-11 orders also run through Conduit's own Agents (A78, ruling 70): order 042, merged on 2026-11-12, is the first. When the Codex allowance runs out, the workers pause and the owner is told (ruling 71's later answer). |
 | Publication | v0 gate in [ruling 47](proposals/ruling-47/README.md); ConduitLang chosen in [ruling 65](proposals/ruling-65/README.md). The owner's account steps wait in [the transition guide](guides/move-to-conduitlang.md). |
 
 ### At the handover of 2026-11-12
@@ -84,8 +84,9 @@ work stopped for that checkpoint with `main` at `57813f06`:
   owner's word.
 - `main`'s CI, red at times since #260, was fixed on 2026-11-14 (#266): three tests in three
   provider packages now wait for what they test.
-- The [full review](proposals/full-review/README.md) of 2026-11-14 is done; its questions wait for
-  the owner, and the queue waits for the answers.
+- The [full review](proposals/full-review/README.md) of 2026-11-14 is done. The owner answered its
+  questions the same day, each as recommended, in [ruling 78](proposals/ruling-78/README.md), and
+  the queue follows the review's orders.
 - The dogfood engine is still pinned before order 070: re-pin it to `main` before the next order
   through Conduit.
 
@@ -99,9 +100,10 @@ log of `main` is the full list.
 
 The [roadmap's order](../ROADMAP.md#the-order-of-the-work) governs. Finish batch 1's build and pin
 it; rerun S1 with both authors and have the owner judge the bar; then batch 2, Fleet authority,
-from the pin. Beside it, the sign-in chain, none of whose orders is written yet: 050 (separate
+from the pin. The pin waits for the sign-in chain's orders
+([ruling 78](proposals/ruling-78/README.md), point 1), none of which is written yet: 050 (separate
 Agent homes, hooks and the account check), 048a (sign-in in the core), 048b (the shell's relay)
-and 051b (the shell's pending-action commands), then A81 and A82
+and 051b (the shell's pending-action commands); A81 and A82 come after them
 ([S2's plan](../experiments/013-s2-shared-login/plan.md#logins-through-the-interface-ruling-72s-later-answer)).
 The second subscription accounts wait for it: they are used only through Conduit, as the test of
 each Agent's own subscription and of the model as a whole, and give the work orders no capacity
@@ -132,9 +134,10 @@ Ruling 48 makes the coordinator the admin session: it plans and decides, writes 
 the workers' reports and accepts or undoes each worker's own choice before merging. A worker lists
 its choices apart and commits nothing; [work orders](implementation/WORK_ORDERS.md) define the
 process. Sessions writing the language commit and push at milestones to their pull-request branch
-(ruling 38). Ruling 71 adds one or two lane coordinators. The admin session stays the merge
-authority for the core, the conformance runner and manifest, `spec/`, IN_FORCE.md and the ledger;
-a lane coordinator merges only pull requests confined to its lane's paths.
+(ruling 38). Ruling 71 adds one or two lane coordinators; until the S1 rerun's pin, ruling 78
+point 1 has one coordinator and no lane. The admin session stays the merge authority for the core,
+the conformance runner and manifest, `spec/`, IN_FORCE.md and the ledger; a lane coordinator merges
+only pull requests confined to its lane's paths.
 
 Ruling 58 point 1 accepts every coordinator decision, editor choice and work-order decision logged
 before ruling 57, except review-list items 15 to 19 and increment 4's open decisions. On
@@ -162,16 +165,16 @@ The records distinguish owner rulings, coordinator decisions on findings, and ed
 ## Waiting for the owner
 
 Only the owner settles these questions; later-stage questions below retain their stated trigger.
+[Ruling 78](proposals/ruling-78/README.md) answered the full review's questions on 2026-11-14, and
+with them A20, S3-OF (option E: the Mac's firewall) and S2's plain server (the coordinator picks it).
 
 | What | Where it is recorded |
 | --- | --- |
-| A20: v0 authorization's cross-path, issuer-independence and provider-scope questions, after the bypass probe A7 | [Action items](#p2--prune-and-re-baseline-under-the-scope-guard), [findings](archive/plan-audit-history.md#findings), [A7](../ROADMAP.md#experiments-and-probes) |
-| After the S1 rerun: S1's bar, with findings 4-01 and 4-11, and C6 to C12 | [Ruling 71](proposals/ruling-71/README.md), points 2 and 3; [increment 4](proposals/first-build/log-increment-4.md); [ruling 62](proposals/ruling-62/README.md) |
+| After the S1 rerun: S1's bar, with findings 4-01 and 4-11, and C6 to C12 | [Ruling 71](proposals/ruling-71/README.md), points 2 and 3, and [ruling 78](proposals/ruling-78/README.md), point 2; [increment 4](proposals/first-build/log-increment-4.md); [ruling 62](proposals/ruling-62/README.md) |
 | Ruling 77's setup on the Windows computer, which needs the owner's sudo: `conduit-run`, the coordinator's key moved to it, the lockdown, and Codex signed in as `conduit-run`; before the end-to-end run, the Mac renamed in the tailnet and HTTPS certificates turned on. Part 1 was done on 2026-11-12: `conduit-run` has its tools and its Codex, signed in by the owner; the coordinator signs nothing in. Part 2, bubblewrap if missing, the restart that applies the lockdown and the coordinator's key taken out of the owner's account, can run now: orders 071 and 080 are checkpointed and the computer is idle | [Ruling 77](proposals/ruling-77/README.md#what-follows); [the second-machine guide](guides/second-machine.md) |
-| S3-OF: how S3 cuts, heals and loses the machine, which ruling 77's lockdown leaves the coordinator no way to do from inside the distro: (A) the owner's hand at each barrier, recommended; (B) a Windows-side mechanism set up once; (C) a helper in the distro. S3's runs wait for it | [S3's plan, for the owner](../experiments/014-s3-two-machines/plan.md#for-the-owner); [ruling 77](proposals/ruling-77/README.md#what-follows) |
-| S2's plain server, chosen with the owner before S2's runs; the admin's decision that the plain row runs only in the owner's runs, against the test workspace, is logged for the owner to strike | [S2's plan, for the owner](../experiments/013-s2-shared-login/plan.md#for-the-owner) |
-| The scenario plans' other questions: the admin's reading of ruling 75 D4, which the counted runs of S3, S7, S8 and S10 wait on; A74's unmeasured cells; S7-NO (the author's repository and npm scope); S8-A (accepting S8's contracts once drafted) | The "For the owner" sections of the plans of [S3](../experiments/014-s3-two-machines/plan.md#for-the-owner), [S7](../experiments/018-s7-outside-package/plan.md#for-the-owner), [S8](../experiments/019-s8-filtered-search/plan.md#for-the-owner) and [S10](../experiments/021-s10-swapped-providers/plan.md#for-the-owner) |
-| Readiness G8: close open questions or put them outside builders' scope; G11: owner's sign-off | [Readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) |
+| S3's one administrator rule on the Mac, under which the coordinator's locked-down script cuts the network; the owner adds it once, before S3's fault harness runs | [Ruling 78](proposals/ruling-78/README.md), point 4 |
+| The scenario plans' other questions: the admin's reading of ruling 75 D4, which the counted runs of S3, S7, S8 and S10 wait on; A74's unmeasured cells; S7-NO (the author's repository and npm scope); S8-A (accepting S8's contracts once drafted); the admin's decision that S2's plain row runs only in the owner's runs, against the test workspace, logged for the owner to strike | The "For the owner" sections of the plans of [S2](../experiments/013-s2-shared-login/plan.md#for-the-owner), [S3](../experiments/014-s3-two-machines/plan.md#for-the-owner), [S7](../experiments/018-s7-outside-package/plan.md#for-the-owner), [S8](../experiments/019-s8-filtered-search/plan.md#for-the-owner) and [S10](../experiments/021-s10-swapped-providers/plan.md#for-the-owner) |
+| Readiness G8: close open questions or put them outside builders' scope (ruling 78, point 3.3, put the native probes outside it); G11: owner's sign-off | [Readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) |
 
 ## Known to be open
 
@@ -245,6 +248,9 @@ Do not report these again unless there is something new:
   the owner kept on 2026-11-12: they are read as found, and root purges them again
   ([what the promises on records cover](../spec/README.md#what-the-promises-on-records-cover);
   [order 082's Record](work-orders/082-spec-records-and-installs.md#record)).
+  F15, accepted by [ruling 78](proposals/ruling-78/README.md) point 17, answers what an engine owes
+  when it cannot write or read its store: every request is refused and reports unavailable (spec
+  pending). Under point 10 only root installs.
 
 ## Purpose
 
@@ -362,8 +368,11 @@ Historical heading retained for links. Ruling 58 point 1 accepted the [round-5 c
 
 ## Layered claim
 
-This section and its table of layer decisions keep the words of rulings 13 and 14. Read
-"declarations" as documents, "grant" as the access an open Conduit carries, "plugin" as
+This section and its table of layer decisions keep the words of rulings 13 and 14.
+[Ruling 78](proposals/ruling-78/README.md), point 15, corrects them without changing a promise:
+the convention layer also holds the provider contracts and the core's own procedures, and LD1 is
+restated for the three layers; until the order that writes this lands, read them with that point.
+Read "declarations" as documents, "grant" as the access an open Conduit carries, "plugin" as
 implementation, "normative surface" as the specification, and, since ruling 42 (vocabulary audit,
 N18 and N15), "runtime profile" as the conformance document and "operation identity" as the
 idempotency key. MCP is the Model Context Protocol.
@@ -454,7 +463,7 @@ counts are in [spec/README.md](../spec/README.md#contents).
 | A11 | State what the language requires of caller authentication, then choose the mechanism from the native probes. | Q3 | Both are in the specification. | in progress: IFC-022, IFC-030, IFC-042 and DL13 state proof; A4 recorded on 2026-11-09 how native Agents obtain and present the token. |
 | A16 | Conduit instance granularity, participation and grant lifetime. | Q5 | Ruled in the layer it is assigned to and swept clean. | ruled: pairwise Conduits; closure coverage incomplete. Closed Conduits removed (LIF-035). |
 | A25 | Agent lifecycle, including what survives replacement. | Q8 | Ruled in the layer it is assigned to and swept clean. | ruled: replacement has a new ID and none of the retired instance's Conduits; own declared Conduits open at setup; vector pending. |
-| A17 | State what runs with no frontend attached and what starts it. | Q7 | It is a promise. | open |
+| A17 | State what runs with no frontend attached and what starts it. | Q7 | It is a promise. | ruled: closes on F39, which [ruling 78](proposals/ruling-78/README.md) (point 17) accepted: `conduit serve` sets up nothing at start, and one explicit command brings a project back; the promise is written after the S1 rerun's pin |
 | A35 | Specify the declare-lost operation, which is reserved to the root Interface. | Ruling 7 | Its contract, fencing and effects are promises. | ruled: PLC-017; provider-reported loss also acts through PLC-024; vector pending. |
 
 ### P1 — prove the language can be rebuilt and its promises kept
@@ -465,7 +474,7 @@ counts are in [spec/README.md](../spec/README.md#contents).
 | A38 | Write the executable core in Rust for the language layer and the shared conventions: a pure, deterministic library in which every case cites a promise. | Rulings 10, 14 | It passes every vector with no unhandled case (G4). | in progress: S1 core runs; S2 to S9 extend it. Measures keyed, unkeyed, failed and unknown invocation storage for A14 (D19). |
 | A39 | Publish the conformance vectors, with a held-out set. | Ruling 10 | Any engine can run them through an adapter; coverage by promise is reported. | in progress: [manifest](../conformance/manifest.yaml) indexes coverage. PLC-024's loss cause needs its portable record field. Lean fixtures remain proposed: [measured costs and migration constraints](../conformance/README.md#lean-vectors); A79 is already the short-form spike in the roadmap. |
 | A44 | Mutation-test the core against the vectors. | G6; [resolver probes](../conformance/README.md#evidence-of-vector-strength-so-far), [regression mutations](../conformance/README.md#evidence-of-vector-strength-so-far), [record-omission probes](../conformance/README.md#evidence-of-vector-strength-so-far) | No unexplained surviving mutant. | open; [mutation results and limits](../conformance/README.md#evidence-of-vector-strength-so-far). |
-| A40 | Model-check the safety promises with Stateright in small configurations, in the ordinary test run, including two machines with message loss, reordering, a partition and a lost machine (ruling 40). | [Experiment 004](../experiments/004-stateright-evaluation/README.md) | Each safety promise holds or has a recorded reason it cannot be checked this way (G5). | in progress: [experiment 012](../experiments/012-model-checking/README.md)'s harness (order 104) and models MC2 to MC7b (orders 105 and 107 to 115) ran on 2026-11-11; its G5 account (order 116) gives each of the 217 convention-layer safety promises its standing and remaining work. The tool was evaluated in experiment 004 |
+| A40 | Model-check the safety promises with Stateright in small configurations, in the ordinary test run, including two machines with message loss, reordering, a partition and a lost machine (ruling 40). | [Experiment 004](../experiments/004-stateright-evaluation/README.md) | Each modelled safety promise holds under loss and reordering, and also under a cut and its repair where its parts sit on two machines. Every other safety promise has a safety vector or a stated reason, and every model finding is fixed or stated as a limit ([ruling 78](proposals/ruling-78/README.md), point 3.2). | in progress: [experiment 012](../experiments/012-model-checking/README.md)'s harness (order 104) and models MC2 to MC7b (orders 105 and 107 to 115) ran on 2026-11-11; its G5 account (order 116) gives each of the 217 convention-layer safety promises its standing and remaining work. The tool was evaluated in experiment 004 |
 | A45 | Publish the build base: the orphan branch, the brief as `BUILD.md`, agent instruction files, and a pilot run of the brief on S1. | Ruling 12 | G10 passes and the owner signs off (G11). | open: brief and process drafted |
 | A34 | Two independent builds in Rust, by Codex and by Claude, of the language layer, the shared conventions and the implementation interface (LD4). | Rulings 10, 14 | Both pass the public and held-out vectors; every divergence is traced to the language and fixed. | open: blocked by the readiness gate |
 | A50 | Build one reference engine, with a standard library of core type contracts and a recorded conformance document. | LD4, LD5; [Resource contract source material](https://github.com/shrav-k/conduit/blob/f1cb473493fbb7b8667686d6fdf639ae96579ec3/docs/research/RESOURCES.md#L148-L250) | It runs the scenarios S1 to S10. | in progress: S1 core and shell; remaining scenarios on this codebase. [Choices and limits](../engine/CONFORMANCE.md). |
@@ -482,7 +491,6 @@ counts are in [spec/README.md](../spec/README.md#contents).
 | ID | Action | Source | Done when | Status |
 | --- | --- | --- | --- | --- |
 | A18 | Present promises that no scenario exercised as candidates for later sequencing, each for an owner ruling. Nothing leaves the accepted scope by default. | D1 | Each candidate under [deferrable scope](archive/plan-audit-history.md#deferrable-scope) has a ruling. | open |
-| A20 | Rule on v0 authorization scope. | D5 | The cross-path, issuer-independence and provider-scope questions each have an answer. | open |
 | A24 | Adopt a review rule: a new ruling carries a vector that can fail. | D8 | The contributor guide states it. | open |
 | A27 | Citation hygiene. | [Reference repositories](archive/plan-audit-history.md#reference-repositories) | The Pi pins are confirmed upstream and the Pi helper probes are retained or their claims removed. | open |
 | A80 | Carry out the rest of [the condensation plan](proposals/condensation/plan.md): its removal orders, steps 4 to 11, and its close. | Ruling 58 | Every step is merged, each removed path is in [the archive's index](archive/README.md#removed-from-the-tree), and the plan's working papers have condensed into the records. | open |
@@ -504,6 +512,7 @@ counts are in [spec/README.md](../spec/README.md#contents).
 
 | ID | Action | Source | Done when | Status |
 | --- | --- | --- | --- | --- |
+| A20 | Rule on v0 authorization scope. | D5 | The cross-path, issuer-independence and provider-scope questions each have an answer. | done 2026-11-14: [ruling 78](proposals/ruling-78/README.md), point 3.3. Cross-path rests on ACC-009, issuer-independence on ACC-030, and provider scope on its promises or is stated as open, in v0's drafted security claim. |
 | A72 | Show the roadmap where a reader finds it: the order of the work, what comes next, and each experiment and probe with its state and what it feeds. | Ruling 45 | A reader can tell from the entry points, without reading this tracker, what is next and whether an experiment they have in mind is already planned. | done 2026-11-09: roadmap at root, ruling 45. |
 | A69 | Apply D06 and D12 of round 6 as the owner accepted them, revised, after ruling 44: a package's own Operation contract states no default implementation, and the engine implements the operations of the core package by rule; names stay the only address, and `set-up.v1`, `retire.v1`, `inspect.v1` and `unregister.v1` take an optional expected ID, which reports conflict where the object that the name resolves to has another. | Ruling 44, [after the ruling](proposals/ruling-44/README.md#after-the-ruling) | Written as promises, in the core package, the schemas and the examples, and logged beside round 6's decisions. | done 2026-11-07: D06/D12 revised and applied; CTR-002, TPL-003/004, LIF-037; LIF-031 unchanged. |
 | A43 | Write the schemas and a strict loader in Rust. | G3 | Every scenario file validates and the negative cases are rejected. | done 2026-11-09: strict loader, increment 1. |

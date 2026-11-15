@@ -1,6 +1,6 @@
 # Ruling 68: metrics, safety vectors, spec batch 1's questions, and four older rulings
 
-Status: in force; amended by 69 (points 1 and 6: metrics as packages emit them) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 7, 9, 13 and 15, and the promises the batches write. This record says why.
+Status: in force; amended by 69 (points 1 and 6: metrics as packages emit them); amended by 78 (point 5: a node bound to its provider's Type, not reading 19) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 7, 9, 13 and 15, and the promises the batches write. This record says why.
 
 The coordinator put the questions that waited at the end of the night of 2026-11-10: the metrics
 proposal, what a safety vector is, the three questions of spec batch 1, and four earlier rulings

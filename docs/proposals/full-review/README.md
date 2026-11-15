@@ -1,5 +1,7 @@
 # Full review of 2026-11-14
 
+Answered on 2026-11-14 by [ruling 78](../ruling-78/README.md): every question as recommended.
+
 Not binding. The [specification](../../../spec/README.md) alone binds, and [IN_FORCE.md](../../../IN_FORCE.md)
 holds every other decision in force. This is the full review the owner asked for at the handover of
 2026-11-12 ([the brief](../../guides/full-review.md)), carried out by the coordinator on 2026-11-14 on

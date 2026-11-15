@@ -145,36 +145,7 @@ pub fn run_matching_with_threads(
             cases.push(path);
         }
     }
-    // Every file under case-schema/ is a piece or an error, never skipped.
-    let mut folders = vec![directory.join("case-schema")];
-    while let Some(folder) = folders.pop() {
-        if !folder.exists() {
-            continue;
-        }
-        for entry in std::fs::read_dir(&folder).map_err(|e| e.to_string())? {
-            let path = entry.map_err(|e| e.to_string())?.path();
-            if path
-                .file_name()
-                .is_some_and(|n| n.to_string_lossy().starts_with('.'))
-            {
-                continue;
-            }
-            if path.is_dir() {
-                folders.push(path);
-                continue;
-            }
-            let relative = path
-                .strip_prefix(&directory)
-                .map_err(|e| e.to_string())?
-                .to_string_lossy()
-                .into_owned();
-            pieces::schema_piece_path(&relative)?;
-            metadata.insert(
-                relative,
-                std::fs::read(&path).map_err(|e| format!("{}: {e}", path.display()))?,
-            );
-        }
-    }
+    metadata.extend(pieces::read_schema_pieces(&directory)?);
     if cases.is_empty() {
         return Err("no conformance cases found".into());
     }

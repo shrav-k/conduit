@@ -1,4 +1,4 @@
-//! File I/O for the pure pieces module.
+//! File I/O for the pieces module; case-schema/ is read only by pieces::read_schema_pieces.
 use conduit_conformance::pieces::{self, Files};
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
@@ -19,6 +19,7 @@ fn read_tree(root: &Path) -> Result<(Files, BTreeSet<String>)> {
             if path
                 .file_name()
                 .is_some_and(|n| n.to_string_lossy().starts_with('.'))
+                || directory == root && path.file_name().is_some_and(|n| n == "case-schema")
             {
                 continue;
             }
@@ -33,13 +34,9 @@ fn read_tree(root: &Path) -> Result<(Files, BTreeSet<String>)> {
                 if path.file_name().is_some_and(|n| n == "case.yaml") {
                     cases.insert(relative.clone());
                 }
-                if relative.starts_with("case-schema/") {
-                    pieces::schema_piece_path(&relative)?;
-                }
                 if relative == "manifest.yaml"
                     || relative == "case.schema.json"
                     || path.file_name().is_some_and(|n| n == "index.yaml")
-                    || relative.starts_with("case-schema/")
                 {
                     files.insert(
                         relative,
@@ -54,6 +51,7 @@ fn read_tree(root: &Path) -> Result<(Files, BTreeSet<String>)> {
     let mut cases = BTreeSet::new();
     let directory = root.join("conformance");
     visit(&directory, &directory, &mut files, &mut cases)?;
+    files.extend(pieces::read_schema_pieces(&directory)?);
     Ok((files, cases))
 }
 fn run() -> Result<()> {

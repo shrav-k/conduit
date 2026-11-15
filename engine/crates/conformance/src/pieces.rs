@@ -1,4 +1,4 @@
-//! Pure transformations of the coverage index and case-schema file contents.
+//! Coverage index and case-schema transformations; read_schema_pieces is the one file reader.
 use super::{Result, Value};
 use serde::de::{MapAccess, SeqAccess, Visitor};
 use serde::ser::{SerializeMap, SerializeSeq};
@@ -217,6 +217,53 @@ pub fn schema_piece_path(relative: &str) -> Result<()> {
     ))
 }
 
+/// Read visible schema pieces, refusing every other visible file under case-schema/.
+pub fn read_schema_pieces(conformance: &Path) -> Result<Files> {
+    fn visit(conformance: &Path, folder: &Path, files: &mut Files) -> Result<()> {
+        for entry in std::fs::read_dir(folder).map_err(|e| format!("{}: {e}", folder.display()))? {
+            let path = entry
+                .map_err(|e| format!("{}: {e}", folder.display()))?
+                .path();
+            if path
+                .file_name()
+                .is_some_and(|n| n.to_string_lossy().starts_with('.'))
+            {
+                continue;
+            }
+            if path
+                .metadata()
+                .map_err(|e| format!("{}: {e}", path.display()))?
+                .is_dir()
+            {
+                visit(conformance, &path, files)?;
+            } else {
+                let relative = path
+                    .strip_prefix(conformance)
+                    .map_err(|e| format!("{}: {e}", path.display()))?
+                    .components()
+                    .map(|c| c.as_os_str().to_string_lossy())
+                    .collect::<Vec<_>>()
+                    .join("/");
+                schema_piece_path(&relative)?;
+                files.insert(
+                    relative,
+                    std::fs::read(&path).map_err(|e| format!("{}: {e}", path.display()))?,
+                );
+            }
+        }
+        Ok(())
+    }
+    let mut files = Files::new();
+    let folder = conformance.join("case-schema");
+    if folder
+        .try_exists()
+        .map_err(|e| format!("{}: {e}", folder.display()))?
+    {
+        visit(conformance, &folder, &mut files)?;
+    }
+    Ok(files)
+}
+
 fn read(files: &Files, name: &str) -> Result<Ordered> {
     Ordered::parse(
         files
@@ -224,6 +271,16 @@ fn read(files: &Files, name: &str) -> Result<Ordered> {
             .ok_or_else(|| format!("{name}: missing file"))?,
     )
     .map_err(|e| format!("{name}: {e}"))
+}
+
+fn root_error(file: &str, problem: &str) -> String {
+    let problem = problem
+        .strip_prefix(&format!("{file}: "))
+        .or_else(|| problem.strip_prefix(&format!("conformance/{file}: ")))
+        .unwrap_or(problem);
+    format!(
+        "merge ROOT's conformance/{file}, not the tree's: {problem}. A merge ROOT holds conformance/manifest.yaml and conformance/case.schema.json from the commit the branch started from (git merge-base HEAD main), before the split: the manifest with its cases, and the schema with its input branches and expectation properties inline. See conformance/README.md, \"The coverage index and the case schema in pieces\"."
+    )
 }
 
 /// Common repair instructions for metadata left inline by new work or a rebase.
@@ -380,45 +437,50 @@ fn safe_name(name: &str) -> Result<()> {
     Ok(())
 }
 fn inline_schema(schema: &Ordered) -> Result<BTreeMap<String, Ordered>> {
+    inline_schema_with(schema, |problem, advice| match advice {
+        Some(advice) => repair(SCHEMA, "", &format!("{problem}; {advice}")),
+        None => format!("{SCHEMA}: {problem}"),
+    })
+}
+fn inline_schema_with(
+    schema: &Ordered,
+    diagnostic: impl Fn(&str, Option<&str>) -> String,
+) -> Result<BTreeMap<String, Ordered>> {
     let mut result = BTreeMap::new();
     let inputs = schema
         .at(INPUTS)
         .and_then(Ordered::array)
-        .map_err(|e| repair(SCHEMA, "", &format!("{INPUTS_PLACE}: {e}; {INPUTS_FORM}")))?;
+        .map_err(|e| diagnostic(&format!("{INPUTS_PLACE}: {e}"), Some(INPUTS_FORM)))?;
     for (index, branch) in inputs.iter().enumerate() {
         if branch.value() == Value::Bool(false) {
             continue;
         }
         let kind = input_name(branch).map_err(|e| {
-            repair(
-                SCHEMA,
-                "",
+            diagnostic(
                 &format!(
-                    "inline input branch {} of the input oneOf: {e}; give it properties.kind.const or a nonempty properties.kind.enum containing a valid piece name, then move it to its piece",
+                    "inline input branch {} of the input oneOf: {e}",
                     index + 1
                 ),
+                Some("give it properties.kind.const or a nonempty properties.kind.enum containing a valid piece name, then move it to its piece"),
             )
         })?;
         let name = format!("case-schema/inputs/{kind}.json");
         if result.insert(name.clone(), branch.clone()).is_some() {
-            return Err(format!("{SCHEMA}: duplicate input file {name}"));
+            return Err(diagnostic(&format!("duplicate input file {name}"), None));
         }
     }
     let properties = schema
         .at(EXPECT)
         .and_then(Ordered::object)
-        .map_err(|e| repair(SCHEMA, "", &format!("{EXPECT_PLACE}: {e}; {EXPECT_FORM}")))?;
+        .map_err(|e| diagnostic(&format!("{EXPECT_PLACE}: {e}"), Some(EXPECT_FORM)))?;
     for (name, property) in properties {
         if name == EXPECT_PLACEHOLDER && property == &Ordered::Scalar(Value::Bool(false)) {
             continue;
         }
         safe_name(name).map_err(|e| {
-            repair(
-                SCHEMA,
-                "",
-                &format!(
-                    "inline expectation property {name}: {e}; rename it to a valid piece name (letters, digits, - or _), then move it to its piece"
-                ),
+            diagnostic(
+                &format!("inline expectation property {name}: {e}"),
+                Some("rename it to a valid piece name (letters, digits, - or _), then move it to its piece"),
             )
         })?;
         result.insert(format!("case-schema/expect/{name}.json"), property.clone());
@@ -551,6 +613,16 @@ fn reconcile(
     })
 }
 
+fn emptied_input_error() -> String {
+    repair(
+        SCHEMA,
+        "",
+        &format!(
+            "{INPUTS_PLACE} holds no input branch and is not the single false placeholder; --merge does not restore input branches removed inline; {INPUTS_FORM}"
+        ),
+    )
+}
+
 /// Plan the entire split or three-way merge before any caller writes a file.
 /// Existing case paths are relative to the conformance directory.
 pub fn split(
@@ -561,24 +633,24 @@ pub fn split(
     let mut output = files.clone();
     let mut manifest = read(files, MANIFEST)?;
     let mut schema = read(files, SCHEMA)?;
-    let baseline_manifest = base.map(|b| read(b, MANIFEST)).transpose()?;
+    let baseline_manifest = base
+        .map(|b| read(b, MANIFEST).map_err(|e| root_error(MANIFEST, &e)))
+        .transpose()?;
     let baseline_entries = baseline_manifest
         .as_ref()
         .map(|m| {
-            inline_entries(m).and_then(|e| {
-                e.ok_or(
-                    "merge ROOT manifest.yaml has no cases; use a tree from before the split"
-                        .into(),
-                )
-            })
+            inline_entries(m)
+                .and_then(|e| e.ok_or("has no cases, so it is from after the split".into()))
+                .map_err(|e| root_error(MANIFEST, &e))
         })
         .transpose()?;
-    let baseline_schema = base.map(|b| read(b, SCHEMA)).transpose()?;
+    let baseline_schema = base
+        .map(|b| read(b, SCHEMA).map_err(|e| root_error(SCHEMA, &e)))
+        .transpose()?;
     let baseline_elements = baseline_schema
         .as_ref()
-        .map(inline_schema)
-        .transpose()
-        .map_err(|e| format!("merge ROOT's conformance/case.schema.json, not the tree's: {e}"))?;
+        .map(|s| inline_schema_with(s, |problem, _| root_error(SCHEMA, problem)))
+        .transpose()?;
     let mut held = BTreeMap::new();
     // Validate existing pieces before planning any changes.
     entries(files)?;
@@ -646,20 +718,14 @@ pub fn split(
     if incoming.is_empty()
         && schema.at(INPUTS)?.array()?.as_slice() != [Ordered::Scalar(Value::Bool(false))]
     {
-        return Err(format!(
-            "{SCHEMA}: schema elements removed inline; retain the placeholder and retire elements by deleting their pieces, not --merge"
-        ));
+        return Err(emptied_input_error());
     }
     // With --merge the baseline names each removed element below; without it nothing would.
     // An emptied region is a removal whatever else is inline: no legitimate path writes one.
     let emptied_expect = schema.at(EXPECT)?.object()?.is_empty();
     let emptied_inputs = schema.at(INPUTS)?.array()?.is_empty();
     if base.is_none() && emptied_inputs {
-        return Err(repair(
-            SCHEMA,
-            "",
-            &format!("input branches removed inline; {INPUTS_FORM}"),
-        ));
+        return Err(emptied_input_error());
     }
     if base.is_none()
         && (emptied_expect || incoming.is_empty() && schema.at(EXPECT)? != &expect_placeholder())
@@ -1321,6 +1387,132 @@ mod tests {
                 assert!(error.contains("conformance/README.md"), "{error}");
             }
         }
+    }
+
+    #[test]
+    fn a_faulty_merge_root_names_the_root_and_its_repair() {
+        let files = split_fixture();
+        for fault in 0..6 {
+            let mut root = fixture();
+            let file = if fault < 4 { SCHEMA } else { MANIFEST };
+            // The fault alone, where it is fixed: the parser's error (1) and the
+            // branch's index (3) depend on the parser and the fixture.
+            let problem = match fault {
+                0 => {
+                    root.remove(SCHEMA);
+                    Some("missing file")
+                }
+                1 => {
+                    root.insert(SCHEMA.into(), b"{not json".to_vec());
+                    None
+                }
+                2 | 3 => {
+                    let mut schema = read(&root, SCHEMA).unwrap();
+                    if fault == 2 {
+                        *schema.at_mut(&INPUTS[..INPUTS.len() - 1]).unwrap() = ordered(json!({}));
+                    } else {
+                        let Ordered::Array(inputs) = schema.at_mut(INPUTS).unwrap() else {
+                            panic!("fixture input branches must be a list");
+                        };
+                        inputs.push(ordered(json!({})));
+                    }
+                    root.insert(SCHEMA.into(), schema.pretty().unwrap());
+                    (fault == 2)
+                        .then_some("properties.steps.items.properties.input.oneOf: missing oneOf")
+                }
+                4 => {
+                    root.remove(MANIFEST);
+                    Some("missing file")
+                }
+                5 => {
+                    root = split_fixture();
+                    Some("has no cases, so it is from after the split")
+                }
+                _ => unreachable!(),
+            };
+            let before = files.clone();
+            let root_before = root.clone();
+            let error = split(&files, Some(&root), &BTreeSet::new()).unwrap_err();
+            assert!(
+                error.starts_with(&format!(
+                    "merge ROOT's conformance/{file}, not the tree's: "
+                )),
+                "{error}"
+            );
+            if let Some(problem) = problem {
+                assert!(
+                    error.starts_with(&format!(
+                        "merge ROOT's conformance/{file}, not the tree's: {problem}. A merge ROOT holds"
+                    )),
+                    "{error}"
+                );
+            }
+            // The problem carries no file name in front of it.
+            for prefixed in [
+                format!("not the tree's: {file}:"),
+                format!("not the tree's: conformance/{file}:"),
+            ] {
+                assert!(!error.contains(&prefixed), "{error}");
+            }
+            assert!(error.contains("git merge-base HEAD main"), "{error}");
+            for unwanted in ["placeholder", "its piece", "New inline elements"] {
+                assert!(!error.contains(unwanted), "{error}");
+            }
+            assert_eq!(files, before);
+            assert_eq!(root, root_before);
+        }
+    }
+
+    #[test]
+    fn assembly_names_the_input_placeholder_and_its_repair() {
+        for inputs in [json!([]), json!([false, false])] {
+            let mut files = split_fixture();
+            let mut schema = read(&files, SCHEMA).unwrap();
+            *schema.at_mut(INPUTS).unwrap() = ordered(inputs);
+            files.insert(SCHEMA.into(), schema.pretty().unwrap());
+            let error = assemble(&files).unwrap_err();
+            for expected in [
+                "properties.steps.items.properties.input.oneOf needs the single false placeholder",
+                "deleting its piece",
+                "-- --merge ROOT",
+            ] {
+                assert!(error.contains(expected), "{error}");
+            }
+        }
+    }
+
+    #[test]
+    fn an_emptied_input_list_gives_one_message() {
+        let root = fixture();
+        let root_before = root.clone();
+        let mut errors = vec![];
+        for variant in 0..3 {
+            let mut files = split_fixture();
+            let mut schema = read(&files, SCHEMA).unwrap();
+            *schema.at_mut(INPUTS).unwrap() = ordered(json!([]));
+            if variant == 1 {
+                let Ordered::Object(properties) = schema.at_mut(EXPECT).unwrap() else {
+                    panic!("fixture expectations must be an object");
+                };
+                properties.push(("added".into(), ordered(json!({"type":"object"}))));
+            }
+            files.insert(SCHEMA.into(), schema.pretty().unwrap());
+            let before = files.clone();
+            errors.push(
+                split(&files, (variant == 2).then_some(&root), &BTreeSet::new()).unwrap_err(),
+            );
+            assert_eq!(files, before);
+        }
+        assert_eq!(errors[0], errors[1]);
+        assert_eq!(errors[0], errors[2]);
+        for expected in [
+            "holds no input branch",
+            "--merge does not restore",
+            "deleting its piece",
+        ] {
+            assert!(errors[0].contains(expected), "{}", errors[0]);
+        }
+        assert_eq!(root, root_before);
     }
 
     #[test]

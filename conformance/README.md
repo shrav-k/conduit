@@ -155,8 +155,9 @@ for coverage-index pieces under this directory. The manifest retains `status`,
 An input kind adds a file `case-schema/inputs/<kind>.json`, named for its kind; a branch
 listing several kinds is named for the first. An expectation adds its property schema as
 `case-schema/expect/<name>.json`, named for the property. A new kind's rule is a new file
-`case-schema/rules/<name>.json`, holding one rule. Every other file under `case-schema/`, other
-than one whose name begins with a dot, is an error, never skipped. Do not extend an inline rule's list.
+`case-schema/rules/<name>.json`, holding one rule. Every other file under `case-schema/`
+is an error, never skipped; nothing whose name begins with a dot is read, nor anything
+inside a folder so named. Do not extend an inline rule's list.
 The one exception is the last inline rule's list of kinds exempt from `data.target`.
 A kind's runner code belongs in a new module under `src/steps/` in the conformance crate,
 with one line in its dispatch; expectation code belongs in that crate's `src/expect.rs`.

@@ -26,13 +26,7 @@ fn baseline() -> Files {
         "case.schema.json".into(),
         std::fs::read(root.join("case.schema.json")).unwrap(),
     );
-    for directory in ["case-schema/inputs", "case-schema/expect"] {
-        for entry in std::fs::read_dir(root.join(directory)).unwrap() {
-            let path = entry.unwrap().path();
-            let name = path.strip_prefix(&root).unwrap().to_str().unwrap();
-            files.insert(name.into(), std::fs::read(&path).unwrap());
-        }
-    }
+    files.extend(pieces::read_schema_pieces(&root).unwrap());
     let schema = pieces::assemble(&files).unwrap();
     Files::from([
         (
@@ -50,6 +44,43 @@ struct Stages(PathBuf);
 impl Drop for Stages {
     fn drop(&mut self) {
         std::fs::remove_dir_all(&self.0).unwrap();
+    }
+}
+
+#[test]
+fn one_walk_reads_pieces_and_refuses_other_files() {
+    let directory =
+        std::env::temp_dir().join(format!("conduit-pieces-walk-{}", std::process::id()));
+    std::fs::create_dir(&directory).unwrap();
+    let stages = Stages(directory);
+    assert!(pieces::read_schema_pieces(&stages.0).unwrap().is_empty());
+    for folder in [
+        "case-schema/inputs",
+        "case-schema/.hidden",
+        "case-schema/rules/sub",
+    ] {
+        std::fs::create_dir_all(stages.0.join(folder)).unwrap();
+    }
+    let piece = "case-schema/inputs/load.json";
+    let bytes = br#"{"properties":{"kind":{"const":"load"}}}"#;
+    std::fs::write(stages.0.join(piece), bytes).unwrap();
+    std::fs::write(stages.0.join("case-schema/inputs/.DS_Store"), b"hidden").unwrap();
+    std::fs::write(stages.0.join("case-schema/.hidden/notes.txt"), b"hidden").unwrap();
+    assert_eq!(
+        pieces::read_schema_pieces(&stages.0).unwrap(),
+        Files::from([(piece.into(), bytes.to_vec())])
+    );
+    for bad in [
+        "case-schema/inputs/load.json.orig",
+        "case-schema/rules/sub/a.json",
+        "case-schema/README.md",
+    ] {
+        let path = stages.0.join(bad);
+        std::fs::write(&path, b"{}").unwrap();
+        let error = pieces::read_schema_pieces(&stages.0).unwrap_err();
+        assert!(error.contains(bad), "{error}");
+        assert!(error.contains("rename or move it"), "{error}");
+        std::fs::remove_file(path).unwrap();
     }
 }
 

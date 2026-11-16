@@ -5,6 +5,8 @@ implemented in increment 2, under the admin's
 [decisions](../docs/proposals/first-build/increment-2/decisions.md), and in the shell orders that
 followed it from [order 020](../docs/implementation/WORK_ORDERS.md#order-020) on, and distinguishes
 them from choices the shell must still make. It is not a declaration of whole-language conformance.
+The section [v0's security claim, drafted](#v0s-security-claim-drafted) is the draft of v0's
+public security claim and promises nothing either.
 The executable [profile](../conformance/profiles/first-build.yaml) and [coverage
 manifest](../conformance/manifest.yaml) name the evidence. A vector demonstrates its stated slice of
 a promise; a coverage reason is not a passing vector.
@@ -406,3 +408,273 @@ observations internally; authorized CLI inspection shows them in `pastConditions
 define no ended-condition history form, so this is a CLI supplement, not a new status promise.
 The regression tests cover current running/unknown observations, ended times, parallel CLI
 processes, failure exits and partial submission summaries.
+
+## v0's security claim, drafted
+
+This section binds nothing: it is the draft of v0's public security claim, from FR-480 as its
+verifier corrected it, and grows by a statement for each route A7 finds ([ruling 78][r78], point
+3.3; [FR-480][fr480]; [ruling 47][r47]). It is the claim the plan audit's E4 was to drive, "The
+honest security claim", and does what Docker's security page does when it says whoever controls the
+daemon is root on the host ([plan-audit history][history], "Standing probes and comparisons";
+FR-480). It describes the first build on `main` as order 183 leaves it; a later order that changes
+what a statement says changes the statement ([order 183][wo183]).
+
+### What the first build is
+
+- The access decision is the core's: it reaches no file, clock, network, process, thread or
+  environment; since order 176, Clippy refuses on every pull request a call to each entry point
+  named in `crates/core/clippy.toml`, with the remaining review limits named in the engine README's
+  "The core's boundary" ([order 176][wo176]; [the core's boundary](README.md#the-cores-boundary)).
+- The serving engine accepts requests on loopback only, so no request crosses machines; its own
+  runner runs every run as the engine's operating-system user, with a cleared environment and a
+  fresh directory: "This is no OS sandbox" (rows "DL13: loopback boundary" and "DL16: environment
+  and working directory"). It calls no runtime provider, makes no remote connection and serves no
+  secret (row "DL16: executor coverage"; I4-01, "Secrets are unserved too: the engine reads no
+  secret through a secret store").
+- `sign-in.v1` and `answer.v1` answer unavailable, naming orders 048a and 047 respectively (rows
+  DL18 and DL19 in "Choices still required").
+- The Agent packages on `main` are 0.1.1: their Types, `claude-code.v1` and `codex.v1`, keep the
+  client's own tools off apart from the remaining tools and reach inputs stated below; neither
+  states `toolsDirectory`, so inspection reports `ownTools` with `stated: false` (I3-04; I4-02;
+  LIF-013). The `.v2` Types turn own tools on and remain on the unmerged branches of orders 050a and
+  076; the dogfood engine runs them ([ruling 70][r70]; [work orders][orders], "Running the orders
+  through Conduit").
+
+### What v0 claims
+
+1. Every request the engine accepts is attributed to exactly one instance from what the request
+   presents; a program that can read another instance's run credential can present as that instance,
+   as the operating system's superuser and every program of that run's operating-system user can
+   (IFC-022). A request is dispatched only through an open Conduit from that consumer to the target
+   that lists the operation; otherwise it is refused, recorded and never sent (ACC-001). Each
+   request is decided anew and recorded, and closing a Conduit ends its access for every later
+   request (ACC-036, REC-001, ACC-011). An invocation already dispatched runs to its end after its
+   Conduit closes (ACC-034). Cancellation, whether the caller's or the shell's when a call passes
+   its deadline, asks the server to stop; nothing confirms that it did (OPS-027; [order 162][wo162];
+   row "DL10: process and call deadlines"). The statement says nothing of the outcome such a call
+   ends with, which ruling 78, point 7 changes for a call that changes nothing ([ruling 78][r78],
+   point 7). Shown in the closeout's third run: 42 requests, 42 access decisions and 42 ends, with
+   T7's close and explicit restoration ([2026-11-10 closeout][closeout], "Results of the third
+   run").
+2. A login that a Pool owns stays with its Resource and is never handed to an Agent through Conduit
+   ([IN_FORCE.md](../IN_FORCE.md#1-purpose-scope-and-principles), topic 1; POOL-001, ACC-003,
+   SEC-007, SEC-019). Not shown: the first build serves no secret, S1 has no credential and S2 has
+   not run (I4-01; FR-480; G3 verifier's list).
+3. Two Agents ran with their own tools off, as S1's do: Claude Code 2.1.318 and Codex 0.167.0; told
+   to read a file outside their Conduits by any means, neither did, and neither loaded a project or
+   ancestor instruction file (2026-11-10 closeout, "Results of the third run"). Claude Code loaded
+   none of the owner's user-level instructions or hooks, but Codex loaded its home's `AGENTS.md`,
+   the stated leak in finding 3-07 (2026-11-10 closeout, "The owner's user-level configuration").
+   This is a property of each Agent package's launch flags at those versions, to be shown again at
+   each new client version (I3-04; FR-480).
+
+### What v0 does not claim
+
+4. No restriction is enforced: every restriction is mediated, applying to requests that pass through
+   the engine and to nothing else (ACC-027).
+5. An Agent whose Type states `toolsDirectory` and whose template names a directory has its client's
+   own tools, unconfined, as the engine's operating-system user (CTR-014; ruling 70, point 2). It
+   reaches every file, process, network address, credential and signed-in account that user reaches,
+   including the engine's store, root's token and every other run's token and state directory, so it
+   can present as root or any instance (IFC-022, PRV-029, DL16; [specification limits][limits],
+   "Pending actions, sign-in and the network"). No Conduit grants that reach, no restriction limits
+   it, no record shows it, and closing the Agent's Conduits does not end it; its Conduits state
+   intended access and are not a boundary, and its records are complete only for what it did through
+   Conduit (CTR-014, ACC-027, REC-001). Inspection shows `ownTools` with `directoryNamed: true` and
+   `enforcement: neither` (LIF-013).
+6. Every program running as the engine's operating-system user is inside the engine's domain of
+   trust and can get past every gate, an installed package's implementation among them (DL16;
+   specification limits, "What the guarantee for secrets covers"). A package that runs a login
+   holds its credential; the defense is choosing packages, pinned by digest (CTR-013;
+   specification limits, "Pending actions, sign-in and the network").
+7. A second machine joined through the SSH runtime provider runs every run as one user: any run can
+   read every other run's identity files and environment, and the secrets of later runs, so
+   PRV-025's isolation is unmet ([SSH runtime provider](../packages/provider-ssh-runtime/README.md),
+   "Runs execute as"; [ruling 77](../docs/proposals/ruling-77/README.md), point 2). The engine on
+   `main` does not yet call that provider (row "DL16: executor coverage").
+8. Restrictions bound what any instruction can make an Agent do through Conduit. They do not filter
+   content, and content read through a shared Resource can carry instructions. (ACC-001, ACC-027).
+9. A client may keep a protocol error from its model, so an Agent's model may never learn that a
+   request was refused ([tracker](../docs/AUDIT.md#known-to-be-open), "What a client and a model
+   see").
+10. Access does not narrow in three ways: a bound limits a right to open by Pools, targets and
+    operations, never filters, so an actor also holding a Conduit to `access` can open itself an
+    unfiltered Conduit to whatever its bound covers; access to `management` cannot be narrowed to
+    one template; closing an actor's own Conduit to `access` closes none it opened (ACC-009,
+    ACC-029, ACC-030; specification limits, "What access does not narrow"). Ruling 44 kept the first
+    two on purpose, and each stays inside Conduit: what it opens is opened by a recorded request
+    (tracker, "Known to be open"; REC-001).
+11. Whoever holds an open Conduit to an Agent listing an operation marked `startsModelWork`, such as
+    `turn.v1`, reaches through that model work whatever the Agent's own tools reach; inspection
+    shows `targetOwnTools` on the holder's entry for that Conduit, one hop only, and not what the
+    Agent reaches through its own Conduits (LIF-013).
+12. Until Agents are confined, a package keeping a Resource's login is to run where no unconfined
+    Agent runs; the engine does not check that placement in v0 ([ruling 75][r75], C1; specification
+    limits, "Pending actions, sign-in and the network"; [FR-197][fr197]).
+13. Root's token lapses 100 years after issue; its only revocation is the check on every request
+    that the instance still exists, and no request retires or unregisters root, so once its token is
+    copied only a new engine store ends it (row "DL13: instance proof"; IFC-022, IFC-032, LIF-034;
+    [FR-196][fr196]; [review decisions][decisions], fix F93).
+14. Once sign-in is built by order 048a, a model-driven console could fill `signInReturn` and the
+    engine cannot tell its source (PND-013; specification limits, "Pending actions, sign-in and the
+    network").
+
+### Under one operating-system user
+
+For an Agent whose template names a directory, and every other process of the engine's
+operating-system user, it is not shown that the process cannot do any of the following
+([FR-422][fr422]; review decisions, D60).
+
+- Read another Agent's login: a Codex login is a file in the client's home, the owner's today, and
+  after order 050 the Agent's state directory, which another process of that user can read without
+  mediation (finding 3-07; PRV-029; order 050; work orders, "Running the orders through Conduit"). A
+  Claude Code login on macOS is that user's keychain item; experiment 005 found another program's
+  reads refused or allowed according to how the item was made, so this is unknown, not safe (FR-422;
+  [experiment 005][keychain], results of 2026-11-06, cases 2a to 3b). PRV-029's "isolation is
+  mediated" is to be reworded (ruling 78, point 14).
+- Use that login by starting the same client with the other Agent's home, needing no read (FR-422).
+- Replace it by putting its own login in the other home: the account is checked only during setup,
+  in `sign-in.v1` or while polling, so turns between checks can run on another subscription
+  (PND-011; FR-422).
+- Act as root's Interface: it can read root's token and, once sign-in is built, call `sign-in.v1`,
+  list pending actions and fill `signInReturn` (DL13; specification limits, "Pending actions,
+  sign-in and the network"; FR-422).
+
+These limits hold before and after ruling 75 B3's dedicated macOS user: before it, the engine runs
+as the owner's own user and the owner's everyday client logins are within reach too; after it they
+are not, while every point above still holds among the engine, root and the Agents (ruling 75, B3;
+FR-422 and its verifier). On the second machine they hold among all runs of the one run user, whose
+own home also holds a client login (statement 7; FR-422). Nothing is claimed about a malicious
+package or a model-driven console (statements 6 and 14; specification limits, "Pending actions,
+sign-in and the network"). Under D60, every result obtained under one operating-system user is
+to open by saying what it cannot show, A5's results, A7's rows and S3's local profile among them.
+Such a result shows the same-user route with a planted marker, never by reading a real login
+(review decisions, D60).
+
+### Routes around the engine found so far
+
+- Own tools on: all of statement 5; by the coordinator's account in the dogfood, `claude-code.v2`
+  wrote inside its slot's `.git` without asking permission, and Codex's terminal children outlived
+  the kill of the run's process group ([increment 4 log][log4], rows 4-22 and 4-23). The built
+  runner neither stops nor sees a process that has left the run's group (rows "DL16: run state and
+  restart" and "DL16: executor coverage").
+- Codex reads its home's `AGENTS.md` whatever its flags say, and the wrapper uses the owner's home
+  (finding 3-07; I3-04).
+- Both Agents of a kind share one subscription login until each has a home of its own (order 050;
+  I3-04; 2026-11-10 closeout, row "The login").
+- With own tools off, Codex keeps three: its request for user input, `apply_patch` in a read-only
+  sandbox and its code-mode host ([2026-11-10 closeout][routes027], "Routes around the engine
+  (ACC-027)"; I3-04).
+- Path containment is the server's own check of its root directory, not the engine's (2026-11-10
+  closeout, "Routes around the engine (ACC-027)").
+- The reach inputs: `accountServices` true opens Claude Code's claude.ai connectors and Codex's
+  apps; Claude Code's `peerMessaging` true opens SendMessage, ListAgents and RemoteTrigger and
+  leaves the client's own default for inbound cross-session messages; no Conduit grants or records
+  this reach, and the messages can start model work ([Claude Code package][claude], launch flags;
+  I3-04).
+- Unwrapped clients, A70's baseline and not Agents: Codex's read-only shell reads any file the user
+  can, and its ChatGPT sign-in offered eight MCP servers that no file declares ([baseline results of
+  2026-11-09][baseline], T3).
+
+### Model work within an Agent's own access
+
+Codex 0.167.0 keeps six `collaboration.*` tools under every switch tried; a sub-agent it spawns
+makes engine requests with the parent Agent's credential and reaches only what that Agent may, more
+parallel model work within its own access rather than a route around the engine (I4-02; increment 4
+log, row 4-06). With a `.v2` Type and a directory named, the client's sandbox is off and sub-agents
+inherit the same unconfined reach, falling under statement 5 (increment 4 log, row 4-27).
+
+### Not shown yet
+
+A7's rows still run as observation (ruling 78, point 3.3).
+
+- Not shown: account services are off when the input is false; no connector or app read was
+  attempted, so this rests on flags alone ([2026-11-10 closeout][notshown], "What is not shown").
+- Not shown: Claude Code refuses an incoming cross-session message (2026-11-10 closeout, "What is
+  not shown").
+- Not shown: the reach inputs set true (2026-11-10 closeout, "What is not shown").
+- Not shown: Codex's own tool list, which its events do not give (2026-11-10 closeout, "What is not
+  shown").
+- Not shown: Claude Code's user skills and the user-settings sentinel (2026-11-10 closeout, "The
+  owner's user-level configuration"; its "How to run the open checks", row "User settings" and its
+  last line).
+- Not shown: a Pool's credential is never reachable by an Agent; this waits for a secret provider
+  and S2's measure D20 ([G3 verifier's list][g3missed]).
+- Not shown: interactive use, where a person can approve what a headless run refuses; every run so
+  far was headless (2026-11-10 closeout, "What ran"; baseline results of 2026-11-09, "Limits", item
+  "Headless only").
+
+### How to get more
+
+Give the Agent a runtime provider whose contract confines its consumer, chosen per Agent with
+`runtime:`; only such a provider could make a restriction enforced, and none ships in v0 (PRV-006,
+ACC-027; ruling 75, B2; FR-480). Inspection in this version reports every restriction as
+mediated, whatever the consumer's runtime provider (ACC-027). The first build calls no runtime
+provider (row "DL16: executor coverage").
+
+### A20's three questions
+
+A20 and the plan audit's D5 close on this claim; D5 is "The authorization machinery exceeds what is
+enforceable natively" (ruling 78, point 3.3; plan-audit history, "Disagreements"). The three
+questions were worded at `e271d1c`, in the archived
+`docs/proposals/authoring-syntax/AUTHORIZATION.md`, lines 12 and 121 to 122; this is the
+coordinator's map, logged for the owner to strike ([archive
+index](../docs/archive/README.md#removed-from-the-tree); [FR-482][fr482]; ruling 78, point 3.3).
+
+- Cross-path: a request through one Conduit is limited by its own restrictions; those on another
+  Conduit of the same consumer do not apply (ACC-009).
+- Issuer-independence: a right to open is passed on only as it is or narrower; closing an actor's
+  own Conduit to `access` closes none of the Conduits it opened (ACC-030; specification limits,
+  "What access does not narrow").
+- Provider scope: no Conduit permits an operation of `runtime-provider.v1`, `machine-provider.v1` or
+  `package-source.v1`; a provider call is not a request, gets no access decision or restriction, but
+  is recorded (PRV-004, PRV-005, REC-001). A read of a secret is a request, decided by the
+  instance's own Conduit to the secret Resource and that Conduit's filters alone; what the
+  provider's own program reaches falls under statement 6 (SEC-011; specification limits, "What the
+  guarantee for secrets covers"). The archived document reads differently: there a provider request
+  is a request to a target's service, and checking one is a different task from checking a proposed
+  grant's permitted extent (its lines 55, 153 to 154 and 181). v0 answers that only as the
+  specification limits' "What access does not narrow" does: a bound limits a right to open by Pools,
+  targets and operations and never by filters, so no filter is compared with a bound (ACC-029,
+  ACC-030). Whether a bound should ever limit filters, which would need a check of a filter against
+  a proposed grant's extent, is stated as open (ruling 78, point 3.3; FR-482's verifier).
+
+### Ruled, not yet built
+
+- The engine's own panel, where sign-in's device codes show, becomes a screen root's person opens,
+  never returned to a request or written to a pipe, file or message; a model of the same
+  operating-system user with a terminal tool can still read it, a stated limit affecting statement
+  14 and "Under one operating-system user" (ruling 78, point 9; order 051c builds the panel).
+- Root alone installs in v0, closing the routes of learning a secret's digest from a refused install
+  and installing an archive at a trusted package's address to share its client IDs; this changes
+  "What access does not narrow" in `spec/README.md`, cited by statement 10 (ruling 78, point 10).
+- Closing the Conduit through which the engine reads a secret ends the engine's own holding of its
+  value at once, changing statement 2 when built (ruling 78, point 11).
+- The status of each Agent and Resource that has a run will say whether the run is inside the
+  engine's domain of trust, and PRV-029's "isolation is mediated" will be reworded, affecting
+  statements 5 and 6 and "Under one operating-system user" (ruling 78, point 14).
+
+[r78]: ../docs/proposals/ruling-78/README.md
+[r47]: ../docs/proposals/ruling-47/README.md
+[r70]: ../docs/proposals/ruling-70/README.md
+[r75]: ../docs/proposals/ruling-75/README.md
+[fr480]: ../docs/proposals/full-review/findings/G3-native-probes.md#fr-480
+[fr482]: ../docs/proposals/full-review/findings/G3-native-probes.md#fr-482
+[fr422]: ../docs/proposals/full-review/findings/E04-signin-isolation.md#fr-422
+[fr196]: ../docs/proposals/full-review/findings/X04-stated-limits.md#fr-196
+[fr197]: ../docs/proposals/full-review/findings/X04-stated-limits.md#fr-197
+[g3missed]: ../docs/proposals/full-review/findings/G3-native-probes.md#what-the-verifier-says-the-analyst-missed
+[history]: ../docs/archive/plan-audit-history.md
+[wo183]: ../docs/work-orders/183-v0-security-claim-drafted.md
+[wo176]: ../docs/work-orders/176-core-purity-enforced.md
+[wo162]: ../docs/work-orders/162-dispatch-deadline-cancels.md
+[orders]: ../docs/implementation/WORK_ORDERS.md#running-the-orders-through-conduit
+[limits]: ../spec/README.md#limits-of-this-version
+[closeout]: ../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#results-of-the-third-run
+[notshown]: ../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#what-is-not-shown
+[routes027]: ../docs/proposals/first-build/increment-3/closeout-results-2026-11-10.md#routes-around-the-engine-acc-027
+[decisions]: ../docs/proposals/full-review/decisions.md
+[keychain]: ../experiments/005-macos-keychain/README.md
+[log4]: ../docs/proposals/first-build/log-increment-4.md
+[claude]: ../packages/agent-claude-code/README.md
+[baseline]: ../experiments/007-s1-baseline/results-2026-11-09.md

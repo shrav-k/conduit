@@ -16,7 +16,7 @@
 > - Ruling 77, M2-3: ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename, before provider runs.
 > - Ruling 77, M2-4: the distro locked down; Windows interop, `appendWindowsPath` and automount off.
 > - Owner step S3-OF: choose the cut/heal/loss method before S3-H’s fault implementation and the runs.
-> - Owner hold MC4-002: any extra fence on old/new-ID run overlap remains outside this plan.
+> - MC4-002, answered on 2026-11-12 (ruling 42's later answer): not held. Every runtime provider Conduit ships, SSH-R among them, carries out a stop it owes on a machine before it starts any run there; the overlap is a stated limit, which S3-H observes, with no new rule against it.
 
 ## Status
 
@@ -26,6 +26,10 @@ accepted in [README.md](README.md). Orders that change `engine/` or `spec/` are 
 No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `8b5c8093c1ca2a7a73e71fd50cce90a8f522f4f8`.
+
+Revised on 2026-11-15 by work order 184 (the full review's order 42): Docker rootless as
+`conduit-run` at S3-O2 and its limit, MC4-002 no longer held, and no work-order worker on the
+second machine during a counted run.
 
 **Checkpoint (2026-11-12, lane SP):** built SSH-R, the SSH runtime provider (orders 137 and 140),
 its durable directory (145) and its stop-drainer (146, 149 and 150). Next: SSH-R's key sweep
@@ -104,6 +108,10 @@ the pair after ruling 77’s setup: the run user `conduit-run`, with no sudo, th
 moved to it, Codex signed in as it, and the distro locked down (ruling 77). Windows interop,
 `appendWindowsPath` and automount are off: nothing in the distro starts Windows programs,
 has the Windows path or mounts Windows drives. The owner supplies sudo for that setup.
+Docker there runs rootless as `conduit-run`, by step 2 of
+[the Docker guide](../../docs/guides/docker.md): the owner's sudo once, for Docker's packages and
+the user-ID maps, then the coordinator as `conduit-run`; no user joins the `docker` group, whose
+members are root in the distro ([the full review's D51][D51]).
 Include the second daemon/context and PRV-011 confidential channel with A63-DR2b; never copy logins.
 Before engine-facing runs, wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s
 tailnet rename (ruling 77); the owner renames the Mac before turning on HTTPS certificates. Each account signs in through Conduit's Interface login flow, as ruling 72's later answer asks; [S2's plan](../013-s2-shared-login/plan.md#logins-through-the-interface-ruling-72s-later-answer) lists where each is first tested.
@@ -189,6 +197,11 @@ S3-A742/A81a/A81b/M/P/H, SEC-D/FLT-D0/1/2, 077/081/082, S3-PATH/S3-S1ITEM, place
 Provider runs also wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet
 rename (ruling 77). S3-OF’s answer gates all four runs. Pin inputs before timing; counted runs wait: the owner confirms D4's reading. No code edits;
 checks are README P1–P6 and M0/M1/M2, including actual outage/stop/effect evidence.
+From the start of each run's fresh lab to the end of its last phase, the second machine carries
+no work-order worker, neither one the coordinator starts over SSH
+([ruling 76](../../docs/proposals/ruling-76/README.md#the-decisions), point 6) nor one Conduit
+runs (A78): workers run as `conduit-run` beside the runs and the rootless Docker daemon, and
+each loss phase stops the distro with every process in it.
 
 ## Shared with other plans
 
@@ -255,7 +268,12 @@ against SEC-D1/FLT-D1 in core, and RET2 against SEC-D2/D3 and FLT-D2 in shell.
   This narrows the accepted prerequisite only if the owner agrees; it is no longer admin A2.
 - **Ruling 77:** SSH-M/SSH-R, the run user `conduit-run` with no sudo, `tailscale serve`
   after the Mac’s tailnet rename, and the distro locked down answer M2-1 to M2-4. O2 and
-  affected live work wait for setup; O1/A741/A742’s stage-0 work does not. MC4-002’s overlap question stays held.
+  affected live work wait for setup; O1/A741/A742’s stage-0 work does not. MC4-002 is not held:
+  under [ruling 42's later answer](../../docs/proposals/ruling-42/README.md#later-answers) of
+  2026-11-12 ([IN_FORCE.md, topic 11][topic-11]), every runtime provider Conduit ships, SSH-R among
+  them, carries out a stop it owes on a machine before it starts any run there, and a run whose stop
+  did not succeed may run beside a later instance, a limit stated in `spec/` (LIF-009, LIF-036,
+  PRV-021).
 - **S3-OF — how should S3 cut/heal the network and lose the machine?** With Windows
   interop off, nothing inside Ubuntu-24.04 can run `wsl --shutdown` or set the Windows
   firewall; `conduit-run` has no sudo to set a Linux-side rule either. The README’s
@@ -305,3 +323,9 @@ second Docker provider or confinement guarantee. Static placement/admission deci
 vectors even where G5 names a model; bounded model evidence does not prove real TLS or
 durable provider stops. Retired/removed is not stopped, unknown is not failed, and retained
 secrets are not recalled. Keep ACC-027 and every accepted measurement/credential limit.
+On the second machine Docker runs rootless as `conduit-run`, and its socket belongs to that
+user, so the isolated profile keeps runs apart only while no unconfined run and no work-order
+worker runs as `conduit-run` beside it (the full review's D51).
+
+[D51]: ../../docs/proposals/full-review/decisions.md#the-providers-and-the-second-machine
+[topic-11]: ../../IN_FORCE.md#11-the-implementation-interface-providers-hooks-and-items

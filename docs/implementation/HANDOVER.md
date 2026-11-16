@@ -5,10 +5,11 @@ every other decision in force (ruling 67). The coordinator's work on 2026-11-12,
 session handed it to a new coordinator session because the owner's usage was near its limit. The
 new session's first task was the owner's [full review](../guides/full-review.md), carried out on
 2026-11-14: [its record](../proposals/full-review/README.md) holds the questions, which the owner
-answered the same day in [ruling 78](../proposals/ruling-78/README.md), and the work orders it
-adds. Rulings, orders and pull requests are cited by number; a fact found only in the coordinator's private notes is
-marked "(log)" and is still to be recorded. Machine details (paths, hosts, accounts, the runners'
-scripts) stay outside the repository, in the private handoff note: `.wo/notes/HANDOFF-local.md`
+answered the same day in [ruling 78](../proposals/ruling-78/README.md), and the work orders it adds.
+Rulings, orders and pull requests are cited by number; a fact found only in the coordinator's
+private notes is marked "(log)" until it is recorded, and since work order 191 no fact is so marked.
+Machine details (paths, hosts, accounts, the runners' scripts) stay outside the repository, in the
+private handoff note: `.wo/notes/HANDOFF-local.md`
 beside the main checkout. [The method as run](METHOD_AS_RUN.md) gives the runners' steps, with each
 private value a variable. Read with it
 [IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed),
@@ -132,9 +133,12 @@ point 3; 76 point 6; 77).
   account, and the coordinator reaches it over SSH. Part 2, bubblewrap if it is missing, the
   distro's restart that applies the lockdown, and taking the coordinator's key out of the owner's
   account, can run now: 080 is checkpointed and the computer is idle; orders then run as
-  `conduit-run` only. Ask the owner before part 2 (log).
+  `conduit-run` only. Ask the owner before part 2, since [ruling 77 gives the setup's steps to the
+  owner](../proposals/ruling-77/README.md#what-follows).
 - **Capacity**: WSL keeps its default 15 GB (M2-7). Five orders reached 12 GB; before 070, shell
-  test binaries took 5 to 8 GB each and ran it out of memory once (log).
+  test binaries took 5 to 8 GB each and ran it out of memory once. The coordinator saw these figures
+  up to 2026-11-12, and no measurement of them is in the repository ([the
+  guide](../guides/second-machine.md#how-the-computer-joins)).
 - [The second-machine guide](../guides/second-machine.md) gives ruling 77's setup and S3-OF's
   options, which ruling 78 point 4 answered with option (E); its dated amendment comes with the
   review's orders.
@@ -156,7 +160,16 @@ open file description; the tests now retry their single attempts for a bounded t
 `packages/runtime-provider-kit` tracing-core cached a callsite's interest from the thread that first
 reached it, so a scoped capture saw nothing; the test keeps a second dispatcher alive. In
 `packages/provider-local-process` the backend proves a run's group gone only once its last member
-is reaped; the test waits for the stopped state. Six CI runs in a row passed.
+is reaped; the test waits for the stopped state. The pull request's CI run, [run
+43584337827](https://github.com/shrav-k/conduit/actions/runs/43584337827) on its head `01c53ed9`,
+passed six attempts in a row. CI's first three runs on `main` from the merge on passed every job:
+[run 43615068193](https://github.com/shrav-k/conduit/actions/runs/43615068193) on `255b3206`, [run
+43660743667](https://github.com/shrav-k/conduit/actions/runs/43660743667) on `2b133486` (#267) and
+[run 43662044232](https://github.com/shrav-k/conduit/actions/runs/43662044232) on `8873bedf` (#268).
+Between them, #267's pull request run, [run
+43659191448](https://github.com/shrav-k/conduit/actions/runs/43659191448), failed once in `rust
+(packages/provider-ssh-runtime)` and passed on its second attempt, and #268 made two more of that
+package's tests retry a start that follows a held lock.
 
 | # | Item | State | Next step |
 | --- | --- | --- | --- |
@@ -167,7 +180,7 @@ is reaped; the test waits for the stopped state. Six CI runs in a row passed.
 | 5 | 071 (S0a): the conformance manifest in pieces | Merged on 2026-11-15 (#281, `2318ec59`) after a third round on the Mac; at the handover it was checkpointed after two rounds on Windows, with one must left ([its Record](../work-orders/071-conformance-manifest-pieces.md#record)) | Tell the lane, when it restarts at the pin, that SV1 is unblocked |
 | 6 | Lane: 144 (S4-SRV2, S4's hook server) | Stopped unmerged at Lane SP's checkpoint (#262); `wo/144-s4-srv2-hook` pushed, with two musts named in its Record on that branch; the order's file on `main` has no Record | A finishing order stacked on it, in the lane, once it restarts at the pin |
 | 7 | The admin's next spec order | Not written. PRV-021's owed stop in three cases, matching kit order 141; PRV-015 names a machine by ID where `place.v1` gives a hostname; "labels last reported" (PRV-027, LIF-036, `stop.v1`); one live node per machine (049a1); what an engine owes when it cannot store its state, and races across addresses ([082](../AUDIT.md#known-to-be-open)); 081's Record's leftovers | Write next (077 is in) |
-| 8 | The admin's small engine order | Not written. The first-start report maps Rust's architecture to Go's `GOARCH` wrongly (`loongarch64`, little-endian `mips` and `mips64`, `armbe`, `arm64be`, `riscv32`, `wasm`); mirror order 128's mapping (PRV-014) (log) | A small order, or a fix under 71 point 4 |
+| 8 | The admin's small engine order | Not written. The first-start report maps Rust's architecture to Go's `GOARCH` wrongly (`loongarch64`, little-endian `mips` and `mips64`, `armbe`, `arm64be`, `riscv32`, `wasm`); mirror order 128's mapping (PRV-014). Logged as [finding 4-28](../proposals/first-build/log-increment-4.md) | The review's [order 66](../proposals/full-review/orders.md), after the pin ([F78](../proposals/full-review/decisions.md#providers-runs-and-machines)), as 4-28's settlement says |
 | 9 | Batch 1's rest, on the rerun path | Not written: 046, 047, 048a, 048b, 050, 053; joining them, 043a, 043b, 052a, 052b, 051a, 051b ([the plan](../proposals/spec-batch-1/README.md#the-work-orders)) | 046 next, through Conduit, once the dogfood engine is re-pinned to `main` |
 | 10 | The sign-in chain | Not written: 050 (each Agent's own home, the hooks, the account check, and the connection Conduit manages for a Claude Agent's sign-in, 80 point 8; merges with 050a, 076 and 078 as one 0.2.0), 048a, 048b, 051b; then A81 (a carried Codex login) and [A82](../../ROADMAP.md#experiments-and-probes) (Linear's OAuth through the Interface) | The second accounts wait for this: each Agent signed in through the Interface, as the test of its own subscription and of the model ([72's later answers](../proposals/ruling-72/README.md#later-answers)) |
 | 11 | Off the rerun path | 049a2, the second half of batch 1's order 049a (PND-008's pending actions for enrollment and ENR-012's removal question), after 047 and 048a; 049b, 051c, SSH-M; `s3/m2` merges after the rerun's pin | After 049a1 |
@@ -218,7 +231,9 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
   skipped.
 - Order 042: Fleet reconciliation matches a sender by ID only, not through a reused name.
 - 049a1: one live node per machine; acceptances decided one at a time; a second refused with a
-  conflict naming the node (log).
+  conflict naming the node. The Record on the order's pushed branch,
+  `wo/049a1-build-enrollment-core` at `6364fc6b`, quotes the decision in lines 692 to 702 of the
+  order's file there.
 - Order 145: SSH-R's drainer keeps its state in an operator-set `durableDir` outside
   `CONDUIT_STATE_DIR`; the SSH key is deleted once nothing is owed.
 - Providers: option (b) of order 120, packaged local providers that are to pass the contract
@@ -235,7 +250,9 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
 - S4's T1 repair: the author corrects a `blockedBy` configuration place through Conduit
   ([S4's plan](../../experiments/015-s4-partial-setup/plan.md)).
 - A6's traces come from S2's and S4's runs ([the register](../../ROADMAP.md#experiments-and-probes)).
-- The side branch `s3/m2` for the Windows engine work, merged after the rerun's pin (log).
+- The side branch `s3/m2` for the Windows engine work, merged after the rerun's pin: point 4 of
+  [order 120's plan](../work-orders/120-plan-providers.md), under [ruling 76's later
+  answer](../proposals/ruling-76/README.md#later-answers) of 2026-11-11.
 - "Windows computer is up again" read as the resume after the pause of 2026-11-11 (72's later answers).
 - Order 154: a plan prints each `ownTools` member as `inventory.v1` gives it, except that an
   absolute-path `directory` is printed as `{"pathSha256":"HEX"}`, as the plan prints a root as
@@ -246,9 +263,13 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
 
 ## Standing rules learned this session
 
-- **No environment dumps.** On 2026-11-11 an agent printed a session's environment, which held
-  keys (log). Every brief that may run a command says: never run `env`, `printenv`, `set` or
-  `export -p`, nor print a variable's value. Probes start clients under `env -i` with fake keys.
+- **No environment dumps.** On 2026-11-11 an agent printed a session's environment, which held API
+  keys. The exposure was closed by [ruling 75's note](../proposals/ruling-75/README.md) of the same
+  day: the coordinator found the keys in no commit of any branch, tag or pull-request ref, and the
+  owner accepted leaving them as they are
+  ([D14](../proposals/full-review/decisions.md#the-pipeline-and-verification)). Every brief that may
+  run a command says: never run `env`, `printenv`, `set` or `export -p`, nor print a variable's
+  value. Probes start clients under `env -i` with fake keys.
 - **Credentials are never read**: no key, token or login file, the owner's or Codex's. Workers never
   edit the owner's configuration (AGENTS.md).
 - **Private details never enter the repository**: no local path, user name, address, host name or

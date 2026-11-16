@@ -1363,6 +1363,16 @@ CONDUIT REPOSITORY (read only, HEAD 5ed438b)
   - I3-04: the wrappers' 180-second per-turn deadline, which poisons the session.
 - AGENTS.md: code is Rust; Python only for the checkers in tools/.
 
+Added on 2026-11-15 by work order 191
+([FR-538](../full-review/findings/G6-outside-the-tree.md#fr-538)): the benchmark's source and output
+and the probe store named below stayed in a session's scratch space, and none is in the repository.
+So no reader of the tree can check the numbers that cite them: the benchmark's rerun in point 1 of
+"WHAT MUST COME FIRST, AND THE COST" and in point 7 of "ENGINE WORK BEFORE THE METRICS BATCH", the
+table under "Cost evidence", and the sizes of the 2026-11-10 probe store's `install.v1` entries in
+point (a) of the engine prerequisites and in point 1 of "ENGINE WORK BEFORE THE METRICS BATCH". The
+full review's [D16](../full-review/decisions.md#the-pipeline-and-verification) has the store's cost
+measured before any store order.
+
 MEASUREMENTS AND SAVED SOURCES (the coordinator's session notes, not in the repository)
 - scratchpad/bench-out/results-2026-11-11.txt: the skeptic's synthetic bench, rerun. Source: scratchpad/bench/src/main.rs.
 - scratchpad/probe-store/state.json: invocation entries of 129.6 KB, of which held_target is 126.3 KB.

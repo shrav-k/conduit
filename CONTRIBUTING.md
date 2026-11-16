@@ -268,15 +268,63 @@ Passing these checks does not establish whole-language conformance.
 
 ## Settings this repository relies on
 
-`main` is protected under [ruling 74, point 1](docs/proposals/ruling-74/README.md).
-CI passes the repository variable `CONDUIT_PRIVATE_NAMES`, a comma-separated list of private
-names never written in the tree, to `tools/check_private_paths.py`. Its seven built-in patterns
-check home-directory paths, session scratch paths, Codex login files, tailnet DNS names, tailnet
-IPv4 addresses, SSH key fingerprints and Windows home paths. The separate `secrets` check runs
-a pinned gitleaks release on the commits each pull request or push to `main` adds; its
-configuration in [.gitleaks.toml](.gitleaks.toml) extends the default secret-detection rules.
-No status check is required on `main` by a branch setting today; the admin merges a pull request
-only after its `docs`, `rust` and `secrets` checks pass.
+These settings are held by GitHub, not by the tree, and they are the owner's: no pull request
+changes them. Here they are as read on 2026-11-15 with read-only `gh api` and `gh run` calls: on the
+repository, its `branches/main/protection`, its `rulesets`, its `actions/variables` and
+`actions/secrets`, the last two only counted so that no value is printed, and its CI runs.
+
+- **`main` is protected** under [ruling 74, point 1](docs/proposals/ruling-74/README.md): every
+  change arrives through a pull request, with no approving review required; the rule binds
+  administrators too; and force-pushes and deletion are refused. No ruleset is defined. When the
+  protection was first applied is not recorded.
+- **No status check is required** by a branch setting. CI's `rust` check passes only when every
+  Rust job does, the macOS jobs of order 187 among them. The full review's [decision
+  D11](docs/proposals/full-review/decisions.md#the-pipeline-and-verification) asks the owner to make
+  `docs` and `rust` required once the CI fix (#266) has held over three runs and the engine's test
+  shards wait on no other job. Since order 152 the shards wait only on the engine's build. [CI's
+  first three runs on `main` after #266](docs/implementation/HANDOVER.md#the-queue) passed, but
+  between them #267's pull request run failed once in `rust (packages/provider-ssh-runtime)`, and
+  #268 made two more of that package's tests retry. From #268 on, 46 runs on `main` in a row passed;
+  the next, [run 43806163460](https://github.com/shrav-k/conduit/actions/runs/43806163460) on
+  `0ed26306`, failed in `macos (packages/provider-local-process)`, a job that order 187 added after
+  D11. The coordinator adds `secrets`, which order 151 created after D11. The step and its timing
+  are the owner's. [Ruling 80](docs/proposals/ruling-80/README.md) answered D11 on 2026-11-16, and
+  with it the owner's question whether `rust` is required now or once the macOS jobs have held: no
+  check is made required now. The checks are to run as local gates before merge in
+  `tools/gate.py`, which order 193 is to build; until it lands, the coordinator runs an interim
+  local gate before each merge, and the merge waits for it. CI keeps running on every pull request
+  as a free second opinion and the Linux leg, but merges do not wait for it, and a red run after
+  merge is fixed in a follow-up. The gates are formalized into GitHub later; until then
+  [the tracker](docs/AUDIT.md#waiting-for-the-owner) keeps D11's step.
+- **GitHub's secret scanning and its push protection are on**, the rest of D11. CI's own `secrets`
+  job also runs a pinned gitleaks release on the commits each pull request or push to `main` adds;
+  its configuration in [.gitleaks.toml](.gitleaks.toml) extends the default secret-detection rules.
+- **`CONDUIT_PRIVATE_NAMES` is not set**: the repository has no Actions variable or secret. CI's
+  `docs` job passes a repository variable of that name to `tools/check_private_paths.py`, beside the
+  checker's seven built-in patterns: home-directory paths, session scratch paths, Codex login files,
+  tailnet DNS names, tailnet IPv4 addresses, SSH key fingerprints and Windows home paths. The
+  variable is meant to list, separated by commas, the private names that no pattern finds: the user,
+  host, machine and account names that never enter the tree. Set as a variable, it would publish
+  them: the job's log prints the step's environment, GitHub masks a secret there but not a variable,
+  and this repository's logs are public. So the variable stays unset. Whether CI should read the
+  names from a secret instead, which would change `.github/workflows/checks.yml` and needs a secret
+  that only the owner can set, was the owner's question, and
+  [ruling 80](docs/proposals/ruling-80/README.md), point 10, settled it on 2026-11-16: not for now.
+  That choice is the coordinator's, applying the owner's answers against its own recommendation of a
+  masked secret, and is open to the owner's strike;
+  [the tracker](docs/AUDIT.md#waiting-for-the-owner) records it. Since then the only name check is
+  the coordinator's [local run of the checker before each
+  merge](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record), which is to check the names
+  once they are held: the coordinator's runs so far have used none, only the seven patterns, and
+  whether one of Conduit's secret stores can hold the names is open.
+- **CI was paused once.** On 2026-11-11 CI was paused (the Records of orders
+  [104](docs/work-orders/104-mc1-model-checking-harness.md#record) and
+  [105](docs/work-orders/105-mc2-operation-identity.md#record) say so; how is not recorded). The
+  runs of the six commits that reached `main` from `a7c176d8` (#139) to `147f0582` (#144) were
+  cancelled or never started, and none of the 54 from `3bc816c5` (#145) to `defee9ba` (#198,
+  order 068) has a run. No run was created after `147f0582`'s, at 20:28 UTC, until order 121's
+  pull request run at 03:40 UTC on 2026-11-12; the eight pull request runs created from 19:33 to
+  20:18 UTC were cancelled too. CI ran again from `1b717c40`, order 121's merge.
 
 ## License and attribution
 

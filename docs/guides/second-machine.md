@@ -18,12 +18,12 @@ not yet on `main`. Until the computer is a node, this manual setup serves A74 an
 S3's preparation, and work-order workers run on it over SSH, as on the Mac
 ([ruling 76](../proposals/ruling-76/README.md), point 6).
 
-The first setup below ran on 2026-11-11, and workers have run there since. Ruling 77's setup is
-the owner's. On 2026-11-12 its steps 1 to 5 were done, but for three parts, which can
-run now (at the handover of 2026-11-12, orders 071 and 080 are checkpointed and the computer is
-idle): bubblewrap if it is missing (step 3), the restart that applies the lockdown
-(step 4), and taking the coordinator's key out of the owner's account (step 2). Tell the
-coordinator where a step differs.
+The first setup below ran on 2026-11-11, and workers have run there since. Ruling 77's setup is the
+owner's. On 2026-11-12 its steps 1 to 5 were done, but for three parts, which can run now (at the
+handover of 2026-11-12, orders 071 and 080 are checkpointed and the computer is idle): bubblewrap if
+it is missing (step 3), the restart that applies the lockdown (step 4), and taking the coordinator's
+key out of the owner's account (step 2). The coordinator asks the owner before starting any of the
+three. Tell the coordinator where a step differs.
 
 ## How the computer joins
 
@@ -49,6 +49,12 @@ the owner may revisit any point.
   the owner's "pause" the coordinator checkpoints and stops the work there, and starts nothing
   there until the owner's "resume". The owner then stops the distro with
   `wsl --terminate Ubuntu-24.04`; `wsl --shutdown` would stop every distro, Docker Desktop's too.
+- **Capacity:** WSL keeps its default memory limit, 15 GB on this computer; M2-7 needed no ruling
+  ([ruling 77, its other questions](../proposals/ruling-77/README.md#the-other-questions)). Five
+  orders reached 12 GB, and before order 070 the shell's test binaries took 5 to 8 GB each and ran
+  it out of memory once. The coordinator saw these figures up to 2026-11-12, and no measurement of
+  them is in the repository. The method as run gives [the load
+  rule](../implementation/METHOD_AS_RUN.md#load).
 
 ## The setup
 

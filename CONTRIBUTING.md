@@ -301,8 +301,9 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   its configuration in [.gitleaks.toml](.gitleaks.toml) extends the default secret-detection rules.
 - **`CONDUIT_PRIVATE_NAMES` is not set**: the repository has no Actions variable or secret. CI's
   `docs` job passes a repository variable of that name to `tools/check_private_paths.py`, beside the
-  checker's seven built-in patterns: home-directory paths, session scratch paths, Codex login files,
-  tailnet DNS names, tailnet IPv4 addresses, SSH key fingerprints and Windows home paths. The
+  checker's eight built-in patterns: home-directory paths, session scratch paths, Codex login files,
+  tailnet DNS names, tailnet IPv4 addresses, SSH key fingerprints, Windows home paths and email
+  addresses outside the domains reserved for examples. The
   variable is meant to list, separated by commas, the private names that no pattern finds: the user,
   host, machine and account names that never enter the tree. Set as a variable, it would publish
   them: the job's log prints the step's environment, GitHub masks a secret there but not a variable,
@@ -315,7 +316,7 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   [the tracker](docs/AUDIT.md#waiting-for-the-owner) records it. Since then the only name check is
   the coordinator's [local run of the checker before each
   merge](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record), which is to check the names
-  once they are held: the coordinator's runs so far have used none, only the seven patterns, and
+  once they are held: the coordinator's runs so far have used none, only the built-in patterns, and
   whether one of Conduit's secret stores can hold the names is open.
 - **CI was paused once.** On 2026-11-11 CI was paused (the Records of orders
   [104](docs/work-orders/104-mc1-model-checking-harness.md#record) and

@@ -126,7 +126,7 @@ python3 tools/check_schemas.py       # schemas, core package and examples; needs
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 python3 tools/check_model_account.py # the model-checking account has a row for each convention-layer promise, and none is stale
 python3 tools/promise_standing.py --check # engine/STANDING.md agrees with the promises, the case tags, the expected failures and the engine's sources
-python3 tools/check_private_paths.py # tracked files contain no private paths or configured names
+python3 tools/check_private_paths.py # tracked files contain no private paths, email addresses outside reserved domains, or configured names
 git diff --check                     # whitespace errors
 (cd engine && cargo test --release)   # the first build: loader, core, vectors and shell
 ```

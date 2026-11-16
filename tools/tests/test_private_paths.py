@@ -122,6 +122,77 @@ class PrivatePathChecks(unittest.TestCase):
         self.assertEqual(self.run_check(), (0, "Errors: 0\n"))
         self.assertLess(time.monotonic() - started, 10)
 
+    def test_email_addresses_outside_the_reserved_domains_are_red(self):
+        values = [
+            b"someone@" + b"mail.synthetic",
+            b"First.Last+tag@" + b"Mail.Synthetic",
+            b"a_b%c-d@" + b"sub.mail.synthetic",
+            b"someone@" + b"example.com.synthetic",
+            b"someone@" + b"synthetic-example.com",
+            b"someone@" + b"host.invalid.synthetic",
+            b"someone@" + b"host.local",
+            b"https://someone@" + b"git.synthetic/repository",
+            b"<someone@" + b"mail.synthetic>.",
+        ]
+        for index, value in enumerate(values):
+            with self.subTest(index=index):
+                self.track("planted.bin", b"\0first line\n" + value)
+                status, output = self.run_check()
+                self.assertEqual(status, 1)
+                self.assertEqual(output, f"planted.bin:2: {private_paths.EMAIL_ERROR}\nErrors: 1\n")
+                self.assertNotIn(value.decode(), output)
+
+    def test_each_address_is_reported_at_its_own_line(self):
+        self.track("two.md", b"first@" + b"mail.synthetic second@" + b"mail.synthetic\n\nthird@"
+                   + b"mail.synthetic\n")
+        self.assertEqual(self.run_check(), (
+            1, f"two.md:1: {private_paths.EMAIL_ERROR}\ntwo.md:1: {private_paths.EMAIL_ERROR}\n"
+            f"two.md:3: {private_paths.EMAIL_ERROR}\nErrors: 3\n"))
+
+    def test_reserved_domains_and_text_that_is_no_address_are_green(self):
+        values = [
+            b"someone@example.com", b"Someone@EXAMPLE.ORG", b"someone@example.net",
+            b"someone@mail.example.com", b"a@b.example.org", b"x@host.test", b"x@site.example",
+            b"x@app.localhost", b"x@HOST.INVALID", b"x@a.b.test", b"someone@example.com.",
+            b"@AGENTS.md", b"    @contextlib.contextmanager", b"actions/cache/save@v6",
+            b"name@1.2.3", b"{}@example.org", b"someone@", b"a@.synthetic", b"x@a.b2c",
+            b"x@a.bc2", b"x@a.bc-d",
+        ]
+        self.track("examples.txt", b"\n".join(values))
+        self.assertEqual(self.run_check(), (0, "Errors: 0\n"))
+
+    def test_an_allowed_address_is_green_in_any_case_and_its_neighbours_are_not(self):
+        with patch.dict(private_paths.ALLOWED_ADDRESSES, {
+                b"role@" + b"vendor.synthetic": "Synthetic vendor role for this test."}):
+            self.track("from.txt", b"From: Role@" + b"Vendor.Synthetic\n")
+            self.assertEqual(self.run_check(), (0, "Errors: 0\n"))
+            values = [b"From: other@" + b"vendor.synthetic\n",
+                      b"From: role@" + b"vendor.synthetic.other\n"]
+            for index, value in enumerate(values):
+                with self.subTest(index=index):
+                    self.track("from.txt", value)
+                    self.assertEqual(self.run_check()[0], 1)
+
+    def test_every_allowed_address_is_one_address_in_lower_case_with_a_reason(self):
+        for index, (address, reason) in enumerate(private_paths.ALLOWED_ADDRESSES.items()):
+            with self.subTest(index=index):
+                match = private_paths.EMAIL.fullmatch(address)
+                self.assertIsNotNone(match)
+                self.assertEqual(address, address.lower())
+                self.assertFalse(private_paths.reserved(match.group(1)))
+                self.assertIsInstance(reason, str)
+                self.assertTrue(reason.strip())
+
+    def test_long_runs_around_an_at_sign_are_checked_quickly(self):
+        values = [b"a" * 100_000 + b"@" + b"a" * 100_000,
+                  b"a+" * 100_000 + b"@", b"x@" + b"a" * 200_000, b"a@" * 100_000]
+        for index, value in enumerate(values):
+            with self.subTest(index=index):
+                self.track("blob.txt", value)
+                started = time.monotonic()
+                self.assertEqual(self.run_check(), (0, "Errors: 0\n"))
+                self.assertLess(time.monotonic() - started, 10)
+
     def test_working_tree_edit_is_checked_without_staging_it(self):
         self.track("edited.txt", b"clean\n")
         (self.root / "edited.txt").write_bytes(b"/home/" + b"synthetic/work")

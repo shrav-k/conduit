@@ -394,3 +394,19 @@ the pull request, the admin shows the engine build, the four engine shards and t
 passing on Linux, and CI's `docs` job reads `177-declared.yaml` through `--declared-changed`. A
 fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `6ef168a2`: the worker (1,218 s) and a fresh Codex
+verifier (314 s), which found nothing in one round but ran no fresh build or mutation check.
+CTR-014's diagnostics now say what to change: for rule (c) each input and pointer of the control's
+`changes` that reaches the place and how; for rule (b) the types the place admits; for rule (a)
+the member at which the walk stopped and why. CTR-006's two rules on a listed control are checked
+when a package or project is resolved, with the new case `contracts-control-without-revision`
+(reason `invalid`, rule ID CTR-006), and increment 4's finding 4-36 is settled. The core's Clippy
+list gains `std::thread::sleep_ms` and `std::thread::park_timeout_ms`, 80 entries in all.
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran the engine's
+tests, clippy and fmt, the vector delta with the order's declaration (1 change, 0 undeclared), the
+pieces tool, the repository's checks, a resolution probe of the four rejection texts, a purity
+probe, and the fix-removal checks on a scratch copy, which failed as the order says. It found no
+must and no should.

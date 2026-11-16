@@ -1,6 +1,14 @@
 {
   "cases": [
     {
+      "id": "contracts-control-without-revision",
+      "case": "language/contracts/control-without-revision/case.yaml",
+      "promises": [
+        "CTR-006"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "contracts-own-tools-control",
       "case": "language/contracts/own-tools-control/case.yaml",
       "promises": [

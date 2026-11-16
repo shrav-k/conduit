@@ -2,7 +2,7 @@
 
 Every result of this experiment is obtained under one operating-system user. Under one user, an Agent that runs code can read, use or replace another Agent's login and act as root's Interface. So no result here shows Agents kept apart, before or after the owner's dedicated macOS user (ruling 75 B3). Stage 0 runs no Agent at all.
 
-Stage 0 pre-registered on 2026-11-15 by work order 159; not run. No real-client result is claimed.
+Stage 0 pre-registered on 2026-11-15 by work order 159; run twice, on 2026-11-15 and 2026-11-16: [results](results-2026-11-16.md).
 
 Amended on 2026-11-15 by work order 167: how a signal stops the probe, the notice of a scratch login found, what the shim cannot catch, and the owner's browser check before the run. The steps, what is recorded, the pass conditions and the outcomes do not change.
 

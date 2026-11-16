@@ -355,3 +355,50 @@ the twelve packages. The second prints `pass`. The other Linux jobs pass as befo
 gives each macOS job's time and the run's total. A fresh Codex verifier and a fresh read-only Opus
 reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `f383edaf`: the worker (1,201 s) and a fresh Codex
+verifier (348 s), which found nothing to change in one round and could not run CI. The first lines
+of `checks.yml` now say that every job runs on a standard runner, free only while the repository
+is public. `rust directories` gains the output `packages`, the entries under `packages/`, and
+fails, saying why, if it finds none. Two new jobs run on `macos-latest`: `macos (packages/NAME)`
+runs clippy and the release tests of each of the twelve packages, and
+`macos (engine: loader, core, conformance)` runs those three crates' release tests, with no thread
+count set for the vectors. Each restores its cache on every run and saves it only on a push to
+`main`, under a key that names the system. The `rust` gate needs both, and its line names their
+results. `METHOD_AS_RUN.md` says what CI now runs on macOS and what still runs on the Mac by hand.
+No crate needed a fix: on the Mac, the twelve packages' clippy and release tests (268 tests) and
+the engine's three crates' tests (149, at `CONDUIT_VECTOR_THREADS=4`) passed.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It reran
+`check_docs.py`, `check_private_paths.py` and `git diff --check`, and parsed the workflow with
+PyYAML. It ran the order's check, which printed `macOS jobs: ok` on the branch and stopped at
+`KeyError: 'macos-package'` on `main`'s file, and the discovery step, which listed the twelve
+packages and, in an empty directory, printed decision 2's line and exited 1. It ran the vectors
+test at 3 threads: it passed in 156 s, at a peak of about 4.7 GiB resident. It found no must and
+three shoulds. Two were applied before merge: the comment above `rust` is re-wrapped to 100
+characters, and `macos-package` has `rust-dir`'s comment on why it runs inside each directory.
+The third changes nothing before CI, as decision 4 plans: the runner has 3 vCPUs and 7 GB, so if
+`macos (engine: loader, core, conformance)` runs out of memory there, a later round sets
+`CONDUIT_VECTOR_THREADS` to 2 on that step alone. The fix also found one test likely to fail on
+the runner. `exported_type_template_passes_semantic_registration_rules`, in
+`packages/provider-local-process`, runs `tools/check_schemas.py` under `python3`, which needs
+PyYAML. The Linux runner's `python3` has it, since that job passes, and no Rust job installs it.
+On the Mac the test passed only because `/usr/bin/python3` has PyYAML installed. The pull
+request's CI, with each macOS job's time and the run's total, is for the admin to add: the
+thirteen jobs run at most five at a time, and the first run builds without a cache.
+
+A second fresh Opus reader read the coordinator's fix (ruling 79, point 2) and found no must. The
+coordinator applied its two shoulds: the macOS package job installs Python with PyYAML and
+jsonschema, as the docs job does, since `provider-local-process`'s template test runs
+`tools/check_schemas.py`, which would otherwise fail on the runner; that test's failure message now
+gives the checker's standard output as well as its standard error (ruling 52); and this Record
+names the thread count of the local engine run.
+
+The pull request's first CI run showed the leg's worth at once: `provider-local-machine`'s three
+MCP tests failed on the macOS runner while passing on the Mac. The coordinator made the test's
+assertion give the provider's reply (ruling 52), which named the cause: "OS hostname must contain 1
+to 63 characters after normalization; no truncation". GitHub's macOS runners have longer hostnames,
+which the provider refuses by design. The macOS package job now sets a short hostname before its
+tests, with a comment that says why.

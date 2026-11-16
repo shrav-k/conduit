@@ -128,6 +128,8 @@ One row for each order file in this directory, in file-name order.
 | [188](188-differential-vectors-nightly.md) | the differential vectors, nightly (the full review's order 31) |
 | [189](189-package-tests-repeated-linux.md) | changed package tests run five more times on Linux (the full review's order 44) |
 | [190](190-desk-checks-terms-1password.md) | two desk checks: each vendor's terms for two subscriptions; 1Password's unattended reads (the full review's order 45) |
+| [191](191-log-marks-closed-settings-written.md) | the '(log)' marks closed, and the repository's settings written down (the full review's order 37) |
+| [192](192-register-rows-mc-mutation-native.md) | register rows: model checking, mutation testing, native probes (the full review's order 39) |
 
 ## Shared and staged files
 

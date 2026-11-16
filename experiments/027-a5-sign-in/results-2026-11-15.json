@@ -1,0 +1,169 @@
+{
+  "clients": [
+    {
+      "client": "claude-code",
+      "steps": {
+        "1": {
+          "exit": 0,
+          "timed_out": false
+        },
+        "2": {
+          "account_field": "email",
+          "account_named": "yes",
+          "exit": 0,
+          "login": "yes",
+          "skipped": false,
+          "timed_out": false
+        },
+        "3": {
+          "account_field": null,
+          "account_named": "no",
+          "exit": 1,
+          "login": "no",
+          "skipped": false,
+          "timed_out": false
+        },
+        "4": {
+          "ended_on": "term",
+          "exited_before_cancel": null,
+          "group_gone": true,
+          "logged_out": false,
+          "login_args": [],
+          "shim_called": true,
+          "skipped": false,
+          "urls": [
+            {
+              "challenge_43": true,
+              "client_id": true,
+              "https": true,
+              "ifc_049": [],
+              "listens": "yes",
+              "no_fragment": true,
+              "no_repeated_parameter": true,
+              "no_userinfo": true,
+              "redirect_host": "localhost",
+              "redirect_no_query": true,
+              "redirect_port": true,
+              "response_type_code": true,
+              "return": "redirect",
+              "s256": true,
+              "source": "shim",
+              "state_length": 43,
+              "state_ok": true
+            },
+            {
+              "challenge_43": true,
+              "client_id": true,
+              "https": true,
+              "ifc_049": [],
+              "listens": "not checked",
+              "no_fragment": true,
+              "no_repeated_parameter": true,
+              "no_userinfo": true,
+              "redirect_host": null,
+              "response_type_code": true,
+              "return": "page",
+              "s256": true,
+              "source": "printed",
+              "state_length": 43,
+              "state_ok": true
+            }
+          ],
+          "urls_seen": 2,
+          "waiting_at_cancel": true
+        },
+        "5": {
+          "account_field": null,
+          "account_named": "no",
+          "exit": 1,
+          "login": "no",
+          "skipped": false,
+          "timed_out": false
+        },
+        "6": {
+          "account_field": "email",
+          "account_named": "yes",
+          "exit": 0,
+          "login": "yes",
+          "skipped": false,
+          "timed_out": false
+        }
+      },
+      "version": "2.1.318"
+    },
+    {
+      "client": "codex",
+      "steps": {
+        "1": {
+          "exit": 0,
+          "timed_out": false
+        },
+        "2": {
+          "account_field": null,
+          "account_named": "no",
+          "exit": 0,
+          "login": "yes",
+          "skipped": false,
+          "timed_out": false
+        },
+        "3": {
+          "account_field": null,
+          "account_named": "no",
+          "exit": 1,
+          "login": "no",
+          "skipped": false,
+          "timed_out": false
+        },
+        "4": {
+          "ended_on": "term",
+          "exited_before_cancel": null,
+          "group_gone": true,
+          "logged_out": false,
+          "login_args": [],
+          "shim_called": false,
+          "skipped": false,
+          "urls": [
+            {
+              "challenge_43": true,
+              "client_id": true,
+              "https": true,
+              "ifc_049": [],
+              "listens": "yes",
+              "no_fragment": true,
+              "no_repeated_parameter": true,
+              "no_userinfo": true,
+              "redirect_host": "127.0.0.1",
+              "redirect_no_query": true,
+              "redirect_port": true,
+              "response_type_code": true,
+              "return": "redirect",
+              "s256": true,
+              "source": "printed",
+              "state_length": 43,
+              "state_ok": true
+            }
+          ],
+          "urls_seen": 1,
+          "waiting_at_cancel": true
+        },
+        "5": {
+          "account_field": null,
+          "account_named": "no",
+          "exit": 1,
+          "login": "no",
+          "skipped": false,
+          "timed_out": false
+        },
+        "6": {
+          "account_field": null,
+          "account_named": "no",
+          "exit": 0,
+          "login": "yes",
+          "skipped": false,
+          "timed_out": false
+        }
+      },
+      "version": "0.167.1"
+    }
+  ]
+}

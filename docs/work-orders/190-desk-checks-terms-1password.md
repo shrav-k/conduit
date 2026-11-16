@@ -409,3 +409,51 @@ After the report:
 - Before it merges, a fresh read-only Opus reader reads the result
   ([ruling 79](../proposals/ruling-79/README.md), point 2). Where the pages can be read, it checks
   at least two quotations of each note against them.
+
+## Record
+
+Run on 2026-11-16, from about 02:35 to 02:55 UTC, on the Mac from `main` `60af81c4`: the worker
+(906 s) and a fresh Codex verifier (318 s), which found nothing to change in one round but could
+not reach the live sources: its sandbox could not resolve the vendors' hosts, so it checked the
+notes' 93 attributed quotations against the copies the worker had kept under `target/wo-190/`.
+The worker dated both notes 2026-11-16, the UTC date at its start, and wrote the two READMEs,
+the index rows and the State cells of A8 and A73. Every named page answered 200 except OA1 and
+OA2, which answered HTTP 403 with a page asking to enable JavaScript and cookies, so OpenAI's
+terms of use and usage policies are still unread and experiment 010's two phrases from a search
+are still unchecked. It read AN4 and OP1 to OP4 as further pages, each linked from a page already
+read. The 1Password note records that the documentation does not say whether a read through the
+desktop app can succeed while the app is locked, and that DA2 lets a process already running
+when authorization is revoked finish its task.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran the
+documentation, roadmap and private-path checks and every Done-when command, with the diff taken
+against `origin/main...HEAD`: since the worker's checkpoint commit exists, `git diff --name-only`
+and the untracked-files command print nothing in the worktree, and against `origin/main` the
+change is the three tracked files and the three new ones. It fetched every named page once on
+2026-11-16, with no sign-in. Each answered 200 with no redirect, except OA1 and OA2, which again
+answered 403 with the same challenge. A script compared all 105 quoted passages of both notes with
+the live text: 103 matched word for word under the source cited, and the other two are OA2's
+challenge text and the OA1 phrase that the note itself marks unchecked. By hand it read a sample
+of each note's quotations in context, and every page's own date as the tables give it. It found
+one must and two shoulds, all applied before merge:
+
+- The must: the 1Password note lists DA2 as read whole and OP4's accepted risks as read, but
+  quoted neither page's "Accepted risks", so it called FR-487's second part plainly supported and
+  said that no unattended bypass of authorization was documented. Question 2 now quotes DA2's two
+  accepted risks (a user or application with administrator-level privileges may circumvent its
+  security measures while the app is unlocked; an application with macOS accessibility
+  permissions may circumvent the prompt) and OP4's administrator-level one, and sums them up as
+  accepted risks, not a documented way to read. Question 3 now says that the pages read do not
+  say whether those risks apply when no person is logged in to the desktop. The expectation's
+  second part reads "supported, subject to the accepted risks DA2 and OP4 list (question 2)", and
+  the owner's questions on ruling 75 B3 and on the desktop case cite those risks too.
+- The terms note's comparison row for OA4's "rotated the token first" said "changed", though the
+  words are the same and only the terminal period differs, which the first results placed inside
+  their quotation marks. The row now says the same words, and why.
+- Question 4 of the terms note now quotes, for OpenAI, the sentence that OA3 and OA4 share on
+  treating Codex's login file like a password and not sharing it in chat, cut before the file's
+  path, and sums it up as a rule for handling a credential file, not OA1's account-sharing term,
+  which remains unchecked. The fix's citation "(OA3; OA4 has the same words)" is written as
+  "(OA3)" and a sentence of its own, to keep the notes' form of an ID in parentheses.
+
+Every Done-when value is unchanged by these fixes.

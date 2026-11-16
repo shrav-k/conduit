@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check Git-tracked files for private paths and CONDUIT_PRIVATE_NAMES.
+"""Check Git-tracked files for private paths, email addresses and CONDUIT_PRIVATE_NAMES.
 
 Uses Python's standard library and Git. Reads working-tree bytes, including binary
 files, and reports only the location and category, never the private value.
@@ -36,10 +36,39 @@ PATTERNS = (
     ("Windows home directory", WINDOWS_HOME_PATH),
 )
 FIXTURE = "experiments/005-macos-keychain/src/lib.rs"
+# An email address in its common form: a local part of letters, digits and . _ % + -, then @,
+# then DNS labels, the last of letters only. The lookbehind starts a match only where a run of
+# local-part characters begins, which keeps the search linear on long runs.
+EMAIL = re.compile(
+    rb"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@((?:" + DNS_LABEL + rb"\.)+[A-Za-z]{2,63})"
+    rb"(?![A-Za-z0-9-])")
+# Domains reserved for documentation and tests (RFC 2606, RFC 6761), which name nobody.
+RESERVED_DOMAINS = (b"example.com", b"example.org", b"example.net")
+RESERVED_TOP_LEVEL = (b"invalid", b"test", b"example", b"localhost")
+# Addresses outside those domains that a tracked file may hold: each key an address as bytes in
+# lower case, each value why it names no private person or account. Only a work order adds one.
+ALLOWED_ADDRESSES = {}
+EMAIL_ERROR = (
+    "email address outside the domains reserved for examples and not in ALLOWED_ADDRESSES in"
+    " tools/check_private_paths.py; a real address can name a person or an account, so use one"
+    " at example.com, example.org or example.net, or under .invalid, .test, .example or"
+    " .localhost (the address is not printed)")
+
+
+def reserved(domain):
+    """Whether a domain, in any case, is reserved for examples, and so names nobody."""
+    domain = domain.lower()
+    if domain.rsplit(b".", 1)[-1] in RESERVED_TOP_LEVEL:
+        return True
+    return any(domain == name or domain.endswith(b"." + name) for name in RESERVED_DOMAINS)
 
 
 def check(root=ROOT):
-    """Return location/category errors; the one exception is the fixture's user u."""
+    """Return location/category errors for the tracked files under root.
+
+    Exempt: placeholder users, hex-only fingerprints, the Codex login path in Markdown, the
+    fixture's user u, reserved email domains and ALLOWED_ADDRESSES.
+    """
     tracked = subprocess.run(
         ["git", "ls-files", "-z"], cwd=root, check=True, stdout=subprocess.PIPE
     ).stdout.split(b"\0")
@@ -75,6 +104,11 @@ def check(root=ROOT):
                     continue
                 line = data.count(b"\n", 0, match.start()) + 1
                 errors.append(f"{path}:{line}: {category}")
+        for match in EMAIL.finditer(data):
+            if reserved(match.group(1)) or match.group().lower() in ALLOWED_ADDRESSES:
+                continue
+            line = data.count(b"\n", 0, match.start()) + 1
+            errors.append(f"{path}:{line}: {EMAIL_ERROR}")
         for name in names:
             for match in re.finditer(re.escape(name), data):
                 line = data.count(b"\n", 0, match.start()) + 1

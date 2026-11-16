@@ -370,3 +370,58 @@ reader read the result ([ruling 79](../proposals/ruling-79/README.md), point 2).
 pass of the local gate, the coordinator's interim gate or `tools/gate.py` once order 193b has
 merged, and CI's run is a second opinion that the merge does not wait for
 ([ruling 80](../proposals/ruling-80/README.md), point 10).
+
+## Record
+
+Run on 2026-11-16 on the Mac from `main` `55d2b85a`: the worker (657 s) and a fresh Codex
+verifier (156 s), which found no must or should in one round; its report holds a pass and no
+detail. Decision 1's survey, run first, found 221 addresses in 45 files, none outside the reserved
+domains, and after the change 232 in 46. `tools/check_private_paths.py` now looks for an email
+address in its common form in every tracked file, after the seven patterns and before the names.
+Each address outside the domains reserved for examples, and not in `ALLOWED_ADDRESSES`, which
+starts empty, is one error. The error names the file and the line, says why the address fails and
+what to write instead, and never holds the address. Six tests in
+`tools/tests/test_private_paths.py` cover the addresses that fail, one error for each address at
+its own line, the reserved domains and text that is no address, the allowed list in any case and
+its neighbours, the form of each allowed entry, and long runs around an at sign. AGENTS.md's line
+for the check names the addresses. The names, the seven patterns and CI are as they were.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran the checker
+(Errors: 0 under `python3` 3.9.6 and `/usr/bin/python3`), the test file (19 tests, OK, under
+Python 3.13.2 and `/usr/bin/python3`), the whole `tools/tests` suite (108 tests, OK), the grep for
+the six new tests (6), `check_docs`, `check_rulings` and `check_roadmap` (Errors: 0 each) and
+`git diff --check origin/main...HEAD`, which was clean. It overlaid the three changed files on
+`origin/main` at `a771b88b`, and the same checks found no error there. On copies outside the tree,
+the new tests failed against `main`'s checker in exactly the order's four names, and each of the
+order's three changes made its named test fail; so did comparing allowed addresses without lower
+case, and checking a domain's suffix without its dot. The whole-tree check took 3.36 s, against
+3.06 s with `main`'s checker. It found one must and two shoulds:
+
+- The must: the admin's edits that "Done when" puts in the same pull request were not made, and
+  the branch was two commits behind `origin/main` (ruling 81 and order 192), one of which moved the
+  D11 row of `docs/AUDIT.md` down a line. The fixer made the edits on the branch as it stands.
+  `CONTRIBUTING.md`'s settings section counts eight built-in patterns and names email addresses
+  outside the domains reserved for examples, in the order's three lines, and it and the tracker's
+  D11 row (line 179 on `a771b88b`) say "only the built-in patterns". The fixer was not to rebase the
+  branch; the admin then rebased it onto `a771b88b`, without conflict.
+- No test held `EMAIL`'s lookahead, `(?![A-Za-z0-9-])`: without it the 19 tests still passed,
+  since `x@a.b2c`, whose last label is one letter, is no match with or without it. At the
+  coordinator's direction, which adds to decision 7's list,
+  `test_reserved_domains_and_text_that_is_no_address_are_green` now also holds `x@a.bc2` and
+  `x@a.bc-d`, which only the lookahead keeps from matching. On a copy outside the tree with the
+  lookahead taken out, that test now fails. The two values are on a line of their own, which keeps
+  the file's width (the fixer's choice).
+- `check`'s docstring named three exemptions as if they were all of them. It now names, as the
+  reader wrote it, the placeholder users, the hex-only fingerprints, the Codex login path in
+  Markdown, the fixture's user u, the reserved email domains and `ALLOWED_ADDRESSES`.
+
+The reader also noted a limit of the prescribed pattern, not a defect of this change: an address
+joined straight onto a reserved address by a local-part character is missed, since the search
+resumes inside the run, where the lookbehind starts no match. It fits "narrows, does not close";
+covering it is for a later order, if the coordinator wants it.
+
+The fixer then ran, from the worktree's root under a cleared environment, the checker (Errors: 0
+under `python3` and `/usr/bin/python3`, both 3.9.6), the test file (19 tests, OK, under each), the
+grep for the six new tests (6), the whole `tools/tests` suite under `/usr/bin/python3` (108 tests,
+OK), `check_docs`, `check_rulings` and `check_roadmap` (Errors: 0 each), and `git diff --check`,
+before the commit and against `origin/main...HEAD` after it, which was clean.

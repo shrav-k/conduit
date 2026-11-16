@@ -40,6 +40,14 @@ process or ambient allocation runs inside it. Unsupported paths and malformed em
 facts are errors, not invented Conduit reasons. Consult [CONFORMANCE.md](CONFORMANCE.md) for
 remaining implementation limits before exposing a management operation.
 
+`cargo clippy` enforces this boundary. The core's [clippy.toml](crates/core/clippy.toml) names the
+functions, types and macros through which code reaches a file, the environment, a process, the
+network, a thread, a clock or the terminal, or depends on a random seed; Clippy applies it to
+`conduit-core` alone, and the core's `lib.rs` forbids allowing those lints. It forbids unsafe code
+too, so that no foreign function can be declared. The list names entry points only: input or output
+inside a dependency's function that it does not name, a new dependency of the core, a module
+under `std::os`, and the files the core embeds when it is built are left to review.
+
 `State` holds started, objects, records, allocated_ids, record_gaps, invocations,
 installed_packages and preinstalled_snapshots. The invocation index includes held contexts,
 setup/retirement progress and retained replies; records alone cannot reconstruct it.

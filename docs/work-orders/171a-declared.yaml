@@ -1,0 +1,6 @@
+- name: a Pool named in a bound's targets covers that Pool alone
+  kind: added
+  cases: [access-pool-target]
+- name: the bound decides before the rule that protects root's Conduits
+  kind: added
+  cases: [access-close-root-outside-bound]

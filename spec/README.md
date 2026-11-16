@@ -290,7 +290,7 @@ A promise is a data record with these fields:
 | `level` | `must`, `must not`, `should` or `may`. |
 | `when` | The situation. |
 | `then` | The single obligation. For `must not`, the thing that must not happen. |
-| `observable` | What can be checked to tell whether the promise was kept. |
+| `observable` | What can be checked to tell whether the promise was kept. What it says is made, returned, rejected or never done binds as `then` does. A comparison with another system, or a reason given, explains and binds nothing. Where `observable` and `then` differ, `then` governs. |
 | `vectors` | The conformance vectors that test it. See the dated coverage status above. |
 
 Rules for writing one:
@@ -395,7 +395,7 @@ Tombstones accumulate until an actor lifts them through `access` (LIF-040, ACC-0
 Recreating an instance under a stable name needs a lift wherever a tombstone matches; replacing
 a declared Conduit also needs one when its local name or target and capability match
 (LIF-041). A bound on an individual target keeps that target's ID and covers no replacement;
-a bound on its Pool covers a replacement owned by that same Pool (ACC-029).
+a bound that names its Pool in `pools` covers a replacement owned by that same Pool (ACC-029).
 Reconciliation through bounded `access`, a Pool or a Fleet has the additional limits of
 ACC-055. Reconciliation through `management` has no sender limit under that promise.
 
@@ -461,10 +461,11 @@ records and trust domain. Another party's machine is only a peer, never a node.
   actor that reads a directory through a Conduit that applies a filter, and that is also the
   consumer of a Conduit to `access` whose bound covers the directory and names its read
   operation, can open for itself a Conduit that reads the directory with no filter.
-- A bound that names a Pool covers every Resource that the Pool owns, those instantiated after
-  the Conduit that carries the bound was opened among them (ACC-029). Closing an actor's own
-  Conduit to `access` closes none of the Conduits that the actor opened (ACC-030): each is
-  closed by its own request, or as its ends are retired (CON-008).
+- A bound that names a Pool in `pools` covers every Resource that the Pool owns, those
+  instantiated after the Conduit that carries the bound was opened among them, and a Pool named
+  in `targets` covers that Pool alone (ACC-029). Closing an actor's own Conduit to `access`
+  closes none of the Conduits that the actor opened (ACC-030): each is closed by its own
+  request, or as its ends are retired (CON-008).
 - Access to `management` cannot be narrowed to one template, nor to less than whole operations.
   A Conduit to `management` carries no bound (CON-028), and the engine, which implements the
   operations of `management`, supports no filter, so no Conduit that lists one of them and

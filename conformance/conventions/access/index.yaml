@@ -24,6 +24,15 @@
       ]
     },
     {
+      "id": "access-close-root-outside-bound",
+      "case": "conventions/access/close-root-outside-bound/case.yaml",
+      "promises": [
+        "ACC-029",
+        "ACC-056"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "access-collision-control-template",
       "case": "conventions/access/collision-control-template/case.yaml",
       "promises": [
@@ -116,6 +125,15 @@
         "CON-022",
         "PKG-020"
       ]
+    },
+    {
+      "id": "access-pool-target",
+      "case": "conventions/access/pool-target/case.yaml",
+      "promises": [
+        "ACC-029",
+        "ACC-030"
+      ],
+      "safety_rows": []
     },
     {
       "id": "access-root-local-lost",

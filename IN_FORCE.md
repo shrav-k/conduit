@@ -132,7 +132,7 @@ How to read a line:
 - Access limits:
   - **In spec/**: only root opens or registers root-consumed Conduits on its own behalf: ACC-054, ACC-006 (62 C1). `make.v1` remains for batch 2 (61 B8).
   - **In spec/**: bounded reconciliation through `access` and sender-limited reconciliation through Pools and Fleets: ACC-055, ACC-033, OPS-008, OPS-014 and `reconcile.v1` in [operations.yaml](spec/core/operations.yaml) (62 C2, 66 point 4).
-  - *Coordinator's, spec pending, order 171a* (F2): a bounded holder's request to open or close that names a Conduit that does not exist is refused under ACC-029. F2 does not reach a repeat of the holder's own request, such as its close repeated after the close succeeded, which is answered from its stored outcome as it is today; that exemption is the owner's (80 point 1).
+  - *Coordinator's* (F2), **in spec/**: a bounded holder's request to open or close that names a Conduit that does not exist is refused, except a repeat of the holder's own request that is answered from its stored outcome; a repeat dispatched as a new attempt is decided as a new request: ACC-029, OPS-029. The exemption of the holder's own repeat is the owner's (80 point 1).
 
 ## 7. Operations, outcomes, revisions, records and observation
 

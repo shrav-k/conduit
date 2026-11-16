@@ -72,7 +72,8 @@
 - id: DL9
   subject: Order of failed checks
   document: >-
-    The order in which several failed checks that give the same reason are reported.
+    The order in which several failed checks that give the same reason, other than refused, are
+    reported. A refused request names one rule, the first in ACC-056's order.
 - id: DL10
   subject: Limits
   document: >-

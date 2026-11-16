@@ -561,7 +561,7 @@
     shutdown is not confirmed, under CON-008, so an onward request of the retire hook through
     one of them is permitted as in the first, under ACC-039. Where the instance was declared
     lost, or an actor closed the Conduit, the Conduit is closed, and such a request reports
-    refused under ACC-011; where its node was declared lost, the retire hook is not
+    refused under ACC-001; where its node was declared lost, the retire hook is not
     dispatched at all, and no run is asked for, under PLC-027. A request that names an instance
     whose shutdown is confirmed reports invalid under OPS-029, because that instance has been
     removed, under LIF-035.

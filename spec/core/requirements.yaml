@@ -49,8 +49,9 @@ metadata:
   name: bound.v1
   description: >-
     The bound of a right to open: the Pools, the individual targets and the operations of the
-    Conduits that the consumer of a Conduit to `access` may open and close. Naming a Pool
-    covers the Pool itself and every Resource it owns. The engine applies the bound itself,
+    Conduits that the consumer of a Conduit to `access` may open and close. Naming a Pool in
+    `pools` covers the Pool itself and every Resource it owns; a Pool named in `targets` covers
+    that Pool alone. The engine applies the bound itself,
     and never sends it. `operations` names operations by qualified reference: of an installed
     package, or of a submitted project, as `address#name` with the address its manifest
     states, even in that project's own documents; each is compared as a name and never

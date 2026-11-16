@@ -342,7 +342,7 @@
   observable: >-
     The next tool list that the engine serves to the consumer omits them. A consumer may hold a
     tool list for as long as the protocol lets it. A call to a tool that is no longer presented
-    reports refused under ACC-011, and is answered as IFC-012 states.
+    reports refused under ACC-001, and is answered as IFC-012 states.
   vectors: []
 
 - id: IFC-014

@@ -1,3 +1,8 @@
 {
-  "cases": []
+  "cases": [
+    {
+      "id": "access-close-root-outside-bound",
+      "reason": "The first build checks ACC-024 before the bound; ACC-056's order of refusing rules (work order 171a) makes ACC-029 decide. Order 046a builds that order."
+    }
+  ]
 }

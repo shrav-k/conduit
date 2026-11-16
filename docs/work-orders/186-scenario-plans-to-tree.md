@@ -511,3 +511,52 @@ grep -c '^| 3[0-8] | \*\*The coordinator.s lines in S[0-9]*.s amendments since a
 READMEs' new sections among them. The admin then has a fresh, read-only Opus reader read the
 diff before it merges ([ruling 79](../proposals/ruling-79/README.md)). Do not stage anything.
 Report each choice you make as your own, and every check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `f383edaf`: the worker (409 s) and a fresh Codex verifier
+(305 s), which found nothing to change in one round. The order changed the 21 files of its Scope and
+nothing else. The nine plans state that the owner confirmed the admin's reading of ruling 75 D4 on
+2026-11-12, with a link to ruling 75's later answers, and no plan line, the tracker's waiting list
+or the handover waits on it any longer; S10's A4 keeps its own "Provisional until the owner
+confirms". S3's plan records S3-OF as answered by ruling 78, point 4: option (E), the Mac's own
+firewall, in its summary, its row S3-OF and a new item under "For the owner" above the question as
+it was put. S2's plan has the coordinator choose the plain server, logged for the owner to strike.
+S6's plan loses the T4 restart case and its dependency on S9-CUT2. Each plan's section "Status" ends
+with a paragraph saying that where the plan differs from the README's "Amendments since acceptance",
+that section governs. Each README gains a line pointing to that section and the section itself,
+beneath "Limits", with the dated lines of ruling 78 and the coordinator's decisions D65 to D73 and
+findings FR-296, FR-390, FR-397 and FR-404: 3, 5, 2, 3, 2, 2, 1, 1 and 1 lines for S2 to S10. No
+README line changed or was removed. The owner's review list gains rows 30 to 38, one for the
+coordinator's lines of each section. Order 184 had merged, so the lines this order named in S3's
+plan had moved, and the worker found them by their words; order 182's changes to the tracker and the
+handover were present, and the lines named there had not moved.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). Once the checkpoint
+commit exists the commands of Done when that use a plain `git diff` print 0, so it ran those against
+`origin/main...HEAD`; every command gave the order's value. On `main` it ran eight of the commands
+marked "on main", which gave 36, 0, 1, 4, 3, 2, 0 and 0, so each of those can fail. `check_docs.py`,
+`check_roadmap.py`, `check_private_paths.py` and `check_rulings.py` each gave Errors: 0, and
+`git diff --check` was clean. A script of its own compared each of the order's 28 quoted blocks with
+the changed files, whitespace normalized, and found each word for word. It read the changes against
+ruling 75's later answers, ruling 78's point 4 and question 4's table, decisions D64 to D73 and the
+sources the lines cite, confirmed that no plan line still waits on D4 and that every README line is
+an addition, and found no private detail and no must. It noted that `engine/CONFORMANCE.md` keeps
+DL1's row under "Choices still required" though the row describes implemented behaviour; that file
+is outside this order's Scope. All three of its shoulds were applied before merge. Ruling 78, point
+6, says that no actor records that an unknown effect did not occur, but its record names only S5's
+branches, while S4-T6 and S4's hook server, and S9-T4's branch (b), P4 and V4, reconcile a hook as
+failed. So S4's and S9's sections each gain a line of the coordinator's, dated 2026-11-15: those
+passages change with the later order that writes point 6 into `spec/`, follow `spec/` as it stands
+until it lands, and the reading is open to the owner's strike. Rows 32 and 37 of the review list
+cite ruling 78, point 6. S5's line from ruling 78 now says that points 5 and 6 are marked spec
+pending in topic 7 of IN_FORCE.md, where it had said that S5's passages were. The review list's
+opening paragraph and the paragraph on S2's plain server are rewrapped to at most 100 characters.
+S2's short line could not join the next within 100 characters, so its five changed lines are
+rewrapped evenly, keeping the break before "by exact version" so that no other line moved. With this
+Record the branch changes 22 files: the 21 of Scope and this order's file.
+
+A second fresh Opus reader read the coordinator's fix (ruling 79, point 2) and found no must. Its
+one should was applied: S9's line of 2026-11-15 says that it is the one line of the coordinator's
+there that reaches a pass condition, P4, and only through the order that writes ruling 78, point 6,
+into `spec/`; row 37 of the review list says the same.

@@ -28,7 +28,7 @@
 > - **Admin decision (b), 2026-11-11:** P3's pairs are the packaged local providers and the second
 >   providers; the built-ins stay S10's first configuration, with no adapter in A63-H.
 > - **Admin question A1:** approve the six vectors' placements.
-> - **Owner:** confirm D4’s reading for counted replays; ruling 77’s `tailscale serve` setup after the Mac’s tailnet rename, with ADDR and DSP, gates Docker T3/T5 and R2.
+> - **Owner:** ruling 77’s `tailscale serve` setup after the Mac’s tailnet rename, with ADDR and DSP, gates Docker T3/T5 and R2; D4’s reading was confirmed on 2026-11-12.
 > - **Admin question A3:** sequence DSP/PSD/SEC-D/FLT-D merges and the selected second store.
 > - **Admin A4:** provisional reading of A73’s “or else”; confirm before choosing fallback.
 
@@ -41,6 +41,11 @@ Orders that change `engine/` or `spec/` are proposals to the admin.
 No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
+
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
 
 ## What `main` had at the commits named above
 
@@ -98,8 +103,8 @@ Rust checks mean `cargo test --release`, `cargo clippy --all-targets -- -D warni
 | FLT-D | core | Caller/filter engine work; no H2 dependency | ACC-001/008/017, IFC-020 | S2 plan’s engine prerequisites | D1 sized after D0, at most L; D2 M | admin | after engine prerequisites |
 | S10-A73 | probe | 1Password service-account and desktop-session observations | A73 | first A63 providers started; owner approval before desktop case | M, 300–500 lines plus observations | lane 11 | beside first providers; desktop held |
 | S10-O | owner | Docker, HTTPS Git repository/credential, stores/service and sign-ins | PND-005/010/011 | 050, 051b, selected providers | owner step | owner | after dependencies |
-| S10-R1 | run | Coordinator: five configurations × S1/S2; E06 | README P1–P5, M0–M3 | run gate/P3 orders below, B2-S/C/H, 077/081/082; ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77), on T3/T5 only | ten replays, about 1 hour each | lane 10 | after dependencies; the owner confirms D4's reading |
-| S10-R2 | run | Fresh author all-swapped S1/S2; E06 | same | S10-R1, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77) | two replays, about 1 hour each | lane 10 | after S10-R1; the owner confirms D4's reading |
+| S10-R1 | run | Coordinator: five configurations × S1/S2; E06 | README P1–P5, M0–M3 | run gate/P3 orders below, B2-S/C/H, 077/081/082; ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77), on T3/T5 only | ten replays, about 1 hour each | lane 10 | after dependencies |
+| S10-R2 | run | Fresh author all-swapped S1/S2; E06 | same | S10-R1, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77) | two replays, about 1 hour each | lane 10 | after S10-R1 |
 
 **S10-H1.** Changes only Rust harness/fixture files under this experiment, with lockfile, pin and
 ignored output. Prepares a package-source Type whose control changes `/schemes` (plus nested/root
@@ -207,8 +212,7 @@ approval before its desktop case. H2b waits S2-H/S2-R1 and packages before freez
 Batch 1 → 053 → PIN → owner judges S1 → B2-S/C/H joins ADDR/DSP, PSD1a/b/2/3, SEC-D/FLT-D,
 provider suites/packages, S3-S1ITEM/S2-L/050 container items, HTTPS Git setup and owner sign-ins.
 071/SV1 gates safety cases; EV follows SEC-D, FLT-D1/D2 and PSD1 only (no S8-only FLT-D3); no engine order waits H1/H2/Git.
-R1 joins the named P3 orders, S2-H/SCR and final H2b; R2 follows R1. Only counted runs wait:
-the owner confirms D4's reading. T3/T5 and R2's provider-run engine access separately waits for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77).
+R1 joins the named P3 orders, S2-H/SCR and final H2b; R2 follows R1. T3/T5 and R2's provider-run engine access waits for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77).
 The A73 “or else” timing interpretation remains provisional under admin A4; no automatic late-probe fallback.
 Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin): PSD1a/b and SEC-D1/FLT-D1 are
 admin-interleaved core work, DSP/PSD2/PSD3/SEC-D2/D3a/D3b/FLT-D2 are interleaved shell work.
@@ -221,7 +225,7 @@ No S10 core/shell order is added; EV uses manifest pieces after its engine prere
   matrix keeps the built-ins as its first configuration. No built-in adapter is planned.
 - **A1 — vector placement:** approve the six unique vector owners above with 117/120; their fixing
   increments absorb dependent cases and split scopes above L. Fresh skeptic first.
-- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 - **A3 — merge/store order:** use S4's single proposed hot-file sequence and name the frozen
   second store before H2b comparison. **Recommendation:** keep all engine dependencies free
   of lane packages; use the named P3 reports rather than a generic “P3 reports” gate.
@@ -233,8 +237,7 @@ No S10 core/shell order is added; EV uses manifest pieces after its engine prere
 
 ## For the owner
 
-Counted R1/R2 wait: the owner confirms D4's reading. Only those runs wait; all independent
-preparation proceeds. **Ruling 77:** Docker-only T3, all-swapped T5 and R2 wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename, to
+The owner confirmed D4's reading on 2026-11-12 (A2 above), so R1/R2 do not wait on it. **Ruling 77:** Docker-only T3, all-swapped T5 and R2 wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename, to
 reach the engine's HTTPS address through runtime providers.
 S10-A73's desktop-app case waits the owner's explicit approval under A73's register row.
 Accepted configurations, second accounts and twelve replays stand. Any changed safety promise,

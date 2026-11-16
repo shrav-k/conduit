@@ -9,13 +9,13 @@
 > - Admin proposal S3-EV: composite managed-enrollment V7 after 049b.
 > - Admin proposal S3-S1ITEM: second-machine PATH and Docker items for S1 servers.
 > - Admin A1: accept the loss/return/relay split and hot-file sequencing?
-> - Owner: confirm D4’s reading for counted real-client runs; confirm A74 unmeasured-cell treatment.
+> - Owner: confirm A74 unmeasured-cell treatment; D4’s reading was confirmed on 2026-11-12.
 > - Admin A4: confirm A63-DR's second-machine qualification and shared provider vectors?
 > - Ruling 77, M2-1: SSH-M and SSH-R; Tailscale is the network.
 > - Ruling 77, M2-2: the run user `conduit-run`, with no sudo.
 > - Ruling 77, M2-3: ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename, before provider runs.
 > - Ruling 77, M2-4: the distro locked down; Windows interop, `appendWindowsPath` and automount off.
-> - Owner step S3-OF: choose the cut/heal/loss method before S3-H’s fault implementation and the runs.
+> - S3-OF, answered on 2026-11-14 by ruling 78, point 4: option (E), the Mac’s own firewall. The owner adds its one administrator rule once, before S3-H’s fault implementation.
 > - MC4-002, answered on 2026-11-12 (ruling 42's later answer): not held. Every runtime provider Conduit ships, SSH-R among them, carries out a stop it owes on a machine before it starts any run there; the overlap is a stated limit, which S3-H observes, with no new rule against it.
 
 ## Status
@@ -36,6 +36,11 @@ its durable directory (145) and its stop-drainer (146, 149 and 150). Next: SSH-R
 (order 147, written, not dispatched), then its loopback-`sshd` tier; SSH-M waits for 049a1 in
 `s3/m2`. Open for the owner: S3's cut, heal and loss method (S3-OF, options A to C). The lane's
 whole queue is in [PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
+
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
 
 ## What `main` had at the commits named above
 
@@ -72,7 +77,7 @@ on core/loader edits); and crate fmt/clippy/release/admission, lockfile, toolcha
 | S3-A741 | probe | A74's Rust stand-ins, gate and fault witnesses | IFC-017/022, PRV-025/028 | — | L, 600–850 lines | lane 9 | now |
 | S3-O1 | owner | Stage-0 machine pair for A74 | A74 | owner availability | owner step | owner | before A742, no ruling 77 setup wait |
 | S3-O2 | owner | Second accounts, Docker daemon/context and service on pair | README P2/P5, PRV-011 | S3-O1, ruling 77 setup | about 1 hour presence plus setup | owner | after ruling 77 setup |
-| S3-OF | owner | Choose S3’s cut, heal and loss method (A/B/C below) | README T4/T5/T6, ruling 77 | — | A: estimated 9–18 extra active min/run; B/C: setup below | owner | before H’s fault implementation and R1–R4 |
+| S3-OF | owner | Add once the administrator rule on the Mac under which the coordinator’s locked-down script cuts the network (S3-OF, answered by ruling 78, point 4: option (E)) | README T4/T5/T6, rulings 77 and 78 | — | one rule, once | owner | before H’s fault implementation and R1–R4 |
 | S3-A742 | probe | A74 dated real-machine observations, all H1–H10 accounted for | A74, not engine proof | S3-A741, S3-O1 | M, 200–350 lines plus observation session | lane 9 | after dependencies |
 | S3-CS | spec | Portable PLC-024 loss-cause contract | PLC-024, REC-001 | PIN, 081, 082, SV1 | S, 120–200 lines | admin | after dependencies |
 | S3-L1 | core | Declare lost and provider-gone path; V4 | PLC-017/024/027, CON-008 | PIN, 042, 049a-1, 049b, 081, S3-CS, SV1 | L, 650–900 lines | admin | after dependencies |
@@ -87,10 +92,10 @@ on core/loader edits); and crate fmt/clippy/release/admission, lockfile, toolcha
 | S3-PATH | server | PATH manifests for S2 binaries on the second machine | MAN-010, PRV-007 | S2-L1/L2 binary interfaces, S2-F | M, 300–450 lines | lane 8 | after binary interfaces |
 | S3-S1ITEM | server | Proposed S1 server PATH/Docker items in S1 example and fixtures | MAN-010, PRV-007 | S1 server binary interfaces | M, 300–450 lines | admin | after interface freeze |
 | S3-EV | vectors | V7 enrollment composite beyond 049a1 cases | ENR-006 | 049b, SV1, PIN | S, 150–250 lines | admin | after dependencies; not RET2 |
-| S3-R1 | run | Coordinator, local profile, T1–T6 | README P1–P6 | run gate below | about 1 hour owner presence | lane 10 | after run gate; the owner confirms D4's reading |
-| S3-R2 | run | Fresh author, local profile, T1–T6 | README P1–P6 | S3-R1 | about 1 hour owner presence | lane 10 | after S3-R1; the owner confirms D4's reading |
-| S3-R3 | run | Coordinator, isolated profile, T1–T6 | README P1–P6 | S3-R2 | about 1 hour owner presence | lane 10 | after S3-R2; the owner confirms D4's reading |
-| S3-R4 | run | Fresh author, isolated profile, T1–T6 | README P1–P6 | S3-R3 | about 1 hour owner presence | lane 10 | after S3-R3; the owner confirms D4's reading |
+| S3-R1 | run | Coordinator, local profile, T1–T6 | README P1–P6 | run gate below | about 1 hour owner presence | lane 10 | after run gate |
+| S3-R2 | run | Fresh author, local profile, T1–T6 | README P1–P6 | S3-R1 | about 1 hour owner presence | lane 10 | after S3-R1 |
+| S3-R3 | run | Coordinator, isolated profile, T1–T6 | README P1–P6 | S3-R2 | about 1 hour owner presence | lane 10 | after S3-R2 |
+| S3-R4 | run | Fresh author, isolated profile, T1–T6 | README P1–P6 | S3-R3 | about 1 hour owner presence | lane 10 | after S3-R3 |
 
 **S3-A741/2 (A74, two orders only).** New probe crate, tests and dated records under
 `experiments/006-across-machines/`. A741 builds engine-free stand-ins, gate proof/wrong-instance
@@ -195,7 +200,7 @@ Cases/index only, G/release vectors/delta; no separate S3-V1/V2 orders remain.
 replays, eight partition cells and two loss/return phases. Gate: PIN; S2's prerequisites (passing S2 runs are not required); B2-S/C/H; 049a-1/2, 049b, 051c, A63-MDIS; AGT/ADDR/DSP/A63-RK/SSH-R, A63-VR and SSH-M (ruling 77);
 S3-A742/A81a/A81b/M/P/H, SEC-D/FLT-D0/1/2, 077/081/082, S3-PATH/S3-S1ITEM, placed vectors and all tagged safety cases.
 Provider runs also wait for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet
-rename (ruling 77). S3-OF’s answer gates all four runs. Pin inputs before timing; counted runs wait: the owner confirms D4's reading. No code edits;
+rename (ruling 77). S3-OF’s answer gates all four runs. Pin inputs before timing. No code edits;
 checks are README P1–P6 and M0/M1/M2, including actual outage/stop/effect evidence.
 From the start of each run's fresh lab to the end of its last phase, the second machine carries
 no work-order worker, neither one the coordinator starts over SSH
@@ -241,8 +246,8 @@ After PIN, 081/082 → S3-CS → S3-L1 → S3-L2;
 A63-RK → SSH-R (ruling 77) → A63-VR joins P/H and the run gate. S2-L → S3-PATH and
 S1 interfaces → S3-S1ITEM join P; Docker's second daemon/profile joins S3-O2/A63-DR2b.
 A63-VM/MP2/admin C join S3-M. B2-S/C/H waits for the S1 judgment. The last of these joins,
-A74 observations, ruling 77’s TLS setup, S3-OF’s answer, remaining owner holds and “the owner confirms D4's reading” on counted runs determines
-R1 → R2 → R3 → R4. No other order waits on D4. S2 prerequisites suffice; S2 passing runs do not gate S3.
+A74 observations, ruling 77’s TLS setup, S3-OF’s answer and remaining owner holds determine
+R1 → R2 → R3 → R4. S2 prerequisites suffice; S2 passing runs do not gate S3.
 Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin): admin interleaves S3-L1/L2/RET1
 against SEC-D1/FLT-D1 in core, and RET2 against SEC-D2/D3 and FLT-D2 in shell.
 
@@ -251,7 +256,7 @@ against SEC-D1/FLT-D1 in core, and RET2 against SEC-D2/D3 and FLT-D2 in shell.
 - **A1, split/merge:** one machine increment or the proposed separate loss/return/relay orders.
   **Recommendation:** separate them; serialize requests.rs/lifecycle.rs merges, then shell
   lib.rs/runner.rs/CLI-table merges against DSP/051c. Reserve manifest pieces via 071.
-- **A3, D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+- **A3, D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 
 - **A4, providers:** extend A63-DR qualification to the second machine, or defer its profile.
   **Recommendation:** coordinate that qualification with order 120; S3's isolated runs wait.
@@ -259,8 +264,8 @@ against SEC-D1/FLT-D1 in core, and RET2 against SEC-D2/D3 and FLT-D2 in shell.
 
 ## For the owner
 
-- **D4:** counted S3-R1–R4 wait: the owner confirms D4's reading. No build, probe or
-  preparation waits on it; the provisional admin reading is recorded above.
+- **D4:** the owner confirmed on 2026-11-12 the admin's reading recorded above (A3), so
+  S3-R1–R4 do not wait on it.
 - **A74 unmeasured cells:** does “A74's dated H1–H10 observations must exist first” permit
   recording H5/H8/H9/H10 unmeasured while running S3's used hypotheses, or require all ten
   measured first? **Recommendation:** permit explicitly unmeasured unused cells, with no pass
@@ -274,6 +279,13 @@ against SEC-D1/FLT-D1 in core, and RET2 against SEC-D2/D3 and FLT-D2 in shell.
   them, carries out a stop it owes on a machine before it starts any run there, and a run whose stop
   did not succeed may run beside a later instance, a limit stated in `spec/` (LIF-009, LIF-036,
   PRV-021).
+- **S3-OF, answered on 2026-11-14:** [ruling 78](../../docs/proposals/ruling-78/README.md),
+  point 4, chose option (E): the Mac's own firewall cuts the network, run by the
+  coordinator's locked-down script under one administrator rule that the owner adds once;
+  two test cuts decide whether it works, and a path it misses gets a relay on the Mac. The
+  owner stops the distro at each loss with `wsl --terminate`. S3-H's fault implementation
+  follows (E). The question below is kept as it was put, with its options (A) to (C) and
+  the recommendation that (E) replaced.
 - **S3-OF — how should S3 cut/heal the network and lose the machine?** With Windows
   interop off, nothing inside Ubuntu-24.04 can run `wsl --shutdown` or set the Windows
   firewall; `conduit-run` has no sudo to set a Linux-side rule either. The README’s

@@ -189,8 +189,7 @@ is reaped; the test waits for the stopped state. Six CI runs in a row passed.
 - Later, not urgent: G5's 12 exclusions, accepted or modelled; a repository and an npm scope for
   S7's outside author ([S7's plan](../../experiments/018-s7-outside-package/plan.md)); S8-A,
   accepting S8's concrete Requirement and contracts before any code
-  ([S8's plan](../../experiments/019-s8-filtered-search/plan.md)); A74's unmeasured cells, and the
-  reading of ruling 75 D4 that counted runs wait on
+  ([S8's plan](../../experiments/019-s8-filtered-search/plan.md)); A74's unmeasured cells
   ([S3's plan](../../experiments/014-s3-two-machines/plan.md#for-the-owner)); G8, whose scope
   leaves out the native probes (ruling 78, point 3.3), and G11; whether runtime providers that use
   the kit by path are "self-contained" ([PROVIDERS.md](PROVIDERS.md), IN_FORCE topic 5). The

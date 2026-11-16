@@ -77,6 +77,27 @@ The owner answered "Agree with all decisions except need more info on 2", where 
 the whole answer is in [ruling 72's later answer](../ruling-72/README.md#later-answers). Items 15
 to 29 stand as decided.
 
+## The scenario plans' amendments, from the full review
+
+[Ruling 78](../ruling-78/README.md), point 4, applied on 2026-11-14 the coordinator's changes in
+the full review's table for S2 to S10, each dated and open to the owner's strike. Each scenario's
+README lists them, with the coordinator's corrections, in its last section, "Amendments since
+acceptance"; the lines there that come from a ruling are the owner's. The coordinator's lines of
+each section are one row here, as
+[decision D64](../full-review/decisions.md#the-experiments-documents-and-the-register) asks.
+
+| # | Decision | Why it matters | Where |
+| --- | --- | --- | --- |
+| 30 | **The coordinator's lines in S2's amendments since acceptance** (decision D65 and FR-390) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S2's README](../../../experiments/013-s2-shared-login/README.md#amendments-since-acceptance) |
+| 31 | **The coordinator's lines in S3's amendments since acceptance** (decision D66 and FR-390) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S3's README](../../../experiments/014-s3-two-machines/README.md#amendments-since-acceptance) |
+| 32 | **The coordinator's lines in S4's amendments since acceptance** (decision D67, FR-296 and ruling 78, point 6) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S4's README](../../../experiments/015-s4-partial-setup/README.md#amendments-since-acceptance) |
+| 33 | **The coordinator's lines in S5's amendments since acceptance** (decision D68 and FR-404) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S5's README](../../../experiments/016-s5-control-contention/README.md#amendments-since-acceptance) |
+| 34 | **The coordinator's lines in S6's amendments since acceptance** (decision D69 and FR-404) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S6's README](../../../experiments/017-s6-revoke-in-flight/README.md#amendments-since-acceptance) |
+| 35 | **The coordinator's lines in S7's amendments since acceptance** (decision D70) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S7's README](../../../experiments/018-s7-outside-package/README.md#amendments-since-acceptance) |
+| 36 | **The coordinator's lines in S8's amendments since acceptance** (decision D71) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S8's README](../../../experiments/019-s8-filtered-search/README.md#amendments-since-acceptance) |
+| 37 | **The coordinator's lines in S9's amendments since acceptance** (decision D72 and ruling 78, point 6) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart, except the line of 2026-11-15, which reads ruling 78, point 6, as reaching P4 once the order that writes point 6 into `spec/` lands | [S9's README](../../../experiments/020-s9-start-and-repair/README.md#amendments-since-acceptance) |
+| 38 | **The coordinator's lines in S10's amendments since acceptance** (decision D73) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S10's README](../../../experiments/021-s10-swapped-providers/README.md#amendments-since-acceptance) |
+
 ## What the owner ruled, for reference
 
 Ruling 48 settled four points with the owner: an Agent's own reach off by default, the shared

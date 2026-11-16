@@ -33,6 +33,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 117; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -260,3 +261,39 @@ credential, separate from Agent subscription authentication. The engine's OS use
 local credential readability limits P3 to delivery through Conduit. A gate is not consumer
 confinement, and isolation does not change ACC-027. This is neither A5's 48-hour account test,
 A73, S8's general search/derived-content case, nor proof over every client version or store.
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, [ruling 78](../../docs/proposals/ruling-78/README.md), point 4 (the owner):**
+  the coordinator, not the owner, chooses the plain server for S2's runs: a pinned open-source
+  server that meets the requirements under "The plain server for the runs" in
+  [the plan](../../experiments/013-s2-shared-login/plan.md), logged for the owner to strike.
+  Measure D20's list of places that can reach a credential also gains another Agent's home and
+  client login. This amends ruling 75 D1 for S2.
+- **2026-11-14, the coordinator's (decision D65):** an expected result is written for each task
+  step; D05's cases are kept in one shared case file and run on both rows that are not plain,
+  with one row made to send an onward request; P5 is judged against a snapshot of each Agent's
+  access; D20's attempts are made by a scripted probe, run as each Agent's process, that reads
+  only planted markers and never a real credential, and the real client's attempt is left to
+  A7; for E07, each author writes down first, from inspection, which Conduits Agent A may open,
+  and a miss is a finding, not a fail; each D01 row's cost is counted in lines; M1's trials and
+  prompts are fixed before the runs; and one E17 case is added and reported apart: a call in
+  flight while its Conduit closes.
+- **2026-11-14, the coordinator's
+  ([FR-390](../../docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)):** two decisions
+  logged in [the plan](../../experiments/013-s2-shared-login/plan.md) change how this text
+  reads, and each is open to the owner's strike there: what "adapter" means for D01's middle
+  row (under "S2-L2"), and that the plain row runs only in the owner's runs, against the test
+  workspace (under "The plain row"). D05's cases are listed in the contracts package's
+  [README](../../packages/scenario-s2-linear-restrictions/README.md#d05-restriction-cases).

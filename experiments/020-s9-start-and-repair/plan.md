@@ -19,6 +19,11 @@ admin. No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
+
 ## What `main` had at the commits named above
 
 The [engine conformance account](../../engine/CONFORMANCE.md) states DL6's implemented policy;
@@ -183,7 +188,7 @@ engine dependencies and are qualified by H.
   after PIN/SV1 through S4's common hot-file order. **Recommendation:** retain DL6 scope and
   exclude arbitrary damaged/legacy foundation reconstruction.
 
-Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 
 ## For the owner
 

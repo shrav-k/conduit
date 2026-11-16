@@ -29,6 +29,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 119; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -223,3 +224,23 @@ complete. The deterministic derived-answer check tests the selected contract, no
 or side channels such as timing. It establishes only mediated reach through Conduit (ACC-027);
 an Agent's own filesystem/network and account services require separate analysis. No distributed
 index, cross-machine partition or production-scale performance claim is made.
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, the coordinator's (decision D71):** the claim is stated in two parts, the
+  contract and the convention; an expectation for counted small adapters is stated before the
+  run and is not a pass condition; the suite must fail seeded leaks; a hand-written expected
+  table is P3's independent oracle; scripted exact-protocol checks run beside the Agents' tasks;
+  and one observation goes to A7: whether a refused Agent reads the corpus with its own tools.
+  V1 to V3 wait for the filter contract, as "Vectors expected" says.

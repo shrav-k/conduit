@@ -19,6 +19,11 @@ admin. No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
+
 ## What `main` had at the commits named above
 
 041b is implemented (`1091a71`); its effects, rather than the earlier README prerequisite,
@@ -77,7 +82,7 @@ use the pinned engine toolchain. Vector expectations are authored from promises,
 | S6-DUTY1 | core | Hook/stop/removal duties; V4 | TPL-009/018, PRV-008, LIF-016/019 | S6-ACCESS, 081, 077 | M, 350–550 lines | admin | after dependencies |
 | S6-DUTY2 | core | Cascade ordering and PND-007 notice; V5 | LIF-020/021, PND-007 | S6-DUTY1, 047 | M, 350–550 lines | admin | after dependencies |
 | S6-END | core | Proposed run-end fences across core and shell | OPS-014, PRV-009 | PIN, 077, DSP | L, 550–850 lines | admin | after dependencies, before WIRE |
-| S6-WIRE | shell | Task/retirement/runtime wire qualification with scripted servers | IFC-016, ACC-034/039, PRV-008 | S6-DUTY1/2, S4-TASK2, DSP, S6-END, S4-LATE, S9-CUT2 for T4 restart | M, 400–600 lines | admin | after dependencies |
+| S6-WIRE | shell | Task/retirement/runtime wire qualification with scripted servers | IFC-016, ACC-034/039, PRV-008 | S6-DUTY1/2, S4-TASK2, DSP, S6-END, S4-LATE | M, 400–600 lines | admin | after dependencies |
 | S6-H | harness | Deterministic branch/cascade scheduling | README P2–P5, M0–M2 | SCR, S6-SRV, S6-STOP | M, 400–550 lines | lane 10 | after dependencies |
 | S6-RUN | run | Coordinator and fresh-author scripted runs | README P1–P5 | S6-H, S6-WIRE, S6-STOP, SV4 | two runs, about 1 h each | lane 10 | after dependencies |
 
@@ -134,8 +139,7 @@ experiment 011 and tools checks. S4-LATE covers replies, END covers stopped runs
 **S6-WIRE.** Shell tests and only scoped retirement transport fixes; hot
 `shell/src/server.rs`, `runner.rs`, `lib.rs`; identity.rs and CLI command tables unchanged.
 Use DSP's provider calls with scripted task/runtime servers inside engine tests, no S6-SRV
-or S6-STOP dependency; S6-H qualifies those lane packages. Wait S6-END and S4-LATE, and
-S9-CUT2 because T4’s restart case uses its acknowledged lab repair cut. Authenticate task operations through
+or S6-STOP dependency; S6-H qualifies those lane packages. Wait S6-END and S4-LATE. Authenticate task operations through
 S4-TASK2, deliver the original result while retire hook/stop are held, then test task-result and
 notification refusal after close. Qualify failure/unknown stop and ACC-039 on actual MCP paths.
 No additional named vector; all V1–V5 belong to their core orders. Checks: engine
@@ -183,11 +187,10 @@ After review S6-SRV starts now; SCR1/2 join S6-H. A63-RK/081 → S6-STOP (A63-VR
 running its suite), with S3-L2 fixture reuse where available. Core/shell/vectors wait batch 1
 through 053 → PIN, including 052a-1/2/052b, unless admin assigns a side branch.
 PIN/042/081/SV1/S4-TASK1/FLT-D1 → ACCESS → DUTY1 → 047/DUTY2.
-077/DSP → END joins S4-LATE/S4-TASK2/S9-CUT2/DSP/DUTY1/2 → WIRE → RUN;
+077/DSP → END joins S4-LATE/S4-TASK2/DSP/DUTY1/2 → WIRE → RUN;
 H/STOP join RUN; live provider-run reachability waits for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77); scripted engine tests do not.
 Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin): ACCESS follows S5-C1, DUTY1/2 follow
-S5-C2; END spans both lanes after 077 and before WIRE. WIRE follows S9-CUT2 and the other
-shared shell work. No owner sign-in or batch-2 gate; no new DL1 policy.
+S5-C2; END spans both lanes after 077 and before WIRE. WIRE follows the shared shell work before it in that order. No owner sign-in or batch-2 gate; no new DL1 policy.
 
 ## For the admin
 
@@ -199,7 +202,7 @@ shared shell work. No owner sign-in or batch-2 gate; no new DL1 policy.
   **recommendation:** preserve existing DL1 cycles and final 081 text, with DUTY1/DUTY2 split.
   Runner/shared-manifest integration stays admin's; no partial run counts as the full gate.
 
-Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 
 ## For the owner
 

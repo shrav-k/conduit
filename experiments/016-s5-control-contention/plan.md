@@ -19,6 +19,11 @@ admin. No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
+
 ## What `main` had at the commits named above
 
 The [conformance account](../../engine/CONFORMANCE.md) at lines 123–133 supersedes the README's
@@ -183,7 +188,7 @@ making unrelated 082 work a C2 dependency.
 None. Q4 selected the two-setting local fixture with explicit readback, counted as provider work;
 its order is kind server, not a new runtime provider. Q3 is scripted only.
 
-Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 
 ## Limits
 

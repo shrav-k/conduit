@@ -2,7 +2,7 @@
 
 Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b), 111 and 114 (MC6), 112 (MC7a), and 113 and 115 (MC7b), ruling 71's proof lane; MC2 rerun 2026-11-15 under work order 160.
 The expected verdicts below were registered before execution; later orders extend this harness.
-[G5’s account of all 217 convention-layer safety promises](G5.md) records their standings and remaining work.
+[G5’s account of all 231 convention-layer safety promises](G5.md) records their standings and remaining work.
 
 ## Question and scope
 

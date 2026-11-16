@@ -95,6 +95,11 @@
   class: safety
   standing: static
   note: 'MC7b: “A static decision, to be shown by vectors: submitted-project address collision.”'
+- id: PKG-032
+  class: safety
+  standing: not modelled
+  note: Written by work order 082 to settle MC7b-002, after MC7b ran; no model has checked it. FR-448
+    names MC7b's rerun for it. Classed by work order 181.
 - id: SUB-009
   class: safety
   standing: static
@@ -466,6 +471,61 @@
   - engine/crates/shell/src/tests.rs
   - engine/crates/shell/tests/changes.rs
   note: 'Source row: “R: each instance retains its own state directory after recovery”. Graded from holds by FR-459.'
+- id: PRV-030
+  class: safety
+  standing: not modelled
+  note: Written by work order 081 after MC4 ran; no model has checked it. FR-448 names MC4's re-registration
+    for it, and a case in experiment 022's runtime suite. Classed by work order 181.
+- id: ENR-001
+  class: safety
+  standing: not modelled
+  note: Enrollment, written by work order 038b, is in no model. FR-448 and D28 name the enrollment
+    model for it. Classed by work order 181.
+- id: ENR-002
+  class: safety
+  standing: static
+  note: Decided in one step by the machine provider's enroll.v1. FR-448 names a case in experiment
+    022's machines suite for it, not a model. Classed by work order 181.
+- id: ENR-004
+  class: safety
+  standing: not modelled
+  note: Enrollment, written by work order 038b, is in no model. FR-448 and D28 name the enrollment
+    model for it. Classed by work order 181.
+- id: ENR-006
+  class: safety
+  standing: not modelled
+  note: Enrollment, written by work order 038b, is in no model. FR-448 and D28 name the enrollment
+    model for it. Classed by work order 181.
+- id: ENR-007
+  class: safety
+  standing: not modelled
+  note: Enrollment, written by work order 038b, is in no model. FR-448 and D28 name the enrollment
+    model for it. Classed by work order 181.
+- id: ENR-008
+  class: safety
+  standing: not modelled
+  note: Enrollment, written by work order 038b, is in no model. FR-448 and D28 name the enrollment
+    model for it. Classed by work order 181.
+- id: ENR-009
+  class: safety
+  standing: not modelled
+  note: Enrollment, written by work order 038b, is in no model. FR-448 and D28 name the enrollment
+    model for it. Classed by work order 181.
+- id: ENR-010
+  class: safety
+  standing: static
+  note: Decided in one step, when a node is made and at each later report of its machine. FR-448 names
+    a vector for it, not a model. Classed by work order 181.
+- id: ENR-011
+  class: safety
+  standing: not modelled
+  note: Enrollment, written by work order 038b, is in no model. FR-448 and D28 name the enrollment
+    model for it. Classed by work order 181.
+- id: ENR-012
+  class: safety
+  standing: not modelled
+  note: Enrollment, written by work order 038b, is in no model. FR-448 and D28 name the enrollment
+    model for it. Classed by work order 181.
 - id: PND-001
   class: safety
   standing: left to MC9
@@ -498,6 +558,10 @@
   class: safety
   standing: left to MC9
   note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-013
+  class: safety
+  standing: left to MC9
+  note: FR-448 names MC9a, order 24 of the full review, for it. Classed by work order 181.
 - id: PND-006
   class: safety
   standing: left to MC9
@@ -506,6 +570,10 @@
   class: safety
   standing: left to MC9
   note: Pending actions await MC9 after batch 2; not checked by MC7b.
+- id: PND-008
+  class: safety
+  standing: left to MC9
+  note: FR-448 names MC9a, order 24 of the full review, for it. Classed by work order 181.
 - id: SEC-004
   class: safety
   standing: static
@@ -1416,26 +1484,6 @@
   class: not safety
 - id: CON-007
   class: not safety
-- id: ENR-001
-  class: uncatalogued
-- id: ENR-002
-  class: uncatalogued
-- id: ENR-004
-  class: uncatalogued
-- id: ENR-006
-  class: uncatalogued
-- id: ENR-007
-  class: uncatalogued
-- id: ENR-008
-  class: uncatalogued
-- id: ENR-009
-  class: uncatalogued
-- id: ENR-010
-  class: uncatalogued
-- id: ENR-011
-  class: uncatalogued
-- id: ENR-012
-  class: uncatalogued
 - id: LIF-031
   class: not safety
 - id: LIF-032
@@ -1454,17 +1502,9 @@
   class: not safety
 - id: OPS-031
   class: not safety
-- id: PKG-032
-  class: uncatalogued
 - id: PLC-011
   class: not safety
-- id: PND-008
-  class: uncatalogued
-- id: PND-013
-  class: uncatalogued
 - id: PRV-020
   class: not safety
-- id: PRV-030
-  class: uncatalogued
 - id: REV-004
   class: not safety

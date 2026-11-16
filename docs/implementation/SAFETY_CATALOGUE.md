@@ -5,11 +5,13 @@ Not binding.
 The classification is the coordinator’s, open to the owner to strike under
 [IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed).
 Written from `spec/` as of commit `e94c057`. The proof lane updates this catalogue when a promise changes.
+Work order 181 added the rows of the 17 promises it lacked, CTR-014, ENR-001 to ENR-012, PKG-032,
+PND-008, PND-013 and PRV-030, read from `spec/` as of commit `6ef168a2`.
 
-Promises read: 502; safety: 394; for the coordinator: 0; others: 108. Safety by kind: access 193,
-secret 39, effect 119, result 43. Safety by layer: language 133, convention 217, interface 44.
+Promises read: 519; safety: 411; for the coordinator: 0; others: 108. Safety by kind: access 199,
+secret 44, effect 125, result 43. Safety by layer: language 135, convention 231, interface 45.
 Safety in the seven convention files: 128 (G5’s list as ruling 39 worded it); safety of the
-convention layer anywhere: 217 (the wider reading, for the owner).
+convention layer anywhere: 231 (the wider reading, for the owner).
 
 Recount the classification rows from the repository root:
 
@@ -100,7 +102,7 @@ Read: 14 promises. Source: [spec/promises/templates.yaml](../../spec/promises/te
 
 ### spec/promises/contracts.yaml
 
-Read: 11 promises. Source: [spec/promises/contracts.yaml](../../spec/promises/contracts.yaml).
+Read: 12 promises. Source: [spec/promises/contracts.yaml](../../spec/promises/contracts.yaml).
 
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
@@ -110,6 +112,7 @@ Read: 11 promises. Source: [spec/promises/contracts.yaml](../../spec/promises/co
 | CTR-005 | language | must | access | `then`: “apply it to each call that they receive for a request through the Conduit” — omitting an applied filter lets a call exceed its Conduit’s restriction. | — |
 | CTR-006 | language | must | result | `then`: “No two pointers of its `changes` are equal, and none lies inside another” — admitting overlapping changes can make the stored settings disagree with the change reported for a dispatched control. | — |
 | CTR-013 | language | must | secret | `observable`: “The engine reads only what account-hook reports, never the instance's state directory” — reading the directory can disclose the client’s credential material outside its intended holder. | — |
+| CTR-014 | language | must | access | `then`: “The Type lists no control whose `changes` holds the pointer, a pointer inside it or a pointer over it” — admitting such a control lets whoever may call it move the directory in which the Agent’s own tools work, reach that no Conduit grants or limits. | — |
 
 ### spec/promises/naming.yaml
 
@@ -153,7 +156,7 @@ Read: 15 promises. Source: [spec/promises/sections.yaml](../../spec/promises/sec
 
 ### spec/promises/packages.yaml
 
-Read: 23 promises. Source: [spec/promises/packages.yaml](../../spec/promises/packages.yaml).
+Read: 24 promises. Source: [spec/promises/packages.yaml](../../spec/promises/packages.yaml).
 
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
@@ -174,6 +177,7 @@ Read: 23 promises. Source: [spec/promises/packages.yaml](../../spec/promises/pac
 | PKG-028 | language | must | effect | `observable`: “No package is fetched or installed because another package lists it” — automatic dependency installation performs work no actor requested. | — |
 | PKG-029 | convention | must | access | `observable`: “the contracts of the submitted project keep that address” — letting an installed package take that address can redirect an existing named bound to different operations. | — |
 | PKG-031 | language | should | access | `observable`: “a plan prints and counts any widening of the resolved Conduit operations before apply” — silently applying a widened template can grant operations the author did not knowingly approve. | — |
+| PKG-032 | convention | must | effect | `observable`: “Of requests that name different digests, at most one installs its package, and nothing is put in the place of an installed package” — installing a second archive in place of the first can run an implementation that the first install did not authorize. | — |
 
 ### spec/promises/manifest.yaml
 
@@ -298,7 +302,7 @@ Read: 6 promises. Source: [spec/promises/first-start.yaml](../../spec/promises/f
 
 ### spec/promises/providers.yaml
 
-Read: 29 promises. Source: [spec/promises/providers.yaml](../../spec/promises/providers.yaml).
+Read: 30 promises. Source: [spec/promises/providers.yaml](../../spec/promises/providers.yaml).
 
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
@@ -329,10 +333,30 @@ Read: 29 promises. Source: [spec/promises/providers.yaml](../../spec/promises/pr
 | PRV-027 | convention | must | effect | `then`: “in `instance` the instance's ID and in `machine` the machine of the instance's node” — misaddressing a stop can leave the requested run alive while stopping a different run. | — |
 | PRV-028 | convention | must | secret | `then`: “before it is sent anything, that it serves the instance” — sending first can disclose request contents or credentials to a process that took the run’s URL. | — |
 | PRV-029 | convention | must | secret | `observable`: “passes it to no other run” — reusing or handing over an instance’s state directory can disclose its client login to another instance. | — |
+| PRV-030 | convention | must not | effect | `then`: “It reports succeeded while any run that it started for that ID is running” — reporting a stop done while a run of the instance still acts treats a running effect as stopped and can let a second run act for the same instance. | — |
+
+### spec/promises/enrollment.yaml
+
+Read: 12 promises. Source: [spec/promises/enrollment.yaml](../../spec/promises/enrollment.yaml).
+
+| ID | layer | level | kind | why a breach is unsafe | S1 traces |
+| --- | --- | --- | --- | --- | --- |
+| ENR-001 | convention | must | secret | `then`: “The result gives only enrollment and pendingAction, their two IDs” — returning more, such as the join action, can put a join secret in a tool result that a model or another reader sees. | — |
+| ENR-002 | convention | must | secret | `then`: “It returns message, carriesSecret” — reporting an action that carries a secret as carrying none lets the engine relay that secret beyond root’s panel. | — |
+| ENR-003 | interface | must not | secret | `then`: “Any part of it appears in a record, result, inspection, observation, diagnostic or _meta” — publishing the join action on those surfaces discloses its secret to their readers. | — |
+| ENR-004 | convention | must | access | `then`: “No node represents it and the provider places no instance on it” — placing an instance on a machine that root has not admitted can disclose its requests to that machine. | — |
+| ENR-005 | language | must | access | `observable`: “code and fact alone never meet the minimum” — admitting a machine on a code or on what it says of itself makes a node of a machine whose identity nothing checked. | — |
+| ENR-006 | convention | must | access | `then`: “The request is dispatched only if all applicable checks hold” — dispatching an admission whose checks fail can make a node of a machine that root did not enroll or whose fingerprint no one compared. | — |
+| ENR-007 | convention | must | effect | `observable`: “An unknown accept call likewise makes no node and ends unknown” — making a node, or ending failed, after an acceptance whose outcome is unknown treats an unknown outcome as known. | — |
+| ENR-008 | convention | must | effect | `observable`: “A failed or unknown removal is reported as such, with its cause, never as a successful removal” — reporting such a removal as done treats a machine that may still be on the provider’s network as removed. | — |
+| ENR-009 | convention | must | effect | `observable`: “No expiry dispatches removal, admission or any other later work” — removing or admitting a machine on expiry performs work that no request authorized. | — |
+| ENR-010 | convention | must | access | `then`: “No later report adds, changes or removes a node's labels” — a machine whose reports could change its labels could match a selector that excludes it and receive the requests of workloads placed there. | — |
+| ENR-011 | convention | must not | access | `then`: “This establishes which instance sent a request or permits any request” — taking a join or an admission as identity or permission grants access that no open Conduit lists. | — |
+| ENR-012 | convention | must | effect | `then`: “Nothing is removed until root asks refuse-machine.v1” — removing a retired node’s machine without root’s request performs an effect that no request authorized. | — |
 
 ### spec/promises/pending.yaml
 
-Read: 11 promises. Source: [spec/promises/pending.yaml](../../spec/promises/pending.yaml).
+Read: 13 promises. Source: [spec/promises/pending.yaml](../../spec/promises/pending.yaml).
 
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
@@ -345,8 +369,10 @@ Read: 11 promises. Source: [spec/promises/pending.yaml](../../spec/promises/pend
 | PND-005 | convention | must | effect | `observable`: “Nothing is queued, resumed or dispatched after it ends” — resuming a held model request after sign-in starts work without a new request. | — |
 | PND-010 | convention | must | access | `then`: “A caller other than root signs in only an Agent of a Fleet in its scope; Resources remain root's” — allowing a broader sign-in lets an Interface alter another party’s account access. | — |
 | PND-011 | convention | must | effect | `observable`: “holds back all model work” — running model work after an unsuccessful account undo spends work under an account the instance did not authorize. | — |
+| PND-013 | convention | must | secret | `observable`: “The value appears in no result, structuredContent, response _meta, notification, diagnostic, log or record” — publishing a sign-in return discloses the login’s authorization code to the readers of those surfaces. | — |
 | PND-006 | convention | must | effect | `observable`: “Computation adds no record and dispatches nothing” — dispatching setup while computing its pending action can repeat an effect implicitly. | — |
 | PND-007 | convention | must | access | `observable`: “Evidence is disclosed under PND-002 and PND-004” — publishing unfiltered notice evidence discloses closed grants beyond the Interface’s scope. | — |
+| PND-008 | convention | must | secret | `then`: “Only root's own panel shows their machine evidence, code, fingerprint or join action” — showing them on another surface can disclose a join secret or a device code to a reader other than root. | — |
 
 ### spec/promises/secrets.yaml
 
@@ -813,11 +839,14 @@ headings, are not counted again.
   from widening delivery or permission.
 - Topic 9, Agent client tools (70, provider order 050): the promised inspection of reach beyond
   Conduit must describe enabled tools accurately, or return a wrong account of the Agent’s reach.
+  **In spec/**: CTR-014, classed above, with LIF-013, ACC-027 and PRV-006 (IN_FORCE.md, topic 9).
 - Topics 9 and 12, secret-reading Agents that others drive (61 B13): preventing turns on a
   secret-reading Agent and secret grants to a driven Agent will guard indirect secret disclosure.
 - Topic 10, managed enrollment (50; 51 point 8; 52 point 4; 56; 68 point 3 R2): root admission,
   stable machine identity, evidence comparison and join-secret withholding will add safeguards
   against an unintended machine’s admission or credential disclosure, changing PLC-025/PLC-026.
+  **In spec/**: ENR-001 to ENR-012 and PND-008, classed above; PLC-026 changed with them and
+  PLC-025 did not (IN_FORCE.md, topic 10).
 - Topic 10, peer engines (51 caveat; 62 C4; 68 point 3 R3): the admitted Interface’s specific
   root standing and exclusions must prevent cross-engine authority from becoming unrestricted.
 - Topic 7, metrics (68 point 1 as amended by 69; 72 point 1): attribution, attribute-preserving

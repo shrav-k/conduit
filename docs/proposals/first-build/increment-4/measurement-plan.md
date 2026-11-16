@@ -113,6 +113,10 @@ rerun; none is settled by this addendum:
 - The simplification [critic](#options-for-the-reruns-counting-rules), gap 3, asks which run
   judges the bar: it recommends coordinator versus the experienced baseline author, with the
   fresh run measuring learnability. That comparison choice remains to be stated explicitly.
+  Note of 2026-11-15: it has since been stated.
+  [Ruling 71](../../ruling-71/README.md), point 3, has both runs pass, the coordinator's and the
+  fresh Codex author's, each against the baseline (A70), and
+  [ruling 78](../../ruling-78/README.md), point 2, scores each run in ruling 45's two groups.
 - Gap 18’s paper sensitivity: three separate installs instead of one made T1 18 in that paper;
   actual rerun commands and mistakes must be counted. Ruling 63’s command rule now governs.
 - The earlier synthesis proposed a JSON side reading and counted the history convention as

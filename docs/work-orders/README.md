@@ -8,22 +8,99 @@ have left the tree; their results, decisions and observations are in
 
 ## Orders still in the directory
 
+One row for each order file in this directory, in file-name order.
+
 | Order | What |
 | --- | --- |
 | [037](037-spec-short-form.md) | The short form in the specification |
 | [038a](038a-spec-pending-and-sign-in.md) | Refusals, pending actions and sign-in |
+| [038b](038b-spec-enrollment.md) | enrollment in the specification |
+| [038c](038c-spec-sign-in-return.md) | the return of a browser login in the specification |
 | [039](039-build-local-names-and-expected-id.md) | Local names and expectedId in the build |
 | [040](040-build-fleet-and-first-start.md) | Fleet and first start in the build |
+| [041a](041a-build-defaults-and-owners.md) | root's defaults, Agents' owners, and the vectors' migration |
+| [041b](041b-build-fleet-authority.md) | authority through Fleets |
+| [042](042-build-tombstones-and-inventory.md) | tombstones, lift, the inventory, provenance and reconcile limits |
+| [044](044-build-package-fixtures.md) | package fixtures for the .v2 Types, and no default added to a published Type |
+| [045](045-build-state-directory.md) | each instance's state directory |
+| [049a1](049a1-build-enrollment-core.md) | enrollment in the core |
+| [050a](050a-agents-v2-own-tools.md) | the .v2 Agent Types, with the Agent's own tools |
 | [067](067-condense-work-orders.md) | Move merged orders into their record |
+| [068](068-test-gate-and-ci.md) | the test gate, CI split across runners, and a check for private paths |
+| [069](069-spec-cli-plan-apply.md) | the CLI reference for plan and apply |
+| [069b](069b-spec-plan-apply-ruling-76.md) | the plan-and-apply reference under ruling 76 |
+| [070](070-build-state-copies.md) | stop copying the whole state on every commit |
+| [071](071-conformance-manifest-pieces.md) | the coverage index in pieces, the runner's seams, and parallel vectors |
+| [072](072-shell-list-operation.md) | list.v1 and the stubbed operations through the shell |
+| [073](073-paper-count-flow-style.md) | a paper count of S1 in flow style, after the bar's rule was fixed |
+| [074](074-shell-session-idle-limit.md) | an MCP session outlives the calls it carries |
+| [075](075-spec-own-tools-reach.md) | an Agent's own tools in the specification |
+| [076](076-agents-v2-folder-grant.md) | in the `.v2` Agent Types, the folder is the grant |
+| [077](077-spec-reconcile-fenced.md) | failed is reconciled only once fenced, and the safety catalogue's findings |
+| [078](078-agents-codex-path-item.md) | the Codex Agent item that finds its wrapper by name |
+| [079](079-shell-https-address.md) | the engine's https address, on a second loopback listener |
+| [080](080-shell-runtime-provider-calls.md) | the shell calls runtime providers and reaches their runs over TLS |
+| [081](081-spec-one-run-per-instance.md) | one run per instance ID, a replacement's overlap, two readings settled |
+| [082](082-spec-records-and-installs.md) | a record lost outside the engine, and installs of one address and version one at a time |
+| [100](100-safety-catalogue.md) | the safety catalogue |
+| [101](101-pre-a-s2-s3.md) | the pre-registrations of S2 and S3 |
+| [102](102-pre-b-s4-s5-s6-s9.md) | the pre-registrations of S4, S5, S6 and S9 |
+| [103](103-pre-c-s7-s8-s10.md) | the pre-registrations of S7, S8 and S10 |
+| [104](104-mc1-model-checking-harness.md) | the model-checking harness |
+| [105](105-mc2-operation-identity.md) | operation identity, unknown outcomes and revisions, model-checked |
+| [107](107-mc3-access-over-time.md) | access over time, model-checked |
+| [108](108-mc4-placement-and-lost-machine.md) | placement and a lost machine, model-checked across two machines |
+| [109](109-mc5a-gates-and-identity.md) | gates and identity, model-checked |
+| [110](110-mc5b-secrets.md) | reading and confining secrets, model-checked |
+| [111](111-mc6-lifecycle.md) | setup, retirement, removal and Pools, model-checked |
+| [112](112-mc7a-controls-and-outcomes.md) | controls, revisions and outcomes, model-checked |
+| [113](113-mc7b-records-and-packages.md) | records, observation and installing packages, model-checked |
+| [114](114-mc6-finish.md) | close the four checks MC6's final verifier left open |
+| [115](115-mc7b-finish.md) | close the two checks MC7b's final verifier left open |
+| [116](116-mc8-g5-account.md) | G5's account of the safety promises |
+| [117](117-plan-s2-s3.md) | the order-level plans of S2 and S3 |
+| [118](118-plan-s4-s5-s6-s9.md) | the order-level plans of S4, S5, S6 and S9 |
+| [119](119-plan-s7-s8-s10.md) | the order-level plans of S7, S8 and S10 |
+| [120](120-plan-providers.md) | the order-level plan of the providers, A63 |
+| [121](121-plans-follow-up.md) | the split reviews and the admin's answers, applied to the plans |
+| [122](122-a63-rk1-runtime-kit-server.md) | the runtime-provider kit, its MCP server and backend interfaces |
+| [123](123-a63-h1-provider-contract-harness.md) | the harness for provider-contract vectors |
+| [124](124-a63-rk1-finish.md) | close what RK1's final verifier left open |
+| [125](125-a63-h1-finish.md) | close what H1's final verifier left open |
+| [126](126-a63-rk2-runtime-kit-gate.md) | the runtime-provider kit's gate |
+| [127](127-a63-rp1-local-process.md) | the local-process runtime provider |
+| [128](128-a63-mp1-local-machine.md) | the local machine provider |
+| [129](129-a63-rk-owed-stop-first.md) | no run starts on a machine that owes a stop |
+| [130](130-a63-rk-owed-stop-first-finish.md) | close the window after admission |
+| [131](131-a63-ps-local-directory.md) | the local-directory package source |
+| [132](132-a63-fs-file-store.md) | the file secret store |
+| [133](133-s2-f-linear-restrictions.md) | S2's restriction contracts, as a contracts-only package |
+| [134](134-plans-ruling-77.md) | ruling 77 in the plans, and S3's fault method |
+| [135](135-s2-linear-stub.md) | a local stub of the Linear API, for S2 |
+| [136](136-s2-l1-linear-aware.md) | S2's Conduit-aware Linear implementation |
+| [137](137-ssh-r-runtime.md) | the SSH runtime provider, built and unit-tested |
+| [138](138-a63-rk-backend-reasons.md) | a runtime's own reason for a failed staging or start |
+| [139](139-s2-l2-linear-adapter.md) | S2's small Linear adapter |
+| [140](140-ssh-r-finish.md) | the launch fence, MAN-017, the kit's reasons and the setup |
+| [141](141-a63-rk-own-owed-stop.md) | a start after its own owed stop, under order 081 |
+| [142](142-scr1-scripted-client.md) | the core scripted MCP Agent client |
+| [143](143-s4-srv1-effect.md) | S4's partial-effect and deduplicating effect servers |
+| [144](144-s4-srv2-hook.md) | S4's setup hook and its ledger reader |
+| [145](145-ssh-r-durable-dir.md) | a durable directory, outside the engine's lifecycle |
+| [146](146-ssh-r-drainer.md) | the stop-drainer that outlives the provider |
+| [147](147-ssh-r-key-sweep.md) | a sweep of retired providers' keys |
+| [148](148-scr1-finish.md) | case-folded names, invalid-script reports and redaction |
+| [149](149-ssh-r-drainer-finish.md) | the launch generation set by the provider |
+| [150](150-ssh-r-one-drainer.md) | one drainer, reading the newest configuration |
 | [151](151-private-names-and-secret-scan.md) | Private names and secrets checked before anything private is committed (the full review's order 2) |
 | [152](152-ci-engine-shards-stand-alone.md) | The engine's CI stands alone, and CI builds every crate (the full review's order 3) |
 | [153](153-model-account-checked.md) | the model-checking account, checked by a tool |
 | [154](154-plan-apply-reference-corrected.md) | the plan-and-apply reference corrected against spec/ |
 | [155](155-increment-4-log.md) | increment 4's log: the dogfood frictions and the Records' findings |
 | [156](156-runner-stopped-after-end.md) | the runner reports a run stopped only once it has seen it end |
+| [157](157-own-tools-reported.md) | an Agent's own tools reported as its Type declares them (the full review's order 15) |
 | [158](158-fresh-author-wording.md) | wording the fresh author reads at the pin: flags recorded with the plan, and CTR-013's citation corrected |
 | [159](159-a5-stage-0-client-facts.md) | the two client facts order 050 needs (A5's stage 0) |
-| [157](157-own-tools-reported.md) | an Agent's own tools reported as its Type declares them (the full review's order 15) |
 | [160](160-mc2-rerun-077.md) | MC2 rerun on order 077's text, as ruling 78 leaves it (the full review's order 9) |
 | [161](161-a78-stage-1-evidence.md) | A78's stage 1: its evidence and the engine's records of order 042 enter the tree (the full review's order 10) |
 | [162](162-dispatch-deadline-cancels.md) | a dispatch deadline cancels its call before the call is reported missing (the full review's order 14) |
@@ -65,5 +142,6 @@ An order that changes a case or a case's fixture writes its declaration here as
 the declarations that a pull request adds or changes
 ([reviewing vector changes](../../conformance/README.md#reviewing-vector-changes)).
 Declarations stay with the orders that use them.
-While an order is in flight, its admin Record stays in its file; at merge, the admin writes
-its row serially in the record before removing that order and its own schema.
+An order keeps its Record at the foot of its file after it merges, until a condensation
+(A80) carries it into [the record](../implementation/WORK_ORDERS.md#the-record): the admin then
+writes its row there serially, and removes the order and its own schema.

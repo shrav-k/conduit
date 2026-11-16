@@ -155,7 +155,8 @@ findings and the branch. The Record names one of three outcomes (D5):
   as 150 replaced the handoff of 146 and 149.
 - A new, local, small fault is fixed by the coordinator, then read by a fresh Opus reader.
 - Otherwise, a finishing order names each finding and its kind and stacks on the branch; the pair
-  merges together: 124 on 122, 125 on 123, 130 on 129, 148 on 142; 149 and 150 on 146 (#260).
+  merges together: 114 on 111, 115 on 113, 124 on 122, 125 on 123, 130 on 129, 140 on 137,
+  148 on 142; 149 and 150 on 146 (#260).
 
 There is no fixed stop at a fourth pass. Applied shoulds also get another fresh Opus reader, as the
 Records of [153](../work-orders/153-model-account-checked.md#record),

@@ -28,7 +28,7 @@ GitHub, with two musts left for a finishing order, named in its Record. Next, af
 S4-SRV1b, S4-SRV2b, SCR2 and S4-H. The lane's whole queue is in
 [PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
 
-## What `main` has now
+## What `main` had at the commits named above
 
 Evidence is from this commit, not from an order's presence or its commit subject.
 The [engine conformance account](../../engine/CONFORMANCE.md) is the implementation baseline.

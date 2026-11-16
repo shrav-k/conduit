@@ -595,17 +595,17 @@ restores A. No fixture patch supplies lifecycle progress. Every dispatched exter
 ends before the trace finishes; plain intents contain no Conduit metadata. Scripted text is
 not evidence of real file effects, Agent behavior or confinement.
 
-The manifest's `s1_coverage` contains exactly the 308 promise IDs in the
-[frozen S1 inventory](s1-promises.yaml), copied from increment 2's study, section 2, including
-its observation paragraph. The [safety traces proposed for S1 in increment 2](s1-safety-cases.md)
-are preserved separately; they do not define the coverage-index pieces' `safety_rows` tags.
-Each row has vectors declaring that promise, or a specific reason
-why no vector does. A case tag demonstrates only its asserted slice; neither a tag nor an
-explicit reason proves a whole promise. The runner checks the inventory even with an ID
-prefix: missing/extra/duplicate rows, empty reasons, unknown vectors and vectors that do not
-declare the promise fail. The inventory currently has 217 rows with vectors and 91 with
-reasons, including loader tests not yet ported, missing boundary cases and shell work. Those
-reasons remain visible coverage debt, logged in the increment's I2-09 section.
+The manifest's `s1_coverage` contains exactly the 308 promise IDs in the [frozen S1
+inventory](s1-promises.yaml), copied from increment 2's study, section 2, including its observation
+paragraph. The [safety traces proposed for S1 in increment 2](s1-safety-cases.md) are preserved
+separately; they do not define the coverage-index pieces' `safety_rows` tags. Each row has vectors
+declaring that promise, or a specific reason why no vector does. A case tag demonstrates only its
+asserted slice; neither a tag nor an explicit reason proves a whole promise. The runner checks the
+inventory even with an ID prefix: missing/extra/duplicate rows, empty reasons, unknown vectors and
+vectors that do not declare the promise fail. When increment 2 ended, the inventory had 217 rows
+with vectors and 91 with reasons; on 2026-11-15 it has 226 with vectors and 82 with reasons. The
+reasons include loader tests not yet ported, missing boundary cases and shell work. Those reasons
+remain visible coverage debt, logged in the increment's I2-09 section.
 
 The first build's [conformance choices](../engine/CONFORMANCE.md) and the
 [increment 3 handoff](../engine/README.md#the-cores-boundary) state the current
@@ -851,15 +851,15 @@ keyed rejection vectors passed before consolidation, as recorded above.
 | The safety vectors pass | The complete suite is required, including E05 standalone schema cases, access/refusal/bounds/filter boundaries, request endings/repeats/restart, partial setup/cancellation, E08's supplied trusted broker, E11 frozen contexts and E12 stale IDs. The run results below report actual checks, not expected passes. |
 | Each case the core cannot decide is a logged finding | Findings 2-01 through 2-08 are settled in this log, including the return reviews. This integrated trace needed no new language answer. Unsupported implementation paths and missing coverage are recorded below for the admin; they are not silently answered or represented as language settlements. |
 
-The [manifest](manifest.yaml) now lists the study's complete inventory:
-308 distinct promises including OBS-001/002/006 in its closing paragraph. 217 have vectors;
-91 have explicit reasons. The runner validates the exact inventory and case references even
-on a development subset; a regression test removes a row, removes a reason and supplies a
-false case attribution, and each must fail. Case tags claim their asserted slice, not an
-entire promise. Loader workspace tests not yet ported to portable cases, missing semantic
-boundary pairs, release-skew/compatibility and shell-only evidence are distinguished in the
-reasons. No promise S1 touches is omitted without explanation. This does not turn the 91
-reasons into conformance results.
+The [manifest](manifest.yaml) now lists the study's complete inventory: 308 distinct promises
+including OBS-001/002/006 in its closing paragraph. 217 then had vectors and 91 explicit reasons;
+[the inventory's section above](#s1-whole-and-promise-inventory-i2-09) gives the later count. The
+runner validates the exact inventory and case references even on a development subset; a regression
+test removes a row, removes a reason and supplies a false case attribution, and each must fail. Case
+tags claim their asserted slice, not an entire promise. Loader workspace tests not yet ported to
+portable cases, missing semantic boundary pairs, release-skew/compatibility and shell-only evidence
+are distinguished in the reasons. No promise S1 touches is omitted without explanation. This does
+not turn the 91 reasons into conformance results.
 
 The continuous S1 case now asserts exact ordered record arrays for the twelve previously
 unchecked management/setup steps: the initial open, Pool setup, each Resource's setup and

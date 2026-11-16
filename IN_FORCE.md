@@ -259,7 +259,7 @@ How to read a line:
   - The server presented to each consumer: IFC-012 to IFC-014, IFC-023, IFC-033, IFC-038 to IFC-040 (31 I6, 32 Q7, 33 F5, 37 D3, 41 changes C51 and C52, 44 D07 and 6-1-04).
   - Instances kept independent: PKG-016 (24 PR7, 31 I4).
   - Templates, the `implementation` map, run items and hooks: TPL-001 to TPL-004, TPL-012, TPL-017 to TPL-019, OPS-028 (14, 31 D1, D8 and D10, 38 point 12g, 40 point 3c, 41 items 1 and 1a, P3 and P20).
-  - Providers as packages implementing core provider capabilities, with the runtime provider in the shape of CRI: PRV-001 to PRV-028 (40 points 1, 2 and 3a, 41 items 2, 2a, 2b and 31, P4 to P6, P13 and P18, 42 N3 to N5, N20 and D8, 43 Q3, 44 6-1-05).
+  - Providers as packages implementing core provider capabilities, with the runtime provider in the shape of CRI: PRV-001 to PRV-028 (40 points 1, 2 and 3a, 41 items 2, 2a, 2b and 31, P4 to P6, P13 and P18, 42 N3 to N5, N20 and D8, 43 Q3, 44 6-1-05), and PRV-030 (experiment 012, MC4-009; order 081).
   - Implementation items: MAN-009, MAN-010, MAN-017, IFC-041 to IFC-044, SEC-024 (37 C51, 41 items 25a to 25d and P15, 42 N6 and N7, 43 D5).
 - *Spec pending, ruling 78*: handles are cut. IFC-011, `handle.v1` and its schema keyword go, and CTR-002, CTR-012 and IFC-033 change; an implementation's ID is a plain string. IFC-011 still holds handles today (78 point 16, amending 31 I5 and 41 P1).
 - Identity, isolation, record storage and the engine's state may become swappable providers, under topic 1's rule of swappability; v0's provider contracts are runtime, machines, package source and secrets (40 point 2). In v1, fetching a package by digest is a feature that a runtime provider declares (43 D20).

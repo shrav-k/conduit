@@ -71,8 +71,8 @@ build. As of 2026-11-12:
   values stay ([ruling 52's later answer](../proposals/ruling-52/README.md#later-answers),
   2026-11-12); 4-08's explicit refusals are promises (ACC-056, IFC-050, OPS-023). Turn deadlines
   (4-12) closed on 2026-11-12, and order 070 removed the whole-state copies of 4-18 except
-  registration's four. The form of ended conditions (4-17) remains open. Both measured author
-  runs failed the bar for authoring work.
+  registration's four, to which order 042 then added two. The form of ended conditions (4-17)
+  remains open. Both measured author runs failed the bar for authoring work.
 
 The deliberate limits of v0, including the two delegation limits, remain in the
 [specification's limits](../../spec/README.md#limits-of-this-version). No round so far was

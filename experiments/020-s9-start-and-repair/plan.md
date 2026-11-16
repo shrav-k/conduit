@@ -19,7 +19,7 @@ admin. No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
-## What `main` has now
+## What `main` had at the commits named above
 
 The [engine conformance account](../../engine/CONFORMANCE.md) states DL6's implemented policy;
 [engine/README.md](../../engine/README.md) describes the boundary and startup. Neither is a new

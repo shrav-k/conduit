@@ -25,7 +25,7 @@ No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `8b5c8093c1ca2a7a73e71fd50cce90a8f522f4f8`.
 
-## What `main` has now
+## What `main` had at the commits named above
 
 These are inspected source/vector slices, not results from running S8.
 

@@ -1,12 +1,12 @@
 # Independent builds
 
 Status: the roles and independence rules were accepted by the owner on 2026-11-05, and the scope
-below follows layer decision LD4 of the same day. **The builds have not started and must not
-start until the [readiness gate](#readiness-gate) passes.** The specification exists as a draft
-in [spec/](../../spec/README.md), and its [form](../proposals/normative-surface/README.md) is
-ruled. `conformance/` and the branches named below do not exist yet; their names are
-proposals. `engine/` holds the code of the first build (ruling 46), which is not one of
-these builds.
+below follows layer decision LD4 of the same day. **The builds have not started and must not start
+until the [readiness gate](#readiness-gate) passes.** The specification exists as a draft in
+[spec/](../../spec/README.md), and its [form](../proposals/normative-surface/README.md) is ruled.
+The branches named below do not exist yet; their names are proposals. `conformance/` holds the
+vectors the first build runs, and `engine/` the code of the first build (ruling 46), which is not
+one of these builds.
 
 Where the readiness gate and the builds come in the work: step 7 of the
 [roadmap](../../ROADMAP.md#the-order-of-the-work).
@@ -75,17 +75,18 @@ locally:
 git clone --single-branch --branch build/codex <repository> conduit-build-codex
 ```
 
-Top-level directories on the working branches. `spec/`, `tools/`, `docs/` and `experiments/`
-exist. The others are proposed and do not exist yet.
+Top-level directories on the working branches. `spec/`, `tools/`, `docs/`, `experiments/`,
+`conformance/`, `engine/` and `packages/` exist on `main`; the others are proposed and do not exist
+yet.
 
 | Directory | Contents | Exists | Visible to builders |
 | --- | --- | --- | --- |
 | `spec/` | The specification: the language, the shared conventions and the implementation interface, as a contents list, promises, definitions, schemas and the core package | Yes | Yes |
 | `tools/` | The checkers the specification refers to | Yes | Yes |
-| `conformance/` | Public conformance vectors and the adapter contract | No | Yes |
+| `conformance/` | Public conformance vectors and the adapter contract | Yes | Yes |
 | `conformance-held-out/` | Vectors withheld from builders, run only by the comparer | No | No |
-| `engine/` | The reference engine in Rust | No | No |
-| `packages/` | The first providers, one Rust crate per provider (ruling 40) | No | No |
+| `engine/` | The reference engine in Rust | Yes, holding the first build (ruling 46) | No |
+| `packages/` | The first providers, one Rust crate per provider (ruling 40) | Yes | No |
 | `docs/`, `experiments/` | Explanation, research, history, proposals, exploratory code | Yes | No |
 | The reference engine, its standard library of type contracts and its conformance document | The one full engine | No | No |
 

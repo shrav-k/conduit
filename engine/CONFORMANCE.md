@@ -1,13 +1,13 @@
 # First-build conformance choices
 
-Not binding. The [specification](../spec/README.md) alone binds. This document states the
-choices implemented through increment 2 and shell orders 020/021/022, under the admin's
-[decisions](../docs/proposals/first-build/increment-2/decisions.md) and
-[order 020](../docs/implementation/WORK_ORDERS.md#order-020), and distinguishes them
-from choices the shell must still make. It is not a declaration of whole-language conformance.
-The executable [profile](../conformance/profiles/first-build.yaml) and
-[coverage manifest](../conformance/manifest.yaml) name the evidence. A vector demonstrates
-its stated slice of a promise; a coverage reason is not a passing vector.
+Not binding. The [specification](../spec/README.md) alone binds. This document states the choices
+implemented in increment 2, under the admin's
+[decisions](../docs/proposals/first-build/increment-2/decisions.md), and in the shell orders that
+followed it from [order 020](../docs/implementation/WORK_ORDERS.md#order-020) on, and distinguishes
+them from choices the shell must still make. It is not a declaration of whole-language conformance.
+The executable [profile](../conformance/profiles/first-build.yaml) and [coverage
+manifest](../conformance/manifest.yaml) name the evidence. A vector demonstrates its stated slice of
+a promise; a coverage reason is not a passing vector.
 
 ## Implemented choices
 
@@ -60,6 +60,8 @@ prints these measurements; they are not a persistence format or compaction polic
 | DL13 | Gate proof, TLS and authorization-server integration. No public OAuth issuer/grant or remote-runtime credential delivery is claimed by the loopback-only authority. |
 | DL16 | Platforms beyond Unix process groups and lifetime sockets; qualification beyond the npm filesystem server and local scripted servers. |
 | DL17 | Multi-machine restart/partition/fencing. No distributed configuration or guarantee is demonstrated by this core. |
+| DL18 | Not built: `sign-in.v1` answers unavailable under PND-010, with the text "not built yet, order 048a" ([requests.rs](crates/core/src/requests.rs)), so no URL action waits and no wait is chosen. |
+| DL19 | Not built: `answer.v1` answers unavailable under PND-009, with the text "not built yet, order 047" ([requests.rs](crates/core/src/requests.rs)), and the core holds no pending action, so no expiry is chosen. |
 
 DL11 and DL14 are removed identifiers, not unanswered choices. The
 [increment 3 handoff](README.md#the-cores-boundary) assigns the next
@@ -266,8 +268,11 @@ Conduits, failure leaves shutdown pending (unknown on a lost node), and uncertai
 unknown. A further
 retirement is explicit. Reconciliation of a retirement as having occurred confirms shutdown
 and removes the instance. Recovery marks interrupted retirements unknown without replay.
-Runtime providers, remote connections and secrets still have the unserved boundaries listed
-above; this order qualifies the built-in runner on S1, not those providers.
+Runtime providers and remote connections still have the unserved boundaries listed above,
+in the row "DL16: executor coverage". Secrets are unserved too: the engine reads no secret
+through a secret store, so its reads under SEC-010, SEC-013 and SEC-023 are not built, and
+no code under `engine/` calls the file secret store in `packages/provider-file`. This order
+qualifies the built-in runner on S1, not those providers.
 
 `unregister.v1` checks the current revision and retirement state, asks once more for the stop
 of a selected run, then removes the instance whatever that stop returned. A template is removed

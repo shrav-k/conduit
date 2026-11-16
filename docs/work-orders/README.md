@@ -47,6 +47,10 @@ have left the tree; their results, decisions and observations are in
 | [184](184-second-machine-docs-ruling-77.md) | the second machine's documents agree with ruling 77 (the full review's order 42) |
 | [185](185-promise-standing-generated.md) | each promise's standing, generated (the full review's order 43) |
 | [186](186-scenario-plans-to-tree.md) | the scenario plans brought to the tree (the full review's order 35) |
+| [187](187-ci-macos-leg.md) | a macOS leg in CI (the full review's order 30) |
+| [188](188-differential-vectors-nightly.md) | the differential vectors, nightly (the full review's order 31) |
+| [189](189-package-tests-repeated-linux.md) | changed package tests run five more times on Linux (the full review's order 44) |
+| [190](190-desk-checks-terms-1password.md) | two desk checks: each vendor's terms for two subscriptions; 1Password's unattended reads (the full review's order 45) |
 
 ## Shared and staged files
 

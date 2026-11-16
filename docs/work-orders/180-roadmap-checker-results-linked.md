@@ -326,3 +326,39 @@ After the report:
 - On the pull request, the admin shows the `docs` job passing.
 - Before it merges, a fresh Codex verifier and a fresh read-only Opus reader read the result
   ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `6ef168a2`: the worker (222 s) and a fresh Codex
+verifier (271 s), which found nothing to change in one round but could not run the unit tests:
+its read-only sandbox refused the temporary directories they write. `check_roadmap.py` gains
+check 7, in `done_without_results`. Each register row whose State begins with done must link, in
+that cell, a `results-YYYY-MM-DD.md` file or a heading whose anchor ends in `results-YYYY-MM-DD`,
+in a file directly inside `experiments/NNN-name/`. A failing row gives one error line that names
+every link of its State and why each does not count. The checker then prints how many done rows
+it read and how many passed: 8 of 8 on the tree. It reads anchors with `check_docs.py`'s
+`anchors`. The results headings of experiments 004 and 012 are dated, and their rows of
+`ROADMAP.md` and their links in `experiments/README.md` name them. The module's docstring and the
+bullet of `CONTRIBUTING.md` describe the check, and `tools/tests/test_roadmap.py` tests it. The
+order's fix-removal step names `git merge-base HEAD main`, but the worktree's local `main`
+(`719a8992`) was 100 commits behind, so that run ended Errors: 6. Run again with the roadmap of
+`ec926025`, the checker fails with decision 3's two lines and ends Errors: 2. Later orders should
+name `origin/main` or the base commit.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It reran the unit
+tests under Python 3.9 (95 passed), the checker, the order's Done-when commands and the
+documentation and private-path checks. On a scratch copy it reran the fix-removal with the
+roadmaps of `6ef168a2` and `ec926025`, applied the branch on a later `main` (8 of 8, Errors: 0),
+and ran twelve mutations of the check against the tests. It found no must. Both of its shoulds were
+applied before merge. Ten mutations failed a test, but dropping either half of the location test
+(the parent directory is `experiments/`; the directory's name matches `NNN-name`) left every test
+passing, since each case the order listed is refused by the other half. A sixth test,
+`test_dated_file_outside_a_numbered_experiment_directory_fails`, links a dated file in
+`experiments/sample/` and one in `docs/007-sample/`; it passes on the branch and fails under each
+of the two mutations. Item 7 of the docstring is re-wrapped to its width. After these fixes, 96
+tests pass, the Done-when grep still prints 5, and the checker ends Errors: 0 with 8 of 8. On a
+scratch copy with the base's roadmap it again ends Errors: 2 with 6 of 8.
+
+
+A second fresh Opus reader read the coordinator's fix (ruling 79, point 2) and found no must; its
+one wording point on this Record was applied.

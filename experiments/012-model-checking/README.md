@@ -105,7 +105,7 @@ that deferred effect; recovery cannot apply it twice. VolatileIds also has a con
 crash and recovery disabled to verify that its failure requires a crash; all other budgets
 and witnesses stay enabled, with reasons recorded for those two zero budgets.
 
-## Results
+## MC1 dated results, 2026-11-11
 
 Measured 2026-11-11 on an Apple M2 Max, 12 cores (8 performance, 4 efficiency),
 Rust `1.97.1` (`8bab26f4f`, 2026-07-14), Stateright `0.31.0`. Full runs used 2 checker

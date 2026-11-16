@@ -1,7 +1,8 @@
-# The engine's tests that fetch the pinned @modelcontextprotocol/server-filesystem from
-# npm, once a day and on request. They need the network, so they stay out of the checks on each
-# pull request. The job runs on `ubuntu-latest`, a standard GitHub-hosted runner, which is free
-# for a public repository; it uses no larger runner, paid service or secret.
+# Two runs kept out of the checks on each pull request, once a day and on request: the engine's
+# tests that fetch the pinned @modelcontextprotocol/server-filesystem from npm, which need the
+# network, and the conformance vectors on the differential build, which take far longer than the
+# checks. Each job runs on `ubuntu-latest`, a standard GitHub-hosted runner, which is free for a
+# public repository; neither uses a larger runner, paid service or secret.
 
 name: nightly
 
@@ -58,3 +59,40 @@ jobs:
         env:
           CONDUIT_TEST_NPM: "1"
         run: cargo test --release
+
+  # The conformance vectors on the differential build (work order 070). Four threads, stated
+  # rather than taken from the processors: order 071 ran the vectors at four, and at 24 they
+  # ran out of memory.
+  differential:
+    name: differential vectors
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the toolchain that rust-toolchain.toml pins
+        run: |
+          rustup toolchain install --no-self-update --profile minimal
+          rustup show active-toolchain
+          cargo --version
+      # The cache the checks workflow saves for engine/ on main; this job only reads it.
+      - name: Restore the cargo cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            engine/target/
+          key: cargo-${{ runner.os }}-engine-${{ hashFiles('engine/Cargo.lock', 'engine/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-engine-
+      - name: cargo build --release -p conduit-conformance --features differential
+        run: cargo build --release -p conduit-conformance --features differential
+      - name: CONDUIT_VECTOR_THREADS=4 cargo run --release -p conduit-conformance --features differential
+        env:
+          CONDUIT_VECTOR_THREADS: "4"
+        run: cargo run --release -p conduit-conformance --features differential

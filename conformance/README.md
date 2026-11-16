@@ -126,6 +126,19 @@ The runner uses `std::thread::available_parallelism()` workers unless
 Reports and failures retain sorted case-path order at every worker count. Inventory and
 schema checks cover the whole tree before any matching case runs.
 
+The `differential` feature adds to the core an independent computation of each consumer's tool
+list and of the notifications its changes send, which
+[order 070](../docs/work-orders/070-build-state-copies.md) kept from before it made publication
+lazy. Every transition is then checked against that computation, and a difference fails the case
+with an error that names the consumer. From `engine/`, the vectors run on that build with:
+
+```sh
+CONDUIT_VECTOR_THREADS=4 cargo run --release -p conduit-conformance --features differential
+```
+
+That run is far slower than the normal build's, so the checks on a pull request leave it out:
+[nightly.yml](../.github/workflows/nightly.yml) runs it once a day and on request.
+
 From `engine/`, the pieces tool moves inline entries and schema elements left by new work:
 
 ```sh

@@ -294,10 +294,11 @@ excluding the macOS-only probe. `engine build` runs fmt, clippy and builds a nex
 `macos (directory)` runs clippy and release tests for each package on `macos-latest`, and
 `macos (engine: loader, core, conformance)` runs those three crates' release tests there. Each
 of these Rust jobs feeds the `rust` gate: failed, skipped or cancelled jobs fail it. Since 152 the
-engine jobs depend on its build alone, so a package or experiment cannot skip them. A nightly job
-runs the engine with npm. 068 built CI (#198); since 070 (#240) engine shards take 1 to 8 minutes,
-down from 12 to 38. No check is required on `main` by a branch setting. The admin decides what to
-fix, reorder or put to the owner.
+engine jobs depend on its build alone, so a package or experiment cannot skip them. Once a day and
+on request, [nightly.yml](../../.github/workflows/nightly.yml) runs the engine's tests with npm and
+the vectors on the differential build. 068 built CI (#198); since 070 (#240) engine shards take 1 to
+8 minutes, down from 12 to 38. No check is required on `main` by a branch setting. The admin decides
+what to fix, reorder or put to the owner.
 
 The Record goes at the order's foot. Begin: "Run on DATE on the Mac from `main` COMMIT: the worker
 (N s) and a fresh Codex verifier (N s), ...". Give rounds, findings, each Opus reader and what it

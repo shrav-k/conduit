@@ -189,3 +189,54 @@ anything. Report each choice you made yourself, and every check's last line.
 Before the merge, the coordinator's local gate runs (ruling 80, point 10), and a fresh Opus reader
 reads the result ([ruling 79](../proposals/ruling-79/README.md)). After the merge, the Record names
 the two tests, as D12 asks.
+
+## Record
+
+Run on 2026-11-16, from about 20:59 to 21:07 UTC, on the Mac from `main` `a771b88b`: the worker
+(368 s) and a fresh Codex verifier (113 s), which found no must or should in one round but did not
+rerun cargo or the scratch delay in its read-only sandbox. Only
+`packages/provider-local-process/tests/runtime.rs` changed. A new helper, `starts`, right after
+`ready`, polls the fixture's `starts` file every 10 ms until it holds the expected count of lines
+or `WAIT` (8 s) runs out, then returns the count it reads. The two tests that start the fixture
+again after a restart, `killed_provider_fences_descendants_and_restart_keeps_state` and
+`killed_guard_cannot_confirm_stop_or_admit_a_duplicate_after_restart`, now wait through it and
+check with `assert_eq!` that the count is exactly 2, with the message "the second run.v1
+succeeded, so the fixture must have started twice". These are the tests D12 asks this Record to
+name: on macOS their read could come before the second start had written its line. The two reads
+that assert no new start, in `real_run_gate_repeat_inspect_environment_and_group_stop` and after
+the `run.v1` answered `unknown` in the second test above, stay immediate and are now `assert_eq!`
+with the order's messages. The provider, the fixture and the other tests are unchanged. With the
+order's 500 ms scratch delay in the fixture, `main`'s file failed those two tests at lines 372 and
+480 (6 passed, 2 failed), and with the change all eight passed; the delay was then reverted. The
+worker could not run `pgrep`, which its sandbox denied.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran
+`cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` (again in a fresh target
+directory) and `cargo test --release` (the `runtime` binary 8 passed, `package.rs` 3), the six grep
+counts (1, 2, 2, 2, 0 and 4), `pgrep -f 'release/test-ru[n]'` (nothing), `check_docs` and
+`check_private_paths` (Errors: 0 each) and `git diff --check origin/main...HEAD` (clean). On a
+scratch copy of `main` at `ecabe372` with the branch's file, `main`'s private-path check, with
+order 196's email pattern, and `check_docs` also found no error. On that copy it repeated the
+order's check: with the delay, `main`'s file failed at lines 372 and 480 and the change passed all
+eight. It made the second start wait 10 s, longer than `WAIT`, and both restart tests failed at
+lines 389 and 496, left 1 and right 2. It made the fixture write its line twice, and the two kept
+reads failed at lines 262 and 464 with a count of 2, and the wait at line 389 with 4. So every
+assertion the change touches can fail, and each failure explains itself (ruling 52, point 2). It
+found no must and no should. Its minor notes are left as they are: the helper's doc comment, which
+the order prescribed word for word, does not say that the wait also ends after `WAIT`;
+`unwrap_or(0)` would show an unreadable file as a count of 0, which is unlikely once `ready` has
+confirmed the first start; and the worker's last line for `cargo test --release` is the doc tests'
+line, not the `runtime` binary's.
+
+With no finding, the fixer changed no code. It rebased the branch onto `main` at `ecabe372`
+(orders 178, 179 and 196) without conflict; none of them touches `provider-local-process` or
+`runtime-provider-kit`. In `packages/provider-local-process`, under `env -i`, it then ran the
+order's "Done when" on the rebased branch, one cargo command at a time. With the scratch delay,
+`main`'s `tests/runtime.rs` again failed at lines 372 and 480 (6 passed, 2 failed) and the branch's
+passed all eight. With the delay reverted, `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` passed, `cargo test --release` passed (`runtime` 8
+passed, `package.rs` 3), the six grep counts were 1, 2, 2, 2, 0 and 4, and
+`pgrep -f 'release/test-ru[n]'` printed nothing after each run. From the repository root,
+`check_docs` and `check_private_paths` reported Errors: 0, and `git diff --check origin/main...HEAD`
+was clean. The order's "Done when" has no loop of runs: under D12 it shows the race and its fix
+with the scratch delay, so no repeated run was made.

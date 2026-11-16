@@ -133,6 +133,22 @@ async fn ready(root: &Path, id: &str) -> Vec<i32> {
     .await
     .expect("test run did not start")
 }
+/// Waits until the fixture has recorded `expected` starts, then returns the count read.
+async fn starts(root: &Path, id: &str, expected: usize) -> usize {
+    let path = state(root, id).join("starts");
+    let read = || {
+        fs::read_to_string(&path)
+            .map(|s| s.lines().count())
+            .unwrap_or(0)
+    };
+    let _ = timeout(WAIT, async {
+        while read() < expected {
+            sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await;
+    read()
+}
 fn alive(pid: i32) -> bool {
     // Zombies cannot execute; Linux test containers do not necessarily reap orphans promptly.
     #[cfg(target_os = "linux")]
@@ -243,12 +259,13 @@ async fn real_run_gate_repeat_inspect_environment_and_group_stop() {
     let again = invoke(&provider.client, "run.v1", input).await;
     outcome(&again, "succeeded");
     assert!(url(&again) == url(&run));
-    assert!(
+    assert_eq!(
         fs::read_to_string(state(root.path(), ID).join("starts"))
             .unwrap()
             .lines()
-            .count()
-            == 1
+            .count(),
+        1,
+        "the repeated run.v1 returned the same URL, so the fixture must not have started again"
     );
     let inspect = invoke(&provider.client, "inspect-run.v1", args(ID)).await;
     outcome(&inspect, "succeeded");
@@ -369,12 +386,10 @@ async fn killed_provider_fences_descendants_and_restart_keeps_state() {
         &invoke(&provider.client, "run.v1", inputs(ID, &fixture)).await,
         "succeeded",
     );
-    assert!(
-        fs::read_to_string(state(root.path(), ID).join("starts"))
-            .unwrap()
-            .lines()
-            .count()
-            == 2
+    assert_eq!(
+        starts(root.path(), ID, 2).await,
+        2,
+        "the second run.v1 succeeded, so the fixture must have started twice"
     );
     outcome(
         &invoke(&provider.client, "stop.v1", args(ID)).await,
@@ -446,12 +461,13 @@ async fn killed_guard_cannot_confirm_stop_or_admit_a_duplicate_after_restart() {
         "failed",
     );
     assert!(!state(root.path(), SECOND).exists());
-    assert!(
+    assert_eq!(
         fs::read_to_string(state(root.path(), ID).join("starts"))
             .unwrap()
             .lines()
-            .count()
-            == 1
+            .count(),
+        1,
+        "run.v1 was answered unknown, so the fixture must not have started again"
     );
     assert!(pids.iter().all(|pid| alive(*pid)));
 
@@ -477,12 +493,10 @@ async fn killed_guard_cannot_confirm_stop_or_admit_a_duplicate_after_restart() {
         &invoke(&provider.client, "run.v1", inputs(ID, &fixture)).await,
         "succeeded",
     );
-    assert!(
-        fs::read_to_string(state(root.path(), ID).join("starts"))
-            .unwrap()
-            .lines()
-            .count()
-            == 2
+    assert_eq!(
+        starts(root.path(), ID, 2).await,
+        2,
+        "the second run.v1 succeeded, so the fixture must have started twice"
     );
     outcome(
         &invoke(&provider.client, "stop.v1", args(ID)).await,

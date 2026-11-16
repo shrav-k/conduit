@@ -396,6 +396,13 @@ CTR-013 names three hooks in every draft.
 
 Numbering continues after 035. Every order carries the standing verifier.
 
+Held on 2026-11-16: the owner held 048a, in both parts of the admin's split (048a-1 and 048a-2),
+048b's second part (048b-join), 050 and 051b until the record of a targeted review on Fable and
+the owner's answers. None of them is written or dispatched until then
+([ruling 81](../ruling-81/README.md), point 1, which settles
+[D18](../full-review/decisions.md#the-pipeline-and-verification)'s dispatch of 048a-1; the split
+is in [order 117](../../work-orders/117-plan-s2-s3.md)).
+
 Gate G for every order:
 - the checks: check_docs, set_names --check, check_schemas, check_roadmap, `python3 -m unittest discover -s tools/tests`, and git diff --check;
 - where Rust changes, in engine/: cargo fmt --check, cargo clippy --all-targets -- -D warnings, and cargo test --release;

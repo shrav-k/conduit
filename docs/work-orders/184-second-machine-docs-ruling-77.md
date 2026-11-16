@@ -260,3 +260,36 @@ Do not stage anything. In your report, mark each choice you made yourself as you
 the last line of every check. The admin then shows the pull request's secret scan passing. A
 fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `2f33a53e`: the worker (276 s) and a fresh Codex verifier
+(235 s), which found nothing to change in one round. Step 2 of the Docker guide now sets Docker
+Engine up rootless as `conduit-run`. The owner, with sudo once, runs Docker's install script, stops
+and disables the system-wide daemon and removes its socket, installs `uidmap` and
+`dbus-user-session`, and checks `conduit-run`'s ranges in `/etc/subuid` and `/etc/subgid`. The
+coordinator, as `conduit-run` without sudo, runs `dockerd-rootless-setuptool.sh install`, enables
+the user service and selects the context `rootless`. No user joins the `docker` group, and whoever
+ran a step that fails stops and reports it. The steps have not yet run on the Windows computer; the
+coordinator confirms them there at S3-O2. Step 3 of the second-machine guide's ruling-77 setup
+points to that step. Its section "What to hand the coordinator" has the host key read at the Windows
+computer, never over SSH, and a key held from elsewhere compared with a fingerprint read there
+before the SSH provider's first run. S3's plan no longer holds MC4-002 (ruling 42's later answer).
+It states Docker at S3-O2 and its limit, bars any work-order worker from the second machine during a
+counted run, and has a revision line. A fresh read-only Opus reader then verified the order (ruling
+79, point 2). It ran the order's checks, which gave the expected values, and showed on `main` that
+each can fail. `check_docs.py`, `check_private_paths.py`, `check_rulings.py` and `check_roadmap.py`
+gave no errors, and `git diff --check` was clean. It read each change against its sources (FR-329,
+FR-330, FR-318, D51, D64, ruling 42's later answer and rulings 76, 77 and 78) and found no private
+detail and no must. It could not check Docker's pages or the install script, having no network. All
+five of its shoulds were applied before merge. One link to Docker's troubleshooting page now covers
+both foreseen failures. The reason `conduit-run`'s sessions read no startup file is the one SSH-R's
+README gives, the login shell `/bin/sh`, with a link to it. The Docker guide names steps 1 and 3 as
+those of ruling 77's setup in the second-machine guide, and links to it; step 1 has the link again,
+since "that setup's step 1" would have read as SSH-R's setup. The host-key section names what stays
+outside the repository instead of "They". The plan's `[topic-11]` definition moved to its foot,
+beside `[D51]`, so the owner's list renders tight again, and the changed lines were rewrapped to at
+most 100 characters.
+
+A second fresh Opus reader read the coordinator's fix (ruling 79, point 2) and found no must; its
+one wording point on this Record was applied.

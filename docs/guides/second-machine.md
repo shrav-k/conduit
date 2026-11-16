@@ -91,7 +91,9 @@ the owner may revisit any point.
 3. Install the shared system packages, bubblewrap for Codex's sandbox among them. The coordinator
    installs the rest as `conduit-run`, in its own home and without sudo: `nvm` with Node and the
    Codex CLI, `rustup`, a Python environment for the checks, and a clone of the public
-   repository with pushes disabled.
+   repository with pushes disabled. Where a run needs Docker, step 2 of
+   [the Docker guide](docker.md) sets it up rootless as `conduit-run`, with the owner's sudo once;
+   no user joins the `docker` group.
 4. Write the lockdown into `/etc/wsl.conf`, keeping `systemd=true` under `[boot]`:
 
    ```ini
@@ -114,8 +116,16 @@ the owner may revisit any point.
 ## What to hand the coordinator
 
 The machine's tailnet name or address and its SSH host key, which the provider pins, and the
-result of each step's check. They stay outside the repository. Never a password, a sign-in link
-or a device code.
+result of each step's check. Read the host key at the Windows computer, in Ubuntu-24.04's own
+terminal there, never over SSH: a key read through the connection it is meant to check proves
+nothing. [Ruling 68](../proposals/ruling-68/README.md#the-decisions), R2, asks the same of admitting
+a machine: the fingerprint the person read on it. There, `cat /etc/ssh/ssh_host_ed25519_key.pub`
+prints the key and `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` its fingerprint. Where
+the coordinator already holds a key for the machine that was not read there, the owner reads
+the fingerprint there once, and the coordinator compares it with the held key's before the SSH
+provider's first run there and tells the owner of any difference.
+The name or address, the key, its fingerprint and the checks' results stay outside the repository.
+Never a password, a sign-in link or a device code.
 
 ## How S3 cuts the network
 

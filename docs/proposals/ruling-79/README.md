@@ -1,6 +1,6 @@
 # Ruling 79: Opus verifies each work order and coordinates; Fable is kept for the owner's reviews of the whole language and design
 
-Status: in force; amended by 80 (points 2 and 4: an Opus read of round 1 on A77's paired orders, and paired reads stopped before dispatch) (ruled by the owner on 2026-11-14 and 2026-11-15). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+Status: in force; amended by 80 (points 2 and 4: an Opus read of round 1 on A77's paired orders, and paired reads stopped before dispatch); amended by 81 (point 1: Fable for one targeted review, of 0.2.0's sign-in and home surface) (ruled by the owner on 2026-11-14 and 2026-11-15). Holds now: [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
 
 Ruling 48 gave the work to Codex sessions so that the coordinator's own session would be spent
 on planning and decisions: "Experiments, increments, sweeps, verifications and fresh reads are

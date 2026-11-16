@@ -328,3 +328,26 @@ to the owner's strike.
   read, which merges right after this ruling and cites it.
   [METHOD_AS_RUN.md](../../implementation/METHOD_AS_RUN.md)'s merge step is carried by order 193,
   which builds `tools/gate.py` and switches the merge step to it.
+
+## Later answers
+
+2026-11-16, later: the coordinator asked the owner, through the session's question tool, whether
+point 8 should keep its wording, that Conduit "opens, limits and closes the connection", or say
+only that Conduit manages it. The question as put: "Ruling 80 (now merged) records your sign-in
+decision as: Conduit 'opens, limits and closes the connection' over which the person completes a
+Claude sign-in. You said 'conduit does manage this connection'; 'opens, limits and closes' was my
+wording. Which should the record say?" Its options: "'Manages'; how is 050's (Recommended)";
+"Keep my wording". The owner chose no option and typed: "What does this wording distinction even
+mean concretely? Your wording seems reasonable". Point 8's wording stands as the owner's, and no
+decision changes. The owner's confirmation came in the same message as the owner's question,
+before the coordinator explained anything, so the owner confirmed the wording only.
+
+The coordinator then gave an illustration: a port forward over SSH that Conduit opens when a
+sign-in is pending and closes when it ends, reaching only that Agent's machine and that login's
+port. The illustration is the coordinator's and came after the owner's answer. It is not a
+decision, it binds nothing, and it narrows none of point 8's routes. What "opens, limits and
+closes" means concretely, for remote desktop, for pasting the code over SSH and for a forwarded
+port alike, is the managed connection's design. Order 050 writes it, once the targeted review
+that the owner chose the same day, which has that connection in its target, has its record and
+the owner's answers ([ruling 81](../ruling-81/README.md), points 1 and 2). Point 8's routes,
+remote desktop and SSH by pasting the code or forwarding the port, stand as point 8 states them.

@@ -39,6 +39,9 @@ have left the tree; their results, decisions and observations are in
 | [174](174-vector-changes-declared.md) | vector changes checked against the order's declaration (the full review's order 29) |
 | [175](175-promise-totals-checked.md) | the promise totals checked (the full review's order 32) |
 | [176](176-core-purity-enforced.md) | the core's purity enforced (the full review's order 33) |
+| [177](177-ctr-014-diagnostics-ctr-006-at-resolution.md) | CTR-014's diagnostics name what reaches the place, and CTR-006 checked at resolution (follow-up to 157 and 176) |
+| [180](180-roadmap-checker-results-linked.md) | the roadmap checker: a finished row links its results (the full review's order 40) |
+| [181](181-uncatalogued-promises-classified.md) | the uncatalogued promises classified (the full review's order 41) |
 
 ## Shared and staged files
 

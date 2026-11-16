@@ -217,7 +217,10 @@ scp -q -F "<KEYS_DIR>/ssh_config" "<WIN_HOST>:<REMOTE_DIR>/out-NNN/*.md" "<WO_DI
 git -C "<MAC_CHECKOUT>" worktree add -q "<WO_DIR>/NNN" wo/NNN-name
 ```
 The reset runs only for an existing local tree; otherwise the branch is set, then the tree added.
-Orders built on Windows pass the changed crate's tests, fmt and clippy on the Mac before merge. 131
+Orders built on Windows passed the changed crate's tests, fmt and clippy on the Mac before merge.
+Since 187, CI's macOS jobs run each package's clippy and release tests and the engine's loader,
+core and conformance tests, and Linux checks fmt; only the experiments, the engine's shell and
+the engine's clippy still run on the Mac by hand. 131
 failed to compile on macOS (rustix's `mknodat`) and expected Linux's error message; 137 and 140 used
 `chmod --` and `find -printf` (fixed in #241). Windows' sandbox could not use the pinned toolchain
 for 075's spec suites ([075's Record](../work-orders/075-spec-own-tools-reach.md#record)) and timed
@@ -285,8 +288,10 @@ vector changes against declarations), tools' unit tests and PR `git diff --check
 `rust directories` discovers crates;
 `rust (directory)` runs fmt/clippy for packages, release tests for packages and experiments,
 excluding the macOS-only probe. `engine build` runs fmt, clippy and builds a nextest archive;
-`engine tests (1/4)` through `(4/4)` use that archive; `engine doctests` runs doctests. Those five
-Rust job groups feed the `rust` gate: failed, skipped or cancelled jobs fail it. Since 152 the
+`engine tests (1/4)` through `(4/4)` use that archive; `engine doctests` runs doctests. Since 187,
+`macos (directory)` runs clippy and release tests for each package on `macos-latest`, and
+`macos (engine: loader, core, conformance)` runs those three crates' release tests there. Each
+of these Rust jobs feeds the `rust` gate: failed, skipped or cancelled jobs fail it. Since 152 the
 engine jobs depend on its build alone, so a package or experiment cannot skip them. A nightly job
 runs the engine with npm. 068 built CI (#198); since 070 (#240) engine shards take 1 to 8 minutes,
 down from 12 to 38. No check is required on `main` by a branch setting. The admin decides what to

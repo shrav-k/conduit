@@ -41,8 +41,10 @@ fn call(name: &str, args: Value) -> CallToolRequestParams {
 async fn outputs(client: &RunningService<RoleClient, ()>, name: &str, args: Value) -> Value {
     let result = client.call_tool(call(name, args)).await.unwrap();
     let wire = serde_json::to_value(result).unwrap();
-    assert!(wire["_meta"][OUTCOME] == "succeeded");
-    assert!(wire["isError"] == false);
+    assert!(
+        wire["_meta"][OUTCOME] == "succeeded" && wire["isError"] == false,
+        "{name} did not succeed: {wire}"
+    );
     assert!(schemas::valid(
         name,
         "outputSchema",

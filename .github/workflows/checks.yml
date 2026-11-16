@@ -504,11 +504,176 @@ jobs:
             engine/target/
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
-  # One result for all Rust directories, all engine shards, the doctests and the macOS jobs.
-  # A skipped or cancelled dependency fails this gate as well, so its stable name stays useful.
+  # Repeat changed packages on Linux (the full review's FR-493, gate 7). Use cargo test as
+  # rust-dir does: nextest puts tests in separate processes and cannot reproduce faults that
+  # need two test threads in one process, such as a forked child's lock or tracing interest.
+  changed-packages:
+    name: changed packages
+    needs: rust-dirs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      dirs: ${{ steps.select.outputs.dirs }}
+      any: ${{ steps.select.outputs.any }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: select
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RUST_DIRS: ${{ needs.rust-dirs.outputs.matrix }}
+          DIFF_BASE: HEAD^1
+          DIFF_HEAD: HEAD
+        run: |
+          if [ "$EVENT_NAME" != pull_request ]; then
+            echo "Not a pull request ($EVENT_NAME): the repeated runs are skipped."
+            echo 'dirs=[]' >> "$GITHUB_OUTPUT"
+            echo 'any=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          candidates=$(printf '%s\n' "$RUST_DIRS" | jq -r '.[] | select(.build == true and (.dir | startswith("packages/"))) | .dir' | LC_ALL=C sort -u)
+          # Preserve every pathname byte, including Git-quoted characters and newlines.
+          # A file keeps git's failure visible; process substitution would hide its status.
+          changed_paths=$(mktemp)
+          trap 'rm -f "$changed_paths"' EXIT
+          if ! git diff --no-renames --name-only -z "$DIFF_BASE" "$DIFF_HEAD" > "$changed_paths"; then
+            echo "::error title=changed packages::git diff $DIFF_BASE $DIFF_HEAD failed, so this step cannot tell which package crates changed; no crate list is set, so the rust gate fails. Repair the cause that git's message above names (the checkout must fetch both commits, with fetch-depth: 2), then rerun the job"
+            exit 1
+          fi
+          root="$PWD/"
+          listed=()
+          while IFS= read -r dir; do
+            [ -n "$dir" ] || continue
+            prefix="$dir/"
+            count=0
+            while IFS= read -r -d '' path; do
+              if [ "${path:0:${#prefix}}" = "$prefix" ]; then
+                count=$((count + 1))
+              fi
+            done < "$changed_paths"
+            if ! metadata=$(cargo metadata --no-deps --format-version 1 --manifest-path "$dir/Cargo.toml"); then
+              echo "::error title=changed packages::$dir: cargo metadata failed on $dir/Cargo.toml, so its path dependencies are unknown; no crate list is set, so the rust gate fails. Fix the manifest as cargo's message above says, then push again"
+              exit 1
+            fi
+            dependencies=$(printf '%s\n' "$metadata" | jq -r '.packages[].dependencies[] | select(.path != null) | .path' | LC_ALL=C sort -u)
+            changed_dependencies=()
+            while IFS= read -r dependency; do
+              [ -n "$dependency" ] || continue
+              if [ "${dependency:0:${#root}}" != "$root" ]; then
+                echo "::error title=changed packages::$dir: its path dependency $dependency is outside the repository ($root), so this step cannot tell whether it changed; no crate list is set, so the rust gate fails. Move the dependency into the repository, or name it by version rather than by path"
+                exit 1
+              fi
+              dependency=${dependency#"$root"}
+              if [ "$dependency" = "$dir" ] || [ "${dependency:0:${#prefix}}" = "$prefix" ]; then
+                continue
+              fi
+              dependency_prefix="$dependency/"
+              while IFS= read -r -d '' path; do
+                if [ "${path:0:${#dependency_prefix}}" = "$dependency_prefix" ]; then
+                  changed_dependencies+=("$dependency")
+                  break
+                fi
+              done < "$changed_paths"
+            done <<< "$dependencies"
+            if [ "$count" -gt 0 ] || [ "${#changed_dependencies[@]}" -gt 0 ]; then
+              listed+=("$dir")
+              if [ "$count" -gt 0 ]; then
+                echo "$dir: $count changed file(s) in its directory"
+              fi
+              for dependency in "${changed_dependencies[@]}"; do
+                echo "$dir: its path dependency $dependency changed"
+              done
+            fi
+          done <<< "$candidates"
+          if [ "${#listed[@]}" -eq 0 ]; then
+            echo 'No package crate changed, nor a path dependency of one: the repeated runs are skipped.'
+            echo 'dirs=[]' >> "$GITHUB_OUTPUT"
+            echo 'any=false' >> "$GITHUB_OUTPUT"
+          else
+            dirs=$(printf '%s\n' "${listed[@]}" | jq -Rsc 'split("\n")[:-1]')
+            echo "Repeating the tests of ${#listed[@]} package crate(s) five times each."
+            echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
+            echo 'any=true' >> "$GITHUB_OUTPUT"
+          fi
+
+  package-repeats:
+    name: package tests repeated (${{ matrix.dir }})
+    needs: changed-packages
+    if: ${{ needs.changed-packages.outputs.any == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.changed-packages.outputs.dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the toolchain that rust-toolchain.toml pins
+        run: |
+          rustup toolchain install --no-self-update --profile minimal
+          rustup show active-toolchain
+          cargo --version
+      - name: Restore the cargo cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ${{ matrix.dir }}/target/
+          key: cargo-${{ runner.os }}-${{ matrix.dir }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.dir), format('{0}/rust-toolchain.toml', matrix.dir)) }}
+          restore-keys: cargo-${{ runner.os }}-${{ matrix.dir }}-
+      - id: repeat
+        name: cargo test --release, five more times
+        shell: bash
+        env:
+          CRATE_DIR: ${{ matrix.dir }}
+          CARGO_TERM_COLOR: never
+        run: |
+          failures=0
+          failed_runs=""
+          for run in 1 2 3 4 5; do
+            log=$(mktemp "$RUNNER_TEMP/package-repeat.XXXXXX")
+            echo "::group::run $run of 5: cargo test --release"
+            if cargo test --release 2>&1 | tee "$log"; then
+              status=0
+            else
+              status=${PIPESTATUS[0]}
+            fi
+            echo '::endgroup::'
+            if [ "$status" -eq 0 ]; then
+              echo "run $run of 5: passed"
+            else
+              failures=$((failures + 1))
+              failed_runs="${failed_runs:+$failed_runs, }$run"
+              echo "run $run of 5: failed (exit $status)"
+              if ! grep -E '^test .+ \.\.\. FAILED$|^error: ' "$log"; then
+                echo "run $run of 5: no failed test was named; see its output above"
+              fi
+            fi
+            rm "$log"
+          done
+          if [ "$failures" -eq 0 ]; then
+            echo "$CRATE_DIR: all 5 repeated runs passed"
+          else
+            echo "::error title=repeated package tests::$CRATE_DIR: $failures of 5 repeated runs failed (run numbers: $failed_runs)"
+            exit 1
+          fi
+
+  # One result for all Rust directories, all engine shards, the doctests, the macOS jobs and the
+  # repeated package tests. A skipped or cancelled dependency fails it, so its stable name stays
+  # useful; the repeats alone may be skipped, and only when changed packages listed no crate.
   rust:
     name: rust
-    needs: [rust-dirs, rust-dir, engine-build, engine-tests, engine-doc, macos-package, macos-engine]
+    needs: [rust-dirs, rust-dir, engine-build, engine-tests, engine-doc, macos-package, macos-engine, changed-packages, package-repeats]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -522,6 +687,11 @@ jobs:
           DOCTESTS: ${{ needs.engine-doc.result }}
           MACOS_PACKAGES: ${{ needs.macos-package.result }}
           MACOS_ENGINE: ${{ needs.macos-engine.result }}
+          CHANGED: ${{ needs.changed-packages.result }}
+          ANY_CHANGED: ${{ needs.changed-packages.outputs.any }}
+          REPEATS: ${{ needs.package-repeats.result }}
         run: |
-          echo "rust directories: $DIRS; rust checks: $CHECKS; engine build: $BUILD; shards: $SHARDS; doctests: $DOCTESTS; macos packages: $MACOS_PACKAGES; macos engine: $MACOS_ENGINE"
-          test "$DIRS" = success && test "$CHECKS" = success && test "$BUILD" = success && test "$SHARDS" = success && test "$DOCTESTS" = success && test "$MACOS_PACKAGES" = success && test "$MACOS_ENGINE" = success
+          echo "rust directories: $DIRS; rust checks: $CHECKS; engine build: $BUILD; shards: $SHARDS; doctests: $DOCTESTS; macos packages: $MACOS_PACKAGES; macos engine: $MACOS_ENGINE; changed packages: $CHANGED (any: $ANY_CHANGED); repeated package tests: $REPEATS"
+          test "$DIRS" = success && test "$CHECKS" = success && test "$BUILD" = success && test "$SHARDS" = success && test "$DOCTESTS" = success && test "$MACOS_PACKAGES" = success && test "$MACOS_ENGINE" = success &&
+            test "$CHANGED" = success &&
+            { { test "$ANY_CHANGED" = true && test "$REPEATS" = success; } || { test "$ANY_CHANGED" = false && test "$REPEATS" = skipped; }; }

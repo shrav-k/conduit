@@ -289,16 +289,20 @@ rulings, model account with history, promise standing, private paths and, on pul
 vector changes against declarations), tools' unit tests and PR `git diff --check`.
 `rust directories` discovers crates;
 `rust (directory)` runs fmt/clippy for packages, release tests for packages and experiments,
-excluding the macOS-only probe. `engine build` runs fmt, clippy and builds a nextest archive;
-`engine tests (1/4)` through `(4/4)` use that archive; `engine doctests` runs doctests. Since 187,
-`macos (directory)` runs clippy and release tests for each package on `macos-latest`, and
-`macos (engine: loader, core, conformance)` runs those three crates' release tests there. Each
-of these Rust jobs feeds the `rust` gate: failed, skipped or cancelled jobs fail it. Since 152 the
-engine jobs depend on its build alone, so a package or experiment cannot skip them. Once a day and
-on request, [nightly.yml](../../.github/workflows/nightly.yml) runs the engine's tests with npm and
-the vectors on the differential build. 068 built CI (#198); since 070 (#240) engine shards take 1 to
-8 minutes, down from 12 to 38. No check is required on `main` by a branch setting. The admin decides
-what to fix, reorder or put to the owner.
+excluding the macOS-only probe. Since 189, on a pull request, `changed packages` lists each package
+crate whose directory, or the directory of one of its path dependencies, the pull request changes,
+and `package tests repeated (directory)` runs that crate's release tests five more times on Linux,
+all five even after a failure; when it lists none, and on a push, the repeats are skipped. `engine
+build` runs fmt, clippy and builds a nextest archive; `engine tests (1/4)` through `(4/4)` use that
+archive; `engine doctests` runs doctests. Since 187, `macos (directory)` runs clippy and release
+tests for each package on `macos-latest`, and `macos (engine: loader, core, conformance)` runs those
+three crates' release tests there. Each of these Rust jobs feeds the `rust` gate: failed, skipped or
+cancelled jobs fail it, except that the repeats may be skipped when `changed packages` lists no
+crate. Since 152 the engine jobs depend on its build alone, so a package or experiment cannot skip
+them. Once a day and on request, [nightly.yml](../../.github/workflows/nightly.yml) runs the
+engine's tests with npm and the vectors on the differential build. 068 built CI (#198); since 070
+(#240) engine shards take 1 to 8 minutes, down from 12 to 38. No check is required on `main` by a
+branch setting. The admin decides what to fix, reorder or put to the owner.
 
 The Record goes at the order's foot. Begin: "Run on DATE on the Mac from `main` COMMIT: the worker
 (N s) and a fresh Codex verifier (N s), ...". Give rounds, findings, each Opus reader and what it

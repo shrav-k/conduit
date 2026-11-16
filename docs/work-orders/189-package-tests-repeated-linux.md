@@ -460,3 +460,52 @@ branch, that adds one comment line to `packages/runtime-provider-kit/tests/runti
 The admin closes that draft unmerged, deletes its branch, and gives each leg's minutes in the
 Record. A fresh read-only Opus reader then reads the diff before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `0ed26306`: the worker (341 s) and a fresh Codex verifier
+(444 s), then in a second round the worker (169 s) and the verifier (299 s). The first verifier
+found one must: without `-z`, `git diff --name-only` quotes a name such as `café.rs`, so a change to
+it missed the prefix match and listed no crate. The worker then read the changed paths with `-z`
+from a temporary file, which keeps git's failure visible, and the second verifier found nothing to
+change. Order 187 had merged, so `macos-package` and `macos-engine` stay in the gate as 187 left
+them, beside this order's two jobs.
+
+In `.github/workflows/checks.yml`, `changed packages` runs on every event. On a pull request it
+lists each crate under `packages/` whose directory, or the directory of one of its direct path
+dependencies, the merge commit changes. It compares paths as plain prefixes. A failed `git diff`,
+`cargo metadata` or `jq` fails it and sets no list. On a push, or when nothing is listed, it sets
+`any=false`. `package tests repeated (directory)` runs only when a crate is listed, one leg per
+crate on `ubuntu-latest` with `fail-fast: false`, and restores `rust-dir`'s cache without saving it.
+It runs `cargo test --release` five times, all five whatever one gives, and never retries. A failed
+run's line gives cargo's exit and the failed tests' lines, and the last line is an annotation that
+counts the failed runs. The `rust` gate needs both jobs. It passes only when `changed packages`
+succeeded and either a crate was listed and its repeats passed, or none was and the repeats were
+skipped. The method as run says so.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran every Done-when
+check under the Mac's `/bin/bash` 3.2, with its outputs outside the tree. The selection matched the
+order's lines on all five commits. The stand-in cargo ran exactly `test --release` five times in
+every case. The gate gave the expected exit for all eight combinations and for more, and `main`'s
+gate at `2f33a53e` passed a failed repeat. It also tried Unicode and newline file names, a sibling
+crate whose name shares a prefix, and a path dependency outside the repository. It found no must and
+four shoulds, all applied before merge. A failed `git diff`, a failed `cargo metadata` and a path
+dependency outside the repository now each print an `::error` annotation that says what happened and
+how to repair it. The method as run keeps order 187's words for the gate and adds the exception to
+them. The comment above `rust` names the repeated tests and again says why a skipped dependency
+fails the gate. A second fresh Opus reader read those fixes, reran the Done-when checks and found
+nothing to change. The hosted runs that Done-when lists, with each leg's minutes, are left to the
+admin.
+
+The admin ran the hosted check on 2026-11-16 with a scratch pull request,
+[#316](https://github.com/shrav-k/conduit/pull/316), on this branch plus one comment line in
+`packages/runtime-provider-kit/tests/runtime.rs`; it was closed unmerged and its branch deleted. In
+[run 43821567746](https://github.com/shrav-k/conduit/actions/runs/43821567746), `changed packages`
+listed `runtime-provider-kit` and the two crates that depend on it by path, and each leg of
+`package tests repeated` passed 5 of 5: `provider-ssh-runtime` in 1 min 26 s,
+`runtime-provider-kit` in 1 min 29 s and `provider-local-process` in 9 min 21 s. The run's `rust`
+gate failed, but not on this order's jobs: order 187's macOS leg for `provider-local-process` failed
+on `killed_provider_fences_descendants_and_restart_keeps_state`, a race in that test that reads the
+fixture's `starts` file before the second start has written to it. That job failed in 3 of the 9
+recent runs that ran it; order 194 fixes the test. Under [ruling 80](../proposals/ruling-80/README.md),
+point 10, the merge waited on the coordinator's local gate, not on CI.

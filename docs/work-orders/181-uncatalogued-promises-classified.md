@@ -383,3 +383,14 @@ decision 8, and each choice you made yourself, marked as your own. The admin the
 and runs `python3 tools/check_private_paths.py` and `git diff --cached --check`. A fresh Codex
 verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `6ef168a2`: the worker (280 s) and a fresh Codex verifier
+(246 s), which found nothing in one round. The promises the safety catalogue left uncatalogued are
+classified under the catalogue's own rule, and the model-checking account, G5.md, the experiment's
+README and IN_FORCE.md's count follow.
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran the account's
+tool with and without its history, the order's checks and the docs and rulings checks, and read
+each classification against the catalogue's rule and the promise's text. It found every class
+justified by the rule, nothing decided that the rule does not decide, and no must or should.

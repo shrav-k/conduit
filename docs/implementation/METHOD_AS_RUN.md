@@ -279,9 +279,10 @@ the second command's files against scope; shared remote refs can move between co
 `wo/NNN-name`, open its pull request, wait for CI and squash-merge with a message written by hand,
 its subject in the form of orders merged since 151: `Work order NNN: title (#PR)`.
 [checks.yml](../../.github/workflows/checks.yml) runs on pull requests and pushes to `main`:
-`secrets` scans added commits; `docs` runs eight Python checks (docs, names, schemas, roadmap,
-rulings, model account with history, private paths and, on pull requests, vector changes against
-declarations), tools' unit tests and PR `git diff --check`. `rust directories` discovers crates;
+`secrets` scans added commits; `docs` runs nine Python checks (docs, names, schemas, roadmap,
+rulings, model account with history, promise standing, private paths and, on pull requests,
+vector changes against declarations), tools' unit tests and PR `git diff --check`.
+`rust directories` discovers crates;
 `rust (directory)` runs fmt/clippy for packages, release tests for packages and experiments,
 excluding the macOS-only probe. `engine build` runs fmt, clippy and builds a nextest archive;
 `engine tests (1/4)` through `(4/4)` use that archive; `engine doctests` runs doctests. Those five

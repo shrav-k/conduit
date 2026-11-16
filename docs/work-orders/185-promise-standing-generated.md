@@ -457,3 +457,39 @@ After the report:
 - On the pull request, the admin shows the `docs` job passing, with its new step.
 - Before it merges, a fresh Codex verifier and a fresh read-only Opus reader read the result
   ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `2f33a53e`: the worker (781 s) and a fresh Codex
+verifier (410 s), which found nothing to change in one round but did not run the fixture tests,
+since they write. `tools/promise_standing.py` now generates `engine/STANDING.md`: one row for
+each of the 519 promises, with its cases, its expected failures, its S1 row, the crates whose
+sources name it and its standing, and the totals by layer. The `docs` job of CI runs its
+`--check` after the model account's step, and the Checks section of `AGENTS.md`, the `docs` job's
+list in `METHOD_AS_RUN.md` (now nine Python checks) and a paragraph of `engine/CONFORMANCE.md` say
+so. From `2f33a53e` the tool reads 501 cases, not the 500 of `ab07fd47`: work order 177 added
+`contracts-control-without-revision`, tagged CTR-006. The standings are those the order gives:
+case passes 292, expected failure 0, reason, no case 74, and no case, no reason 153. The engine's
+sources name 317 of the 519, and PRV-019, PRV-021, PRV-030, IFC-050, ACC-056 and PKG-032 read
+`no case, no reason`.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran the tools'
+unit tests (102, OK), every command of Done when, the other Python checks and `git diff --check`.
+It recounted all 519 rows with a script of its own, probed the check on a scratch copy with an
+expected failure, a missing table and a missing PyYAML, and mutated the tool one change at a time
+against the tests. It found no must. Its three shoulds were applied before merge. Each diagnostic
+of an input in the wrong form now names the whole form wanted, as `check_model_account.py`'s do,
+and a YAML parse error gives its line, column and problem. Where the table differs from the
+generated text only in line ends or the final newline, `--check` now says so; before, it printed
+no difference at all. The tests now cover the 40-line cap on the difference and its count of the
+lines not shown, the difference's lack of context lines, a reason of whitespace alone, a
+promise's first S1 row, a tag given twice in one case, the shell crate's `tests/` and
+`examples/`, a table with CRLF line ends or no final newline, and the diagnostics' words. Each of
+those behaviours, removed alone, now fails the tests. After the fixes the unit tests (102, OK),
+every command of Done when and `check_docs.py` pass; an independent recount gives the same 519
+rows (226 language, 245 convention and 48 interface promises), and on a scratch copy the order's
+probe still ends `Errors: 1`, then `Errors: 0` once the expected failures are restored.
+
+A second fresh Opus reader read the coordinator's fix (ruling 79, point 2) and found no must. Its
+two shoulds were applied: the test now gives a tag twice in an expected-failure case too, and fails
+with that case's set() removed; and a comment's header count is corrected.

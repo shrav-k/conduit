@@ -42,6 +42,11 @@ have left the tree; their results, decisions and observations are in
 | [177](177-ctr-014-diagnostics-ctr-006-at-resolution.md) | CTR-014's diagnostics name what reaches the place, and CTR-006 checked at resolution (follow-up to 157 and 176) |
 | [180](180-roadmap-checker-results-linked.md) | the roadmap checker: a finished row links its results (the full review's order 40) |
 | [181](181-uncatalogued-promises-classified.md) | the uncatalogued promises classified (the full review's order 41) |
+| [182](182-stale-state-lines.md) | stale state lines in the handover, tracker, roadmap and engine pages (the full review's order 36) |
+| [183](183-v0-security-claim-drafted.md) | v0's security claim, drafted (the full review's order 38) |
+| [184](184-second-machine-docs-ruling-77.md) | the second machine's documents agree with ruling 77 (the full review's order 42) |
+| [185](185-promise-standing-generated.md) | each promise's standing, generated (the full review's order 43) |
+| [186](186-scenario-plans-to-tree.md) | the scenario plans brought to the tree (the full review's order 35) |
 
 ## Shared and staged files
 

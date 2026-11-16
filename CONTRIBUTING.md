@@ -251,8 +251,9 @@ What the checks cover:
   in the plan audit, the roadmap or the plan audit's history; that each one cited has a row;
   that the roadmap's order of the work cites each one not yet done; that each
   directory under `experiments/` is listed in its index and linked from the roadmap; that the
-  entry points link the roadmap; and that each state begins with an allowed word. It cannot
-  tell whether a state is true. Its own header lists each check.
+  entry points link the roadmap; that each state begins with an allowed word; and that each row of
+  the roadmap's register whose state is done links its dated results in an experiment's directory.
+  It cannot tell whether a state is true. Its own header lists each check.
 - `cargo test --release` in `engine/` runs the first build's tests: the strict loader
   reads every example under `spec/schemas/examples/` and checks its verdict against the one
   `check_schemas.py` gives, which a fixture records, and reads documents and directories case

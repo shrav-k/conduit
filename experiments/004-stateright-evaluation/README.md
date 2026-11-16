@@ -49,7 +49,7 @@ cargo run --release -- 3 1 8     # callers, crashed-at-once, threads
 cargo test --release             # asserts every variant behaves as predicted
 ```
 
-## Results
+## Results, 2026-11-05
 
 Measured on an Apple M2 Max (12 cores), rustc 1.97.1, Stateright 0.31.0. `cargo test --release`
 passed. Peak memory for the default run on 8 threads was 192 MB.

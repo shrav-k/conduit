@@ -28,6 +28,11 @@ first cell is `A` followed by digits, such as `A70`, or a link whose text is one
   6. Each State cell of the order of the work and of the register, its finished items
      included, begins with one of the words: done, now, next, later, open, in progress,
      dropped, superseded, removed, not adopted.
+  7. Each register row whose State begins with done links, in that cell, dated results:
+     a results-YYYY-MM-DD.md file (optionally suffixed before .md by a hyphen and lower-case
+     letters, digits and hyphens), or a heading whose anchor is results-YYYY-MM-DD or ends in
+     -results-YYYY-MM-DD, in a file directly inside experiments/NNN-name/. The date must be
+     a calendar date.
 
 It reads text, and knows only the shape of a Markdown table: a table is a run of lines that
 begin with `|`, its first line is the header, and a column is found by its name in the header.
@@ -35,15 +40,19 @@ Tables and links inside code fences, and links inside inline code or HTML commen
 counted. The order of the work is a table under the heading "The order of the work" with the
 columns Items and State. The register is each table under "Experiments and probes" with the
 columns Item and State, and one of them must also have the column "Question it settles". It
-cannot tell whether a stated state is true: the coordinator keeps the states.
+cannot tell whether a stated state is true: the coordinator keeps the states. It cannot tell
+whether the results a done row links show what the row says.
 
 The last line of output is "Errors: N", and the exit status is 1 when N is not 0.
 """
 
+from datetime import date
 from pathlib import Path
 import re
 import sys
 from urllib.parse import unquote, urlsplit
+
+from check_docs import anchors
 
 ROOT = Path(__file__).resolve().parents[1]
 ROADMAP = ROOT / "ROADMAP.md"
@@ -209,6 +218,64 @@ def label(path):
     return path.relative_to(ROOT).as_posix()
 
 
+def done_without_results(register):
+    """Count done register rows and report those without a link to dated results."""
+    count, errors = 0, []
+
+    def inspect_link(source, target):
+        parsed = urlsplit(target)
+        if parsed.scheme or parsed.netloc:
+            return target, "not a local link"
+        destination = ((source.parent / unquote(parsed.path)).resolve()
+                       if parsed.path else source.resolve())
+        anchor = unquote(parsed.fragment)
+        try:
+            shown = label(destination) + ("#" + anchor if anchor else "")
+        except ValueError:
+            shown = target
+        if (destination.parent.parent != EXPERIMENTS
+                or not DIRECTORY.fullmatch(destination.parent.name)):
+            return shown, "not in a directory experiments/NNN-name/"
+        if not destination.is_file():
+            return shown, "no such file"
+        filename = re.fullmatch(r"results-(\d{4}-\d{2}-\d{2})(?:-[a-z0-9-]+)?\.md",
+                               destination.name)
+        heading = re.fullmatch(r"(?:.*-)?results-(\d{4}-\d{2}-\d{2})", anchor)
+        dated = filename or heading
+        if not dated:
+            return shown, "neither its file name nor its anchor is dated results"
+        try:
+            date.fromisoformat(dated[1])
+        except ValueError:
+            return shown, "not a calendar date"
+        if not filename and anchor not in anchors(destination.read_text(encoding="utf-8")):
+            return shown, "no heading with this anchor"
+        return shown, None
+
+    for table in register:
+        where, item = column(table, "state"), column(table, "item")
+        for number, row in table["rows"]:
+            state = row[where] if where < len(row) else ""
+            if not re.match(r"done\b", plain(state)):
+                continue
+            count += 1
+            body = re.sub(r"(`+)(?:(?!\1).)+?\1", "", state)
+            body = re.sub(r"<!--.*?-->", "", body, flags=re.S)
+            links = [inspect_link(table["path"], match[1].strip("<>"))
+                     for match in LINK.finditer(body)]
+            if any(reason is None for _, reason in links):
+                continue
+            name = LINK.sub(lambda m: re.match(r"!?\[([^\]\n]*)\]", m[0])[1],
+                            row[item]).strip("*_ ")
+            linked = "; ".join(f"{target} ({reason})" for target, reason in links) or "nothing"
+            errors.append(
+                f"{label(table['path'])}:{number}: {name} is done, and its State cell links "
+                "no dated results: a file experiments/NNN-name/results-YYYY-MM-DD.md, or a "
+                "heading of a file in experiments/NNN-name/ whose anchor ends in "
+                f"results-YYYY-MM-DD. It links {linked}.")
+    return count, errors
+
+
 def check():
     errors = []
     missing = [label(p) for p in (ROADMAP, AUDIT, HISTORY, INDEX) if not p.is_file()]
@@ -335,12 +402,18 @@ def check():
                 errors.append(f"{label(ROADMAP)}:{number}: the state {state[:40]!r} does not "
                               f"begin with one of {', '.join(STATES)}")
 
+    # 7. Each done register row links its dated results in its State cell.
+    done_rows, without_results = done_without_results(register)
+    errors.extend(without_results)
+
     in_audit = sum(1 for _, t, _, _ in live if t["path"] == AUDIT)
     print(f"Action items: {in_audit} rows in {label(AUDIT)}, {len(live) - in_audit} in "
           f"{label(ROADMAP)}, {len(done_before)} in {label(HISTORY)}; {open_items} not finished.")
     print(f"Order of the work: {sum(len(t['rows']) for t in order)} rows, citing "
           f"{len(in_order)} action items. Register: {sum(len(t['rows']) for t in register)} "
           f"rows. States checked: {states}.")
+    print(f"Done rows in the register: {done_rows}, "
+          f"{done_rows - len(without_results)} of them linking dated results.")
     print(f"Experiment directories: {len(directories)}. Entry points: {len(ENTRY_POINTS)}.")
     for error in errors:
         print(error, file=sys.stderr)

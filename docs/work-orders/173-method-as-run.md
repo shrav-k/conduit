@@ -401,3 +401,60 @@ coordinator also runs the review's own check for this order, which is not the wo
 
 A failure is fixed on the branch before the merge, and the fix is read as decision 5 says. The
 coordinator records the result in this order's Record and deletes `target/wo-173/` after the merge.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `5f9fcbe8`: the worker (573 s) and a fresh Codex verifier
+(218 s), which found nothing to change in one round. The order adds [the method as
+run](../implementation/METHOD_AS_RUN.md): the runner variables, the Mac runner's and the continue
+runner's commands, the Codex verifier and its rounds, the Windows wrapper, the Opus readers, the
+merge and the Record, the load rule and the failure modes the Records name. WORK_ORDERS.md's
+sections Dispatch and Checking what comes back become one paragraph that points to the page. The
+handover's pipeline steps, its squash guard and its load bullet point there too, and three of its
+'(log)' marks close (seven remain). verify.md does not change. The worker followed the inputs where
+WORK_ORDERS.md and the handover differed: `CARGO_NET_OFFLINE` for a `net` order, the configurable
+`BASE`, the prompt on standard input and the rounds; for the docs job's count of Python checks it
+followed checks.yml.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). With the inputs in
+place, it ran every command of Done when, `check_docs.py` (Errors: 0) and `check_private_paths.py`
+under a temporary index (Errors: 0). It read the page against the five inputs, checks.yml and the
+sources the order cites. Once, by mistake, it ran a `git ls-remote`, which may have contacted the
+remote and wrote nothing. It found no must and eight shoulds.
+
+Order 174 merged first (#296), so the coordinator rebased the branch onto `main` `ec926025`. In
+WORK_ORDERS.md it resolved the one conflict by keeping this order's pointer in place of the section
+that 174 had extended. It also refreshed two inputs: the Mac runner and the continue runner now
+commit each checkpoint as `"Conduit work order" <work-orders@conduit.invalid>`, as the Windows
+wrapper already did, so their checkpoints name neither the Mac's user nor its host; this branch's
+worker checkpoint predates the change and the squash replaces it. Those two inputs' digests
+therefore differ from the worker's.
+
+A Claude Opus fixer then applied the eight shoulds. The verifier's section now says that it is not
+shown `EXTRA` or an earlier round's findings. Section 6 describes the fixer's brief, the third in
+the coordinator's briefs, and section 7 names 156's Record as the model the fixer now uses. Section
+6 now quotes the order reader's checklist through its last item. The compile cache and cargo's
+directory are under `$HOME`, as the runners write them. Section 5 says that the remote copy runs
+under WSL, that the wrapper forwards no `PREP` or `APIKEY`, that the 20 lost contacts are in a row,
+and that the runner does not record which command writes `out-NNN.log`. The lesson in WORK_ORDERS.md
+is rewrapped within 100 characters. Order 174's sentence on vector changes against declarations,
+which the rebase removed with WORK_ORDERS.md's section, is in section 7, where the docs job now
+counts eight Python checks. Sections 2 and 7 give the checkpoints' identity, and say that the
+coordinator's squash commits with it too. The page was tightened elsewhere to stay at 340 lines.
+
+A second fresh Opus reader read that fix (ruling 79, point 2) and found no must. The coordinator
+applied its four shoulds: the guard's command on the page now commits with the neutral identity;
+two statements of this Record are corrected; section 5 says the wrapper exits 1 and fetches nothing
+after 20 failed contacts, and that no command writes the Mac copy of the remote log; and section 6
+names the fix reader's log and reports and the fixer's last limit. The page stays at 340 lines.
+
+The review's fresh-reader test ran on 2026-11-15, twice, each time as a fresh read-only Codex
+session in a clean clone of the pushed branch, with no private note, no memory, none of the owner's
+settings and no inputs. It wrote the commands to dispatch this order on the Mac, to continue order
+080 from its round-2 report and to start this order on the Windows computer. The first run found two
+facts of the method missing: where an order's original base commit is kept, and what happens to an
+order with untracked inputs on the Windows computer. The page now says both (the first runner's
+base= line; such an order runs on the Mac, since the Windows wrapper forwards no PREP). The second
+run passed: every value it could not find was a variable the page marks private or an order's own
+content (080's base commit, its earlier report and EXTRA, and this order's inputs), and the Windows
+task stopped where the page says such an order runs on the Mac.

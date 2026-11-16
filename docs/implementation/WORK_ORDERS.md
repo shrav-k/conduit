@@ -40,53 +40,12 @@ an experiment. It holds:
    its Record in its own file under `docs/work-orders/` until a later condensation (A80) carries
    it here.
 
-## Dispatch
+## Dispatch and checking
 
-One order, one working tree on a branch `wo/NNN-name` from `main`, outside the repository's own
-checkout, made with `git worktree add --no-track`: two orders started at once raced for Git's
-configuration without it. The admin starts Codex headless in it:
-
-```sh
-CARGO_NET_OFFLINE=true codex exec \
-  --ignore-user-config --strict-config --disable apps \
-  -s workspace-write --add-dir "$HOME/.cargo" \
-  -C <tree> -c 'model_reasoning_effort="high"' \
-  --output-schema <order>.schema.json -o <report>.json --json \
-  - < docs/work-orders/NNN-name.md > <events>.jsonl
-```
-
-Each part answers a fault the first round found:
-
-- `--ignore-user-config` keeps out the owner's Codex configuration and its MCP servers. Codex
-  still signs in with the owner's subscription (ruling 48, point 2).
-- `--strict-config` stops at a key Codex does not know. A70 lost a task to an override that Codex
-  accepted without a warning and ignored (mistake 2 of its results).
-- `--disable apps` turns off the apps of the ChatGPT login (ruling 48, point 1).
-- `workspace-write` lets Codex write in its tree and nowhere else, with no network. Cargo's cache
-  is the one other place it writes, and with `CARGO_NET_OFFLINE` every crate comes from it. An
-  order whose tests bind a loopback port has the network on, since the sandbox without it refuses
-  the bind (order 010's second round).
-- The order goes in on standard input (`-`), so that Codex never waits on an open input, as one
-  of A70's runs did for five minutes.
-- `-o` and `--output-schema` write the report to a file; `--json` keeps every event, which the
-  admin reads only when a report needs explaining. Codex's events do not show every command it
-  runs (A70, surprise 7), so a claim that matters is checked against the files.
-
-## Checking what comes back
-
-1. **A verifier**: a fresh Codex session in a read-only sandbox for each round, and, once the
-   order's checks pass, a fresh read-only Claude Opus reader before it merges (ruling 79); each has
-   the order, the diff and a schema of its own ([the standing verifier order](../work-orders/verify.md)). It tries to
-   refute each change against the decisions and the texts they cite. A reviewer reading cold found
-   the first round's most consequential faults: a contradiction across nine promises, and a wrong
-   claim about Codex in the coordinator's own notes.
-2. **The admin** runs every check itself, reads the diff and the verifier's findings, scans for
-   private paths and names, and decides what to fix, to reorder or to put to the owner. On the pull
-   request, CI's `docs` job also checks every vector change against the declarations that the pull
-   request adds or changes, and lists each flip for the reader
-   ([reviewing vector changes](../../conformance/README.md#reviewing-vector-changes)).
-3. **One more round at most**: the admin sends the worker back once with the verifier's findings
-   it accepts. If that does not settle them, the admin finishes the work itself.
+How an order is dispatched, checked by a fresh Codex verifier in each round, read by a fresh
+Opus reader before it merges ([ruling 79](../proposals/ruling-79/README.md)) and merged, with
+each command and the fault each part of the dispatch answers, is in
+[the method as run](METHOD_AS_RUN.md).
 
 ## Fresh reads
 
@@ -109,7 +68,7 @@ From A70, increment 1, the review of both, and the orders below:
   tool call that the server records.
 - **Keep the owner's machine out.** No order edits the owner's agent configuration or reads a
   credential. A worker's own state, such as Codex's sessions, is the agent's.
-- **Close the input, pin the flags, write the report to a file.** The dispatch above is the sum
+- **Close the input, pin the flags, write the report to a file.** The dispatch's flags are the sum
   of the first round's harness faults.
 - **The admin runs what a sandbox cannot.** Real clients, and the harness against them, run from
   the admin session; when such a run shows a harness fault, the admin fixes it, says so in the

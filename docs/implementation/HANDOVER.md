@@ -7,9 +7,11 @@ new session's first task was the owner's [full review](../guides/full-review.md)
 2026-11-14: [its record](../proposals/full-review/README.md) holds the questions, which the owner
 answered the same day in [ruling 78](../proposals/ruling-78/README.md), and the work orders it
 adds. Rulings, orders and pull requests are cited by number; a fact found only in the coordinator's private notes is
-marked "(log)" and is still to be recorded. Machine details (paths, hosts, accounts, the runners)
-stay outside the repository, in the private handoff note: `.wo/notes/HANDOFF-local.md` beside the
-main checkout. Read with it [IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed),
+marked "(log)" and is still to be recorded. Machine details (paths, hosts, accounts, the runners'
+scripts) stay outside the repository, in the private handoff note: `.wo/notes/HANDOFF-local.md`
+beside the main checkout. [The method as run](METHOD_AS_RUN.md) gives the runners' steps, with each
+private value a variable. Read with it
+[IN_FORCE.md, topic 15](../../IN_FORCE.md#15-how-the-work-is-governed),
 [work orders](WORK_ORDERS.md) and [what waits for the owner](../AUDIT.md#waiting-for-the-owner).
 
 ## Roles
@@ -48,59 +50,9 @@ How the rulings shape the work:
 
 ## The work-order pipeline
 
-[Work orders](WORK_ORDERS.md) gives the design: an order's parts, the dispatch flags, the verifier
-and [the lessons](WORK_ORDERS.md#what-this-round-taught). As practised on 2026-11-12:
-
-1. **Write.** An order is `docs/work-orders/NNN-name.md`: a preamble (read AGENTS.md; the report
-   schema; what the network is for; never print the environment or a whole large file; one cargo
-   command at a time), then What and why, The decisions it applies (each with its source), What to
-   do, Scope, Done when (commands) and, at merge, its Record. Its schema is its own
-   `NNN-name.schema.json` or the shared `004-i2-01-vectors-and-first-start.schema.json`, named at
-   dispatch with `SCHEMA=`. The order's file merges to `main` first, on a branch `orders/NNN`
-   (#245, #258): the runners read order files from `origin/main`, whatever the base.
-2. **Dispatch.** A runner kept outside the repository makes a worktree on `wo/NNN-name` from
-   `BASE` (default `origin/main`; a stacked order names the unfinished branch). It starts the worker
-   with `codex exec --ignore-user-config --strict-config --disable apps -s workspace-write`, with the
-   network only for `net` orders (crates, loopback ports), and with secret-like environment
-   variables removed by name. It checkpoints the worker's output as a local commit. `EXTRA` appends
-   a section "From the admin session" (080, 081). `JOBS` and `TT` cap cargo's jobs and test threads.
-3. **Verify and rounds.** A fresh read-only Codex session reads [verify.md](../work-orders/verify.md),
-   the order and the report, and answers must, should or nit in `verify.schema.json`. A must or a
-   should starts another worker round and a fresh verifier, up to `ROUNDS` (default 2).
-4. **Rounds after the fact.** A second runner continues from a verifier report (`START_ROUND=N`;
-   `VERIFY_FIRST=1` when a worker finished but its verifier never ran, as 079's did). The admin may
-   write that report itself to drive a round: to continue a checkpoint (070, 077 and 081 after the
-   Windows pause) or to fix a merge (042 after its rebase).
-5. **Finishing orders.** When the rounds end with musts left, a finishing order is stacked on the
-   branch and the pair merges together: 124 on 122, 125 on 123, 130 on 129, 148 on 142; 149 and
-   150 on 146, the three as one (#260).
-6. **Review and merge.** The admin reads the diff, the report and each choice the worker made
-   itself; runs every check of AGENTS.md and, for a Rust directory, its tests, fmt and clippy; scans
-   for private paths. It squashes with the guard (below), checks that the squash's files stay in the
-   order's scope, pushes `wo/NNN-name`, opens a pull request, waits for CI and squash-merges with a
-   message written by hand. The Record goes at the end of the order's file: dates, rounds and
-   times, verifier findings, the admin's changes and own decisions, and the worker's findings kept
-   for later ([081's Record](../work-orders/081-spec-one-run-per-instance.md#record) is the model).
-   Orders 037 to 045, 049a1, 050a and 067 onward still sit in `docs/work-orders/`; moving them
-   into [the record](WORK_ORDERS.md#the-record) is owed (A80). Order 067 moved 001 to 036k and 060
-   to 066 into it.
-7. **Orders built on Windows** pass the changed crate's tests, fmt and clippy on the Mac before
-   merging. Order 131 did not compile on macOS (rustix's `mknodat`) and expected Linux's error
-   message; 137 and 140 used `chmod --` and `find -printf` (fixed in #241). Windows' sandbox could
-   not use the pinned toolchain for 075's spec suites, and timed out 072's S1 HTTP test (log).
-8. **CI** ([checks.yml](../../.github/workflows/checks.yml)) runs on every pull request and every
-   push to `main`: the docs job (the six Python checks, the tools' unit tests, `git diff --check`);
-   fmt, clippy and tests per Rust directory; the engine's tests as a nextest archive in four
-   partitions; doctests. A nightly job runs the engine with npm. Order 068 built it (#198); since
-   070 (#240) an engine shard takes 1 to 8 minutes, from 12 to 38. Since order 152 the engine
-   builds in its own job, `engine build`, and its four shards and doctests need only that job, so
-   a package or experiment cannot skip them; the `rust` gate still fails when any Rust job failed,
-   was skipped or was cancelled. No check is required on `main` by a branch setting.
-9. **Small findings (71 point 4).** Instead of another round, a coordinator may fix a small last
-   finding and log it in the Record: the last race of 122 and 124 (#207), 128's mips byte order,
-   136's redaction of a library-built error, 137 and 140's macOS fixes (#241), 141's extension
-   (#249). Until the S1 rerun, nothing that could move S1's author counts: CLI flags, short-form
-   keys, templates and defaults.
+[The method as run](METHOD_AS_RUN.md) gives every step, from writing an order to its Record, with
+each command and each runner variable. [Work orders](WORK_ORDERS.md) gives the design and
+[the lessons](WORK_ORDERS.md#what-this-round-taught).
 
 ## Restarting the lane coordinator
 
@@ -117,7 +69,8 @@ coordinator with this brief. The private handoff note gives its worktree, its lo
   Anything else, `engine/`, `spec/`, `conformance/`, IN_FORCE.md and the ledger among it, goes to
   the admin.
 - **Each merge** needs CI green and a clean fresh verifier; for an order built on Windows, the
-  changed crates' tests, fmt and clippy run on the Mac (item 7 above); and the guarded squash
+  changed crates' tests, fmt and clippy run on the Mac
+  ([the method as run](METHOD_AS_RUN.md#5-on-the-windows-computer)); and the guarded squash
   ([the squash guard](#standing-rules-learned-this-session)).
 - **Its queue** is row 14 of [the queue](#the-queue): Lane SP checkpointed in #262, and
   [PROVIDERS.md's status](PROVIDERS.md#status) lists its queue in order. Tell it when 071 merges
@@ -292,18 +245,13 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
   point 5).
 - **The squash guard.** Worktrees share the remote-tracking refs, and another session's fetch can
   move `origin/main` between two commands; the squash of 041b (1091a71) undid MC8's merge, restored
-  in #190. Squash only in one command, `git fetch origin && git rebase origin/main && git merge-base
-  --is-ancestor origin/main HEAD && git reset --soft origin/main && git commit`, then check
-  `git diff --name-only HEAD^ HEAD` against the order's scope.
+  in #190. [The method as run](METHOD_AS_RUN.md#7-merge-and-the-record) gives the one command and
+  the check after it.
 - **zsh**: brace a variable before a colon in a refspec, `${NAME}:refs/...`; `$NAME:r` is a
   modifier. An unmatched glob aborts the whole command.
-- **Load.** The lane coordinator runs one heavy (engine-building) order on each machine; the admin
-  ran at most two engine orders on Windows until 070 merged. On the Mac, dispatch only while the
-  load is under 8, and cap `JOBS` and `TT`. Under load, rerun timing-sensitive shell tests with
-  `RUST_TEST_THREADS=2` (log).
+- **Load.** [The method as run](METHOD_AS_RUN.md#load) gives the rule.
 - **Don't start finishing orders blindly.** Read the last verifier's findings and the branch first.
   When each round finds a new fault of one kind, the design is wrong: 149's drainer handover raced
   in every round, and [150](../work-orders/150-ssh-r-one-drainer.md) replaced it with one drainer.
-  Two of 081's dispatches failed at once, for a missing `SCHEMA` and a leftover branch (log).
 - **Keep work out of session scratch space** (order 019's run was lost) and never print a whole
   large file (order 028) ([lessons](WORK_ORDERS.md#what-this-round-taught)).

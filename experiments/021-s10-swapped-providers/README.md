@@ -287,3 +287,8 @@ that these lines cite are in
   [FR-410](../../docs/proposals/full-review/findings/E03-s8-s9-s10.md#fr-410) are run as checks
   of the invariants D16 states; and the plan's reading of A73's "or else", its item A4 for the
   admin, is the coordinator's and open to the owner's strike.
+- **2026-11-16, [ruling 80](../../docs/proposals/ruling-80/README.md), point 9 (the owner): the
+  second store.** Q2's "or else" is settled: S10 uses the file store whenever A73 has not reported
+  by the time it runs, and 1Password only if A73 has already reported that it works, so S10 never
+  waits on A73. The plan's reading of it, item A4 under decision D73 above, is no longer the
+  coordinator's.

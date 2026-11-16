@@ -20,8 +20,8 @@ private value a variable. Read with it
 | --- | --- | --- |
 | The owner | Rules on behavior, on what Conduit is for and on the order of the work. May strike any coordinator decision logged since ruling 57. Answers numbered questions in batches ("1a 2 3c") | 37, 38, 46 point 4, 57, 58 point 1 |
 | The admin session: the coordinator and merge authority | Runs on Claude Opus (ruling 79). Plans; writes and dispatches each order and the decisions it applies; reviews each diff, beside the Opus reader's; runs the checks; commits, opens and merges pull requests; records rulings. Sole merge authority for the engine's core, the conformance runner and manifest, `spec/`, IN_FORCE.md and the ledger. Its orders are numbered below 100 (037 to 082 so far) | 48, 71 point 1 |
-| The lane coordinator | One lane, scenarios, providers and proof, in its own worktree, with orders 100 to 199. Merges only pull requests confined to its lane's paths (`packages/`, `experiments/`, a provider's crate), once CI is green and a fresh verifier is clean. A conflict between lanes goes to the admin; a behavior question to the owner. It was a subagent of the outgoing session: [restart it](#restarting-the-lane-coordinator). Not run until the S1 rerun's pin (78 point 1) | 71 point 1, 78 point 1 |
-| Workers and verifiers | A Codex worker (or Claude Opus) carries out one order in a tree of its own, commits nothing and answers in the order's JSON schema. A fresh read-only Codex verifier checks each round; a fresh Opus reader verifies the order before it merges, and when the Claude allowance runs low, dispatch stops and nothing merges unread. Fable is kept for the owner's reviews of the whole | 48 ([how the work is done from now on](../proposals/ruling-48/README.md#how-the-work-is-done-from-now-on)); [ruling 79](../proposals/ruling-79/README.md); [work orders](WORK_ORDERS.md) |
+| The lane coordinator | One lane, scenarios, providers and proof, in its own worktree, with orders 100 to 199. Merges only pull requests confined to its lane's paths (`packages/`, `experiments/`, a provider's crate), once the local gate passes and a fresh verifier is clean; CI is not waited on. A conflict between lanes goes to the admin; a behavior question to the owner. It was a subagent of the outgoing session: [restart it](#restarting-the-lane-coordinator). Not run until the S1 rerun's pin (78 point 1) | 71 point 1, 78 point 1, 80 point 10 |
+| Workers and verifiers | A Codex worker (or Claude Opus) carries out one order in a tree of its own, commits nothing and answers in the order's JSON schema. A fresh read-only Codex verifier checks each round; a fresh Opus reader verifies the order before it merges, and when the Claude allowance runs low, A77's paired reads stop first and dispatch next, and nothing merges unread (80 point 6). Fable is kept for the owner's reviews of the whole | 48 ([how the work is done from now on](../proposals/ruling-48/README.md#how-the-work-is-done-from-now-on)); [ruling 79](../proposals/ruling-79/README.md); [work orders](WORK_ORDERS.md) |
 
 How the rulings shape the work:
 
@@ -33,7 +33,7 @@ How the rulings shape the work:
   record replaces merged orders (points 3, 4 and 10; A80).
 - **67.** Four documents, one question each: `spec/` binds, IN_FORCE.md holds other decisions, the
   ledger what was ruled, a record why. A number only for a new decision; a clarification is a dated
-  later answer in the ruling it clarifies (42, 52, 67, 68, 71, 72, 75 and 76 have them). One
+  later answer in the ruling it clarifies (42, 49, 52, 67, 68, 71, 72, 75 and 76 have them). One
   change carries a ruling everywhere.
 - **70.** Agents run code, unconfined in v0. Conduit building Conduit (A78) is the first priority;
   every friction of dogfooding is a finding of the first build.
@@ -68,10 +68,16 @@ coordinator with this brief. The private handoff note gives its worktree, its lo
   files (100 to 199) under `docs/work-orders/`, with [PROVIDERS.md](PROVIDERS.md) and its plans.
   Anything else, `engine/`, `spec/`, `conformance/`, IN_FORCE.md and the ledger among it, goes to
   the admin.
-- **Each merge** needs CI green and a clean fresh verifier; for an order built on Windows, the
+- **Each merge** needs the local gate to pass on the coordinator's machine and a clean fresh
+  verifier ([ruling 80](../proposals/ruling-80/README.md), point 10). The gate is `tools/gate.py`
+  once order 193 lands it, and until then the coordinator's interim gate, which runs CI's checks
+  for what the branch changes since `origin/main`; the private handoff note names its script, as
+  it does the runners'. GitHub's CI keeps running on every pull request, as a second opinion and
+  the Linux leg, but no merge waits for it, and a run that fails after a merge is fixed in a
+  follow-up. For an order built on Windows, the
   changed crates' tests, fmt and clippy run on the Mac
-  ([the method as run](METHOD_AS_RUN.md#5-on-the-windows-computer)); and the guarded squash
-  ([the squash guard](#standing-rules-learned-this-session)).
+  ([the method as run](METHOD_AS_RUN.md#5-on-the-windows-computer)). The merge is the guarded
+  squash ([the squash guard](#standing-rules-learned-this-session)).
 - **Its queue** is row 14 of [the queue](#the-queue): Lane SP checkpointed in #262, and
   [PROVIDERS.md's status](PROVIDERS.md#status) lists its queue in order. Tell it that 071 has merged
   (#281), so SV1 is unblocked, and when the checkpoint ends. Under [ruling
@@ -163,7 +169,7 @@ is reaped; the test waits for the stopped state. Six CI runs in a row passed.
 | 7 | The admin's next spec order | Not written. PRV-021's owed stop in three cases, matching kit order 141; PRV-015 names a machine by ID where `place.v1` gives a hostname; "labels last reported" (PRV-027, LIF-036, `stop.v1`); one live node per machine (049a1); what an engine owes when it cannot store its state, and races across addresses ([082](../AUDIT.md#known-to-be-open)); 081's Record's leftovers | Write next (077 is in) |
 | 8 | The admin's small engine order | Not written. The first-start report maps Rust's architecture to Go's `GOARCH` wrongly (`loongarch64`, little-endian `mips` and `mips64`, `armbe`, `arm64be`, `riscv32`, `wasm`); mirror order 128's mapping (PRV-014) (log) | A small order, or a fix under 71 point 4 |
 | 9 | Batch 1's rest, on the rerun path | Not written: 046, 047, 048a, 048b, 050, 053; joining them, 043a, 043b, 052a, 052b, 051a, 051b ([the plan](../proposals/spec-batch-1/README.md#the-work-orders)) | 046 next, through Conduit, once the dogfood engine is re-pinned to `main` |
-| 10 | The sign-in chain | Not written: 050 (each Agent's own home, the hooks, the account check; merges with 050a, 076 and 078 as one 0.2.0), 048a, 048b, 051b; then A81 (a carried Codex login) and [A82](../../ROADMAP.md#experiments-and-probes) (Linear's OAuth through the Interface) | The second accounts wait for this: each Agent signed in through the Interface, as the test of its own subscription and of the model ([72's later answers](../proposals/ruling-72/README.md#later-answers)) |
+| 10 | The sign-in chain | Not written: 050 (each Agent's own home, the hooks, the account check, and the connection Conduit manages for a Claude Agent's sign-in, 80 point 8; merges with 050a, 076 and 078 as one 0.2.0), 048a, 048b, 051b; then A81 (a carried Codex login) and [A82](../../ROADMAP.md#experiments-and-probes) (Linear's OAuth through the Interface) | The second accounts wait for this: each Agent signed in through the Interface, as the test of its own subscription and of the model ([72's later answers](../proposals/ruling-72/README.md#later-answers)) |
 | 11 | Off the rerun path | 049a2, the second half of batch 1's order 049a (PND-008's pending actions for enrollment and ENR-012's removal question), after 047 and 048a; 049b, 051c, SSH-M; `s3/m2` merges after the rerun's pin | After 049a1 |
 | 12 | The S1 rerun and the bar | 053, a pinned tag, the rerun with the owner present, the owner's judgment (71 points 2 and 3, as 78 point 2 amends point 3) | After batch 1 |
 | 13 | Batch 2 | Not begun. On its own branch, merged after the bar (71 point 2). Holds appointment (A78's orders 4 and 5), MC9 ([G5](../../experiments/012-model-checking/G5.md#what-g5-still-needs)), and apply calling the control a Type offers for a changed control value (OPS-020; from 069b's reference, for S4's T1) | After the rerun's pin |
@@ -231,12 +237,6 @@ owner confirmed them on 2026-11-10 and 2026-11-12. Logged since, and still to be
 - A6's traces come from S2's and S4's runs ([the register](../../ROADMAP.md#experiments-and-probes)).
 - The side branch `s3/m2` for the Windows engine work, merged after the rerun's pin (log).
 - "Windows computer is up again" read as the resume after the pause of 2026-11-11 (72's later answers).
-- Ruling 72, decision 3: "No rented machine stands in", in
-  [IN_FORCE.md, topic 10](../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment),
-  and in [the ruling's record](../proposals/ruling-72/README.md), is the coordinator's rendering.
-  The owner's words, "We can use the windows machine whenever needed", answered a question about
-  a fallback machine ([FR-330](../proposals/full-review/findings/P05-second-machine.md#fr-330),
-  point 5). Struck, the sentence leaves topic 10 and decision 3.
 - Order 154: a plan prints each `ownTools` member as `inventory.v1` gives it, except that an
   absolute-path `directory` is printed as `{"pathSha256":"HEX"}`, as the plan prints a root as
   `root-sha256=HEX`, so that plan text holds no local path

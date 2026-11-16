@@ -37,3 +37,9 @@ check it".
 - A5 runs on it with the owner's second accounts, including a sign-in to the wrong account,
   which must be refused.
 - Interfaces that other people use, and sign-ins they complete, are recorded as v1 work.
+
+## Later answers
+
+2026-11-16: on A5's runs on the owner's second accounts, against the vendors' terms that order 190
+read, the owner: "Proceed as ruled". No decision changes; the answer is in
+[ruling 72's later answers](../ruling-72/README.md#later-answers).

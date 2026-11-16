@@ -1,6 +1,6 @@
 # Ruling 78: the full review's answers: one coordinator to the pin, S1's bar in two groups, no fence, a reconciliation only records, root alone installs, three cuts
 
-Status: in force (ruled by the owner on 2026-11-14). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 1, 2, 4, 5, 7 to 13 and 15 (spec pending wherever `spec/` must change). This record says why.
+Status: in force; amended by 80 (point 5: a setup's pending action stays open; point 6: F13 after a late success, and not for a call that changes nothing; point 17: the measures file is not the store) (ruled by the owner on 2026-11-14). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 1, 2, 4, 5, 7 to 13 and 15 (spec pending wherever `spec/` must change). This record says why.
 
 At the handover of 2026-11-12 the owner asked for a full review of the repository and the progress
 so far. The coordinator carried it out on 2026-11-14, on commit `2eb8f258`, and put

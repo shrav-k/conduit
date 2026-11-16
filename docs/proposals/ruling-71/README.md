@@ -1,6 +1,6 @@
 # Ruling 71: a faster pace: more coordinators, batch 2 begun now, the bar's rule fixed, small findings delegated
 
-Status: in force; amended by 78 (point 1: one coordinator until the pin; point 3: the bar in two groups) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
+Status: in force; amended by 78 (point 1: one coordinator until the pin; point 3: the bar in two groups); amended by 80 (point 1: a lane merges once the local gate passes, not on CI) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed). This record says why.
 
 The owner found an estimate of three to six weeks to v0 unacceptable, and offered more Codex credits
 and their own time. The coordinator measured the pace and planned the remaining work as parallel

@@ -125,6 +125,7 @@ python3 tools/set_names.py --check   # the names under spec/, engine/, conforman
 python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 python3 tools/check_model_account.py # the model-checking account has a row for each convention-layer promise, and none is stale
+python3 tools/promise_standing.py --check # engine/STANDING.md agrees with the promises, the case tags, the expected failures and the engine's sources
 python3 tools/check_private_paths.py # tracked files contain no private paths or configured names
 git diff --check                     # whitespace errors
 (cd engine && cargo test --release)   # the first build: loader, core, vectors and shell
@@ -155,6 +156,12 @@ What each check needs:
 - `check_model_account.py` needs Python 3 and PyYAML, and runs itself again under
   `/usr/bin/python3` when its `python3` lacks PyYAML, as `check_schemas.py` does. With
   `--history` it also needs Git and the history back to each row's `read`.
+- `promise_standing.py` needs Python 3 and PyYAML, and runs itself again under
+  `/usr/bin/python3` when its `python3` lacks PyYAML, as `check_model_account.py` does. A
+  change to a promise, to a case's `promises`, to the expected failures, to an S1 row or to a
+  promise ID in the sources of the loader, core or shell changes `engine/STANDING.md`: run
+  the tool with `--write` in the same change, whatever files an order's scope lists, so that
+  the file is committed with the change.
 - `cargo test --release` in `engine/` needs Rust through rustup, which installs on
   first use the toolchain that `engine/rust-toolchain.toml` pins. Run it from inside
   the directory, so that the pin applies. For a change to its code, run

@@ -9,6 +9,11 @@ The executable [profile](../conformance/profiles/first-build.yaml) and [coverage
 manifest](../conformance/manifest.yaml) name the evidence. A vector demonstrates its stated slice of
 a promise; a coverage reason is not a passing vector.
 
+For each promise, [STANDING.md](STANDING.md) gives the evidence the tree holds: how many cases
+list it, how many of those are expected failures, its S1 row, and which of the engine's crates
+name it. `tools/promise_standing.py` generates it. It says what evidence there is, not that a
+promise is kept.
+
 ## Implemented choices
 
 | DL item | First build's choice | Where it is shown |

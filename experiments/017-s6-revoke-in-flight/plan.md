@@ -19,7 +19,7 @@ admin. No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
-## What `main` has now
+## What `main` had at the commits named above
 
 041b is implemented (`1091a71`); its effects, rather than the earlier README prerequisite,
 set the remaining work. See [CONFORMANCE.md](../../engine/CONFORMANCE.md).

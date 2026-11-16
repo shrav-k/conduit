@@ -42,7 +42,8 @@ probes) stopped here; nothing of the lane runs, and every unfinished branch is o
   outside the engine's lifecycle (145); S2's adapter row (139); S4's scripted client SCR1 (142 and
   148) and effect servers S4-SRV1 (143); and SSH-R's stop-drainer (146, 149 and 150), which outlives
   the provider. **Stopped unmerged:** S4-SRV2 (order 144), its branch `wo/144-s4-srv2-hook` pushed,
-  with two musts left for a finishing order, named in its Record.
+  with two musts left for a finishing order, named in its Record on that branch; the order's file
+  on `main` has no Record.
 - **The queue, in order:**
   1. S4-SRV2's finishing order, stacked on `wo/144-s4-srv2-hook`, for the two musts its Record
      names;
@@ -68,7 +69,7 @@ probes) stopped here; nothing of the lane runs, and every unfinished branch is o
 - **Waiting on others:** SSH-M on 049a1 in `s3/m2`; PRV-021's three cases in the admin's next
   spec order.
 
-## What `main` has now
+## What `main` had at the commits named above
 
 Evidence below is the tree at that commit, not the presence of an order file or its commit title.
 [A63](../AUDIT.md#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept) remains open;

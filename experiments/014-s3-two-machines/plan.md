@@ -33,7 +33,7 @@ its durable directory (145) and its stop-drainer (146, 149 and 150). Next: SSH-R
 `s3/m2`. Open for the owner: S3's cut, heal and loss method (S3-OF, options A to C). The lane's
 whole queue is in [PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
 
-## What `main` has now
+## What `main` had at the commits named above
 
 The log records 041b at `1091a71`; commits headed 070–072, 076–082, 049a1 and 038c add order files. Their work is absent here; side-branch contents and
 real-machine setup cannot be verified from this checkout. This agrees with the admin's state.

@@ -48,12 +48,12 @@ too, so that no foreign function can be declared. The list names entry points on
 inside a dependency's function that it does not name, a new dependency of the core, a module
 under `std::os`, and the files the core embeds when it is built are left to review.
 
-`State` holds started, objects, records, allocated_ids, record_gaps, invocations,
-installed_packages and preinstalled_snapshots. The invocation index includes held contexts,
-setup/retirement progress and retained replies; records alone cannot reconstruct it.
-`Context` supplies builtin, core_package, meta_prefix, templates, record_source and
-core_environment from the names file and core documents. `Evidence` supplies time, ids,
-revisions and suffixes; allocation exhaustion/invalidity fails the embedding input.
+`State` holds started, objects, records, allocated_ids, tombstones, bound_targets, record_gaps,
+invocations, installed_packages and preinstalled_snapshots. The invocation index includes held
+contexts, setup/retirement progress and retained replies; records alone cannot reconstruct it.
+`Context` supplies builtin, core_package, meta_prefix, templates, record_source and core_environment
+from the names file and core documents. `Evidence` supplies time, ids, revisions and suffixes;
+allocation exhaustion/invalidity fails the embedding input.
 
 ### Inputs
 
@@ -61,7 +61,7 @@ The kebab-case tagged variants of `Input` are:
 
 | Input | Values besides kind | Purpose |
 | --- | --- | --- |
-| first-start | evidence, machine | Bootstrap once from supplied hostname/labels/state |
+| first-start | evidence, machine, trustDomain | Bootstrap once from supplied hostname/labels/state |
 | resolve-project | snapshots, builtin, project | Resolve documents without registration/effects |
 | register-project | snapshots, builtin, project, evidence, request | Resolve and register atomically |
 | install-archive | archive, snapshots, builtin | Pure byte/hash/archive admission |

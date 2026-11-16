@@ -25,7 +25,7 @@ No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
 
-## What `main` has now
+## What `main` had at the commits named above
 
 Evidence below is source inspection, not a new execution result. Order files alone are not builds.
 

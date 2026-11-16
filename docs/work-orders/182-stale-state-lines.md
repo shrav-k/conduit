@@ -435,3 +435,48 @@ The admin then stages the changes and runs `python3 tools/check_private_paths.py
 private names set, and `git diff --cached --check`. On the pull request, CI's `docs` job runs the
 checks again. A fresh Codex verifier and a fresh read-only Opus reader read the result before it
 merges ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `2f33a53e`: the worker (316 s) and a fresh Codex verifier
+(255 s), which found nothing to change in one round. The order changed the 24 files of its Scope
+and nothing else. The handover says that 071 merged (#281) and that SV1 is unblocked, names
+049a2 as the second half of 049a, drops row 15's phrase on A78's findings (order 155 logged them
+as 4-21 to 4-27), rewords the providers' bullet as D45 changed it, with the four contract suites
+holding no case yet, and records ruling 72's "No rented machine stands in" as the coordinator's
+rendering. The tracker gives registration's six whole-state copies, 049a2, the readiness gate's
+assessment of G8 to G10 alone, and only 080 as checkpointed in the row on ruling 77's setup.
+`ROADMAP.md`'s steps 4 and 5 say what has begun, and A79 gains its rerun of 2026-11-11.
+`IN_FORCE.md`'s topic 11 cites PRV-030. `INDEPENDENT_BUILDS.md` says that `conformance/`,
+`engine/` and `packages/` exist. The method as run gains the stacked pairs 114 on 111, 115 on 113
+and 140 on 137. The order README's table has one row for each of the 112 order files, and it
+says that an order keeps its Record in its file until A80's condensation carries it into the
+record. The cold readers' guide and row 4-18 of increment 4's log give the six copies, and the
+measurement plan gains a dated note on rulings 71 and 78. `engine/CONFORMANCE.md`'s opening
+names the shell orders from 020 on, its rows DL18 and DL19 say what is not built, and it says
+that secrets are unserved. `engine/README.md` gives `State`'s fields and `trustDomain`, and
+`conformance/README.md` the counts of 2026-11-15: 226 rows with vectors and 82 with reasons.
+Experiment 012's lines in the experiments' index name its models MC2 to MC7b, MC2's rerun and
+G5's account. Ten headings now read "What `main` had at the commits named above". The review's
+order 36 also asks that `grep` find no "PRV-001 to PRV-028" in `IN_FORCE.md`. That check is not
+met, on purpose: decision 5 keeps the range, since PRV-029 is cited in topic 9 with its own
+rulings and rulings 40 to 44 did not make PRV-030, and it adds PRV-030 with its source instead.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran every command
+of Done when (the counts command printed `226 82`, the README script `112 112 True []`), with
+`check_docs`, `check_roadmap`, `check_rulings`, `check_private_paths` and `check_model_account`
+(each Errors: 0) and `git diff --check origin/main...HEAD`. Once the checkpoint commit exists,
+the README script compares HEAD's README with itself, and the line-length check finds no
+unstaged change to read. So it reran both against `origin/main`, and both passed. It checked
+that the changed files are the 24 of Scope, read each new statement against the tree and found
+no must. Three of its four shoulds were applied before merge. The secrets sentence says that no
+code under `engine/` calls the file secret store, since the package's own tests call it. The
+handover's row 6 and `PROVIDERS.md` say that 144's file on `main` has no Record. This Record
+says why order 36's PRV check is not met. The fourth should is for the admin: a check in
+`tools/check_docs.py` that the README's table lists each order file, since nothing checks it
+now. It is outside this order's Scope, so until it is written the admin adds a row for each
+order written.
+
+A second fresh Opus reader read the coordinator's fix (ruling 79, point 2) and found no must. Its one
+should was applied: the README check's follow-up is now in the handover's row 15, beside the docs
+pass.

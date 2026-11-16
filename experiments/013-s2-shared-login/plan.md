@@ -28,7 +28,7 @@ server is chosen with the owner; S2-LOG (A82) after the core lane's 048a, 048b a
 the owner: the plain Linear server for S2's runs, to the requirements in "The plain row" below.
 The lane's whole queue is in [PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
 
-## What `main` has now
+## What `main` had at the commits named above
 
 Evidence below is inspection of this commit, not a new test result. The log's entries for orders
 070–072, 076–082 and 038c add order files, not their implementations. 050a/076's work is absent:

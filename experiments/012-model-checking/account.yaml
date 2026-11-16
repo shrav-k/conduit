@@ -824,7 +824,8 @@
     to be written, not yet run.'
 - id: LIF-026
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: lifecycle::H
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 3f0c07dfcc4621a1a61f95f9387fd8f9d44d21fd7c010a375de739a18c942dfd
@@ -930,7 +931,8 @@
   note: 'MC3: “a static decision, to be shown by vectors”.'
 - id: ACC-011
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: access::C
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 9bcebdb4d7eed59fca576fbf2cd067e4fa68389d72c84e6d900f9beec16bd27b
@@ -1011,7 +1013,8 @@
   note: 'MC3: “a static decision, to be shown by vectors”.'
 - id: ACC-034
   class: safety
-  standing: 'property over-broad: MC3-002'
+  standing: text changed, not rerun
+  was: 'property over-broad: MC3-002'
   model: access::F, O, Q
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 10df05eec3b69982889bfaccb47d72a304b2e798b57863160116ebd51d4a72c4
@@ -1129,7 +1132,8 @@
     order 160 on 2026-11-15 under ruling 78 point 6: O holds, graded searched.'
 - id: OPS-009
   class: safety
-  standing: restated
+  standing: text changed, not rerun
+  was: restated
   model: operations::A
   read: 71c725bc8495d11df289a6b12ef6ff920b38660e
   digest: 3e0bf7a8e8eb84de41cd464e01f1d45ac55d63aba0a86d1df8787964ea12e960
@@ -1276,7 +1280,8 @@
     point 6 a reconciliation records only that the effect occurred.'
 - id: OPS-032
   class: safety
-  standing: restated
+  standing: text changed, not rerun
+  was: restated
   model: operations::A
   read: 71c725bc8495d11df289a6b12ef6ff920b38660e
   digest: 634a59d7161ae7df7cb9c5764871c68cbfab9cef8d99e1bc84cc8abc0a33e3a6

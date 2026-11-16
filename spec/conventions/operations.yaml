@@ -239,7 +239,7 @@
     unknown is OPS-012, and of one that failed OPS-024. A repeat is a request through a
     Conduit, and
     the access decision is made for it like any other, under ACC-036: a repeat sent through a
-    Conduit that has been closed reports refused under ACC-011.
+    Conduit that has been closed reports refused under ACC-001.
   vectors: []
 
 - id: OPS-010
@@ -700,9 +700,13 @@
     alone, under OPS-023, so that a caller with only a Pool's authority learns nothing of
     whether a name exists outside that Pool; and one that names a Resource through a Conduit
     to `management` reports refused while the Pool that owns the Resource is not retired. A
-    bound is judged against what exists, and does not make such a request report refused: a
-    request for `open.v1` that names no Conduit reports invalid whatever the bound of the
-    actor's Conduit to `access`. A request from an actor with no open Conduit that lists the
+    request for `open.v1` or `close.v1` that names no Conduit reports invalid where the actor's
+    Conduit to `access` carries no bound, and refused under ACC-029 where it carries one, as
+    ACC-053 refuses a bounded holder's `lift.v1`: a bounded holder learns nothing of a name
+    outside its bound. A repeat of the actor's own request, as OPS-009 describes a match, that
+    neither OPS-012 nor OPS-024 dispatches as a new attempt is answered from the stored outcome
+    of the invocation it repeats, as OPS-009 and OPS-032 state, whether or not that Conduit
+    carries a bound. A request from an actor with no open Conduit that lists the
     operation reports refused under ACC-001, and discloses only what ACC-056 permits. A
     request for `set-up.v1` or for `retire.v1` that names a template or a Conduit reports
     invalid too, under LIF-032: the thing exists, and is not one the operation addresses. So
@@ -793,7 +797,7 @@
     is answered under OPS-009, OPS-012 or OPS-024, or reports conflict under OPS-034 where it
     succeeded and neither OPS-009 nor OPS-024 answers it. A repeat is decided like any other
     request, under ACC-036: one sent through a Conduit that has been closed reports refused
-    under ACC-011, which OPS-023 puts first.
+    under ACC-001, which OPS-023 puts first.
   vectors: []
 
 
@@ -858,7 +862,7 @@
     is answered from its outcome under
     OPS-009, or dispatched  under OPS-024. A repeat is decided like any other
     request, under ACC-036: one sent through a Conduit that has been closed reports refused
-    under ACC-011, which OPS-023 puts first.
+    under ACC-001, which OPS-023 puts first.
   vectors: []
 
 - id: OPS-036

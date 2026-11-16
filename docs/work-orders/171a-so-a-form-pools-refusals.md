@@ -748,3 +748,38 @@ new files and runs `python3 tools/check_private_paths.py` and `git diff --cached
 the merge the admin runs the engine's build, its four shards and the doctests at the local gate
 (ruling 80, point 10); GitHub's CI runs on the pull request too, and the merge does not wait for
 it.
+
+## Record
+
+Run on 2026-11-16 on the Mac from `main` `55d2b85a`: the worker (1,255 s) and a fresh Codex verifier
+(251 s), which found nothing to change in one round. It ran both cases with the runner the worker
+had built, but did not rebuild, run `cargo test` or the fix-removal runs. The form of a promise now
+says what an observable binds, and that
+`then` governs where the two differ (F122), and ACC-024's observable names ACC-024. A Pool named
+in a bound's `targets` covers that Pool alone, and a new bound's `pools` must be within the old
+one's `pools` (F1), in ACC-029, ACC-030 and their copies. A bounded holder's request to open or
+close a Conduit that does not exist is refused under ACC-029, except a repeat of its own request
+that is answered from its stored outcome (F2; ruling 80, point 1), in ACC-029, OPS-029, ACC-006,
+ACC-011, ACC-012 and the descriptions of `open.v1` and `close.v1`. ACC-056 states one order of
+the refusing rules, a cause in the engine's own words and who receives tier 2 (F3). CTR-013 went
+into that order and its table, as it still refuses. Six copies give a closed Conduit's refusal to
+ACC-001, `refusal.v1`'s `cause` has `minLength: 1`, and DL9 no longer covers a refusal. Two cases
+were added: `access-pool-target`, which passes and fails when either `covers` or `subset_in_view`
+is loosened, and `access-close-root-outside-bound`, an expected failure until order 046a builds
+ACC-056's order. Five rows of the model-checking account became `text changed, not rerun`,
+`engine/STANDING.md` was written by the tool, and IN_FORCE.md's line 135 now points into `spec/`.
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) on the branch merged
+with `main` `ecabe372`. It reran every check, the tools' unit tests, cargo fmt, clippy and
+`cargo test --release` with 4 vector threads, all of which passed, and both fix-removal runs on a
+scratch copy, each of which failed as "Done when" says. It found no must and three shoulds. For
+order 046a it noted that the build's check order in `evaluate_path` differs from ACC-056's in
+more places than ACC-024 against the bound: ACC-033's routing comes before ACC-032 and ACC-039,
+and ACC-054 before the owner check of a registration under ACC-033. No existing step it sampled
+expects a rule that decision 5 changes. Before merge the branch was rebased onto `ecabe372` with
+no conflict, and the first should was applied: the copy of ACC-029's rule on a replacement in
+`spec/README.md` now reads "a bound that names its Pool in `pools`". The other two are recorded here
+for SO-H's sweep of observables. The row `close` of `spec/definitions.md`, where a request that
+names a closed Conduit reports invalid (OPS-029) with no word on a bound, is a copy of the kind
+decision 4 leaves, beside CON-008, CON-031 and `spec/core/README.md`. NAM-026's observable, where a
+call to a tool that is not presented reports refused under IFC-012 while IFC-012 gives ACC-001, is
+of decision 7's kind, in `spec/promises/naming.yaml`, outside this order's scope.

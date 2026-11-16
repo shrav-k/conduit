@@ -124,6 +124,7 @@
     Conduit that was open when its consumer was retired is still open, under ACC-039. The part
     of a setup counts as succeeded in the same case, under CON-004. A request to open a closed
     Conduit names one that no longer exists, under LIF-035, and reports invalid under OPS-029,
+    or refused under ACC-029 where the actor's Conduit to `access` carries a bound,
     and a request to open a Conduit that is not open and whose consumer is retired reports
     conflict, under CON-031: one whose target is retired is closed already, under CON-008.
     ACC-054 adds the condition where the consumer is root. LIF-041 gives conflict where a
@@ -193,7 +194,9 @@
     that no Conduit ever permitted does, although the engine still holds the closed Conduit's ID
     in the state of the invocations dispatched through it, under OPS-008, and in its records,
     under LIF-019. A request that names the closed Conduit itself, to open, close or inspect it,
-    reports invalid under OPS-029, because it no longer exists. To narrow access, the Conduit is
+    reports invalid under OPS-029, because it no longer exists, or, to open or close it, refused
+    under ACC-029 where the actor's Conduit to `access` carries a bound. To narrow access, the
+    Conduit is
     closed and a narrower one, which lists fewer operations or applies further filters, is
     opened. A Conduit whose consumer is retired is not closed by that: CON-008 closes it once
     the consumer's shutdown is confirmed, or at once where the consumer is declared lost, and
@@ -216,7 +219,8 @@
   observable: >-
     An actor with such a Conduit to `access` can close a Conduit it did not open. Any other
     actor reports refused, and the Conduit is as it was. A closed Conduit no longer exists,
-    under LIF-035, so a request to close it reports invalid under OPS-029, and a repeat of the
+    under LIF-035, so a request to close it reports invalid under OPS-029, or refused under
+    ACC-029 where the actor's Conduit to `access` carries a bound, and a repeat of the
     request that closed it is answered as OPS-009 and OPS-032 state: `close.v1` declares no
     outputs, so OPS-034 does not apply to it. Closing leaves a tombstone under LIF-040, except
     for an engine-made Conduit.
@@ -425,7 +429,7 @@
   then: >-
     The Conduit is closed.
   observable: >-
-    The request is not dispatched, reports refused under ACC-012, and the Conduit stays open.
+    The request is not dispatched, reports refused under ACC-024, and the Conduit stays open.
     Root may close its own other Conduits on its own behalf. CON-008 still closes a Conduit
     whose target is retired. Root's unbounded Conduit to `access` stays open (ACC-022), so
     closing its own other Conduit cannot remove its ability to open another.
@@ -476,14 +480,24 @@
   when: >-
     A Conduit to `access` carries a bound.
   then: >-
-    The bound is a restriction, which the engine applies itself. It names Pools, individual
-    targets and operations. Naming a Pool covers the Pool itself and every Resource that Pool
-    owns, including those instantiated after the Conduit that carries the bound was opened. An
-    individual target is covered when the bound names it.
+    The bound is a restriction, which the engine applies itself. It names Pools, in `pools`,
+    individual targets, in `targets`, and operations. Naming a Pool in `pools` covers the Pool
+    itself and every Resource that Pool owns, including those instantiated after the Conduit
+    that carries the bound was opened. An individual target is covered when `targets` names it.
+    A Pool named in `targets` is an individual target: it covers that Pool alone and none of its
+    Resources, as a Fleet named there covers that Fleet alone. A request to open or to close
+    that is made through such a Conduit and names a Conduit that does not exist is not covered
+    by its bound: it reports refused under this promise, with the bound in
+    `io.github.shrav-k.conduit/restriction`, as one whose target the bound does not cover does.
+    This does not hold for a repeat of the consumer's own request, as OPS-009 describes a match,
+    that neither OPS-012 nor OPS-024 dispatches as a new attempt: the repeat is answered from
+    the stored outcome of the invocation it repeats, as OPS-009 and OPS-032 state.
   observable: >-
-    The consumer of a Conduit to `access` whose bound names a Pool can open a Conduit to that
+    The consumer of a Conduit to `access` whose bound names a Pool in `pools` can open a Conduit
+    to that
     Pool, and to a Resource instantiated in that Pool afterwards, and reports refused for a
-    Resource that another Pool owns unless the bound names that Resource or its Pool. The bound
+    Resource that another Pool owns unless the bound names that Resource, or names its Pool in
+    `pools`. The bound
     is written as the core package's requirement `bound.v1`, applied in the `requirements` of
     the Conduit's template with the arguments `pools`, `targets` and `operations`, each a list
     that is empty where it is left out. The engine applies it itself and never sends it, as it
@@ -506,7 +520,8 @@
     CON-028 says where a bound may be applied. Each item naming a Pool or individual target
     keeps the ID it resolved to under OBJ-021. It covers no later object under that name. A
     single Resource item therefore stops covering it after replacement under its name; naming
-    its Pool covers the replacement while that same Pool owns it. A Fleet named in `targets`
+    its Pool in `pools` covers the replacement while that same Pool owns it. A Fleet named in
+    `targets`
     covers that Fleet alone and none of its Agents.
   vectors: []
 
@@ -518,9 +533,10 @@
     itself included.
   then: >-
     The request is dispatched only if that Conduit's bound is within the bound of the actor's
-    own Conduit to `access`. A new bound is within an old one when every Pool and every
-    individual target it names is covered by the old one, as ACC-029 states, and every operation
-    it names is one the old one names. A Conduit that has no bound is within another only if
+    own Conduit to `access`. A new bound is within an old one when every Pool that its `pools`
+    names is one that the old one's `pools` names, every individual target that its `targets`
+    names is covered by the old one, as ACC-029 states, and every operation it names is one the
+    old one names. A Conduit that has no bound is within another only if
     that other has none: only an actor whose own Conduit to `access` applies no bound may open
     or close a Conduit to `access` that applies none. A request to open is dispatched only if,
     in addition, every operation of `access` that the new Conduit lists is one that the actor's
@@ -532,7 +548,8 @@
     request to open one that lists an operation of `access` that the actor's own Conduit to
     `access` does not list. An actor that opens a further Conduit to `access` for itself gains
     nothing its first one did not permit. A new bound may name a Resource that the old one
-    covers only through its Pool, and may name a Pool only if the old one names that Pool. At
+    covers only through its Pool, and may name a Pool in `pools` only if the old one names that
+    Pool in `pools`. At
     the moment a Conduit to `access` is opened, its bound covers nothing that the bound of the
     actor that opened it does not cover, and names no operation that bound does not name.
     Closing that actor's own Conduit to `access` afterwards closes none of the Conduits it
@@ -686,7 +703,7 @@
     `isError` is as IFC-025 gives it for that outcome. The request was permitted when it was
     dispatched, and the delivery of its result is not decided again. A later repeat of the
     request, or a `tasks/get` for the invocation under IFC-016, is decided anew under ACC-036:
-    made through the closed Conduit, it reports refused, under ACC-011. So where the tasks
+    made through the closed Conduit, it reports refused, under ACC-001. So where the tasks
     extension answered the call with a task, a result that only a later `tasks/get` would read
     is not delivered once the Conduit has closed, and the caller learns the outcome from the
     records. An invocation counts as dispatched through the Conduit of its latest attempt, under
@@ -913,21 +930,37 @@
     reason under IFC-026.
   then: >-
     Its result carries one error diagnostic, whose ruleId is the refusing promise and whose
-    properties.refusal has the form refusal.v1. Tier 1 is given to every caller, an Agent's
-    model among them: the qualified operation, the tool and local Conduit name and object
-    references as the request named them, and the cause in the refusing rule's row below. It states the specific cause of that
-    rule; the no-open-Conduit statement belongs to ACC-001. Nothing in tier 1 depends on
-    whether an object exists,
-    who owns it or its state. Tier 2 is always given to root. Another caller gets it only
-    where it may inspect the authorizing target under ACC-033 and every object the request
-    names, through open Conduits with no filter. It adds the resolved target and the
-    caller's Conduits to it, each with its name, local name, state and operations, or states
-    that the named object does not exist.
+    properties.refusal has the form refusal.v1. Where more than one rule would refuse the
+    request, the refusing promise is the first that refuses in this order: (1) who is asking:
+    IFC-032 and IFC-022, where the request establishes no instance, then the sender and the
+    invocations it serves, under IFC-021, IFC-028, IFC-016, ACC-019, ACC-034, ACC-039 and
+    IMP-008; (2) ACC-001; (3) the rules on the caller and the operation it asks for alone:
+    ACC-032 on an operation reserved to root, ACC-057, CTR-013 and SEC-007, and PND-009 and
+    PND-010 on who may answer or sign in; (4) ACC-033; (5) the bound: ACC-029, ACC-030, ACC-053
+    and ACC-055; (6) the rules that read the object the request names: ACC-054, SEC-008, ACC-024
+    and LIF-034, and ACC-032, PND-009 and PND-010 on a Conduit to be opened that lists an
+    operation they restrict; (7) last, the filter: ACC-008. A promise that this order does not
+    name restates a refusal and is never the refusing promise. Tier 1 is given to every caller,
+    an Agent's model among them: the qualified operation, the tool and local Conduit name and
+    object references as the request named them, and a cause: a non-empty sentence, in the
+    engine's own words, that conveys the refusing rule's row below. The no-open-Conduit
+    statement belongs to ACC-001. Nothing in tier 1 depends on a fact outside both what the
+    caller may inspect and what the bound of its Conduit to `access` covers, where the request
+    is made through one; one with no bound covers every target (ACC-029). Within them, tier 1
+    may depend on the named Conduit and on the chain of invocations the caller serves. Tier 2 is
+    always given to root. Another caller gets it only where it may inspect the authorizing
+    target under ACC-033 and every object the request names, through open Conduits with no
+    filter. For an operation that ACC-033 does not route, the authorizing target is the
+    request's target; for a request that a Pool or a Fleet authorizes, no caller but root and a
+    holder of `inspect.v1` on `management` meets that condition. Tier 2 adds the resolved target
+    and the caller's Conduits to it, each with its name, local name, state and operations, or
+    states that the named object does not exist.
   observable: |-
     The Conduits in tier 2 include open ones, registered ones not yet open and closed ones
     whose tombstones remain (LIF-040). An inventory supplies its own disclosure under
     LIF-013. Without that inspection authority the diagnostic is identical whether a name
-    exists or not, apart from the references the caller wrote. A target inferred from an
+    exists or not, apart from the references the caller wrote, except where the `then` lets tier
+    1 depend on a named object within the caller's bound. A target inferred from an
     owner is described by its ACC-033 row in tier 1, never by a newly resolved name. The
     first text block of IFC-025 and the message of IFC-012's error repeat the diagnostic's
     explanation. The record states the refusing rule and tier, never the tier-2 list.
@@ -965,6 +998,7 @@
     | ACC-057 | Only root on its own behalf registers a submission containing an Agent. |
     | CON-008 | Requests need an open Conduit; retirement closes target Conduits (ACC-001, ACC-011). |
     | CON-031 | Explicit open still needs ordinary authority (ACC-006); it is not implied by registration. |
+    | CTR-013 | Only root may confirm a shared client ID in install.v1's confirmClientIds. |
     | FLEET-004 | Fleet ownership gives no permission (ACC-001, ACC-033). |
     | IFC-012 | No tool of that spelling is presented; no open Conduit permits this call. |
     | IFC-013 | No open Conduit permits this call, as IFC-012 states. |

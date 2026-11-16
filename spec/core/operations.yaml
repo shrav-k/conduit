@@ -761,8 +761,9 @@ metadata:
     and one that lists `get-secret.v1` only where the root Interface asks on its own behalf and the
     consumer is a Resource or an Agent; any other such request reports refused. A request to open
     a Conduit that is already open changes nothing and succeeds. A closed Conduit has been removed,
-    so a request that names one, like one that names a Conduit that does not exist, reports invalid,
-    whatever the bound. One to open a Conduit that is not open and whose consumer is retired reports
+    so a request that names one, like one that names a Conduit that does not exist, reports
+    invalid, or refused where the actor's own Conduit to `access` applies a bound (ACC-029). One
+    to open a Conduit that is not open and whose consumer is retired reports
     conflict; a Conduit that was open when its consumer was retired is still open, and a request to
     open it succeeds like any other.
 
@@ -800,7 +801,8 @@ metadata:
     actor's own. A root-consumed Conduit is closed only where root asks on its own behalf and it is
     neither a first-start nor a default Conduit (ACC-024); otherwise the request reports refused.
     A closed Conduit no longer exists, so a request that names one, like one that names a Conduit
-    that does not exist, reports invalid, whatever the bound. A Conduit whose consumer is retired
+    that does not exist, reports invalid, or refused where the actor's own Conduit to `access`
+    applies a bound (ACC-029). A Conduit whose consumer is retired
     is closed without a request once the consumer's shutdown is confirmed, and until then permits
     only the requests of the consumer's retirement.
 

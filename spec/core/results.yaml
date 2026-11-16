@@ -614,9 +614,10 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: refusal.v1
-  description: The two tiers of ACC-056. named echoes only the request, cause states the refusing
-    rule. target, exists and conduits are tier-2-only. An unknown tool need not be decomposable
-    into an operation; its spelling is preserved in named.tool.
+  description: The two tiers of ACC-056. named echoes only the request; cause is a non-empty
+    sentence, in the engine's own words, that conveys the refusing rule's row of ACC-056.
+    target, exists and conduits are tier-2-only. An unknown tool need not be decomposable into
+    an operation; its spelling is preserved in named.tool.
 spec:
   type: object
   properties:
@@ -639,6 +640,7 @@ spec:
       additionalProperties: false
     cause:
       type: string
+      minLength: 1
     target:
       $ref: github.com/shrav-k/conduit/core#object.v1
     exists:

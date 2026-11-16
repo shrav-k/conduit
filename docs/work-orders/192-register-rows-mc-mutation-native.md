@@ -468,3 +468,78 @@ wrote, the lines where you found each row if `main` had moved, S2's plan's S2-LO
 decision 12 asks, each choice you made yourself, and every check's last line. A fresh Codex
 verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-16, from about 19:11 to 19:19 UTC, on the Mac from `main` `d4c8cf8b`: the worker
+(205 s) and a fresh Codex verifier (257 s), which found no must or should in one round. `main` had
+moved from `0ed26306`, so the worker found each row by its first cell: in `ROADMAP.md`, the In
+parallel row at line 26, step 6 at 31, A6 at 63, A7 at 64, A10 at 65, A22 at 67, A73 at 68, A82 at
+74 and experiment 012 at 76; in `docs/AUDIT.md`, A44 at 477 and A40 at 478; in
+`docs/implementation/PROVIDERS.md`, item 7 at 62. `check_model_account.py` printed 245 rows, 28 of
+them "text changed, not rerun", before and after the change, the counts of `0ed26306`, so experiment
+012's State keeps them with that commit. The change is 9, 2 and 1 lines in the three files of Scope,
+each row still on one line. Experiment 012's row is in progress: its harness and models MC2 to MC7b
+ran on 2026-11-11, before later specification orders changed text they read, MC2 ran again on
+2026-11-15, and each rerun is registered before it runs. Step 6 says that A44's first pass runs on
+the build that the S1 rerun pins, and the In parallel row names A5 and A7 as the items whose rows
+say what they need. A40's Status says that G5's account gives each row its standing, that
+`tools/check_model_account.py` fails while a row whose promise changed still claims its model's run,
+and that experiment 012's row orders the reruns. A44 now mutates the core by promise, counts only a
+conformance vector as catching a mutant, fixes three classes of survivor before the first pass, and
+puts that pass in `experiments/031-a44-mutation/`. A6 needs no engine: a new stub in Rust of the
+presented server, two cases and twelve runs in experiment 008, after the S1 rerun's pin. A7 tests
+statements 2, 3, 5, 6 and 7 of v0's drafted security claim through attempts 1 to 11, with its
+results to go in `experiments/030-a7-routes/`, and drops the sentence on Claude Code's messaging and
+scheduling tools that it credited to A70's T3. A10 is done on 2026-11-14 by D79, its State linking
+order 042's dated results: `check_roadmap.py`'s "not finished" fell from 51 to 50, and the done rows
+in the register stayed 8, each linking dated results. A22 asks whether a keychain item can be
+written and read unattended in the sessions of ruling 75, B3's dedicated macOS user, and where that
+user's Claude Code login lands. A73's Question, Needs, Feeds, Done when and Source are rewritten,
+and its State is left as order 190 set it. A82 has two legs, the package's own listener on the Mac
+and a final URL pasted over SSH from the Windows computer, and states ruling 75, C1's placement.
+`PROVIDERS.md`'s item 7 loses "; MX0 at the admin's word". As decision 12 asks, the worker reported
+that S2's plan needs two changes, for S2's dated amendments (D64): its S2-LOG row
+(`experiments/013-s2-shared-login/plan.md` line 96) needs decision 10's two legs and its placement
+line, and its table "Logins through the Interface" (the section at line 229, the table from line
+236) needs its first-use column replaced with A5, as FR-430 has it.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). A script of its own took
+each of the 41 quoted cells, joined its lines and rewrote its links for the file it goes in, and
+found each word for word at HEAD; every other cell and line of the three files was unchanged, the
+numstat was 9/9, 2/2 and 1/1, and no added line held a non-ASCII character or a private detail. It
+ran `check_docs`, `check_rulings`, `check_roadmap`, `check_model_account`, `check_private_paths`,
+`set_names.py --check` and `promise_standing.py --check` (each Errors: 0), `vector_delta.py HEAD` (0
+changes; 0 flips; 0 undeclared; 0 errors), `git diff --check origin/main...HEAD` (clean) and the
+order's two `git grep` commands (no output). The order's six commands on `main` each printed the
+opposite value, and on scratch copies a done A10 with no dated-results link failed
+`check_roadmap.py` and an unrewritten `../../` link in `ROADMAP.md` failed `check_docs.py`, so the
+checks can fail. It read the rows against ruling 78, points 1, 3.2 and 3.3, ruling 80, the decisions
+and findings the order cites, the review's register rows and `engine/CONFORMANCE.md`, and found no
+must and three shoulds. Two were applied before merge, in the reader's words:
+
+- A73's Feeds gave the owner's answer Q2, "1Password after A73, or else the file store", as the
+  whole rule for S10's second store, though [ruling 80](../proposals/ruling-80/README.md), point 9,
+  has since settled the timing of "or else". The cell now ends "; S10 uses the file store whenever
+  A73 has not reported by the time it runs", citing ruling 80, point 9.
+- Experiment 012's State named the next MC2 run against ruling 78, point 6 alone, though ruling 80,
+  points 2 and 3, have since amended its F13. It now reads "MC2 again with the specification orders
+  that write ruling 78, point 6, as ruling 80, points 2 and 3 amend it (order 172a, and SO-E for
+  point 3)".
+
+Decisions 2 and 9 above, which quote those two cells, were written before ruling 80 and are left as
+written. Every command of "Done when" gives the same value, and the three files' numstat is still
+9/9, 2/2 and 1/1; with this Record the branch also changes this order's file. The reader's second
+should, and the part of its first on experiment 025, are outside this order's Scope, for the admin's
+follow-ups. The new A6 row takes no trace from S2's runs, refresh staying S2's own case, but three
+lines still say that A6's traces come from S2's (and S4's) runs: `docs/implementation/HANDOVER.md`
+line 252, for the next handover edit, and `experiments/013-s2-shared-login/README.md` lines 95 to 98
+and `experiments/013-s2-shared-login/plan.md` line 282, for S2's dated amendments (D64), beside the
+S2-LOG row and table above. `experiments/025-1password/README.md` line 38 still leaves the reading
+of "or else" to the owner's strike, which ruling 80, point 9, has settled, and needs the same fix as
+A73's Feeds in a later order.
+
+The fixer then ran, from the worktree's root under `env -i`, `check_docs`, `check_rulings`,
+`check_roadmap`, `check_model_account`, `check_private_paths`, `set_names.py --check` and
+`promise_standing.py --check`, each Errors: 0, the order's commands of "Done when", each with its
+value, and `git diff --check origin/main...HEAD`, which was clean.

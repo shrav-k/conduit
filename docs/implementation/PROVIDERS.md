@@ -59,7 +59,7 @@ probes) stopped here; nothing of the lane runs, and every unfinished branch is o
      051b;
   7. model checking: MC4's P1 registered again, and the models of orders 109, 110, 112 and 113
      reviewed against order 081's promises, now that 077 has merged (#263); the MC2 rerun,
-     likewise unblocked; MC9 after batch 2; SV1 after 071; MX0 at the admin's word.
+     likewise unblocked; MC9 after batch 2; SV1 after 071.
 - **Answered by [ruling 78](../proposals/ruling-78/README.md), point 4:** S3-OF by option (E),
   the Mac's own firewall under one administrator rule the owner adds once
   ([S3's plan](../../experiments/014-s3-two-machines/plan.md)); S2's plain Linear server is the

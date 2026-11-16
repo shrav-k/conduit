@@ -368,3 +368,36 @@ yourself as your own. Give the section's line count, the eight `missing` lines a
 of every check. A fresh Codex verifier checks each statement against the sources it cites. A
 fresh read-only Opus reader then reads the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `f383edaf`: the worker (572 s) and a fresh Codex verifier
+(290 s), which found no must or should in one round. `engine/CONFORMANCE.md` gained, as its last
+section, "v0's security claim, drafted", with the ten subsections of decisions 3 to 12, and its
+opening paragraph gained the one sentence that names it. The G8 cell of
+`docs/implementation/INDEPENDENT_BUILDS.md` no longer says that the bypass probe A7 has not run, and
+names A71 done and A74 open. A20's row in `docs/AUDIT.md` links the section. No promise, case,
+vector or code changed. A fresh read-only Opus reader then verified the order (ruling 79, point 2).
+It ran every command of the Done when, `check_docs.py`, `check_roadmap.py`, `promise_standing.py
+--check` and `check_private_paths.py`, each of the four ending "Errors: 0", and the negative
+control, which printed all eight `missing` lines. It checked the cited rows, results and logs, and
+the build on `main` that the section describes. It found two musts that the Codex verifier had
+missed. Statement 1 did not say that it says nothing of a cancelled call's outcome, which ruling 78,
+point 7 changes for a call that changes nothing. And the second bullet of "What the first build is"
+quoted the I4-01 section in words that order 182 had already rewritten. It found six shoulds: four
+links without their anchors; the sources of two "Not shown yet" bullets, of D5 and of the archived
+lines of A20's questions; D60's rule stated as a fact about past results; "How to get more" without
+ACC-027's "mediated, whatever the consumer's runtime provider"; and "its domain of trust" and "its
+root", each open to the wrong reading. This fix applied every one before merge. For the
+provider-scope question, it took the reader's second branch: the bullet now says that the archived
+document's provider request is a request to a target's service, that v0 answers it only as "What
+access does not narrow" does, and that the rest is stated as open (ruling 78, point 3.3). The
+section is now 267 lines, over the order's estimate of 120 to 200: 24 of them are link definitions,
+four of which pass 100 characters because a link's target cannot wrap. The Done when's `git grep -n
+CONFORMANCE` prints four lines of `tools/promise_standing.py`, which order 185 added, a defect of
+this order's check rather than of the work: none of them reads `engine/CONFORMANCE.md`.
+
+A second fresh Opus reader read the coordinator's fix (ruling 79, point 2). Its one must, this
+Record's count of the section's subsections, and its two shoulds were applied: the Record says which
+checks end "Errors: 0", and the provider-scope bullet cites the archived lines that make a provider
+request a request to a target's service and names what is stated as open.

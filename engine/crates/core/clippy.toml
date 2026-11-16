@@ -1,0 +1,109 @@
+# conduit-core is pure (src/lib.rs): it reaches no file system, environment, process, network,
+# thread, clock or terminal, and no result of it depends on a random seed. The shell passes in
+# what the core needs. Clippy reads this file for this crate alone, and src/lib.rs forbids
+# allowing these lints. The list names entry points: it cannot see input or output inside a
+# function of a dependency that it does not name.
+
+disallowed-methods = [
+# File system
+{ path = "std::fs::read", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::read_to_string", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::read_dir", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::read_link", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::metadata", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::symlink_metadata", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::canonicalize", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::exists", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::write", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::copy", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::rename", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::hard_link", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::create_dir", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::create_dir_all", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::remove_file", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::remove_dir", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::remove_dir_all", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::set_permissions", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::exists", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::try_exists", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::is_file", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::is_dir", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::is_symlink", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::metadata", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::symlink_metadata", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::canonicalize", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::read_dir", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::path::Path::read_link", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+# The loader's file reads
+{ path = "conduit_loader::read_file", reason = "this reads the file system: the core calls only the loader's pure functions, such as read_bytes and read_submitted_files" },
+{ path = "conduit_loader::read_project", reason = "this reads the file system: the core calls only the loader's pure functions, such as read_bytes and read_submitted_files" },
+{ path = "conduit_loader::Specification::read", reason = "this reads the file system: the core calls only the loader's pure functions, such as read_bytes and read_submitted_files" },
+# Environment and process
+{ path = "std::env::var", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::var_os", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::vars", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::vars_os", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::args", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::args_os", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::current_dir", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::set_current_dir", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::current_exe", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::home_dir", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::env::temp_dir", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::process::abort", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::process::exit", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::process::id", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+# Network
+{ path = "std::net::ToSocketAddrs::to_socket_addrs", reason = "the core opens no connection and resolves no name: the shell connects and passes in what it receives" },
+# Threads
+{ path = "std::thread::spawn", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
+{ path = "std::thread::scope", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
+{ path = "std::thread::sleep", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
+{ path = "std::thread::available_parallelism", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
+{ path = "std::thread::park_timeout", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
+# Clock
+{ path = "std::time::SystemTime::now", reason = "the core reads no clock: the time arrives in Evidence.time" },
+{ path = "std::time::Instant::now", reason = "the core reads no clock: the time arrives in Evidence.time" },
+# chrono's now exists only when another member of the workspace, the shell, turns on chrono's
+# clock feature; allow-invalid keeps a check of this crate alone free of warnings.
+{ path = "chrono::Utc::now", reason = "the core reads no clock: the time arrives in Evidence.time", allow-invalid = true },
+{ path = "chrono::Local::now", reason = "the core reads no clock: the time arrives in Evidence.time", allow-invalid = true },
+# Terminal
+{ path = "std::io::stdin", reason = "the core neither prints nor reads a terminal: it returns its results and diagnostics to the shell" },
+{ path = "std::io::stdout", reason = "the core neither prints nor reads a terminal: it returns its results and diagnostics to the shell" },
+{ path = "std::io::stderr", reason = "the core neither prints nor reads a terminal: it returns its results and diagnostics to the shell" },
+]
+
+disallowed-types = [
+# File system
+{ path = "std::fs::File", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::OpenOptions", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+{ path = "std::fs::DirBuilder", reason = "the core touches no file system: the shell reads files and passes their bytes in" },
+# Environment and process
+{ path = "std::process::Command", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+# Network
+{ path = "std::net::TcpStream", reason = "the core opens no connection and resolves no name: the shell connects and passes in what it receives" },
+{ path = "std::net::TcpListener", reason = "the core opens no connection and resolves no name: the shell connects and passes in what it receives" },
+{ path = "std::net::UdpSocket", reason = "the core opens no connection and resolves no name: the shell connects and passes in what it receives" },
+# Threads
+{ path = "std::thread::Builder", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
+# Clock
+{ path = "std::time::SystemTime", reason = "the core reads no clock: the time arrives in Evidence.time" },
+{ path = "std::time::Instant", reason = "the core reads no clock: the time arrives in Evidence.time" },
+# Random order
+{ path = "std::collections::HashMap", reason = "a random seed changes the order from run to run: the core uses BTreeMap and BTreeSet" },
+{ path = "std::collections::HashSet", reason = "a random seed changes the order from run to run: the core uses BTreeMap and BTreeSet" },
+{ path = "std::hash::RandomState", reason = "a random seed changes the order from run to run: the core uses BTreeMap and BTreeSet" },
+]
+
+disallowed-macros = [
+# Environment and process
+{ path = "std::env", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+{ path = "std::option_env", reason = "the core neither reads nor changes its environment, and neither runs nor ends a process: the shell passes in what the core needs" },
+# Terminal
+{ path = "std::print", reason = "the core neither prints nor reads a terminal: it returns its results and diagnostics to the shell" },
+{ path = "std::println", reason = "the core neither prints nor reads a terminal: it returns its results and diagnostics to the shell" },
+{ path = "std::eprint", reason = "the core neither prints nor reads a terminal: it returns its results and diagnostics to the shell" },
+{ path = "std::eprintln", reason = "the core neither prints nor reads a terminal: it returns its results and diagnostics to the shell" },
+{ path = "std::dbg", reason = "the core neither prints nor reads a terminal: it returns its results and diagnostics to the shell" },
+]

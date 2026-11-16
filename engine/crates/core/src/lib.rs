@@ -1,6 +1,15 @@
 //! Deterministic transitions. No filesystem, clock, network, process or ambient allocation.
 //! The caller supplies the built-in templates, names, time, machine evidence and unique IDs.
 //! Unsupported cases and broken embedding inputs are errors, never Conduit reasons.
+//! Clippy enforces this: `clippy.toml`, beside this crate's `Cargo.toml`, names the functions,
+//! types and macros that reach outside the core, and the attributes below forbid allowing them.
+//! Unsafe code is forbidden too, so that no foreign function can be declared.
+#![forbid(unsafe_code)]
+#![forbid(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::disallowed_types
+)]
 
 pub mod access;
 pub mod archives;

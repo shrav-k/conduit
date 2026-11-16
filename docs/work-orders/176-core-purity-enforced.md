@@ -271,3 +271,39 @@ Before the pull request merges, the admin has a fresh read-only Opus reader read
 (ruling 79). The admin also shows the engine build, the four engine shards and the doctests
 passing on the pull request, on Linux. Do not stage anything. Report each choice you make as your
 own, and every check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `5f9fcbe8`: the worker (829 s) and a fresh Codex verifier
+(204 s), which found nothing to change in one round but did not rerun the build or the tests; it
+reran `cargo fmt --check` and the docs, private-path and whitespace checks, and checked the build
+and probe results against the worker's saved logs. The new `engine/crates/core/clippy.toml` names 57
+methods, 13 types and 5 macros in eight groups, each with the reason Clippy prints under its
+refusal. Only the two chrono entries carry `allow-invalid`, and no entry was dropped. The core's
+`lib.rs` forbids unsafe code and forbids allowing the three lints, and the engine's README says how
+the boundary is kept and what is left to review. No other line of the core changed. The pinned
+rustfmt wraps the second `forbid` over several lines, so the order's exact-line grep prints 1, not
+2; both attributes are in force. The worker's probe was refused on all 10 of its lines, an `allow`
+failed with E0453, and with the list removed the probe passed. A fresh read-only Opus reader then
+verified the order (ruling 79, point 2). With a target directory of its own it reran `cargo fmt
+--check`, both Clippy commands, the core with `--features differential`, the core's release tests
+(22 unit tests passed; the core has no doctest) and `cargo check` with warnings denied, then the
+docs, private-path and whitespace checks. It probed every entry and several ways around the list,
+such as an alias, a function pointer and a module-level `allow`, and each was refused. It found no
+must. Both of its shoulds were applied before merge. The Network and Threads reasons now also say
+what the shell does instead: "the shell connects and passes in what it receives" and "the shell runs
+the work and passes machine evidence in". Three routes that the reasons already ruled out but Clippy
+let through are now listed: `std::thread::park_timeout` with the threads, and `env!` and
+`option_env!`, which read the build machine's environment, in a new environment group at the head of
+the macros. The list now has 58 methods, 13 types and 7 macros, 78 entries in all, so the order's
+first count prints 78. In a scratch copy, a probe of each of the three was refused by its path, with
+its reason. Clippy now refuses all three, so the README need not name them as left to review. The
+one route the reader found that the list does not name, `std::os::unix::fs::symlink`, is under
+`std::os`, which the README already leaves to review, so that list is unchanged. With the fix, both
+Clippy commands passed with no warning, the core's 22 unit tests passed in a release build with two
+test threads, and `cargo fmt --check` passed.
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2) and found no must. Its
+two wording points on this Record were applied. Its third should, two more deprecated routes of the
+same kind (`std::thread::sleep_ms` and `std::thread::park_timeout_ms`, which an `allow(deprecated)`
+lets through), is left to a follow-up order with the counts it changes.

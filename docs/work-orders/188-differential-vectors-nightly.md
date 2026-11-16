@@ -314,3 +314,63 @@ duration, that last line and the `npm` job's result beside it (D9;
 the admin also shows the `docs` and `rust` checks passing. A fresh Codex verifier and a fresh
 read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `0ed26306`: the worker (6,666 s) and a fresh Codex
+verifier (594 s), which found no must or should in one round but could not run the hosted
+workflow. `nightly.yml` gains its second job, `differential vectors`, after `npm`, word for word as
+decision 2 gives it: on `ubuntu-latest`, with at most 300 minutes, restoring without saving the
+cache that `checks.yml` saves for `engine/`, then a build step and the run step at
+`CONDUIT_VECTOR_THREADS=4`. Its header now says what both jobs are. The schedule, the manual
+trigger, `permissions`, `concurrency`, `env` and the `npm` job are unchanged, and neither job reads
+a secret. `conformance/README.md` says, in "Running", what the `differential` feature checks and
+gives its command, and the paragraph on CI in `METHOD_AS_RUN.md` says that `nightly.yml` runs the
+vectors on the differential build once a day and on request. Nothing under `engine/`, `spec/` or
+the cases changed. On the Mac both `access-` runs printed `18 cases passed`; with the planted fault
+the differential build printed `FAIL 0 cases passed; 18 failed` and 18 planted-fault errors, and
+`differential.rs` was restored byte for byte. In the full timed run, `/usr/bin/time -l` failed in
+the sandbox (`time: sysctl kern.clockrate: Operation not permitted`) after the runner printed
+`501 cases passed` (real 3062.73 s), and printed no peak. The peak, 5,336,973,312 bytes (4.97 GiB,
+under decision 3's 12 GiB), was measured on a second run through `getrusage(RUSAGE_CHILDREN)`
+(3011.01 s), which also printed `501 cases passed`; that second run was the worker's own choice.
+Four threads were kept.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran
+`check_docs.py`, `check_private_paths.py` and `set_names.py --check`, each ending "Errors: 0", and
+`git diff --check`, which was clean, and parsed the workflow with PyYAML 6.0.1 under
+`/usr/bin/python3`. Every Done-when check gave the order's value. Since the checkpoint commit
+exists, it compared the second against `origin/main` rather than `HEAD`, and on `main`'s file the
+first stopped at `KeyError: 'differential'`; the README and `METHOD_AS_RUN.md` greps each gave the
+opposite count on `main`, so each can fail. It ran the run step's command on the `access-` cases,
+which printed `18 cases passed`, and read the workflow's run against the worker's: the same binary,
+features, thread count and cases, since with no argument the runner takes the repository it was
+built in (`main.rs` lines 3 to 6), and its last line is the count (lines 34 to 42). It did not
+repeat the full run or the planted fault. It found no fault in the change. Its must is the order's
+own last step, the manual run, left to the admin. Its should, that this Record give the timed run
+as it went rather than say that `time` printed the peak, is applied above.
+
+This fix reran `check_docs.py`, `check_private_paths.py` and `set_names.py --check`, each ending
+"Errors: 0", `git diff --check`, the YAML parse, every Done-when check from the root (the second
+against `origin/main`) and the case count, 501 with no expected failure. From `engine/` it reran
+the order's `access-` runs and the planted fault: the differential build printed `18 cases passed`
+(186 s); with the fault, `FAIL 0 cases passed; 18 failed` and 18 planted-fault lines; the normal
+build, with the fault still in place, `18 cases passed` (8 s). `differential.rs` was then restored
+byte for byte as on `main`. It did not repeat the full run.
+
+The order is done only once the admin has pushed the branch, opened its pull request and run
+`gh workflow run nightly.yml --ref wo/188-differential-vectors-nightly`, and the
+`differential vectors` job has passed with its run step's log ending `501 cases passed`. This
+Record then gains the run's address, the job's duration, that last line and the `npm` job's result
+beside it (D9; [FR-533](../proposals/full-review/findings/G6-outside-the-tree.md#fr-533)), and the
+pull request shows the `docs` and `rust` checks passing. If the job exits 137, loses its runner or
+reaches its 300 minutes, the admin applies decision 3's two-thread form, says so here and runs it
+again.
+
+The admin pushed the branch and ran `gh workflow run nightly.yml --ref
+wo/188-differential-vectors-nightly` on 2026-11-16: [run
+43821570026](https://github.com/shrav-k/conduit/actions/runs/43821570026), on the branch at
+`4492dd35`. `differential vectors` passed in 103 min 16 s; its run step's log ends `501 cases
+passed`. `engine with npm` passed beside it in 15 min 8 s. Under
+[ruling 80](../proposals/ruling-80/README.md), point 10, the merge waited on the coordinator's local
+gate, not on the pull request's CI checks, which run but are not waited on.

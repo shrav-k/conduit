@@ -163,6 +163,16 @@ Records of [153](../work-orders/153-model-account-checked.md#record),
 [156](../work-orders/156-runner-stopped-after-end.md#record) and
 [168](../work-orders/168-tidy-after-153-155.md#record) show.
 
+For an order of A77's sample whose round 1 is a Codex worker's and whose group still lacks five
+paired orders, while the Claude allowance allows, a fresh Claude Opus reader also reads round 1's
+checkpoint, given only what the Codex verifier is given and running nothing that writes; neither
+sees the other's report. Such an order is dispatched with `ROUNDS=1`. The coordinator judges both
+reports' findings with their readers' names removed, and the accepted musts and shoulds of both
+start round 2 through the continue runner. Each of A77's orders keeps a record in
+`docs/work-orders/NNN-a77.yaml`.
+[A77's measures](WORK_ORDERS.md#a77s-measures-registered-before-the-first-paired-read) give the
+rules.
+
 ## 4. Continue from a report
 
 The continue runner is called `round-order.sh`. It uses the existing worktree and output directory:

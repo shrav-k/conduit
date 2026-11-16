@@ -112,6 +112,198 @@ when it merges. That is S1 in daily use, so each friction is logged as a finding
 When S2 runs, opening the pull request moves behind a Conduit to GitHub too, and the token for it
 stays with the engine rather than going to any worker.
 
+## A77's measures, registered before the first paired read
+
+Registered on 2026-11-16 by work order 179, before the first paired read
+([ruling 45](../proposals/ruling-45/README.md)). [A77](../../ROADMAP.md#experiments-and-probes)
+keeps ruling 48's question: when Codex workers carry out the work under the admin session's
+orders, is the work as good, and does the admin session spend less? It measures
+[the method as run](METHOD_AS_RUN.md) under [ruling 79](../proposals/ruling-79/README.md), a
+fresh Codex verifier in each round and a fresh, read-only Claude Opus reader once the checks
+pass, and adds one step, the paired read below. It applies
+[FR-498](../proposals/full-review/findings/G4-who-verifies.md#fr-498) and
+[FR-272](../proposals/full-review/findings/P01-work-orders-lanes.md#fr-272) as their verifiers
+corrected them, [FR-497](../proposals/full-review/findings/G4-who-verifies.md#fr-497),
+[FR-501](../proposals/full-review/findings/G4-who-verifies.md#fr-501), D3 and D9 of
+[the review's decisions](../proposals/full-review/decisions.md). The owner's
+[ruling 80](../proposals/ruling-80/README.md), point 6, pairs the readers at round 1, keeps A77's
+question whole and the 20-order counting rule, records the coordinator's spend per order only as
+a baseline, with no comparison, and leaves what the paired reads change to the owner. Its point
+10 has each merge wait for a local gate and no longer for CI, so claim 1 counts the reds that
+come after a merge. The other choices here are the coordinator's, each open to the owner's strike
+([ruling 48](../proposals/ruling-48/README.md)). It changes only by a dated amendment, merged
+before the first order it changes is dispatched.
+
+### Claim
+
+1. **The work is as good.** No merge of A77's orders turns a job of `main`'s CI red, and no more
+   faults escape per merged order than from the baseline's. Merges wait for the local gate and
+   not for CI (ruling 80, point 10), so a red is counted after the merge, not prevented.
+2. **On one diff under one brief, the Opus reader finds what the Codex verifier finds, and
+   more.** At round 1 of each group's paired orders, a fresh Opus reader finds every must-level
+   fault that the Codex verifier finds, and at least one that the verifier misses.
+
+The coordinator's spend per order is measured with no condition: it was never measured before,
+so this is its first baseline.
+
+### The orders
+
+- *A77's orders* are the next 20 work orders dispatched after this section merges, merged or
+  not. An order that the coordinator carries out itself, with no worker, is not dispatched. In
+  an order run through Conduit (A78), the Codex verifier is `verifier-1`. The result gives claim 1's
+  counts for orders with a Codex worker apart from those with an Opus worker.
+- *The baseline* is the 20 dispatched work orders whose change merged last before this section
+  merges; a merge that only adds order files is not one. An order dispatched before this section
+  merges and merged after it is in neither.
+- An order is *code* if its Scope lets it change a `.rs` or `.py` file or a file under
+  `.github/`, and *text* otherwise.
+- *Paired orders.* Each of A77's orders whose round 1 is a Codex worker's is paired, in dispatch
+  order, while its group has fewer than five. Each costs one more Opus read, at most ten in all.
+  When the Claude allowance runs low (ruling 79, point 4, as ruling 80, point 6, amends it),
+  paired reads stop before dispatch does: an order dispatched then is not paired, and its record
+  says why.
+
+### The paired read
+
+A paired order is dispatched with `ROUNDS=1`, so that the runner stops after round 1's verifier.
+Two fresh readers read its round-1 checkpoint, the same diff from the same base: the Codex
+verifier, as [the method](METHOD_AS_RUN.md#3-the-codex-verifier-and-the-rounds) runs it, and a
+Claude Opus reader, started as the method starts
+[its Opus reader](METHOD_AS_RUN.md#6-the-opus-reader-and-fixes-by-hand) but given only what the
+verifier is given: [the standing order](../work-orders/verify.md), the order, the worker's
+report, the diff and the report's schema. The Codex verifier runs without the owner's
+configuration, so the Opus reader is started with no memory or settings of the owner's (D3); a
+pass that loaded any names them under `loaded`, and the result names each such paired order.
+Claim 2 is judged over all paired orders, and also shown, with their number, over those whose Opus
+reader loaded none; where the two differ, the result says so. The Opus reader runs no command that
+writes, so no build and no test, as the verifier's read-only sandbox allows none. Neither sees the
+other's report. The Opus reader writes its report to a file beside the Codex verifier's, and is
+started so that nothing of its report comes back to the coordinator's session.
+
+A paired order counts toward its group's five only when both readers' reports of round 1 are
+valid against the report's schema. A reader whose read ends without one is started once more,
+fresh, on the same checkpoint. If round 1 leaves no checkpoint, or a reader fails twice, the order
+is not paired, its record says why, and the next order of its group is paired in its place, within
+the ten Opus reads, a read started again counting among them.
+
+Before the coordinator reads either report, a script merges their findings into one list, each
+finding whole but for its reader, sorted by file, line and problem, and numbered. The key from
+number to reader, and each report's verdict, go into a file that the coordinator opens only once
+it has judged every finding. It checks each finding against the files and records: accepted or
+rejected, with the reason for a rejection; its own severity, by the standing order's words; for
+a must, its class (order fault, specification gap, implementation, test weakness, out of scope
+or environment); and for an accepted finding, the fault it belongs to. Two accepted findings
+are one fault when one change to the files closes both; a finding that the change closes only
+in part is a fault of its own. The accepted musts and shoulds of both readers start round 2, in
+a report the coordinator writes for
+[the continue runner](METHOD_AS_RUN.md#4-continue-from-a-report). The order then runs as the
+method has it, and the Opus reader before its merge is another fresh one.
+
+### The record each order keeps
+
+For each of A77's orders, the coordinator commits `docs/work-orders/NNN-a77.yaml` in its first
+pull request after the order is stopped, or after the checks run of its merge on `main` has
+ended. It fills the record from the runner's files, the readers' reports, git and GitHub (D9),
+and replaces each private value with a placeholder; the local gate and CI's path and secret
+checks read it with the rest of that pull request. A pass whose findings the runner passed on to
+the next round unjudged has its musts judged by the coordinator, as the paired read's are, when
+it writes the order's Record, before the round's checkpoint is discarded. A record is complete
+when no key is missing and none says `not recorded`:
+
+```yaml
+order: "<NNN>"
+group: <code or text>
+worker: <codex or opus, the model of round 1's worker (ruling 79, point 3)>
+dispatched: <YYYY-MM-DDTHH:MMZ>
+merged: <YYYY-MM-DDTHH:MMZ, or no and the reason>
+base: <the commit round 1 started from>
+lines: <+N -N, by git diff --shortstat of the squash, or of the last checkpoint>
+order_reads: []    # each read of the order's file before dispatch: model, findings, changes made
+rounds: []         # each worker round's seconds
+passes:            # every read of the work, in the order they ran
+  - reader: <codex, opus-paired, opus or opus-fix>
+    round: <N>
+    model: <as the client names it>
+    client: <the client and its version>
+    effort: <as passed, or default>
+    loaded: []     # the memory, settings or instruction files it read beyond its brief
+    seconds: <N>
+    tokens: <N>    # input and output, as the client reports them
+    marked: {must: <N>, should: <N>, nit: <N>}
+    musts_accepted: <N>    # of the musts it marked, those not rejected
+    musts_rejected: []     # each with its file, line and reason
+    classes: {}    # its accepted musts, counted by class
+fixes: []          # the coordinator's own fixes, each with the pass that read it
+rebases: <N>
+ci:                # from the checks run of the merge's push to main, once it has ended
+  linux: <green; or red, each failed job, and whether it failed in the run before; or none>
+  macos: <green; or red, each failed job, and whether it failed in the run before; or none>
+paired: null       # for a paired order: findings, key and verdicts
+escapes: []        # filled at the result
+```
+
+For a paired order, `paired` holds `findings`, the merged list, each finding with its number,
+its fields as [the report's schema](../work-orders/verify.schema.json) gives them and the
+coordinator's judgment; `key`, from number to reader; and `verdicts`, each reader's verdict.
+
+### Verdicts
+
+The result is a dated file linked from A77's row, written once A77's last order has merged or
+stopped and seven days have passed since the last merge it counts.
+
+- **Claim 1** holds when no merge of A77's orders turns a job of the `checks` workflow red on
+  `main`, on Linux or in the macOS jobs it has run since order 187; every record is complete; and
+  A77's orders have no more escapes per merged order than the baseline. A merge *turns a job
+  red* when the job fails in the run of that merge's push to `main` and did not fail in the run
+  of the push before it; a job left red by an earlier merge is that merge's, not a later one's.
+  The red counts once its run has ended, after the merge, even when a follow-up fixes it; an order
+  that did not merge turns nothing red. A failure that passes when the same commit's job is rerun,
+  and is traced to no change of the merge, is a flake: the result lists it apart, with its job and
+  run, and it turns nothing red. An *escape* is a fault in an order's merged change, found within
+  seven days of the merge by a later Record, a commit that fixes it, CI on `main` or a finding in
+  the first build's open log, and traced to that change. One found by a review on Claude Fable, the
+  owner's of the whole (ruling 79, point 1) or the targeted one of ruling 81, point 2, is reported
+  apart and not counted. The baseline's escapes are recounted at the result by the same rule.
+- **Claim 2** is judged for each group on its five paired orders. A fault is must-level when the
+  coordinator judged it a must, and a reader found it when any of its findings is in it, at any
+  severity. The claim holds for the group when the Opus reader found every must-level fault
+  that the Codex verifier found, and at least one more. A group with fewer than five paired
+  orders is not shown.
+- **What follows is the owner's.** The review would drop the Codex read for a group in which,
+  over five paired orders, it found no must-level fault that the Opus reader missed. Ruling 79,
+  point 2, fixes who reads each order, so the result puts that to the owner with the counts and
+  changes nothing by itself. No estimate of the faults both readers missed is made: from two
+  readers it is unreliable, as FR-498's verifier found.
+
+The result also gives, per paired order, each reader's findings, musts accepted and rejected,
+the faults both found, minutes and tokens; and per order, the reads, the rounds and the
+coordinator's fixes. The coordinator's spend is its own session's tokens from A77's first
+dispatch to its last merge, divided by the orders merged; it counts all of its work in that
+time, but not the readers it starts, whose tokens their passes count. The other sessions it starts
+that are neither a round's worker nor a pass, such as an Opus fixer or a reader of an order before
+dispatch, count in its spend. A script beside the runners reads the spend from the session's
+transcripts, which hold private text, so it stays outside the tree. The result gives the command of
+each script it relies on, each private value a variable. Until the transcript script exists, the
+spend is not shown.
+
+### What it cannot show
+
+The coordinator who judges the findings runs on Opus, the paired reader's model: removing the
+reader's name hides the reader, not its style. Five orders in a group show only large
+differences. The paired reader is held to the verifier's brief and limits, so it does less than the
+Opus reader before the merge, which runs the checks. FR-498's verifier asked for FR-492's wider
+brief; verify.md has not taken it, so both read under verify.md, the brief in use. Each round's diff
+is discarded after the merge (D63, as the method runs it), so a judgment can be checked later only
+against the quotes its record keeps. The coordinator, not the runner, fills each record, and neither
+the worker's nor the readers' reports are committed beside it, where D9 commits them: the record
+keeps the readers' counts, each rejected must and, for a paired order, every finding. A77's baseline
+is work by Codex workers too, so claim 1 shows whether the work keeps its level, not how it compares
+with work the coordinator does by itself. Nor does A77 answer yet whether the admin session spends
+less: the spend per order is a first baseline, compared with nothing (ruling 80). The baseline's
+merges made before ruling 80 waited for CI, and A77's wait only for the local gate: a fault that CI
+stopped before such a merge would be, in A77, a red after the merge, which claim 1 counts, and also
+an escape.
+
 ## The record
 
 One row per merged order, 001 to 036k and 060 to 066, as the condensation plan's E30 set under

@@ -371,7 +371,7 @@ grep -c '(log)' docs/implementation/HANDOVER.md                                 
 grep -oh 'actions/runs/[0-9]*' docs/implementation/HANDOVER.md docs/work-orders/042-build-tombstones-and-inventory.md docs/work-orders/077-spec-reconcile-fenced.md | sort -u | wc -l   # 9
 tr -s ' \n' '  ' < docs/work-orders/042-build-tombstones-and-inventory.md | grep -c 'holds 494 cases'   # 1
 tr -s ' \n' '  ' < docs/work-orders/077-spec-reconcile-fenced.md | grep -c 'holds 446 cases'   # 1
-grep -c 'CONDUIT_PRIVATE_NAMES' CONTRIBUTING.md                                   # 1 or more
+tr -s ' \n' '  ' < CONTRIBUTING.md | grep -c '`CONDUIT_PRIVATE_NAMES` is not set'   # 1 (0 on main)
 tr -s ' \n' '  ' < CONTRIBUTING.md | grep -c 'GitHub masks a secret there but not a variable'   # 1
 tr -s ' \n' '  ' < CONTRIBUTING.md | grep -c 'from `a7c176d8` (#139) to `147f0582` (#144)'   # 1
 grep -c '^| Required status checks on' docs/AUDIT.md                              # 1
@@ -421,6 +421,144 @@ gh run list --workflow checks.yml --created '2026-11-11T20:29:00Z..2026-11-12T03
 ```
 
 If an answer differs, the admin corrects decisions 6 and 7's text to match and says so in the
-Record. The admin then shows CI's `docs`, `rust` and `secrets` checks passing on the pull
-request, and a fresh read-only Opus reader reads the result before it merges
-([ruling 79](../proposals/ruling-79/README.md), point 2).
+Record. The admin then runs the local gate, and the merge waits for it; CI's `docs`, `rust` and
+`secrets` checks run on the pull request, but no merge waits for them
+([ruling 80](../proposals/ruling-80/README.md), point 10). A fresh read-only Opus reader reads the
+result before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `260f3cba`: the worker (299 s) and a fresh Codex
+verifier (138 s), which found no must or should in one round. The handover's six "(log)" marks are
+gone, each fact cited where the tree records it, and its definition says that since this order no
+fact is so marked. The second-machine guide says that the coordinator asks the owner before part
+2's three steps, and gives WSL's capacity. Finding 4-28 names `wasm32` and `wasm64`. The Records
+of 042 and 077 gain the evidence at merge: the case counts (494 at `57813f06`, 446 at `575a1bcd`,
+443 at `575a1bcd^`) and the CI runs by address. `CONTRIBUTING.md`'s settings section gives
+`main`'s protection, the checks D11 asks the owner to require, secret scanning, the unset
+`CONDUIT_PRIVATE_NAMES` and the pause of 2026-11-11, as read on GitHub. The tracker gains the
+owner's row for the required checks, and the metrics proposal names the numbers whose sources
+were not kept.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran every check of
+"Done when", with the diff checks against `origin/main...HEAD`, and `check_docs`,
+`check_rulings`, `check_roadmap` and `check_private_paths`, which passed. It read GitHub again
+with the read-only commands above, and every stated fact held. It compared the twelve blockquotes
+and the cited tree facts with the files. It found no must and five shoulds, all applied before
+merge:
+
+- The tracker's row now asks the owner plainly: require `rust` now, or once the macOS jobs have
+  passed three runs on `main` in a row? `CONTRIBUTING.md` says that the tracker asks it. The
+  row's last sentence begins "Until the checks are required" in place of "Until then": after the
+  question, "then" could be read as "until the macOS jobs have held" (the fixer's choice).
+- The bullet on `CONDUIT_PRIVATE_NAMES` says that the variable stays unset, and that whether CI
+  reads the names from a secret is the owner's and not yet decided.
+- The bullet on the pause cites the Records of 104 and 105 for it and says that how CI was paused
+  is not recorded. "No pull request's run started in that time" was true only from `147f0582`'s
+  run on. It now says that no run was created after that run, at 20:28 UTC, until order 121's
+  pull request run at 03:40 UTC on 2026-11-12, and that the eight pull request runs created from
+  19:33 to 20:18 UTC were cancelled. The fixer named that pull request run, since it was created
+  two seconds before `1b717c40`'s. It also wrote "the eight pull request runs created from 19:33
+  to 20:18 UTC" in place of the reader's "while the six were pushed", since the first, at 19:33,
+  came before `a7c176d8`'s run at 19:37, and it linked the two Records (the fixer's choices).
+- FR-538's least fix marks the numbers "source not kept" where they are cited. The order's scope
+  gives the metrics proposal one paragraph, so the one note before the source list stands in
+  place of a mark at each citing line. The note names each place by its section, so its reader
+  finds every number it covers. Marks at the citing lines, at `260f3cba` lines 114, 386, 403,
+  1239 and 1245, are left to a later order.
+- "Done when"'s check on `CONDUIT_PRIVATE_NAMES` counted a word that `main` already holds. It now
+  looks for the bullet "`CONDUIT_PRIVATE_NAMES` is not set", which `main` lacks. After the
+  checkpoint commit, the admin ran the diff checks against `origin/main...HEAD`.
+
+The fixer then ran every check of "Done when" again, the diff checks against `origin/main...HEAD`,
+and `check_docs`, `check_rulings`, `check_roadmap` and `check_private_paths`. It read GitHub again
+on 2026-11-16 with the read-only commands above, and each answered as its comment says. `main`'s
+latest run then, run 43812163441 on `260f3cba`, passed every job, the macOS jobs among them. The
+reader also noted that the handover's queue row 3 still names 049a1's branch at `cdf146d5`. The
+rewrite of 2026-11-16 (ruling 80, its facts) gave the branch's commits the work-order identity with
+the same trees: `cdf146d5` is now `17e811b5`, an ancestor of `6364fc6b` (formerly `769fbcbe`), which
+the handover cites; that row is outside this order's scope, for the admin.
+
+A second fresh read-only Opus reader read that fix and found no must and two shoulds. On 2026-11-16
+[ruling 80](../proposals/ruling-80/README.md), point 10, settled the order's two questions by
+applying the owner's answers 11 to 13, which did not take them option by option: no status check is
+made required now, the checks to run as local gates before merge in `tools/gate.py`, which order 193
+is to build, while GitHub CI keeps running on every pull request as a free second opinion and the
+Linux leg, which merges do not wait for, and the gates are formalized into GitHub later; and, as the
+coordinator's choice, made against its own recommendation of a masked secret and open to the owner's
+strike, `CONDUIT_PRIVATE_NAMES` stays unset in CI, so that the coordinator's local run before each
+merge is the only name check. A fixer changed each line that this order wrote to ask these questions
+so that it states ruling 80's settlement and cites the ruling: the tracker's row, and in
+`CONTRIBUTING.md` the bullets "No status check is required" and "`CONDUIT_PRIVATE_NAMES` is not
+set". The first bullet no longer says that the admin merges a pull request only after its `docs`,
+`rust` and `secrets` checks pass, since under ruling 80 merges do not wait for CI, and it adds, from
+the option the owner chose, that a red run after merge is fixed in a follow-up. The reader's first
+should asked that the tracker's row also put the private-names question to the owner, and that
+`CONTRIBUTING.md` say the tracker asks it; with ruling 80 in, the row names that question with
+ruling 80's settlement of it, and the bullet says that the tracker records it (the fixer's choices,
+as is the row's last sentence, "What waits: the gates are formalized into GitHub later, and D11's
+step with them"). The second should is applied, as the reader wrote it, in the bullet on the pause
+above. Nothing else of the order's work changed, and no count of "Done when" changed. This order's
+own text above, which puts the two questions to the owner, is left as it was written.
+
+A third fresh read-only Opus reader read that fix and found one must and five shoulds. The must:
+ruling 80's record, `docs/proposals/ruling-80/README.md`, was not yet in the tree, so
+`check_docs` failed on every link to it. Ruling 80 merges first, and the links resolve then; the
+fixer confirmed that the file is on the ruling's branch, and the links name no anchor. A fixer
+applied the five shoulds:
+
+- `tools/gate.py` does not exist yet. `CONTRIBUTING.md`, the tracker's row and this Record now say
+  that the checks are to run in it and that order 193 is to build it; the first two add that, until
+  it lands, the coordinator runs an interim local gate before each merge, which the merge waits
+  for. Order 193 is named without a link, since its file is not yet in the tree.
+- The name check. The coordinator's runs so far used no names, only the seven built-in patterns,
+  as ruling 80 records; the owner was told, and whether one of Conduit's secret stores can hold the
+  names is open. `CONTRIBUTING.md` drops the sentence that the admin's run takes the names from the
+  coordinator's private note, and says in one sentence that since ruling 80 the coordinator's local
+  run before each merge is the only name check, which is to check the names once they are held,
+  and that its runs so far used none. The tracker's row says the same.
+- This order's merge step now says that the merge waits for the local gate, and that CI's checks
+  run on the pull request but no merge waits for them (ruling 80, point 10), in place of showing
+  CI's checks passing before merge (the fixer's choice, in place of the reader's sentence at merge).
+- [`METHOD_AS_RUN.md`, section 7](../implementation/METHOD_AS_RUN.md#7-merge-and-the-record), still
+  says that the pull request's `secrets` job must pass, that the admin waits for CI, and that the
+  checker runs with `CONDUIT_PRIVATE_NAMES` set from the private note, which no run has done so far
+  (ruling 80); decision 6's text above, which this order's worker wrote from, says the same and is
+  left as written. Section 7 is outside this order's scope; order 193, which switches the merge step
+  to `tools/gate.py`, changes it.
+- The tracker's row names the section that put the second question, `CONTRIBUTING.md`'s settings
+  section, in place of "the same section", and adds the part of the option the owner chose that it
+  left out: a red run after merge is fixed in a follow-up.
+
+The wording of each is the fixer's. No count of "Done when" changed.
+
+A fourth fresh read-only Opus reader read that fix and found one must and four shoulds. It rebuilt
+the merge outside the repository, from `origin/main`, ruling 80's branch and then this branch: the
+handover, the one file that both change, merged without conflict, and on that copy `check_docs`,
+`check_rulings` and `check_roadmap` found no error. The must: ruling 80, point 10, says that the
+owner did not answer the order's two questions option by option, that the coordinator applied the
+owner's answers 11 to 13 to them, and that leaving the names out of CI is the coordinator's choice,
+made against its own recommendation of a masked secret and open to the owner's strike. The paragraph
+above on the second reader's round said that the owner answered them, and now says what ruling 80
+says. A fixer applied the must and the four shoulds as the reader wrote them:
+
+- `CONTRIBUTING.md`'s bullet on `CONDUIT_PRIVATE_NAMES` and the tracker's row now say the same, and
+  the row's "What waits" adds that the owner may strike the choice on the names.
+- On 2026-11-16 the six branches not yet merged were rewritten to the work-order identity (ruling
+  80, its facts), so `769fbcbe` is no longer on 049a1's pushed branch. The handover now cites
+  `6364fc6b`, the rewritten commit with the same tree, and the Record above names `17e811b5`, the
+  rewritten `cdf146d5`, which the fixer matched by its tree.
+- The third reader's bullet on `METHOD_AS_RUN.md` now also names section 7's line that the checker
+  runs with the names from the private note, which no run has done so far, and its "It is outside"
+  became "Section 7 is outside", so that "it" is not read as decision 6's text (the fixer's choice).
+  Order 193's text keeps that line; it is outside this order's scope.
+- The third reader's bullet on the merge step now says that changing the step was the fixer's
+  choice, in place of the reader's sentence at merge. That sentence is still owed at merge.
+
+No count of "Done when" changed.
+
+Two phrases of the fourth reader's paragraph that still spoke of "the answer" now name ruling 80's
+settlement, as a third Opus reader worded them, applied by the admin. The order merged through the
+coordinator's interim local gate, since `tools/gate.py` has not landed (order 193); CI ran on the
+pull request, and the merge did not wait for it ([ruling 80](../proposals/ruling-80/README.md),
+point 10).

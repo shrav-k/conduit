@@ -597,3 +597,14 @@ requests.json, kept to the stated scope, and prepared a patch that passed every 
 The admin applied it as an admin-side fix (ruling 71): the attempt is fenced by an observed late
 answer before the original reconcile. On the rebased tree all 446 vectors pass, the vector delta
 shows 123 declared changes and none undeclared, and the repository checks pass.
+
+Added on 2026-11-15 by work order 191 ([FR-525, row
+7](../proposals/full-review/findings/G6-outside-the-tree.md#fr-525)), the evidence at merge. `main`
+at `575a1bcd` (#263) holds 446 cases: from the repository root, `git ls-tree -r --name-only 575a1bcd
+conformance | grep -c '/case.yaml$'` prints 446. The pull request's one CI run, [run
+43279956068](https://github.com/shrav-k/conduit/actions/runs/43279956068) on its head `edb0160e`,
+failed on both its attempts in `rust (packages/provider-ssh-runtime)`, so the engine's four test
+shards and its doctests were skipped. The order merged on the Mac's runs of the engine's suite and
+the 446 vectors; their commands and last lines are not in the tree. CI's run on `main` after the
+merge, [run 43282660601](https://github.com/shrav-k/conduit/actions/runs/43282660601), passed every
+job, the four engine shards among them.

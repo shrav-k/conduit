@@ -60,3 +60,17 @@ the inventory and a view form for publication) and lib.rs. One vector then faile
 Fleet reconciliation check matching a sender through a reused name; the admin fixed it to match by
 ID only (ruling 71). Kept for later work: the inventory-reading vector does not exercise a Fleet
 holder, and node-requests' readmission injects the expected node instead of testing readmission.
+
+Added on 2026-11-15 by work order 191 ([FR-525, row
+7](../proposals/full-review/findings/G6-outside-the-tree.md#fr-525)), the evidence at merge. `main`
+at `57813f06` (#264) holds 494 cases: from the repository root, `git ls-tree -r --name-only 57813f06
+conformance | grep -c '/case.yaml$'` prints 494. The 491 above matches the tree before order 077's
+three cases reached `main`: 443 cases at `575a1bcd^`, and this order's 48. [The
+handover](../implementation/HANDOVER.md#the-queue) reports that all 494 pass on the normal and the
+differential builds after the rebase onto 077, the differential run taking about 2.4 hours on the
+Mac; the commands and last lines of those runs are not in the tree. The pull request's CI run, [run
+43312121448](https://github.com/shrav-k/conduit/actions/runs/43312121448) on its head `e33c121f`,
+and CI's run on `main` after the merge, [run
+43315266140](https://github.com/shrav-k/conduit/actions/runs/43315266140), passed every job, among
+them the engine's four test shards, which run the vectors on the normal build. No CI job ran the
+differential build then.

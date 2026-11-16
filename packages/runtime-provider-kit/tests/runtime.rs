@@ -1661,3 +1661,4 @@ async fn another_calls_drain_before_operation_lock_does_not_cancel_start() {
     assert!(*h.backend.call_order.lock().unwrap() == [("stop", ID.into()), ("start", ID.into())]);
     h.close().await;
 }
+// A comment line for order 189's demonstration; this pull request is closed unmerged.

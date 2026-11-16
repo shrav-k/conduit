@@ -284,3 +284,69 @@ the coordinator's interim gate or `tools/gate.py` once order 193b has merged. CI
 its four engine shards and the doctests run on the pull request, on Linux, as a second opinion
 that the merge does not wait for; a run that fails after the merge is fixed in a follow-up
 ([ruling 80](../proposals/ruling-80/README.md), point 10).
+
+## Record
+
+Run on 2026-11-16 on the Windows computer from `main` `55d2b85a`: the worker (339 s) and a fresh
+Codex verifier (132 s), which found no must or should in one round. Cargo was offline there and
+its cache lacked `jsonschema`, so only `cargo fmt --check` ran, and passed: clippy and every cargo
+test stopped at dependency resolution, and the verifier read the change without running it. The
+shell now appends one line of compact JSON to `commit-measures.jsonl` in the store directory after
+each commit that returns `Ok`, still under the writer mutex, with no fsync. A line holds `at`,
+`input`, `stateBytes`, `invocations`, `writes`, `stepMicros`, `writeMicros` and `commitMicros`; the
+recover commit that `Shell::open` makes also gives `openMicros`. `write_state` returns the bytes it
+wrote, `persist` returns those bytes and the write's time, and `retention` adds each expiry's step
+and write to the commit's measures. `Writer` keeps the open's time and the count of lines not
+appended, which the next line appended carries as `unwritten`. The new
+`store::append_commit_measures` creates the file 0600 with `O_NOFOLLOW` and `O_NONBLOCK`, and
+refuses one that is not a regular file with mode 0600. A line not appended changes no result: a line
+naming the input's kind and the cause goes to standard error with the prefix `conduit: `. The new
+test `commit_measures_one_line_per_commit` walks the seven steps of decision 6, and the retention
+test now checks the `writes` of both retention checks. As its own choice, the worker added a
+`println!` of those numbers to that test. DL2's row in `engine/CONFORMANCE.md` says all of this.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), and ran on the Mac the
+order's first clippy and cargo tests. It found all seven decisions applied and no must. Its one
+should was that the worker's report lacks the evidence that Done when asks for. On a scratch copy
+with `main`'s `lib.rs` and `store.rs`, the new test compiled and failed at its assertion that the
+file exists, and passed once the two files were restored with `cp`. The order's `git show HEAD:`
+would have restored nothing, since `HEAD` is the worker's checkpoint commit, so it took the two
+files from `main`. Three faults it planted also failed the tests: without `O_NOFOLLOW` at `tests.rs`
+line 166, without the mode check at line 161, and without counting the first retention check's
+writes at line 663 (7 against 14). It found the `println!` harmless and not blocking.
+
+The fix applied that should: this Record carries the evidence from the Mac, and no code changed.
+On 2026-11-16 the coordinator's fixer ran Done when on the Mac, on the branch, against `main`
+`a771b88b`, which has not touched `engine/` since `55d2b85a`. Each cargo command ran alone from
+`engine/` under `env -i`, with `CARGO_NET_OFFLINE=true`. The last line of each check:
+
+- `cargo fmt --check`: exit 0, no output.
+- `cargo clippy --all-targets -- -D warnings`: exit 0, no warning, and
+  ``Finished `dev` profile [unoptimized + debuginfo] target(s)``.
+- `cargo test --release -p conduit-shell --lib commit_measures_`:
+  `test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 53 filtered out`.
+- The same with `-- --nocapture`, through the order's `grep`: exactly the two lines below, step
+  4's first and step 5's second. Neither names a path.
+- `cargo test --release -p conduit-shell`: exit 0. The library's tests report 54 passed, every
+  test binary is ok, and the last line is the doc-tests' `test result: ok. 0 passed`.
+- `cargo test --release`, the whole workspace: exit 0, and all 28 test results are ok. The two
+  lines below are the only diagnostics in its output.
+- The retention test: the submit's `invoke` line has `writes` 8 and its `complete` line 6. Before
+  the submit 12 invocations kept an output, and after it 1, so 8 + 6 = 2 + 12 + 1 - 1 = 14.
+- The fix-removal check, on a scratch copy made with `git archive HEAD` and given `main`'s
+  `lib.rs` and `store.rs`: the test compiled and failed at `crates/shell/src/tests.rs:86:5` with
+  `assertion failed: path.exists()`. Once the two files were restored with `cp`, it reported
+  `1 passed`. The scratch copy was then removed.
+- From the root, with `/usr/bin/python3`: `check_docs.py`, `check_rulings.py`,
+  `set_names.py --check`, `check_schemas.py` and `check_private_paths.py` each end `Errors: 0`.
+  `promise_standing.py --check` ends `engine/STANDING.md is current; promise rows: 519.` and
+  `Errors: 0`. `vector_delta.py origin/main HEAD` and `vector_delta.py HEAD` each end
+  `Vector delta: 0 changes; 0 flips; 0 undeclared; 0 errors.`
+- `git diff --check origin/main...HEAD` prints nothing. The `numstat` of `engine/CONFORMANCE.md`
+  is one line added and one removed, the `grep` pipeline prints 3, and before this Record
+  `git status --short` printed nothing, since the work is in the checkpoint commit.
+
+```text
+conduit: the measures line of a commit of kind list-tools was not appended: commit-measures.jsonl is not a regular file with mode 0600
+conduit: the measures line of a commit of kind list-tools was not appended: Too many levels of symbolic links (os error 62)
+```

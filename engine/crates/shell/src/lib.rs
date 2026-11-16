@@ -10,9 +10,10 @@ use conduit_core::{Context, Input, State, Transition};
 pub use identity::RunIdentity;
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, VecDeque};
+use std::io::Write;
 use std::path::Path;
 use std::sync::{Arc, Condvar, Mutex, Weak};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 #[cfg(test)]
 use store::Stored;
 use store::{Memory, Store};
@@ -142,6 +143,27 @@ impl Ticket {
 struct Writer {
     store: Store,
     waiters: BTreeMap<(String, u64), Vec<Weak<ReplyCell>>>,
+    open_micros: Option<u64>,
+    unwritten: u64,
+}
+
+fn micros(duration: Duration) -> u64 {
+    duration.as_micros().min(u64::MAX as u128) as u64
+}
+
+#[derive(Default)]
+struct CommitMeasures {
+    state_bytes: usize,
+    writes: u64,
+    step_time: Duration,
+    write_time: Duration,
+}
+impl CommitMeasures {
+    fn written(&mut self, (bytes, elapsed): (usize, Duration)) {
+        self.state_bytes = bytes;
+        self.writes += 1;
+        self.write_time += elapsed;
+    }
 }
 struct Committed {
     ticket: Ticket,
@@ -165,6 +187,7 @@ pub struct Shell {
 
 impl Shell {
     pub fn open(directory: &Path, context: Context, config: Config) -> Result<Self> {
+        let started = Instant::now();
         // DL2/DL13: Store hands its one parsed committed snapshot to identity and recovery.
         let url = url::Url::parse(&config.engine_url).map_err(|_| "invalid engine URL")?;
         let loopback = matches!(url.host(), Some(url::Host::Domain("localhost")))
@@ -199,12 +222,14 @@ impl Shell {
             )?;
         }
         let authority = identity::Authority::open(&store, config.trust_domain.as_deref())?;
-        let shell = Self {
+        let mut shell = Self {
             directory: store.directory.clone(),
             run_groups: Mutex::new(Vec::new()),
             writer: Mutex::new(Writer {
                 store,
                 waiters: BTreeMap::new(),
+                open_micros: None,
+                unwritten: 0,
             }),
             authority,
             context,
@@ -215,7 +240,13 @@ impl Shell {
             trace: Mutex::new(None),
         };
         // An open is a restart boundary, even for an empty store. No intent is replayed.
-        let recovered = shell.commit(json!({"kind":"recover"}))?;
+        let recover = json!({"kind":"recover"});
+        shell
+            .writer
+            .get_mut()
+            .map_err(|_| "writer lock poisoned")?
+            .open_micros = Some(micros(started.elapsed()));
+        let recovered = shell.commit(recover)?;
         if !recovered.intents.is_empty() {
             return Err("recovery unexpectedly requested external work".into());
         }
@@ -431,7 +462,12 @@ impl Shell {
         Err("embedding error: evidence exhausted after retry".into())
     }
 
-    fn persist(&self, writer: &Writer, stored: &mut Memory, transition: &Transition) -> Result<()> {
+    fn persist(
+        &self,
+        writer: &Writer,
+        stored: &mut Memory,
+        transition: &Transition,
+    ) -> Result<(usize, Duration)> {
         let now = Utc::now().to_rfc3339_opts(SecondsFormat::Nanos, true);
         stored.output_times.retain(|id, _| {
             transition
@@ -456,12 +492,19 @@ impl Shell {
             }
         }
         // DL2/REC-003/OPS-013: persist records and outcomes before advancing memory.
-        writer
+        let started = Instant::now();
+        let bytes = writer
             .store
-            .write_state(&transition.state, &stored.output_times)
+            .write_state(&transition.state, &stored.output_times)?;
+        Ok((bytes, started.elapsed()))
     }
 
-    fn retention(&self, writer: &Writer, stored: &mut Memory) -> Result<()> {
+    fn retention(
+        &self,
+        writer: &Writer,
+        stored: &mut Memory,
+        measures: &mut CommitMeasures,
+    ) -> Result<()> {
         let now = Utc::now();
         let mut outputs = Vec::new();
         for v in &stored.state.invocations {
@@ -495,12 +538,11 @@ impl Shell {
             {
                 // DL10: only expiry writes; both retention checks use the in-memory commit.
                 let state = Arc::unwrap_or_clone(std::mem::take(&mut stored.state));
-                let t = self.transition(
-                    state,
-                    &writer.store,
-                    json!({"kind":"expire-outputs","invocation":id}),
-                )?;
-                self.persist(writer, stored, &t)?;
+                let input = json!({"kind":"expire-outputs","invocation":id});
+                let started = Instant::now();
+                let t = self.transition(state, &writer.store, input)?;
+                measures.step_time += started.elapsed();
+                measures.written(self.persist(writer, stored, &t)?);
                 stored.state = Arc::new(t.state);
                 total -= size;
             }
@@ -510,10 +552,13 @@ impl Shell {
 
     fn commit(&self, input: Value) -> Result<Committed> {
         let mut writer = self.writer.lock().map_err(|_| "writer lock poisoned")?;
+        let started = Instant::now();
+        let kind = input["kind"].as_str().unwrap_or("").to_string();
+        let mut measures = CommitMeasures::default();
         // DL2: taking memory leaves the cache empty on every failed step/write.
         let mut stored = writer.store.take()?;
         if input["kind"] != "recover" {
-            self.retention(&writer, &mut stored)?;
+            self.retention(&writer, &mut stored, &mut measures)?;
         }
         // IFC-038: notices read objects only. The State is copied only for a held reader.
         let before = State {
@@ -521,8 +566,10 @@ impl Shell {
             ..State::default()
         };
         let state = Arc::unwrap_or_clone(std::mem::take(&mut stored.state));
+        let step_started = Instant::now();
         let mut t = self.transition(state, &writer.store, input)?;
-        self.persist(&writer, &mut stored, &t)?;
+        measures.step_time += step_started.elapsed();
+        measures.written(self.persist(&writer, &mut stored, &t)?);
         // PRV-029/LIF-035: reconcile only after removal is durable. A directory
         // whose delete fails remains the retry marker, including across restart.
         writer.store.clean_state_directories(&t.state)?;
@@ -579,7 +626,7 @@ impl Shell {
         // DL10/IFC-038: keep the second retention check before notices. Expiry
         // changes only retained outputs, so the committed objects are still t's.
         stored.state = Arc::new(std::mem::take(&mut t.state));
-        self.retention(&writer, &mut stored)?;
+        self.retention(&writer, &mut stored, &mut measures)?;
         let mut notifications =
             conduit_core::access::tool_list_changes(&before, &stored.state, &self.context)?;
         for o in before.objects.iter().filter(|o| {
@@ -589,7 +636,38 @@ impl Shell {
                 notifications.push(json!({"consumer":o["id"],"method":"consumer-ended"}));
             }
         }
+        let invocations = stored.state.invocations.len();
         writer.store.remember(stored);
+        let commit_micros = micros(started.elapsed());
+        // These optional measures cannot turn a durable commit into a failure.
+        let mut line = json!({
+            "at": Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
+            "input": kind,
+            "stateBytes": measures.state_bytes,
+            "invocations": invocations,
+            "writes": measures.writes,
+            "stepMicros": micros(measures.step_time),
+            "writeMicros": micros(measures.write_time),
+            "commitMicros": commit_micros,
+        });
+        if let Some(open_micros) = writer.open_micros.take() {
+            line["openMicros"] = json!(open_micros);
+        }
+        if writer.unwritten > 0 {
+            line["unwritten"] = json!(writer.unwritten);
+        }
+        let mut bytes = line.to_string().into_bytes();
+        bytes.push(b'\n');
+        match store::append_commit_measures(&writer.store.directory, &bytes) {
+            Ok(()) => writer.unwritten = 0,
+            Err(error) => {
+                let _ = writeln!(
+                    std::io::stderr(),
+                    "conduit: the measures line of a commit of kind {kind} was not appended: {error}"
+                );
+                writer.unwritten = writer.unwritten.saturating_add(1);
+            }
+        }
         Ok(Committed {
             ticket: Ticket { invocation, cell },
             intents: t.external_intents,

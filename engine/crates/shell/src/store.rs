@@ -77,6 +77,23 @@ pub(crate) fn atomic_write(directory: &Path, name: &str, bytes: &[u8]) -> Result
         None,
     )
 }
+
+pub(crate) fn append_commit_measures(directory: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    let mut file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(directory.join("commit-measures.jsonl"))?;
+    let metadata = file.metadata()?;
+    if !metadata.is_file() || metadata.permissions().mode() & 0o777 != 0o600 {
+        return Err(std::io::Error::other(
+            "commit-measures.jsonl is not a regular file with mode 0600",
+        ));
+    }
+    file.write_all(bytes)
+}
+
 fn atomic_write_inner(
     directory: &Path,
     name: &str,
@@ -243,7 +260,7 @@ impl Store {
         &self,
         state: &State,
         output_times: &BTreeMap<String, String>,
-    ) -> Result<()> {
+    ) -> Result<usize> {
         // DL2: identical version-1 field order and bytes, serialized from references.
         self.cached.borrow_mut().take();
         #[derive(Serialize)]
@@ -264,11 +281,13 @@ impl Store {
             &bytes,
             #[cfg(test)]
             self.fault.borrow_mut().take(),
-        )
+        )?;
+        Ok(bytes.len())
     }
     #[cfg(test)]
     pub fn write(&self, stored: &Stored) -> Result<()> {
         // DL2: fixture writes also invalidate memory, so their next reader reloads the file.
         self.write_state(&stored.state, &stored.output_times)
+            .map(|_| ())
     }
 }

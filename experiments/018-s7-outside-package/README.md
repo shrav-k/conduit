@@ -29,6 +29,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 119; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -221,3 +222,28 @@ One outside author and a small fixture do not establish broad MCP compatibility 
 author usability. Plain servers cannot enforce arbitrary filters. This does not show provider
 substitution, remote placement, OS confinement or safety outside the domain of trust; ACC-027
 reports restrictions as mediated. The non-Rust publication check does not add a v0 gate.
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, [ruling 78](../../docs/proposals/ruling-78/README.md), point 4 (the owner):** S7
+  is split. The outside author works against a scripted consumer, so that part needs neither the
+  owner's presence nor the second accounts. Real Agents on the second accounts then use the same
+  packages, and the coordinator, not the outside author, sets them up. This amends ruling 75 D1
+  for S7's tasks and run.
+- **2026-11-14, the coordinator's (decision D70):** "intervention" is defined and counted by
+  kind; the author's pack is frozen and hashed, and its log of files read is kept; places of
+  doubt, files read outside `spec/` and time are measured; measure D01's middle row is the
+  adapter as S2's plan logs it, or two rows with the reason; a second server and a self-check run
+  after the counted tasks and are reported apart; and a limit is stated: a fresh session stands
+  in for ruling 47's outside author.

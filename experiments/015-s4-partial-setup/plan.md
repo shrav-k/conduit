@@ -9,7 +9,7 @@
 > - S4-REC2: propose current-owner reconciliation V5 qualification.
 > - Admin A: accept the split and hot-file sequence, or revise it; recommendation: accept after a fresh skeptic's review.
 > - Admin B: place pending shared fixes against PIN; recommendation: preserve batch 1's pin, use a side branch if needed.
-> - Admin C: provisional D4 reading recorded below.
+> - Admin C: D4 reading recorded below, confirmed by the owner on 2026-11-12.
 > - Admin D: confirm E09’s loopback proxy URL through 050’s Agent package.
 > - Owner: no new question; Q1–Q5 are answered.
 
@@ -27,6 +27,11 @@ S4-SRV2 (order 144) stopped unmerged at the checkpoint: its branch `wo/144-s4-sr
 GitHub, with two musts left for a finishing order, named in its Record. Next, after that order:
 S4-SRV1b, S4-SRV2b, SCR2 and S4-H. The lane's whole queue is in
 [PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
+
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
 
 ## What `main` had at the commits named above
 
@@ -272,7 +277,7 @@ package/harness preparation can proceed alongside it without concurrent requests
 - **B — shared fixes and PIN:** preserve batch 1's pin; changes to starting vectors/root tools/
   S1 work on main wait PIN, unless the admin assigns a side branch. No order file counts as
   completed 077/081/082 work. Admin owns runner/shared-manifest integration.
-- **C — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+- **C — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 - **D — E09 URL, for admin as 050's owner:** can the Agent package point its engine URL at
   S4-H's loopback response-dropping proxy, or does 050 need an explicit lab-only endpoint
   override while preserving token audience/Host/proof checks? **Recommendation:** expose the

@@ -30,6 +30,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 118; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -245,3 +246,34 @@ This demonstrates local mediated access and selected interleavings, not client c
 instant stopping of remote effects, every runtime provider or distributed partition safety.
 An unknown shutdown is not confirmation of stopped work. A deterministic cascade is not a
 load benchmark or A40's model checking. No run, result, promise or vector is written here.
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, the coordinator's (decision D69,
+  [FR-397](../../docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-397)):** M1's count of
+  forbidden dispatches after a close or a retirement is expected to be zero; M2's retained-data
+  checks are a fixed list, written before the runs; the plan's "T4 restart case", which S6-T4
+  above does not have, is removed with its dependency on S9's shell order; S6 keeps to one local
+  machine, as "Runs" says; a child process that outlives a stop is a measure here, with no pass
+  condition, and as a gap it goes to the language list and to a PRV-030 case in experiment
+  022's runtime-provider suite; and the fixture's ledger is kept outside the state directory
+  that removal deletes.
+- **2026-11-14, the coordinator's
+  ([FR-404](../../docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-404)):** "What it needs
+  first" says that the conformance document leaves `retire-with-resources.v1` and DL1's order
+  unfinished. Both are implemented: DL1's row in
+  [engine/CONFORMANCE.md](../../engine/CONFORMANCE.md) states the order, independent members in
+  stored order and the members of a cycle in ascending ID order, and that Pool and Fleet
+  cascades are implemented, and `retire-with-resources.v1` is among the operations the engine
+  runs publicly. What remains is to qualify them, as the plan's S6-DUTY1 and S6-DUTY2 do.

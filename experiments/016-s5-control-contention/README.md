@@ -30,6 +30,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 118; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -236,3 +237,37 @@ No numeric usability bar, arbitrary control semantics, generic effect detection,
 metadata visibility or distributed locking is shown. A scripted race is a deterministic
 interleaving, not a contention-load benchmark. Physical settings are judged only under the
 selected contract. No run, result, new promise or vector is produced by this paper order.
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, [ruling 78](../../docs/proposals/ruling-78/README.md), points 5 and 6 (the
+  owner):** P5, S5-T5 and V4 follow them. A reconciliation records the outcome and what was
+  checked; it stores no control's values, makes nothing ready and leaves the settings reported
+  unknown, and the way on is to send again: the control, naming the current revision, or a
+  further setup. No actor records that an unknown effect did not occur, so S5-T5's
+  `occurred: false` branches change with the later order that writes points 5 and 6 into
+  `spec/`. This amends ruling 75 D1 for these passages; points 5 and 6 are marked spec pending
+  in topic 7 of [IN_FORCE.md](../../IN_FORCE.md) until that order lands.
+- **2026-11-14, the coordinator's (decision D68):** M1 names the right next step for each of its
+  five conflict classes; M2's branches are listed; the fixture's own contract checks that a
+  readback equals what was sent; and a branch in which an Agent's control lands between plan and
+  apply is reported apart, and runs only if batch 2 has merged.
+- **2026-11-14, the coordinator's
+  ([FR-404](../../docs/proposals/full-review/findings/E02-s5-s6-s7.md#fr-404)):** "What it needs
+  first" says that controls and control reconciliation are outside the engine's implemented
+  slice. Order 041b has since implemented control reconciliation, which applies the held input
+  values to the current revision
+  ([engine/CONFORMANCE.md](../../engine/CONFORMANCE.md#consumer-server-order-022)), and ruling
+  78, point 5, narrows it as the first line here says. Control dispatch is still unfinished
+  there.

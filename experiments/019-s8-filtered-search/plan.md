@@ -12,7 +12,7 @@
 > - **Admin / 071:** provide separate conformance pieces.
 > - **Admin / SV1:** define the safety field before new safety cases.
 > - **Admin question A1:** accept the vector/core boundary and FLT-D's merge placement.
-> - **Owner:** confirm D4’s reading for counted real-client runs.
+> - D4’s reading for counted real-client runs was confirmed by the owner on 2026-11-12.
 > - **Owner / S8-A:** accept the concrete Requirement and search/storage contracts before code.
 
 ## Status
@@ -24,6 +24,11 @@ Orders that change `engine/` or `spec/` are proposals to the admin.
 No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `8b5c8093c1ca2a7a73e71fd50cce90a8f522f4f8`.
+
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
 
 ## What `main` had at the commits named above
 
@@ -80,8 +85,8 @@ Rust checks mean `cargo test --release`, `cargo clippy --all-targets -- -D warni
 | S8-V | vectors | V1–V3 with existing input/completion forms | IFC-019, OPS-009, ACC-001 | 071, SV1, PIN | M, 400–600 lines | lane 10 | after engine/format prerequisites only |
 | FLT-D3 | vectors | S8 V4/V5; admin order owned by S2 plan | ACC-014/017 | FLT-D1, FLT-D2 only | M, 300–450 lines | admin | after engine orders only, not S8-H2 |
 | S8-O | owner | Label second accounts; sign each fresh Agent home in | PND-005/010/011 | 050, 051b | owner step | owner | after sign-in chain |
-| S8-R1 | run | Coordinator T1–T6 | README P1–P6, M0–M2 | S8-V, FLT-D3, S8-H2, S8-O, PIN | about 1 hour | lane 10 | after dependencies; the owner confirms D4's reading |
-| S8-R2 | run | Fresh author T1–T6 | same | S8-R1 | about 1 hour | lane 10 | after S8-R1; the owner confirms D4's reading |
+| S8-R1 | run | Coordinator T1–T6 | README P1–P6, M0–M2 | S8-V, FLT-D3, S8-H2, S8-O, PIN | about 1 hour | lane 10 | after dependencies |
+| S8-R2 | run | Fresh author T1–T6 | same | S8-R1 | about 1 hour | lane 10 | after S8-R1 |
 
 **S8-C.** Ships one contracts-only package under `packages/scenario-s8-search-restrictions/`, as S2-F does;
 both filesystem and SQLite adapters pin it, rather than copying contracts into each package. It
@@ -169,8 +174,7 @@ Dispatch S8-C and H1 now. Both → A; accepted C is pinned by F/Q → H2, which 
 oracle and uses SCR1/2 for scripted checks. H1 never waits A to supply the independent draft.
 Batch 1 through 053 → PIN; 071/SV1/PIN → V, independently of owner acceptance and lane preparation.
 FLT-D1 plus DSP → FLT-D2; D1/D2 → FLT-D3, with no S8 harness/package/owner dependency.
-V/FLT-D3/H2 and 050/051b → O join R1 → R2; only the counted runs wait:
-the owner confirms D4's reading. Contract acceptance may hold implementation separately.
+V/FLT-D3/H2 and 050/051b → O join R1 → R2. Contract acceptance may hold implementation separately.
 Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin) for FLT-D1/2; D3 follows D2 in manifest
 pieces. S8 adds no separate engine order. No PSD/Docker/A22/A73/batch-2 prerequisite.
 
@@ -180,11 +184,11 @@ pieces. S8 adds no separate engine order. No PSD/Docker/A22/A73/batch-2 prerequi
   failing case into its actual engine fix. **Recommendation:** the split above, with no harness
   or package dependency for engine/vector fixes and at most L per fixing order. S4 holds the
   common merge sequence; runner/shared-manifest changes remain admin's.
-- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 
 ## For the owner
 
-Counted R1/R2 wait: the owner confirms D4's reading; preparation does not wait.
+The owner confirmed D4's reading on 2026-11-12 (A2 above), so R1/R2 do not wait on it.
 
 S8-A asks for acceptance of the concrete Requirement and search/storage Operation contracts once
 drafted. Options: accept the complete contracts applying the settled Q2/Q3 answers, or return

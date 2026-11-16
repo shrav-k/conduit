@@ -32,6 +32,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 117; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -275,3 +276,52 @@ No result or exhaustive proof is claimed; A40 remains. Partition availability, a
 peer mode and checkpoint migration are outside this run. Unknown work may finish; retirement proves no stop and recalls
 no secret. Gates do not confine Agents; OS-user trust and readable credentials remain explicit. The proposal's section-2
 labels are not program scenarios; H1–H10 name only its section-11 hypotheses.
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, [ruling 78](../../docs/proposals/ruling-78/README.md), point 4 (the owner): the
+  cut.** The Mac's own firewall cuts the network, run by the coordinator's locked-down script
+  under one administrator rule that the owner adds once; two test cuts decide whether it works,
+  and a path it misses gets a relay on the Mac. This replaces the Linux-side firewall rule and
+  the coordinator's restoring script of "Fault preparation, apart from author tasks", which the
+  lockdown of [ruling 77](../../docs/proposals/ruling-77/README.md) left impossible to follow
+  ([FR-390](../../docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)). It answers S3-OF
+  in the plan, and the table under question 4 of the full review's questions gives its details.
+- **2026-11-14, ruling 78, point 4 (the owner): the loss.** At each loss the owner stops the
+  distro with `wsl --terminate`, in place of the `wsl --shutdown` of "Fault preparation" and of
+  O4's answer, which also stopped Docker Desktop's distro. Root still declares the node lost, and
+  the provider reporting it gone stays a separate case.
+- **2026-11-14, ruling 78, point 4 (the owner): a last phase.** Each run ends with a phase in
+  which the machine is declared lost while a test run is alive, so that P4's owed stop is seen
+  to end a run and can fail. The table under question 4 of the full review's questions
+  describes the phase: a test server that ignores the end of its input, witnessed by the stop's
+  ledger entry; a call that the old run makes to the engine after the declaration, which must
+  be refused; and two runs that heal before sshd's 120 seconds and two after. With the two
+  lines above, this amends ruling 75 D1 for S3's fault method, O4's command, P4 and runs.
+- **2026-11-14, the coordinator's (decision D66), each reported apart:** the documents' changes
+  from their one-machine form; the seconds from each cut to "unavailable", against SSH's 30,
+  sshd's 120 and the machine provider's bound once it is written (the gate's 45 seconds applies
+  on loopback only); the unit's state before and after each heal, with "nothing left to stop"
+  reported; three ordering cells beside the accepted four, once the MC2 rerun has run and a
+  scripted cut exists; the revocation axis, kept and labelled an exercise of reconnection; D20
+  at each phase; a start that waits for an owed stop, tested in an undeclared cut with no pass
+  condition; the cost of adding a machine; and a disposable Linux node on the engine's machine,
+  used to rehearse and never as evidence.
+- **2026-11-14, the coordinator's
+  ([FR-390](../../docs/proposals/full-review/findings/E01-s2-s3-s4.md#fr-390)):** G4, under
+  "What `spec/` does not yet decide", and V7, under "Vectors expected", wait for enrollment's
+  promises. They are written: ENR-001 to ENR-012, in
+  [spec/promises/enrollment.yaml](../../spec/promises/enrollment.yaml), and V7 cites those it
+  tests when its case is written. The engine's enrollment bindings, which orders 049a and 049b
+  land, are still spec pending in topic 10 of [IN_FORCE.md](../../IN_FORCE.md).

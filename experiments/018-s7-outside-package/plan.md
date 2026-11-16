@@ -13,7 +13,7 @@
 > - **Admin / SV1:** provide the safety-promise field before writing safety cases.
 > - **Admin / FLT-D:** conditional only if the author's plugin declares filter support.
 > - **Admin question A1:** approve the split and placement of the isolated vector piece.
-> - **Owner:** confirm D4’s reading for counted runs; provide author’s repository/npm scope.
+> - **Owner:** provide author’s repository/npm scope; D4’s reading was confirmed on 2026-11-12.
 
 ## Status
 
@@ -24,6 +24,11 @@ Orders that change `engine/` or `spec/` are proposals to the admin.
 No order named here has been dispatched.
 
 Revised on 2026-11-11 by work order 121, against `1b717c408291b632d285a6bf0a782596478cc770`.
+
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
 
 ## What `main` had at the commits named above
 
@@ -71,9 +76,9 @@ Rust checks mean `cargo test --release`, `cargo clippy --all-targets -- -D warni
 | S7-H2 | harness | Isolated author brief, consumer handoff and count ledger | PKG-018, REC-002 | S7-H1 | S, 150–250 lines | lane 10 | after H1, not S2-L |
 | S7-V | vectors | V1–V4 in private S7 case directory/index | PKG-026, MAN-010, PLC-007, CON-022 | 071, SV1, PIN | M, 400–600 lines | lane 10 | after dependencies; no S7-P |
 | S7-O | owner | Supply labelled second accounts and sign each Agent home in | PND-005/010/011 | 050, 051b | owner step | owner | after sign-in chain |
-| S7-R | run | Fresh Codex author T1–T6, including T3 plugin/adapter | README P1–P5, M0–M2 | S7-H2, S7-V, S7-O, PIN; FLT-D only if plugin supports filters | about 1 hour | lane 10 | after dependencies; the owner confirms D4's reading |
+| S7-R | run | Fresh Codex author T1–T6, including T3 plugin/adapter | README P1–P5, M0–M2 | S7-H2, S7-V, S7-O, PIN; FLT-D only if plugin supports filters | about 1 hour | lane 10 | after dependencies |
 | S7-NO | owner | Set up author-owned repository and npm scope | README Q4 | outside author identified | owner step | owner | before S7-N |
-| S7-N | run | External TypeScript/npm publication check, T7 | README P6 | S7-R, S7-NO | about 1 hour | lane 10 | after dependencies; the owner confirms D4's reading |
+| S7-N | run | External TypeScript/npm publication check, T7 | README P6 | S7-R, S7-NO | about 1 hour | lane 10 | after dependencies |
 
 Each account signs in through Conduit's Interface login flow, as ruling 72's later answer asks; [S2's plan](../013-s2-shared-login/plan.md#logins-through-the-interface-ruling-72s-later-answer) lists where each is first tested.
 
@@ -147,8 +152,7 @@ This publication check adds no v0 condition.
 Dispatch H1 now: build the disposable upstream and qualify mcp-remote against it; H2 follows.
 No reference plugin/adapter precedes the author's T3. Batch 1 completes through 053 → PIN,
 including 050's sign-in chain; 071/SV1/PIN → V, 050/051b → O. H2/V/O → R → NO/N,
-joining FLT-D only if the author's plugin declares filter support. Counted R/N also wait:
-the owner confirms D4's reading. Only those runs wait on it; no A22/A73/batch-2 wait.
+joining FLT-D only if the author's plugin declares filter support. No A22/A73/batch-2 wait.
 Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin) for any conditional FLT-D engine
 work; S7 adds no core/shell order of its own. H1/H2/V have no S2-L or S7-P dependency.
 
@@ -157,12 +161,12 @@ work; S7 adds no core/shell order of its own. H1/H2/V have no S2-L or S7-P depen
 - **A1 — split/placement:** private scenario index after 071, or central index edits owned by
   admin. **Recommendation:** private S7 piece, lane 10, after PIN/SV1; admin takes any runner,
   shared-piece or core fix with its affected case. Approve the proposed scopes with a fresh skeptic.
-- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+- **A2 — D4:** Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 
 ## For the owner
 
-- **D4:** counted S7-R/N wait: the owner confirms D4's reading. Build/qualification preparation
-  proceeds independently; no scripted substitute for real consuming Agents is selected.
+- **D4:** the owner confirmed on 2026-11-12 the admin's reading recorded above (A2), so
+  S7-R/N do not wait on it.
 - **S7-NO:** supply the author's own repository and npm scope before N. If actual npm cannot
   be used, options are defer T7 or explicitly accept a local stand-in. **Recommendation:**
   retain actual npm; a local stand-in changes Q4 and is an owner's question, not a plan choice.

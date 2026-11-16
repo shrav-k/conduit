@@ -33,6 +33,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 118; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -255,3 +256,39 @@ These local contracts/faults do not show arbitrary effect detection, every clien
 behavior, partition tolerance or model checking (A40). Scripts do not qualify real clients;
 boundary seeds do not prove public reachability. This pre-registration writes no result,
 promise or vector.
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, the coordinator's (decision D67):** measure D02 is written as a twelve-row
+  table; M2 gets a rubric, applied by a judge who has not seen the harness; the lifecycle model
+  (MC6) is asked whether a Resource can outlive its retired Pool before E18's fixture is built;
+  E20 is labelled an observation of a stated limit; and S4's one lost-response replay on a
+  second account stays. Beside S4 and not part of it, a small stub like experiment 008's takes a
+  lost response and a call never answered, three runs of each per client (A6's twelve runs), on
+  the primary accounts, with the owner told first, after the pin
+  ([ruling 78](../../docs/proposals/ruling-78/README.md), point 1).
+- **2026-11-14, the coordinator's (decision D67,
+  [FR-296](../../docs/proposals/full-review/findings/P03-plan-apply.md#fr-296)):** T1's repair
+  cannot be a control call. After the blocked setup the hook's instance is not ready, and a
+  request to an instance that is not ready is not dispatched unless it is a management verb,
+  which a control is not (CON-024). So the author corrects the file and replaces the instance.
+  This changes the plan's two logged decisions on T1, "T1's blocked part" and "How M2 counts
+  T1's repair", which order 50 of
+  [the full review's orders](../../docs/proposals/full-review/orders.md) rewrites. Whether apply
+  ever calls a control is the owner's, asked with finding 4-01 after the S1 rerun.
+- **2026-11-15, the coordinator's (ruling 78, point 6):** no actor records that an unknown effect
+  did not occur, so S4-T6's reconciliation of the hook's lost reply as failed, and the hook server's
+  proof of no effect for it under "The tasks", change with the later order that writes point 6 into
+  `spec/`; until it lands they follow `spec/` as it stands. Ruling 78 names only S5's branches, so
+  this reading is open to the owner's strike.

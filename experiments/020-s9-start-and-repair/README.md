@@ -30,6 +30,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 118; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -259,3 +260,30 @@ These runs show a local reference engine's declared initialization and repair po
 arbitrary corrupt-store recovery, distributed failover, all runtime providers or population
 usability. Stable IDs do not prove durable backup quality. Engine-specific crash cuts add no
 portable atomicity guarantee. This paper order runs nothing and writes no promise or vector.
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, the coordinator's (decision D72):** once the change of
+  [ruling 78](../../docs/proposals/ruling-78/README.md), point 17 (F39), lands after the pin, so
+  that the engine sets nothing up at start, S9-T4's branch (a) and M2 expect no setup or hook
+  dispatched at start for a registered or failed instance (OBS-004), and a ready instance's
+  restart is recorded but not judged until `spec/` states it. M2 gets a rubric; the dispatches
+  before the first request and the seconds until the engine listens are measured; and every
+  recorded request names the caller that sent it.
+- **2026-11-15, the coordinator's (ruling 78, point 6):** no actor records that an unknown
+  effect did not occur, so S9-T4's branch (b), P4's reconciliation of an unknown hook and V4's
+  unknown-hook branch change with the later order that writes point 6 into `spec/`; until it
+  lands they follow `spec/` as it stands. Ruling 78 names only S5's branches, so this reading is
+  open to the owner's strike. It is the one line of the coordinator's here that reaches a pass
+  condition, P4, and it changes P4 only through that later order.

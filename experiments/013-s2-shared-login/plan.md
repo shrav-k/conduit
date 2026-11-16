@@ -28,6 +28,11 @@ server is chosen with the owner; S2-LOG (A82) after the core lane's 048a, 048b a
 the owner: the plain Linear server for S2's runs, to the requirements in "The plain row" below.
 The lane's whole queue is in [PROVIDERS.md](../../docs/implementation/PROVIDERS.md).
 
+**Since acceptance (2026-11-15, work order 186):** what has changed since the owner accepted the
+README is listed in the README's last section, "Amendments since acceptance". Where this
+plan differs from that section, the section governs, until the order that builds the
+passage rewrites it.
+
 ## What `main` had at the commits named above
 
 Evidence below is inspection of this commit, not a new test result. The log's entries for orders
@@ -75,7 +80,7 @@ each changed Rust crate, a pinned toolchain, Cargo.lock, ignored output and pack
 | S2-F | server | Ship O3's restriction contracts | CON-018, IFC-019 | — | S, 150–220 lines | lane 8 | now |
 | S2-L1 | server | Local Linear stub and aware implementation | IFC-019/020, SEC-019 | S2-F | L, 550–800 lines | lane 8 | after S2-F |
 | S2-L2 | server | Separate adapter crate, reading only; the plain row runs in S2's runs | CON-022, IFC-007/019 | S2-F, S2-L1 stub protocol freeze only | L, about 1,200–1,600 lines | lane 8 | order 139 |
-| S2-PL | package | Package and admit the plain server chosen for the runs | PKG-020, MAN-010/017 | the plain server's choice, with the owner | S, 150–300 lines | lane 8 | after that choice |
+| S2-PL | package | Package and admit the plain server chosen for the runs | PKG-020, MAN-010/017 | the plain server's choice, by the coordinator (ruling 78, point 4) | S, 150–300 lines | lane 8 | after that choice |
 | SEC-D1 | core | Secret decisions/records; V4 and S10 V1 safety | SEC-006–018, SEC-023/024 | PIN, 042, S0b, SV1 | L, 650–900 lines | admin | after dependencies |
 | SEC-D2 | shell | Execute reads; deliver private values to runs | SEC-010–020, PRV-011/022/026 | SEC-D1, DSP | L, 650–900 lines | admin | after SEC-D1 and DSP on main |
 | SEC-D3a | shell | Secret-bearing remote connection headers | SEC-013/014/018 | SEC-D2 | L, 550–800 lines | admin | after SEC-D2 |
@@ -207,9 +212,11 @@ safety vectors;
 the isolated profile also needs A63-DR, ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77). FLT-D3 is S8-only, not this run gate. Measure every README cell, outage and manual repair;
 keep fresh-author/coordinator evidence apart. No production edits; checks are README P1–P6 and M0/M1.
 
-**The plain server for the runs** is chosen before them, with the owner, since it runs under the
-owner's account against the test workspace, unconfined on the Mac as the engine's own runner
-starts it (the admin's requirements, 2026-11-12). It must have an OSI-approved license; be pinned
+**The plain server for the runs** is chosen before them by the coordinator, and
+logged for the owner to strike ([ruling 78](../../docs/proposals/ruling-78/README.md),
+point 4, 2026-11-14). It runs under the owner's account against the test
+workspace, unconfined on the Mac as the engine's own runner starts it (the
+admin's requirements, 2026-11-12). It must have an OSI-approved license; be pinned
 by exact version and archive digest; have its source read, and its dependencies' for telemetry or
 update checks, for every network destination other than Linear's API and every file it writes,
 and be disqualified by any; send the personal key in the bare `Authorization` form that Linear
@@ -275,7 +282,7 @@ A82, in [the roadmap's register](../../ROADMAP.md#experiments-and-probes), besid
 - A6 discovery/invocation traces come from T1/T4, refresh from T5's key rotation; S4 supplies
   the lost response. These are recorded during engine runs, not a new proxy probe.
 
-Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. Provisional until the owner confirms.
+Planned on the admin's reading of ruling 75 D4 (2026-11-11): it limits the optional replays of S4, S5, S6 and S9 only. The owner confirmed this reading on 2026-11-12 ([ruling 75's later answers](../../docs/proposals/ruling-75/README.md#later-answers)).
 
 ## The order of the work
 
@@ -310,7 +317,7 @@ with S3-L1/L2/RET1 in core, SEC-D2/D3a/D3b and FLT-D2 with S3-RET2 in shell. D0 
 Every runtime-provider run receives that address through DSP/079, including a local Docker run.
 O1–O5 stand and no other S2 work waits on this setup.
 
-**The plain server:** chosen with the owner before S2's runs, under the requirements above; the
+**The plain server:** chosen by the coordinator before S2's runs, under the requirements above, and logged for the owner to strike (ruling 78, point 4, 2026-11-14); the
 admin's decision that the plain row runs only there is logged here for the owner to strike.
 
 ## Limits

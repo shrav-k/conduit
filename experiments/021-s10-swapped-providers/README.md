@@ -29,6 +29,7 @@ counting rules and planned vectors, with the answers under "Open for the owner" 
 45 fixes what an experiment must show before it runs. No result is recorded here.
 
 Its order-level plan is [plan.md](plan.md), written by work order 119; the plan changes nothing accepted here.
+What has changed since acceptance is listed in the last section, "Amendments since acceptance".
 
 ## Question
 
@@ -264,3 +265,25 @@ No promise requires live migration. Log any new missing behavior as a gap before
 This demonstrates substitution for pinned tasks/tools, not automatic migration, zero adapter work,
 OS confinement or all registry/transport kinds. Machines are proved in S3. A22's daemon question,
 A73's unattended behavior, scaling and S1's A70 bar remain separate. Access is mediated (ACC-027).
+
+## Amendments since acceptance
+
+The text above keeps what the owner accepted on 2026-11-11 under
+[ruling 75](../../docs/proposals/ruling-75/README.md), D. Each line below is dated and says
+whose it is. A line from a ruling amends the text above as that ruling says. A line marked
+the coordinator's is open to the owner's strike: it changes no pass condition above, and what
+it adds to a run is reported apart from the counted result.
+[Ruling 78](../../docs/proposals/ruling-78/README.md), point 4, applied the coordinator's
+changes in the table under question 4 of
+[the full review's questions](../../docs/proposals/full-review/questions.md); the decisions
+that these lines cite are in
+[the full review's decisions](../../docs/proposals/full-review/decisions.md).
+
+- **2026-11-14, the coordinator's (decision D73):** a predicted set of edits for each swap,
+  written from a paper count before the run, is reported beside measure D16 and is not a pass
+  list, so an unlisted edit stays a deviation; D16's ledger records each edited document's kind
+  and counts `lift.v1` requests; D15 names its six implementations; a ledger lists the behavior
+  that differs across a swap; stage R's conditions 2 to 6 in
+  [FR-410](../../docs/proposals/full-review/findings/E03-s8-s9-s10.md#fr-410) are run as checks
+  of the invariants D16 states; and the plan's reading of A73's "or else", its item A4 for the
+  admin, is the coordinator's and open to the owner's strike.

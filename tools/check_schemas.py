@@ -68,6 +68,12 @@ What it checks, and reports under these numbers:
   7. Promises under spec/promises/, spec/conventions/ and spec/interface/ have exactly the
      seven fields of spec/README.md, allowed layers and levels, unique IDs, and no ID named
      as retired in a head comment or the README's removed-file register is reused.
+  8. The totals that spec/README.md states under Contents are those the promise files of
+     step 7 hold: the number of promises in all and of each layer, in the sentence "N in all:
+     N of the layer `language`, N of the layer `convention` and N of the layer `interface`",
+     and the number of promises in the row of each promise file, one row for each. The
+     coverage by vectors and the other figures of that table are not compared. Step 8 runs
+     only when step 7 found no error.
 
 What it does not check: anything that needs an engine. It does not resolve references to
 packages that are not in this repository, instantiate a template, or evaluate any of the
@@ -2249,6 +2255,8 @@ def check_promises():
     fields = {"id", "layer", "level", "when", "then", "observable", "vectors"}
     seen, retired = {}, {}
     total, before = 0, len(errors)
+    file_counts = {}
+    layer_counts = dict.fromkeys(("language", "convention", "interface"), 0)
     paths = sorted(path for directory in ("promises", "conventions", "interface")
                    for path in (ROOT / "spec" / directory).rglob("*.yaml"))
     for path in paths:
@@ -2269,6 +2277,7 @@ def check_promises():
         if len(records) != 1 or not isinstance(records[0], list):
             fail(f"{rel(path)}: promises must be one list")
             continue
+        file_counts[path.relative_to(ROOT / "spec").as_posix()] = len(records[0])
         for index, promise in enumerate(records[0], 1):
             total += 1
             label = f"{rel(path)} promise {index}"
@@ -2282,6 +2291,8 @@ def check_promises():
                      f"extra {sorted(set(promise) - fields)}")
             if promise.get("layer") not in ("language", "convention", "interface"):
                 fail(f"{label}: invalid layer {promise.get('layer')!r}")
+            else:
+                layer_counts[promise["layer"]] += 1
             if promise.get("level") not in ("must", "must not", "should", "may"):
                 fail(f"{label}: invalid level {promise.get('level')!r}")
             if not isinstance(id_, str):
@@ -2306,6 +2317,106 @@ def check_promises():
         fail(f"{seen[id_]}: live ID is retired in {', '.join(sorted(retired[id_]))}")
     print(f"7. Checked {total} promises in {len(paths)} files: seven fields, layers, levels, "
           f"unique IDs and {len(retired)} retired IDs; {len(errors) - before} errors.")
+    return (file_counts, layer_counts) if len(errors) == before else None
+
+
+def check_promise_totals(counts):
+    def link_target(cell):
+        if not cell.startswith("[") or not cell.endswith(")"):
+            return None
+        # The label, by the depth of its brackets; the rest of the cell is in parentheses.
+        depth, position = 0, 0
+        while position < len(cell):
+            if cell[position] == "\\":
+                position += 2
+                continue
+            depth += {"[": 1, "]": -1}.get(cell[position], 0)
+            position += 1
+            if not depth:
+                break
+        if depth or cell[position:position + 1] != "(":
+            return None
+        # The destination, bare or in angle brackets, then an optional title.
+        target = re.fullmatch(r"""\s*(?:<((?:[^<>\\]|\\.)*)>|([^<\s]\S*))"""
+                              r"""(?:\s+(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'"""
+                              r"""|\((?:[^()\\]|\\.)*\)))?\s*""", cell[position + 1:-1])
+        if not target:
+            return None
+        if target[2] is not None:
+            # A bare destination's unescaped parentheses balance.
+            depth = 0
+            for character in re.sub(r"\\.", "", target[2]):
+                depth += {"(": 1, ")": -1}.get(character, 0)
+                if depth < 0:
+                    return None
+            if depth:
+                return None
+        return target[1] or target[2]
+
+    if counts is None:
+        print("8. NOT RUN: step 7 found errors in the promise files, so the promise totals "
+              "that spec/README.md states were not compared.")
+        return
+    file_counts, layer_counts = counts
+    total, before = sum(file_counts.values()), len(errors)
+    readme = (ROOT / "spec/README.md").read_text(encoding="utf-8")
+    section = re.search(r"^## Contents(?:\n|\Z)(.*?)(?=^## |\Z)", readme, re.M | re.S)
+    if not section:
+        fail('spec/README.md: has no line "## Contents", so the promise totals it states '
+             'were not compared')
+    else:
+        sentence = (r"([0-9]+) in all: ([0-9]+) of the layer `language`, "
+                    r"([0-9]+) of the layer `convention` and ([0-9]+) of the layer `interface`")
+        stated = re.findall(sentence, " ".join(section[1].split()))
+        if len(stated) != 1:
+            fail('spec/README.md: under Contents, the sentence of the promise totals '
+                 '("N in all: N of the layer `language`, N of the layer `convention` and '
+                 f'N of the layer `interface`") appears {len(stated)} times; '
+                 'it must appear once')
+        else:
+            all_stated, *layers_stated = map(int, stated[0])
+            if all_stated != total:
+                fail(f"spec/README.md: states {all_stated} promises in all, and the promise "
+                     f"files hold {total}")
+            for layer, number in zip(("language", "convention", "interface"), layers_stated):
+                if number != layer_counts[layer]:
+                    fail(f"spec/README.md: states {number} promises of the layer `{layer}`, "
+                         f"and the promise files hold {layer_counts[layer]}")
+        rows = dict.fromkeys(file_counts, 0)
+        for line in section[1].splitlines():
+            row = line.strip()
+            if row.startswith("|"):
+                row = row[1:]
+            if row.endswith("|"):
+                row = row[:-1]
+            cells = re.split(r"(?<!\\)\|", row)
+            if len(cells) < 2:
+                continue
+            path = link_target(cells[0].strip())
+            if path is None or not path.startswith(("promises/", "conventions/", "interface/")) \
+                    or not path.endswith(".yaml"):
+                continue
+            if path not in file_counts:
+                fail(f"spec/README.md: the Contents table has a row for {path}, which is not "
+                     "a promise file under spec/promises/, spec/conventions/ or spec/interface/")
+                continue
+            rows[path] += 1
+            numbers = [part.strip().split(" ")[0] for part in cells[-1].split(";")
+                       if re.fullmatch(r"[0-9]+ promises?", part.strip())]
+            if len(numbers) != 1:
+                fail(f"spec/README.md: the Contents row for {path} states its number of "
+                     f'promises {len(numbers)} times; it must state it once, as "N promises"')
+            elif int(numbers[0]) != file_counts[path]:
+                fail(f"spec/README.md: the Contents table gives {path} {int(numbers[0])} "
+                     f"promises, and the file holds {file_counts[path]}")
+        for path, count in rows.items():
+            if count != 1:
+                fail(f"spec/README.md: the Contents table has {count} rows for {path}; it must "
+                     "have one, stating the file's number of promises")
+    print("8. Compared the promise totals that spec/README.md states with the promise files: "
+          f"{total} promises in {len(file_counts)} files, {layer_counts['language']} of the "
+          f"layer `language`, {layer_counts['convention']} of the layer `convention` and "
+          f"{layer_counts['interface']} of the layer `interface`; {len(errors) - before} errors.")
 
 
 def main():
@@ -2709,7 +2820,7 @@ def main():
         print(f"   SCH-019: NOT APPLIED. No `default` was validated against its schema, and "
               f"{not_run} files under examples/invalid-by-rule/ were not tried, because "
               f"jsonschema is not importable.")
-    check_promises()
+    check_promise_totals(check_promises())
     return finish(validating)
 
 

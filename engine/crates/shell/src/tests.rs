@@ -79,6 +79,108 @@ fn open(path: &Path) -> Shell {
 }
 
 #[test]
+fn commit_measures_one_line_per_commit() {
+    let temp = temporary();
+    let shell = open(temp.path());
+    let path = temp.path().join("commit-measures.jsonl");
+    assert!(path.exists());
+    let read = || -> Vec<Value> {
+        fs::read_to_string(&path)
+            .unwrap()
+            .lines()
+            .map(|line| serde_json::from_str(line).unwrap())
+            .collect()
+    };
+    let mode = || fs::metadata(&path).unwrap().permissions().mode() & 0o777;
+    let check_keys = |line: &Value, extra: Option<&str>| {
+        let mut keys = vec![
+            "at",
+            "input",
+            "stateBytes",
+            "invocations",
+            "writes",
+            "stepMicros",
+            "writeMicros",
+            "commitMicros",
+        ];
+        keys.extend(extra);
+        keys.sort();
+        assert_eq!(
+            line.as_object()
+                .unwrap()
+                .keys()
+                .map(String::as_str)
+                .collect::<Vec<_>>(),
+            keys
+        );
+    };
+    assert_eq!(mode(), 0o600);
+    let lines = read();
+    assert_eq!(lines.len(), 1);
+    assert_eq!(lines[0]["input"], "recover");
+    assert!(lines[0]["openMicros"].as_u64().is_some());
+    assert!(lines[0].get("unwritten").is_none());
+    shell
+        .submit(
+            json!({"kind":"first-start","machine":local_machine(BTreeMap::new()).unwrap()}),
+            &MissingExecutor,
+        )
+        .unwrap();
+    let input =
+        json!({"kind":"list-tools","identity":{"kind":"instance","id":actor(&shell,"root")}});
+    shell.submit(input.clone(), &MissingExecutor).unwrap();
+    let lines = read();
+    assert_eq!(lines.len(), 3);
+    assert_eq!(lines[1]["input"], "first-start");
+    assert_eq!(lines[2]["input"], "list-tools");
+    for (index, line) in lines.iter().enumerate() {
+        check_keys(line, (index == 0).then_some("openMicros"));
+        assert_eq!(line["writes"], 1);
+        let at = line["at"].as_str().unwrap();
+        DateTime::parse_from_rfc3339(at).unwrap();
+        assert!(at.ends_with('Z'));
+        assert!(
+            line["stepMicros"].as_u64().unwrap() + line["writeMicros"].as_u64().unwrap()
+                <= line["commitMicros"].as_u64().unwrap()
+        );
+    }
+    assert_eq!(
+        lines[2]["stateBytes"],
+        fs::metadata(temp.path().join("state.json")).unwrap().len()
+    );
+    assert_eq!(
+        lines[2]["invocations"],
+        shell.state().unwrap().invocations.len()
+    );
+    let original = fs::read(&path).unwrap();
+    *shell.writer.lock().unwrap().store.fault.borrow_mut() = Some(store::WriteFault::Write);
+    assert!(shell.submit(input.clone(), &MissingExecutor).is_err());
+    assert_eq!(fs::read(&path).unwrap(), original);
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+    shell.submit(input.clone(), &MissingExecutor).unwrap();
+    assert_eq!(fs::read(&path).unwrap(), original);
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+    fs::rename(&path, temp.path().join("commit-measures.old")).unwrap();
+    std::os::unix::fs::symlink(temp.path().join("missing-target"), &path).unwrap();
+    shell.submit(input.clone(), &MissingExecutor).unwrap();
+    assert!(!temp.path().join("missing-target").exists());
+    fs::remove_file(&path).unwrap();
+    shell.submit(input, &MissingExecutor).unwrap();
+    assert!(path.exists());
+    assert_eq!(mode(), 0o600);
+    let lines = read();
+    assert_eq!(lines.len(), 1);
+    check_keys(&lines[0], Some("unwritten"));
+    assert_eq!(lines[0]["unwritten"], 2);
+    drop(shell);
+    let _shell = open(temp.path());
+    let lines = read();
+    assert_eq!(lines.len(), 2);
+    assert_eq!(lines[1]["input"], "recover");
+    check_keys(&lines[1], Some("openMicros"));
+}
+
+#[test]
 fn private_state_directory_is_empty_distinct_and_stable_after_restart() {
     // PRV-029: instance IDs, rather than names or run IDs, select the directory.
     let temp = temporary();
@@ -523,12 +625,48 @@ fn retention_cap_oldest_first_and_age_survive_restart() {
     .unwrap()
     .len();
     shell.config.max_output_bytes = retained_size + 128;
+    let measures_path = temp.path().join("commit-measures.jsonl");
+    let read_measures = || -> Vec<Value> {
+        fs::read_to_string(&measures_path)
+            .unwrap()
+            .lines()
+            .map(|line| serde_json::from_str(line).unwrap())
+            .collect()
+    };
+    let count_outputs = || {
+        shell
+            .state()
+            .unwrap()
+            .invocations
+            .iter()
+            .filter(|v| retained_results(v).next().is_some())
+            .count()
+    };
+    let before_measures = read_measures();
+    let before_outputs = count_outputs();
     shell
         .submit(
             invoke(&shell, "agent-b", "project.file.write.v1", Some("newer")),
             &executor,
         )
         .unwrap();
+    let after_measures = read_measures();
+    let after_outputs = count_outputs();
+    assert!(before_measures.iter().all(|line| line["writes"] == 1));
+    assert_eq!(after_measures.len(), before_measures.len() + 2);
+    let appended = &after_measures[before_measures.len()..];
+    assert_eq!(appended[0]["input"], "invoke");
+    assert_eq!(appended[1]["input"], "complete");
+    let invoke_writes = appended[0]["writes"].as_u64().unwrap();
+    let complete_writes = appended[1]["writes"].as_u64().unwrap();
+    assert!(complete_writes >= 2);
+    assert_eq!(
+        invoke_writes + complete_writes,
+        (2 + before_outputs + 1 - after_outputs) as u64
+    );
+    println!(
+        "retention measures: writes {invoke_writes}, {complete_writes}; outputs before {before_outputs}, after {after_outputs}"
+    );
     let state = shell.state().unwrap();
     assert_eq!(state.invocations.len(), original.invocations.len() + 1);
     assert!(

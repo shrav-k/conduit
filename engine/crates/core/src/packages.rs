@@ -596,22 +596,23 @@ impl Catalog {
                         ),
                     ));
                 }
-                if d["kind"] == "Type"
-                    && let Some(pointer) = d["spec"]["toolsDirectory"]["directory"].as_str()
-                {
+                if d["kind"] == "Type" {
                     let name = &d["metadata"]["name"];
-                    if let Err(cause) = binding_parts(
-                        &env,
-                        vec![BindingPart {
-                            scope: scope.clone(),
-                            root: d["spec"]["schema"].clone(),
-                            schema: d["spec"]["schema"].clone(),
-                            secret: false,
-                        }],
-                        &pointer_tokens(pointer),
-                        core,
-                        true,
-                    ) {
+                    let pointer = d["spec"]["toolsDirectory"]["directory"].as_str();
+                    if let Some(pointer) = pointer
+                        && let Err(cause) = binding_parts(
+                            &env,
+                            vec![BindingPart {
+                                scope: scope.clone(),
+                                root: d["spec"]["schema"].clone(),
+                                schema: d["spec"]["schema"].clone(),
+                                secret: false,
+                            }],
+                            &pointer_tokens(pointer),
+                            core,
+                            true,
+                        )
+                    {
                         diagnostics.push(diag(
                             "CTR-014",
                             format!("{scope}: Type {name} toolsDirectory {pointer}: {cause}"),
@@ -621,13 +622,19 @@ impl Catalog {
                         let (target, control_name) =
                             resolve_name(&env, &indexes, scope, control, "Operation", core)
                                 .map_err(|(_, why)| why)?;
-                        if items(&indexes[&target][&control_name]["spec"], "changes")
-                            .filter_map(|(_, p)| p.as_str())
-                            .any(|p| pointers_reach(p, pointer))
+                        let spec = &indexes[&target][&control_name]["spec"];
+                        if let Some(cause) = listed_control_faults(spec) {
+                            diagnostics.push(diag(
+                                "CTR-006",
+                                format!("{scope}: Type {name} lists control {control}: {cause}"),
+                            ));
+                        }
+                        if let Some(pointer) = pointer
+                            && let Some(cause) = own_tools_control_fault(control, spec, pointer)
                         {
                             diagnostics.push(diag(
                                 "CTR-014",
-                                format!("{scope}: Type {name} toolsDirectory {pointer}: rule (c): control {control} changes the place, a pointer inside it or a pointer over it"),
+                                format!("{scope}: Type {name} toolsDirectory {pointer}: {cause}"),
                             ));
                         }
                     }
@@ -1139,6 +1146,51 @@ fn pointers_reach(a: &str, b: &str) -> bool {
     a.starts_with(&b) || b.starts_with(&a)
 }
 
+fn own_tools_control_fault(control: &str, spec: &Value, pointer: &str) -> Option<String> {
+    let place = pointer_tokens(pointer);
+    let clauses: Vec<_> = items(spec, "changes")
+        .filter_map(|(input, p)| {
+            let p = p.as_str()?;
+            if !pointers_reach(p, pointer) {
+                return None;
+            }
+            let tokens = pointer_tokens(p);
+            let relation = if tokens == place {
+                "equals"
+            } else if place.starts_with(&tokens) {
+                "lies over"
+            } else {
+                "lies inside"
+            };
+            let input = serde_json::to_string(input).expect("a string serializes");
+            let p = serde_json::to_string(p).expect("a string serializes");
+            Some(format!(
+                "input {input} sets {p}, which {relation} the place"
+            ))
+        })
+        .collect();
+    (!clauses.is_empty()).then(|| {
+        format!(
+            "rule (c): control {control} reaches the place: {}",
+            clauses.join("; ")
+        )
+    })
+}
+
+fn listed_control_faults(spec: &Value) -> Option<String> {
+    let mut faults = vec![];
+    if spec["inputSchema"]["properties"].get("revision").is_none() {
+        faults.push("its inputSchema does not declare the input revision under properties");
+    }
+    if !strings(&spec["inputSchema"], "required").any(|name| name == "revision") {
+        faults.push("its inputSchema does not list revision under required");
+    }
+    if spec["outputSchema"]["properties"].get("settings").is_some() {
+        faults.push("its outputSchema declares the output settings");
+    }
+    (!faults.is_empty()).then(|| faults.join("; "))
+}
+
 fn branches(
     env: &Environment,
     part: BindingPart,
@@ -1244,11 +1296,23 @@ fn binding_parts(
     tokens: &[String],
     core: &str,
     own_tools: bool,
-) -> std::result::Result<bool, &'static str> {
-    const REQUIRED: &str = "rule (a): the schema does not require the place and every member on its path in every branch";
+) -> std::result::Result<bool, String> {
+    binding_parts_at(env, parts, tokens, core, own_tools, "")
+}
+
+fn binding_parts_at(
+    env: &Environment,
+    parts: Vec<BindingPart>,
+    tokens: &[String],
+    core: &str,
+    own_tools: bool,
+    path: &str,
+) -> std::result::Result<bool, String> {
+    const UNREADABLE: &str =
+        "rule (a): the walk could not read a reference or a pattern of the schema";
     let mut alternatives = vec![vec![]];
     for part in parts {
-        let expanded = branches(env, part, core, &BTreeSet::new()).ok_or(REQUIRED)?;
+        let expanded = branches(env, part, core, &BTreeSet::new()).ok_or(UNREADABLE)?;
         alternatives = alternatives
             .iter()
             .flat_map(|a| expanded.iter().map(|b| [a.clone(), b.clone()].concat()))
@@ -1259,12 +1323,19 @@ fn binding_parts(
         if let Some((head, tail)) = tokens.split_first() {
             // MAN-017: required/properties constrain objects only. Every admitted
             // value here must be an object for the next member to have a value.
-            if binding_mask(&parts) & !32 != 0
-                || !parts
-                    .iter()
-                    .any(|p| strings(&p.schema, "required").any(|n| n == head))
+            let member = format!("{path}/{}", head.replace('~', "~0").replace('/', "~1"));
+            if binding_mask(&parts) & !32 != 0 {
+                return Err(format!(
+                    "rule (a): in a branch of the schema, the value holding {member} may be other than an object, so {member} may be absent"
+                ));
+            }
+            if !parts
+                .iter()
+                .any(|p| strings(&p.schema, "required").any(|n| n == head))
             {
-                return Err(REQUIRED);
+                return Err(format!(
+                    "rule (a): a branch of the schema does not list {member} under required"
+                ));
             }
             let mut subs = vec![];
             for p in parts {
@@ -1274,7 +1345,7 @@ fn binding_parts(
                 }
                 for (pattern, sub) in items(&p.schema, "patternProperties") {
                     if conduit_loader::formats::ecma_regex(pattern)
-                        .map_err(|_| REQUIRED)?
+                        .map_err(|_| UNREADABLE)?
                         .find(head)
                         .is_some()
                     {
@@ -1292,9 +1363,11 @@ fn binding_parts(
                 }));
             }
             if subs.is_empty() {
-                return Err(REQUIRED);
+                return Err(format!(
+                    "rule (a): a branch of the schema describes {member} under none of properties, patternProperties and additionalProperties"
+                ));
             }
-            nullable |= binding_parts(env, subs, tail, core, own_tools)?;
+            nullable |= binding_parts_at(env, subs, tail, core, own_tools, &member)?;
         } else {
             if !own_tools && parts.iter().any(|p| p.secret) {
                 continue;
@@ -1302,9 +1375,22 @@ fn binding_parts(
             let mask = binding_mask(&parts);
             if mask & if own_tools { !9 } else { 48 } != 0 {
                 return Err(if own_tools {
-                    "rule (b): the place admits a type other than string or null in a branch"
+                    let types: Vec<_> =
+                        [(2, "boolean"), (4, "number"), (16, "array"), (32, "object")]
+                            .into_iter()
+                            .filter_map(|(bit, name)| (mask & bit != 0).then_some(name))
+                            .collect();
+                    let types = match types.as_slice() {
+                        [only] => (*only).to_owned(),
+                        [first, last] => format!("{first} and {last}"),
+                        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+                        [] => unreachable!("a forbidden type is admitted"),
+                    };
+                    format!(
+                        "rule (b): in a branch of the schema, the place admits {types}, where only string and null are allowed"
+                    )
                 } else {
-                    "the place admits an array or object"
+                    "the place admits an array or object".into()
                 });
             }
             nullable |= mask & 1 != 0;
@@ -1441,6 +1527,161 @@ mod tests {
         }
         assert!(pointer_tokens("").is_empty());
         assert_eq!(pointer_tokens("/"), [""]);
+    }
+    fn own_tools_binding_result(schema: Value, pointer: &str) -> std::result::Result<bool, String> {
+        binding_parts(
+            &Environment {
+                scopes: BTreeMap::new(),
+            },
+            vec![BindingPart {
+                scope: "project".into(),
+                root: schema.clone(),
+                schema,
+                secret: false,
+            }],
+            &pointer_tokens(pointer),
+            "core",
+            true,
+        )
+    }
+    #[test]
+    fn own_tools_rule_a_names_the_member_and_the_cause() {
+        for (pointer, schema, expected) in [
+            (
+                "/directory",
+                json!({"type":"object","properties":{"directory":{"type":"string"}}}),
+                "rule (a): a branch of the schema does not list /directory under required",
+            ),
+            (
+                "/tools/directory",
+                json!({"type":"object","properties":{"tools":{"type":"object","properties":{"directory":{"type":"string"}},"required":["directory"]}}}),
+                "rule (a): a branch of the schema does not list /tools under required",
+            ),
+            (
+                "/tools/directory",
+                json!({"type":"object","properties":{"tools":{"type":["object","null"],"properties":{"directory":{"type":"string"}},"required":["directory"]}},"required":["tools"]}),
+                "rule (a): in a branch of the schema, the value holding /tools/directory may be other than an object, so /tools/directory may be absent",
+            ),
+            (
+                "/a~1b",
+                json!({"type":"object","required":["a/b"]}),
+                "rule (a): a branch of the schema describes /a~1b under none of properties, patternProperties and additionalProperties",
+            ),
+            (
+                "/directory",
+                json!({"type":"object","properties":{"directory":{"type":"string"}},"anyOf":[{"required":["directory"]},{}]}),
+                "rule (a): a branch of the schema does not list /directory under required",
+            ),
+        ] {
+            assert_eq!(
+                own_tools_binding_result(schema, pointer),
+                Err(expected.into())
+            );
+        }
+    }
+    #[test]
+    fn own_tools_rule_b_names_the_admitted_types() {
+        for (leaf, expected) in [
+            (json!({"type":["string","null"]}), Ok(true)),
+            (json!({"anyOf":[{"type":"string"},{"type":"null"}]}), Ok(true)),
+            (json!({"type":["string","number"]}), Err("rule (b): in a branch of the schema, the place admits number, where only string and null are allowed".into())),
+            (json!({"type":"integer"}), Err("rule (b): in a branch of the schema, the place admits number, where only string and null are allowed".into())),
+            (json!({"type":["boolean","array"]}), Err("rule (b): in a branch of the schema, the place admits boolean and array, where only string and null are allowed".into())),
+            (json!({"anyOf":[{"type":"string"},{"type":"object"}]}), Err("rule (b): in a branch of the schema, the place admits object, where only string and null are allowed".into())),
+            (json!({}), Err("rule (b): in a branch of the schema, the place admits boolean, number, array and object, where only string and null are allowed".into())),
+            (json!({"$ref":"core#secret-reference.v1"}), Err("rule (b): in a branch of the schema, the place admits boolean, number, array and object, where only string and null are allowed".into())),
+        ] {
+            let schema = json!({"type":"object","properties":{"directory":leaf},"required":["directory"]});
+            assert_eq!(own_tools_binding_result(schema, "/directory"), expected);
+        }
+    }
+    #[test]
+    fn own_tools_rule_c_names_each_input_pointer_and_relation() {
+        for (changes, expected) in [
+            (
+                json!({"tools":"/tools"}),
+                Some(
+                    r#"rule (c): control #set-tools.v1 reaches the place: input "tools" sets "/tools", which lies over the place"#,
+                ),
+            ),
+            (
+                json!({"d":"/tools/directory"}),
+                Some(
+                    r#"rule (c): control #set-tools.v1 reaches the place: input "d" sets "/tools/directory", which equals the place"#,
+                ),
+            ),
+            (
+                json!({"a":"/tools/directory/x","b":"/other","c":"/tools/directory/y"}),
+                Some(
+                    r#"rule (c): control #set-tools.v1 reaches the place: input "a" sets "/tools/directory/x", which lies inside the place; input "c" sets "/tools/directory/y", which lies inside the place"#,
+                ),
+            ),
+            (
+                json!({"whole":""}),
+                Some(
+                    r#"rule (c): control #set-tools.v1 reaches the place: input "whole" sets "", which lies over the place"#,
+                ),
+            ),
+            (
+                json!({"say \"hi\"":"/tools/directory"}),
+                Some(
+                    r#"rule (c): control #set-tools.v1 reaches the place: input "say \"hi\"" sets "/tools/directory", which equals the place"#,
+                ),
+            ),
+            (json!({"x":"/tools/dir","y":"/toolsdirectory"}), None),
+        ] {
+            assert_eq!(
+                own_tools_control_fault(
+                    "#set-tools.v1",
+                    &json!({"changes":changes}),
+                    "/tools/directory"
+                ),
+                expected.map(str::to_owned)
+            );
+        }
+    }
+    #[test]
+    fn listed_control_faults_name_each_rule_of_ctr_006() {
+        let input = json!({"type":"object","properties":{"revision":{"type":"string"},"limit":{"type":"integer"}},"required":["revision"]});
+        let mut no_required = input.clone();
+        no_required.as_object_mut().unwrap().remove("required");
+        let mut no_revision = input.clone();
+        no_revision["properties"]
+            .as_object_mut()
+            .unwrap()
+            .remove("revision");
+        for (spec, expected) in [
+            (
+                json!({"inputSchema":input,"outputSchema":{"type":"object","properties":{"revision":{"type":"string"}}},"changes":{"limit":"/limit"}}),
+                None,
+            ),
+            (
+                json!({"changes":{"limit":"/limit"}}),
+                Some(
+                    "its inputSchema does not declare the input revision under properties; its inputSchema does not list revision under required",
+                ),
+            ),
+            (
+                json!({"inputSchema":no_required}),
+                Some("its inputSchema does not list revision under required"),
+            ),
+            (
+                json!({"inputSchema":no_revision}),
+                Some("its inputSchema does not declare the input revision under properties"),
+            ),
+            (
+                json!({"inputSchema":input,"outputSchema":{"type":"object","properties":{"settings":{"type":"object"}}},"changes":{"limit":"/limit"}}),
+                Some("its outputSchema declares the output settings"),
+            ),
+            (
+                json!({"outputSchema":{"type":"object","properties":{"settings":{"type":"object"}}},"changes":{"limit":"/limit"}}),
+                Some(
+                    "its inputSchema does not declare the input revision under properties; its inputSchema does not list revision under required; its outputSchema declares the output settings",
+                ),
+            ),
+        ] {
+            assert_eq!(listed_control_faults(&spec), expected.map(str::to_owned));
+        }
     }
     fn compare_defaults(earlier: &Project, later: &Project) -> Vec<Value> {
         let scopes = [("old", earlier), ("new", later)]

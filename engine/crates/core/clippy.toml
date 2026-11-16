@@ -61,6 +61,8 @@ disallowed-methods = [
 { path = "std::thread::sleep", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
 { path = "std::thread::available_parallelism", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
 { path = "std::thread::park_timeout", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
+{ path = "std::thread::sleep_ms", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
+{ path = "std::thread::park_timeout_ms", reason = "the core starts no thread, sleeps for nothing and reads no machine fact: the shell runs the work and passes machine evidence in" },
 # Clock
 { path = "std::time::SystemTime::now", reason = "the core reads no clock: the time arrives in Evidence.time" },
 { path = "std::time::Instant::now", reason = "the core reads no clock: the time arrives in Evidence.time" },

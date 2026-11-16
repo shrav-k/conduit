@@ -105,8 +105,8 @@ on the plain runner
 
 ### Setup, recorded before order 2's first turn
 
-The coordinator records each of these before order 2's first turn, and order 2's result gives
-each, with the command that shows it where one does:
+The coordinator records each of these in this section, by a dated amendment merged before order
+2's first turn, and order 2's result repeats each, with the command that shows it where one does:
 
 - the commit of `main` that the dogfood engine is re-pinned to from `38c0b4f`, now that
   [ruling 78](../../docs/proposals/ruling-78/README.md) has ended the hold on the re-pin, and that
@@ -120,12 +120,14 @@ each, with the command that shows it where one does:
   version and digest;
 - the Fleet's documents, as `inputs/fleet/` holds them or as changed, and the Agents' deadlines;
 - whether the store was initialized again at the re-pin;
-- the harness as run: the commit or digest of its scripts, and the lines its log writes for each
-  restart's seconds, each guard's answer and the cause of each turn that does not succeed. A
-  measure that no line gives is not shown;
+- the harness as run: the commit or digest of its scripts, and the lines its log and its guard
+  files write for each turn it sends through Conduit, repair turns included, with its role and
+  round; for each restart's seconds; for each guard's answer; and for the cause of each turn that
+  does not succeed. A measure that no line gives is not shown;
 - three restarts of the re-pinned engine on that store, with no turn sent, each timed as set-up
-  seconds are below, and their median. If the median is over 240 seconds, condition 2 is
-  amended here, with the three times, before order 2 runs.
+  seconds are below, and their median. If any of the three is over 240 seconds, condition 2's
+  bound is amended here before order 2 runs, with the three times, to the longest of them plus a
+  quarter of it, rounded up to a multiple of 10 seconds.
 
 ### Measures
 
@@ -133,7 +135,15 @@ Each is counted from the order's directory (below) unless it names another sourc
 number in a result has beside it the command that gives it, as in
 [the results of 2026-11-12](results-2026-11-12.md) (D13).
 
-Per turn, one row for each `invocation-dispatched` record whose operation ends in `#turn.v1`:
+A turn of the order is an `invocation-dispatched` record in `records.jsonl` whose operation ends
+in `#turn.v1` and that is not in the export the harness made at the order's first restart; the
+result gives that export's last record's time, with its command. A turn of the harness's log is
+one that the harness sent through Conduit, not one run by `VIA=exec` or `ON_LIMIT=exec`. A turn
+of the log is found in the export when it pairs with a turn of the order: on each Agent, the
+log's turns in log order pair one to one with the order's turns in dispatch order, the first
+with the first.
+
+Per turn, one row for each turn of the order:
 
 - the Agent, named from the access decision's `tool` and the Fleet's instances as the results of
   2026-11-12 name it, and the turn's role and round, from the harness's log;
@@ -142,23 +152,25 @@ Per turn, one row for each `invocation-dispatched` record whose operation ends i
   ([step 2 of the harness](inputs/harness.md#what-conduit-ordersh-does)), as the harness's log
   gives them for that restart. Order 042's harness gave only each run's sum, in `restartSeconds`.
   A repair turn is sent with no restart, and its set-up seconds are 0;
-- work seconds: from the turn's `invocation-dispatched` record to its `invocation-ended` record,
-  or "no end recorded";
-- the outcome, and for a turn not `succeeded`, the cause that the harness's log gives from the
-  Agent package's error or an engine diagnostic;
-- whether the report was valid against the order's schema at the first try, whether a repair
-  turn was sent, and whether the report was valid after it;
+- work seconds: from the turn's `invocation-dispatched` record to its end, the first
+  `invocation-ended` record of that attempt whose `reconciled` is not true, or "no end recorded";
+- the outcome, from that end, and for a turn not `succeeded`, the cause that the harness's log
+  gives from the Agent package's error or an engine diagnostic;
+- whether the report was valid against its schema (the order's for a worker's report,
+  `verify.schema.json` for a verifier's) at the first try, whether a repair turn was sent, and
+  whether the report was valid after it;
 - each guard's answer after the turn, held, broken or unknown, and its notes.
 
 Per order:
 
-- the turns in the harness's log and in the export; each turn of the log not found in the
-  export; and each field of a found turn that the records do not give;
+- the turns of the harness's log and the turns of the order; each turn of the log not found in
+  the export; and each field of a found turn that the records do not give;
 - the rounds; the seconds of each round, from its first dispatch to its last end; and for each
   verifier pass, its musts, shoulds and nits, and the musts the coordinator accepted;
 - each turn that ended `unknown`, and what followed it on its Agent: a `reconcile.v1` that
-  recorded it as having occurred, with what was checked; a new turn request; or nothing. Whether
-  any field of the records links a new request to the turn it replaced is reported, not judged
+  recorded it as having occurred, with what was checked; a repeat under the same key (a later
+  attempt of the same invocation); a new turn request; or nothing. Whether any field of the
+  records links a new request to the turn it replaced is reported, not judged
   ([FR-531's verifier](../../docs/proposals/full-review/findings/G6-outside-the-tree.md#fr-531));
 - the harness's interventions, each kind counted: repair turns; restarts, one for each fresh
   conversation and any other apart, with its reason; the processes the harness's sweep listed,
@@ -169,8 +181,10 @@ Per order:
   invocations that succeeded. A zero says that the order tested no access (D57);
 - the lines of the Fleet's documents added or removed for the order, 0 if none changed;
 - the redactions made before committing, by class: path, name, other;
-- the store's size, by `du -sk`, before the order's first restart and after its last turn. The
-  time each commit takes is not measured: the engine does not write it yet.
+- the store's size, by `du -sk`, before the order's first restart and after its last turn, and
+  its change divided by the order's invocations in the export, with the command; the order's
+  invocations are those dispatched in `records.jsonl` and not in the export of its first restart.
+  The time each commit takes is not measured: the engine does not write it yet.
 
 Observed, and never counted as shown, while every Agent runs as one operating-system user (D60;
 [FR-337's verifier](../../docs/proposals/full-review/findings/P06-dogfooding.md#fr-337)). A guard
@@ -186,30 +200,33 @@ that held shows nothing; a guard that answers broken still fails condition 4:
 
 ### Pass conditions
 
-An order passes when all seven hold. A condition that the order's directory cannot show is "not
-shown", and an order with a condition not shown does not pass. The claim holds for orders 2 and
-3 when both pass.
+An order passes when all seven hold. A condition that the order's directory, and the sources the
+condition names, cannot show is "not shown", and an order with a condition not shown does not
+pass. In conditions 1, 2, 3 and 7, a turn is a turn of the order and a turn of the log is a turn
+of the harness's log, as Measures defines both. The claim holds for orders 2 and 3 when both
+pass.
 
 1. **No turn is lost to a fault of the engine, the Agent package or the harness.** A turn is
    lost when its call ends `failed` or `unknown`, the harness's watchdog ends it, or its report
    is still invalid after its one repair turn. A lost turn counts against this condition unless
    the Agent package names its cause `usage-limit` or `rate-limit`, limits that the account sets
-   on a plain `codex exec` turn as well, or its result shows, by evidence outside the turn, that
-   the cause would also have ended a plain `codex exec` turn, such as a plain turn that ran at
-   the same time and ended the same way. A loss of the network is judged like any other cause
-   (finding 4-21).
-2. **Every turn's set-up seconds are at most 240.** The bound is about a quarter above the
-   longest restarts of order 042: 171 to 191 seconds in its round 4, by the coordinator's account
-   (finding 4-24), and 181 seconds on average over that run's two restarts, by
-   `inputs/measures.jsonl`.
-3. **Every report is valid against the order's schema**, at the first try or after its one
-   repair turn, and every turn that ends `failed` or `unknown` has its cause named in the
-   harness's log, by the Agent package's error or an engine diagnostic. `client failure: other`,
-   or no cause, names none.
+   on a plain `codex exec` turn as well, or a plain `codex exec` turn that ran at the same time,
+   on the same machine and account, ended with the same cause, by a log line that the result
+   cites. A loss of the network is judged like any other cause (finding 4-21).
+2. **Every turn's set-up seconds are at most 240.** The bound is about a quarter above order
+   042's round-4 restarts, the only ones timed one by one: 171 to 191 seconds, by the
+   coordinator's account (finding 4-24), and 181 seconds on average over that run's two
+   restarts, by `inputs/measures.jsonl`.
+3. **Every report is valid against its schema** (the order's for a worker's report,
+   `verify.schema.json` for a verifier's), at the first try or after its one repair turn, and
+   every turn that ends `failed` or `unknown` has its cause named in the harness's log, by the
+   Agent package's error or an engine diagnostic. `client failure: other`, or no cause, names
+   none.
 4. **No guard answers broken, and none is still unknown when the order merges.** A trip whose
    cause is that the guard could not read what it checks, as when GitHub's refs could not be read
    in order 042 (finding 4-25), is unknown, and that guard runs again before the next turn (D58).
-   A note is not a trip.
+   Any other trip is broken; after a turn, a guard that neither trips nor answers unknown held. A
+   note is not a trip.
 5. **No turn is recorded as not having occurred** (ruling 78, point 6): no `invocation-ended`
    record whose `reconciled` is true and whose `outcome` is `failed` names a turn of the order.
 6. **Each friction is in the first build's open log, now
@@ -218,10 +235,11 @@ shown", and an order with a condition not shown does not pass. The claim holds f
    result names the rows. A friction is each lost turn, each repair turn, each guard broken or
    unknown, each intervention but the one restart for each fresh conversation, and each fault
    found during the order in the engine, the Agent packages or the harness.
-7. **Every turn in the harness's log is found in the export** with its caller, its Agent (the
-   target's ID, named as the per-turn measures name it), its dispatch, its end and its outcome. A
-   turn not found, or found without one of these, is logged as a finding of the first build
-   against REC-001, or against the promise that should have recorded it (FR-531's verifier).
+7. **Every turn of the harness's log is found in the export** with its caller, its Agent (the
+   target's ID, named as the per-turn measures name it), its dispatch, its end and its outcome,
+   as the per-turn measures take them. A turn not found, or found without one of these, is logged
+   as a finding of the first build against REC-001, or against the promise that should have
+   recorded it (FR-531's verifier).
 
 ### What counts, and what each outcome changes
 
@@ -234,9 +252,9 @@ shown", and an order with a condition not shown does not pass. The claim holds f
 - An order's directory is a directory here named as the order's file, without `.md`. It holds
   `records.jsonl`, the whole export that the harness makes after the order's last run;
   `harness.log`, the harness's log of each run of the order; `measures.jsonl`, the harness's
-  lines for the order; `reports/`, each report the harness read, named by role and round; the
-  Fleet's documents, if the order changed them; and `results-YYYY-MM-DD.md`, dated by the day of
-  the order's last turn, in UTC.
+  lines for the order; `reports/`, each report the harness read, named by role and round;
+  `guard/`, the harness's guard files, notes included; the Fleet's documents, if the order
+  changed them; and `results-YYYY-MM-DD.md`, dated by the day of the order's last turn, in UTC.
 - Before anything is committed, each private value is replaced by a placeholder that the result
   lists, as this README's table does, and `python3 tools/check_private_paths.py` and the pull
   request's secret scan pass.
@@ -388,3 +406,55 @@ grep -c "Orders 2 and 3 \[pre-registered\](028-a78-dogfood/README.md#$A) on" exp
 read-only Opus reader read the diff before it merges (ruling 79), and merges it before the next
 order runs through Conduit. Do not stage anything. Report each choice you make as your own, and
 every check's last line.
+
+## Record
+
+Run on 2026-11-15 on the Mac from `main` `5f9fcbe8`: the worker (131 s) applied all six decisions
+to the three files, and a fresh Codex verifier (159 s) found nothing to change in one round.
+028's README now ends with the registration of orders 2 and 3: the claim, the setup recorded
+before order 2, the measures, the seven pass conditions, what counts, the Claude verifier slot
+and what is not registered. Its opening points to it, What it cannot show opens with D60's
+statement, and its Files table names the order directories to come. A78's row in `ROADMAP.md`
+gains the claim, the counting rule beside the unchanged done-when and the pre-registration in
+its State, and 028's row in the experiments index says so.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It checked the
+order's eight blocks against the branch byte for byte by script, ran every done-when command
+from the root (the five "on main" counts give 0, 0, 0, 1, 0 at `5f9fcbe8`), checked with
+`git merge-tree` that the branch merges cleanly with the newer `main`, and read the cited
+findings, rulings, decisions and lines of `requests.rs`. It found no must, and ten shoulds
+against the registration's own text, which the coordinator wrote. All ten were applied before
+merge, to the README and to decision 1's block alike:
+
+- a turn of the order is a `#turn.v1` dispatch in `records.jsonl` that is not in the export of
+  the order's first restart, and a turn of the log is one the harness sent through Conduit, not
+  by `VIA=exec` or `ON_LIMIT=exec`; the per-turn rows, the per-order count and conditions 1, 2,
+  3 and 7 are read of the order;
+- the order's directory holds `guard/`, the setup records the guard files' lines as well as the
+  log's, and condition 4 says that any other trip is broken and that a guard that neither trips
+  nor answers unknown held;
+- condition 2 is amended if any of the three re-timed restarts, not their median, is over 240 s;
+- the setup is recorded in the registration by a dated amendment merged before order 2;
+- a verifier's report is checked against `verify.schema.json`, in the measure and condition 3;
+- a condition is "not shown" only when neither the directory nor the sources it names show it;
+- condition 1's exception for the plain runner needs a plain `codex exec` turn at the same time,
+  on the same machine and account, that ended with the same cause, by a log line the result
+  cites;
+- a turn's end is the first `invocation-ended` record of its attempt whose `reconciled` is not
+  true, and a repeat under the same key is among what can follow an unknown turn;
+- the store's change per invocation of the order is measured;
+- condition 2's rationale says that only round 4's restarts were timed one by one.
+
+The coordinator's choices in these fixes, each open to the owner's strike (ruling 48), fix each
+rule before any of order 2's data is seen: a new bound, if one is needed, is the longest
+re-timed restart plus a quarter of it, rounded up to a multiple of 10 s; on each Agent, the
+log's turns and the order's turns pair first with first; the order's invocations are those
+dispatched in `records.jsonl` and not in the export of its first restart; and a turn's outcome,
+and its end and outcome in condition 7, are those of its first unreconciled end. The definitions
+stand before the per-turn list rather than inside its lead-in, and conditions 1, 2, 3 and 7 are
+read of the order by one sentence before them, so that condition 2 keeps the words the done-when
+counts. Every done-when count is unchanged after the fixes.
+
+A second fresh Opus reader read the coordinator's fixes (ruling 79, point 2) and found no must. Its
+one should was applied in both copies: the setup records the log line that names each turn sent
+through Conduit, repair turns included, with its role and round.

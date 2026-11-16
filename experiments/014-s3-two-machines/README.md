@@ -325,3 +325,13 @@ that these lines cite are in
   [spec/promises/enrollment.yaml](../../spec/promises/enrollment.yaml), and V7 cites those it
   tests when its case is written. The engine's enrollment bindings, which orders 049a and 049b
   land, are still spec pending in topic 10 of [IN_FORCE.md](../../IN_FORCE.md).
+- **2026-11-16, [ruling 80](../../docs/proposals/ruling-80/README.md), point 11 (the owner): a
+  rented stand-in.** P2's "no rented stand-in" and the "no rented substitute" that ends "What it
+  needs first" are struck, with ruling 72 decision 3's "No rented machine stands in": a rented
+  machine may stand in if the Windows computer is unavailable. The rest of P2 and of that
+  paragraph stands.
+- **2026-11-16, ruling 80, point 8 (the owner): signing Claude in.** Besides the sign-in answer
+  above, the owner may complete a Claude Agent's sign-in by remote desktop or by SSH, pasting the
+  code or forwarding the port, over a connection that Conduit manages once order 050 builds it:
+  Conduit opens, limits and closes the tunnel or SSH session, and never reads, holds or relays
+  the credential that the sign-in returns (C3, as ruling 80 amends it).

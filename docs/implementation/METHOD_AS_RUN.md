@@ -231,7 +231,9 @@ second machine](HANDOVER.md#the-second-machine) for the owner's pause and resume
 
 Once checks pass, a fresh read-only Claude Opus reader verifies each order before merge, and each
 coordinator's fix the same way ([ruling 79, points 2 and 4](../proposals/ruling-79/README.md)). When
-the Claude allowance runs low, dispatch stops first, nothing merges unread, and the owner is told.
+the Claude allowance runs low, A77's paired reads stop first and dispatch next
+([ruling 80](../proposals/ruling-80/README.md), point 6), nothing merges unread, and the owner is
+told.
 Each reader starts with no memory of the work and gives a structured verdict and findings.
 
 The order reader gets its worktree, base and order, `git -C <WO_DIR>/<NNN> diff origin/main...HEAD`

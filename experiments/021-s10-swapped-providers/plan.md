@@ -30,7 +30,7 @@
 > - **Admin question A1:** approve the six vectors' placements.
 > - **Owner:** ruling 77’s `tailscale serve` setup after the Mac’s tailnet rename, with ADDR and DSP, gates Docker T3/T5 and R2; D4’s reading was confirmed on 2026-11-12.
 > - **Admin question A3:** sequence DSP/PSD/SEC-D/FLT-D merges and the selected second store.
-> - **Admin A4:** provisional reading of A73’s “or else”; confirm before choosing fallback.
+> - **Admin A4:** answered by the owner on 2026-11-16 ([ruling 80](../../docs/proposals/ruling-80/README.md), point 9): the file store whenever A73 has not reported by the time S10 runs.
 
 ## Status
 
@@ -154,8 +154,7 @@ waits explicit owner approval. No provider implementation, engine change or pass
 **S10-O.** Owner installs/inventories Docker, supplies throwaway service and selected store scope,
 prepares a disposable HTTPS Git repository and its credential (A63-GS claims git+https only),
 and signs every replacement home into its labelled second subscription through Conduit.
-1Password waits for A73 and its approvals. The timing interpretation of “or else” is
-provisional under admin A4, not automatic permission to choose file when the probe is late.
+1Password waits for A73 and its approvals. Under ruling 80, point 9, S10 uses the file store whenever A73 has not reported by the time it runs.
 No vectors. Checks: exact versions/nonsecret setup and account/panel observations recorded apart. Each account signs in through Conduit's Interface login flow, as ruling 72's later answer asks; [S2's plan](../013-s2-shared-login/plan.md#logins-through-the-interface-ruling-72s-later-answer) lists where each is first tested.
 
 **S10-R1 / S10-R2.** Coordinator with owner performs the twelve accepted replays: R1 first,
@@ -213,7 +212,7 @@ Batch 1 → 053 → PIN → owner judges S1 → B2-S/C/H joins ADDR/DSP, PSD1a/b
 provider suites/packages, S3-S1ITEM/S2-L/050 container items, HTTPS Git setup and owner sign-ins.
 071/SV1 gates safety cases; EV follows SEC-D, FLT-D1/D2 and PSD1 only (no S8-only FLT-D3); no engine order waits H1/H2/Git.
 R1 joins the named P3 orders, S2-H/SCR and final H2b; R2 follows R1. T3/T5 and R2's provider-run engine access waits for ADDR and DSP, and `tailscale serve` set up after the Mac’s tailnet rename (ruling 77).
-The A73 “or else” timing interpretation remains provisional under admin A4; no automatic late-probe fallback.
+S10 uses the file store whenever A73 has not reported by the time it runs (ruling 80, point 9).
 Use [S4’s proposed hot-file merge order](../015-s4-partial-setup/plan.md#for-the-admin): PSD1a/b and SEC-D1/FLT-D1 are
 admin-interleaved core work, DSP/PSD2/PSD3/SEC-D2/D3a/D3b/FLT-D2 are interleaved shell work.
 No S10 core/shell order is added; EV uses manifest pieces after its engine prerequisites.
@@ -233,7 +232,9 @@ No S10 core/shell order is added; EV uses manifest pieces after its engine prere
   late, or only after A73 reports 1Password unsuitable/unavailable? **Recommendation:** confirm
   the former for scheduling, with the choice recorded before freeze. This is the plan's reading
   for admin confirmation. Provisional until the owner confirms. No changed ruling
-  or automatic late-probe fallback is recorded here.
+  or automatic late-probe fallback is recorded here. The owner confirmed the former on 2026-11-16
+  ([ruling 80](../../docs/proposals/ruling-80/README.md), point 9): S10 never waits on A73, and
+  uses 1Password only if A73 has already reported that it works.
 
 ## For the owner
 

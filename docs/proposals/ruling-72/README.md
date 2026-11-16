@@ -1,6 +1,6 @@
 # Ruling 72: metrics after batch 2 and outside v0's gate, second accounts signed in through Conduit, the Windows machine as the second machine
 
-Status: in force (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement). This record says why.
+Status: in force; amended by 80 (decision 3's "No rented machine stands in" struck: a rented machine may stand in if the Windows computer is unavailable) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 10. Placement, nodes, machines, identity and enrollment](../../../IN_FORCE.md#10-placement-nodes-machines-identity-and-enrollment), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement). This record says why.
 
 After [ruling 71](../ruling-71/README.md), the coordinator put three smaller questions from the
 acceleration plan, each with a recommendation:
@@ -80,3 +80,13 @@ want to use this within conduit as a test of agent subscription isolation and ou
 So the second accounts are used only through Conduit, signed in through its Interface login flow,
 as the test of each Agent's own subscription and of the model as a whole; they give the work
 orders no capacity outside Conduit.
+
+2026-11-16: order 190's desk check read each vendor's terms for two subscriptions
+([its results](../../../experiments/010-subscription-terms/results-2026-11-16.md)) and asked the
+owner, among other things, how the second accounts stand against the wording it found: this
+ruling's point 2 and its later answers, [ruling 49](../ruling-49/README.md)'s A5 runs on them, and
+[ruling 75](../ruling-75/README.md)'s D2 and D4. The owner: "Proceed as ruled". The second accounts
+are used as those rulings say, and no decision changes. The other answers of that day are
+[ruling 80](../ruling-80/README.md). Later that day the owner added, on signing into the second
+accounts for a test: "Don't do this without notifying me I may be away"; "I just meant signing
+into the second accounts for the test". The coordinator tells the owner before any such sign-in.

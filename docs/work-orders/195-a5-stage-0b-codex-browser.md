@@ -539,3 +539,39 @@ The coordinator then does the following:
    probe can pass, the coordinator records that part B does not run, in the README's stage 0b note
    and A5's State, and tells the owner that part B needs no time. Otherwise it asks the owner to
    pick a time, checks `codex --version`, and runs part B as the README pre-registers it.
+
+## Record
+
+Run on 2026-11-16 on the Mac from `main` `55d2b85a`: the worker (576 s) and a fresh Codex
+verifier (305 s), whose one must was that the first line of `target/wo195/literals.txt`, the
+check's list of login literals, held another constant's value rather than `CLIENT_ID`'s. The
+worker's second round (139 s) corrected it, and a second verifier (227 s) found nothing. The
+README gains decision 2's three additions as written, with 2026-11-16 for TODAY: 169 lines added,
+none removed. The new results file reads Codex's source at `rust-v0.167.1` (`0a94398fa60c`),
+cloned, and the CD1 to CD3 pages, each redirected once to `learn.chatgpt.com`. Q1: where the
+requirements name no configuration server, `codex login` with no argument builds its server options
+with `open_browser: true` and calls `webbrowser` 1.2.4 under that field alone, with no terminal,
+headless-environment or browser-variable condition, and no Codex code on that path reads `BROWSER`
+or runs `open` or `xdg-open`. Q2: no argument, setting or variable read on the path keeps the
+browser shut while the URL is printed and the loopback wait holds; `--device-auth` is named as a
+switch of login. Q3: each successful status names an authentication mode, not an account. "For part
+B" is None, so part B does not run. The worker reported that one of its tool outputs printed a login
+literal; that output stays in the run's local event log, which nothing committed holds.
+
+A fresh read-only Opus reader then read the result (ruling 79, point 2). Without printing them,
+it compared `literals.txt` with the three values it names and planted each in a scratch copy to
+see the guard catch it. It matched all twelve CX1 code blocks with their cited lines in the clone,
+and all seventeen documentation quotations with the live CD1 to CD3 pages, fetched once each. It
+ran every Done-when check on the branch and every "on main" check on a scratch copy of
+`d4c8cf8b`, and ran `check_docs.py`, `check_rulings.py`, `check_roadmap.py` and
+`check_private_paths.py` under `env -i`, also on `origin/main` with the two files laid on top. It
+found no must and four shoulds, all in the results file. Before merge the branch was rebased onto
+`main` `ecabe372` without conflict, and all four were applied. Q1 now says that when the
+requirements name a configuration server, `codex login` runs that server's OAuth login instead,
+which also calls `webbrowser::open`, quoted with its URL cut, and it places that branch's search
+matches there. The hidden `--experimental_client-id`'s citation now reaches its lines. The desktop
+app's `open`, MCP login's `no_browser` and `run_login_with_device_code_fallback_to_browser` are
+cited by path and line. The worker's own classifications and summaries begin "In this reading" or
+"In summary". The fix also added, as its own, a search of `codex-rs/cloud-config/src/` for Q1's
+terms (no match), a search for the fallback function's callers (none but its re-export), and the
+manager's token-resolution functions that pass the same opener, which it did not follow.

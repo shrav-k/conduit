@@ -80,19 +80,34 @@ Not all of this is in the tree. Check what you can against it, and report any di
        in modules. M. After 070. S0c: the CLI's commands in a table. M. After 070.
      - 042: tombstones, lift, inventory, provenance. L+. 046a: refusal tiers, a diagnostic on
        every reason, the runner's assertions, the CLI's tier 2. L. 046b: closed Conduits from
-       tombstones. M. After 042 and 046a.
-     - 047: the pending-action core. L. After 046a. 048a-1: CTR-013 in the loader, IFC-016's
+       tombstones. M. After 042 and 046a. Order 046a, as written, moves tier 2 for callers other
+       than root to 046b. It moves the outcomes the engine decides (FR-353's half of IFC-050, its
+       former decision 6) to a new order 046c, after 046a and before 047. It moves F2's build and
+       vectors, with F3's other vectors, to a separate admin order not yet numbered, because F2
+       needs ruling 80's repeat exemption. Each is the coordinator's choice, for FR-264, open to
+       the owner's strike.
+     - 047: the pending-action core. L. After 046c. 048a-1: CTR-013 in the loader, IFC-016's
        detection, the signIn fixture Type. M. 048a-2: sign-in as a kind of pending action,
-       PND-005, SignInUndone. L. After 047 and 048a-1.
+       PND-005, SignInUndone. L. After 047 and 048a-1. Order 048a1, as written, moves IFC-016's
+       detection from 048a-1 to 048a-2, which raises PND-005, its other half (the coordinator's
+       decision, open to the owner's strike), and leaves CTR-013's comparisons across Types
+       (client IDs across addresses, confirmClientIds, REC-002, the logins outputs of install.v1
+       and inspect.v1) to a follow-up order the coordinator writes after it (the coordinator's
+       decision, open to the owner's strike). 048a-1 comes after 046a.
      - 048b-relay: the shell relays `input_required` (`server.rs`, `runner.rs`). M. After S0b.
        048b-join: S-M. After 048a-2. 051a: shell commands (`list`, `fleet`, `retire
        --with-resources`). M. After 042 and S0c. 051b: the pending-action commands `pending`,
        `sign-in` and `answer`. M. After 047 and 048b-join.
      - 050: the Agent packages 0.2.0, with each Agent's home, the login flows and the sign-in
        hooks, built on orders 050a and 076 (the `.v2` Types and their clients' own tools), whose
-       work is on their branches, not yet on `main`. M plus a run. After 048b-join.
-     - 052a-1 and 052a-2: plan and apply. L each. After 069 (K3), 043b, 042 and 051a. 052b:
-       replacement and authoring commands. 053: the rerun's preparation, last.
+       work is on their branches, not yet on `main`. M plus a run. After 048b-join. Its .v2 Types
+       state the fixture's shape that order 048a1's decision 6 gives: account required with no
+       default, apiKey defaulting to null, the oneOf unchanged.
+     - 052a-1 and 052a-2: plan and apply. L each. After 069 (K3), 043b, 042 and 051a. The
+       plan-and-apply golden cases and README keep agents-0.2.0's old digest (`479ef470...`)
+       until 052a-1, or whichever of the two first builds plan against those cases, re-pins it,
+       by order 048a1's decision 6. 052b: replacement and authoring commands. 053: the rerun's
+       preparation, last.
 3. **Batch 2** (ruling 61) is drafted on its own branch and merges to `main` only after the owner
    judges the rerun's bar. Name its orders `B2-S` (specification), `B2-C` (core) and `B2-H` (shell), and
    say which behavior you need from it; it holds, among others, the rule on secrets for an Agent

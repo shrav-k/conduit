@@ -1,0 +1,32 @@
+- name: an outcome the engine decides names its deciding rule, in one portable case
+  kind: added
+  cases: [explain-outcome-causes]
+- name: FR-547, the first text block no longer pinned to a bare outcome the engine decides
+  kind: expectation
+  operation: remove
+  cases: [
+    requests-aware-headers-no-repair, requests-aware-malformed, requests-cancellation,
+    requests-effectful-plain-headers, requests-invalid-outputs, requests-plain-model-work,
+    requests-read-input-required, requests-read-missing, requests-read-unknown-result-type,
+    requests-reconcile-false, requests-reconcile-fenced, requests-reconcile-invalid,
+    requests-reconcile-true, requests-reconcile-unconfirmed-cancel,
+    requests-repeat-failed-earlier-succeeded, requests-repeat-failed-earlier-unanswered,
+    requests-unknown-write, requests-unsafe-write-headers, requests-write-capability-error,
+    requests-write-input-required, requests-write-invalid-parameters, requests-write-is-error,
+    requests-write-missing, requests-write-parameter-headers, requests-write-unknown-result-type]
+  paths: ['/steps/*/expect/reply/content/0/text']
+- name: FR-547, structuredContent no longer asserted absent beside an outcome the engine decides
+  kind: expectation
+  operation: remove
+  cases: [
+    requests-aware-headers-no-repair, requests-aware-malformed, requests-cancellation,
+    requests-effectful-plain-headers, requests-invalid-outputs, requests-plain-model-work,
+    requests-read-input-required, requests-read-missing, requests-read-unknown-result-type,
+    requests-reconcile-false, requests-reconcile-fenced, requests-reconcile-invalid,
+    requests-reconcile-true, requests-reconcile-unconfirmed-cancel,
+    requests-repeat-failed-earlier-succeeded, requests-repeat-failed-earlier-unanswered,
+    requests-unknown-write, requests-unsafe-write-headers, requests-write-capability-error,
+    requests-write-input-required, requests-write-invalid-parameters, requests-write-is-error,
+    requests-write-missing, requests-write-parameter-headers, requests-write-unknown-result-type]
+  paths: ['/steps/*/expect/absent/*']
+  before: /reply/structuredContent

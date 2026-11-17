@@ -1,0 +1,3 @@
+- name: setup-action-at-root
+  kind: added
+  cases: [setup-action-at-root]

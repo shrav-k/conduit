@@ -8,7 +8,9 @@ have left the tree; their results, decisions and observations are in
 
 ## Orders still in the directory
 
-One row for each order file in this directory, in file-name order.
+One row for each order file in this directory, in file-name order. Orders 047b to 047d and 050b to
+050o, which the coordinator's cuts of 047 and 050 plan (order 117) but which are not yet written,
+have rows without links where their names sort, each saying what it comes after.
 
 | Order | What |
 | --- | --- |
@@ -25,9 +27,27 @@ One row for each order file in this directory, in file-name order.
 | [045](045-build-state-directory.md) | each instance's state directory |
 | [046a](046a-build-refusal-tiers-and-diagnostics.md) | one deciding rule, and a diagnostic on every reason |
 | [046c](046c-build-outcome-diagnostics.md) | the outcomes the engine decides name their promise |
+| [047](047-build-setup-action.md) | a failed setup's action, computed and raised at root's inspection |
+| 047b | where actions are raised: scoped Interfaces, disclosure, list.v1's pending output, the unanswered key; after 047 (planned; the coordinator's split, open to the owner's strike) |
+| 047c | answer.v1 with stored answers; after 047b (planned; the coordinator's split, open to the owner's strike) |
+| 047d | the notice kind; after 047c (planned; the coordinator's split, open to the owner's strike) |
 | [048a1](048a1-build-sign-in-type-checks.md) | CTR-013's checks on a Type's sign-in, and the .v2 fixture's apiKey |
 | [049a1](049a1-build-enrollment-core.md) | enrollment in the core |
 | [050a](050a-agents-v2-own-tools.md) | the .v2 Agent Types, with the Agent's own tools |
+| [050b](050b-spec-claude-sign-in-connection.md) | the connection Conduit manages for a Claude sign-in, F95, the three stale route texts, and Codex's browser-opens limit, in the specification; after ruling 82 and order 199 (the coordinator's split, open to the owner's strike) |
+| [050c](050c-agents-v2-client-home.md) | each .v2 Agent's own client home inside its state directory; after the stack's rebase onto main and order 045 (the coordinator's split, open to the owner's strike) |
+| 050d | the .v2 wrappers stop their client's whole process tree (the full review's order 16); after 050c (planned; the coordinator's split, open to the owner's strike) |
+| 050e | failed turns as fields, with a network class, and a lapsed login in a turn (the full review's order 17); after 050d, and 048a-2 written (planned; the coordinator's split, open to the owner's strike) |
+| 050f | the .v2 inputs: account, an explicit apiKey, toolsDirectory, and the description sentences (i) and (ii); after 050e, 048a-1 merged, and where a set apiKey is refused at setup chosen (planned; the coordinator's split, open to the owner's strike) |
+| [050g](050g-logout-revocation-read.md) | desk reads: what each client's logout revokes, and the scope of each; after nothing (the coordinator's split, open to the owner's strike) |
+| 050h | the retire hook: each .v2 Agent signs out at retirement (D53); after 050f and 050g's outcome recorded (planned; the coordinator's split, open to the owner's strike) |
+| 050i | claude-code.v2's account and sign-out hooks; after 050h, and 048a-2 written (planned; the coordinator's split, open to the owner's strike) |
+| 050j | claude-code.v2 states signIn, with its redirect login and sign-in hook; after 050i, and 048a-1 merged (planned; the coordinator's split, open to the owner's strike) |
+| 050k | claude-code.v2's code-page login, chosen by signInLogin; after 050j (planned; the coordinator's split, open to the owner's strike) |
+| 050l | codex.v2's account hook asks Codex itself through account/read, and its sign-out hook; after 050h, the coordinator's reading that order 197 confirms the route (if not, the owner's decision first), and 048a-2 written (planned; the coordinator's split, open to the owner's strike) |
+| 050m | codex.v2 states signIn: its browser login, its device login refused, and its keyed sign-in hook; after 050l, and 048a-1 merged (planned; the coordinator's split, open to the owner's strike) |
+| 050n | the Agent packages 0.2.0, joined and merged, the last 050 order; after 048b-join merged, the live check's results merged, 050b merged, and 050k and, on a pass, 050m (planned; the coordinator's split, open to the owner's strike) |
+| 050o | the managed connection for a Claude sign-in, built in the Interface; after 051b merged and 050b merged (planned; the coordinator's split, open to the owner's strike) |
 | [067](067-condense-work-orders.md) | Move merged orders into their record |
 | [068](068-test-gate-and-ci.md) | the test gate, CI split across runners, and a check for private paths |
 | [069](069-spec-cli-plan-apply.md) | the CLI reference for plan and apply |

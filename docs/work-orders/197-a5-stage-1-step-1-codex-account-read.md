@@ -605,3 +605,165 @@ The coordinator then does the following:
    point 1). Otherwise 050's Codex half is written on that route.
 5. After order 048b-join merges and before 0.2.0 merges, the coordinator asks the owner to pick a
    time, and runs the step as the README pre-registers it.
+
+## Record
+
+Run on 2026-11-17, from about 06:27 to 07:03 UTC, on the Mac from `main` `9af1c29f` (#338, which
+wrote this order), in two rounds: the worker (1323 s) and a fresh Codex verifier (329 s), then the
+worker again (236 s) and a second fresh Codex verifier (271 s). The change is the two files of
+Scope. Experiment 027's README takes decision 2's four changes as written, with TODAY 2026-11-17:
+the note after stage 0b's, the stage 1 bullet, the three lines on what A5 gates, and the section
+"Stage 1, step 1: the account check" (215 lines added; lines 15, 20 and 21 removed).
+`results-2026-11-17-account-read-source.md` holds the read of CX1, cloned at the tag with depth 1,
+its HEAD `0a94398fa60c`: its method line names `account/read`, `account/rateLimits/read`,
+`accountSession/list` and `accountSession/switch`, and R1 to R7 quote the source in fenced blocks,
+each after its citation. The worker's own choices: helpers under the ignored `target/wo197/` to
+transcribe the order's text, assemble the excerpts and audit the quotations; `accountSession/list`
+and `accountSession/switch` included, since their answers carry an account session's identity,
+with R2 to R6 kept to `account/read`; unrelated startup calls named in R4 as boundaries of the
+reading; and the checks run with a temporary Git index and object store, since the sandbox refused
+writes to the worktree's index. The first verifier found one must: R1 left out
+`account/rateLimits/read`, whose answer carries an optional account ID. Round 2 added it to the
+method line and to R1, with its wire declaration, its types, its dispatch and the line that builds
+its answer. The second verifier found one must: R4 began at the app-server's configuration load
+and left out the CLI's bootstrap, which reads the home's `.env` and creates the helper aliases in
+the home, without naming it as a boundary.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch at
+`c774aa8c`. It ran both blocks of "Done when" against a scratch index at `9af1c29f`, since the work
+stood in two commits and the tree was clean, and each printed what the order says beside it:
+`check_docs`, `check_roadmap` and `check_private_paths` Errors: 0 each, and `git diff --check`
+clean. It rebuilt the list of login literals in a scratch file and compared it with the worker's
+(the same three lines, no value printed), and found none of them, nor the login server's port, in
+either file. With scratch scripts it compared each of the 212 quoted blocks with its cited range at
+`0a94398fa60c` (no mismatch, every block's line count equal to its range). It checked that both
+commits carry the work-order identity, that the diff holds the two files of Scope, that the
+README's changes are decision 2's text with only lines 15, 20 and 21 removed, and that no prose
+gives a verdict, and it read `codex-rs/arg0/src/lib.rs` at the tag. It found one must and three
+shoulds:
+
+- F1 (must): as the second verifier found, R4 left out the CLI's bootstrap. `main` runs inside
+  `arg0_dispatch_or_else`, whose `arg0_dispatch()` reads the home's `.env` through dotenvy and,
+  preparing the helper aliases, creates directories, a lock file and symlinks in the home, before
+  the app-server's entry point runs.
+- F2 (should): the README puts the scratch root under the system temporary directory, and at the tag
+  a release build refuses to create the helper aliases for a home whose canonical path begins with
+  the path `std::env::temp_dir()` returns and goes on with a WARNING line on stderr. The README
+  stays frozen; the refusal is recorded in R4, and whether a later amendment moves the scratch root
+  is the coordinator's to decide before the step runs.
+- F3 (should): the file quotes whole function bodies where the questions ask for the lines that
+  answer, which roughly doubles its length. Its examples: `provider.rs:690-735`, whose last lines
+  are the next function's signature; the workspace-routing blocks of R4; and `login.rs:488-554`.
+- F4 (should): one quoted line held the at sign of a Rust binding pattern, which the order's email
+  check passes but the rule against any at sign in the repository bars.
+
+The fixer found the branch already on `origin/main` at `9af1c29f`, so the rebase changed nothing,
+and applied each finding to the results file alone, since the README does not change once source
+is read (decision 1):
+
+- F1: R4 gains a paragraph that begins "In this reading, the CLI's bootstrap runs before the
+  app-server's entry point", and twelve quoted blocks: `cli/src/main.rs:1037-1040`; in
+  `arg0/src/lib.rs`, the call at 202, the calls to `load_dotenv` and the alias preparation at
+  132-140, `load_dotenv` at 276-284 without its doc comment, which holds a home path, the `CODEX_`
+  filter at 298-302, the warning at 159-167, the refusal under the temporary directory at 322-337
+  with line 331's message cut, the home's directories and the janitor's call at 345-364, the
+  temporary directory and its lock at 366-378, the symlinks at 386-392, and `janitor_cleanup`'s
+  rename and removal at 489-503; and dotenvy's pin, 0.15.7, at `Cargo.lock:6939-6940`, tempfile's
+  pin being quoted already. The branches for a helper alias or a helper's first argument, at
+  `arg0/src/lib.rs:72-130`, are named as not followed. R4's opening summary names the bootstrap, and
+  the paragraph on the app-server's startup now begins "after that bootstrap". A second reader found
+  that `InstallContext::current()` (arg0/src/lib.rs:137), which checks for the package metadata,
+  reading it on Windows only, and canonicalizes the home, was neither quoted nor named; R4 now names
+  it as not followed, with `dispatch_cli`'s argument parsing (cli/src/main.rs:1049-1065).
+- F2: the same paragraph records the release build's refusal and its WARNING line, and that the
+  README puts the scratch root, and with it the instance's home, under the system temporary
+  directory, with no verdict. The README does not change.
+- F3: applied to the examples it names. `provider.rs` is cited 690-731, without the next function;
+  the R4 blocks `workspace_routing.rs:303-335`, `336-367`, `417-455` and `486-510` lose some lines
+  that are neither I/O, refresh nor network, each cut marked by a `...` line (417-455 keeps 35 of
+  its 39 lines); and `login.rs:488-554` keeps its `eprintln!` lines and match arms.
+  `workspace_routing.rs:392-416`, the discovery request and its recovery, stays whole. The wider
+  trim of the other blocks, which the reader called optional, was not made.
+- F4: the line is cut to `Some(value ...) => value.to_owned(),`.
+
+With a scratch script that lets a `...` line stand for one or more source lines, each of the 224
+quoted blocks matches its cited range at `0a94398fa60c` (Errors: 0); no line of the results file
+holds an at sign, and none is over 100 characters but the Sources row and the method line, which
+the order sets. Both blocks of "Done when", run against a scratch index at `9af1c29f` on the
+results file as fixed, printed what the order says beside each: Errors: 0 from `check_docs`,
+`check_roadmap` and `check_private_paths`, `git diff --check` clean, the README alone changed and
+the results file alone untracked, the clone at `0a94398fa60c`, 215 and 3, the section's diff
+empty, 1 five times, 0 from each literal and barred-pattern count, and `https://github.com` alone.
+On the files of this commit, `python3 tools/check_docs.py` and
+`python3 tools/check_private_paths.py` gave Errors: 0 each, and
+`git diff --check origin/main...HEAD` printed nothing.
+
+A second fresh read-only Opus reader then read the branch at `4db2091a`. It ran both blocks of "Done
+when" against a scratch index at `9af1c29f`, each printing what the order says beside it; rebuilt
+the list of login literals in a scratch file (the same three lines as the worker's, no value
+printed) and found none of them, nor the login server's port, in the results file, the README or the
+order; with a scratch script that lets a `...` line stand for one or more source lines, compared
+each of the 224 quoted blocks with its cited range at `0a94398fa60c` (Errors: 0); checked that the
+commits carry the work-order identity, that the diff holds the two files of Scope and the Record,
+that no added line holds an at sign or a local path and that no prose gives a verdict; read
+`arg0/src/lib.rs`, `install-context/src/lib.rs` and `cli/src/main.rs` at the tag; and checked this
+Record against the logs. It found one must and three shoulds:
+
+- G1 (must): R4's bootstrap paragraph skipped `InstallContext::current()`, which `arg0_dispatch()`
+  calls on the quoted line `arg0/src/lib.rs:137` and which resolves and canonicalizes the home and
+  checks files beside the executable and under the home, and `dispatch_cli`'s argument parsing and
+  canonicalizing of the executable's path before the app-server branch. R4 neither quoted them nor
+  named them as not followed.
+- G2 (should): the refusal under the temporary directory was paraphrased more broadly than the
+  source states it. The check compares, with `starts_with`, the canonicalized home with what
+  `std::env::temp_dir()` returns, uncanonicalized, so whether the step's home meets it is a
+  library's answer that this read does not show.
+- G3 (should): F3's bullet overstated the trim: the R4 blocks lost a few lines each that are neither
+  I/O, refresh nor network. It also counted 12 citations quoted twice (147 lines), whose removal it
+  called optional.
+- G4 (should): F1's bullet did not say how `InstallContext::current()` was handled.
+
+The fixer found the branch already on `origin/main` at `9af1c29f`, so the rebase changed nothing,
+and applied each finding:
+
+- G1: in R4's bootstrap paragraph, after the `.env` read, `InstallContext::current()`
+  (`arg0/src/lib.rs:137`) and what it does are named, citing
+  `install-context/src/lib.rs:85-97, 120-139, 233-279, 310-337`, as not followed. The wording
+  differs from the reader's in one point: the reader had it read a package metadata file beside the
+  executable, and at the tag that read is under `#[cfg(windows)]` (line 238), so the paragraph says
+  that it checks for the file and reads it on Windows only; the sentence added to F1's bullet says
+  the same. R4's opening summary says the bootstrap may "resolve the install context", and its "both
+  quoted below" becomes "the first and the last quoted below", since the install context is not
+  quoted. The paragraph that begins "In this reading, after that bootstrap" ends with
+  `dispatch_cli`'s parsing and canonicalizing (`cli/src/main.rs:1049-1065`), not followed past the
+  app-server branch at 1236.
+- G2: the refusal's sentence takes the reader's wording, ending "is a library's answer that this
+  read does not show", and F2's bullet above takes the reader's correction.
+- G3: F3's bullet takes the reader's wording. The optional removal of the 12 second quotes was not
+  made: the order's quoting rules set no cap, and the reader called it optional.
+- G4: F1's bullet ends with the reader's sentence, as G1 says.
+
+With a scratch script that lets a `...` line stand for one or more source lines, each of the 224
+quoted blocks (22 with a cut, 2952 lines of code) matches its cited range at `0a94398fa60c` (Errors:
+0); no line of the results file holds an at sign, and none is over 100 characters but the Sources
+row and the method line. Both blocks of "Done when", run against a scratch index at `9af1c29f` with
+the results file removed from that index after the checks, since it is committed, printed what the
+order says beside each: Errors: 0 from `check_docs`, `check_roadmap` and `check_private_paths`,
+`git diff --check` clean, the README and this order's Record changed and the results file alone
+untracked, the clone at `0a94398fa60c`, 215 and 3, the section's diff empty, 1 five times, 0 from
+each literal and barred-pattern count, 2 for the clone's short hash, and `https://github.com` alone.
+On the files of this commit, `python3 tools/check_docs.py` and
+`python3 tools/check_private_paths.py` gave Errors: 0 each, and
+`git diff --check origin/main...HEAD` printed nothing. The gate's run on this order's squash, which
+this merge waits on, is the coordinator's at the merge.
+
+At the merge the coordinator applied the third reader's second should: in R4, the sentence on
+`dispatch_cli` now comes where `dispatch_cli` runs, between the bootstrap and the app-server's
+startup. Its first should, quoting each repeated citation once, was left: the order's quoting rules
+set no cap. The coordinator also brought ROADMAP.md's A5 row up to date: order 195 pre-registered
+stage 0b and ran part A, so part B does not run, and stage 1's first step is pre-registered here. A
+fact for before that step runs, from the first reader: release builds refuse to make the CLI's PATH
+aliases for a home under the system's temporary directory, which the pre-registered scratch root is,
+and go on with a warning; the coordinator decides, before the step runs, whether an amendment moves
+the scratch root or records the warning as expected. The gate runs on the squash, and the merge
+waits on its PASS.

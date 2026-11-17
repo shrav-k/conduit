@@ -8,17 +8,20 @@ Amended on 2026-11-15 by work order 167: how a signal stops the probe, the notic
 
 Stage 0b pre-registered on 2026-11-16 by work order 195, [below](#stage-0b): part A, a read of Codex's public source and documentation, done on 2026-11-16, [results](results-2026-11-16-0b-source.md); part B, a watched run, not yet run.
 
+Stage 1's first step pre-registered on 2026-11-17 by work order 197, [below](#stage-1-step-1-the-account-check): the live account check of ruling 82, point 1, not yet run; before it, a read of Codex's public source for `account/read`, done on 2026-11-17, [results](results-2026-11-17-account-read-source.md). The same order replaced, in the stages below, Codex's ID-token route and A5's "gates nothing" with ruling 82's route and gate.
+
 ## Four stages
 
 - **0:** Before order 050 is written: two facts about the real clients, primary accounts only, no engine, nothing signed in; no owner time unless a window opens. The coordinator tells the owner first.
 - **0b:** A follow-up to stage 0, before order 050 is written: how Codex's browser login opens a browser past the shim, what stops it, and whether Codex's status can name the account. Part A reads Codex's public source and documentation and runs no client; part B is a watched start of Codex's login in a scratch home, cancelled before any sign-in, at a time the owner picks. [Pre-registered below](#stage-0b).
-- **1:** On the first build with sign-in, as the S1 rerun's rehearsal: one checked sign-in on a primary account; the package's hook tries Codex's ID-token route in its own home, never the coordinator. About five owner minutes.
+- **1:** On the first build with sign-in, as the S1 rerun's rehearsal: one checked sign-in on a primary account; the package's account hook asks Codex itself, through its app-server's `account/read`, in its own home, never opening the login file, and never the coordinator. Its first step, after order 048b-join merges and before 0.2.0 merges, is the live check of [ruling 82](../../docs/proposals/ruling-82/README.md), point 1, [pre-registered below](#stage-1-step-1-the-account-check); the rest of stage 1 is pre-registered before it runs. About five owner minutes.
 - **2:** After the rerun's pin: the second accounts' first sign-ins, four Agents and four homes, wrong then right accounts, checks after sign-in, undo and retirement, forced lapse, shared directory and history, reach and robustness cases, retirement and fresh sign-in. Needs the Windows computer on; about 30 to 40 owner minutes. If a scenario's owner step comes first, its first second-account sign-ins run under P1 to P7.
 - **3:** After stage 2: a 48-hour soak of small scripted turns; no owner time planned.
 
 Stages 1 to 3 use [the full review's P1 to P8](../../docs/proposals/full-review/experiments.md#a5-stages-and-pass-conditions).
-Each later stage is pre-registered in this README before it runs. A5 gates nothing;
-no Agent doing Conduit's own orders names a second account until the owner says so.
+Each later stage is pre-registered in this README before it runs. A5 gates one thing: `codex.v2`
+states `signIn` only if stage 1's first step passes (ruling 82, point 1). It gates nothing else,
+and no Agent doing Conduit's own orders names a second account until the owner says so.
 
 ## Stage 0: questions
 
@@ -456,3 +459,212 @@ wanted, a later amendment pre-registers it before it runs.
 - Codex's device login.
 - The logins' literal origins, paths, client IDs and ports.
 - Order 050's design.
+
+## Stage 1, step 1: the account check
+
+Pre-registered on 2026-11-17 by work order 197, before any of it ran, under
+[ruling 82](../../docs/proposals/ruling-82/README.md), point 1, the owner's answer of 2026-11-16
+("Ask Codex itself"). Stage 0 found that Codex's everyday status names no account
+([results](results-2026-11-16.md)), and stage 0b's source read found no status message that names
+one ([results](results-2026-11-16-0b-source.md)). CTR-013 lets a Type state `signIn` only where its
+account hook reports an account the service attests, and NAM-024 forbids removing `signIn` once a
+release states it. This step asks once, before any such release is installed, whether `codex.v2`'s
+account hook reports the account that a home is signed in to. It is stage 1's first step; the
+rest of stage 1 is pre-registered here before it runs.
+
+### The route and the gate
+
+- **The route.** `codex.v2`'s account hook learns the signed-in ChatGPT account by asking Codex
+  itself, through its app-server's `account/read`, in the Agent's own home. It never opens the
+  login file, the home's auth.json, and the coordinator never takes its place. Where Codex gives
+  no answer, an error or no account, the hook reports that, with a diagnostic naming the step and
+  the cause, and never reports an account that Codex did not give.
+- **What it replaces.** This route replaces the one that spec batch 1's area draft planned and
+  that this README stated before ruling 82: the status first and, if that names no account, the
+  email claim of the ID token in the home's auth.json. Stage 0's and stage 0b's text keeps its
+  words, as pre-registered. Where that text names that route or calls the ID-token route stage
+  1's, in stage 0's questions, its [outcomes](#what-each-outcome-changes) and its
+  [Not shown](#not-shown), and in stage 0b's Q3 and its [Not shown](#not-shown-in-stage-0b), the
+  route is now this one, tried only in stage 1, by the package.
+- **The gate.** `codex.v2` states `signIn` only if this step passes. No archive whose `codex.v2`
+  states `signIn` is installed anywhere before this step's outcome is recorded here. Nothing
+  switches a Codex Agent to an API key: a key is used only where a template sets `apiKey`
+  explicitly (ruling 82, point 2).
+- **The engine.** CTR-013 and PND-011 are unchanged. The engine reads only what the account hook
+  reports, and compares it with the expected account, ignoring ASCII case.
+
+### Before it: the source read
+
+Before this step, work order 197 reads Codex's public source at the tag `rust-v0.167.1`, the tag
+stage 0b read, for `account/read`, with no client run, and writes
+[its results](results-2026-11-17-account-read-source.md) in this directory. It asks whether the
+app-server offers the method and how it is reached; its answer for a ChatGPT login, an API-key
+login and no login; where the email it returns comes from; whether answering reads or writes
+anything beyond the home's login file, refreshes a token or calls the network; whether it is
+marked experimental; what it returns when the claim is absent; and whether `codex login status`
+names an account at that tag. The read runs no client and decides nothing for order 050. If it
+finds no such method at that tag, or the coordinator does not read it as confirming this route,
+the coordinator brings that to the owner before order 050's Codex half is written (ruling 82,
+point 1), and this step runs only as a later amendment here says.
+
+### When, and under which Type
+
+- **When.** After order 048b-join merges, onto an engine that runs the account check, and before
+  the Agent packages 0.2.0 merge. The coordinator runs it on the Mac, at a time the owner picks,
+  and tells the owner first: a scratch home is signed in once through Conduit's sign-in flow, the
+  owner signs in there with the account the check expects, a browser window opens for that, and
+  the home is signed out and removed afterwards. It runs only once order 050's report records
+  its read of what `codex logout` revokes
+  ([section 6](../../docs/proposals/review-signin-2026-11-16/README.md#050-codexv2), item 8).
+- **The client.** Before the step the coordinator runs `codex --version`. The step runs only with
+  Codex at a version that a source read for `account/read` covers: 0.167.1, by work order 197. At
+  another version it waits until a later amendment here records a read at that version.
+- **The engine.** Built from `main` at a commit that holds order 048b-join, and run with a new
+  state directory inside the scratch root, never the dogfood engine's state.
+- **The Type.** The scratch home is signed in under the Type `codex-account-check.v1`, not under
+  an installed `codex.v2`. The coordinator builds the package that exports it from order 050's
+  branch, at the address `example.org/conduit/a5-stage-1-check`. It differs from that branch's
+  Codex Agent package, `packages/agent-codex`, only in its address and in that Type's name: its
+  contract is `codex.v2`'s in the shape that section 6's 050 `codex.v2` item 1 gives for the
+  account fact's pass (`signIn` with `/account`, as `claude-code.v2`'s item 1), as order 050's
+  branch states that shape, and where that branch states `codex.v2` with no `signIn`, the step
+  waits for a later amendment here that gives the shape; and its items are `codex.v2`'s, the
+  account hook included. It is installed only in the scratch state
+  directory and removed with it. No archive whose `codex.v2` states `signIn` is installed for
+  this step.
+- **The template.** One Agent template of that Type. Its `account` is the expected account, the
+  primary ChatGPT account that the owner uses with Codex, written only in the scratch state
+  directory. Its home is the one that the package derives inside the instance's state
+  directory, which the engine keeps in the scratch state directory (D53: the package refuses a
+  client home outside it).
+- **The scratch root.** A new directory, mode 0700, under the system temporary directory, whose
+  name begins `a5-`, so that stage 0's check after a run finds it if it is left.
+
+### The step
+
+1. Version: `codex --version`.
+2. Everyday status: `codex login status` in the client's own default home.
+3. Registration and setup: the coordinator registers the template and runs its setup. Setup's
+   account check finds no account and raises the instance's sign-in action (PND-011, PND-005).
+4. Empty-home status: step 2's command, with `CODEX_HOME` set to the instance's home and with
+   the configuration overrides, if any, that the package passes to every launch of Codex. It must
+   report no login. Otherwise the step stops here and is recorded as a fault.
+5. The sign-in: the coordinator, as root's Interface, then calls `sign-in.v1` (PND-010). The
+   Interface relays the browser login's URL; the owner opens it and signs in once, with the
+   expected account. Each retry polls the account hook (PND-010, PND-011) until `sign-in.v1`
+   ends.
+6. The outcome: the coordinator reads, through a filter that prints only these fields,
+   `sign-in.v1`'s outcome and reason, whether the action answered signed-in, and the promise IDs
+   its diagnostics name; it never prints the result's `account` or a diagnostic's text, which on
+   another account names both accounts (PND-011). It then asks the owner whether the owner
+   signed in with the expected account, and whether any other window appeared.
+7. Sign-out: the coordinator stops the engine; where 050's item 8 read passed, it runs
+   `codex logout` with `CODEX_HOME` set to the instance's home and step 4's overrides, and in no
+   other home; where it failed, the home's credential is removed as item 8's fail says, by
+   removing that home, without the client command; then step 4's status again, which must
+   report no login.
+8. Everyday status again: step 2's command again.
+9. The checks after: the coordinator removes the scratch root, and each command under the guards'
+   checks after, below, must print nothing.
+
+### Stage 0's guards, as they apply
+
+The owner signs in once, on purpose, in this step; stage 0 signed in nowhere. Its guards hold
+otherwise, in its sections' words where they apply:
+
+- **The browser** ([Running stage 0](#running-stage-0)). The coordinator tells the owner before
+  the run (D80), and asks the owner to make the default browser, for the run, one that holds no
+  OpenAI session, so that the account signed in is the one the owner enters. The owner signs in
+  only at the URL that the Interface relays, opened by the owner; a window that Codex opens by
+  itself is closed without signing in.
+- **A scratch home with no login** ([Steps](#steps)): step 4. A home that is not shown to be
+  separate could hold the everyday login, and a sign-in or sign-out there could touch it.
+- **The everyday login** ([What each outcome changes](#what-each-outcome-changes)): steps 2 and
+  8 must both report a login; a change between them goes to the owner at once.
+- **No file read** ([Safety](#safety)). No one opens, lists, reads or copies a file in the
+  scratch home or in the everyday home, the home's auth.json and any keychain item included. The
+  exceptions are removing the instance's home under step 7, where it says so, and removing the
+  scratch root. No sign-out or logout runs in a default home.
+- **The checks after** ([Running stage 0](#running-stage-0)). Before step 1 the coordinator
+  keeps, in a shell variable `BEFORE`, what `pgrep -f 'codex app-server'` prints then. After
+  the step, completed or not, each of these must print nothing:
+
+  ```sh
+  pgrep -f 'auth login|codex login'
+  comm -13 <(printf '%s\n' "$BEFORE" | sort) <(pgrep -f 'codex app-server' | sort)
+  find "${TMPDIR:-/tmp}" -maxdepth 1 -name 'a5-*'
+  ```
+
+  If any prints anything, the coordinator ends only the processes it lists, removes that
+  directory and records the run as a fault.
+
+### What the step records
+
+- The date; Codex's version; the commits of the engine and of the package built for the check;
+  and the Type, `codex-account-check.v1`.
+- For steps 2, 4, 7 and 8: `login` and `account_named`, under stage 0's
+  [status rules](#what-is-recorded).
+- The result: **pass** or **fail**, or a fault; and, where it is not a pass, the step that
+  failed, by its number and name above, with its cause as one of: no answer from Codex, an
+  error, no account, another account, or a guard's check.
+- `sign-in.v1`'s outcome and reason, whether the action answered signed-in, and the promise IDs
+  that its diagnostics name.
+- The owner's two answers, each **yes** or **no**: whether the owner signed in with the expected
+  account, and whether any other window appeared.
+- Each check after the step, as printed nothing or not; and the owner's minutes.
+
+### What the step never records
+
+In a file, a report or a message: any account value, the expected account and the reported one
+included, such as an email address, an account, user or workspace ID, or a person's name; a
+token, or any claim of one; an authorization code or a device code; a `state` value, or a PKCE
+challenge or verifier; a URL of a login, its authorization or its redirect, whole or in part; a
+login literal, such as a client ID, an authorization origin, a port or a path; the app-server's
+answer; the text of a diagnostic beyond its step and its cause; or anything else that a client
+printed.
+
+Two things pass, and only where this says: the expected account, which the owner enters in the
+template in the scratch state directory, never through the coordinator's messages, and which is
+removed with that directory; and the login's URL, which the Interface shows the owner on the
+Mac's screen in step 5, and which the coordinator's session never prints or copies. Steps 2, 4,
+7 and 8 are read through a filter that prints only `login` and `account_named` under stage 0's
+status rules, as step 6's prints only its fields.
+
+### What the outcomes change
+
+- **Pass.** `sign-in.v1` succeeded and the action answered signed-in, so PND-011 found the account
+  that the hook reported equal to the expected one, ignoring ASCII case; the owner answered
+  **yes**, signed in with the expected account; and every guard held.
+  `codex.v2` then states `signIn`, as order 050 writes it, and the outcome is recorded here
+  before any archive whose `codex.v2` states `signIn` is installed.
+- **Fail.** The guards held, the owner answered **yes**, and the account hook gave no answer, an
+  error or no account, or the engine found another account. `codex.v2` then does not state
+  `signIn`, Codex Agents do not sign in yet, nothing switches a Codex Agent to an API key, and
+  the question returns to the owner, with FR-118.
+- **A fault, not a result.** The owner answered **no**, or did not sign in; step 4 found a login;
+  the engine, the package build or the scratch root failed for a cause that is not the account
+  hook's; a signal ended the run; or a check after the step printed anything. Once the fault is
+  cleared, the coordinator may run the step again at a time the owner picks.
+- **The everyday status changes** between steps 2 and 8, or step 7 cannot leave the scratch home
+  with no login: this goes to the owner at once, and the step stops.
+
+The owner's answer that another window appeared is recorded and, alone, changes no outcome.
+
+The coordinator records a dated Markdown result, `results-DATE-1-step-1.md`, DATE being the day
+of the step, which opens with this experiment's limit. Under D78 it merges with A5's State change
+and the experiments index's Current evidence change in the same pull request. As for stage 0, the
+coordinator stages it and reruns the private-path check, which must pass.
+
+### Not shown in stage 1's first step
+
+- Agents kept apart: the step runs under one operating-system user.
+- P1 to P8 as a whole. The step's pass is its own, above. It observes P1 only as step 4 and
+  step 6, P2 only as step 6, and P7 only for the everyday status at steps 2 and 8. P3 to P6 and
+  P8 wait for the rest of stage 1.
+- The rest of stage 1, and stages 2 and 3: a wrong account refused and undone, the second
+  accounts, refresh, lapse, and one Agent's sign-in or retirement leaving the others working.
+- Claude Code, whose status names the account, and of which this step asks nothing.
+- Codex's device login, Codex on the Windows computer or under WSL, and any version of Codex but
+  the one the step records.
+- The logins' literal origins, paths, client IDs and ports. Order 050 reads those from the
+  clients.

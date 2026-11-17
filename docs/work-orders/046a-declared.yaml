@@ -1,0 +1,36 @@
+- name: one deciding rule and a diagnostic on every reason, in three portable cases
+  kind: added
+  cases: [explain-agent-results, explain-reason-diagnostic, explain-refusal-tiers]
+- name: C9's tier 1, asserted by hand on the protected case's three refused steps
+  kind: expectation
+  operation: add
+  cases: [first-start-protected-without-pool]
+  paths: ['/steps/*/expect/reply/diagnostics/*', '/steps/*/expect/record_facts/*']
+- name: FR-547, the first text block no longer pinned to a bare reason
+  kind: expectation
+  operation: remove
+  cases: [
+    records-expected-id, requests-key-scope, requests-plain-content, requests-reason-order,
+    requests-reason-reconsidered, requests-reconcile-false, requests-reconcile-invalid,
+    requests-reconcile-revision-in-progress, requests-reconcile-revision-succeeded,
+    requests-reconcile-true, requests-records-inputs-invalid,
+    requests-sign-in-return-kept-nowhere]
+  paths: ['/steps/*/expect/reply/content/0/text']
+- name: FR-547, structuredContent or diagnostics no longer asserted absent beside a reason
+  kind: expectation
+  cases: [
+    access-bounds, access-close-root-outside-bound, access-current-tools, access-identity,
+    access-pool-target, access-s1-exact-access, access-s1-plain-filter, access-s1-pool-authority,
+    expected-id-access-order, first-start-protected-without-pool, records-expected-id,
+    root-consumer-onward, root-consumer-open, root-consumer-register,
+    root-consumer-register-invalid, root-consumer-register-onward-invalid]
+  paths: ['/steps/*/expect/absent/*']
+- name: FR-547, an empty diagnostics list no longer asserted beside a reason
+  kind: expectation
+  operation: remove
+  cases: [
+    archives-instance-contract-holder, archives-instance-implementation-holder,
+    archives-registered-project-holder, archives-s1, archives-template-contract-holder,
+    archives-template-implementation-holder, archives-unavailable]
+  paths: ['/steps/*/expect/reply/diagnostics']
+  before: []

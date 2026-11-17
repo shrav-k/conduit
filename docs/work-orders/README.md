@@ -23,6 +23,9 @@ One row for each order file in this directory, in file-name order.
 | [042](042-build-tombstones-and-inventory.md) | tombstones, lift, the inventory, provenance and reconcile limits |
 | [044](044-build-package-fixtures.md) | package fixtures for the .v2 Types, and no default added to a published Type |
 | [045](045-build-state-directory.md) | each instance's state directory |
+| [046a](046a-build-refusal-tiers-and-diagnostics.md) | one deciding rule, and a diagnostic on every reason |
+| [046c](046c-build-outcome-diagnostics.md) | the outcomes the engine decides name their promise |
+| [048a1](048a1-build-sign-in-type-checks.md) | CTR-013's checks on a Type's sign-in, and the .v2 fixture's apiKey |
 | [049a1](049a1-build-enrollment-core.md) | enrollment in the core |
 | [050a](050a-agents-v2-own-tools.md) | the .v2 Agent Types, with the Agent's own tools |
 | [067](067-condense-work-orders.md) | Move merged orders into their record |

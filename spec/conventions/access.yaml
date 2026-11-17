@@ -830,8 +830,10 @@
     Conduit to `access` of the sender that would have permitted that part independently when
     decided, in ID order. For an engine-made Conduit it is `cause`, `first-start` or `default`.
   observable: >-
-    Inspection and inventory show the provenance. Reconciling an open as having occurred gives
-    that invocation's provenance. Repeating an open of an already open Conduit preserves its
+    Inspection and inventory show the provenance. A reconciliation that records an open as
+    having occurred opens nothing, under LIF-028, so it gives no provenance: the request that
+    later opens the Conduit gives its own. Repeating an open of an already open Conduit
+    preserves its
     original provenance. Nothing changes it afterwards, and a purge touches none of it
     (REC-004). It is state apart from records, with the form `provenance.v1`; this adds no
     record field. A Conduit with no `openedThrough` has no opening authority to name as closed.

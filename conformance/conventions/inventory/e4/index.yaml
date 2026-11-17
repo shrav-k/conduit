@@ -299,6 +299,15 @@
       "safety_rows": []
     },
     {
+      "id": "e4-reconcile-open-records-only",
+      "case": "conventions/inventory/e4/reconcile-open-records-only/case.yaml",
+      "promises": [
+        "LIF-028",
+        "ACC-044"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "e4-reconcile-open-replaced-subject",
       "case": "conventions/inventory/e4/reconcile-open-replaced-subject/case.yaml",
       "promises": [
@@ -350,6 +359,24 @@
       "promises": [
         "ACC-055",
         "OPS-030"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-setup-action-open",
+      "case": "conventions/inventory/e4/reconcile-setup-action-open/case.yaml",
+      "promises": [
+        "PND-006",
+        "PND-003"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "e4-reconcile-setup-records-only",
+      "case": "conventions/inventory/e4/reconcile-setup-records-only/case.yaml",
+      "promises": [
+        "LIF-028",
+        "LIF-003"
       ],
       "safety_rows": []
     },

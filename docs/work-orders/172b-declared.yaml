@@ -1,0 +1,14 @@
+- name: e4-reconcile-open-records-only
+  kind: added
+  cases: [e4-reconcile-open-records-only]
+- name: e4-reconcile-setup-records-only
+  kind: added
+  cases: [e4-reconcile-setup-records-only]
+- name: e4-reconcile-setup-action-open
+  kind: added
+  cases: [e4-reconcile-setup-action-open]
+- name: reconcile-open-retired-consumer-provenance
+  kind: expectation
+  cases: [e4-reconcile-open-retired-consumer]
+  paths: ['/steps/5/expect/object_facts/0/provenance/*']
+  operation: remove

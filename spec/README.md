@@ -606,6 +606,12 @@ it. Each point cites the promises that state its parts; the reasons are in the
   still exists (IFC-022, PRV-022). Unregistering asserts that shutdown is settled in another way
   (LIF-017), as force deletion of a Kubernetes StatefulSet Pod does, with the same risk to
   at-most-one semantics.
+- A process that a run started and that left the unit by which its provider stops the run, as a
+  process that starts a session of its own leaves a process group, goes on after a stop that
+  succeeded, with the values the run was given, secrets included, and can act outside Conduit
+  with them. The provider's contract, and DL16 for the engine's own runner, say what can leave
+  that unit (PRV-030, LIF-024). Once the instance is removed, its credential reaches nothing
+  (IFC-022, PRV-022).
 
 ### What the promises on records cover
 

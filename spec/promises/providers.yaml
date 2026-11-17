@@ -292,7 +292,8 @@
     The runtime provider that the instance names is not retired while the instance exists, under
     PRV-020, so there is one to ask while the instance exists. A further retirement under
     LIF-026 asks for the stop again, and it succeeds where nothing runs. A stop succeeds only
-    once no run of the ID is running, including one still being started: the provider ends or
+    once no process of a run of the ID still runs in the unit by which the provider stops it,
+    and no run is still being started: the provider ends or
     cancels that start, and starts none until `run.v1` next asks, under PRV-030. A request to
     unregister
     a retired instance asks for the stop once more, under LIF-036, and what a runtime provider
@@ -989,10 +990,17 @@
   when: >-
     A runtime provider is asked with `stop.v1` to stop an instance's run.
   then: >-
-    It reports succeeded while any run that it started for that ID is running, or is still being
-    started under an earlier `run.v1`; or it starts any run for that ID after the stop
-    succeeded, by a restart under PRV-010 or otherwise, until `run.v1` next asks for one.
+    It reports succeeded while any process of a run that it started for that ID still runs in
+    the unit by which it stops that run, or while a run is still being started under an earlier
+    `run.v1`; or it starts any run for that ID after the stop succeeded, by a restart under
+    PRV-010 or otherwise, until `run.v1` next asks for one.
   observable: >-
+    A run's processes are every process that the provider started for the ID and every process
+    that those started. The provider stops a run by a unit that the operating system ends whole,
+    such as a process group, a control group, as systemd stops a unit under
+    `KillMode=control-group`, or a job object. Its contract names that unit and which processes
+    of a run can leave it, which a stop that succeeded may leave running. Where the provider
+    cannot tell whether its unit still holds a process, the stop ends unknown, under PRV-008.
     Before reporting succeeded, it ends or cancels every run it is still starting for the ID, so
     no earlier `run.v1` can start a run afterwards. A stop of a run that exited on its own also
     ends any pending restart: succeeded stays true until a later `run.v1` asks for a run. A run

@@ -668,11 +668,13 @@
   note: Bounded source slice; no individual finding.
 - id: LIF-003
   class: safety
-  standing: holds, not graded
+  standing: text changed, not rerun
+  was: holds, not graded
   model: lifecycle::L
   read: 5ed438b21a3a22c08b46b7bb9297f3cf6ef027f0
   digest: 6d8da850e46a65b639bc02d1ed6f6031845fc86a0c8da940b7088a29b62d3054
-  note: Bounded source slice; no individual finding.
+  note: Bounded source slice; no individual finding. Work order 172b changed its when and
+    observable, so that a reconciled setup leaves the state as it was (ruling 78 point 5).
 - id: LIF-004
   class: safety
   standing: holds, not graded

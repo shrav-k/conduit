@@ -50,7 +50,7 @@
     An operation answers a pending action, or its expiry passes.
   then: >-
     The answer is decided under ordinary access using the Conduits the actor holds. Sign-in is
-    answered signed-in by sign-in.v1; setup is answered retried, ready, retired or dismissed
+    answered signed-in by sign-in.v1; setup is answered retried, retired or dismissed
     (PND-006); notice is answered acknowledged by answer.v1. Enrollment, machine and
     machine-removal are answered under PND-008 at root alone; anything touching a secret
     remains root's. A scoped Interface completes sign-ins only for Agents of its scoped
@@ -297,14 +297,16 @@
   layer: convention
   level: must
   when: >-
-    An instance is not retired and its latest set-up.v1 invocation ended failed or unknown.
+    An instance is not retired and its latest set-up.v1 invocation ended failed or unknown,
+    including one whose outcome a reconciliation has since set under LIF-028.
   then: >-
     One setup action is computed, with that invocation's ID, the instance as subject, and
     evidence naming the invocation, outcome, reason and diagnostics where present, parts
     that did not succeed and unreconciled IDs. It has an expiry under DL19.
   observable: >-
-    Dispatch of a further set-up.v1 answers retried; reconciliation as having occurred
-    answers ready; retirement answers retired; answer.v1 may answer dismissed. A dismissal
+    Dispatch of a further set-up.v1 answers retried; retirement answers retired; answer.v1 may
+    answer dismissed. A reconciliation that records the setup as having occurred answers nothing
+    and leaves the action open, since it makes nothing ready under LIF-028. A dismissal
     or expiry for that invocation stays answered and is not recomputed as unanswered. A
     later unsuccessful setup makes a new action. Computation adds no record and dispatches
     nothing.

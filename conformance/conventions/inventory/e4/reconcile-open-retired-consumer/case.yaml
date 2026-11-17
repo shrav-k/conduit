@@ -966,15 +966,7 @@
           {
             "id": "$subject",
             "open": false,
-            "state": "registered",
-            "provenance": {
-              "actor": "00000000-0000-4000-8000-000000000005",
-              "sentBy": "00000000-0000-4000-8000-000000000005",
-              "invocation": "c9e48f7d-a521-59b1-ab69-40b535d5cf28",
-              "openedThrough": [
-                "00000000-0000-4000-8000-000000000007"
-              ]
-            }
+            "state": "registered"
           },
           {
             "id": "$a",

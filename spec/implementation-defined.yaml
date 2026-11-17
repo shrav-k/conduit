@@ -181,7 +181,9 @@
     `package` item it runs, such as `npm` or `pypi`, as a runtime provider's contract states
     them under PRV-012; it runs one only where its `transport` is of the `type` `stdio`, and
     ends the run of any other failed, under PRV-003; the runner's restart policy, under PRV-010;
-    and what becomes of the processes it started when the engine stops and when it starts again,
+    the unit by which it stops a run, and which processes of a run can leave that unit, under
+    PRV-030; and what becomes of the processes it started when the engine stops and when it
+    starts again,
     apart from the servers of the runtime, machine and package-source providers, and the
     processes of the secret Resources that it runs, which PRV-026 has the engine run again when
     it first needs each. A process that runs as the engine's own operating-system user can read

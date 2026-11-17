@@ -278,3 +278,51 @@ above all: that the words change NAM-024's meaning only as that point says, and 
 an `offers` entry. It merges on a pass of `tools/gate.py`; CI runs on the pull request as a second
 opinion that the merge does not wait for ([ruling 80](../proposals/ruling-80/README.md)). It merges
 before order 050 is written.
+
+## Record
+
+Run on 2026-11-17, from about 06:27 to 06:41 UTC, on the Mac from `main` `9af1c29f` (the merge
+that added orders 197, 198 and 199), in one round: the worker (687 s) and a fresh Codex verifier
+(136 s). The change is the three files of Scope: NAM-024's `then` is decision 1's text, its
+`observable` holds its two kept sentences, decision 2's three and the kept text from "An input of
+a requirement" to the end, the `login` row of `spec/definitions.md` gains decision 4's sentence,
+and IN_FORCE.md's line 101 is decision 5's line; `tools/promise_standing.py --write` left
+`engine/STANDING.md` unchanged. The worker's own choices: it kept cargo offline, and it rewrapped
+the inserted `observable` text after a line-length check of its own caught three lines over 96
+characters. `check_model_account.py` printed the same counts as on the starting tree (246 rows,
+232 safety, 14 not, 0 uncatalogued). The worker could not run the engine's tests whole: its sandbox
+refused loopback binds, so 13 HTTP tests of `conduit-shell` failed with `PermissionDenied` and
+cargo exited 101 before the later test binaries ran. The verifier found no must and no should; it
+noted that the engine's tests still needed a run that passes before the merge.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), against ruling 82
+point 4 above all. It ran the eight `tools/` checks of "Done when" (Errors: 0 each; the model
+account's output identical to `origin/main`'s), `git diff --check origin/main...HEAD` (clean), the
+order's ten greps that print 1, its Python check (`True True True`), its three greps that print 0
+and the two `--numstat` lines, and it compared `naming.yaml` on parse with `origin/main`: the same
+IDs, every promise but NAM-024 equal, and NAM-024 different only in `then` and `observable`. It
+read that the words name no `offers` entry and add no example beyond logins, members of a login
+and a further operation with its default implementation, so they change NAM-024's meaning only as
+ruling 82 point 4 says and settle nothing on `offers`; that the facts cited from NAM-026, PND-010
+and PND-013 hold; and that the other texts that describe NAM-024 (the `contract` row of
+`spec/definitions.md`, `conduits.yaml`, `implementation.yaml`, `contracts.yaml` and NAM-025) still
+agree with it. In a scratch copy of the branch it ran `CONDUIT_VECTOR_THREADS=4 cargo test
+--release` from `engine/`: 28 `test result:` lines, each `ok` with `0 failed`, and cargo exited 0.
+It found no must and no should.
+
+The fixer fetched `origin/main`, still at `9af1c29f`, so the rebase with the work-order identity
+changed nothing, and the branch's commits have that identity as author and committer. With no
+finding to apply, it ran from the worktree's root, on the files of this commit before it was made:
+the eight `tools/` checks of "Done when" (each last line ends `Errors: 0`), `git diff --check` and
+`git diff --check origin/main...HEAD` (clean), the ten greps that print 1 (1 each), the Python check
+(`True True True`), the three greps that print 0, the hunk check against `origin/main...HEAD` (0
+each), and the two `--numstat` lines (`1`, `1` for `IN_FORCE.md` and for `spec/definitions.md`);
+`git diff --name-status origin/main...HEAD` lists the three files of Scope, each modified, and not
+`engine/STANDING.md`. From `engine/`, `CONDUIT_VECTOR_THREADS=4 cargo test --release` printed 28
+`test result:` lines, each `ok` with `0 failed`, the last
+`test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out`, and exited 0. The
+gate's run on this order's squash, which this merge waits on, is the coordinator's at the merge.
+
+At the merge the coordinator applied the second reader's one should, in this Record: of the three
+greps that print 0, only the hunk check reads `origin/main...HEAD`. The gate runs on the squash, and
+the merge waits on its PASS.

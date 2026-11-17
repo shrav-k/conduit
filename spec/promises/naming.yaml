@@ -419,13 +419,26 @@
     that an earlier release at the same address gave it.
   then: >-
     The later contract may add optional things, such as an optional input of an operation, a
-    further operation of a capability or an optional property of a Type's `schema`. A property
-    that it adds to a Type's `schema`, at any depth, and an input that it adds to a
-    Requirement contract, state no `default`. It does not remove or change anything the
-    earlier one held.
+    further operation of a capability or an optional property of a Type's `schema`. A further
+    operation of a capability is one of them, and so is the default implementation of it that
+    a Type whose earlier contract offers that capability adds to its `implementation`. A login
+    added to a Type's `signIn.logins`, and a member added to a login that the earlier contract
+    states, are not: a Type's logins, and the members of each, are stated in the first release
+    at the address that exports the Type under its name, or in none. A property that it adds to
+    a Type's `schema`, at any depth, and an input that it adds to a Requirement contract, state
+    no `default`. It does not remove or change anything the earlier one held.
   observable: >-
     Comparing the two contracts shows only such additions. Any other change is made as a new
-    contract, under a name with another version segment, as NAM-015 states. An input of a
+    contract, under a name with another version segment, as NAM-015 states. A request that was
+    dispatched under the earlier release, made again with the same target and inputs, names no
+    further operation, since a request that names an operation that the version the target holds
+    does not include reaches no implementation, under NAM-026; so a further operation changes
+    nothing such a request may do. A login, or a member of a login, added later would change
+    what such a request may do: a `sign-in.v1` that names no login may start any of its Type's
+    logins, the hook choosing among them under PND-010, and a member such as `issuer` adds a
+    check of that login's carried return under PND-013. So a login, or a member of one, that the
+    first release exporting a Type under its name does not state is stated only under a name
+    with another version segment. An input of a
     requirement that states a `default` is filled in and sent with every filter of it, under
     NAM-019 and IFC-018, and an implementation built for the earlier release cannot apply a
     filter whose `arguments` hold an input that its version does not declare, under IFC-019,

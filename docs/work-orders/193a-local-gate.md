@@ -564,3 +564,153 @@ After the report:
 - The admin runs the new gate on this order's squash, with the file of private names once they
   are held, beside the interim gate, which still gates this merge; the Record gives that run's
   last line, its `identity` result among its gates.
+
+## Record
+
+Run on 2026-11-16, from about 20:38 to 21:13 UTC, on the Mac from `main` `55d2b85a`, in two
+rounds: the worker (916 s) and a fresh Codex verifier (259 s), then the worker again (580 s) and a
+second fresh Codex verifier (304 s). The change is the two new files of Scope. `tools/gate.py`
+runs, from the root, `identity`, the eleven Python gates of CI's `docs` job, `secrets` and a
+`rust and engine` gate that does not run; it prints a line for each and writes
+`target/gate/<head>.json`. `tools/tests/test_gate.py` holds decision 11's ten tests. The runner's
+interface is the worker's: `run(args, *, cwd, env, timeout, log, redact)` returns
+`CommandResult(exit, output, timed_out)`, and the `redact` callback, added in round 2, writes each
+configured name as `[redacted]` before the output is logged or returned. Decision 4 puts a failing
+commit's role in brackets and test 2 in parentheses; the worker used parentheses. The first verifier
+found two musts: a checker's output carried a configured name to the terminal and the log, and a
+Unicode line separator in a name split one commit into two rows and printed part of the name.
+Round 2 redacts output in the runner, splits Git's rows at LF and tab bytes alone, and checks each
+row's hash. The second verifier found two musts that round 2 left open: a configured name in the
+branch or in `--base` reached the header and the record, and after a timeout the runner waited
+without bound for a process that had left the group and still held the output pipe.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). Under `env -i` it ran
+the tool tests (112, OK; 118, OK on the branch merged with `origin/main` at `ecabe372`), the gate's
+tests with `-v` (10 ok lines), the order's commands of "Done when", `check_docs`, `check_rulings`,
+`check_roadmap` and `check_private_paths` (Errors: 0 each) and
+`git diff --check origin/main...HEAD` (clean). On scratch copies each of the order's ten removals
+failed its test, and so did twenty mutations of its own. It found the first verifier's musts
+closed, and three musts and four shoulds:
+
+- On macOS `os.killpg` answers EPERM, not ESRCH, for a group whose only member is a zombie leader.
+  So when a timed-out or interrupted command's leader died on SIGTERM, the gate crashed with a
+  traceback (9 runs of 10): no FAIL line, no `Gate: interrupted` line, and exit 1, not 130.
+- The second verifier's two musts were still open. The branch and `--base` were never redacted, a
+  privacy fault. `communicate()` after the group was ended had no timeout, a hang; and a command
+  that exited 0 but left such a process was reported as a 15-minute timeout.
+- Shoulds: the `Environment:` line lacked decision 2's "and". Three behaviours survived their
+  removal: the redaction of `secrets`'s finding lines, `CONDUIT_GATE_REEXEC=1` before the restart,
+  and the SIGKILL after 10 seconds. `git log` honours `refs/replace`, which every worktree shares,
+  so the gate could read a substitute commit's identity while `git push` sends the original, and a
+  tab in a name gave six fields. `git status` takes `index.lock` and may rewrite the index.
+
+The fixer rebased the branch onto `origin/main` at `ecabe372` with the work-order identity, without
+conflict, and applied each finding:
+
+- `end_group` takes PermissionError as it takes ProcessLookupError, when it signals the group and
+  when it probes it, with a comment on macOS's answer.
+- Once the names are read, the branch and `--base` are redacted, and the header, the `Base:` line,
+  the last line and the record's `branch` and `base.ref` take the redacted forms; the Git queries
+  keep the raw ones. Decision 2's lines for a base that does not resolve or shares no commit with
+  `HEAD` still print REF, since decision 2 reads the names file after them.
+- The runner times the leader with `process.wait(timeout)` and ends the group on its timeout. A
+  reader thread collects the output, and after a normal exit, a timeout or an interrupt the runner
+  joins it for 10 seconds at most (`PIPE_WAIT`). The Opus reader's fix closes `process.stdout` then,
+  but closing it while the thread still reads would wait on the buffered reader's lock. As the
+  nearest sound reading, the thread reads the descriptor through `select` every 0.1 seconds until
+  end of file or a stop flag, and the runner sets the flag after the 10 seconds, joins it, and only
+  then closes the pipe (the fixer's choice).
+- The `Environment:` line reads `..., and <K> variables named for a credential.`
+- The direct Git queries of decisions 2 and 4 run as `git --no-replace-objects`, and `identity`
+  reads `git --no-replace-objects log -z --format=%H%x00%an%x00%ae%x00%cn%x00%ce <merge base>..HEAD`
+  and takes the fields five at a time. A row that is not a hash and four fields fails with
+  `git log returned a row that is not a commit hash and four identity fields; identities are not printed`.
+  The command printed and recorded for `identity` thus differs from decision 4's, for the
+  coordinator to accept.
+- The tree's entries come from `git --no-optional-locks status`.
+- Test 10 adds, with the real runner, to its case of a successful command: a child that ignores
+  SIGTERM under a leader that waits for it, so that only the SIGKILL ends them, within 15 seconds; a
+  leader and child that trap nothing, five times with a timeout of 0.5 seconds, each timed out and
+  raising nothing; a child that left the group and holds the pipe, where a timeout of 1 second
+  returns within 15 seconds with the line printed before the sleep in the log, the child killed by
+  its PID after; and `main` interrupted by a SIGINT during `docs`, which returns 130 with its line
+  and leaves the record `incomplete`. Test 3 checks the exact `Environment:` line, and runs on
+  branch `wo/planted-alpha` with `--base planted-beta-base`, a branch one commit ahead of it:
+  `[redacted]` is printed and recorded, and neither name. Test 7 gives a names file and a finding in
+  `planted-alpha/x.txt`, printed as `[redacted]/x.txt`. Test 5 checks that the restart sees
+  `CONDUIT_GATE_REEXEC` set to `1`. Test 2 adds a tab in an author's name, named `(author)`, and a
+  planted commit replaced under `refs/replace` by a work-order one, named `(author and committer)`.
+
+On a scratch copy each of ten removals failed its test: the PermissionError catch, the branch's and
+the base's redaction, the "and", the findings' redaction, setting `CONDUIT_GATE_REEXEC`,
+`--no-replace-objects`, the NUL-separated fields, the SIGKILL and the bound on the reader's join;
+the copy was then restored, and `cmp` printed nothing. The fixer then ran, from the worktree's root
+under `env -i` with a minimal `PATH` and `HOME`, the tool tests (118, OK), the count of the gate's
+ok lines (10), `--plan` (12 `WOULD RUN` lines, `identity` among them since the branch now holds the
+order's commits, and `NOT RUN` for `secrets` and `rust and engine`), the names file's two cases (1;
+then decision 3's line for mode 0644 and exit 2), `--base no-such-ref` (decision 2's line, exit 2),
+the full run, before the commit, whose last line begins
+`Gate: PASS. 12 passed; not run: secrets, rust and engine.` and goes on with the 3 uncommitted
+paths, then exit 0 (its `identity` passed on the 2 commits, and gitleaks is not installed), the
+record's summary (`PASS False False ['secrets', 'rust and engine']`), `no absolute path`,
+`check_docs`, `check_rulings`, `check_roadmap` and `check_private_paths` (Errors: 0 each), and
+`git diff --check` and the order's grep for trailing whitespace, which were clean.
+
+A second fresh Opus reader then verified the branch at `d4037d49` (ruling 79, point 2), under
+`env -i` on a scratch clone: the tool tests (118, OK), the gate's tests with `-v` (10 ok lines),
+the order's commands of "Done when", `check_docs`, `check_rulings`, `check_roadmap` and
+`check_private_paths` (Errors: 0 each) and `git diff --check origin/main...HEAD` (clean). The rebase
+lost nothing, and each of the first reader's findings was applied. Each removal it tried failed its
+test but one, its must: with the PermissionError catch taken out, test 10 passed in 4 of 4 runs,
+since with the reader thread the five timeouts of 0.5 seconds seldom leave a group of zombies alone.
+So the paragraph above overstates that removal; it was not reliably caught. Its four shoulds: an
+interrupt during the bounded wait on the pipe, after the leader exited, skipped `end_group`, against
+decision 8; no test covered a leader that exits 0 at once while a child outside its group holds the
+pipe, which must not count as a timeout; the Record gave no run of the gate on the committed head;
+and the merge message overclaimed in two phrases. The coordinator's fixer applied them:
+
+- Test 10 calls `end_group` on a group whose only member is a leader that has exited and is not
+  reaped, which returns without an exception, with exit 0. The leader waits on its input, which the
+  test closes only once kqueue watches the leader, and kqueue reports the exit without reaping it,
+  so the group holds only a zombie every time; where kqueue is missing, the case is skipped. A
+  second case, on every platform, gives `end_group` through a stub of `os.killpg` an EPERM on the
+  probe after a SIGTERM that was taken, for a leader that has exited, so that no real signal is
+  sent. On a scratch copy with `except ProcessLookupError:` restored, test 10 failed in 10 of 10
+  runs, at the first case, and in 3 of 3 at the second with the first left out; with the catch, it
+  passed in 10 of 10.
+- The runner's bounded join on the reader moved inside the `try` whose `except KeyboardInterrupt`
+  ends the group; that `except` joins the reader for `PIPE_WAIT` at most and raises again, and the
+  `finally` sets the stop flag, joins the reader and closes the pipe. Test 10 interrupts, after 3
+  seconds, a `/bin/sh` leader that exits at once and leaves in its group a `sleep 30` that holds the
+  pipe: `run_command` raises KeyboardInterrupt, and the `sleep` is gone within 5 seconds. With the
+  join back in the `finally`, the test failed.
+- The script of test 10 gains a `detach` mode, in which the child leaves the group and the leader
+  exits 0 at once: with a timeout of 3 seconds the runner returns within 15 seconds, not timed out,
+  with exit 0 and the line printed before. With the timeout counted until the pipe's end of file
+  rather than on the leader, the test failed.
+- The merge message says where the private names are printed raw, and that three tests were made
+  to fail without their fixes, not that three were added.
+
+The fixer then ran the gate, under `env -i` with a minimal `PATH` and `HOME`, on the branch's clean
+head `32da2c79be70`, the commit before this paragraph, with the order's default base, `origin/main`
+(then `41c620aa`, two commits past the merge base `ecabe372`, neither touching this order's files),
+and with no file of private names, since none is held yet. Its last line was
+`Gate: PASS. 12 passed; not run: secrets, rust and engine.`, then the record's path,
+`target/gate/32da2c79be7068d58748bb9bff28c869107b48a0.json`, and the sentence that the branch lacks
+2 commits of `origin/main`; it exited 0. Its `identity` passed on the 4 commits the branch adds,
+`secrets` did not run since gitleaks is not on that `PATH`, and the record's summary was
+`PASS True False ['secrets', 'rust and engine']`, with no absolute path. On that head the other
+commands of "Done when" gave 10 ok lines; 12 `WOULD RUN` lines, with `NOT RUN` for `secrets` and
+`rust and engine`; 1 for the names file at mode 0600, and decision 3's line and exit 2 at mode 0644;
+and decision 2's line and exit 2 for `--base no-such-ref`. `check_docs`, `check_rulings`,
+`check_roadmap` and `check_private_paths` gave Errors: 0 each, and
+`git diff --check origin/main...HEAD` was clean. On the same files before the commit, the tool
+tests ran 118, OK, in 5 runs of 5. The gate's run on this order's squash, and the interim gate,
+which still gates this merge, are the coordinator's at the merge.
+
+At the merge the coordinator ran the gate on the squash `64b58eecf2a2`: its last line began `Gate:
+PASS. 13 passed; not run: rust and engine.`, with `identity` PASS on 1 commit and `secrets` run,
+gitleaks 8.24.2 on the coordinator's `PATH`; the interim gate, which still gates this merge, printed
+`GATE PASS`. The coordinator accepts `identity`'s command, `git --no-replace-objects log -z
+--format=%H%x00%an%x00%ae%x00%cn%x00%ce <merge base>..HEAD`, and its words for a malformed row, in
+place of decision 4's.

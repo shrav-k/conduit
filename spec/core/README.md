@@ -198,9 +198,9 @@ ENR-008).
   authorized against `management` in its place: inspecting a Resource the Pool owns, and
   reconciling an invocation. Where the instance of an invocation no longer exists, the
   invocation is reconciled through `management`, and the reconciliation records the outcome
-  and stores nothing (ACC-033). Recording that an unknown setup or open occurred makes the
-  instance ready or the Conduit open, unless the instance or the Conduit's consumer has been
-  retired. Recording that a retirement or a close occurred confirms the shutdown, and the
+  and stores nothing (ACC-033). Recording that an unknown setup or open occurred records the
+  outcome alone: a further setup makes the instance ready, and `open.v1` sent again opens the
+  Conduit. Recording that a retirement or a close occurred confirms the shutdown, and the
   instance is removed (LIF-028, LIF-035). Recording that the effect did not occur gives the
   outcome failed only once the invocation is fenced (OPS-014), and changes nothing else. An
   actor tells whether a run is running from the instance's condition `Running` (PRV-009): no
@@ -413,8 +413,9 @@ for an ID whose run may still be running, including one being started or restart
 none: it succeeds with the running run's current `url`, or ends unknown where it cannot tell
 (PRV-019). A call that starts no run delivers and keeps none of its `secrets` or `identity`;
 the existing run keeps the identity and certificate it received when it started (PRV-011,
-PRV-022, PRV-028). A stop succeeds only once no run of the ID remains running or being started,
-and prevents any start or restart until `run.v1` next asks (PRV-030). A provider's contract
+PRV-022, PRV-028). A stop succeeds only once no process of a run of the ID still runs in the
+unit by which the provider stops it and no run is being started, and prevents any start or
+restart until `run.v1` next asks (PRV-030). A provider's contract
 may promise to carry out every stop it still owes on a machine before starting any run there:
 a start that finds an owed stop fails, naming it, and may be retried once that stop is carried
 out (PRV-019, PRV-021). An instance that has

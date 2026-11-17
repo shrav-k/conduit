@@ -114,7 +114,7 @@ The row `setup action` of `spec/definitions.md` (line 275) is the line after 171
 (line 274): where 171b lands between your start and your rebase, Git reports a conflict there;
 keep 171b's row as it merged, and apply decision 5's change to `setup action` alone.
 
-**Size: M.** Text in nine files under `spec/`, three cases and one changed expectation, two
+**Size: M.** Text in ten files under `spec/`, three cases and one changed expectation, two
 bullets of `IN_FORCE.md`, one row of the account and the generated standing table.
 
 ## The decisions it applies
@@ -184,6 +184,11 @@ name stays word for word ("Writing promises", rules 1 and 7).
      ready or the Conduit open, unless the instance or the Conduit's consumer has been retired."
      becomes "Recording that an unknown setup or open occurred records the outcome alone: a further
      setup makes the instance ready, and `open.v1` sent again opens the Conduit."
+   - In `spec/core/results.yaml`, the description of `provenance.v1` (lines 216 and 217):
+     "Repeats and reconciliation preserve the original provenance; a purge never removes it."
+     becomes "Repeats preserve the original provenance, and a reconciliation of an open gives none,
+     since it opens nothing (ACC-044); a purge never removes it." Rewrap only those two lines.
+     (Added by the coordinator on the Opus reader's finding.)
    - No case asserts the core's descriptions; if a case or a fixture changes because of this
      decision or of decision 7's change to `stop.v1`, stop and report.
 5. **PND-006: a reconciled setup's action stays open** (ruling 80, point 4),
@@ -402,12 +407,13 @@ name stays word for word ("Writing promises", rules 1 and 7).
 ## Scope
 
 Change only `spec/conventions/lifecycle.yaml` (LIF-003, LIF-024, LIF-028),
-`spec/conventions/access.yaml` (ACC-044), `spec/core/operations.yaml` (`reconcile.v1`'s
-description and effect, `stop.v1`'s description), `spec/core/README.md` (two sentences),
-`spec/promises/providers.yaml` (PRV-008, PRV-030), `spec/promises/pending.yaml` (PND-003,
-PND-006), `spec/implementation-defined.yaml` (DL16), `spec/definitions.md` (the rows `run`,
-`runtime provider` and `setup action`), `spec/README.md` (one bullet), `IN_FORCE.md` (two bullets
-of topic 7), `conformance/conventions/inventory/e4/reconcile-open-retired-consumer/case.yaml`,
+`spec/conventions/access.yaml` (ACC-044), `spec/core/operations.yaml` (`reconcile.v1`'s description
+and effect, `stop.v1`'s description), `spec/core/results.yaml` (`provenance.v1`'s description),
+`spec/core/README.md` (two sentences), `spec/promises/providers.yaml` (PRV-008, PRV-030),
+`spec/promises/pending.yaml` (PND-003, PND-006), `spec/implementation-defined.yaml` (DL16),
+`spec/definitions.md` (the rows `run`, `runtime provider` and `setup action`), `spec/README.md`
+(one bullet), `IN_FORCE.md` (two bullets of topic 7),
+`conformance/conventions/inventory/e4/reconcile-open-retired-consumer/case.yaml`,
 `conformance/conventions/inventory/e4/index.yaml`, `conformance/expected-failures.yaml` and
 `experiments/012-model-checking/account.yaml`, and create
 `conformance/conventions/inventory/e4/reconcile-open-records-only/` (`case.yaml` and
@@ -492,6 +498,7 @@ tr -s ' \n' '  ' < spec/core/operations.yaml | grep -c 'makes the instance ready
 tr -s ' \n' '  ' < spec/core/README.md | grep -c 'makes the instance ready or the Conduit open'
 tr -s ' \n' '  ' < spec/conventions/access.yaml | grep -c "gives that invocation's provenance"
 tr -s ' \n' '  ' < spec/core/operations.yaml | grep -c "keeps that invocation's provenance"
+tr -s ' \n' '  ' < spec/core/results.yaml | grep -c 'Repeats and reconciliation preserve'
 tr -s ' \n' '  ' < spec/conventions/lifecycle.yaml | grep -c 'makes the instance ready in the same way'
 tr -s ' \n' '  ' < spec/conventions/lifecycle.yaml | grep -c 'leaves no run of the instance running'
 tr -s ' \n' '  ' < spec/definitions.md | grep -c 'once no run of the ID is running or being started'
@@ -531,3 +538,90 @@ the coordinator's interim gate or `tools/gate.py` once order 193b has merged. CI
 its four engine shards and the doctests run on the pull request, on Linux, as a second opinion
 that the merge does not wait for; a run that fails after the merge is fixed in a follow-up
 ([ruling 80](../proposals/ruling-80/README.md), point 10).
+
+## Record
+
+Run on 2026-11-16 on the Windows computer from `main` `a771b88b`: the worker (1,324 s) and a fresh
+Codex verifier (168 s), which found no must or should in one round and did not rerun the cargo
+tests. The worker changed the 20 files that Scope then named. LIF-028 now says that recording a
+setup or an open as having occurred gives the outcome succeeded and changes nothing else, and its
+observable names the two ways on: a further setup, under OPS-021 and LIF-003, and a later
+`open.v1`, sent again or as a part of a further setup under CON-004, which makes every check that
+an open makes. LIF-003's `when` excepts an outcome that a reconciliation set; ACC-044 and the
+descriptions of `reconcile.v1` say that a reconciled open gives no provenance, since it opens
+nothing; and `reconcile.v1`'s effect no longer makes anything ready. Under ruling 80, point 4,
+PND-006's setup action stays open after a reconciliation of the setup, PND-003 drops `ready` from
+its answers, and the row `setup action` of `spec/definitions.md` follows. Under F61, the rows `run`
+and `runtime provider`, PRV-030, PRV-008, LIF-024, `stop.v1`, the core's summary and DL16 say that
+a stop succeeds only once no process of the run still runs in the unit by which the provider stops
+it, a unit that the provider's contract, or DL16 for the engine's own runner, names with what can
+leave it; `spec/README.md` gains a bullet on a process that left that unit. The two bullets of
+topic 7 of `IN_FORCE.md` say what is now in spec/. Three cases are new under
+`conformance/conventions/inventory/e4/`: `e4-reconcile-open-records-only` and
+`e4-reconcile-setup-action-open`, both listed as expected failures, and
+`e4-reconcile-setup-records-only`, which passes; `e4-reconcile-open-retired-consumer` no longer
+expects a provenance. The declaration gives 7 changes. The account moves LIF-003 from
+`holds, not graded` to `text changed, not rerun`: the first count falls from 66 to 65, and the
+second rises from 28 to 29. `engine/STANDING.md`, regenerated, changes the rows of ACC-044,
+LIF-003, LIF-028, PND-003 and PND-006, and in Totals `expected failure` 0 to 2 and
+`no case, no reason` 89 to 87 and 153 to 151. The worker's own choice was its evidence: UUIDv5 IDs
+with distinct step tags, at 2026-11-12T12:00:00Z, the inspection at the reconciliation's time. It
+reported every check of Done when with its stated value, and 241 tests passed.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch and on a
+scratch tree of the branch with `main`'s orders 178, 179 and 196. Under `env -i` it ran
+`check_docs`, `check_rulings`, `set_names.py --check`, `check_schemas`, `check_roadmap`,
+`check_model_account` (with and without `--history`), `promise_standing.py --check` and
+`check_private_paths`, each Errors: 0 on both trees;
+`vector_delta.py origin/main HEAD --declared-changed`, which gave 7 changes, 0 flips, 0 undeclared
+and 0 errors; `git diff --check`, clean; and the 26 counts of Done when, 15 printing 0 and 11
+printing 1. On the scratch tree `cargo fmt --check` and clippy were clean, the pieces tool printed
+`Nothing to move.`, both runner commands printed what Done when states, the check by hand of steps 4
+and 5 printed `PASS e4-reconcile-open-records-only (5 steps; LIF-028, ACC-044)`, and
+`cargo test --release` passed 242 tests. With the core's reconciliation of an open switched off, as
+review order 22 will build it, the open case passed all its steps; with a reconciled setup made
+ready, the setup case failed with `object_facts/state: expected "registered", found "ready"`. So
+both new cases can fail and can pass. It found each decision applied word for word, the
+coordinator's readings marked as the coordinator's, nothing on sign-in, and the scope exactly the 20
+files. It found no must and three shoulds:
+
+- `spec/core/results.yaml`, outside Scope, still said in `provenance.v1`'s description that "Repeats
+  and reconciliation preserve the original provenance", the twin of the ACC-044 sentence this order
+  rewrites, which ruling 78, point 5, removes.
+- The DL16 insertion left a line of 98 characters and a line holding only "again,", and the new
+  bullet of `spec/README.md` was wrapped at 83 to 87 characters, not at its list's width of 96.
+- A follow-up, not for this order: under ruling 80, point 4, a setup action stays open over an
+  invocation whose outcome reads succeeded, and PND-006's evidence does not say that a
+  reconciliation set that outcome (ruling 52).
+
+A Claude Opus fixer then rebased the branch onto `main` `ecabe372`, which holds orders 178, 179 and
+196 and touches none of this order's files; the rebase had no conflict. It applied the first two
+shoulds as the reader gave them. Decision 4 and Scope now name `spec/core/results.yaml`, and its
+sentence reads "Repeats preserve the original provenance, and a reconciliation of an open gives
+none, since it opens nothing (ACC-044); a purge never removes it.", rewrapped over three lines
+within the paragraph's width of 98. As its own choices, the fixer added to Done when a count of the
+old words, which prints 0, made Size count ten files under `spec/`, and rewrapped the Scope
+paragraph within 99. DL16's three lines are those the reader gave, and the bullet's six lines are
+rewrapped within 96, with no word changed. The third should is left for the coordinator to log, for
+SO-E or S9-CORE2: where a reconciliation set the outcome, PND-006's evidence would name that
+reconciliation's invocation and its `checked` text.
+
+The fixer then ran, on the Mac in the worktree after the rebase and the fixes, under `env -i`:
+`check_docs`, `check_rulings`, `set_names.py --check`, `check_schemas`, `check_roadmap`,
+`check_model_account` (with and without `--history`), `promise_standing.py --check` and
+`check_private_paths`, each Errors: 0; `vector_delta.py origin/main HEAD --declared-changed`, which
+gave 7 changes, 0 flips, 0 undeclared and 0 errors; `git diff --check origin/main...HEAD`, clean;
+and the 27 counts of Done when, 16 printing 0 and 11 printing 1. From `engine/`, with
+`CARGO_NET_OFFLINE=true`, `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` were
+clean and the pieces tool printed `Nothing to move.` The runner printed, for `e4-reconcile-open-`,
+`PASS` for the two older cases, the expected failure with
+`object_facts/open: expected false, found true` and `2 cases passed; 1 expected failures`; for
+`e4-reconcile-setup-`, `PASS e4-reconcile-setup-records-only (5 steps; LIF-028, LIF-003)`, the
+expected failure with an error beginning
+`step 6: /reply/structuredContent/status/pending: missing required field` and
+`1 cases passed; 1 expected failures`. The check by hand printed
+`PASS e4-reconcile-open-records-only (5 steps; LIF-028, ACC-044)` and `1 cases passed`; both files
+then matched their copies under `cmp`, and the first runner command printed what it printed before.
+`CONDUIT_VECTOR_THREADS=4 cargo test --release -p conduit-conformance --test vectors` gave
+`2 passed`, and `CONDUIT_VECTOR_THREADS=4 cargo test --release` exited 0, with 242 passed and 0
+failed over its 28 results.

@@ -505,9 +505,9 @@ metadata:
     `revision`. A request that names an invocation whose outcome is not unknown, or records that
     the effect did not occur before the invocation is fenced under OPS-014, reports conflict under
     OPS-030; one whose ID names no invocation reports invalid. Recording that a setup or an open
-    occurred
-    gives it the outcome succeeded and makes the instance ready or the Conduit open, unless the instance
-    or the Conduit's consumer has been retired. Recording that a retirement or a close occurred confirms
+    occurred gives it the outcome succeeded and changes nothing else: a further setup makes the
+    instance ready, and `open.v1` sent again opens the Conduit. Recording that a retirement or a
+    close occurred confirms
     the shutdown, and the instance is removed. An actor tells whether a run is running from the instance's
     condition `Running`. Recording that the effect did not occur gives the outcome failed only once
     the invocation is fenced under OPS-014, and changes nothing else. Where a control of an
@@ -520,8 +520,9 @@ metadata:
     authority the original request required. Through a Pool, a holder other than root may reconcile
     only invocations it sent. Through a Fleet, it may reconcile invocations it sent or that the
     Fleet or an Agent the Fleet owns sent; a Fleet is never a sender in this version (FLEET-004).
-    Root is exempt only as the consumer of the authorizing Conduit. A reconciled opening keeps that invocation's
-    provenance (ACC-044); confirmed closings and retirements preserve their tombstones (LIF-040).
+    Root is exempt only as the consumer of the authorizing Conduit. A reconciled open gives no
+    provenance, since it opens nothing (ACC-044); confirmed closings and retirements preserve
+    their tombstones (LIF-040).
 spec:
   inputSchema:
     type: object
@@ -541,9 +542,8 @@ spec:
     - checked
   effect: >-
     Changes the invocation's outcome from unknown to succeeded, or to failed only once the
-    invocation is fenced under OPS-014. Where a setup or an open
-    is recorded as having occurred, sets the state of the instance or the Conduit to ready, unless
-    the instance or the Conduit's consumer is retired. Where a retirement or a close is, confirms
+    invocation is fenced under OPS-014. Where a retirement or a close is recorded as having
+    occurred, confirms
     the shutdown, which removes the instance. For a control that took effect on an instance that exists
     and is not retired, stores the values it was sent.
   deduplicates: true
@@ -997,8 +997,9 @@ metadata:
     and the labels of the machine that the instance's node represents, as `run.v1` gives them,
     those last reported where the node is retired, so that a provider that keeps no state of
     its own finds the run. Stopping a run that is not running succeeds. A stop succeeds only
-    once no run of the ID is running, including a run still being started under an earlier
-    `run.v1`, which the provider ends or cancels. After it succeeds, no run starts for that ID
+    once no process of a run of the ID still runs in the unit by which the provider stops it,
+    under PRV-030, and no run is still being started under an earlier `run.v1`, which the
+    provider ends or cancels. After it succeeds, no run starts for that ID
     until `run.v1` next asks, under PRV-030. A stop held under PRV-021 ends, once carried out,
     whatever run of the ID is running then, a run restarted meanwhile included. Where the
     provider cannot tell whether the run stopped, the outcome is unknown. What the provider

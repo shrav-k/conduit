@@ -213,8 +213,9 @@ metadata:
     The immutable provenance of a Conduit opening (ACC-044). A requested opening keeps the caller,
     sending instance and invocation, and openedThrough lists the authorizing Conduit IDs. A direct
     open lists its authorizing Conduit; a setup part lists every independently sufficient Conduit
-    to access in ID order. An engine-made opening states only its cause. Repeats and reconciliation
-    preserve the original provenance; a purge never removes it.
+    to access in ID order. An engine-made opening states only its cause. Repeats preserve the
+    original provenance, and a reconciliation of an open gives none, since it opens nothing
+    (ACC-044); a purge never removes it.
 spec:
   oneOf:
   - type: object

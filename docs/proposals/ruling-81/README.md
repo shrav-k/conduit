@@ -1,6 +1,6 @@
 # Ruling 81: the sign-in orders held until the targeted review, Fable for that review, and A5's stage 0b
 
-Status: in force (ruled by the owner on 2026-11-16). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 9 and 15, and A5's row of [ROADMAP.md](../../../ROADMAP.md#experiments-and-probes). This record says why.
+Status: in force; amended by 82 (point 1: the hold ends with the owner's answers to the targeted review's record; "What it does not change": A5 gates codex.v2's signIn through stage 1's first step) (ruled by the owner on 2026-11-16). Holds now: [IN_FORCE.md](../../../IN_FORCE.md), topics 13 and 15, and A5's row of [ROADMAP.md](../../../ROADMAP.md#experiments-and-probes). This record says why.
 
 After [ruling 80](../ruling-80/README.md) merged, later on 2026-11-16, the coordinator put four
 questions to the owner through the session's question tool, each with options and a

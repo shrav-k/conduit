@@ -403,6 +403,11 @@ the owner's answers. None of them is written or dispatched until then
 [D18](../full-review/decisions.md#the-pipeline-and-verification)'s dispatch of 048a-1; the split
 is in [order 117](../../work-orders/117-plan-s2-s3.md)).
 
+Ruling 82 answered the review's record on 2026-11-16: the hold ends and the five orders may now
+be written, 050 beside 048a-1 and 048a-2, and 0.2.0 merges after 048b-join
+([ruling 82](../ruling-82/README.md), point 3); Codex's account route of D2 and O3 in
+[refusals and identity](areas/refusals-and-identity.md) is replaced by `account/read` (point 1).
+
 Gate G for every order:
 - the checks: check_docs, set_names --check, check_schemas, check_roadmap, `python3 -m unittest discover -s tools/tests`, and git diff --check;
 - where Rust changes, in engine/: cargo fmt --check, cargo clippy --all-targets -- -D warnings, and cargo test --release;

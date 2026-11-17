@@ -167,10 +167,14 @@ The records distinguish owner rulings, coordinator decisions on findings, and ed
 Only the owner settles these questions; later-stage questions below retain their stated trigger.
 [Ruling 78](proposals/ruling-78/README.md) answered the full review's questions on 2026-11-14, and
 with them A20, S3-OF (option E: the Mac's firewall) and S2's plain server (the coordinator picks it).
+[Ruling 82](proposals/ruling-82/README.md) answered the questions of
+[the targeted review of 0.2.0's sign-in and home surface](proposals/review-signin-2026-11-16/README.md)
+on 2026-11-16, so 048a-1, 048a-2, 048b-join, 050 and 051b may now be written; if the live check of
+its point 1 fails, the Codex question returns here.
 
 | What | Where it is recorded |
 | --- | --- |
-| After the targeted review of 0.2.0's sign-in and home surface: the owner's answers to its record, before 048a-1, 048a-2, 048b-join, 050 and 051b are written | [The review's record](proposals/review-signin-2026-11-16/README.md); [ruling 81](proposals/ruling-81/README.md); [D18](proposals/full-review/decisions.md#the-pipeline-and-verification) |
+| The targeted review's parked list, ten lines, with no trigger (of line 5, only its offers entry; ruling 82 point 4 answers its logins, and point 2 answers line 9) | [The review's record, section 7](proposals/review-signin-2026-11-16/README.md#7-the-parked-list); [ruling 82](proposals/ruling-82/README.md) |
 | After the S1 rerun: S1's bar, with findings 4-01 and 4-11, and C6 to C12 | [Ruling 71](proposals/ruling-71/README.md), points 2 and 3, and [ruling 78](proposals/ruling-78/README.md), point 2; [increment 4](proposals/first-build/log-increment-4.md); [ruling 62](proposals/ruling-62/README.md) |
 | Ruling 77's setup on the Windows computer, which needs the owner's sudo: `conduit-run`, the coordinator's key moved to it, the lockdown, and Codex signed in as `conduit-run`; before the end-to-end run, the Mac renamed in the tailnet and HTTPS certificates turned on. Part 1 was done on 2026-11-12: `conduit-run` has its tools and its Codex, signed in by the owner; the coordinator signs nothing in. Part 2, bubblewrap if missing, the restart that applies the lockdown and the coordinator's key taken out of the owner's account, can run now: order 080 is checkpointed and the computer is idle | [Ruling 77](proposals/ruling-77/README.md#what-follows); [the second-machine guide](guides/second-machine.md) |
 | S3's one administrator rule on the Mac, under which the coordinator's locked-down script cuts the network; the owner adds it once, before S3's fault harness runs | [Ruling 78](proposals/ruling-78/README.md), point 4 |

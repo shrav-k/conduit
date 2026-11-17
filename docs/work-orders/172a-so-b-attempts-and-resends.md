@@ -493,7 +493,7 @@ Each of these prints 1:
 
 ```bash
 tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c 'governs the resend after both'
-tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c "No attempt number is sent: Conduit's keys do not tell one attempt"
+tr -s ' \n' '  ' < spec/interface/implementation.yaml | grep -c "No attempt number is sent: no key of Conduit's says which attempt"
 tr -s ' \n' '  ' < spec/conventions/operations.yaml | grep -c 'No attempt number is sent under IFC-006'
 tr -s ' \n' '  ' < spec/conventions/operations.yaml | grep -c 'one that is not kept with what it stated is none here'
 tr -s ' \n' '  ' < spec/conventions/operations.yaml | grep -c 'or unknown where it is answered failed while an earlier attempt has no answer'
@@ -517,3 +517,85 @@ wait on, the engine's tests, its doctests and the experiment's tests among what 
 on the pull request as well, and the merge does not wait for it. A fresh Codex verifier and a
 fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-16, from about 20:39 to 21:04 UTC, on the Mac from `main` `55d2b85a`: the worker
+(1,253 s) and a fresh Codex verifier (233 s), which found no must or should in one round. The
+verifier reran the repository's checks, and with binaries already built the three cases and MC2's
+registration test, but not the full Cargo suites. OPS-012's `then` and observable now carry F13 as
+ruling 80, point 2, refines it: a new attempt answered failed while an earlier attempt of the
+invocation has no answer or was answered succeeded leaves the outcome unknown, not failed. The
+observable says what counts as an answer, that one not kept with what it stated counts as none, and
+that no attempt number is sent. OPS-024's `then` and observable say the same. CTR-002, IFC-006,
+OPS-028 and the row `deduplicates` have a deduplicating implementation recognize an invocation by
+`io.github.shrav-k.conduit/invocation`, never by the idempotency key alone (F14). IFC-046, IFC-003
+and IMP-007 send a call once more after -32020 or a revision error only for a call that changes
+nothing, and end any other unknown (F46). In `IN_FORCE.md`, topic 7's F13 bullet is now an In-spec
+line, and ruling 80, point 3's exception stays spec pending for SO-E;
+`conformance/s1-safety-cases.md` follows F46. Of the three cases copied from
+`requests-aware-unknown`, `requests-repeat-failed-earlier-answered` passes, and
+`requests-repeat-failed-earlier-succeeded` and `requests-repeat-failed-earlier-unanswered` are
+expected failures until review order 22. Each fails at attempt 2's completion, step 6 and step 5 as
+the runner counts, with `uncited expected promise "OPS-012"` on a reply that states failed. The
+account's rows OPS-012, OPS-028 and IMP-007 became `text changed, not rerun`: `searched` 7 to 6,
+`contradiction: MC2-001` 2 to 1, `gap: MC2-004` gone, and `text changed, not rerun` 28 to 31, with
+`model`, `read` and `digest` kept. Against the README's pre-registered rule for the rerun, the
+worker reported that OPS-012 adds "or was answered succeeded", ruling 80's run, which needs two
+reorders and lies outside MC2's bounds. Its observable also says what is an answer, which answers
+count as none, and that no attempt number is sent; the outcome rule differs in nothing else.
+
+A fresh read-only Opus reader then verified the order at `ab0b8d1f` (ruling 79, point 2). It found
+with `git merge-tree` that a rebase onto `main` `ecabe372` does not conflict, and that on the
+merged tree the Python checks end `Errors: 0` and `engine/STANDING.md` needs no regeneration. Under
+`env -i` it ran `check_docs`, `check_rulings`, `set_names.py --check`, `check_schemas`,
+`check_roadmap`, `check_model_account` (with and without `--history`), `promise_standing.py
+--check` and `check_private_paths` (each `Errors: 0`), `vector_delta.py origin/main HEAD
+--declared-changed` (3 changes; 0 flips; 0 undeclared; 0 errors) and `git diff --check`. In
+`engine/` it ran fmt, clippy, the pieces tool, the runner (`1 cases passed; 2 expected failures`)
+and the engine's tests, and in the experiment the 62 tests, which the Codex verifier had not run.
+It found decisions 1 to 11 applied word for word, and the change in the 18 files of Scope. On
+scratch copies, each failing case passed once cut back by its last step, so the only failure is at
+attempt 2's completion, and `main`'s `engine/STANDING.md` failed `promise_standing.py --check`. It
+noted that the answered case lists OPS-012 though no step requires it, as decision 7 says, and can
+still fail on an engine that applied F13 too widely, and that the order settles nothing on the Open
+line of `IN_FORCE.md`'s topic 9 and writes nothing on sign-in. It found no must and three shoulds,
+all applied:
+
+- The row "attempt, new attempt" in `spec/definitions.md` defined "has no answer" more narrowly
+  than OPS-012's observable, which also counts as none a late answer not kept with what it stated.
+  The row now reads "no response that ends its call has reached the engine and been kept with what
+  it stated"; decision 4, which quotes the old words, is left as written.
+- IFC-006's "Conduit's keys do not tell one attempt of an invocation from another" was false where
+  attempts go through different Conduits (OPS-012) or take a new caller (OPS-028). It now reads "No
+  attempt number is sent: no key of Conduit's says which attempt of an invocation a call is, or
+  which of two attempts was sent first." The grep of "Done when" above follows the new words;
+  decision 3, which quotes the old sentence, is left as written.
+- IFC-006's only assertion lay in an expected-failure case, which the runner excuses whatever step
+  fails. Step 3 of `requests-repeat-failed-earlier-answered` now asserts the same `_meta`
+  projection, the invocation `$i` and the key `key`, and the case and its index entry list IFC-006.
+  The first build passes the case, so in `engine/STANDING.md`, written again by the tool, IFC-006
+  reads 2 cases, 1 expected failure, `case passes`. From `main`, in the columns interface and all,
+  Totals move `case passes` 22 to 23 and 292 to 293 and `no case, no reason` 24 to 23 and 153 to
+  152, and `expected failure` stays 0, where decision 11 had it rise by 1. Decision 7, which gives
+  the case only OPS-012, is left as written.
+
+The fixer first rebased the branch onto `main` `ecabe372`, five commits past `55d2b85a`, among them
+ruling 81's, which changed other lines of `IN_FORCE.md`; there was no conflict. After the fixes,
+under `env -i`, `check_docs`, `check_rulings`, `set_names.py --check`, `check_schemas`,
+`check_roadmap`, `check_model_account` (with and without `--history`), `promise_standing.py
+--check` and `check_private_paths` each end `Errors: 0`, and `git diff --check origin/main...HEAD`
+is clean. `vector_delta.py origin/main HEAD --declared-changed`, and the form of "Done when" with
+`origin/main` in place of `HEAD`, each end `Vector delta: 3 changes; 0 flips; 0 undeclared; 0
+errors.` The form with `HEAD` compares `HEAD` with the working tree; with the worker's output
+committed, it measured only the fix's uncommitted changes to the answered case, as 3 undeclared.
+Every grep of "Done when" prints its value, and the old words of IFC-006 print 0. The model
+account's counts are those above. In `engine/`, `cargo fmt --check` and `cargo clippy --all-targets
+-- -D warnings` pass, and the pieces tool prints `Nothing to move.` The runner prints `PASS` for
+`requests-repeat-failed-earlier-answered`, now with OPS-012 and IFC-006, then the two expected
+failures, each with its first line as before, and ends `1 cases passed; 2 expected failures`. With
+that case's key set to `other` and then restored, it failed with `step 4:
+/external_intents/0/call/params/_meta/io.github.shrav-k.conduit/idempotencyKey: expected "other",
+found "key"`. The vectors test passes (2 tests) and `CONDUIT_VECTOR_THREADS=4 cargo test --release`
+passes, 242 tests in 28 suites. In the experiment, `rerun_matches_registration` and the 62 tests
+pass.

@@ -281,6 +281,8 @@
     The repeat is dispatched as a new attempt only if the operation's contract declares
     `deduplicates: true` and the implementation is not marked `plain`. Otherwise nothing is
     dispatched, and the result gives the state unknown.
+    Where a new attempt is answered failed while an earlier attempt of the invocation has no
+    answer or was answered succeeded, the invocation's outcome is unknown, not failed.
   observable: >-
     Where the contract does not declare it, or the implementation is plain and so never receives
     the idempotency key, the implementation receives no further call for the invocation. A new
@@ -288,6 +290,22 @@
     the request to be permitted under ACC-001.
     Where the new attempt goes through another Conduit than the attempt before it, the
     invocation counts as dispatched through that Conduit, as OPS-024 states.
+    An attempt has an answer once a response that ends its call has reached the engine: a
+    result, an error or a JSON-RPC error. Creating a task under IFC-016 is not that answer,
+    which is what the task ended with under IFC-010; an `input_required` result is none; and an
+    error after which the call is sent once more under IFC-046 is none until the call sent again
+    is answered. A cancellation that the engine sends, under OPS-027 or when a call passes the
+    time that DL10 allows it, is no answer. Whether an answer that reaches the engine after it
+    stopped waiting is kept is DL2: one that is not kept with what it stated is none here, and a
+    late answer changes no outcome, under OPS-013. An earlier attempt with no answer may still
+    reach the implementation and apply the effect after a new attempt was answered failed, which
+    would make failed false under OPS-003. No attempt number is sent under IFC-006, so the
+    implementation cannot tell such a late attempt from a new one: the outcome is unknown
+    instead, and a further repeat is dispatched as a new attempt under this promise. An earlier
+    attempt answered succeeded under IFC-009 has applied the effect, which would make failed
+    false as well, so the outcome is unknown there too, and not succeeded, since a late answer
+    changes no outcome. An engine that does not keep a late answer counts that attempt as having
+    none, with the same outcome.
   vectors: []
 
 - id: OPS-013
@@ -520,12 +538,17 @@
   then: >-
     The repeat is dispatched as a new attempt. An invocation counts as dispatched through the
     Conduit of its latest attempt.
+    Where the new attempt is answered failed while an earlier attempt of the invocation has no
+    answer or was answered succeeded, the invocation's outcome is unknown, not failed, under
+    OPS-012.
   observable: >-
     A failed outcome recorded by a reconciliation was recorded only once every attempt was
     fenced, under OPS-014, so the new attempt cannot meet an earlier dispatch still on its
     way. The implementation receives a further call. The invocation's state is then in
     progress, and
-    afterwards the outcome of the new attempt. The records of the earlier attempt are kept. Like
+    afterwards the outcome of the new attempt, or unknown where it is answered failed while an
+    earlier attempt has no answer or was answered succeeded. The records of the earlier attempt
+    are kept. Like
     any dispatch, the new attempt needs the request to be permitted under ACC-001. Where the
     invocation succeeded, the new attempt is made so that the filters that apply to the repeat
     decide afresh, under IFC-019, what it may do and return now, as they would for a new
@@ -661,9 +684,11 @@
   observable: >-
     The hook's implementation receives the idempotency key in
     `io.github.shrav-k.conduit/idempotencyKey` under IFC-006, whether or not the caller of
-    the setup or the retirement supplied one of its own. An implementation therefore recognizes
-    the new attempt of a hook that failed, which a further setup or retirement dispatches under
-    OPS-021 and OPS-024. Neither hook's contract declares `deduplicates: true`, so a hook whose
+    the setup or the retirement supplied one of its own. An implementation recognizes the new
+    attempt of a hook that failed, which a further setup or retirement dispatches under OPS-021
+    and OPS-024, by `io.github.shrav-k.conduit/invocation`, which every attempt of the hook's
+    invocation carries under IFC-006, as CTR-002 has a deduplicating implementation recognize an
+    invocation. Neither hook's contract declares `deduplicates: true`, so a hook whose
     outcome is unknown is not dispatched again until it is reconciled, under OPS-021. The setup
     hook and the retire hook of one instance have different idempotency keys, because their
     operations differ. A further setup that another actor sends finds the hook's earlier

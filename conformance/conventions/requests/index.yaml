@@ -649,6 +649,32 @@
       ]
     },
     {
+      "id": "requests-repeat-failed-earlier-answered",
+      "case": "conventions/requests/repeat-failed-earlier-answered/case.yaml",
+      "promises": [
+        "OPS-012",
+        "IFC-006"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-repeat-failed-earlier-succeeded",
+      "case": "conventions/requests/repeat-failed-earlier-succeeded/case.yaml",
+      "promises": [
+        "OPS-012"
+      ],
+      "safety_rows": []
+    },
+    {
+      "id": "requests-repeat-failed-earlier-unanswered",
+      "case": "conventions/requests/repeat-failed-earlier-unanswered/case.yaml",
+      "promises": [
+        "OPS-012",
+        "IFC-006"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-restart-interrupted",
       "case": "conventions/requests/restart-interrupted/case.yaml",
       "promises": [

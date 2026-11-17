@@ -1,0 +1,9 @@
+- name: requests-repeat-failed-earlier-answered
+  kind: added
+  cases: [requests-repeat-failed-earlier-answered]
+- name: requests-repeat-failed-earlier-succeeded
+  kind: added
+  cases: [requests-repeat-failed-earlier-succeeded]
+- name: requests-repeat-failed-earlier-unanswered
+  kind: added
+  cases: [requests-repeat-failed-earlier-unanswered]

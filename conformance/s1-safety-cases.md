@@ -70,8 +70,8 @@ new reference syntax. Every actual vector uses the full address from the names f
 
 IFC-010 reads -32602 as any other plain error: failed only for an operation that states no
 `effect`, is not a control and starts no model work, and unknown for any other. IFC-046's
-wire resend is within one attempt: after -32020 only that same class of operation is sent
-again, and a revision error allows a resend only at a revision both sides support.
+wire resend is within one attempt: after -32020 or a revision error only that same class of
+operation is sent again, after a revision error at a revision both sides support.
 Filtered replay variants from finding 6-1-02 are adjacent boundaries: read-only success is
 redispatched under OPS-024; success with an effect and outputs or plain content conflicts
 under OPS-034; success with an effect and no outputs or plain content returns its outcome

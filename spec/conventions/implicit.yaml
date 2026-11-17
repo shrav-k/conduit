@@ -68,8 +68,9 @@
     repeat that OPS-012 or OPS-024 dispatches: of an invocation whose outcome is unknown or
     failed, or, where a filter applies to the repeat, of one that succeeded, whose operation's
     contract states no `effect`, that is not a control and whose contract is not marked
-    `startsModelWork: true`. A call that the implementation rejected before acting on it, and
-    that the engine sends once more under IFC-046, is part of the same dispatch, not a second.
+    `startsModelWork: true`. A call that the engine sends once more under IFC-046, which it does
+    only for an operation whose contract states no `effect`, that is not a control and starts no
+    model work, is part of the same dispatch, not a second.
     For a setup hook or a retire hook, the further setup or retirement that dispatches a new
     attempt under OPS-021 is the repeat, and its caller is the attempt's caller, under OPS-028.
     An invocation that was in progress across a restart has the outcome unknown.

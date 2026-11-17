@@ -30,12 +30,24 @@ class FakeRunner:
         self.report = []
         self.scan_exit = 0
         self.inspect = None
+        self.workspaces = {}
+        self.dependencies = {}
 
     def __call__(self, args, *, cwd, env, timeout, log, redact):
         self.calls.append(dict(args=list(args), cwd=cwd, env=dict(env), timeout=timeout, log=log))
         if self.inspect:
             self.inspect(self.calls[-1])
-        if args[-1] == 'version':
+        if len(args) > 1 and args[1] == 'locate-project':
+            manifest = args[-1]
+            workspace = self.workspaces.get(manifest, manifest)
+            result = self.responses.get('locate-project', gate.CommandResult(0, str(cwd / workspace) + '\n'))
+        elif len(args) > 1 and args[1] == 'metadata':
+            directory = str(Path(args[-1]).parent)
+            dependencies = [dict(path=str(cwd / path), kind=kind)
+                            for path, kind in self.dependencies.get(directory, [])]
+            result = self.responses.get('metadata', gate.CommandResult(
+                0, json.dumps(dict(packages=[dict(dependencies=dependencies)]))))
+        elif args[-1] == 'version':
             result = self.responses.get('version', gate.CommandResult(0, self.version))
         elif 'git' in args and '--report-path' in args:
             if self.report is not None:
@@ -53,7 +65,7 @@ class GateTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
-        self.parent = Path(temporary.name)
+        self.parent = Path(temporary.name).resolve()
         self.root = self.parent / 'repository'
         self.root.mkdir()
         self.environment = mock.patch.dict(os.environ, {'PATH': os.defpath}, clear=True)
@@ -61,7 +73,8 @@ class GateTests(unittest.TestCase):
         self.addCleanup(self.environment.stop)
         self.git('init', '-q')
         self.write('.gitignore', 'target/\n')
-        self.write(str(gate.WORKFLOW), 'jobs:\n  secrets:\n    scanner_version=8.24.2\n')
+        self.write(str(gate.WORKFLOW), 'jobs:\n  secrets:\n    scanner_version=8.24.2\n'
+                   '    macos_only=" experiments/005-macos-keychain "\n')
         self.write('seed.txt', 'base\n')
         self.base = self.commit()
         self.git('branch', 'base')
@@ -97,10 +110,11 @@ class GateTests(unittest.TestCase):
         path.chmod(mode)
         return path
 
-    def invoke(self, *args, installed=None):
+    def invoke(self, *args, installed=None, cargo='cargo'):
         out, err = io.StringIO(), io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err), \
-                mock.patch.object(gate.shutil, 'which', return_value=installed):
+                mock.patch.object(gate.shutil, 'which',
+                                  side_effect=lambda name: cargo if name == 'cargo' else installed):
             code = gate.main(self.root, ['--base', 'base', *args], run=self.fake)
         return code, out.getvalue(), err.getvalue()
 
@@ -184,7 +198,7 @@ class GateTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn(gate.NO_COMMITS, output)
         self.assertFalse(self.row('identity')['required'])
-        self.assertIn('not run: identity, secrets, rust and engine.', output.splitlines()[-1])
+        self.assertIn('not run: identity, secrets, engine.', output.splitlines()[-1])
 
         # Valid Git identities may hold Unicode separators that are not Git row delimiters.
         for separator in ('\u2028', '\u2029', '\x85'):
@@ -265,7 +279,9 @@ class GateTests(unittest.TestCase):
         self.assertEqual(private_calls, 1)
         self.assertIn('Private names: read from the file that --private-names-file names, and given to '
                       'tools/check_private_paths.py alone; neither they nor the file\'s path are printed or recorded.', output)
-        self.assertIn('Environment: removed from every command: CONDUIT_PRIVATE_NAMES, CONDUIT_TEST_NPM, '
+        self.assertIn('Environment: cargo runs with CARGO_NET_OFFLINE=true, RUSTUP_AUTO_INSTALL=0, '
+                      'CARGO_TERM_COLOR=never and CARGO_BUILD_JOBS=6, and cargo test with '
+                      'RUST_TEST_THREADS=4. Removed from every command: CONDUIT_PRIVATE_NAMES, CONDUIT_TEST_NPM, '
                       'RUSTFLAGS, RUSTUP_TOOLCHAIN, SCR_AGENT_CODEX, and 1 variables named for a credential.\n',
                       output)
         env = self.record()['environment']
@@ -373,10 +389,13 @@ class GateTests(unittest.TestCase):
             ('tool tests', 'python3 -m unittest discover -s tools/tests'),
             ('whitespace', 'git diff --check ' + self.base),
             ('vector changes', 'python3 tools/vector_delta.py ' + self.base + ' WORKTREE --declared-changed')]
-        actual = [(row['name'], row['command']) for row in self.record()['gates'][1:12]]
+        actual = [(row['name'], row['command']) for row in self.record()['gates'][2:13]]
         self.assertEqual(actual, expected)
         for call in self.fake.calls:
             self.assertEqual(call['cwd'], self.root.resolve())
+            if call['args'][0] == 'cargo':
+                self.assertEqual(call['timeout'], 300)
+                continue
             self.assertEqual(call['timeout'], 900)
             if call['args'][0] != 'git':
                 self.assertEqual(call['args'][0], sys.executable)
@@ -428,8 +447,9 @@ class GateTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(self.row('identity')['result'], 'PASS')
         self.assertIn('gitleaks is not installed; the pin is 8.24.2', output)
-        self.assertIn('NOT RUN rust and engine: ' + gate.RUST_WHY, output)
-        self.assertIn('Gate: PASS. 12 passed; not run: secrets, rust and engine.', output)
+        self.assertIn('NOT RUN engine: ' + gate.ENGINE_WHY, output)
+        self.assertNotIn('rust and engine', output)
+        self.assertIn('Gate: PASS. 13 passed; not run: secrets, engine.', output)
         self.fake.responses['tools/check_schemas.py'] = gate.CommandResult(1, 'detail\nlast failure line\n')
         self.fake.calls.clear()
         code, output, error = self.invoke()
@@ -438,7 +458,7 @@ class GateTests(unittest.TestCase):
         line = next(line for line in output.splitlines() if line.startswith('FAIL schemas'))
         self.assertIn('exit 1; its last line: last failure line; log target/gate/logs/', line)
         self.assertIn('    last failure line', error)
-        self.assertEqual(len(self.fake.calls), 11)
+        self.assertEqual(len(self.fake.calls), 12)
         self.assertIn('tools/vector_delta.py', self.fake.calls[-1]['args'])
         self.fake.responses['tools/check_schemas.py'] = gate.CommandResult(None, 'partial\n', True)
         code, output, _ = self.invoke()
@@ -461,7 +481,7 @@ class GateTests(unittest.TestCase):
         def interrupt(*args, **kwargs):
             raise KeyboardInterrupt
         self.fake = interrupt
-        code, output, _ = self.invoke()
+        code, output, _ = self.invoke(cargo=None)
         self.assertEqual(code, 130)
         self.assertIn('Gate: interrupted during docs; its process group was ended', output)
         self.assertEqual(self.record()['result'], 'incomplete')
@@ -528,7 +548,7 @@ class GateTests(unittest.TestCase):
         observed = []
 
         def inspect(call):
-            if len(self.fake.calls) == 2:
+            if len(self.fake.calls) == 3:
                 observed.append(self.record())
 
         self.fake.inspect = inspect
@@ -538,11 +558,11 @@ class GateTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(observed[0]['result'], 'incomplete')
         self.assertIsNone(observed[0]['finished'])
-        self.assertEqual([row['name'] for row in observed[0]['gates']], ['identity', 'docs'])
+        self.assertEqual([row['name'] for row in observed[0]['gates']], ['rust discovery', 'identity', 'docs'])
         record = self.record()
         self.assertEqual(set(record), {'format', 'tool', 'started', 'finished', 'result', 'base',
                          'merge_base', 'head', 'branch', 'contains_base', 'behind', 'tree', 'changed_paths',
-                         'platform', 'python', 'python_packages', 'environment', 'gates'})
+                         'platform', 'python', 'python_packages', 'environment', 'settings', 'gates'})
         self.assertEqual(record['format'], 1)
         self.assertEqual(record['tool'], 'tools/gate.py')
         self.assertEqual(record['result'], 'PASS')
@@ -551,7 +571,8 @@ class GateTests(unittest.TestCase):
         self.assertEqual(record['tree'], dict(clean=True, uncommitted_paths=0))
         self.assertTrue(record['environment']['private_names_configured'])
         self.assertEqual(record['environment']['removed_credentials'], 1)
-        self.assertEqual(record['environment']['set'], {})
+        self.assertEqual(record['environment']['set'], dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0',
+                         CARGO_TERM_COLOR='never', CARGO_BUILD_JOBS='6', RUST_TEST_THREADS='4'))
         for row in record['gates']:
             self.assertEqual(set(row), {'name', 'directory', 'command', 'required', 'result',
                                        'reason', 'why', 'partial', 'exit', 'seconds', 'log'})
@@ -568,22 +589,291 @@ class GateTests(unittest.TestCase):
         self.add_commit()
         code, output, _ = self.invoke('--plan', installed='gitleaks')
         self.assertEqual(code, 0)
-        self.assertEqual([call['args'] for call in self.fake.calls], [['gitleaks', 'version']])
+        self.assertEqual([call['args'] for call in self.fake.calls],
+                         [['cargo', 'metadata', '--no-deps', '--format-version', '1', '--offline',
+                           '--manifest-path', 'engine/Cargo.toml'], ['gitleaks', 'version']])
         would = [line for line in output.splitlines() if line.startswith('WOULD RUN ')]
         self.assertEqual(len(would), 13)
         self.assertTrue(would[0].startswith('WOULD RUN identity:'))
         self.assertTrue(would[-1].startswith('WOULD RUN secrets:'))
-        self.assertIn('NOT RUN rust and engine: ' + gate.RUST_WHY, output)
-        self.assertEqual(output.splitlines()[-1], 'Gate plan: 13 gates would run, 1 would not. '
-                         'Nothing was checked, and no record was written.')
+        self.assertTrue(any(line.startswith('PASS rust discovery') for line in output.splitlines()))
+        self.assertIn('NOT RUN engine: ' + gate.ENGINE_WHY, output)
+        self.assertEqual(output.splitlines()[-1], 'Gate plan: rust discovery passed; 13 other gates '
+                         'would run, 1 would not. No other gate was checked, and no record was written.')
         self.assertFalse((self.root / gate.OUTPUT).exists())
         self.fake.calls.clear()
         self.git('reset', '--hard', self.base)
         code, output, _ = self.invoke('--plan')
         self.assertEqual(code, 0)
-        self.assertIn('Gate plan: 11 gates would run, 3 would not.', output)
-        self.assertFalse(self.fake.calls)
+        self.assertIn('Gate plan: rust discovery passed; 11 other gates would run, 3 would not.', output)
+        self.assertEqual([call['args'][1] for call in self.fake.calls], ['metadata'])
         self.assertFalse((self.root / gate.OUTPUT).exists())
+
+    def crates(self, *directories, not_built=('experiments/005-macos-keychain',)):
+        for directory in directories:
+            self.write(directory + '/Cargo.toml', '[package]\nname="fake"\nversion="0.1.0"\n')
+        self.write(str(gate.WORKFLOW), 'scanner_version=8.24.2\nmacos_only=" '
+                   + ' '.join(not_built) + ' "\n')
+        self.commit()
+        self.git('branch', '-f', 'base', 'HEAD')
+
+    def test_rust_directories_are_found_as_ci_finds_them(self):
+        self.crates('packages/p', 'packages/w', 'packages/w/m', 'packages/p/target',
+                    'experiments/e', 'experiments/f/g', 'experiments/005-macos-keychain')
+        self.fake.workspaces['packages/w/m/Cargo.toml'] = 'packages/w/Cargo.toml'
+        code, output, _ = self.invoke('--all')
+        self.assertEqual(code, 0)
+        self.assertEqual([row['name'] for row in self.record()['gates']][0], 'rust discovery')
+        expected = ['rust experiments/005-macos-keychain', 'rust experiments/e test',
+                    'rust experiments/f/g test', 'rust packages/p fmt', 'rust packages/p clippy',
+                    'rust packages/p test', 'rust packages/w fmt', 'rust packages/w clippy',
+                    'rust packages/w test', 'engine fmt', 'engine clippy', 'engine test']
+        self.assertEqual([row['name'] for row in self.record()['gates']][14:], expected)
+        self.assertFalse(self.row('rust experiments/005-macos-keychain')['required'])
+        self.assertEqual(self.row('rust experiments/005-macos-keychain')['why'], gate.NOT_BUILT_WHY)
+        locate = [call for call in self.fake.calls if call['args'][1] == 'locate-project']
+        self.assertEqual(len(locate), 6)
+        self.assertTrue(all(call['cwd'] == self.root and call['timeout'] == 300 for call in locate))
+        self.assertTrue(all('target' not in call['args'][-1] for call in locate))
+        log = (self.root / self.row('rust discovery')['log']).read_text()
+        self.assertIn('cargo locate-project --workspace --message-format plain', log)
+        self.assertIn('cargo metadata --no-deps --format-version 1 --offline', log)
+        self.fake.calls.clear()
+        code, output, _ = self.invoke('--plan', '--all', installed='gitleaks')
+        self.assertEqual(code, 0)
+        self.assertEqual({call['args'][1] for call in self.fake.calls},
+                         {'locate-project', 'metadata', 'version'})
+        self.assertTrue(all(call['timeout'] == 300 for call in self.fake.calls
+                            if call['args'][1] != 'version'))
+        self.assertIn('PASS rust discovery', output)
+        for option in ((), ('--plan',)):
+            with self.subTest(option=option):
+                code, output, _ = self.invoke(*option, cargo=None)
+                self.assertEqual(code, 1)
+                self.assertIn('NOT RUN rust discovery:', output)
+                self.assertIn('cargo was not found on the PATH; install Rust through rustup', output)
+                self.assertIn('NOT RUN rust and engine: ' + gate.RUST_WHY, output)
+                if not option:
+                    self.assertIn('required, not run: rust discovery;', output.splitlines()[-1])
+                    self.assertIsNone(self.row('rust and engine')['directory'])
+                    self.assertIsNone(self.row('rust and engine')['command'])
+                else:
+                    self.assertTrue(output.splitlines()[-1].startswith(
+                        'Gate plan: rust discovery was not run; '))
+        self.write(str(gate.WORKFLOW), 'scanner_version=8.24.2\n')
+        code, output, _ = self.invoke()
+        self.assertEqual(code, 1)
+        line = next(line for line in output.splitlines() if line.startswith('FAIL rust discovery'))
+        self.assertIn('macos_only could not be read from .github/workflows/checks.yml', line)
+        self.assertIn('NOT RUN rust and engine: ' + gate.RUST_WHY, output)
+        self.assertEqual(self.record()['result'], 'FAIL')
+        self.write(str(gate.WORKFLOW), 'scanner_version=8.24.2\nmacos_only=""\n')
+        for command in ('locate-project', 'metadata'):
+            for result in (gate.CommandResult(7, 'discovery failure\n'),
+                           gate.CommandResult(-15, 'timed out\n', True)):
+                with self.subTest(command=command, timeout=result.timed_out):
+                    self.fake.responses[command] = result
+                    code, output, _ = self.invoke('--plan')
+                    self.assertEqual(code, 1)
+                    self.assertIn('FAIL rust discovery', output)
+                    self.assertIn(gate.timeout_words(5) if result.timed_out else 'exit 7', output)
+                    self.assertNotIn('WOULD RUN engine', output)
+                    self.assertTrue(output.splitlines()[-1].startswith(
+                        'Gate plan: rust discovery failed; '))
+                    self.fake.responses.clear()
+        # A failed command's own last line is shown, not the gate's words for its exit.
+        self.fake.responses['metadata'] = gate.CommandResult(101, 'error: failed to parse manifest\n')
+        code, output, _ = self.invoke()
+        self.assertEqual(code, 1)
+        line = next(line for line in output.splitlines() if line.startswith('FAIL rust discovery'))
+        self.assertIn('exit 101; its last line: error: failed to parse manifest; log ', line)
+        self.fake.responses.clear()
+
+    def test_dependents_by_path_run_transitively(self):
+        self.crates('packages/a', 'packages/b', 'packages/c', 'packages/d')
+        self.fake.dependencies = {'packages/b': [('packages/a', None)],
+                                  'packages/c': [('packages/b', 'dev')]}
+        self.write('packages/a/src/lib.rs', '// changed\n')
+        code, _, _ = self.invoke()
+        self.assertEqual(code, 0)
+        names = {row['name'] for row in self.record()['gates']}
+        self.assertTrue({'rust packages/a test', 'rust packages/b test', 'rust packages/c test'} <= names)
+        self.assertEqual(self.row('rust packages/a test')['reason'], 'the branch changes 1 of its paths')
+        self.assertEqual(self.row('rust packages/b test')['reason'],
+                         'it depends by path on packages/a, which the branch changes')
+        self.assertEqual(self.row('rust packages/c test')['reason'],
+                         'it depends by path, through packages/b, on packages/a, which the branch changes')
+        self.assertEqual(self.row('rust unreached')['why'], gate.UNREACHED_WHY + 'packages/d')
+        self.assertFalse(self.row('rust unreached')['required'])
+        self.assertIsNone(self.row('rust unreached')['command'])
+        # A cycle cannot select an otherwise unreached directory or prevent termination.
+        self.fake.dependencies['packages/d'] = [('packages/d/nested', 'build')]
+        (self.root / 'packages/a/src/lib.rs').unlink()
+        self.invoke()
+        self.assertTrue(all(row['result'] == 'NOT RUN' for row in self.record()['gates']
+                            if row['name'].startswith('rust ') and row['name'] != 'rust discovery'))
+        self.fake.dependencies['packages/b'].append(('packages/c', 'build'))
+        self.write('packages/a/src/lib.rs', '// changed\n')
+        self.assertEqual(self.invoke()[0], 0)
+        self.assertEqual(self.row('rust packages/c test')['result'], 'PASS')
+        outside = self.parent / 'outside'
+        self.fake.dependencies['packages/d'] = [(str(outside), 'build')]
+        code, output, _ = self.invoke()
+        self.assertEqual(code, 1)
+        self.assertIn('FAIL rust discovery', output)
+        self.assertIn(str(outside), output)
+        self.assertIn('NOT RUN rust and engine: ' + gate.RUST_WHY, output)
+        self.assertFalse(self.record()['environment']['private_names_configured'])
+        self.assertNotIn(str(outside), self.record_path().read_text())
+        self.assertEqual(self.row('rust discovery')['why'],
+                         'path dependency outside the repository')
+        discovery_log = self.root / self.row('rust discovery')['log']
+        self.assertIn('path dependency outside the repository: ' + str(outside),
+                      discovery_log.read_text())
+        # One inside the repository that no discovered directory or engine holds fails too.
+        self.fake.dependencies['packages/d'] = [('tools/crate', None)]
+        code, output, _ = self.invoke()
+        self.assertEqual(code, 1)
+        self.assertIn('path dependency has no discovered directory: tools/crate', output)
+        self.assertEqual(self.row('rust discovery')['why'],
+                         'path dependency has no discovered directory: tools/crate')
+
+    def test_reads_and_the_engine_rule(self):
+        self.crates('packages/e', 'packages/f', 'packages/g', 'packages/h')
+        self.fake.dependencies['packages/h'] = [('engine/crates/core', None)]
+        reads = (('packages/e', 'spec/', 'tests/read.rs', 'spec'),
+                 ('packages/f', 'packages/g/contracts.yaml', 'tests/read.rs', 'contracts'))
+        cases = [('spec/x.yaml', {'packages/e'}, True),
+                 ('packages/g/contracts.yaml', {'packages/f', 'packages/g'}, False),
+                 ('packages/g/README.md', {'packages/g'}, False),
+                 ('specs/x.yaml', set(), False), ('engine/x', {'packages/h'}, True),
+                 ('conformance/x', set(), True), ('packages/agent-claude-code/x', set(), True),
+                 ('packages/agent-codex/x', set(), True), ('docs/x.md', set(), False),
+                 ('tools/x.py', set(), False)]
+        with mock.patch.object(gate, 'RUST_READS', reads):
+            for path, expected, engine in cases:
+                with self.subTest(path=path):
+                    self.write(path, 'changed\n')
+                    self.assertEqual(self.invoke()[0], 0)
+                    rows = self.record()['gates']
+                    chosen = {row['directory'] for row in rows if row['name'].startswith('rust packages/')}
+                    self.assertEqual(chosen, expected)
+                    self.assertEqual(any(row['name'] == 'engine test' for row in rows), engine)
+                    if path == 'spec/x.yaml':
+                        self.assertEqual(self.row('rust packages/e test')['reason'],
+                                         'it reads spec/ (tests/read.rs), which the branch changes')
+                    if path == 'packages/g/contracts.yaml':
+                        self.assertEqual(self.row('rust packages/f test')['reason'],
+                                         'it reads packages/g/contracts.yaml (tests/read.rs), which the branch changes')
+                    if path == 'engine/x':
+                        self.assertEqual(self.row('rust packages/h test')['reason'],
+                                         'it depends by path on engine, which the branch changes')
+                    if engine:
+                        prefix = next(prefix for prefix in gate.ENGINE_PREFIXES if path.startswith(prefix))
+                        self.assertEqual(self.row('engine test')['reason'],
+                                         'the branch changes 1 paths under ' + prefix)
+                    else:
+                        self.assertEqual(self.row('engine')['why'], gate.ENGINE_WHY)
+                        self.assertIsNone(self.row('engine')['command'])
+                        self.assertIsNone(self.row('engine')['directory'])
+                    if not expected:
+                        self.assertEqual(self.row('rust unreached')['why'], gate.UNREACHED_WHY
+                                         + 'packages/e, packages/f, packages/g, packages/h')
+                (self.root / path).unlink()
+            self.assertEqual(self.invoke('--all')[0], 0)
+            rows = [row for row in self.record()['gates'] if row['name'].startswith('rust packages/')
+                    or row['name'].startswith('engine ')]
+            self.assertEqual(len(rows), 15)
+            self.assertTrue(all(row['reason'] == '--all was given' for row in rows))
+            self.assertNotIn('rust unreached', [row['name'] for row in self.record()['gates']])
+            self.fake.dependencies['engine'] = [('packages/e', 'build')]
+            self.write('packages/e/src/lib.rs', '// changed\n')
+            self.assertEqual(self.invoke()[0], 0)
+            self.assertEqual(self.row('engine test')['reason'],
+                             'it depends by path on packages/e, which the branch changes')
+
+    def test_each_kind_of_directory_gets_ci_commands_and_environment(self):
+        self.crates('packages/p', 'experiments/e', 'experiments/005-macos-keychain', 'packages/skipped',
+                    not_built=('experiments/005-macos-keychain', 'packages/skipped'))
+        planted = {key: 'planted-value-' + str(index) for index, key in enumerate(
+            ('CONDUIT_TEST_NPM', 'SCR_AGENT_CODEX', 'RUSTUP_TOOLCHAIN', 'RUSTFLAGS', 'EXAMPLE_API_KEY'))}
+        with mock.patch.dict(os.environ, planted):
+            code, output, error = self.invoke('--all', '--jobs', '5', '--test-threads', '3')
+        self.assertEqual(code, 0)
+        cargo_calls = [call for call in self.fake.calls if call['args'][0] == 'cargo']
+        checks = [call for call in cargo_calls if call['args'][1] not in ('metadata', 'locate-project')]
+        triple = [['cargo', 'fmt', '--check'], ['cargo', 'clippy', '--all-targets', '--', '-D', 'warnings'],
+                  ['cargo', 'test', '--release']]
+        for directory, commands in (('packages/p', triple), ('experiments/e', [triple[-1]]),
+                                    ('experiments/005-macos-keychain', []),
+                                    ('packages/skipped', [triple[0]]), ('engine', triple)):
+            self.assertEqual([call['args'] for call in checks if call['cwd'] == self.root / directory], commands)
+        self.assertTrue(all(call['timeout'] == 5400 for call in checks))
+        for call in cargo_calls:
+            for name, value in dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0',
+                                    CARGO_TERM_COLOR='never', CARGO_BUILD_JOBS='5').items():
+                self.assertEqual(call['env'][name], value)
+            if call['args'][1] == 'test':
+                self.assertEqual(call['env']['RUST_TEST_THREADS'], '3')
+            self.assertFalse(planted.keys() & call['env'].keys())
+        self.assertEqual(self.record()['settings'], dict(jobs=5, test_threads=3, all=True))
+        self.assertEqual(self.record()['environment']['set'],
+                         dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0', CARGO_TERM_COLOR='never',
+                              CARGO_BUILD_JOBS='5', RUST_TEST_THREADS='3'))
+        self.assert_private(output + error + self.logs() + self.record_path().read_text(), *planted.values())
+        self.assertIn('RUST_TEST_THREADS=3 cargo test --release in packages/p', output)
+        for name in ('rust experiments/005-macos-keychain', 'rust packages/skipped'):
+            self.assertEqual(self.row(name)['result'], 'NOT RUN')
+            self.assertFalse(self.row(name)['required'])
+        for row in self.record()['gates']:
+            if row['name'].startswith(('rust packages/', 'rust experiments/', 'engine ')) and row['command']:
+                self.assertTrue(row['required'])
+        # Names in cargo's absolute paths must be parsed before redaction, and never escape.
+        names = self.names_file(self.parent.name + ',packages/p')
+        self.fake.dependencies['packages/p'] = [('experiments/e', None)]
+        code, output, error = self.invoke('--all', '--private-names-file', str(names))
+        self.assertEqual(code, 0)
+        self.assertIn('rust [redacted] test', [row['name'] for row in self.record()['gates']])
+        self.assertEqual(self.row('rust [redacted] test')['directory'], '[redacted]')
+        self.assert_private(output + error + self.logs() + self.record_path().read_text(),
+                            self.parent.name, 'packages/p', names)
+        # A failed command never skips the next check, and cargo timeouts use the runner's limit.
+        self.fake.responses['clippy'] = gate.CommandResult(4, 'failed clippy\n')
+        self.fake.responses['test'] = gate.CommandResult(-15, 'timeout\n', True)
+        code, output, _ = self.invoke('--all')
+        self.assertEqual(code, 1)
+        self.assertEqual(self.row('rust packages/p clippy')['result'], 'FAIL')
+        self.assertEqual(self.row('engine test')['why'], gate.timeout_words(90))
+        self.assertIn('ended after 90 minutes, with its process group', output)
+        for args in (('--jobs', '0'), ('--test-threads', 'x')):
+            with self.subTest(args=args), self.assertRaises(SystemExit) as stopped:
+                self.invoke(*args)
+            self.assertEqual(stopped.exception.code, 2)
+
+    def test_reads_table_agrees_with_the_tree(self):
+        tracked = set(subprocess.run(['git', 'ls-files', '-z'], cwd=REPOSITORY, check=True,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split('\0'))
+        directories = {str(Path(path).parent) for path in tracked if path.endswith('/Cargo.toml')
+                       and path.split('/')[0] in ('packages', 'experiments')}
+        for directory, path, evidence, text in gate.RUST_READS:
+            with self.subTest(directory=directory, path=path):
+                self.assertIn(directory, directories)
+                source = directory + '/' + evidence
+                self.assertIn(source, tracked)
+                self.assertIn(text, (REPOSITORY / source).read_text())
+        for directory in sorted(directories):
+            sources = [path for path in tracked if path.startswith(directory + '/') and path.endswith('.rs')]
+            text = '\n'.join((REPOSITORY / source).read_text() for source in sources)
+            reads = [path for reader, path, _, _ in gate.RUST_READS if reader == directory]
+            if '"../../spec' in text or '.join("spec' in text:
+                self.assertIn('spec/', reads, directory)
+            if '"../../conformance' in text or '.join("conformance' in text:
+                self.assertTrue(any(path.startswith('conformance/') for path in reads), directory)
+            for sibling in directories - {directory}:
+                if Path(sibling).parent == Path(directory).parent and '"../' + Path(sibling).name + '/' in text:
+                    self.assertTrue(any(path.startswith(sibling + '/') for path in reads), (directory, sibling))
+        self.assertIn(('packages/provider-local-process', 'tools/check_schemas.py', 'tests/package.rs',
+                       'import check_schemas'), gate.RUST_READS)
 
     def test_a_command_past_its_timeout_is_ended_with_its_children(self):
         processes = []

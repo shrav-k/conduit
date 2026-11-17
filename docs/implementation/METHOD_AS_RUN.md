@@ -28,6 +28,7 @@ coordinator](HANDOVER.md#restarting-the-lane-coordinator)).
 | `<BASE_COMMIT>` | the main commit the order started from | no | none |
 | `<CHECKS>` | the checks the coordinator names for that order, usually the order's Done when | no | none |
 | `<FINDINGS_FILE>` | a file in the coordinator's private notes holding a reader's structured result | yes | in the private note |
+| `<NAMES_FILE>` | the file of private names, of mode 0600 and outside the repository, that `tools/gate.py --private-names-file` reads; where the names are held is open ([ruling 80](../proposals/ruling-80/README.md)) | yes | in the private note, once the names are held |
 | `<FIXER_REPORT>` | the fixer's structured report, pasted | no | none |
 | `SCHEMA` | the report schema's name under docs/work-orders, without .schema.json | no | the order's own name |
 | `EXTRA` | a file appended to the order's prompt under From the admin session | no | none |
@@ -227,10 +228,9 @@ scp -q -F "<KEYS_DIR>/ssh_config" "<WIN_HOST>:<REMOTE_DIR>/out-NNN/*.md" "<WO_DI
 git -C "<MAC_CHECKOUT>" worktree add -q "<WO_DIR>/NNN" wo/NNN-name
 ```
 The reset runs only for an existing local tree; otherwise the branch is set, then the tree added.
-Orders built on Windows passed the changed crate's tests, fmt and clippy on the Mac before merge.
-Since 187, CI's macOS jobs run each package's clippy and release tests and the engine's loader,
-core and conformance tests, and Linux checks fmt; only the experiments, the engine's shell and
-the engine's clippy still run on the Mac by hand. 131
+Orders built on Windows passed the changed crate's tests, fmt and clippy on the Mac before
+merge. Since order 193b the gate of [section 7](#7-merge-and-the-record) runs them there,
+for each Rust directory the branch reaches and the engine; CI's macOS jobs (187) run after. 131
 failed to compile on macOS (rustix's `mknodat`) and expected Linux's error message; 137 and 140 used
 `chmod --` and `find -printf` (fixed in #241). Windows' sandbox could not use the pinned toolchain
 for 075's spec suites ([075's Record](../work-orders/075-spec-own-tools-reach.md#record)) and timed
@@ -278,22 +278,52 @@ redaction of a library-built error, 137 and 140's macOS fixes (#241), and 141's 
 
 ## 7. Merge and the Record
 
-The admin reads the diff, report and every worker choice, runs [AGENTS.md's
-checks](../../AGENTS.md#checks) and, for a Rust directory, its tests, fmt and clippy, and scans
-private paths and names. Once files are staged, run `python3 tools/check_private_paths.py` with
-`CONDUIT_PRIVATE_NAMES` set from the private note; the pull request's `secrets` job must pass too.
-On the pull request, CI's `docs` job also checks every vector change against the declarations that
-the pull request adds or changes, and lists each flip for the reader ([reviewing vector
-changes](../../conformance/README.md#reviewing-vector-changes)). Squash with the guard:
+The admin reads the diff, report and every worker choice, then squashes with the guard:
 ```sh
 git fetch origin && git rebase origin/main && git merge-base --is-ancestor origin/main HEAD && git reset --soft origin/main && git -c user.name="Conduit work order" -c user.email=work-orders@conduit.invalid commit
 git diff --name-only HEAD^ HEAD
 ```
-The squash commits with the checkpoints' identity, not the handover's plain `git commit`. Check
-the second command's files against scope; shared remote refs can move between commands. Push
-`wo/NNN-name`, open its pull request, wait for CI and squash-merge with a message written by hand,
-its subject in the form of orders merged since 151: `Work order NNN: title (#PR)`.
-[checks.yml](../../.github/workflows/checks.yml) runs on pull requests and pushes to `main`:
+The squash commits with the checkpoints' identity, not the handover's plain `git commit`.
+Check the second command's files against scope; shared remote refs can move between
+commands. Then, on the Mac, with the tree clean, run the gate
+([ruling 80](../proposals/ruling-80/README.md), point 10), giving it the file of private
+names once they are held:
+```sh
+python3 tools/gate.py --private-names-file <NAMES_FILE>
+```
+It compares the branch with `origin/main` as last fetched, and never fetches, pushes or
+calls GitHub. It fails a commit since `origin/main` whose author or committer is not the
+work-order identity, as a plain rebase leaves one, and names the commit. For what the
+branch changes it runs the checks of CI's `checks` workflow on the Mac: the `docs` job's
+Python checks in that job's order, with the private names given to
+`tools/check_private_paths.py` alone; the vector changes against the declarations the
+branch adds or changes, the tools' unit tests and `git diff --check`; `cargo fmt --check`,
+clippy with `-D warnings` and `cargo test --release` in each package that the branch
+changes, that depends by path on a directory it changes, or that reads a path it changes,
+and the tests alone of each such experiment; the engine's fmt, clippy and release tests
+when `engine/`, `spec/`, `conformance/` or an Agent package changes; and gitleaks on the
+branch's commits when the release that checks.yml pins is on the `PATH`. Cargo runs
+offline. The gate prints one line for each gate, PASS, FAIL or NOT RUN with its command
+and why, and a last line that says PASS only when every required gate passed, and writes
+its record to `target/gate/<HEAD>.json`. `--plan` runs `rust discovery` alone and lists
+the other gates without running them, and exits 1 when discovery does not pass; `--all`
+runs every Rust directory and the engine. A FAIL is fixed on the branch, which is squashed
+again, and the gate runs again.
+
+The merge waits on the gate, not on GitHub CI. Only after the gate's PASS, push
+`wo/NNN-name`, open its pull request with the gate's last line and its record's gates in
+the description, and squash-merge with a message written by hand, its subject in the form
+of orders merged since 151: `Work order NNN: title (#PR)`. The record cited names the
+pushed commit as its head, and says that the tree was clean, that the branch contained
+`origin/main` and, once the names are held, that they were configured. Where it says that
+gitleaks did not run, no secret scan ran before the push: GitHub's push protection stops
+only the patterns it knows, and the pull request's `secrets` job scans after. The gate's
+log of the vector changes lists each flip for the reader ([reviewing vector
+changes](../../conformance/README.md#reviewing-vector-changes)).
+[checks.yml](../../.github/workflows/checks.yml) still runs on pull requests and pushes to
+`main`, as a second opinion and the Linux leg that nothing waits on (ruling 80). A run that
+fails after a merge is fixed in a follow-up, an order or a coordinator's fix read by a
+fresh Opus reader, whose Record names the run. Its jobs:
 `secrets` scans added commits; `docs` runs nine Python checks (docs, names, schemas, roadmap,
 rulings, model account with history, promise standing, private paths and, on pull requests,
 vector changes against declarations), tools' unit tests and PR `git diff --check`.

@@ -548,3 +548,120 @@ After the report:
   while the names are not held, cites its record in the pull request, and merges on its PASS.
   The Record gives that run's gates and times, the engine's among them when it runs, and the
   coordinator switches its private merge script to the gate.
+
+## Record
+
+Run on 2026-11-17, from about 00:27 to 01:07 UTC, on the Mac from `main` `f08a73ea` (order 193a's
+merge), in two rounds: the worker (1510 s) and a fresh Codex verifier (198 s), then the worker again
+(433 s) and a second fresh Codex verifier (251 s). The change is the seven files of Scope.
+`tools/gate.py` gains `--all`, `--jobs` and `--test-threads`; a first gate, `rust discovery`, which
+finds the Rust directories as `rust-dirs` does and their path dependencies, with
+`cargo locate-project` and `cargo metadata --no-deps --offline` run from the root; decision 2's
+selection, with its table as `RUST_READS`; decision 3's Rust gates, `rust unreached`, and the
+engine's three gates or `engine`; the environment that cargo runs with and the record's `settings`;
+and a `--plan` that runs discovery and exits 1 when it does not pass. `tools/tests/test_gate.py` has
+the fake answer discovery's commands, changes order 193a's tests where this order changes what they
+assert (the `Environment:` line, the gates' order and `rust and engine`), and adds decision 5's five
+tests. The documents take row V and texts A and B in the method as run, C and D in AGENTS.md, C, E1
+and E2 in CONTRIBUTING.md, F in the handover, and G1 and G2 in the tracker. The worker's own
+choices: a breadth-first search for a dependency's route, in byte order on ties; invalid metadata,
+and a path dependency inside the repository that no discovered directory or engine holds, fail
+discovery; the count of manifests includes the engine's; and the plan's last line said that
+discovery was checked. On the worker's tree, both plans of "Done when" exceeded the order's lists
+only by the lines of the commits since `d4c8cf8b` that change `engine/`, `spec/` or experiment 012
+(orders 178, 171a, 172a and 172b): experiment 011 in the first list, and experiments 012 and 022 and
+eight more packages' fmt, clippy and test in both, as the order foresaw. The first verifier found
+one must: a path dependency outside the repository put its absolute path in the record's `why`,
+against order 193a's rule of no absolute path in the record. Round 2 gave `DiscoveryError` a
+path-free `record_reason`, kept the path in the line and the log, and extended decision 5's test 2
+to check the record. The second verifier found nothing.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch before its
+rebase. It ran the gate's tests with `-v` (15 ok lines, the five new among them), the tool tests
+(123, OK), both plans of "Done when" (37 and 36 lines, supersets of the order's lists by the lines
+of orders 171a, 172a, 172b and 178; at `d4c8cf8b` the gate's selection gives the order's lists
+exactly), the full gate (its last line began
+`Gate: PASS. 13 passed; not run: secrets, rust unreached, engine.`, exit 0; no cargo command ran but
+discovery's 41), the record's summary, `no absolute path`, the order's greps, `check_docs` and
+`check_private_paths` (Errors: 0 each) and `git diff --check origin/main...HEAD` (clean); `.github`
+was unchanged and the diff held the seven files of Scope. It also ran a `--plan` with no cargo on
+the `PATH` (exit 1); with scratch scripts it compared the texts of decision 6 with the files
+(verbatim, E1 and E2 after the rewrap) and the order's table with `RUST_READS` (16 rows, identical);
+and on scratch copies it ran a probe in which `cargo metadata` exits 101, and eight removals, each
+of which failed its test, and a ninth, R1's, which did not. It found no must and eight shoulds:
+
+- R1: in decision 5's test 1, the check that the failed discovery's line names
+  `.github/workflows/checks.yml` searched the whole output, where the `secrets` line always names
+  that file, so it could not fail.
+- R2: the plan's last line said `Only rust discovery was checked` when discovery did not run, and
+  counted discovery, passed or failed, among the gates that would run.
+- R3: for a discovery command that fails, the line's `its last line:` repeated the gate's own words
+  for the exit, and cargo's message reached only the tail on stderr.
+- R4: texts A and D said that `--plan` lists the gates without running them, though it runs
+  `rust discovery` and exits 1 when that does not pass.
+- R5: text D did not say that discovery, which runs cargo from the root, where no toolchain is
+  pinned, needs rustup's default toolchain (inferred from rustup's behaviour, not reproduced).
+- R6: CONTRIBUTING.md's lists of what each check needs and what the checks cover had no item for
+  `gate.py`.
+- R7: a path dependency inside the repository that no discovered directory or engine holds fails
+  discovery, the worker's own choice, and no test covered it.
+- R8: the usage printed `BASE`, `PRIVATE_NAMES_FILE`, `JOBS` and `TEST_THREADS`, not decision 1's
+  `REF`, `FILE` and `N`.
+
+The fixer rebased the branch onto `origin/main` at `0db2951c` (order 171b) with the work-order
+identity, without conflict, and applied each finding:
+
+- R1: decision 5's test 1 takes the `FAIL rust discovery` line and checks that it holds
+  `macos_only could not be read from .github/workflows/checks.yml`.
+- R2: the plan's last line begins `Gate plan: rust discovery passed;`, `failed;` or `was not run;`,
+  then counts the other gates, `<W> other gates would run, <N> would not.`, and ends
+  `No other gate was checked, and no record was written.` The test
+  `test_plan_lists_the_gates_and_runs_none` expects it, and decision 5's test 1 checks its start
+  when cargo is missing and when a discovery command fails.
+- R3: `DiscoveryError` carries `from_command` for a command's exit or timeout, and the gate adds its
+  own words to the discovery log only for the other faults (no `macos_only` line, a path outside the
+  repository, invalid metadata, a dependency no directory holds), so that `its last line:` is
+  cargo's. The same test runs the gate with `cargo metadata` exiting 101 and checks for
+  `exit 101; its last line: error: failed to parse manifest; log`.
+- R4: in text D of AGENTS.md and text A of the method as run, `--plan` now "runs `rust discovery`
+  alone and lists the other gates without running them, and exits 1 when discovery does not pass",
+  and the rest of each paragraph is rewrapped.
+- R5: text D gains the sentence "Its discovery runs cargo from the root, which pins no toolchain, so
+  it needs rustup's default toolchain too."
+- R6: CONTRIBUTING.md gains an item for `gate.py` in each list: what it needs, the default toolchain
+  among it, with a link to AGENTS.md for the rest; and what it covers, with a link to the method as
+  run's section 7.
+- R7: decision 5's test 2 gives `packages/d` a path dependency at `tools/crate`, and checks exit 1
+  and `path dependency has no discovered directory: tools/crate` in the output and in the record's
+  `why`. This differs from CI: `changed-packages` matches such a dependency by its own directory as
+  a prefix and goes on, where the gate fails discovery, and with it the run.
+- R8: `--base` takes the metavar `REF`, `--private-names-file` `FILE`, and `--jobs` and
+  `--test-threads` `N`; `--help` prints
+  `[--base REF] [--plan] [--private-names-file FILE] [--all] [--jobs N] [--test-threads N]`.
+
+On scratch copies, each fix taken out failed its test: R1's message without the file's name, R2's
+former last line, R3's words added for every fault, and R7's dependency skipped. The fixer then ran,
+from the worktree's root under `env -i` with a minimal `PATH` and `HOME`, on the files of this
+commit before it was made: `/usr/bin/python3 -m unittest tools.tests.test_gate -v` (15 ok lines,
+OK), `/usr/bin/python3 -m unittest discover -s tools/tests` (123, OK), `python3 tools/check_docs.py`
+and `python3 tools/check_private_paths.py` (Errors: 0 each), `git diff --check origin/main...HEAD`
+and `git diff --check` (clean), and `/usr/bin/python3 tools/gate.py`, which exited 0 with the last
+line `Gate: PASS. 13 passed; not run: secrets, rust unreached, engine.`, then the record's path and
+the sentence on the uncommitted paths. Its `rust discovery` passed on 21 manifests, cargo ran only
+discovery's 41 commands, `identity` passed on the branch's 2 commits, and `secrets` did not run,
+since gitleaks is not on that `PATH`. `--plan` ended
+`Gate plan: rust discovery passed; 12 other gates would run, 3 would not.` and exited 0; with no
+cargo on the `PATH` it ended
+`Gate plan: rust discovery was not run; 12 other gates would run, 2 would not.` and exited 1. The
+gate's run on this order's squash, which this merge waits on, and the switch of the coordinator's
+private merge script are the coordinator's at the merge.
+
+The coordinator applied the second reader's two shoulds: the `gate.py` item of CONTRIBUTING.md's
+"What the checks cover" no longer lists the commit identity among CI's checks, which do not check
+it, and this Record says which of the reader's comparisons ran with scratch scripts and which on
+scratch copies. At the merge the coordinator ran the gate on a trial squash, `9908637a691c`, which
+differs from the merged squash by this paragraph alone: its last line began `Gate: PASS. 14
+passed; not run: rust unreached, engine.`, with `rust discovery` PASS on 21 manifests, `identity`
+PASS on 1 commit and `secrets` run, gitleaks 8.24.2 on the coordinator's `PATH`; the interim gate,
+which still gates this merge, printed `GATE PASS`. The coordinator's merge script switches to the
+gate after this merge.

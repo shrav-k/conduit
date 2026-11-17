@@ -129,6 +129,7 @@ python3 tools/promise_standing.py --check # engine/STANDING.md agrees with the p
 python3 tools/check_private_paths.py # tracked files contain no private paths, email addresses outside reserved domains, or configured names
 git diff --check                     # whitespace errors
 (cd engine && cargo test --release)   # the first build: loader, core, vectors and shell
+python3 tools/gate.py                # CI's checks, run here for what the branch changes; merges wait on its PASS
 ```
 
 What each check needs:
@@ -168,6 +169,24 @@ What each check needs:
   `cargo clippy --all-targets -- -D warnings` there too. The tests read `spec/`, and check the
   loader's verdict on every example against the verdicts of `check_schemas.py`, which a
   fixture records.
+- `gate.py` needs Python 3 and Git, and what each check it runs needs: the items above
+  and, for each Rust directory it runs, the toolchain that directory pins installed
+  through rustup and its crates in cargo's cache, since it runs cargo offline and lets
+  rustup install nothing. Its discovery runs cargo from the root, which pins no toolchain,
+  so it needs rustup's default toolchain too. When its `python3` lacks PyYAML or jsonschema
+  it runs itself again under `/usr/bin/python3`, as `check_model_account.py` does. It
+  compares the working tree with `origin/main` as last fetched, or with `--base REF`, and
+  never fetches, pushes or calls GitHub. It fails a commit since the base whose author or
+  committer is not `Conduit work order <work-orders@conduit.invalid>`. It reads the private
+  names from the file that `--private-names-file` names, of mode 0600 and outside the
+  repository, gives them to `check_private_paths.py` alone, and prints none; the
+  `CONDUIT_PRIVATE_NAMES` of its own environment it does not use. It runs gitleaks only when
+  the release that `.github/workflows/checks.yml` pins is on the `PATH`, and otherwise says
+  that it did not. Its last line says PASS only when every required gate passed, and it
+  writes its record under `target/gate/`. `--plan` runs `rust discovery` alone and lists the
+  other gates without running them, and exits 1 when discovery does not pass; `--all` runs
+  every Rust directory and the engine. The admin merges on its PASS on the Mac, and CI runs
+  after, as a second opinion ([ruling 80](docs/proposals/ruling-80/README.md)).
 
 The names the specification assigns (the core package's address, `apiVersion`, the prefix of
 its `_meta` keys and, since ruling 43, the names of what `identity` carries) are defined once,

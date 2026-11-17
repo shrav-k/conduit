@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the local Python, commit identity and secret gates without fetching anything."""
+"""Run the local merge gates for what the branch changes, without fetching anything."""
 
 import argparse
 from dataclasses import dataclass
@@ -50,9 +50,37 @@ PYTHON_GATES = (
     ('tool tests', ('-m', 'unittest', 'discover', '-s', 'tools/tests')),
 )
 PYTHON_REASON = "CI's docs job runs it on each pull request"
-RUST_WHY = ('this version of the gate runs no Rust directory and not the engine; '
-            'order 193b adds them, and until then their checks run by hand, '
-            'as the method as run says')
+RUST_WHY = 'rust discovery did not pass, so no Rust directory or engine gate was chosen'
+ENGINE_PREFIXES = ('engine/', 'spec/', 'conformance/', 'packages/agent-claude-code/',
+                   'packages/agent-codex/')
+ENGINE_WHY = ('the branch changes nothing under engine/, spec/, conformance/, '
+              'packages/agent-claude-code/ or packages/agent-codex/')
+UNREACHED_WHY = ('the branch changes nothing in these, in a directory they depend on by path, '
+                 'or in a path they read: ')
+NOT_BUILT_WHY = ('listed in macos_only of checks.yml, which CI does not build; '
+                 'the gate does not run it either')
+# directory, path read, evidence file within the directory, literal evidence in that file.
+RUST_READS = (
+    ('packages/provider-file', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
+    ('packages/provider-local-directory', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
+    ('packages/provider-local-machine', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
+    ('packages/provider-local-process', 'spec/', 'tests/package.rs', '"../../spec'),
+    ('packages/provider-local-process', 'tools/check_schemas.py', 'tests/package.rs', 'import check_schemas'),
+    ('packages/provider-ssh-runtime', 'spec/', 'tests/package.rs', '"../../spec'),
+    ('packages/runtime-provider-kit', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
+    ('packages/scenario-s2-linear', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
+    ('packages/scenario-s2-linear', 'packages/scenario-s2-linear-restrictions/contracts.yaml',
+     'tests/schema_drift.rs', '"../scenario-s2-linear-restrictions/contracts.yaml'),
+    ('packages/scenario-s2-linear-adapter', 'spec/', 'tests/package.rs', '"../../spec'),
+    ('packages/scenario-s2-linear-adapter', 'packages/scenario-s2-linear-restrictions/contracts.yaml',
+     'tests/package.rs', '"../scenario-s2-linear-restrictions/contracts.yaml'),
+    ('packages/scenario-s2-linear-restrictions', 'spec/', 'tests/schema_drift.rs', '"../../spec'),
+    ('packages/scenario-s4-effect', 'spec/', 'tests/declarations.rs', '"../../spec'),
+    ('experiments/011-short-form-spike', 'spec/', 'src/evidence.rs', '.join("spec")'),
+    ('experiments/011-short-form-spike', 'conformance/fixtures/s1/', 'src/evidence.rs',
+     '.join("conformance/fixtures/s1")'),
+    ('experiments/022-provider-contracts', 'spec/', 'tests/harness.rs', '.join("spec/'),
+)
 NO_COMMITS = 'the branch adds no commit since the merge base'
 PRIVATE_FILE = 'the file that --private-names-file names'
 
@@ -62,6 +90,139 @@ class CommandResult:
     exit: object
     output: str = ''
     timed_out: bool = False
+
+
+@dataclass
+class RustDirectory:
+    path: str
+    build: bool
+    lint: bool
+
+
+class DiscoveryError(Exception):
+    def __init__(self, message, *, record_reason=None, from_command=False):
+        super().__init__(message)
+        self.record_reason = message if record_reason is None else record_reason
+        # A command's exit or timeout: its own output, already in the log, ends the log.
+        self.from_command = from_command
+
+
+def rust_manifests(root):
+    return sorted({path for area in ('packages', 'experiments')
+                   for pattern in ('*/Cargo.toml', '*/*/Cargo.toml')
+                   for path in (root / area).glob(pattern)
+                   if path.is_file() and 'target' not in path.relative_to(root).parts},
+                  key=lambda path: os.fsencode(path.relative_to(root)))
+
+
+def discover_rust(root, manifests, query):
+    """Discover CI's workspace roots and their path dependencies, without building."""
+    try:
+        workflow = (root / WORKFLOW).read_text(encoding='utf-8')
+    except OSError:
+        workflow = ''
+    match = re.search(r'^\s*macos_only="([^"\n]*)"\s*$', workflow, re.MULTILINE)
+    if not match:
+        raise DiscoveryError('macos_only could not be read from .github/workflows/checks.yml')
+    not_built = match[1].split()
+    directories = []
+    for manifest in manifests:
+        relative = manifest.relative_to(root).as_posix()
+        workspace = query(['locate-project', '--workspace', '--message-format', 'plain',
+                           '--manifest-path', relative]).strip()
+        if Path(workspace).resolve() == manifest.resolve():
+            directory = manifest.parent.relative_to(root).as_posix()
+            directories.append(RustDirectory(directory, directory not in not_built,
+                                              directory.startswith('packages/')))
+    directories.sort(key=lambda entry: os.fsencode(entry.path))
+    holders = [entry.path for entry in directories] + ['engine']
+    dependencies = {directory: set() for directory in holders}
+    for directory in holders:
+        output = query(['metadata', '--no-deps', '--format-version', '1', '--offline',
+                        '--manifest-path', directory + '/Cargo.toml'])
+        try:
+            metadata = json.loads(output)
+            for package in metadata['packages']:
+                for dependency in package['dependencies']:
+                    if dependency.get('path') is None:
+                        continue
+                    path = Path(dependency['path']).resolve()
+                    try:
+                        relative = path.relative_to(root).as_posix()
+                    except ValueError:
+                        raise DiscoveryError(
+                            f'path dependency outside the repository: {path}',
+                            record_reason='path dependency outside the repository') from None
+                    if relative == directory or relative.startswith(directory + '/'):
+                        continue
+                    owners = [holder for holder in holders
+                              if relative == holder or relative.startswith(holder + '/')]
+                    if not owners:
+                        raise DiscoveryError(f'path dependency has no discovered directory: {relative}')
+                    dependencies[directory].add(max(owners, key=len))
+        except (ValueError, KeyError, TypeError, AttributeError) as error:
+            raise DiscoveryError(f'cargo metadata for {directory} returned invalid metadata') from error
+    return directories, dependencies
+
+
+def selects_path(path, entry):
+    return path.startswith(entry) if entry.endswith('/') else path == entry
+
+
+def select_rust(directories, dependencies, changed, all_directories):
+    paths = [os.fsdecode(path) for path in changed]
+    holders = [entry.path for entry in directories] + ['engine']
+    direct = {directory: sum(path.startswith(directory + '/') for path in paths)
+              for directory in holders}
+
+    def dependency_reason(directory):
+        # Breadth first, then byte order: cycles cannot recur and equal routes are stable.
+        queue = [(directory, [])]
+        visited = {directory}
+        for holder, route in queue:
+            for dependency in sorted(dependencies[holder], key=os.fsencode):
+                if dependency in visited:
+                    continue
+                visited.add(dependency)
+                if direct[dependency]:
+                    through = ', through ' + ', '.join(route) + ',' if route else ''
+                    return f'it depends by path{through} on {dependency}, which the branch changes'
+                queue.append((dependency, route + [dependency]))
+        return None
+
+    selected = {}
+    for entry in directories:
+        directory = entry.path
+        reason = f'the branch changes {direct[directory]} of its paths' if direct[directory] else None
+        reason = reason or dependency_reason(directory)
+        if reason is None:
+            for reader, path, evidence, _ in RUST_READS:
+                if reader == directory and any(selects_path(changed_path, path) for changed_path in paths):
+                    reason = f'it reads {path} ({evidence}), which the branch changes'
+                    break
+        if reason is None and all_directories:
+            reason = '--all was given'
+        if reason:
+            selected[directory] = reason
+    prefixes = [prefix for prefix in ENGINE_PREFIXES if any(path.startswith(prefix) for path in paths)]
+    engine_reason = None
+    if prefixes:
+        count = sum(any(path.startswith(prefix) for prefix in prefixes) for path in paths)
+        engine_reason = f"the branch changes {count} paths under {', '.join(prefixes)}"
+    engine_reason = engine_reason or dependency_reason('engine')
+    if engine_reason is None and all_directories:
+        engine_reason = '--all was given'
+    return selected, engine_reason
+
+
+def positive_integer(text):
+    try:
+        value = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError('must be a positive integer') from None
+    if value <= 0:
+        raise argparse.ArgumentTypeError('must be a positive integer')
+    return value
 
 
 def end_group(process):
@@ -241,6 +402,8 @@ def gate_row(name, command, required=True, reason=None, why=None):
 
 def show(row, output='', findings=(), plan=False):
     name, command = row['name'], row['command']
+    if command and row['directory'] != '.':
+        command += ' in ' + row['directory']
     label = f'{name}: {command}' if command else name + ':'
     if row['result'] == 'NOT RUN':
         print(f"NOT RUN {label}; {row['why']}" if command else f"NOT RUN {label} {row['why']}")
@@ -271,12 +434,21 @@ def show(row, output='', findings=(), plan=False):
 
 def main(root, argv, run=run_command):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--base', default='origin/main')
+    parser.add_argument('--base', default='origin/main', metavar='REF')
     parser.add_argument('--plan', action='store_true')
-    parser.add_argument('--private-names-file')
+    parser.add_argument('--private-names-file', metavar='FILE')
+    parser.add_argument('--all', action='store_true')
+    parser.add_argument('--jobs', type=positive_integer, default=6, metavar='N')
+    parser.add_argument('--test-threads', type=positive_integer, default=4, metavar='N')
     options = parser.parse_args(argv)
     root = Path(root).resolve()
     environment, removed, credentials = scrub_environment()
+    settings = dict(jobs=options.jobs, test_threads=options.test_threads, all=options.all)
+    environment_set = dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0',
+                           CARGO_TERM_COLOR='never', CARGO_BUILD_JOBS=str(options.jobs),
+                           RUST_TEST_THREADS=str(options.test_threads))
+    environment.update({key: value for key, value in environment_set.items()
+                        if key != 'RUST_TEST_THREADS'})
 
     def not_started(why):
         print('Gate: NOT RUN: ' + why + '. Nothing was checked.')
@@ -340,7 +512,10 @@ def main(root, argv, run=run_command):
               'the checks that need them fail, or skip tests that CI runs.')
     else:
         print(f'Python: {platform.python_version()} imports PyYAML and jsonschema, as CI\'s docs job does.')
-    print(f"Environment: removed from every command: {', '.join(removed) or 'no named variable'}, "
+    print('Environment: cargo runs with CARGO_NET_OFFLINE=true, RUSTUP_AUTO_INSTALL=0, '
+          f'CARGO_TERM_COLOR=never and CARGO_BUILD_JOBS={options.jobs}, and cargo test with '
+          f'RUST_TEST_THREADS={options.test_threads}. Removed from every command: '
+          f"{', '.join(removed) or 'no named variable'}, "
           f'and {credentials} variables named for a credential.')
 
     record = dict(format=1, tool=TOOL, started=utc_now(), finished=None, result='incomplete',
@@ -349,7 +524,8 @@ def main(root, argv, run=run_command):
                   tree=dict(clean=not dirty, uncommitted_paths=dirty), changed_paths=len(changed),
                   platform=platform.system() + ' ' + platform.machine(), python=platform.python_version(),
                   python_packages=not missing,
-                  environment=dict(set={}, removed=removed, removed_credentials=credentials,
+                  settings=settings,
+                  environment=dict(set=environment_set, removed=removed, removed_credentials=credentials,
                                    private_names_configured=private_names is not None), gates=[])
     record_path = root / OUTPUT / (head + '.json')
     log_directory = root / OUTPUT / 'logs' / head
@@ -358,21 +534,78 @@ def main(root, argv, run=run_command):
         for old in log_directory.glob('*.log'):
             old.unlink()
         write_record(record_path, record)
-    current = 'identity'
+    current = 'rust discovery'
 
     def finish(row, output='', findings=()):
+        for key in ('name', 'directory', 'command', 'reason', 'why', 'partial', 'log'):
+            if isinstance(row[key], str):
+                row[key] = redact_output(row[key], private_names)
         record['gates'].append(row)
         if not options.plan:
             write_record(record_path, record)
-        show(row, output, (redact_output(item, private_names) for item in findings), options.plan)
+        show(row, output, (redact_output(item, private_names) for item in findings),
+             options.plan and row['name'] != 'rust discovery')
 
-    def execute(args, log, minutes, env=None, display=None):
-        print(f'running {current}: {display or command_text(args)}', file=sys.stderr)
-        return run(args, cwd=root, env=dict(environment if env is None else env),
+    def execute(args, log, minutes, env=None, display=None, directory='.', redact=None):
+        print(redact_output(f'running {current}: {display or command_text(args)}', private_names),
+              file=sys.stderr)
+        return run(args, cwd=root / directory, env=dict(environment if env is None else env),
                    timeout=minutes * 60, log=log,
-                   redact=lambda text: redact_output(text, private_names))
+                   redact=redact or (lambda text: redact_output(text, private_names)))
 
     try:
+        manifests = rust_manifests(root)
+        discovery = gate_row(current,
+                             'cargo locate-project and cargo metadata --no-deps --offline, '
+                             f'for {len(manifests) + 1} manifests',
+                             reason='the Rust gates are chosen from it')
+        cargo = shutil.which('cargo')
+        directories, dependencies = [], {}
+        if cargo is None:
+            discovery['why'] = 'cargo was not found on the PATH; install Rust through rustup'
+        else:
+            started = time.monotonic()
+            discovery_output = []
+            # Plans also discover, but write neither a persistent log nor a record.
+            with tempfile.TemporaryDirectory() as temporary:
+                log = Path(temporary) / 'discovery.log' if options.plan else log_directory / '01-rust-discovery.log'
+
+                def query(args):
+                    printed = command_text(['cargo', *args])
+                    raw_output = []
+
+                    def redact_discovery(text):
+                        # Cargo prints absolute paths. Parse their original text in memory;
+                        # a configured user name in the root must not change their meaning.
+                        raw_output.append(text)
+                        return redact_output(text, private_names)
+
+                    result = execute([cargo, *args], Path(temporary) / 'command.log', 5,
+                                     display=printed, redact=redact_discovery)
+                    discovery_output.append(redact_output(printed, private_names) + '\n' + result.output + '\n')
+                    discovery['exit'] = result.exit
+                    if result.timed_out:
+                        raise DiscoveryError(timeout_words(5), from_command=True)
+                    if result.exit != 0:
+                        raise DiscoveryError(f'{printed}: exit {result.exit}', from_command=True)
+                    return raw_output[-1] if raw_output else result.output
+
+                try:
+                    directories, dependencies = discover_rust(root, manifests, query)
+                    discovery.update(result='PASS', exit=0)
+                except DiscoveryError as fault:
+                    discovery.update(result='FAIL',
+                                     why=redact_output(fault.record_reason, private_names))
+                    if not fault.from_command:
+                        discovery_output.append(redact_output(str(fault), private_names) + '\n')
+                finally:
+                    discovery['seconds'] = round(time.monotonic() - started, 1)
+                    log.write_text(''.join(discovery_output), encoding='utf-8')
+                    if not options.plan:
+                        discovery['log'] = log.relative_to(root).as_posix()
+        finish(discovery, ''.join(discovery_output) if cargo else '')
+
+        current = 'identity'
         identity_args = ['log', '-z', IDENTITY_FORMAT, merge_base + '..HEAD']
         identity = gate_row('identity', command_text([*GIT, *identity_args]), required=head != merge_base)
         if head == merge_base:
@@ -517,18 +750,76 @@ def main(root, argv, run=run_command):
                         if dirty:
                             secrets['partial'] = f'{dirty} uncommitted path(s), since gitleaks reads commits alone'
         finish(secrets, findings=findings)
-        current = 'rust and engine'
-        finish(gate_row(current, None, required=False, why=RUST_WHY))
+        if discovery['result'] != 'PASS':
+            finish(gate_row('rust and engine', None, required=False, why=RUST_WHY))
+        else:
+            selected, engine_reason = select_rust(directories, dependencies, changed, options.all)
+
+            def rust_command(name, directory, arguments, reason):
+                nonlocal current
+                current = name
+                env = dict(environment)
+                printed = command_text(['cargo', *arguments])
+                if arguments[0] == 'test':
+                    env['RUST_TEST_THREADS'] = str(options.test_threads)
+                    printed = f'RUST_TEST_THREADS={options.test_threads} ' + printed
+                row = gate_row(name, printed, reason=reason)
+                row['directory'] = directory
+                if options.plan:
+                    row['result'] = 'PASS'
+                    finish(row)
+                    return
+                position = len(record['gates']) + 1
+                log_name = redact_output(name, private_names).replace(' ', '-').replace('/', '-')
+                log = log_directory / (f'{position:02d}-' + log_name + '.log')
+                started = time.monotonic()
+                result = execute([cargo, *arguments], log, 90, env, printed + ' in ' + directory,
+                                 directory=directory)
+                row.update(result='FAIL' if result.timed_out or result.exit != 0 else 'PASS',
+                           exit=result.exit, seconds=round(time.monotonic() - started, 1),
+                           log=log.relative_to(root).as_posix())
+                if row['result'] == 'FAIL':
+                    row['why'] = timeout_words(90) if result.timed_out else f'exit {result.exit}'
+                finish(row, result.output)
+
+            for entry in directories:
+                if entry.path not in selected:
+                    continue
+                reason = selected[entry.path]
+                if entry.lint:
+                    rust_command('rust ' + entry.path + ' fmt', entry.path, ['fmt', '--check'], reason)
+                if not entry.build:
+                    finish(gate_row('rust ' + entry.path, None, required=False,
+                                    reason=reason, why=NOT_BUILT_WHY))
+                    continue
+                if entry.lint:
+                    rust_command('rust ' + entry.path + ' clippy', entry.path,
+                                 ['clippy', '--all-targets', '--', '-D', 'warnings'], reason)
+                rust_command('rust ' + entry.path + ' test', entry.path, ['test', '--release'], reason)
+            unreached = [entry.path for entry in directories if entry.path not in selected]
+            if unreached:
+                finish(gate_row('rust unreached', None, required=False,
+                                why=UNREACHED_WHY + ', '.join(unreached)))
+            if engine_reason:
+                for suffix, arguments in (('fmt', ['fmt', '--check']),
+                                          ('clippy', ['clippy', '--all-targets', '--', '-D', 'warnings']),
+                                          ('test', ['test', '--release'])):
+                    rust_command('engine ' + suffix, 'engine', arguments, engine_reason)
+            else:
+                finish(gate_row('engine', None, required=False, why=ENGINE_WHY))
     except KeyboardInterrupt:
-        print(f'Gate: interrupted during {current}; its process group was ended, '
-              'and the record says incomplete.')
+        print(redact_output(f'Gate: interrupted during {current}; its process group was ended, '
+                            'and the record says incomplete.', private_names))
         return 130
 
     if options.plan:
-        would = sum(row['result'] != 'NOT RUN' for row in record['gates'])
-        print(f"Gate plan: {would} gates would run, {len(record['gates']) - would} would not. "
-              'Nothing was checked, and no record was written.')
-        return 0
+        would = sum(row['result'] != 'NOT RUN' for row in record['gates']
+                    if row['name'] != 'rust discovery')
+        state = {'PASS': 'passed', 'FAIL': 'failed'}.get(discovery['result'], 'was not run')
+        print(f"Gate plan: rust discovery {state}; {would} other gates would run, "
+              f"{len(record['gates']) - 1 - would} would not. "
+              'No other gate was checked, and no record was written.')
+        return 0 if discovery['result'] == 'PASS' else 1
     failed = [row['name'] for row in record['gates'] if row['result'] == 'FAIL']
     required_missing = [row['name'] for row in record['gates']
                         if row['required'] and row['result'] == 'NOT RUN']

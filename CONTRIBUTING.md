@@ -203,6 +203,7 @@ python3 tools/check_schemas.py       # schemas, core package and examples; needs
 python3 tools/check_roadmap.py       # one row per action item, and the roadmap cites each open one
 git diff --check                     # whitespace errors
 (cd engine && cargo test --release)   # the first build: loader, core, vectors and shell
+python3 tools/gate.py                # CI's checks, run here for what the branch changes; merges wait on its PASS
 ```
 
 What each check needs:
@@ -230,6 +231,10 @@ What each check needs:
   first use the toolchain that `engine/rust-toolchain.toml` pins. Run it from inside
   the directory, so that the pin applies. For a change to its code, run
   `cargo clippy --all-targets -- -D warnings` there too.
+- `gate.py` needs Python 3 and Git, and what each check it runs needs. It runs cargo offline and
+  lets rustup install nothing, so each Rust directory it runs needs the toolchain it pins
+  installed through rustup and its crates in cargo's cache, and its discovery, which runs cargo
+  from the root, needs rustup's default toolchain. [AGENTS.md](AGENTS.md#checks) says the rest.
 
 Run `cargo test --release` in each Rust directory you change, under `experiments/`,
 `packages/` or `engine/`, and in `engine/` after any change to `spec/`.
@@ -260,6 +265,15 @@ What the checks cover:
   by case. As of 2026-11-10 it also tests the pure core, portable vectors, durable shell,
   runner and HTTP adapter, with scripted clients by default.
   [engine/README.md](engine/README.md) gives the commands and limits.
+- `gate.py` runs on the Mac. It fails a commit since `origin/main` as last fetched that is not by
+  the work-order identity, and for what the branch changes it runs the checks of CI's `checks`
+  workflow: the `docs` job's Python checks, the vector changes, the tools' unit tests and
+  `git diff --check`; `cargo fmt --check`, clippy and `cargo test --release` in each package the
+  branch reaches, the tests alone of each such experiment, and the engine's three when it is
+  reached; and gitleaks when the release that checks.yml pins is installed. It runs each check once
+  and never fetches, pushes or calls GitHub; the nightly job and the Linux leg stay CI's. Its last
+  line says PASS only when every required gate passed, and merges wait on it
+  ([the method as run](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record)).
 
 The Python and whitespace checks do not establish engine behavior. As of 2026-11-10, the Rust
 tests exercise the implemented slice; real-client evidence is recorded separately in the
@@ -277,8 +291,8 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   change arrives through a pull request, with no approving review required; the rule binds
   administrators too; and force-pushes and deletion are refused. No ruleset is defined. When the
   protection was first applied is not recorded.
-- **No status check is required** by a branch setting. CI's `rust` check passes only when every
-  Rust job does, the macOS jobs of order 187 among them. The full review's [decision
+- **No status check is required** by a branch setting. CI's `rust` check passes only when every Rust
+  job does, the macOS jobs of order 187 among them. The full review's [decision
   D11](docs/proposals/full-review/decisions.md#the-pipeline-and-verification) asks the owner to make
   `docs` and `rust` required once the CI fix (#266) has held over three runs and the engine's test
   shards wait on no other job. Since order 152 the shards wait only on the engine's build. [CI's
@@ -290,12 +304,12 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   D11. The coordinator adds `secrets`, which order 151 created after D11. The step and its timing
   are the owner's. [Ruling 80](docs/proposals/ruling-80/README.md) answered D11 on 2026-11-16, and
   with it the owner's question whether `rust` is required now or once the macOS jobs have held: no
-  check is made required now. The checks are to run as local gates before merge in
-  `tools/gate.py`, which order 193 is to build; until it lands, the coordinator runs an interim
-  local gate before each merge, and the merge waits for it. CI keeps running on every pull request
-  as a free second opinion and the Linux leg, but merges do not wait for it, and a red run after
-  merge is fixed in a follow-up. The gates are formalized into GitHub later; until then
-  [the tracker](docs/AUDIT.md#waiting-for-the-owner) keeps D11's step.
+  check is made required now. The checks run as local gates before merge in `tools/gate.py` (orders
+  193a and 193b), and the merge waits for its PASS on the Mac, as [AGENTS.md](AGENTS.md#checks)
+  describes. CI keeps running on every pull request as a free second opinion and the Linux leg, but
+  merges do not wait for it, and a red run after merge is fixed in a follow-up. The gates are
+  formalized into GitHub later; until then [the tracker](docs/AUDIT.md#waiting-for-the-owner) keeps
+  D11's step.
 - **GitHub's secret scanning and its push protection are on**, the rest of D11. CI's own `secrets`
   job also runs a pinned gitleaks release on the commits each pull request or push to `main` adds;
   its configuration in [.gitleaks.toml](.gitleaks.toml) extends the default secret-detection rules.
@@ -303,21 +317,21 @@ repository, its `branches/main/protection`, its `rulesets`, its `actions/variabl
   `docs` job passes a repository variable of that name to `tools/check_private_paths.py`, beside the
   checker's eight built-in patterns: home-directory paths, session scratch paths, Codex login files,
   tailnet DNS names, tailnet IPv4 addresses, SSH key fingerprints, Windows home paths and email
-  addresses outside the domains reserved for examples. The
-  variable is meant to list, separated by commas, the private names that no pattern finds: the user,
-  host, machine and account names that never enter the tree. Set as a variable, it would publish
-  them: the job's log prints the step's environment, GitHub masks a secret there but not a variable,
-  and this repository's logs are public. So the variable stays unset. Whether CI should read the
-  names from a secret instead, which would change `.github/workflows/checks.yml` and needs a secret
-  that only the owner can set, was the owner's question, and
-  [ruling 80](docs/proposals/ruling-80/README.md), point 10, settled it on 2026-11-16: not for now.
-  That choice is the coordinator's, applying the owner's answers against its own recommendation of a
-  masked secret, and is open to the owner's strike;
-  [the tracker](docs/AUDIT.md#waiting-for-the-owner) records it. Since then the only name check is
-  the coordinator's [local run of the checker before each
-  merge](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record), which is to check the names
-  once they are held: the coordinator's runs so far have used none, only the built-in patterns, and
-  whether one of Conduit's secret stores can hold the names is open.
+  addresses outside the domains reserved for examples. The variable is meant to list, separated by
+  commas, the private names that no pattern finds: the user, host, machine and account names that
+  never enter the tree. Set as a variable, it would publish them: the job's log prints the step's
+  environment, GitHub masks a secret there but not a variable, and this repository's logs are
+  public. So the variable stays unset. Whether CI should read the names from a secret instead, which
+  would change `.github/workflows/checks.yml` and needs a secret that only the owner can set, was
+  the owner's question, and [ruling 80](docs/proposals/ruling-80/README.md), point 10, settled it on
+  2026-11-16: not for now. That choice is the coordinator's, applying the owner's answers against
+  its own recommendation of a masked secret, and is open to the owner's strike; [the
+  tracker](docs/AUDIT.md#waiting-for-the-owner) records it. Since then the only name check is the
+  `private paths` gate of `tools/gate.py` before each merge ([the method as
+  run](docs/implementation/METHOD_AS_RUN.md#7-merge-and-the-record)), which gives the checker the
+  names from a file the coordinator names, of mode 0600 and outside the repository; until the names
+  are held it checks the built-in patterns alone, and its record says so. Whether one of Conduit's
+  secret stores can hold the names is open.
 - **CI was paused once.** On 2026-11-11 CI was paused (the Records of orders
   [104](docs/work-orders/104-mc1-model-checking-harness.md#record) and
   [105](docs/work-orders/105-mc2-operation-identity.md#record) say so; how is not recorded). The

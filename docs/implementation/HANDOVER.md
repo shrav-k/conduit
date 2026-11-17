@@ -69,16 +69,15 @@ coordinator with this brief. The private handoff note gives its worktree, its lo
   files (100 to 199) under `docs/work-orders/`, with [PROVIDERS.md](PROVIDERS.md) and its plans.
   Anything else, `engine/`, `spec/`, `conformance/`, IN_FORCE.md and the ledger among it, goes to
   the admin.
-- **Each merge** needs the local gate to pass on the coordinator's machine and a clean fresh
-  verifier ([ruling 80](../proposals/ruling-80/README.md), point 10). The gate is `tools/gate.py`
-  once order 193 lands it, and until then the coordinator's interim gate, which runs CI's checks
-  for what the branch changes since `origin/main`; the private handoff note names its script, as
-  it does the runners'. GitHub's CI keeps running on every pull request, as a second opinion and
-  the Linux leg, but no merge waits for it, and a run that fails after a merge is fixed in a
-  follow-up. For an order built on Windows, the
-  changed crates' tests, fmt and clippy run on the Mac
-  ([the method as run](METHOD_AS_RUN.md#5-on-the-windows-computer)). The merge is the guarded
-  squash ([the squash guard](#standing-rules-learned-this-session)).
+- **Each merge** needs a PASS from `tools/gate.py` on the coordinator's machine and a clean
+  fresh verifier ([ruling 80](../proposals/ruling-80/README.md), point 10;
+  [the method as run](METHOD_AS_RUN.md#7-merge-and-the-record)). The private handoff note
+  names the merge script that runs the gate, as it does the runners'. GitHub's CI keeps
+  running on every pull request, as a second opinion and the Linux leg, but no merge waits
+  for it, and a run that fails after a merge is fixed in a follow-up. For an order built on
+  Windows, the gate runs the changed crates' tests, fmt and clippy on the Mac
+  ([the method as run](METHOD_AS_RUN.md#5-on-the-windows-computer)). The merge is the
+  guarded squash ([the squash guard](#standing-rules-learned-this-session)).
 - **Its queue** is row 14 of [the queue](#the-queue): Lane SP checkpointed in #262, and
   [PROVIDERS.md's status](PROVIDERS.md#status) lists its queue in order. Tell it that 071 has merged
   (#281), so SV1 is unblocked, and when the checkpoint ends. Under [ruling

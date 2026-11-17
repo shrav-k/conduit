@@ -110,3 +110,59 @@ strike.
   record and the owner's answers decide when the five orders are written, and with what.
 - Order 195 pre-registers stage 0b and carries out part A. The coordinator runs part B when the
   owner picks a time.
+
+## Later answers
+
+2026-11-16, later: before the targeted review of point 2 began, the coordinator put four more
+questions to the owner through the session's question tool, the run-mode question first and the
+other three together in a later call the same day. Each had a recommended option, and the owner
+chose it each time. The minutes were not measured. None of these answers changes a decision of
+this ruling, so they are later answers here and get no new number (ruling 67).
+
+The run mode. The question as put: "How should the targeted Fable review run? Ruling 79 described
+Fable reviews as sessions you start by hand; ruling 81 left that as it was." Its options: "Workflow
+from here (Recommended)": "I launch it as a resumable workflow: Fable agents for the readers,
+verifiers, critic and skeptic, and Opus only for setup and the record. A Fable shortfall pauses it
+without losing work. You see the questions at the end."; and "Fable session by hand": "You start a
+Fable lead session and give it the brief and packet I prepare. Closer to the last review; less
+resumable, and more of your time." The owner chose "Workflow from here (Recommended)". For this one
+review, then, Fable ran as a workflow from the coordinator's session, where ruling 79 described
+Fable reviews as sessions the owner starts by hand; point 2 is otherwise unchanged, and it sets no
+standing rule.
+
+FR-118. The question as put: "Moving sign-in out of the engine's core (FR-118) was set aside, to
+come back only if probe A81, A82 or A5 failed. A5 stage 0 then found two Codex failures: its status
+names no account, and its login opens a browser by itself. Does that reopen moving sign-in out of
+the core?" Its options: "Leave to the review (Recommended)": "The review says whether Codex's
+failures can be met with sign-in in the core, via the hook and ID-token route. FR-118 comes back to
+you only if it says no."; "No, keep it in the core": "The failures are Codex specifics for order
+050 to handle. FR-118 stays closed."; and "Yes, reopen it now": "The review weighs moving sign-in
+out of the core as an option. This widens the review considerably." The owner chose "Leave to the
+review (Recommended)". What it means, as the coordinator recorded it: the review says whether
+those failures can be met with sign-in in the core; FR-118 comes back to the owner only if it says
+no.
+
+The `.v2` choices. The question as put: "On 2026-11-12 you agreed to my decisions on the .v2 Agent
+packages: turn-deadline bounds, effort, hosted search and the rest (items 15–29). What's new is
+that publishing 0.2.0 freezes them, and the packages' descriptions, for the life of .v2. How should
+they be checked?" Its options: "In the review (Recommended)": "They're already on the members list
+(M81–M87). The review gives each a freeze verdict, and any change reaches you among its at most
+five questions."; "With me, after the review": "A separate short sitting with you before order 050
+is written."; and "Leave as agreed": "No further check; the review treats them as decided." The
+owner chose "In the review (Recommended)". What it means, as the coordinator recorded it: the
+review gives each of the coordinator's `.v2` decisions that 0.2.0 holds (items 15, 16 and 20 to 25)
+and the `.v2` descriptions a freeze verdict; any change reaches the owner among its at most five
+questions.
+
+A81 and A22. The question as put: "Should publishing 0.2.0 wait for two probes not yet run? A81
+is a real Codex sign-in carried across machines; ruling 75 C5 asked for it, and codex.v2 would
+freeze 'carried: true'. A22 is the keychain-without-a-login-session case on macOS." Its options:
+"Leave to the review (Recommended)": "The review says, per member, whether freezing is safe without
+each probe. If it isn't, the probe becomes a gate, and that reaches you as a question."; "Yes, wait
+for both": "0.2.0 publishes only after A81 and A22 report."; and "No, don't wait": "0.2.0 can
+publish before either probe." The owner chose "Leave to the review (Recommended)". What it means,
+as the coordinator recorded it: the review says per member whether freezing is safe without each
+probe; where not, the probe becomes a gate, put to the owner as a question.
+
+The review's record, with its answers to these three and its questions for the owner, is
+[the targeted review of 2026-11-16](../review-signin-2026-11-16/README.md).

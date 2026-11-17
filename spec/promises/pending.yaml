@@ -204,7 +204,7 @@
     chooses among the Type's logins. A plain hook gets no Conduit keys (IFC-007), hence no
     name; its URL for another login fails IFC-049's match. This includes asking for a device
     code where the account permits it. The return goes only through the Interface that
-    received the sign-in: only its retry in the session and invocation bound by requestState
+    received the sign-in: only its retry in the invocation bound by requestState
     (IFC-049) carries a return under PND-013. Polling continues under PND-011, and the account
     check alone decides completion.
   vectors: []

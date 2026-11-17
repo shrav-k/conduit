@@ -1390,8 +1390,9 @@
     carrying a secret is shown only in the engine's own panel, never relayed (ENR-003).
   observable: >-
     There is no elicitationId or completion notification. The engine correlates retries
-    through its own integrity-protected requestState, an opaque handle bound to the
-    authenticated Interface, session and originating invocation, expiring with DL18. The
+    through its own integrity-protected requestState, an opaque value bound to the Interface
+    that the request establishes under IFC-022 and to the originating invocation, expiring
+    with DL18. The
     client echoes it exactly; the engine treats it as attacker-controlled and rejects
     tampering, replay of a consumed state or another principal. Each retry consumes its
     state; another input-required response issues a fresh state for that same invocation.
@@ -1432,6 +1433,6 @@
     `io.github.shrav-k.conduit/signInReturn` holds {value, via} in an Interface's retry _meta,
     via being listener or paste, and {value} in the engine's sign-in-hook.v1 retry (IFC-006).
     It is kept nowhere (PND-014). PND-013 alone accepts it, only from
-    the Interface that received the sign-in, in its bound session and invocation. No Agent
+    the Interface that received the sign-in, in its bound invocation. No Agent
     receives a sign-in's URL, login metadata or return (PND-002, IFC-016).
   vectors: []

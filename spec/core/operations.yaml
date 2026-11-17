@@ -1382,7 +1382,7 @@ metadata:
     part, a fixed port shared with a login an in-progress sign-in may start reports
     unavailable, naming the port and only a visible pending action (PND-010). The hook's URL
     must match exactly one stated login and the asked-for one; the engine writes the message
-    (IFC-049). Only the receiving Interface's tools/call retry in its bound session and
+    (IFC-049). Only the receiving Interface's tools/call retry in its bound
     invocation may carry signInReturn under PND-013; its checked value reaches only the
     initiating hook's waiting program and is never kept. A return on a first request, another
     operation or tasks/update reports invalid after access and before dispatch, with a

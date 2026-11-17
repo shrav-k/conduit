@@ -98,6 +98,14 @@ each section are one row here, as
 | 37 | **The coordinator's lines in S9's amendments since acceptance** (decision D72 and ruling 78, point 6) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart, except the line of 2026-11-15, which reads ruling 78, point 6, as reaching P4 once the order that writes point 6 into `spec/` lands | [S9's README](../../../experiments/020-s9-start-and-repair/README.md#amendments-since-acceptance) |
 | 38 | **The coordinator's lines in S10's amendments since acceptance** (decision D73) | They change how the runs are observed, counted and prepared, not a pass condition, and what they add is reported apart | [S10's README](../../../experiments/021-s10-swapped-providers/README.md#amendments-since-acceptance) |
 
+## From the targeted review of the sign-in surface
+
+[Ruling 82](../ruling-82/README.md), point 6, o5, accepted the targeted review's carriers for the full review's fixes F95 to F97, which are the coordinator's ([decisions](../full-review/decisions.md#secrets-pending-actions-and-sign-in)). F96 removes a binding that the specification stated, and F96's row says the removal is logged, as FR-039's verifier asked ([FR-039](../full-review/findings/L04-interface.md#fr-039)). It is logged here, with the other decisions that change what the language says.
+
+| # | Decision | Why it matters | Where |
+| --- | --- | --- | --- |
+| 39 | **A URL action's requestState is bound to the Interface that the request establishes and to the originating invocation, and to no session** (fix F96, work order 198) | It removes a binding that IFC-049, PND-010 and `sign-in.v1` stated. No definition gave the session, and the baseline transport keeps none, so an engine that read it as the transport's session would refuse a sign-in's retry that comes back on a new connection, and the sign-in would end unknown at DL18 | [Order 198](../../work-orders/198-f96-request-state-binding.md); [FR-039](../full-review/findings/L04-interface.md#fr-039); IFC-049, PND-010, `sign-in.v1` |
+
 ## What the owner ruled, for reference
 
 Ruling 48 settled four points with the owner: an Agent's own reach off by default, the shared

@@ -293,3 +293,60 @@ file. A fresh Codex verifier and a fresh read-only Opus reader read the result b
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The merge waits on the admin's local
 gate, `python3 tools/gate.py`, on the squash, not on GitHub's CI, which still runs on the pull
 request and does not block ([ruling 80](../proposals/ruling-80/README.md#the-decisions), point 10).
+
+## Record
+
+Run on 2026-11-17, from about 06:27 to 06:38 UTC, on the Mac from `main` `9af1c29f` (#338, which
+wrote this order), in one round: the worker (533 s) and a fresh Codex verifier (139 s). The change
+is the five files of Scope, with the numstat of "Done when": IFC-049's `observable` takes decisions
+1 and 2, with decision 1's three-line rewrap that ends "with DL18. The"; PND-010's takes decision 3;
+`sign-in.v1`'s description takes decision 4; the owner's review list takes decision 5's block, its
+row numbered 39, since the list's last row was still 38, between that row and the heading "What the
+owner ruled, for reference", with a blank line before and after; and IN_FORCE.md loses F96's pending
+sentence and one space and gains the `In spec/` bullet after it (decision 6).
+`promise_standing.py --write` left `engine/STANDING.md` byte for byte as it was, and the
+`Standings:` line was the same before and after:
+`case passes 293; expected failure 5; reason, no case 74; no case, no reason 148.` The worker
+applied decisions 1 to 6 as the coordinator wrote them and made one choice of its own, adding
+`CARGO_NET_OFFLINE=true` to the cargo command. Every check of "Done when" passed on its tree but the
+engine's tests: the 13 HTTP tests of the shell library failed on binding `127.0.0.1:0`, which the
+sandbox refused (41 passed, 13 failed; the portable vectors passed). The verifier found nothing, and
+did not rerun cargo.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) on the branch's
+checkpoint. It ran the preconditions on `origin/main` (F96's sentence once in IN_FORCE.md; the word
+`session` 4 times in the three files), `check_schemas` (step 8: 520 promises in 27 files, 226
+`language`, 246 `convention`, 48 `interface`), `set_names --check`, `check_rulings`, `check_docs`,
+`check_model_account` (`Rows: 246 (safety 232, not safety 14, uncatalogued 0)`) and
+`check_private_paths` (Errors: 0 each), `promise_standing --check` on `main` and on the branch (the
+same `Standings:` line; `engine/STANDING.md is current; promise rows: 520.`), `--write` on a scratch
+clone (`engine/STANDING.md` byte-identical), `git diff --check origin/main...HEAD` (clean), the
+three greps that print nothing, the nine that print 1 (row 39), the two that print 0, the count of
+`session` in `spec` (7, 11 on `main`), the numstat (the five lines in order) and the placement of
+row 39. It compared decision 5's block and decision 6's edit with the order's text byte for byte
+(exact), scanned the added lines and the commit's metadata (no at sign, absolute path or private
+path; the work-order identity), and on a scratch clone of the checkpoint ran, from `engine/`,
+`CONDUIT_VECTOR_THREADS=4 CARGO_NET_OFFLINE=true cargo test --release`, which exited 0 with every
+test result ok, so that check of "Done when" is now met. It found no must and no should. It noted
+that, since the harness commits the worker's output as a checkpoint, the literal `git diff --numstat
+-- ...` and `git status --short` of "Done when" print nothing on the branch, and give the five lines
+and the five files against `origin/main...HEAD`.
+
+The fixer found `origin/main` still at `9af1c29f`, so the rebase with the work-order identity left
+the branch as it was, and with no finding to apply it changed no file but this Record. It then ran,
+from the worktree's root, every check of "Done when" against `origin/main...HEAD`: `check_schemas`
+(step 8 as above), `set_names --check`, `check_rulings`, `check_docs`, `check_model_account` (the
+same `Rows:` line), `promise_standing --check` (the same `Standings:` line; current, 520 rows) and
+`check_private_paths`, each Errors: 0; `git diff --check origin/main...HEAD` and `git diff --check`
+(clean); the three greps that print nothing (nothing), the nine that print 1 (1 each), the two that
+print 0 (0 each), the count of `session` (7), the numstat (the five lines in order), the placement
+of row 39 (a blank line after row 38, row 39 and a blank line above the heading) and the changed
+files (the five of Scope); and, from `engine/`,
+`CONDUIT_VECTOR_THREADS=4 CARGO_NET_OFFLINE=true cargo test --release`, which had printed 15 test
+results, each ok, when this commit was made; a second fresh reader's full run of the same command on
+this commit, in a scratch clone, exited 0 with every test result ok. The gate's run on this order's
+squash, which this merge waits on, is the coordinator's at the merge.
+
+At the merge the coordinator applied the second reader's two shoulds, both in this Record: the base
+is named by the pull request that wrote the order, and the test run is reported as finished. The
+gate runs on the squash, and the merge waits on its PASS.

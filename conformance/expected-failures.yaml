@@ -19,6 +19,10 @@
     {
       "id": "requests-repeat-failed-earlier-unanswered",
       "reason": "OPS-012, F13 of ruling 78 point 6: the first build records failed when a new attempt is answered failed while an earlier attempt has no answer; review order 22, the engine following SO-B, makes it pass and removes this entry"
+    },
+    {
+      "id": "requests-sign-in-return-kept-nowhere",
+      "reason": "The core's request has no member for signInReturn and reads no return; the sign-in orders 048a-1 and 048a-2 build PND-013 and PND-014."
     }
   ]
 }

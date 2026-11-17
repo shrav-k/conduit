@@ -7,11 +7,13 @@ The classification is the coordinator’s, open to the owner to strike under
 Written from `spec/` as of commit `e94c057`. The proof lane updates this catalogue when a promise changes.
 Work order 181 added the rows of the 17 promises it lacked, CTR-014, ENR-001 to ENR-012, PKG-032,
 PND-008, PND-013 and PRV-030, read from `spec/` as of commit `6ef168a2`.
+Work order 171b added the row of PND-014, which it wrote, and requoted the rows of PND-011
+and PND-013, whose quoted text it changed.
 
-Promises read: 519; safety: 411; for the coordinator: 0; others: 108. Safety by kind: access 199,
-secret 44, effect 125, result 43. Safety by layer: language 135, convention 231, interface 45.
+Promises read: 520; safety: 412; for the coordinator: 0; others: 108. Safety by kind: access 199,
+secret 45, effect 125, result 43. Safety by layer: language 135, convention 232, interface 45.
 Safety in the seven convention files: 128 (G5’s list as ruling 39 worded it); safety of the
-convention layer anywhere: 231 (the wider reading, for the owner).
+convention layer anywhere: 232 (the wider reading, for the owner).
 
 Recount the classification rows from the repository root:
 
@@ -356,7 +358,7 @@ Read: 12 promises. Source: [spec/promises/enrollment.yaml](../../spec/promises/e
 
 ### spec/promises/pending.yaml
 
-Read: 13 promises. Source: [spec/promises/pending.yaml](../../spec/promises/pending.yaml).
+Read: 14 promises. Source: [spec/promises/pending.yaml](../../spec/promises/pending.yaml).
 
 | ID | layer | level | kind | why a breach is unsafe | S1 traces |
 | --- | --- | --- | --- | --- | --- |
@@ -368,8 +370,9 @@ Read: 13 promises. Source: [spec/promises/pending.yaml](../../spec/promises/pend
 | PND-012 | convention | must | secret | `then`: “a request record holds no code or fingerprint value” — recording a device code exposes sign-in material to ordinary request-record readers. | — |
 | PND-005 | convention | must | effect | `observable`: “Nothing is queued, resumed or dispatched after it ends” — resuming a held model request after sign-in starts work without a new request. | — |
 | PND-010 | convention | must | access | `then`: “A caller other than root signs in only an Agent of a Fleet in its scope; Resources remain root's” — allowing a broader sign-in lets an Interface alter another party’s account access. | — |
-| PND-011 | convention | must | effect | `observable`: “holds back all model work” — running model work after an unsuccessful account undo spends work under an account the instance did not authorize. | — |
-| PND-013 | convention | must | secret | `observable`: “The value appears in no result, structuredContent, response _meta, notification, diagnostic, log or record” — publishing a sign-in return discloses the login’s authorization code to the readers of those surfaces. | — |
+| PND-011 | convention | must | effect | `observable`: “dispatches to that instance no request other than the parts of sign-in.v1, of a setup and of its retirement” — running model work or serving a Resource’s requests after an unsuccessful account undo spends work under an account the instance did not authorize. | — |
+| PND-013 | convention | must | secret | `observable`: “Only the package and login that started it receive it” — passing a return to another package or login hands the login’s authorization code to a program that did not start the sign-in. | — |
+| PND-014 | convention | must not | secret | `then`: “The value appears in a result, structuredContent, response _meta, notification, diagnostic, log or record” — publishing a sign-in return discloses the login’s authorization code to the readers of those surfaces. | — |
 | PND-006 | convention | must | effect | `observable`: “Computation adds no record and dispatches nothing” — dispatching setup while computing its pending action can repeat an effect implicitly. | — |
 | PND-007 | convention | must | access | `observable`: “Evidence is disclosed under PND-002 and PND-004” — publishing unfiltered notice evidence discloses closed grants beyond the Interface’s scope. | — |
 | PND-008 | convention | must | secret | `then`: “Only root's own panel shows their machine evidence, code, fingerprint or join action” — showing them on another surface can disclose a join secret or a device code to a reader other than root. | — |

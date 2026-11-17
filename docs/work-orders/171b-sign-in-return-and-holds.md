@@ -674,3 +674,108 @@ gate on the squash, not on GitHub's CI, which still runs on the pull request and
 ([ruling 80](../proposals/ruling-80/README.md#the-decisions), point 10). That gate is
 `python3 tools/gate.py` once order 193b has merged, and until then the checks it stands in for,
 the engine's build, its four test shards and its doctests among them.
+
+## Record
+
+Run on 2026-11-16, from about 23:13 to 23:35 UTC, on the Mac from `main` `41c620aa`: the worker
+(1,109 s) and a fresh Codex verifier (172 s), which found no must or should in one round. The
+verifier reran the repository's checks read-only, but not the Cargo checks. Orders 172a and 172b
+were not on the worker's tree. PND-014, a convention-layer `must not`, now holds the rule that a
+sign-in return is kept nowhere (F122): the value of `signInReturn` appears in no result,
+`structuredContent`, response `_meta`, notification, diagnostic, log or record, is none of the
+values REC-002 keeps, reaches no Agent, and leaves the engine's memory once the retry that passes it
+on, or else the request that carried it, has ended. PND-013's and IFC-049's observables, PND-004's
+sentence on a return and the row return of `spec/definitions.md` now point to it. PND-005 has a
+fourth trigger, the account-hook.v1 part before sign-in-hook.v1 reporting a different account (F81),
+raises an action only where none is unanswered, and holds the instance until `sign-in.v1` answers
+that it is signed in: an operation that starts model work on an Agent, and any request to a Resource
+other than the parts of `sign-in.v1`, of a setup and of its retirement, reports unavailable, and an
+expiry lifts nothing (F79, F80). Its third trigger keeps its words: F84 is left whole to the
+targeted review. In PND-011 the account the first check found counts as no account yet while
+`sign-in.v1` polls, and a failed undo holds every request to the instance but those parts, with a
+diagnostic naming PND-011 (F81, F80). PND-010's observable and IFC-049's `then` decide a request
+that does not declare URL elicitation after the access decision and before any part: -32021 with
+`requiredCapabilities`, reported and recorded invalid (F82). The rows sign-in and account check,
+`spec/README.md`'s paragraph on a wrong account and its counts, and IN_FORCE.md's lines 202, 212 and
+296 (the Scope's 295) follow. The case `requests-sign-in-return-kept-nowhere` (PND-014, PND-013)
+sends `signInReturn` on an inspection and expects invalid with a diagnostic naming PND-013 and seven
+absent pointers. It is an expected failure: the runner stops at step 2, where the core refuses the
+unknown field `signInReturn`. In the coordinator's classing, the safety catalogue gains PND-014 as
+`secret` and requotes PND-011 and PND-013, the account gains PND-014 as `left to MC9`, and the count
+of convention-layer safety promises goes from 231 to 232 in IN_FORCE.md, experiment 012's README and
+G5.md. The worker chose the request's evidence time, 2026-11-16T12:30:00Z, and its IDs, and ran
+Cargo offline. `engine/STANDING.md` was written by the tool.
+
+A fresh read-only Opus reader then verified the order at `38408f5d` (ruling 79, point 2). Under
+`env -i` it ran `check_docs`, `check_rulings`, `set_names.py --check`, `check_schemas` (520
+promises: 226 language, 246 convention, 48 interface), `check_model_account` (Rows: 246, safety 232,
+not safety 14, uncatalogued 0), `promise_standing.py --check`, `check_private_paths` and
+`check_roadmap`, each `Errors: 0`, `vector_delta.py origin/main HEAD --declared-changed` (1 changes;
+0 flips; 0 undeclared; 0 errors) and `git diff --check`, which was clean. In `engine/`, fmt, clippy
+and `cargo test --release` passed, the pieces tool printed `Nothing to move.`, and the runner gave
+the expected failure at step 2. On a scratch copy the case failed at step 2 with its
+expected-failure entry removed, and with `signInReturn` also dropped from the request it failed on
+the unexpected `outcome` member, so it can fail. It found every decision applied word for word, the
+change within the 15 files of Scope, and nothing settled that topic 9's *Open* line leaves to the
+targeted review: PND-005's third trigger, PND-010's and PND-013's `then`, IFC-049's sentence for
+`carried: false`, `spec/schemas/contracts.yaml` and the README's limits are unchanged, and the words
+session, SSH, tunnel and forward occur as often as before. It found one must, a rebase onto `main`
+`121020ec`, where order 172a's entries of the expected failures and its totals conflicted, and four
+shoulds:
+
+- The description of `sign-in.v1` in `spec/core/operations.yaml` still reads "Retries poll for the
+  account; a wrong account found then is undone and the invocation fails with the action still
+  pending. Failed undo holds model work." It contradicts PND-011 and understates F80's hold. "Done
+  when"'s grep missed it because "holds model" and "work." fall on two lines. The file is outside
+  this order's Scope, so it is left for SO-H's sweep, with the amendment the reader gave: "Retries
+  poll for the account; the account the first check found counts as no account yet, and any other
+  wrong account found then is undone and the invocation fails with the action still pending. A
+  failed undo holds every request to the instance but the parts of sign-in.v1, of a setup and of its
+  retirement." A later order's greps should join lines first (`tr -s ' \n' '  '`).
+- G5.md's MC9 bullet put PND-008 "in the last bullet", which is now PND-014's. It now says "in the
+  bullet on the 14 that work order 181 classed", and the blank line before PND-014's bullet is gone,
+  so the list is tight again.
+- PND-005's held request reported only unavailable and an action ID, which an Agent can neither see
+  nor answer, so it was not told why (ruling 52, point 2). At the coordinator's decision its `then`
+  now adds, after the `pendingAction` key, "with a diagnostic naming PND-005 and that the instance
+  awaits sign-in to its expected account, without naming that account (PND-004)". This concerns the
+  held request, not how a lapse is reported, so F84 is untouched; PND-005 has no digest in the
+  account.
+- The case asserts the value's absence only at its seven pointers: maps are required-field
+  projections and a diagnostic's message is not compared, so an engine that echoed the value in a
+  message, another member or a log would still pass. No change was made here. When the core gains
+  the member, orders 048a-1 and 048a-2 are to add an expectation that searches the reply, every
+  record and the engine's log for the value and its code and state strings. Until then PND-014 is
+  not counted as covered by a safety vector.
+
+The reader also noted, without raising them, that PND-014's "reaches an Agent" copies IFC-049's
+existing words and is the targeted review's to read, that PND-011 does not say whether the first
+account is compared ignoring ASCII case, and that on `main` four catalogue quotes, of PKG-031,
+PLC-026, PRV-015 and ACC-056, already fail to match their promises. The coordinator's choices that
+this order opens to the owner's strike are leaving F84 to the targeted review, PND-014's class, the
+requotes of PND-011 and PND-013, and the diagnostic that PND-005's held request names.
+
+The fixer rebased the branch onto `121020ec`. In `conformance/expected-failures.yaml` it kept order
+172a's two entries and this order's, four in all in byte order, and it wrote `engine/STANDING.md`
+again with `promise_standing.py --write`: convention `expected failure` 3 and `no case, no reason`
+87, totals 3, 150 and 520. `main` then moved three times, to `852a6d52` (order 172b), `20e9b29d`
+(order 195) and `f08a73ea` (order 193a), and the branch was rebased onto each. Order 172b's row
+setup action sits beside this order's rows return and sign-in in `spec/definitions.md`, so the three
+rows were merged by hand, each keeping its own order's text. The expected failures merged clean, six
+entries in byte order, and the tool wrote `engine/STANDING.md` again: convention `expected failure`
+5 and `no case, no reason` 85, totals 293, 5, 74, 148 and 520, with PND-013 and PND-014
+`expected failure`. Orders 195 and 193a touched none of this order's files. Then the shoulds above
+were applied. On the result, under `env -i`, `check_docs`, `check_rulings`, `set_names.py --check`,
+`check_schemas` (step 8: 520 promises, 226, 246 and 48), `check_model_account` (Rows: 246, safety
+232, not safety 14, uncatalogued 0; `left to MC9` 13), `promise_standing.py --check` (current; 520
+promise rows), `check_private_paths` and `check_roadmap` each end `Errors: 0`;
+`vector_delta.py origin/main HEAD --declared-changed` ends
+`Vector delta: 1 changes; 0 flips; 0 undeclared; 0 errors.`; and
+`git diff --check origin/main...HEAD` is clean. Every command of "Done when" prints its value, with
+`origin/main` in place of `HEAD` where a command compares against `HEAD`, and the catalogue still
+quotes each PND promise word for word. With lines joined, the old words of the holds remain in
+`spec/` only in `spec/core/operations.yaml`. In `engine/`, `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` pass, the pieces tool prints `Nothing to move.`, the
+runner ends `0 cases passed; 1 expected failures`, the case failing at step 2 on the core's refusal
+of `signInReturn`, and `CONDUIT_VECTOR_THREADS=4 cargo test --release` passes, 242 tests in 28
+suites.

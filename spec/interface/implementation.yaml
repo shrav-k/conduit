@@ -1370,9 +1370,12 @@
   then: >-
     For sign-in.v1 the request must declare {"elicitation": {"url": {}}} in
     _meta.io.modelcontextprotocol/clientCapabilities; without it the engine answers -32021
-    with data.requiredCapabilities naming URL elicitation, sending no elicitation. An
-    enroll-machine.v1 request without it succeeds with enrollment and pendingAction IDs at
-    once and shows the action only at root's panel (ENR-003). With that capability tools/call
+    with data.requiredCapabilities naming URL elicitation, sending no elicitation. It does so
+    after the access decision and before any part is dispatched; the request is not
+    dispatched and reports invalid, recorded so, and the error holds in its data
+    io.github.shrav-k.conduit/reason with the value invalid, as IFC-036 has such an error hold
+    it. An enroll-machine.v1 request without it succeeds with enrollment and pendingAction IDs
+    at once and shows the action only at root's panel (ENR-003). With that capability tools/call
     may return InputRequiredResult with resultType input_required and exactly one
     inputRequests entry: elicitation/create with mode url, message and url. The message
     for enrollment names the enrollment and what follows, but holds no code, fingerprint
@@ -1428,7 +1431,7 @@
     never in its input request, which holds only mode, message and url.
     `io.github.shrav-k.conduit/signInReturn` holds {value, via} in an Interface's retry _meta,
     via being listener or paste, and {value} in the engine's sign-in-hook.v1 retry (IFC-006).
-    It appears in no result, notification or record. PND-013 alone accepts it, only from
+    It is kept nowhere (PND-014). PND-013 alone accepts it, only from
     the Interface that received the sign-in, in its bound session and invocation. No Agent
     receives a sign-in's URL, login metadata or return (PND-002, IFC-016).
   vectors: []

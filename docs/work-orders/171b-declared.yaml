@@ -1,0 +1,3 @@
+- name: a sign-in return is kept nowhere
+  kind: added
+  cases: [requests-sign-in-return-kept-nowhere]

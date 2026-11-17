@@ -217,7 +217,7 @@ lists each S1 promise's vectors, or the reason it has none.
 | [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 6 promises; vectors test slices of 6 promises |
 | [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, what a run is given to reach the engine, the gate before every server that the engine does not run itself, other than a `plain` server reached by `remote`, and how what answers at a run's URL proves itself, a stop that cannot be carried out now, and what the engine's own runner passes to a process; the machine provider, package sources, the provider call, and a provider's run made again after the engine restarts | Draft; 30 promises; vectors test slices of 9 promises |
 | [promises/enrollment.yaml](promises/enrollment.yaml) | Managed machine enrollment, provider evidence, root admission and refusal, expiry, fixed labels and removal questions (rulings 50, 51, 52, 56 and 68); six contracts live, capability and engine bindings staged for 049a and 049b | Draft; 12 promises; no vectors yet |
-| [promises/pending.yaml](promises/pending.yaml) | Pending actions, scope delivery, evidence, answers, sign-in, setup, notices and enrollment | Draft; 13 promises; no vectors yet |
+| [promises/pending.yaml](promises/pending.yaml) | Pending actions, scope delivery, evidence, answers, sign-in, setup, notices and enrollment | Draft; 14 promises; no vectors yet |
 | [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one and what else their type may offer, who may have one read, how the engine reads one before a run or a connection, and again once it has lost a connection's values, and where the value may go, a header that carries one among it | Draft; 24 promises; vectors test slices of 2 promises |
 | [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 147 documents exported and 1 implementation, which is also an export |
 | [core/conduit.yaml](core/conduit.yaml) | The core package's manifest: its address, its version, its exports and its one implementation, the engine itself | Draft |
@@ -251,7 +251,7 @@ lists each S1 promise's vectors, or the reason it has none.
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol, and the proof of who is who in both directions | Draft; 46 promises; vectors test slices of 23 promises |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its conformance document | Draft; 17 items |
 
-Every area has been written as promises, 519 in all: 226 of the layer `language`, 245 of the
+Every area has been written as promises, 520 in all: 226 of the layer `language`, 246 of the
 layer `convention` and 48 of the layer `interface`. The JSON Schemas of documents, contracts and
 manifests, the core package as documents and the manifest's file format exist: they are
 `schemas/`, `core/` and `promises/manifest.yaml`. The vectors and the core exist on
@@ -410,9 +410,11 @@ misrepresent evidence: the person compares the engine panel's own rendering. Vis
 action supplies no authority to answer it (PND-002, PND-009, PND-010).
 
 A missing login ends the request that encountered it; nothing is queued. After signing in,
-the caller sends a new request. A wrong account is undone and failed undo holds model work
-until a later account check in sign-in or setup clears it (PND-005, PND-011). The state
-directory isolates client state by instance identity, but another process under the same
+the caller sends a new request. A wrong account is undone, and a failed undo holds every request
+to that instance but the parts of sign-in, of a setup and of its retirement until a later
+account check in sign-in or setup clears it (PND-011). A sign-in action holds its instance until
+sign-in answers that it is signed in, whatever the action's expiry (PND-005). The state directory
+isolates client state by instance identity, but another process under the same
 operating-system user can read it: confinement remains the runtime provider's work (PRV-029,
 DL16). A5, the probe using the owner's second accounts, does not gate the S1 rerun; scripted
 vectors first prove the wrong-account undo, and A5 remains real-account evidence to obtain.

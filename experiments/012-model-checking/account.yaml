@@ -562,6 +562,11 @@
   class: safety
   standing: left to MC9
   note: FR-448 names MC9a, order 24 of the full review, for it. Classed by work order 181.
+- id: PND-014
+  class: safety
+  standing: left to MC9
+  note: Written by work order 171b from the rule that PND-013's observable held (F122). FR-448
+    names MC9a, order 24 of the full review, for PND-013. Classed by work order 171b.
 - id: PND-006
   class: safety
   standing: left to MC9

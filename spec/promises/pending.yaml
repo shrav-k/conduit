@@ -88,8 +88,8 @@
     record of a request. Inspection or export of answer records through a tool also withholds
     code and fingerprint values; storing them with the answer never authorizes returning them
     on the wire. The panel can display the full recorded evidence to a person permitted to
-    inspect the answer. A return is neither evidence nor a prompt. PND-013 alone governs it,
-    and only signInReturn carries it.
+    inspect the answer. A return is neither evidence nor a prompt. PND-013 and PND-014 alone
+    govern it, and only signInReturn carries it.
   vectors: []
 
 - id: PND-009
@@ -139,15 +139,22 @@
   level: must
   when: >-
     An instance whose Type states signIn has a string at its account pointer, and setup's
-    account-hook reports no account or a different account; or its implementation sends URL-
-    mode elicitation outside sign-in.v1; or its contract reports a missing or lapsed login.
+    account-hook reports no account or a different account; or the account-hook.v1 part that
+    sign-in.v1 dispatches before sign-in-hook.v1 reports a different account; or its
+    implementation sends URL-mode elicitation outside sign-in.v1; or its contract reports a
+    missing or lapsed login.
   then: >-
-    A sign-in action is raised for the instance, with expiry. Evidence names the expected
-    account, the login started by name and return, device user code where relevant, triggering
-    request and attempts with their results, subject to PND-004. Each return attempt lists its
-    via, time and result, never its value. Until answered, operations that start model work on
-    that instance are not dispatched and report unavailable with the action ID in
-    io.github.shrav-k.conduit/pendingAction.
+    A sign-in action is raised for the instance, with expiry, unless one is unanswered
+    (PND-001). Evidence names the expected account, the login started by name and return, device
+    user code where relevant, triggering request and attempts with their results, subject to
+    PND-004. Each return attempt lists its via, time and result, never its value. The instance
+    is then held until sign-in.v1 answers that it is signed in (PND-010, PND-011): an operation
+    that starts model work on an Agent, and any request to a Resource other than the parts of
+    sign-in.v1, of a setup and of its retirement, is not dispatched and reports unavailable with
+    the ID of the instance's unanswered sign-in action in
+    io.github.shrav-k.conduit/pendingAction, with a diagnostic naming PND-005 and that the
+    instance awaits sign-in to its expected account, without naming that account (PND-004). The
+    hold is the instance's, not the action's: an expiry lifts nothing.
   observable: >-
     Every held request is final. Nothing is queued, resumed or dispatched after it ends; the
     caller sends a new request. A mid-call URL elicitation ends that call unknown under
@@ -181,12 +188,17 @@
     succeeds with output account and answers any sign-in action signed-in. If that check
     succeeds with no account or another account, the engine invokes sign-in-hook.v1 as a
     part and relays its URL elicitation under IFC-049; that initial mismatch does not undo
-    the account or end sign-in.v1. Each retry polls account-hook.v1 to check the account
+    the account or end sign-in.v1. Another account found there raises the instance's sign-in
+    action under PND-005, unless one is unanswered, and counts as no account yet while
+    sign-in.v1 polls (PND-011). Each retry polls account-hook.v1 to check the account
     after the person's sign-in, under PND-011, until an account appears or DL18 ends; no
     account yet is not failed. The same invocation may answer another InputRequiredResult or
     block. Decline or cancel received on a retry ends failed. DL18 ending without completion
     ends unknown and no hook runs later. The operation starts no model work and resumes no
-    held request. Missing URL capability uses -32021 with requiredCapabilities, not invalid.
+    held request. A request that does not declare URL elicitation is decided after the access
+    decision and before any part: it gets the protocol's error -32021 with
+    requiredCapabilities, not the JSON-RPC error for invalid parameters, and reports invalid
+    under IFC-049.
     The engine passes the asked-for name to sign-in-hook.v1 (IFC-006), which starts that login
     or fails with a diagnostic naming PND-010 and why it could not. Without a name the hook
     chooses among the Type's logins. A plain hook gets no Conduit keys (IFC-007), hence no
@@ -207,14 +219,18 @@
     Only the expected account, compared ignoring ASCII case, completes sign-in. The check
     before sign-in-hook.v1 follows PND-010: no account or another account proceeds to that
     hook. During polling after its URL elicitation, the expected account succeeds with output
-    account and answers the action signed-in; a different account is undone by a
-    sign-out-hook.v1 part, sign-in.v1 ends failed naming both accounts, and the action stays
+    account and answers the action signed-in; the account that the check before sign-in-hook.v1
+    found counts as no account yet; any other account is undone by a sign-out-hook.v1 part,
+    sign-in.v1 ends failed naming both accounts, and the action stays
     pending with the attempt as evidence. A failed or unknown
     account hook does not complete sign-in, and its uncertainty is explained; no account yet
     during polling follows PND-010.
   observable: >-
-    If sign-out does not succeed, the engine reports SignInUndone=False with its cause and
-    holds back all model work. Only a later account-hook.v1 part within sign-in.v1 or setup
+    If sign-out does not succeed, the engine reports SignInUndone=False with its cause and,
+    until that condition clears, dispatches to that instance no request other than the parts
+    of sign-in.v1, of a setup and of its retirement: every other request to it, an operation
+    that starts its model work among them, reports unavailable, with a diagnostic naming
+    PND-011 and the condition. Only a later account-hook.v1 part within sign-in.v1 or setup
     that reports the expected account or none clears that condition; reconciliation never
     clears it. Hooks run only as parts of sign-in.v1 or setup, for that invocation's caller
     and filters, through no Conduit, never on an implementation notification. Setup checks
@@ -264,10 +280,7 @@
     naming the failed check. A return carrying error adds error: its RFC 6749 registered
     error code, or other for an unregistered code, never error_description or error_uri.
     Polling continues under PND-011. Undelivered ends nothing; the person may decline or
-    cancel (PND-010). No diagnostic holds a return, code, state, URL value, error_description
-    or error_uri. The value appears in no result, structuredContent, response _meta,
-    notification, diagnostic, log or record. It is none of the values REC-002 keeps. The
-    engine holds it in memory only until the hook retry ends; restart loses it.
+    cancel (PND-010). The value is kept nowhere (PND-014).
     signInReturn on a first sign-in.v1 request, any other operation's request, or a tasks/update
     is not a return: after access and before dispatch the request reports invalid in
     OPS-023's order, with a diagnostic naming PND-013 and the key, holding no value. For
@@ -291,6 +304,29 @@
     Where it cannot tell, or cannot bind the port, it opens none and asks the person to paste.
     Its listener answers only a request matching path, Host and state and stops after that
     request or at DL18. The engine cannot tell where a return came from (spec/README.md).
+  vectors: []
+
+- id: PND-014
+  layer: convention
+  level: must not
+  when: >-
+    An Interface's request or retry carries io.github.shrav-k.conduit/signInReturn, whether
+    or not PND-013 accepts it as a return, or the engine holds a return's value to pass to
+    sign-in-hook.v1.
+  then: >-
+    The value appears in a result, structuredContent, response _meta, notification,
+    diagnostic, log or record, is among the values REC-002 keeps, reaches an Agent, or stays
+    in the engine's memory after the sign-in-hook.v1 retry that passes it on has ended or,
+    where none passes it on, after the request that carried it has ended; or a diagnostic
+    holds its code, state, error_description or error_uri, or another URL value taken from it.
+  observable: >-
+    Only the package and login that started the sign-in receive an accepted value, in the
+    engine's sign-in-hook.v1 retry, a part of sign-in.v1, in that retry's own _meta (IFC-006,
+    PND-013); that retry's record holds neither the value nor signInReturn, and a restart
+    loses the value. A refused return's diagnostic names PND-013, the failed check and its
+    cause, and holds none of the value. A request that carries signInReturn where PND-013
+    takes no return reports invalid, with a diagnostic naming PND-013 and the key, and holds
+    no value.
   vectors: []
 
 - id: PND-006

@@ -689,6 +689,15 @@
       ]
     },
     {
+      "id": "requests-sign-in-return-kept-nowhere",
+      "case": "conventions/requests/sign-in-return-kept-nowhere/case.yaml",
+      "promises": [
+        "PND-014",
+        "PND-013"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-unknown-write",
       "case": "conventions/requests/unknown-write/case.yaml",
       "promises": [

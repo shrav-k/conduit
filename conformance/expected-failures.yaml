@@ -3,6 +3,14 @@
     {
       "id": "access-close-root-outside-bound",
       "reason": "The first build checks ACC-024 before the bound; ACC-056's order of refusing rules (work order 171a) makes ACC-029 decide. Order 046a builds that order."
+    },
+    {
+      "id": "requests-repeat-failed-earlier-succeeded",
+      "reason": "OPS-012, F13 of ruling 78 point 6 as ruling 80 point 2 refines it: the first build records failed when a new attempt is answered failed after an earlier attempt's late answer said succeeded; review order 22, the engine following SO-B, makes it pass and removes this entry"
+    },
+    {
+      "id": "requests-repeat-failed-earlier-unanswered",
+      "reason": "OPS-012, F13 of ruling 78 point 6: the first build records failed when a new attempt is answered failed while an earlier attempt has no answer; review order 22, the engine following SO-B, makes it pass and removes this entry"
     }
   ]
 }

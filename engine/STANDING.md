@@ -41,10 +41,10 @@ Each number counts promises. The last row counts those whose Engine source is no
 
 | Promises | language | convention | interface | all |
 | --- | ---: | ---: | ---: | ---: |
-| case passes | 129 | 141 | 22 | 292 |
+| case passes | 129 | 141 | 23 | 293 |
 | expected failure | 0 | 1 | 0 | 1 |
 | reason, no case | 57 | 15 | 2 | 74 |
-| no case, no reason | 40 | 88 | 24 | 152 |
+| no case, no reason | 40 | 88 | 23 | 151 |
 | all | 226 | 245 | 48 | 519 |
 | named in engine source | 140 | 155 | 22 | 317 |
 
@@ -150,7 +150,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | IFC-003 | interface | may | 0 | 0 | outside | none | no case, no reason |
 | IFC-004 | interface | must | 0 | 0 | outside | none | no case, no reason |
 | IFC-005 | interface | must | 0 | 0 | outside | none | no case, no reason |
-| IFC-006 | interface | must | 0 | 0 | outside | none | no case, no reason |
+| IFC-006 | interface | must | 2 | 1 | outside | none | case passes |
 | IFC-007 | interface | must not | 1 | 0 | cases | core | case passes |
 | IFC-008 | interface | must | 2 | 0 | outside | core | case passes |
 | IFC-009 | interface | must | 10 | 0 | outside | core | case passes |
@@ -342,7 +342,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | OPS-009 | convention | must | 12 | 0 | cases | core | case passes |
 | OPS-010 | convention | must | 3 | 0 | cases | core | case passes |
 | OPS-011 | convention | must | 1 | 0 | cases | core | case passes |
-| OPS-012 | convention | must | 21 | 0 | cases | core | case passes |
+| OPS-012 | convention | must | 24 | 2 | cases | core | case passes |
 | OPS-013 | convention | must | 4 | 0 | cases | core, shell | case passes |
 | OPS-014 | convention | must | 6 | 0 | cases | core | case passes |
 | OPS-018 | convention | must not | 4 | 0 | cases | core | case passes |

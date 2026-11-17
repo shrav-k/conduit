@@ -76,9 +76,11 @@
     request's `_meta`. The meaning of Conduit's keys and of an outcome is the same at every
     revision.
   observable: >-
-    A request that the implementation rejects for its revision, with the protocol's JSON-RPC
-    error for an unsupported version, is sent again at a revision both support, under IFC-046,
-    and is one invocation, not two.
+    A request for an operation whose contract states no `effect`, that is not a control and
+    starts no model work, and that the implementation rejects for its revision with the
+    protocol's JSON-RPC error for an unsupported version, is sent again at a revision both
+    support, under IFC-046, and is one invocation, not two. Any other request so rejected ends
+    unknown, under IFC-046.
   vectors: []
 
 - id: IFC-004
@@ -139,7 +141,15 @@
   observable: >-
     The instance is given by its ID, the operation by its qualified reference, the invocation by
     the ID the engine gives every invocation, the caller by its ID, the Conduit by its ID, and
-    the revision as REV-001 gives it. The configuration is the instance's as it is stored, its
+    the revision as REV-001 gives it. Every attempt of one invocation carries the same
+    `io.github.shrav-k.conduit/invocation`, and no other invocation carries it, so an
+    implementation that deduplicates under CTR-002 recognizes an invocation by it.
+    `io.github.shrav-k.conduit/idempotencyKey` is unique only within the scope that OPS-008
+    gives it, and the instance that sent the request is not sent, so an implementation tells one
+    invocation from another by the invocation's ID and never by the idempotency key alone. No
+    attempt number is sent: no key of Conduit's says which attempt of an invocation a call is,
+    or which of two attempts was sent first. The configuration is the instance's as it is
+    stored, its
     references in the resolved form of OBJ-009, and a place that `secret-reference.v1` governs
     holds only the reference, never a secret. So an implementation learns its instance's
     configuration, such as the directory it is to serve, from every request. The key
@@ -1278,20 +1288,22 @@
     protocol's error for a revision that it does not support, and the engine has not sent that
     call once more already.
   then: >-
-    After -32020 the engine sends the call once more only for an operation whose contract
-    states no `effect`, that is not a control and starts no model work; it first reads the
-    implementation's `tools/list` again. Otherwise it ends the invocation
-    unknown and sends nothing more. After an error for the revision it sends the call once
-    more at a revision that both support, where there is one. The two are one call, and what
-    it ends with is read from the response to the second.
+    After -32020, or after the protocol's error for a revision that the implementation does not
+    support, the engine sends the call once more only for an operation whose contract states no
+    `effect`, that is not a control and starts no model work; any other invocation it ends
+    unknown, and it sends nothing more. After -32020 it first reads the implementation's
+    `tools/list` again, and after an error for the revision it sends the call at a revision that
+    both support, where there is one. The two are one call, and what it ends with is read from
+    the response to the second.
   observable: >-
-    The protocol's -32020 gives no guarantee that a plain server has not acted, so an effectful
-    call is never repeated after that code. A deduplicates mark does not authorize a resend,
+    Neither the protocol's -32020 nor its error for an unsupported version guarantees that a
+    server has not acted, so a call of an operation outside that class is never sent again after
+    either. A deduplicates mark does not authorize a resend,
     and neither does an annotation's idempotentHint. A plain call receives no idempotency
     key under IFC-007. The protocol has a client
     read the tool list again after -32020, and send a call again at another revision after a
     version error, under IFC-001 and IFC-003; the safety condition above governs the resend
-    after -32020. A call for a request or a hook sent so is
+    after both. A call for a request or a hook sent so is
     one dispatch of one attempt, under IMP-007, and one invocation, not two: its first error is
     read neither as an outcome, under IFC-010 and OPS-007, nor as a reason. Where no revision
     is supported by both, or the second call is rejected again, nothing more is sent, and that

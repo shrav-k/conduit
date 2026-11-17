@@ -40,8 +40,10 @@
     outputs. A handle is a top-level property whose schema is `{$ref:
     github.com/shrav-k/conduit/core#handle.v1}` and which states no `default`. The `spec` may
     further hold `effect`, a statement of what it changes outside itself; `startsModelWork`;
-    `deduplicates`, the mark of an operation whose implementation recognizes an idempotency key
-    that it has already been sent and applies the effect at most once for it; `reservedToRoot`,
+    `deduplicates`, the mark of an operation whose implementation recognizes an invocation that
+    it has already been sent, by the engine's ID for it, which every attempt of it carries in
+    `io.github.shrav-k.conduit/invocation` under IFC-006, and applies the effect at most once
+    for it; `reservedToRoot`,
     the mark of an operation reserved to the root Interface; for a control, `changes`, as
     CTR-006 states; and the booleans `idempotentHint`, `destructiveHint` and `openWorldHint`.
   observable: >-

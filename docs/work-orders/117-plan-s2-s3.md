@@ -71,8 +71,8 @@ Not all of this is in the tree. Check what you can against it, and report any di
    rerun measures it. An order that changes the starting snapshot of the vectors, root's tools, or
    what S1's author does, waits for the pin unless the admin places it on a side branch. After
    the pin, the scenarios' core orders build on `main`, in two or three lanes at once.
-   - **Batch 1's orders, as the coordinators split them** (sizes before the pipeline's fixes).
-     Batch 1's plan has only 046, 048a, 048b, 050 and 052a; the splits are:
+   - **Batch 1's orders, as the coordinators split them** (sizes before the pipeline's fixes). Batch
+     1's plan has only 046, 047, 048a, 048b, 050 and 052a; the splits are:
      - 070 (E1): the core stops copying the whole state per transition. M-L. 071 (S0a): the
        manifest in pieces, vectors in parallel. M-L. 072 (LST): `list.v1` in the shell. XS.
      - S0b: the core's seams: an operations registry, the coming State maps (tombstones, pending
@@ -86,9 +86,16 @@ Not all of this is in the tree. Check what you can against it, and report any di
        vectors, with F3's other vectors, to a separate admin order not yet numbered, because F2
        needs ruling 80's repeat exemption. Each is the coordinator's choice, for FR-264, open to
        the owner's strike.
-     - 047: the pending-action core. L. After 046c. 048a-1: CTR-013 in the loader, IFC-016's
+     - 047: the pending-action core. L. After 046c. The coordinator cuts it into four, each after
+       the one before (FR-264; the coordinator's, open to the owner's strike): 047, the setup
+       action (PND-006), computed and raised at root's own inspection of its instance until it
+       expires, S-M; 047b, where actions are raised: root and each Interface whose scope holds a
+       subject, evidence disclosed only as inspection allows, `list.v1`'s `pending` output and
+       the `unanswered` key; 047c, `answer.v1` in place of its stub, with stored answers; 047d,
+       the notice kind (PND-007). 048a-1: CTR-013 in the loader, IFC-016's
        detection, the signIn fixture Type. M. 048a-2: sign-in as a kind of pending action,
-       PND-005, SignInUndone. L. After 047 and 048a-1. Order 048a1, as written, moves IFC-016's
+       PND-005, SignInUndone. L. After 047, 047b, 047c and 048a-1 (the coordinator's, open to the
+       owner's strike). Order 048a1, as written, moves IFC-016's
        detection from 048a-1 to 048a-2, which raises PND-005, its other half (the coordinator's
        decision, open to the owner's strike), and leaves CTR-013's comparisons across Types
        (client IDs across addresses, confirmClientIds, REC-002, the logins outputs of install.v1
@@ -98,11 +105,59 @@ Not all of this is in the tree. Check what you can against it, and report any di
        048b-join: S-M. After 048a-2. 051a: shell commands (`list`, `fleet`, `retire
        --with-resources`). M. After 042 and S0c. 051b: the pending-action commands `pending`,
        `sign-in` and `answer`. M. After 047 and 048b-join.
-     - 050: the Agent packages 0.2.0, with each Agent's home, the login flows and the sign-in
-       hooks, built on orders 050a and 076 (the `.v2` Types and their clients' own tools), whose
-       work is on their branches, not yet on `main`. M plus a run. After 048b-join. Its .v2 Types
-       state the fixture's shape that order 048a1's decision 6 gives: account required with no
-       default, apiKey defaulting to null, the oneOf unchanged.
+     - 050: the Agent packages 0.2.0, with each Agent's home, the login flows and the sign-in hooks,
+       built on orders 050a and 076 (the `.v2` Types and their clients' own tools), whose work is on
+       their branches, not yet on `main`. M plus a run. After 048b-join in the merging (ruling 82,
+       point 3), which binds 0.2.0, the packages that 050n merges. Its .v2 Types state the fixture's
+       shape that order 048a1's decision 6 gives: account required with no default, apiKey
+       defaulting to null, the oneOf unchanged. The coordinator cuts it into 050b to 050o (FR-264;
+       the coordinator's, open to the owner's strike), continuing 050a's letters, each with what it
+       comes after:
+       - 050b, spec: the connection Conduit manages for a Claude sign-in, F95, the three stale
+         route texts, and Codex's browser-opens limit. After ruling 82 and order 199.
+       - 050c, each `.v2` Agent's own client home inside its state directory. After the stack's
+         rebase onto `main` and order 045.
+       - 050d, the `.v2` wrappers stop their client's whole process tree (the full review's
+         order 16). After 050c.
+       - 050e, failed turns as fields, with a network class, and a lapsed login in a turn (the
+         full review's order 17). After 050d, and 048a-2 written.
+       - 050f, the `.v2` inputs: account, an explicit apiKey, toolsDirectory, and the
+         description sentences (i) and (ii). After 050e, 048a-1 merged with the branch rebased
+         onto it, and the coordinator's choice of where a set apiKey is refused at setup.
+       - 050g, desk reads: what each client's logout revokes, and the scope of each. A paper
+         order; after nothing.
+       - 050h, the retire hook: each `.v2` Agent signs out at retirement (D53). After 050f and
+         050g's outcome recorded. Its tip is where the two lanes split.
+       - 050i, claude-code.v2's account and sign-out hooks. After 050h, and 048a-2 written.
+       - 050j, claude-code.v2 states signIn, with its redirect login and sign-in hook. After 050i,
+         and 048a-1 merged with the branch rebased onto it.
+       - 050k, claude-code.v2's code-page login, chosen by signInLogin. After 050j.
+       - 050l, codex.v2's account hook asks Codex itself through account/read, and its sign-out
+         hook. After 050h, the coordinator's reading that order 197 confirms the route (if not,
+         the owner first, under ruling 82, point 1), and 048a-2 written.
+       - 050m, codex.v2 states signIn: its browser login, its device login refused, and its keyed
+         sign-in hook. After 050l, and 048a-1 merged with the lane rebased onto it.
+       - 050n, the Agent packages 0.2.0, joined and merged, the last 050 order. After 048b-join
+         merged, the live check (A5 stage 1, step 1) run and its results merged with A5's row,
+         050b merged, and 050k and, on a pass, 050m.
+       - 050o, the managed connection for a Claude sign-in, built in the Interface. After 051b
+         merged (and so 048b-join and 048a-2), and 050b merged.
+
+       How they merge: 050c to 050h stack on one branch, built on 050a's, 076's and 078's work
+       rebased onto `main`, and rebased again after 048a-1 and after 048b-join. From 050h it splits
+       into a Claude lane (050i to 050k) and a Codex lane (050l and 050m), which run in parallel.
+       None of them merges alone: each is a checkpoint with its Record in its own order file, and
+       050n carries them to `main` as one change, with the Codex lane only if the live check passed.
+       No archive built from the Codex lane, or from any unmerged 0.2.0, is ever installed as
+       codex.v2; the dogfood store keeps its 076-branch archive until 0.2.0 merges. 050b, 050g and
+       050o merge to `main` on their own: 050b and 050g at any time, 050o after 051b. That 050b and
+       050g, which hold no package, may merge before 048b-join is the coordinator's reading of
+       ruling 82, point 3, open to the owner's strike. The split's open points stay with the
+       coordinator, and those it names for the owner with the owner: the live check's time, which
+       the owner picks, told first; on a fail of it, Codex's route, with FR-118, and any departure
+       from failing setup where apiKey is set (ruling 82, point 1); order 197's route only if the
+       coordinator does not read it as confirming; and each dogfood slot's one sign-in after 0.2.0
+       and 051b.
      - 052a-1 and 052a-2: plan and apply. L each. After 069 (K3), 043b, 042 and 051a. The
        plan-and-apply golden cases and README keep agents-0.2.0's old digest (`479ef470...`)
        until 052a-1, or whichever of the two first builds plan against those cases, re-pins it,

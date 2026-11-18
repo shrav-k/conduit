@@ -10,6 +10,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
+use url::Url;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -599,6 +600,8 @@ impl Catalog {
                 if d["kind"] == "Type" {
                     let name = &d["metadata"]["name"];
                     let pointer = d["spec"]["toolsDirectory"]["directory"].as_str();
+                    let sign_in = &d["spec"]["signIn"];
+                    let account = sign_in["account"].as_str();
                     if let Some(pointer) = pointer
                         && let Err(cause) = binding_parts(
                             &env,
@@ -618,6 +621,31 @@ impl Catalog {
                             format!("{scope}: Type {name} toolsDirectory {pointer}: {cause}"),
                         ));
                     }
+                    if let Some(account) = account
+                        && let Err(cause) = binding_parts(
+                            &env,
+                            vec![BindingPart {
+                                scope: scope.clone(),
+                                root: d["spec"]["schema"].clone(),
+                                schema: d["spec"]["schema"].clone(),
+                                secret: false,
+                            }],
+                            &pointer_tokens(account),
+                            core,
+                            true,
+                        )
+                    {
+                        diagnostics.push(diag(
+                            "CTR-013",
+                            format!("{scope}: Type {name} signIn account {account}: {cause}"),
+                        ));
+                    }
+                    for text in sign_in_login_faults(&sign_in["logins"]) {
+                        diagnostics.push(diag(
+                            "CTR-013",
+                            format!("{scope}: Type {name} signIn: {text}"),
+                        ));
+                    }
                     for control in strings(&d["spec"], "controls") {
                         let (target, control_name) =
                             resolve_name(&env, &indexes, scope, control, "Operation", core)
@@ -635,6 +663,14 @@ impl Catalog {
                             diagnostics.push(diag(
                                 "CTR-014",
                                 format!("{scope}: Type {name} toolsDirectory {pointer}: {cause}"),
+                            ));
+                        }
+                        if let Some(account) = account
+                            && let Some(cause) = own_tools_control_fault(control, spec, account)
+                        {
+                            diagnostics.push(diag(
+                                "CTR-013",
+                                format!("{scope}: Type {name} signIn account {account}: {cause}"),
                             ));
                         }
                     }
@@ -1177,6 +1213,130 @@ fn own_tools_control_fault(control: &str, spec: &Value, pointer: &str) -> Option
     })
 }
 
+struct SignInLogin<'a> {
+    index: usize,
+    name: &'a str,
+    return_kind: &'a str,
+    authorization: &'a str,
+    value: &'a Value,
+}
+
+fn sign_in_login_faults(logins: &Value) -> Vec<String> {
+    let Some(logins) = logins.as_array() else {
+        return Vec::new();
+    };
+    // Schema validation follows resolution. Keep the original indices when skipping
+    // malformed logins so diagnostics always name positions in the Type's list.
+    let logins: Vec<_> = logins
+        .iter()
+        .enumerate()
+        .filter_map(|(index, value)| {
+            Some(SignInLogin {
+                index,
+                name: value.get("name")?.as_str()?,
+                return_kind: value.get("return")?.as_str()?,
+                authorization: value.get("authorization")?.as_str()?,
+                value,
+            })
+        })
+        .collect();
+
+    let mut faults = Vec::new();
+    let mut first_named = BTreeMap::new();
+    for login in &logins {
+        let first = *first_named.entry(login.name).or_insert(login.index);
+        if first != login.index {
+            faults.push(format!(
+                "logins {first} and {} are both named {}",
+                login.index,
+                json!(login.name)
+            ));
+        }
+    }
+    for (position, a) in logins.iter().enumerate() {
+        for b in &logins[position + 1..] {
+            if let Some(reason) = sign_in_login_overlap(a, b) {
+                // Split so tools/promise_standing.py does not count the interface rule as built:
+                // the engine only cites it in this text; CTR-013 makes the decision.
+                let url_checks = concat!("IFC-", "049");
+                faults.push(format!(
+                    "logins {} {} and {} {} could both pass {url_checks}'s checks for one URL: {reason}",
+                    a.index,
+                    json!(a.name),
+                    b.index,
+                    json!(b.name)
+                ));
+            }
+        }
+    }
+    faults
+}
+
+fn sign_in_login_overlap(a: &SignInLogin<'_>, b: &SignInLogin<'_>) -> Option<&'static str> {
+    let same_authorization = match (Url::parse(a.authorization), Url::parse(b.authorization)) {
+        (Ok(a), Ok(b)) => a.origin() == b.origin() && a.path() == b.path(),
+        _ => a.authorization == b.authorization,
+    };
+    if !same_authorization {
+        return None;
+    }
+
+    let same_string_member = |a: &Value, b: &Value, member: &str| {
+        a[member]
+            .as_str()
+            .is_some_and(|a| Some(a) == b[member].as_str())
+    };
+    let a_redirect = &a.value["redirect"];
+    let b_redirect = &b.value["redirect"];
+    match (a.return_kind, b.return_kind) {
+        ("device", "device") => {
+            Some("both are device logins with the same authorization origin and path")
+        }
+        ("redirect", "redirect")
+            if same_string_member(a.value, b.value, "clientId")
+                && same_string_member(a_redirect, b_redirect, "host")
+                && same_string_member(a_redirect, b_redirect, "path")
+                && sign_in_ports_overlap(&a_redirect["ports"], &b_redirect["ports"]) =>
+        {
+            Some(
+                "both are redirect logins with the same authorization origin and path, client ID, host and path, and ports that overlap",
+            )
+        }
+        ("page" | "service", "page" | "service")
+            if same_string_member(a.value, b.value, "clientId") =>
+        {
+            let a = a.value["page"].as_str()?;
+            let b = b.value["page"].as_str()?;
+            let same_page = match (Url::parse(a), Url::parse(b)) {
+                (Ok(a), Ok(b)) => a == b,
+                _ => a == b,
+            };
+            same_page.then_some("both return to the same page with the same authorization origin and path and client ID")
+        }
+        _ => None,
+    }
+}
+
+fn sign_in_ports_overlap(a: &Value, b: &Value) -> bool {
+    // JSON Schema also accepts numbers such as 8400.0 as integers. The schema's
+    // port range is exactly representable as f64.
+    let integer = |port: &Value| port.as_f64().filter(|port| port.fract() == 0.0);
+    let valid = |ports: &Value| {
+        ports == "any"
+            || ports
+                .as_array()
+                .is_some_and(|ports| ports.iter().all(|port| integer(port).is_some()))
+    };
+    valid(a)
+        && valid(b)
+        && (a == "any"
+            || b == "any"
+            || a.as_array().zip(b.as_array()).is_some_and(|(a, b)| {
+                a.iter()
+                    .any(|port| b.iter().any(|other| integer(port) == integer(other)))
+            }))
+}
+
 fn listed_control_faults(spec: &Value) -> Option<String> {
     let mut faults = vec![];
     if spec["inputSchema"]["properties"].get("revision").is_none() {
@@ -1503,6 +1663,91 @@ fn file_reference(base: &UriRef<&str>, reference: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn sign_in_login_faults_name_duplicates_and_overlaps() {
+        let redirect = json!({
+            "name": "browser",
+            "return": "redirect",
+            "authorization": "https://example.org/authorize",
+            "clientId": "c1",
+            "redirect": {"host": "127.0.0.1", "ports": [8400, 8401], "path": "/callback"},
+            "carried": true
+        });
+        let device = json!({
+            "name": "device",
+            "return": "device",
+            "authorization": "https://example.org/device",
+            "clientId": "c1"
+        });
+        let page = json!({
+            "name": "page",
+            "return": "page",
+            "authorization": "https://example.org/authorize",
+            "clientId": "c1",
+            "page": "https://example.org/code",
+            "carried": false
+        });
+        let service = json!({
+            "name": "service",
+            "return": "service",
+            "authorization": "https://example.org/authorize",
+            "clientId": "c1",
+            "page": "https://example.org/code"
+        });
+
+        let faults = |first: &Value, second: &Value| sign_in_login_faults(&json!([first, second]));
+        assert_eq!(faults(&redirect, &device), Vec::<String>::new());
+
+        let device_text = concat!(
+            r#"logins 0 "device" and 1 "device-2" could both pass IFC-"#,
+            "049's checks for one URL: both are device logins with the same authorization origin and path"
+        );
+        let mut other_device = device.clone();
+        other_device["name"] = json!("device-2");
+        other_device["clientId"] = json!("c2");
+        assert_eq!(faults(&device, &other_device), [device_text]);
+        other_device["clientId"] = json!("c1");
+        other_device["authorization"] = json!("https://EXAMPLE.org:443/device");
+        assert_eq!(faults(&device, &other_device), [device_text]);
+
+        let mut other_redirect = redirect.clone();
+        other_redirect["name"] = json!("browser-any");
+        other_redirect["redirect"]["ports"] = json!("any");
+        let redirect_text = concat!(
+            r#"logins 0 "browser" and 1 "browser-any" could both pass IFC-"#,
+            "049's checks for one URL: both are redirect logins with the same authorization origin and path, client ID, host and path, and ports that overlap"
+        );
+        assert_eq!(faults(&redirect, &other_redirect), [redirect_text]);
+        other_redirect["redirect"]["ports"] = json!([8401.0]);
+        assert_eq!(faults(&redirect, &other_redirect), [redirect_text]);
+        other_redirect["name"] = json!("browser-2");
+        other_redirect["redirect"]["ports"] = json!([8402]);
+        assert_eq!(faults(&redirect, &other_redirect), Vec::<String>::new());
+        other_redirect["redirect"]["ports"] = json!([8400, 8401]);
+        other_redirect["redirect"]["host"] = json!("localhost");
+        assert_eq!(faults(&redirect, &other_redirect), Vec::<String>::new());
+        other_redirect["redirect"]["host"] = json!("127.0.0.1");
+        other_redirect["clientId"] = json!("c2");
+        assert_eq!(faults(&redirect, &other_redirect), Vec::<String>::new());
+
+        assert_eq!(
+            faults(&page, &service),
+            [concat!(
+                r#"logins 0 "page" and 1 "service" could both pass IFC-"#,
+                "049's checks for one URL: both return to the same page with the same authorization origin and path and client ID"
+            )]
+        );
+        let mut same_name = redirect.clone();
+        same_name["redirect"]["ports"] = json!([8402]);
+        assert_eq!(
+            faults(&redirect, &same_name),
+            [r#"logins 0 and 1 are both named "browser""#]
+        );
+        let mut mixed = redirect.clone();
+        mixed["authorization"] = json!("https://example.org/device");
+        assert_eq!(faults(&device, &mixed), Vec::<String>::new());
+    }
+
     #[test]
     fn own_tools_control_pointers_compare_decoded_reference_tokens() {
         for (a, b) in [

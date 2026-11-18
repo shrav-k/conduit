@@ -140,7 +140,8 @@
           }
         },
         "required": [
-          "account"
+          "account",
+          "apiKey"
         ],
         "type": "object"
       }
@@ -217,7 +218,8 @@
           }
         },
         "required": [
-          "account"
+          "account",
+          "apiKey"
         ],
         "type": "object"
       }

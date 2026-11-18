@@ -40,6 +40,14 @@
         "SUB-005"
       ],
       "safety_rows": []
+    },
+    {
+      "id": "contracts-sign-in-resolution",
+      "case": "language/contracts/sign-in-resolution/case.yaml",
+      "promises": [
+        "CTR-013"
+      ],
+      "safety_rows": []
     }
   ]
 }

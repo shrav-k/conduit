@@ -1,3 +1,4 @@
+# Checked at the merge of order 048a-1, against main at 9472f5d4: the work's vector delta matches these shapes.
 - name: contracts-sign-in-resolution
   kind: added
   cases: [contracts-sign-in-resolution]

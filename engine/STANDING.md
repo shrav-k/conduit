@@ -46,7 +46,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | reason, no case | 57 | 15 | 2 | 74 |
 | no case, no reason | 40 | 85 | 22 | 147 |
 | all | 226 | 246 | 48 | 520 |
-| named in engine source | 140 | 156 | 23 | 319 |
+| named in engine source | 141 | 156 | 23 | 320 |
 
 ## The promises
 
@@ -119,7 +119,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | CTR-008 | language | must | 0 | 0 | reason | none | reason, no case |
 | CTR-009 | language | must | 0 | 0 | reason | none | reason, no case |
 | CTR-012 | language | must | 0 | 0 | reason | none | reason, no case |
-| CTR-013 | language | must | 2 | 0 | outside | none | case passes |
+| CTR-013 | language | must | 3 | 0 | outside | core | case passes |
 | CTR-014 | language | must | 6 | 0 | outside | core | case passes |
 | ENR-001 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | ENR-002 | convention | must | 0 | 0 | outside | none | no case, no reason |

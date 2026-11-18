@@ -56,10 +56,10 @@
 # that the place each pointer of `signIn` and `toolsDirectory` names and every member on its
 # path are required by the Type's `schema`, and the place is confined to string or null
 # (CTR-013, CTR-014), which relate values in one document; that no control of a Type stating
-# `toolsDirectory` has `changes` reaching its place (CTR-014), which needs the contracts of
-# the controls; that a `default` satisfies its schema (SCH-019); compatibility between
-# releases (NAM-024); and CTR-013's other rules: the three hooks, distinct login names, no
-# URL matching two logins, and client IDs shared across addresses.
+# `signIn` or `toolsDirectory` has `changes` reaching its place (CTR-013, CTR-014), which
+# needs the contracts of the controls; that a `default` satisfies its schema (SCH-019);
+# compatibility between releases (NAM-024); and CTR-013's other rules: distinct login names,
+# no URL matching two logins, and client IDs shared across addresses.
 # tools/check_schemas.py also checks some of these, as far as the documents in front of it show:
 # spec/schemas/README.md, "What a schema cannot express", says which.
 # Standing: draft specification; see spec/README.md for status and coverage.

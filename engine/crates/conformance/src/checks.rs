@@ -160,6 +160,7 @@ impl Checks {
                     "invocation-ended",
                     "provider-call",
                     "object-change",
+                    "pending-action-answered",
                 ]
                 .iter()
                 .any(|e| r["type"] == *e)

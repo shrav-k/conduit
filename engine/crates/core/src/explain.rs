@@ -1,5 +1,5 @@
 //! IFC-050 / ACC-056: public explanations, with disclosure determined by the sender.
-use crate::{Context, Result, State, access, inventory, schemas};
+use crate::{Context, Result, State, access, inventory, pending, schemas};
 use chrono::{DateTime, FixedOffset};
 use serde_json::{Value, json};
 use std::cmp::Reverse;
@@ -90,6 +90,10 @@ pub const REFUSAL_CAUSES: &[(&str, &str)] = &[
     (
         "LIF-034",
         "First-start objects are protected against retirement and unregistration.",
+    ),
+    (
+        "PND-009",
+        "Only an Interface acting on its own behalf may answer an action raised there, with the required Conduit; other consumers may not open a Conduit listing answer.",
     ),
     (
         "SEC-007",
@@ -359,6 +363,27 @@ fn closed_operation<'a>(
     operation.into()
 }
 
+fn answer_refusal_target<'a>(
+    state: &'a State,
+    route: &Value,
+    c: &Context,
+) -> Result<Option<&'a Value>> {
+    let Some(sender) = access::object_by_id(state, &route["consumer"]) else {
+        return Ok(None);
+    };
+    let Some(action) = pending::action_for_answer(
+        state,
+        sender,
+        route["serving"].as_str(),
+        &route["arguments"]["action"],
+        c,
+    ) else {
+        return Ok(None);
+    };
+    let target = access::action_inspection_target(state, &action, c)?;
+    Ok(access::object_by_id(state, target))
+}
+
 pub(crate) fn tier(state: &State, route: &Value, c: &Context) -> Result<u8> {
     let sender = &route["consumer"];
     if is_root(state, sender, c) {
@@ -384,18 +409,12 @@ pub(crate) fn tier(state: &State, route: &Value, c: &Context) -> Result<u8> {
     } else {
         return Ok(1);
     };
-    // ACC-033 rows 9 (enrollment), 16 and 17 are missing from routing.
+    // ACC-033 rows 9 (enrollment) and 16 are missing from routing.
     // The default Conduit target cannot establish disclosure for those operations.
     if matches!(
         op.strip_prefix(&c.core_package)
             .and_then(|op| op.strip_prefix('#')),
-        Some(
-            "enroll-machine.v1"
-                | "admit-machine.v1"
-                | "refuse-machine.v1"
-                | "sign-in.v1"
-                | "answer.v1"
-        )
+        Some("enroll-machine.v1" | "admit-machine.v1" | "refuse-machine.v1" | "sign-in.v1")
     ) {
         return Ok(1);
     }
@@ -411,7 +430,11 @@ pub(crate) fn tier(state: &State, route: &Value, c: &Context) -> Result<u8> {
     } else {
         args
     };
-    let (target, named) = access::routing(state, &view, path, &op, routing_args, c)?;
+    let (target, named) = if op == c.qualified("answer.v1") {
+        (answer_refusal_target(state, route, c)?, None)
+    } else {
+        access::routing(state, &view, path, &op, routing_args, c)?
+    };
     let Some(target) = target else {
         return Ok(1);
     };
@@ -532,7 +555,8 @@ pub(crate) fn access_route(state: &State, request: &access::AccessRequest, c: &C
         })
         .unwrap_or_else(|| request.tool.clone());
     json!({"consumer":sender.map(|s| &s["id"]), "tool":request.tool,
-        "operation":operation, "conduit":path.map(|p| &p["id"]), "target":path.map(|p| &p["target"]), "arguments":request.arguments})
+        "operation":operation, "conduit":path.map(|p| &p["id"]), "target":path.map(|p| &p["target"]), "arguments":request.arguments,
+        "serving":request.serving})
 }
 
 pub(crate) fn ids(request: &crate::Request, arguments: Value) -> Value {
@@ -614,6 +638,7 @@ fn acc033_target(state: &State, route: &Value, c: &Context) -> String {
             "management".into()
         }
         Some("open.v1" | "close.v1" | "lift.v1") => "access".into(),
+        Some("answer.v1") => "the target that authorizes inspection of the action's subject".into(),
         Some("set-up.v1" | "retire.v1" | "inspect.v1") => {
             let reference = args
                 .get("instance")
@@ -754,10 +779,22 @@ pub(crate) fn diagnostic(
     if tier == 2 {
         let sender = &route["consumer"];
         let path = path.filter(|path| is_root(state, sender, c) || sender_live_path(path, sender));
-        let target = if let Some(path) = path {
+        let stone = path
+            .is_none()
+            .then(|| closed_path(state, route, c))
+            .flatten();
+        let presented = if let Some(path) = path {
             access::object(state, &path["target"])
         } else {
-            closed_path(state, route, c).and_then(|stone| stone.get("target"))
+            stone.and_then(|stone| stone.get("target"))
+        };
+        // The operation that tier() resolved, through a closed Conduit as well.
+        let resolved = stone.map_or(operation.into(), |stone| closed_operation(stone, route, c));
+        // PND-009 never resolves an action in the diagnostic, even at root.
+        let target = if resolved == c.qualified("answer.v1") && rule != "PND-009" {
+            answer_refusal_target(state, route, c)?.or(presented)
+        } else {
+            presented
         };
         let mut conduits = vec![];
         if let Some(target) = target {
@@ -1278,7 +1315,6 @@ pub(crate) mod tests {
         expected_inspection(&s, &c, "v", "management", false);
         for op in [
             "sign-in.v1",
-            "answer.v1",
             "enroll-machine.v1",
             "admit-machine.v1",
             "refuse-machine.v1",
@@ -1295,6 +1331,87 @@ pub(crate) mod tests {
             assert_eq!(r["tier"], 1, "{op}");
             assert!(r.get("target").is_none());
         }
+    }
+
+    #[test]
+    fn answer_refusals_disclose_only_the_authority_the_caller_may_inspect() {
+        let (mut s, c) = inspector_fixture();
+        let operation = c.qualified("answer.v1");
+        item_mut(&mut s, "v-x")["operations"] = json!([operation]);
+        inspection(&mut s, "p", &c);
+        s.invocations.push(
+            json!({"id":"setup","operation":c.qualified("set-up.v1"),"object":"x",
+            "state":"failed","ended":{"time":"2026-11-09T12:00:00Z","outcome":"failed"}}),
+        );
+        let route = |state: &State, action| {
+            access_route(
+                state,
+                &request(
+                    "v",
+                    "x.answer.v1",
+                    json!({"action":action,"answer":"dismissed"}),
+                ),
+                &c,
+            )
+        };
+        let wrong_target = refusal(&s, &c, &route(&s, "setup"), "ACC-033");
+        assert_eq!(wrong_target["tier"], 1);
+        assert!(wrong_target.get("target").is_none());
+
+        inspection(&mut s, "management", &c);
+        let wrong_target = refusal(&s, &c, &route(&s, "setup"), "ACC-033");
+        assert_eq!(wrong_target["tier"], 2);
+        assert_eq!(wrong_target["target"]["id"], "p");
+        assert_eq!(wrong_target["conduits"][0]["as"], "p");
+
+        // Through a closed Conduit whose kept target, x, is not the authorizing one, p.
+        let mut closed_state = s.clone();
+        closed_state.objects.retain(|o| o["id"] != "v-x");
+        let mut closed = stone(&closed_state, "answer", "v", "x", "2026-11-11T13:00:00Z");
+        closed["localName"] = json!("x");
+        closed["operations"] = json!([operation]);
+        closed_state.tombstones.insert("answer".into(), closed);
+        let closed_route = route(&closed_state, "setup");
+        assert_eq!(closed_route["conduit"], Value::Null);
+        let wrong_target = refusal(&closed_state, &c, &closed_route, "ACC-033");
+        assert_eq!(wrong_target["tier"], 2);
+        assert_eq!(wrong_target["target"]["id"], "p");
+        assert_eq!(wrong_target["conduits"][0]["as"], "p");
+        item_mut(&mut closed_state, "v-p")["open"] = json!(false);
+        let ineligible = refusal(&closed_state, &c, &route(&closed_state, "setup"), "PND-009");
+        assert_eq!(ineligible["tier"], 1);
+        assert_eq!(
+            ineligible,
+            refusal(
+                &closed_state,
+                &c,
+                &route(&closed_state, "missing"),
+                "PND-009"
+            )
+        );
+
+        item_mut(&mut s, "v-p")["open"] = json!(false);
+        let ineligible = refusal(&s, &c, &route(&s, "setup"), "PND-009");
+        assert_eq!(ineligible["tier"], 1);
+        assert_eq!(
+            ineligible,
+            refusal(&s, &c, &route(&s, "missing"), "PND-009")
+        );
+
+        item_mut(&mut s, "root-management")["operations"] = json!([operation]);
+        let root = |action| {
+            access_route(
+                &s,
+                &request("root", "management.answer.v1", json!({"action":action})),
+                &c,
+            )
+        };
+        let mut serving = root("setup");
+        serving["serving"] = json!("parent");
+        let unknown = refusal(&s, &c, &root("missing"), "PND-009");
+        assert_eq!(unknown["tier"], 2);
+        assert_eq!(unknown["target"]["id"], "management");
+        assert_eq!(unknown, refusal(&s, &c, &serving, "PND-009"));
     }
 
     fn submit_registration(s: &State, c: &Context, owner: &str) -> Transition {

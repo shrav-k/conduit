@@ -1,6 +1,7 @@
 //! Explicit retirement/removal plans. Shutdown work is reported by the boundary.
 use crate::{
-    Allocation, Context, Result, State, Transition, access, decision, explain, lifecycle, requests,
+    Allocation, Context, Result, State, Transition, access, decision, explain, lifecycle, pending,
+    requests,
 };
 use serde_json::{Value, json};
 
@@ -212,6 +213,8 @@ pub(crate) fn execute(
     let lost = access::object(&t.state, &o["placement"]).is_some_and(|n| n["state"] == "retired");
     let shutdown = if lost { "unknown" } else { "pending" };
     t.state.invocations[i]["retirement_of"] = o["id"].clone();
+    let retired =
+        pending::answer_before_change(&mut t.state, o, &a.evidence.time, "retired", &v, c);
     let object = t
         .state
         .objects
@@ -225,15 +228,21 @@ pub(crate) fn execute(
     if let Some(tombstone) = tombstone {
         object["retirement_tombstone"] = tombstone;
     }
-    event(
-        t,
-        a,
-        c,
-        i,
-        &o["id"],
-        "retired",
-        json!({"state":"retired","shutdown":shutdown}),
-    )?;
+    let mut extra = json!({"state":"retired","shutdown":shutdown});
+    if let Some(action) = &retired {
+        extra["pendingAction"] = json!([action["id"]]);
+    }
+    event(t, a, c, i, &o["id"], "retired", extra)?;
+    if let Some(action) = retired {
+        pending::record_answer(t, a, c, &action)?;
+        t.decisions.push(decision(
+            "answer-setup-retired",
+            &["PND-003", "PND-006", "PND-012"],
+            &["DL19"],
+            json!({"action":action["id"]}),
+            vec![],
+        ));
+    }
     close_ends(t, a, c, i, &o["id"], false)?;
     let ever_setup = t
         .state

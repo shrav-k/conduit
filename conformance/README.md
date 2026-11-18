@@ -99,7 +99,8 @@ are absent where no document was established. Schema-invalid documents and manif
 SUB-005, identified file/document, instance pointer, named contract and keyword location.
 
 The first-build record vocabulary is `access-decision`, `request-ended`, `invocation-dispatched`,
-`invocation-ended`, `provider-call` and `object-change`. First start emits two `object-change`
+`invocation-ended`, `provider-call`, `object-change` and `pending-action-answered` (order 047c, an
+answer to a pending action, apart from the request's records under PND-004). First start emits two `object-change`
 records per instance: registration and registered-to-ready, with `cause: first-start` and no
 invented caller or invocation. LIF-034 and protected-template requests emit an access decision
 and an undispatched request end. This vocabulary and the additional event data are runner

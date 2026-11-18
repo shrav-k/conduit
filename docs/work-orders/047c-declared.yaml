@@ -1,3 +1,4 @@
+# Checked at the merge of order 047c, against main at 280a7fcc: the work's vector delta matches these shapes.
 - name: setup-action-answers
   kind: added
   cases: [setup-action-answers]

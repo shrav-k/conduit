@@ -1,6 +1,6 @@
 //! Access only: a permit is not an invocation or a dispatch. The next stage must consume
 //! the permit atomically with this state. Identity and state availability are boundary facts.
-use crate::{Allocation, Context, Evidence, Result, State, Transition, decision, schemas};
+use crate::{Allocation, Context, Evidence, Result, State, Transition, decision, pending, schemas};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::{borrow::Cow, cell::OnceCell, collections::BTreeSet};
@@ -511,7 +511,11 @@ pub(crate) fn may_inspect(
         &context.qualified("inspect.v1"),
     ))
 }
-fn inspection_route<'a>(state: &'a State, item: &Value, context: &Context) -> Result<&'a Value> {
+pub(crate) fn inspection_route<'a>(
+    state: &'a State,
+    item: &Value,
+    context: &Context,
+) -> Result<&'a Value> {
     let management = management(state, "management", context)?;
     Ok(
         if item.get("spec").is_none() && ["Resource", "Agent"].iter().any(|k| item["kind"] == *k) {
@@ -522,6 +526,22 @@ fn inspection_route<'a>(state: &'a State, item: &Value, context: &Context) -> Re
             management
         },
     )
+}
+
+pub(crate) fn action_inspection_target<'a>(
+    state: &'a State,
+    action: &Value,
+    context: &Context,
+) -> Result<&'a Value> {
+    let subject_id = &action["subject"][0]["id"];
+    let subject = subject_id
+        .as_str()
+        .and_then(|_| object_by_id(state, subject_id));
+    let target = match subject {
+        Some(subject) => inspection_route(state, subject, context)?,
+        None => management(state, "management", context)?,
+    };
+    Ok(&target["id"])
 }
 /// ACC-056: inspection for refusal disclosure must have an unfiltered path.
 pub(crate) fn may_inspect_unfiltered(
@@ -624,6 +644,16 @@ pub(crate) fn routing<'a>(
                     .or(Some(mgmt))
             }
             _ => Some(mgmt),
+        },
+        Some("answer.v1") => match args["action"]
+            .as_str()
+            .and_then(|id| pending::action_named(state, id, None, context))
+        {
+            Some(action) => {
+                let target = action_inspection_target(state, &action, context)?;
+                view.object(&json!({"id":target}))?
+            }
+            None => None,
         },
         Some("retire-with-resources.v1") => view
             .object(&path["target"])?
@@ -817,6 +847,17 @@ fn evaluate_path(
     }
     if op == context.qualified("get-secret.v1") {
         return Ok(Verdict::reason("refused", "SEC-007"));
+    }
+    if op == context.qualified("answer.v1")
+        && !pending::may_answer(
+            state,
+            instance,
+            request.serving.as_deref(),
+            &request.arguments["action"],
+            context,
+        )
+    {
+        return Ok(Verdict::reason("refused", "PND-009"));
     }
     let (route, named) = routing(state, view, path, op, &request.arguments, context)?;
     if route.is_none_or(|r| r["id"] != path["target"]) {

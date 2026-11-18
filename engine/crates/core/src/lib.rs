@@ -81,6 +81,8 @@ pub struct State {
     pub allocated_ids: BTreeSet<String>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub tombstones: BTreeMap<String, Value>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub pending_actions: BTreeMap<String, Value>,
     /// ACC-029 / ACC-053 / ACC-055: immutable kind and owner facts for IDs named by bounds.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub bound_targets: BTreeMap<String, Value>,

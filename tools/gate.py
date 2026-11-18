@@ -14,12 +14,14 @@ import select
 import shlex
 import shutil
 import signal
+import socket
 import stat
 import subprocess
 import sys
 import tempfile
 import threading
 import time
+from urllib.parse import urlsplit
 
 WORKFLOW = Path('.github/workflows/checks.yml')
 OUTPUT = Path('target/gate')
@@ -34,6 +36,12 @@ IDENTITY_FORMAT = '--format=%H%x00%an%x00%ae%x00%cn%x00%ce'
 COMMIT_HASH = re.compile(rb'(?:[0-9a-f]{40}|[0-9a-f]{64})')
 GRACE = 10
 PIPE_WAIT = 10
+DERIVE_TIMEOUT = 10
+PUBLIC_WORDS = {
+    'agentwatch': "ruling 68's record names it among ruling 1's reference clones",
+    'localhost': 'the documents and examples use it, and phones and some machines report it as their host name',
+    'pi-reference': "ruling 68's record names it among ruling 1's reference clones",
+}
 NAMED = frozenset(('CONDUIT_TEST_NPM', 'SCR_AGENT_CODEX', 'RUSTUP_TOOLCHAIN',
                    'RUSTFLAGS', 'CARGO_ENCODED_RUSTFLAGS', 'RUSTDOCFLAGS',
                    'CONDUIT_PRIVATE_NAMES'))
@@ -97,6 +105,72 @@ class RustDirectory:
     path: str
     build: bool
     lint: bool
+
+
+@dataclass
+class Derivation:
+    kept: list
+    values: list
+    dropped: dict
+    sources: list
+    origin_remote: bool
+    unreadable_remotes: int
+
+
+class SourceSkipped(Exception):
+    pass
+
+
+class UnusablePrivateName(Exception):
+    pass
+
+
+def without_git_tracing(environment):
+    clean = {key: value for key, value in environment.items() if not key.startswith('GIT_TRACE')}
+    # Explicitly override Trace2 targets from Git's system or global configuration too.
+    return dict(clean, GIT_TRACE2='0', GIT_TRACE2_EVENT='0', GIT_TRACE2_PERF='0')
+
+
+class Machine:
+    def __init__(self, environment):
+        self.environment = dict(environment)
+
+    def account(self):
+        try:
+            import pwd
+        except ImportError:
+            raise SourceSkipped('this system has no pwd module') from None
+        try:
+            entry = pwd.getpwuid(os.getuid())
+        except KeyError:
+            raise SourceSkipped("this process's user ID has no account entry") from None
+        return entry.pw_name, entry.pw_gecos
+
+    def host_name(self):
+        return socket.gethostname()
+
+    def is_macos(self):
+        return sys.platform == 'darwin'
+
+    def which(self, name):
+        return shutil.which(name, path=self.environment.get('PATH', os.defpath))
+
+    def list_directory(self, path):
+        return sorted(os.listdir(path), key=os.fsencode)
+
+    def query(self, args, extra=None):
+        environment = dict(self.environment, **(extra or {}))
+        if args[0] == 'git':
+            environment = without_git_tracing(environment)
+        try:
+            result = subprocess.run(args, env=environment,
+                                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                    stderr=subprocess.DEVNULL, timeout=DERIVE_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            return None, b''
+        except OSError:
+            return 127, b''
+        return result.returncode, result.stdout
 
 
 class DiscoveryError(Exception):
@@ -264,7 +338,7 @@ def redact_output(text, names=None):
     if not names:
         return text
     pattern = '|'.join(re.escape(name) for name in sorted(names.split(','), key=len, reverse=True))
-    return re.sub(pattern, '[redacted]', text)
+    return re.sub(pattern, '[redacted]', text, flags=re.IGNORECASE)
 
 
 def run_command(args, *, cwd, env, timeout, log, redact=redact_output):
@@ -364,6 +438,235 @@ def read_private_names(filename, root):
     return ','.join(names), None
 
 
+def account_names(machine):
+    short, gecos = machine.account()
+    full = gecos.partition(',')[0]
+    return [short, full, *full.split()]
+
+
+def host_names(machine):
+    try:
+        host = machine.host_name()
+    except OSError:
+        raise SourceSkipped('socket.gethostname() failed') from None
+    label, dot, _ = host.partition('.')
+    return [host, label] if dot else [host]
+
+
+def macos_names(machine):
+    if not machine.is_macos():
+        raise SourceSkipped('this is not macOS')
+    names = []
+    for field in ('ComputerName', 'LocalHostName'):
+        code, output = machine.query(['scutil', '--get', field])
+        if code == 0:
+            names.append(output.decode('utf-8', errors='replace').strip())
+    if not names:
+        raise SourceSkipped('scutil answered neither ComputerName nor LocalHostName')
+    return names
+
+
+def git_identity_names(machine):
+    name_exit, name = machine.query(['git', 'config', '--global', '--get', 'user.name'])
+    email_exit, email = machine.query(['git', 'config', '--global', '--get', 'user.email'])
+    if None in (name_exit, email_exit):
+        raise SourceSkipped('git config --global did not answer within 10 seconds')
+    for code in (name_exit, email_exit):
+        if code not in (0, 1):
+            raise SourceSkipped(f'git config --global exited {code}')
+    if name_exit == email_exit == 1:
+        raise SourceSkipped("git's global configuration sets neither user.name nor user.email")
+    names = []
+    if name_exit == 0:
+        names.append(name.decode('utf-8', errors='replace').strip())
+    if email_exit == 0:
+        names.append(email.decode('utf-8', errors='replace').strip().rsplit('@', 1)[0])
+    return names
+
+
+def remote_repository_name(url):
+    url = url.strip()
+    prefix, colon, path = url.partition(':')
+    if '://' in url:
+        path = urlsplit(url).path
+    elif not colon or '/' in prefix:
+        path = url
+    name = path.rstrip('/').rsplit('/', 1)[-1]
+    return name[:-4] if name.endswith('.git') else name
+
+
+def sibling_names(root, machine):
+    unavailable = 'this repository has no main working tree, so its sibling directories are not known'
+    try:
+        common = git(root, without_git_tracing(machine.environment),
+                     'rev-parse', '--path-format=absolute', '--git-common-dir')
+    except OSError:
+        raise SourceSkipped(unavailable) from None
+    directory = Path(common.stdout.decode('utf-8', errors='replace').rstrip('\r\n'))
+    if common.returncode or directory.name != '.git':
+        raise SourceSkipped(unavailable)
+    holder = directory.parent.parent
+    try:
+        entries = machine.list_directory(holder)
+    except OSError:
+        raise SourceSkipped('the directory that holds this repository could not be listed') from None
+    names = []
+    unreadable = 0
+    for entry in entries:
+        path = holder / entry
+        if not os.path.isdir(path) or os.path.islink(path) or not os.path.lexists(path / '.git'):
+            continue
+        names.append(entry)
+        code, output = machine.query(
+            [*GIT, '-C', str(path), 'config', '--local', '--get-regexp', r'^remote\..*\.url$'],
+            extra={'GIT_CEILING_DIRECTORIES': str(holder)})
+        if code == 1:
+            continue
+        if code != 0:
+            unreadable += 1
+            continue
+        for line in output.decode('utf-8', errors='replace').split('\n'):
+            try:
+                names.append(remote_repository_name(line.partition(' ')[2]))
+            except ValueError:
+                unreadable += 1
+    return names, unreadable
+
+
+def tailnet_names(machine):
+    executable = machine.which('tailscale')
+    if executable is None:
+        raise SourceSkipped('the tailscale command is not on the PATH')
+    code, output = machine.query([executable, 'status', '--json'])
+    if code is None:
+        raise SourceSkipped('tailscale status --json did not answer within 10 seconds')
+    if code != 0:
+        raise SourceSkipped(f'tailscale status --json exited {code}')
+    invalid = 'tailscale status --json did not print a JSON object'
+    try:
+        status = json.loads(output.decode('utf-8', errors='replace'))
+    except (ValueError, RecursionError):
+        raise SourceSkipped(invalid) from None
+    if not isinstance(status, dict):
+        raise SourceSkipped(invalid)
+    peers = status.get('Peer')
+    entries = [status.get('Self')]
+    if isinstance(peers, dict):
+        entries.extend(peers.values())
+    names = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        host = entry.get('HostName')
+        dns = entry.get('DNSName')
+        if isinstance(host, str) and host:
+            names.append(host)
+        if isinstance(dns, str) and dns:
+            names.append(dns.partition('.')[0])
+    return names
+
+
+def origin_public_text(root, machine):
+    try:
+        result = git(root, without_git_tracing(machine.environment),
+                     'config', '--local', '--get', 'remote.origin.url')
+    except OSError:
+        return None
+    if result.returncode:
+        return None
+    url = result.stdout.decode('utf-8', errors='replace').strip()
+    if '://' in url:
+        try:
+            parsed = urlsplit(url)
+            return (parsed.hostname or '') + parsed.path
+        except ValueError:
+            return None
+    prefix, colon, _ = url.partition(':')
+    if colon and '@' in prefix:
+        return url.partition('@')[2]
+    return url
+
+
+def derive_private_names(root, machine):
+    sources = []
+    candidates = {}
+    unreadable = 0
+    for name, read in (('account', account_names), ('host name', host_names),
+                       ('macOS computer names', macos_names), ('git identity', git_identity_names),
+                       ('sibling repositories', sibling_names), ('tailnet peers', tailnet_names)):
+        source = dict(name=name, result='read', kept=0, why=None)
+        sources.append(source)
+        try:
+            if read is sibling_names:
+                names, unreadable = read(root, machine)
+            else:
+                names = read(machine)
+        except SourceSkipped as skipped:
+            source.update(result='NOT RUN', why=str(skipped))
+            continue
+        for candidate in names:
+            for part in re.split(r'[,\r\n]', candidate):
+                part = part.strip()
+                if part:
+                    candidates.setdefault(part.lower(), (part, source))
+
+    origin = origin_public_text(root, machine)
+    public_origin = origin.lower() if origin is not None else ''
+    kept, values = [], []
+    dropped = dict(short=0, origin=0, public=0)
+    for lower, (name, source) in candidates.items():
+        if len(name) < 4:
+            dropped['short'] += 1
+        elif lower in public_origin:
+            dropped['origin'] += 1
+        elif lower in PUBLIC_WORDS:
+            dropped['public'] += 1
+        else:
+            try:
+                name.encode('utf-8')
+            except UnicodeEncodeError:
+                raise UnusablePrivateName(source['name']) from None
+            if '\0' in name:
+                raise UnusablePrivateName(source['name'])
+            source['kept'] += 1
+            kept.append(name)
+            values.append(name)
+            if lower != name:
+                values.append(lower)
+    return Derivation(kept, values, dropped, sources, origin is not None, unreadable)
+
+
+def show_derivation(derivation, names_file, ignored_environment_names):
+    count = len(derivation.kept)
+    read = ', '.join(f"{source['name']} {source['kept']}"
+                     for source in derivation.sources if source['result'] == 'read')
+    short, origin, public = (derivation.dropped[key] for key in ('short', 'origin', 'public'))
+    dropped = (f'{short + origin + public} dropped as public or short '
+               f"({short} shorter than 4 characters, {origin} in the origin remote's URL, "
+               f'{public} on the gate\'s list of public words)')
+    if names_file:
+        line = (f'Private names: read from {PRIVATE_FILE}, and {count} more derived from this machine '
+                f'({read}), all given to tools/check_private_paths.py alone; {dropped}; '
+                "neither the names nor the file's path are printed or recorded.")
+    else:
+        line = (f'Private names: {count} derived from this machine ({read}), and given to '
+                f'tools/check_private_paths.py alone; {dropped}; none is printed or recorded.')
+        if count == 0:
+            line += ' So tools/check_private_paths.py checks its built-in patterns only.'
+        if ignored_environment_names:
+            line += ' CONDUIT_PRIVATE_NAMES in the environment is not used.'
+    print(line)
+    for source in derivation.sources:
+        if source['result'] == 'NOT RUN':
+            print(f"Private names: NOT RUN {source['name']}: {source['why']}.")
+    if derivation.unreadable_remotes:
+        print(f'Private names: the remotes of {derivation.unreadable_remotes} sibling repositories '
+              'could not be read; their directory names alone were taken.')
+    if not derivation.origin_remote:
+        print('Private names: this repository has no origin remote, so no derived name was dropped '
+              'as already public in its URL.')
+
+
 def packages_missing():
     return [label for module, label in (('yaml', 'PyYAML'), ('jsonschema', 'jsonschema'))
             if importlib.util.find_spec(module) is None]
@@ -432,23 +735,24 @@ def show(row, output='', findings=(), plan=False):
             print(finding, file=sys.stderr)
 
 
-def main(root, argv, run=run_command):
+def main(root, argv, run=run_command, machine=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base', default='origin/main', metavar='REF')
     parser.add_argument('--plan', action='store_true')
     parser.add_argument('--private-names-file', metavar='FILE')
+    parser.add_argument('--derive-private-names', action='store_true')
     parser.add_argument('--all', action='store_true')
     parser.add_argument('--jobs', type=positive_integer, default=6, metavar='N')
     parser.add_argument('--test-threads', type=positive_integer, default=4, metavar='N')
     options = parser.parse_args(argv)
     root = Path(root).resolve()
-    environment, removed, credentials = scrub_environment()
+    clean_environment, removed, credentials = scrub_environment()
     settings = dict(jobs=options.jobs, test_threads=options.test_threads, all=options.all)
     environment_set = dict(CARGO_NET_OFFLINE='true', RUSTUP_AUTO_INSTALL='0',
                            CARGO_TERM_COLOR='never', CARGO_BUILD_JOBS=str(options.jobs),
                            RUST_TEST_THREADS=str(options.test_threads))
-    environment.update({key: value for key, value in environment_set.items()
-                        if key != 'RUST_TEST_THREADS'})
+    environment = dict(clean_environment, **{key: value for key, value in environment_set.items()
+                                             if key != 'RUST_TEST_THREADS'})
 
     def not_started(why):
         print('Gate: NOT RUN: ' + why + '. Nothing was checked.')
@@ -469,10 +773,29 @@ def main(root, argv, run=run_command):
         return not_started(f'the base {options.base} shares no commit with HEAD')
     merge_base = common.stdout.decode().strip()
     private_names = None
-    if options.private_names_file is not None:
+    names_file = options.private_names_file is not None
+    if names_file:
         private_names, fault = read_private_names(options.private_names_file, root)
         if fault:
             return not_started(PRIVATE_FILE + ' ' + fault)
+    derivation = None
+    derived_record = None
+    if options.derive_private_names:
+        if machine is None:
+            machine = Machine(clean_environment)
+        try:
+            derivation = derive_private_names(root, machine)
+        except UnusablePrivateName as fault:
+            return not_started(f'--derive-private-names read a name from {fault} that cannot be '
+                               'passed to tools/check_private_paths.py')
+        if all(source['result'] == 'NOT RUN' for source in derivation.sources):
+            return not_started('--derive-private-names read none of its sources on this machine')
+        file_values = private_names.split(',') if private_names else []
+        private_names = ','.join(dict.fromkeys(file_values + derivation.values)) or None
+        derived_record = dict(kept=len(derivation.kept), dropped=derivation.dropped,
+                              origin_remote=derivation.origin_remote,
+                              unreadable_sibling_remotes=derivation.unreadable_remotes,
+                              sources=derivation.sources)
     head = git(root, environment, 'rev-parse', 'HEAD').stdout.decode().strip()
     branch_result = git(root, environment, 'symbolic-ref', '--quiet', '--short', 'HEAD')
     branch = branch_result.stdout.decode().strip() if branch_result.returncode == 0 else None
@@ -498,7 +821,9 @@ def main(root, argv, run=run_command):
         print(f'Base: the branch lacks {behind} commits of {shown_base}. CI tests a pull request '
               'merged with them; the gate tests the branch alone.')
     print(f'Changed since the merge base: {len(changed)} paths.')
-    if private_names is not None:
+    if derivation is not None:
+        show_derivation(derivation, names_file, 'CONDUIT_PRIVATE_NAMES' in removed)
+    elif private_names is not None:
         print('Private names: read from the file that --private-names-file names, and given to '
               'tools/check_private_paths.py alone; neither they nor the file\'s path are printed or recorded.')
     else:
@@ -526,7 +851,8 @@ def main(root, argv, run=run_command):
                   python_packages=not missing,
                   settings=settings,
                   environment=dict(set=environment_set, removed=removed, removed_credentials=credentials,
-                                   private_names_configured=private_names is not None), gates=[])
+                                   private_names_configured=False,
+                                   private_names=dict(file=names_file, derived=derived_record)), gates=[])
     record_path = root / OUTPUT / (head + '.json')
     log_directory = root / OUTPUT / 'logs' / head
     if not options.plan:
@@ -537,21 +863,30 @@ def main(root, argv, run=run_command):
     current = 'rust discovery'
 
     def finish(row, output='', findings=()):
+        shown = dict(row)
         for key in ('name', 'directory', 'command', 'reason', 'why', 'partial', 'log'):
             if isinstance(row[key], str):
-                row[key] = redact_output(row[key], private_names)
-        record['gates'].append(row)
+                shown[key] = redact_output(row[key], private_names)
+        record['gates'].append(shown)
         if not options.plan:
             write_record(record_path, record)
-        show(row, output, (redact_output(item, private_names) for item in findings),
+        show(shown, output, (redact_output(item, private_names) for item in findings),
              options.plan and row['name'] != 'rust discovery')
 
-    def execute(args, log, minutes, env=None, display=None, directory='.', redact=None):
+    def execute(args, log, minutes, env=None, display=None, directory='.', raw_output=None):
+        def redact(text):
+            if raw_output is not None:
+                raw_output.append(text)
+            return redact_output(text, private_names)
+
         print(redact_output(f'running {current}: {display or command_text(args)}', private_names),
               file=sys.stderr)
-        return run(args, cwd=root / directory, env=dict(environment if env is None else env),
-                   timeout=minutes * 60, log=log,
-                   redact=redact or (lambda text: redact_output(text, private_names)))
+        command_environment = dict(environment if env is None else env)
+        if 'CONDUIT_PRIVATE_NAMES' in command_environment:
+            record['environment']['private_names_configured'] = True
+            write_record(record_path, record)
+        return run(args, cwd=root / directory, env=command_environment,
+                   timeout=minutes * 60, log=log, redact=redact)
 
     try:
         manifests = rust_manifests(root)
@@ -572,16 +907,10 @@ def main(root, argv, run=run_command):
 
                 def query(args):
                     printed = command_text(['cargo', *args])
+                    # Cargo prints absolute paths. Parse the original paths in memory.
                     raw_output = []
-
-                    def redact_discovery(text):
-                        # Cargo prints absolute paths. Parse their original text in memory;
-                        # a configured user name in the root must not change their meaning.
-                        raw_output.append(text)
-                        return redact_output(text, private_names)
-
                     result = execute([cargo, *args], Path(temporary) / 'command.log', 5,
-                                     display=printed, redact=redact_discovery)
+                                     display=printed, raw_output=raw_output)
                     discovery_output.append(redact_output(printed, private_names) + '\n' + result.output + '\n')
                     discovery['exit'] = result.exit
                     if result.timed_out:
@@ -666,12 +995,14 @@ def main(root, argv, run=run_command):
                 finish(row)
                 continue
             position = len(record['gates']) + 1
-            log = log_directory / (f'{position:02d}-' + current.replace(' ', '-').replace('/', '-') + '.log')
+            log_name = redact_output(current, private_names).replace(' ', '-').replace('/', '-')
+            log = log_directory / (f'{position:02d}-' + log_name + '.log')
             env = dict(environment)
             if current == 'private paths' and private_names is not None:
                 env['CONDUIT_PRIVATE_NAMES'] = private_names
             started = time.monotonic()
-            result = execute(args, log, 15, env, row['command'])
+            raw = []
+            result = execute(args, log, 15, env, row['command'], raw_output=raw)
             row.update(result='FAIL' if result.timed_out or result.exit != 0 else 'PASS',
                        exit=result.exit, seconds=round(time.monotonic() - started, 1),
                        log=log.relative_to(root).as_posix())
@@ -681,11 +1012,11 @@ def main(root, argv, run=run_command):
                 row['partial'] = f'{untracked} untracked path(s)'
             if current == 'docs':
                 skipped = sum(line.startswith('Notice: skipped repository permalinks at')
-                              for line in result.output.splitlines())
+                              for line in ''.join(raw).splitlines())
                 if skipped:
                     row['partial'] = f'the permalinks at {skipped} commit(s) this clone lacks, which CI fetches'
             if current == 'tool tests':
-                skipped = re.search(r'OK \(skipped=(\d+)\)\s*$', result.output)
+                skipped = re.search(r'OK \(skipped=(\d+)\)\s*$', ''.join(raw))
                 if skipped:
                     row['partial'] = f'{skipped[1]} test(s) unittest skipped'
             finish(row, result.output)
@@ -713,8 +1044,10 @@ def main(root, argv, run=run_command):
                                   "(.github/workflows/checks.yml), and the pull request's secrets job "
                                   'scans these commits after the push')
             else:
-                version = execute([executable, 'version'], temp / 'version.log', 10, display='gitleaks version')
-                found = version.output.strip().lstrip('v')
+                raw_output = []
+                version = execute([executable, 'version'], temp / 'version.log', 10,
+                                  display='gitleaks version', raw_output=raw_output)
+                found = (raw_output[-1] if raw_output else version.output).strip().lstrip('v')
                 if version.exit != 0 or version.timed_out:
                     detail = timeout_words(10) if version.timed_out else f'exit {version.exit}'
                     secrets['why'] = f'gitleaks version did not answer ({detail}); the pin is {pin}'
@@ -813,8 +1146,8 @@ def main(root, argv, run=run_command):
         return 130
 
     if options.plan:
-        would = sum(row['result'] != 'NOT RUN' for row in record['gates']
-                    if row['name'] != 'rust discovery')
+        # Discovery finishes first and is the only gate the plan executes.
+        would = sum(row['result'] != 'NOT RUN' for row in record['gates'][1:])
         state = {'PASS': 'passed', 'FAIL': 'failed'}.get(discovery['result'], 'was not run')
         print(f"Gate plan: rust discovery {state}; {would} other gates would run, "
               f"{len(record['gates']) - 1 - would} would not. "

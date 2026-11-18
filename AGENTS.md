@@ -177,12 +177,21 @@ What each check needs:
   it runs itself again under `/usr/bin/python3`, as `check_model_account.py` does. It
   compares the working tree with `origin/main` as last fetched, or with `--base REF`, and
   never fetches, pushes or calls GitHub. It fails a commit since the base whose author or
-  committer is not `Conduit work order <work-orders@conduit.invalid>`. It reads the private
-  names from the file that `--private-names-file` names, of mode 0600 and outside the
-  repository, gives them to `check_private_paths.py` alone, and prints none; the
-  `CONDUIT_PRIVATE_NAMES` of its own environment it does not use. It runs gitleaks only when
-  the release that `.github/workflows/checks.yml` pins is on the `PATH`, and otherwise says
-  that it did not. Its last line says PASS only when every required gate passed, and it
+  committer is not `Conduit work order <work-orders@conduit.invalid>`.
+  With `--derive-private-names` it derives the private names from the machine it runs on,
+  at each run and with no file: the OS account's short and full names, the host names (on
+  macOS the computer and local host names too), git's global `user.name` and the local part
+  of its `user.email`, the names of the Git repositories beside this one and of their
+  remotes, and the host names of the tailnet's peers where `tailscale` is installed. It
+  drops a name shorter than 4 characters, one in the origin remote's URL and one on its list
+  of public words, and skips a source it cannot read, naming the source. With
+  `--private-names-file` it also reads names from that file, of mode 0600 and outside the
+  repository, and drops none of them. It gives the names to `check_private_paths.py` alone,
+  redacts them from its output and logs, and prints only how many it derived and from which
+  sources; the `CONDUIT_PRIVATE_NAMES` of its own environment it does not use.
+  It runs gitleaks only when the release that `.github/workflows/checks.yml` pins is on the
+  `PATH`, and otherwise says that it did not. Its last line says PASS only when every
+  required gate passed, and it
   writes its record under `target/gate/`. `--plan` runs `rust discovery` alone and lists the
   other gates without running them, and exits 1 when discovery does not pass; `--all` runs
   every Rust directory and the engine. The admin merges on its PASS on the Mac, and CI runs

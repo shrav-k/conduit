@@ -28,7 +28,6 @@ coordinator](HANDOVER.md#restarting-the-lane-coordinator)).
 | `<BASE_COMMIT>` | the main commit the order started from | no | none |
 | `<CHECKS>` | the checks the coordinator names for that order, usually the order's Done when | no | none |
 | `<FINDINGS_FILE>` | a file in the coordinator's private notes holding a reader's structured result | yes | in the private note |
-| `<NAMES_FILE>` | the file of private names, of mode 0600 and outside the repository, that `tools/gate.py --private-names-file` reads; where the names are held is open ([ruling 80](../proposals/ruling-80/README.md)) | yes | in the private note, once the names are held |
 | `<FIXER_REPORT>` | the fixer's structured report, pasted | no | none |
 | `SCHEMA` | the report schema's name under docs/work-orders, without .schema.json | no | the order's own name |
 | `EXTRA` | a file appended to the order's prompt under From the admin session | no | none |
@@ -286,18 +285,22 @@ git diff --name-only HEAD^ HEAD
 The squash commits with the checkpoints' identity, not the handover's plain `git commit`.
 Check the second command's files against scope; shared remote refs can move between
 commands. Then, on the Mac, with the tree clean, run the gate
-([ruling 80](../proposals/ruling-80/README.md), point 10), giving it the file of private
-names once they are held:
+([ruling 80](../proposals/ruling-80/README.md), point 10 and its later answers), which
+derives the private names from the Mac at each run:
 ```sh
-python3 tools/gate.py --private-names-file <NAMES_FILE>
+python3 tools/gate.py --derive-private-names
 ```
 It compares the branch with `origin/main` as last fetched, and never fetches, pushes or
 calls GitHub. It fails a commit since `origin/main` whose author or committer is not the
 work-order identity, as a plain rebase leaves one, and names the commit. For what the
 branch changes it runs the checks of CI's `checks` workflow on the Mac: the `docs` job's
-Python checks in that job's order, with the private names given to
-`tools/check_private_paths.py` alone; the vector changes against the declarations the
-branch adds or changes, the tools' unit tests and `git diff --check`; `cargo fmt --check`,
+Python checks in that job's order,
+with the private names it derives (the Mac's account, host and computer names, git's
+global identity, the repositories beside this one and their remotes, and the tailnet's
+peers, less those shorter than 4 characters, in the origin remote's URL or on its list of
+public words) given to `tools/check_private_paths.py` alone and never printed;
+the vector changes against the declarations the branch adds or changes, the tools' unit tests
+and `git diff --check`; `cargo fmt --check`,
 clippy with `-D warnings` and `cargo test --release` in each package that the branch
 changes, that depends by path on a directory it changes, or that reads a path it changes,
 and the tests alone of each such experiment; the engine's fmt, clippy and release tests
@@ -315,10 +318,11 @@ The merge waits on the gate, not on GitHub CI. Only after the gate's PASS, push
 the description, and squash-merge with a message written by hand, its subject in the form
 of orders merged since 151: `Work order NNN: title (#PR)`. The record cited names the
 pushed commit as its head, and says that the tree was clean, that the branch contained
-`origin/main` and, once the names are held, that they were configured. Where it says that
-gitleaks did not run, no secret scan ran before the push: GitHub's push protection stops
-only the patterns it knows, and the pull request's `secrets` job scans after. The gate's
-log of the vector changes lists each flip for the reader ([reviewing vector
+`origin/main` and that the private names were configured; the pull request copies the
+gate's `Private names:` lines, which give counts and sources and no name.
+Where it says that gitleaks did not run, no secret scan ran before the push: GitHub's push
+protection stops only the patterns it knows, and the pull request's `secrets` job scans
+after. The gate's log of the vector changes lists each flip for the reader ([reviewing vector
 changes](../../conformance/README.md#reviewing-vector-changes)).
 [checks.yml](../../.github/workflows/checks.yml) still runs on pull requests and pushes to
 `main`, as a second opinion and the Linux leg that nothing waits on (ruling 80). A run that

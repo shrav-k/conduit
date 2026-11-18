@@ -8,8 +8,8 @@ have left the tree; their results, decisions and observations are in
 
 ## Orders still in the directory
 
-One row for each order file in this directory, in file-name order. Orders 047c, 047d, 050e, 050f
-and 050h to 050o, which the coordinator's cuts of 047 and 050 plan (order 117) but which are not
+One row for each order file in this directory, in file-name order. Orders 047d, 050e, 050f and
+050h to 050o, which the coordinator's cuts of 047 and 050 plan (order 117) but which are not
 yet written, have rows without links where their names sort, each saying what it comes after.
 
 | Order | What |
@@ -26,10 +26,11 @@ yet written, have rows without links where their names sort, each saying what it
 | [044](044-build-package-fixtures.md) | package fixtures for the .v2 Types, and no default added to a published Type |
 | [045](045-build-state-directory.md) | each instance's state directory |
 | [046a](046a-build-refusal-tiers-and-diagnostics.md) | one deciding rule, and a diagnostic on every reason |
+| [046b](046b-build-tier-two-and-closed-conduits.md) | tier 2 for a caller that may inspect the target, and closed Conduits from tombstones; after 042, 046a and 046c (order 117's split, with 046a's move of tier 2 for callers other than root, the coordinator's, open to the owner's strike) |
 | [046c](046c-build-outcome-diagnostics.md) | the outcomes the engine decides name their promise |
 | [047](047-build-setup-action.md) | a failed setup's action, computed and raised at root's inspection |
 | [047b](047b-build-actions-raised-by-scope.md) | where pending actions are raised: scoped Interfaces, disclosure, list.v1's pending output and the unanswered key; after 047 (the coordinator's split, open to the owner's strike) |
-| 047c | answer.v1 with stored answers; after 047b (planned; the coordinator's split, open to the owner's strike) |
+| [047c](047c-build-stored-answers.md) | `answer.v1` with stored answers: dismissed, retried and retired, conflict, and answered state that survives a purge; after 047b (the coordinator's split, open to the owner's strike) |
 | 047d | the notice kind; after 047c (planned; the coordinator's split, open to the owner's strike) |
 | [048a1](048a1-build-sign-in-type-checks.md) | CTR-013's checks on a Type's sign-in, and the .v2 fixture's apiKey |
 | [049a1](049a1-build-enrollment-core.md) | enrollment in the core |

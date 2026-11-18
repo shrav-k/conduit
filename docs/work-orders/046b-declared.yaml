@@ -1,0 +1,3 @@
+- name: tier 2 for a caller that may inspect the target, closed Conduits included, in one portable case
+  kind: added
+  cases: [explain-tier-two-inspectors]

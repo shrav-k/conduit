@@ -1,0 +1,3 @@
+- name: setup-action-answers
+  kind: added
+  cases: [setup-action-answers]

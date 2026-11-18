@@ -51,6 +51,21 @@ holds, the readings that the findings MC9a-001 to MC9a-003 register, the status 
 clause, and leaving `ROADMAP.md` unchanged (decision 5). Apply them as written and report them
 under `decisions` as the coordinator's.
 
+**Amended 2026-11-18.** Round 2 changed decision 4's block, to answer round 1's verifier: new
+witnesses 23 to 26, the mutant RetainHold, a computed setup action's ledger identity by the setup
+ending that computed it, G's route to open the candidate through an `access` Conduit, and the two
+future vectors it names, `requests-sign-in-during-sign-in-conflict` and
+`requests-sign-in-during-retirement-conflict`. The readers' findings of the same day changed it
+again: the first added MC9a-002's reading that an `O` found by a sign-in after A's retirement has
+been dispatched raises no action (PND-003), and P01's matching exception; the second made K11
+require success where the check or polling finds the expected account, limited R13's passed return
+to the sign-in-hook.v1 call that started the login, and limited P01's required raise to a turn
+decided while A is ready. The third tied R13's passed return to a `sign-in-hook.v1` retry of the
+part that started the login, added that retry to the ledger, and put the requestState of H's call
+outside the model. The coordinator adopts those
+changes, each open to the owner's strike as the rest; the README's section, not the block below, is
+the registration, and its verdict rows are 23.
+
 **Read first:** `AGENTS.md`; this order; in `experiments/012-model-checking/README.md`, lines 1 to
 24 and the headings (`grep -n '^#'`); order 048a-2's decisions 1, 2, 4, 6 and 7. You need not read
 `spec/`: the block below quotes it, and a done-when check compares each quotation with its source.
@@ -691,7 +706,7 @@ awk "$S" $F | grep -c '^### MC9a'                                 # 11
 awk "$S" $F | grep -c -e 'DATE' -e 'C048A2'                       # 0
 awk "$S" $F | grep -v -e '](' -e '^|' | /usr/bin/python3 -c 'import sys; print(sum(len(l.rstrip("\n")) > 100 for l in sys.stdin))'   # 0
 sed -n 3p $F | grep -c '; MC9a registered 20[0-9-]* under work order 201, not run\.$'   # 1; on the base, 0
-awk "$S" $F | grep -c '^| [A-Za-z]* / [A-Za-z]* | [HF]* | '      # 22
+awk "$S" $F | grep -c '^| [A-Za-z]* / [A-Za-z]* | [HF]* | '      # 23
 awk "$S" $F | grep -c '^| Correct / every '                       # 2
 awk "$S" $F | grep -c '^\*\*[A-Z][0-9][0-9] (PND-'                # 11
 awk "$S" $F | grep -c '^\*\*MC9a-00[1-3] — '                      # 3
@@ -742,3 +757,111 @@ The admin then has a fresh, read-only Opus reader read the diff before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2), and the merge waits for the local gate
 ([ruling 80](../proposals/ruling-80/README.md), point 10). This order merges before order 048a-2
 is dispatched.
+
+## Record
+
+Run on 2026-11-18, from about 12:36 to 13:12 UTC, on the Mac from `main` `f414e438` (the merge
+that added orders 048a-2 and 201), in two rounds: the worker (156 s) and a fresh Codex verifier
+(611 s), then the worker again (646 s) and a second fresh Codex verifier (698 s). The
+worker found the 13 base checks of decision 1 as written, took `DATE` as `2026-11-18` and `C048A2`
+as `f414e438`, changed line 3 as decision 3 says, and added decision 4's block word for word; its
+own choice was to copy the block from the checked-in order and compare the README with it byte for
+byte. The first verifier found the checkpoint identical to the block after the substitution, and
+the 34 quotations, the mechanical checks and the 13 account rows as written, and found 8 musts and
+5 shoulds in the prescribed content: X10 refused the ordinary stage 4 retry and a copy of an ended
+request; K11 failed a correct run interrupted after a wrong polling result; G had no route through
+`access` to reach PND-009's refusal; stage 7 dropped the schedule in which retirement removes A;
+the final sign-in could not find a preserved `O`; ReplayState and AnswerExpired could still reach
+witnesses 20 and 11; ForgetOnPurge's refutation of S02 was not registered; A03 counted answers by
+public ID across a redispatch; MC9a-003's witness did not observe the hold lift; the portable vector
+was credited for conflicts it does not exercise; quiescence was not in the ledger; and Y's refusal
+named no reason. Round 2, at the admin's prompt, rewrote the block for all 13: X10 applies PND-010
+to fresh requests and repeats eligible for a new attempt, R13 checks continuations and OPS-009,
+OPS-012 and OPS-034 the other copies; K11 asks for the failure on ordinary completion and an unknown
+ending on interruption; G opens through an `access` Conduit with a bound naming F and `answer.v1`;
+stage 7 keeps the removal and checks X's refusal through its Fleet-only route; the final sign-in
+reads the preserved account; witnesses 20 and 11 were narrowed; ForgetOnPurge became `FHFFH`; a
+computed setup action's ledger identity is the ending that computed it; witness 12 and H05 observe
+the stage 6 turn dispatched, with the mutant RetainHold; the vector is credited for setup, and two
+future vectors are named; quiescence is a harness-only check; and witnesses 23 to 26 were added.
+The worker's own choices were those witnesses, the stage 6 turn as the release probe, the vectors'
+names and the count of 23 verdict rows, which it reported under `could_not` against the order's
+22. The second verifier found 6 musts, 5 shoulds and a nit: the count; Wait's window; K11's
+queued hook after DL18; H05's release while A is still registered; P01 with no raise required on
+the final sign-in's `O`; a sign-in action left unanswered on retired A; Q's stage 4 after W has
+ended; K11's success clause; the return's destination during restart overlap; the conflict
+diagnostic's invocation ID; witness 13 under AnswerTwice; and the limits' faults.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) on the branch. It ran
+the order's greps, the quotation script (`34 0`), `check_docs` and `check_private_paths` (Errors: 0
+each) and `git diff --check origin/main...HEAD` (clean), compared the block with the section, and
+read DL18, PND-003, PND-010, LIF-004, LIF-005, LIF-015, LIF-024, LIF-035, OPS-029 and CON-024 at
+`f72c2bc3`. Every check passed but the verdict rows, 23 against 22. It found four musts and seven
+shoulds:
+
+- M1: the order's check of verdict rows expects 22, and round 2's RetainHold makes 23.
+- M2: Wait's timer ended the oldest `sign-in.v1` in progress, though DL18 is the URL wait, which
+  ends when polling finds an account; so Wait's expected reach of witness 26 was wrong.
+- M3: under Crash, E can crash in stage 1 after s1 is raised and before setup succeeds, leaving A
+  registered; H05's release then requires a turn that CON-024 refuses.
+- M4: a copy of Y's refused stage 4 answer reaches witness 13, which AnswerTwice does not change.
+- S1: P01 allowed, and did not require, the raise when a sign-in's initial check finds `O`.
+- S2: in stage 7, an `O` found after retirement is dispatched could raise an action on retired A.
+- S3: K11 (d) let a hook already on the link run after DL18, which PND-010 forbids.
+- S4: X10 did not check that PND-010's diagnostic names no invocation ID (order 048a-2, decision 6).
+- S5: stage 4 gave Q no step when W ended before Q held rs1.
+- S6: the two future vectors' names were the worker's own and owned by no order, and a link stood
+  alone on its line.
+- S7: the limits put every fault on Q's links, though Crash and Wait act on E.
+
+The fixer found the branch already on `origin/main` at `f414e438`, its two commits with the
+work-order identity, and applied each finding, rewrapping the changed paragraphs at 100 columns:
+
+- M1: the order's check expects `# 23`, and a dated note after "Who decided what" records round
+  2's changes to decision 4's block, with the vectors' names, and the coordinator's adoption of
+  them, open to the owner's strike. Dropping RetainHold was the other choice; the coordinator
+  confirmed the adoption at the merge.
+- M2: Wait's row reads "DL18's end, which ends unknown the oldest `sign-in.v1` that has relayed its
+  URL and whose polling has found no account yet"; Wait's reach is "as Base, with 21 and 24"; K11
+  (d) and witness 26 read "recovery, or DL18 before polling finds an account". In witness 26 that
+  DL18 branch cannot occur, so Crash alone reaches it, as the reader said.
+- M3: stage 1 gains "If setup ends unknown, A stays registered and the script goes on; a turn to A
+  then reports unavailable under CON-024."; H05's span clause covers turns "decided in that span
+  while the ledger shows A ready", its release "the next turn in stage 6, decided while A is ready
+  and access permits it", and its oracle readiness; witness 12's turn is "with A ready".
+- M4: witness 13 is the reader's text word for word.
+- S1 and S2: P01 gains the reader's clause and witness 24 the raise; stage 7 and P01 add that no
+  action is raised once A's retirement has been dispatched, and P01 that none of A is unanswered
+  after it; MC9a-002 gains the interleaving and the reading, from PND-003. The words "unless A's
+  retirement has been dispatched" are the fixer's: without them, S1's clause and S2's check
+  contradict each other in that interleaving.
+- S3, S4, S5 and S7: the reader's texts, word for word; S4 after a comma.
+- S6: the names stay, adopted in M1's note, and the link is folded into "When MC9a's results merge
+  under", as the text of a link to full review order 24. The reader's other choice was not taken:
+  full review order 24 names the model, not these vectors, so "which full review order 24 names"
+  would be wrong.
+
+The second verifier's shoulds on K11's success clause and on the return's destination during
+restart overlap were not among the reader's findings; this round leaves them to the coordinator.
+The fixer then ran, from the worktree's root on the files of this commit before it was made, every
+check of "Done when", with `git diff` against `origin/main`: `check_docs` and `check_private_paths`
+(Errors: 0 each), `git diff --check origin/main` (clean), the README's deletions (1), and each
+grep as its comment says, with the verdict rows at 23; the quotation script printed `34 0`. The
+names changed are the README and this order, which the amendment and this Record change. MC9a
+remains unrun.
+
+A second fresh Opus reader found no must and nine shoulds: the amendment's wording (S1), K11's
+success clause and R13's return destination, the second verifier's two open shoulds (S2, S3), DL18
+in K11 (d) and witness 26 (S4), MC9a-001 after recovery (S5), P01's raise limited to A ready (S6),
+the revision paragraph (S7), the Record's durations (S8) and Q's dropped request (S9). A fixer
+applied each as its fix states, taking the first option where it offered two, and the coordinator
+confirmed the amendment. Every check of "Done when" passed as before, the quotation script printing
+`34 0`.
+
+A third fresh Opus reader found no must and three shoulds: R13 (b)'s antecedent and the requestState
+the model does not hold (S1), the amendment and revision paragraph naming the second reader (S2),
+and
+the Record's missing round (S3). A fixer applied each as its fix states. A fourth reader found the
+readers still miscounted and the ledger's late-result clause displaced; the coordinator applied both
+fixes at the merge, the revision paragraph now naming the readers without a count. Every check of
+"Done when" passed as before, the quotation script printing `34 0`.

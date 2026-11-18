@@ -83,31 +83,6 @@
       "requires": [],
       "schema": {
         "additionalProperties": false,
-        "oneOf": [
-          {
-            "properties": {
-              "account": {
-                "type": "string"
-              },
-              "apiKey": {
-                "type": "null"
-              }
-            }
-          },
-          {
-            "properties": {
-              "account": {
-                "type": "null"
-              },
-              "apiKey": {
-                "type": "object"
-              }
-            },
-            "required": [
-              "apiKey"
-            ]
-          }
-        ],
         "properties": {
           "account": {
             "type": [
@@ -119,17 +94,6 @@
             "default": false,
             "type": "boolean"
           },
-          "apiKey": {
-            "anyOf": [
-              {
-                "$ref": "github.com/shrav-k/conduit/core#secret-reference.v1"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null
-          },
           "model": {
             "default": "",
             "type": "string"
@@ -140,8 +104,7 @@
           }
         },
         "required": [
-          "account",
-          "apiKey"
+          "account"
         ],
         "type": "object"
       }
@@ -165,31 +128,6 @@
       "requires": [],
       "schema": {
         "additionalProperties": false,
-        "oneOf": [
-          {
-            "properties": {
-              "account": {
-                "type": "string"
-              },
-              "apiKey": {
-                "type": "null"
-              }
-            }
-          },
-          {
-            "properties": {
-              "account": {
-                "type": "null"
-              },
-              "apiKey": {
-                "type": "object"
-              }
-            },
-            "required": [
-              "apiKey"
-            ]
-          }
-        ],
         "properties": {
           "account": {
             "type": [
@@ -201,25 +139,13 @@
             "default": false,
             "type": "boolean"
           },
-          "apiKey": {
-            "anyOf": [
-              {
-                "$ref": "github.com/shrav-k/conduit/core#secret-reference.v1"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null
-          },
           "model": {
             "default": "",
             "type": "string"
           }
         },
         "required": [
-          "account",
-          "apiKey"
+          "account"
         ],
         "type": "object"
       }

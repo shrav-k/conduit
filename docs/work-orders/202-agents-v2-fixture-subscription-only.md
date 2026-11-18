@@ -350,3 +350,97 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 17:06 to 17:51 UTC, on the Mac from `main` `578835bd` (the merge of
+orders 048a-4 and 202's text, #362), in two rounds: the worker (1320 s) and a fresh Codex verifier
+(283 s), then the worker again (818 s) and a second fresh Codex verifier (245 s). Round 1 changed
+the eight files of Scope as decisions 1 to 4 say: `make_archives.rs` writes both `.v2` schemas with
+`account` alone required, a string or null with no default, and no `apiKey` and no `oneOf`; the five
+generated files and `install.json` carry `sha256:8f151f36...`; the case takes the new title, the ten
+removals of a null `apiKey` and the four `valid` changes; and the declaration's five shapes matched
+its 19 changes. The worker's own choices: cargo ran offline, with the compiler cache off after it
+met a sandbox write error, and `/usr/bin/python3` ran the tools that need PyYAML; the negative
+control's `git show HEAD:` read the base, since the checkpoint came after the worker.
+
+The first verifier found no must and three shoulds: the case could pass while an installed Type
+still accepted a null `apiKey`, since steps 3 and 4 evaluate the values file's schema and match
+values as required-field projections; order 117's entry for 052a-1 and 052a-2 calls for the digest's
+re-pin without the golden configurations' cleanup; and the 050f row of the index and order 117's
+plan still direct an explicit `apiKey`. The admin's round 2 asked for the fixes in the order's
+scope. The worker added to step 2, the install, projections of both installed `.v2` schemas
+(`account`'s type, `required` and `additionalProperties: false`) and an `absent` list of six
+pointers (`apiKey`, `oneOf` and `account`'s default in each), and two shapes to `202-declared.yaml`,
+and left the other two to the coordinator as outside the scope. Its own choices: the negative
+control and the checks of the old source and digest read `578835bd`, since `HEAD` held the new
+fixture after the checkpoint, and the two shapes declare the leaf paths that `vector_delta.py`
+reports. With a null-only `apiKey` added to either installed Type, and the install's digest changed
+to match, the case failed; both files were then restored byte for byte. The second verifier found no
+must and four shoulds: an installed schema could still admit `apiKey: null` through
+`patternProperties`; steps 3 and 4 could pass if the evaluator added an `apiKey: null` that a value
+omits; and the first verifier's two follow-ups to order 117 and the index, again the coordinator's.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch before
+its rebase. It ran `cargo fmt --check` and clippy (clean), `make_archives -- --check` (41 verified,
+the digest `8f151f36...`), the runner (`1 cases passed`), the vectors with 4 threads (2 passed; 0
+failed), the full suite (28 `ok` lines, 339 passed, 0 failed), the spike (9 passed), the eight
+Python checks (`Errors: 0` where named), the tool tests (129, OK), the order's probes and greps
+(as stated), the protected paths' status (empty), `git diff --check`, a privacy scan of the added
+lines, the commits' identity and a trial merge with `main` at `3c761dd9` (order 047d; clean). On a
+scratch copy with a fresh build it ran the negative control against the base `578835bd`: the
+first runner exited 1 with `step 3: /reply/samples/1/valid: expected false, found true`, and the
+rest passed as stated. A first attempt from a copied target directory ran a binary that wrote the
+worktree's fixtures again, with identical bytes; the worktree stayed clean. It found one must and
+one should:
+
+- R1: "Done-when unmet as worded": `vector_delta.py` gives 7 shapes and 33 changes, not the order's
+  5 shapes and 19 changes, and against the order's declaration as merged on `main` it gives 14
+  undeclared and exits 1. Round 2's additions to step 2 and the declaration go beyond decision 3
+  ("the steps 1 and 2 ... stay as they are") and decision 4 ("change it only to make it so").
+- R2: after the checkpoint commits, two checks of "Done when" that name `HEAD` test nothing: the
+  negative control's `git show HEAD:` restores the new values file, and
+  `vector_delta.py HEAD WORKTREE` reports 0 changes.
+
+The fixer rebased the branch onto `origin/main` at `1e38ff92` (order 048a-2, which merged
+meanwhile; before it, onto `3c761dd9`) with the work-order identity, without conflict, since
+neither order shares a file with this one, and took each finding:
+
+- R1: the reader's option (b). Round 2's assertions stay, as the coordinator's choice: the admin's
+  round 2 amended decisions 3 and 4, adding step 2's projections of both installed `.v2` schemas,
+  its `absent` list of six pointers and the declaration's two shapes for them. The merge's check
+  is `vector_delta.py origin/main WORKTREE --declared docs/work-orders/202-declared.yaml`, which
+  printed `7 shapes.` and `Vector delta: 33 changes; 0 flips; 0 undeclared; 0 errors.`, exit 0.
+  With the 5-shape declaration from `main` it gives 14 undeclared, exit 1; from `origin/main` to
+  round 1's checkpoint with that declaration it gives `5 shapes.` and
+  `Vector delta: 19 changes; 0 flips; 0 undeclared; 0 errors.`, exit 0, as the order states. The
+  order's text is unchanged.
+- R2: both checks ran against a base, not `HEAD`: the negative control took the values file from
+  `578835bd`, and `vector_delta.py` read `origin/main` at `1e38ff92`, which holds the old fixture
+  and the order's text. The order's text is unchanged; where the squash lands first, the base is
+  `origin/main~1` and the head `origin/main`.
+
+The second verifier's two shoulds on the installed schemas (`patternProperties`, and an
+`apiKey: null` that the evaluator adds) and both verifiers' follow-ups to order 117's entries for
+050f, 052a-1 and 052a-2 and the index's 050f row are left to the coordinator; the reader raised
+none of them.
+
+On the rebased branch, with this Record written, the fixer ran from `engine/`, one at a time and
+with `RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`: `cargo fmt --check` and clippy (exit
+0), `make_archives -- --check` (`41 reproducible archive fixtures verified`), the runner
+(`1 cases passed`), the vectors (`test result: ok. 2 passed; 0 failed`) and the full suite (exit
+0, 28 `ok` lines, 349 passed, none failed; the ten more than the reader's come with orders 047d
+and 048a-2). The negative control, with the values file from `578835bd`, failed first with
+`FAIL 0 cases passed; 1 failed` and, cut before `; reply:`, the line ending
+`step 3: /reply/samples/1/valid: expected false, found true`; `make_archives` then wrote the 41
+fixtures again, the runner ended `1 cases passed`, the check ended
+`41 reproducible archive fixtures verified`, and `git status` showed no fixture changed. From the
+root: `check_schemas.py`, `set_names.py --check`, `check_rulings.py`, `check_docs.py`,
+`check_roadmap.py`, `check_model_account.py`, `check_private_paths.py` and
+`promise_standing.py --check` (`Errors: 0` each), the tool tests with `/usr/bin/python3` (129,
+OK), the two probes (as stated), the five greps that print 1, the five that print 0 and the one
+that prints 3 (as stated), the protected paths' status and their diff from `origin/main` (both
+empty), and `git diff --check origin/main...HEAD` (clean). The spike's `tests/spike.rs` reported
+`test result: ok. 9 passed; 0 failed`. The commits' authors and committers are the work-order
+identity alone. The gate's run on this order's squash, which the merge waits on, is the
+coordinator's at the merge.

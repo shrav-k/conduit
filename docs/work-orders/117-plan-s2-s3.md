@@ -100,10 +100,19 @@ Not all of this is in the tree. Check what you can against it, and report any di
        decision, open to the owner's strike), and leaves CTR-013's comparisons across Types
        (client IDs across addresses, confirmClientIds, REC-002, the logins outputs of install.v1
        and inspect.v1) to a follow-up order the coordinator writes after it (the coordinator's
-       decision, open to the owner's strike). 048a-1 comes after 046a.
+       decision, open to the owner's strike). 048a-1 comes after 046a. The coordinator cuts
+       048a-2 into five, each after the one before (FR-264; the coordinator's, open to the
+       owner's strike): 048a-2, order 048a2, a lapsed login raising the instance's sign-in action
+       (F84's two halves, IFC-016's detection) and the conflict of a second `sign-in.v1` of one
+       instance (PND-010), kept together because ruling 82 (point 6, o1 and o4) and the targeted
+       review name 048a-2 as their carrier, with a sign-in action's expiry seven days under DL19;
+       048a-3, the hold (PND-005's `then`); 048a-4, setup's account check (PND-011's setup half),
+       the wrong-account undo and SignInUndone; 048a-5, `sign-in.v1` dispatched, with IFC-049's
+       relay and polling, which may need its own split; and 048a-6, the returns (PND-013,
+       PND-014). MC9a's pre-registration is order 201, which merges before 048a-2 is dispatched.
      - 048b-relay: the shell relays `input_required` (`server.rs`, `runner.rs`). M. After S0b.
-       048b-join: S-M. After 048a-2. 051a: shell commands (`list`, `fleet`, `retire
-       --with-resources`). M. After 042 and S0c. 051b: the pending-action commands `pending`,
+       048b-join: S-M. After 048a-6, the last part of 048a-2. 051a: shell commands (`list`,
+       `fleet`, `retire --with-resources`). M. After 042 and S0c. 051b: the pending-action commands `pending`,
        `sign-in` and `answer`. M. After 047 and 048b-join.
      - 050: the Agent packages 0.2.0, with each Agent's home, the login flows and the sign-in hooks,
        built on orders 050a and 076 (the `.v2` Types and their clients' own tools), whose work is on
@@ -128,13 +137,13 @@ Not all of this is in the tree. Check what you can against it, and report any di
          order; after nothing.
        - 050h, the retire hook: each `.v2` Agent signs out at retirement (D53). After 050f and
          050g's outcome recorded. Its tip is where the two lanes split.
-       - 050i, claude-code.v2's account and sign-out hooks. After 050h, and 048a-2 written.
+       - 050i, claude-code.v2's account and sign-out hooks. After 050h, and 048a-4 written.
        - 050j, claude-code.v2 states signIn, with its redirect login and sign-in hook. After 050i,
          and 048a-1 merged with the branch rebased onto it.
        - 050k, claude-code.v2's code-page login, chosen by signInLogin. After 050j.
        - 050l, codex.v2's account hook asks Codex itself through account/read, and its sign-out
          hook. After 050h, the coordinator's reading that order 197 confirms the route (if not,
-         the owner first, under ruling 82, point 1), and 048a-2 written.
+         the owner first, under ruling 82, point 1), and 048a-4 written.
        - 050m, codex.v2 states signIn: its browser login, its device login refused, and its keyed
          sign-in hook. After 050l, and 048a-1 merged with the lane rebased onto it.
        - 050n, the Agent packages 0.2.0, joined and merged, the last 050 order. After 048b-join

@@ -6,6 +6,7 @@ use crate::{
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
@@ -600,6 +601,15 @@ pub(crate) fn reject(
     reject_diagnostics(t, a, c, route, reason, rule, id, restriction, None)
 }
 
+fn rejection_route(route: &Value) -> Cow<'_, Value> {
+    if route.get("operation").is_some() {
+        return Cow::Borrowed(route);
+    }
+    let mut explanation = route.clone();
+    explanation["operation"] = route["tool"].clone();
+    Cow::Owned(explanation)
+}
+
 #[allow(clippy::too_many_arguments)]
 fn reject_diagnostics(
     t: &mut Transition,
@@ -652,6 +662,7 @@ fn reject_diagnostics(
         }
         _ => None,
     };
+    let explanation = rejection_route(route);
     let diagnostic = if let Some(diagnostics) = &diagnostics {
         diagnostics
             .as_array()
@@ -661,10 +672,6 @@ fn reject_diagnostics(
     } else if let Some(message) = specific {
         json!({"ruleId":rule,"level":"error","message":{"text":message}})
     } else {
-        let mut explanation = route.clone();
-        if explanation.get("operation").is_none() {
-            explanation["operation"] = route["tool"].clone();
-        }
         crate::explain::diagnostic(&t.state, &explanation, c, reason, rule)?
     };
     t.reply["structuredContent"] =
@@ -706,11 +713,7 @@ fn reject_diagnostics(
     let mut ending = route.clone();
     ending["ruleId"] = json!(rule);
     if reason == "refused" {
-        ending["refusalTier"] = json!(crate::explain::tier(
-            &t.state,
-            route["consumer"].as_str(),
-            c
-        ));
+        ending["refusalTier"] = json!(crate::explain::tier(&t.state, &explanation, c)?);
     }
     end(t, a, c, &ending, None, Some(reason), id)
 }
@@ -914,13 +917,6 @@ fn invoke_inner(
         } else {
             v.rules[0]
         });
-        if reason == "refused" {
-            access_data["refusalTier"] = json!(crate::explain::tier(
-                &t.state,
-                explanation["consumer"].as_str(),
-                c
-            ));
-        }
         access_data["dispatched"] = json!(false);
     }
     if access_data.get("caller").is_none()
@@ -960,6 +956,10 @@ fn invoke_inner(
         if let Some(value) = access_data.get(field) {
             route[field] = value.clone();
         }
+    }
+    if v.reason == Some("refused") {
+        access_data["refusalTier"] =
+            json!(crate::explain::tier(&t.state, &rejection_route(&route), c)?);
     }
     record(t, a, c, "access-decision", access_data)?;
     let mut access_rules = v.rules.clone();

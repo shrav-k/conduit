@@ -737,31 +737,23 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                     json!({"request":request}),
                     vec![],
                 ));
-                end_request(
-                    &mut transition,
-                    &evidence,
-                    &request,
-                    None,
-                    "refused",
-                    if management_authority {
-                        "ACC-033"
-                    } else {
-                        "ACC-001"
-                    },
-                    context,
-                )?;
                 let rule = if management_authority {
                     "ACC-033"
                 } else {
                     "ACC-001"
                 };
-                let diagnostic = explain::diagnostic(
-                    &transition.state,
-                    &explain::ids(&request, json!({"documents":documents})),
-                    context,
+                let route = explain::ids(&request, json!({"documents":documents}));
+                end_request(
+                    &mut transition,
+                    &evidence,
+                    &route,
+                    None,
                     "refused",
                     rule,
+                    context,
                 )?;
+                let diagnostic =
+                    explain::diagnostic(&transition.state, &route, context, "refused", rule)?;
                 transition.reply = json!({"reason":"refused","diagnostics":[diagnostic]});
                 return Ok(transition);
             }
@@ -790,7 +782,7 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
             end_request(
                 &mut transition,
                 &evidence,
-                &request,
+                &explain::ids(&request, json!({})),
                 None,
                 "invalid",
                 "FST-006",
@@ -812,22 +804,18 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                     json!({"request":request}),
                     vec![],
                 ));
+                let route = explain::ids(&request, json!({"object":object}));
                 end_request(
                     &mut transition,
                     &evidence,
-                    &request,
+                    &route,
                     None,
                     "refused",
                     "ACC-001",
                     context,
                 )?;
-                let diagnostic = explain::diagnostic(
-                    &transition.state,
-                    &explain::ids(&request, json!({"object":object})),
-                    context,
-                    "refused",
-                    "ACC-001",
-                )?;
+                let diagnostic =
+                    explain::diagnostic(&transition.state, &route, context, "refused", "ACC-001")?;
                 transition.reply = json!({"reason":"refused","diagnostics":[diagnostic]});
                 return Ok(transition);
             }
@@ -854,22 +842,18 @@ fn step_body(state: State, input: Input, context: &Context) -> Result<Transition
                 json!({"request":request, "object":object, "first_start":protected}),
                 vec![object.clone()],
             ));
+            let route = explain::ids(&request, json!({"object":object}));
             end_request(
                 &mut transition,
                 &evidence,
-                &request,
+                &route,
                 Some(&object),
                 "refused",
                 "LIF-034",
                 context,
             )?;
-            let diagnostic = explain::diagnostic(
-                &transition.state,
-                &explain::ids(&request, json!({"object":object})),
-                context,
-                "refused",
-                "LIF-034",
-            )?;
+            let diagnostic =
+                explain::diagnostic(&transition.state, &route, context, "refused", "LIF-034")?;
             transition.reply = json!({"reason":"refused","diagnostics":[diagnostic]});
         }
     }
@@ -1090,23 +1074,25 @@ fn authorized_path(state: &State, request: &Request, _context: &Context) -> Resu
 fn end_request(
     t: &mut Transition,
     evidence: &Evidence,
-    request: &Request,
+    route: &Value,
     object: Option<&str>,
     reason: &str,
     rule: &str,
     context: &Context,
 ) -> Result<()> {
-    let refusal_tier = explain::tier(&t.state, Some(&request.sender), context);
+    let refusal_tier = (reason == "refused")
+        .then(|| explain::tier(&t.state, route, context))
+        .transpose()?;
     let mut allocation = Allocation {
         evidence,
         cursor: 0,
     };
     for event in ["access-decision", "request-ended"] {
-        let mut data = json!({"caller":request.caller,
-            "consumer":request.sender, "conduit":request.conduit, "target":request.target,
-            "operation":request.operation, "reason":reason, "ruleId":rule, "dispatched":false});
-        if reason == "refused" {
-            data["refusalTier"] = json!(refusal_tier);
+        let mut data = json!({"caller":route["caller"],
+            "consumer":route["consumer"], "conduit":route["conduit"], "target":route["target"],
+            "operation":route["operation"], "reason":reason, "ruleId":rule, "dispatched":false});
+        if let Some(tier) = refusal_tier {
+            data["refusalTier"] = json!(tier);
         }
         if let Some(object) = object {
             data["object"] = json!(object);
@@ -1119,7 +1105,12 @@ fn end_request(
         &["REC-001", "REC-002", "REC-003", "OPS-005"],
         &["DL8"],
         json!({"reason":reason}),
-        vec![request.target.clone()],
+        vec![
+            route["target"]
+                .as_str()
+                .ok_or("missing request target")?
+                .into(),
+        ],
     ));
     Ok(())
 }

@@ -914,5 +914,8 @@ pub async fn client(
             "tools for {asked}: instance exists but has no presented tools yet; set up its targets and open its Conduits, then run tools again"
         );
     }
+    if let Ok(reply) = &response {
+        crate::author::note_unanswered(reply);
+    }
     response.map_err(|error| format!("{} for {asked} failed: {error}; check conduit tools and the serving engine's diagnostics; this request was not retried", tool.unwrap_or("tools/list")))
 }

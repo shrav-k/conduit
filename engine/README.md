@@ -737,6 +737,16 @@ and Agents and administrators for Pools. Templates and Conduits have no inventor
 and route selection use a read-only snapshot, and each request rechecks authority; inspection
 across multiple objects is not atomic with concurrent changes.
 
+`conduit pending --store DIR` lists, through `serve`, the pending actions raised at root,
+one JSON line each, as `list.v1`'s `pending` output gives them, and prints nothing on
+standard output when none is raised. `conduit answer --store DIR ACTION ANSWER` answers
+one of them through root's Conduit to the target that authorizes inspection of its
+subject (PND-009): a setup action takes `dismissed`. It answers only an action it finds
+raised at root, and only of the setup kind in this build; for any other it sends nothing
+and says so. After any other command whose last result through `serve` counts unanswered
+actions at root, the command line says how many on standard error and names
+`conduit pending`. The sign-in command is not built yet (order 051b-2).
+
 ```sh
 engine/target/release/conduit install --store /tmp/conduit-live-store \
   conformance/fixtures/s1/archives/filesystem-0.2.0.tar.gz#cbb831f07d2b251c84fcd768a03353203a8a1b2215e862881fef47f866d84436

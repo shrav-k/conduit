@@ -10,12 +10,17 @@ fn run() -> Result<()> {
     if raw.is_empty() || raw[0] == "--help" {
         return help::print(None);
     }
-    if raw.iter().any(|arg| arg == "--help") {
+    let help_requested = if raw[0] == "answer" {
+        raw[1..] == ["--help"]
+    } else {
+        raw.iter().any(|arg| arg == "--help")
+    };
+    if help_requested {
         return help::print(Some(&raw[0]));
     }
     let mut args = raw.into_iter();
     let command = args.next().ok_or(
-        "usage: conduit init|register|submit|replace|install|retire|unregister|inspect|records|serve|tools|call --store DIR [ARGUMENTS]",
+        "usage: conduit init|register|submit|replace|install|retire|unregister|inspect|pending|answer|records|serve|tools|call --store DIR [ARGUMENTS]",
     )?;
     let mut store = None;
     let mut project = None;
@@ -26,7 +31,14 @@ fn run() -> Result<()> {
     let mut positional = Vec::new();
     let mut as_instance = None;
     while let Some(arg) = args.next() {
+        // ANSWER is passed as given, even where it looks like an option; ACTION is an
+        // engine-issued ID and goes through the normal match.
+        if command == "answer" && positional.len() == 1 {
+            positional.push(arg);
+            continue;
+        }
         match arg.as_str() {
+            "--help" if command == "answer" => return help::print(Some(&command)),
             "--trust-domain" if command == "init" => {
                 config.trust_domain = Some(args.next().ok_or("--trust-domain needs DOMAIN")?);
             }
@@ -65,6 +77,8 @@ fn run() -> Result<()> {
                 "replace",
                 "retire",
                 "unregister",
+                "pending",
+                "answer",
             ]
             .contains(&command.as_str())
                 && !arg.starts_with('-') =>
@@ -104,6 +118,8 @@ fn run() -> Result<()> {
         "init",
         "register",
         "inspect",
+        "pending",
+        "answer",
         "records",
         "serve",
         "call",
@@ -125,7 +141,17 @@ fn run() -> Result<()> {
         return Err("store is not initialized; run conduit init".into());
     }
     config.engine_url = url.unwrap_or(Config::for_store(&store)?.engine_url);
-    if ["install", "submit", "replace", "retire", "unregister"].contains(&command.as_str()) {
+    if [
+        "install",
+        "submit",
+        "replace",
+        "retire",
+        "unregister",
+        "pending",
+        "answer",
+    ]
+    .contains(&command.as_str())
+    {
         let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
         let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
         return runtime.block_on(conduit_shell::author::run(
@@ -438,14 +464,21 @@ fn object_id(state: &conduit_core::State, name: &str) -> Result<String> {
         .ok_or_else(|| format!("missing first-start object {name}"))
 }
 fn main() {
-    let result = if std::env::args().nth(1).as_deref() == Some("__run-guard") {
+    let asked = std::env::args().nth(1).unwrap_or_default();
+    let result = if asked == "__run-guard" {
         conduit_shell::runner::guard_main()
     } else {
         run()
     };
-    if let Err(error) = result {
-        let asked: Vec<_> = std::env::args().skip(1).take(1).collect();
-        eprintln!("conduit {}: {error}", asked.join(" "));
+    if let Err(error) = &result {
+        eprintln!("conduit {asked}: {error}");
+    }
+    if !matches!(asked.as_str(), "pending" | "__run-guard")
+        && let Some(hint) = conduit_shell::author::unanswered_hint()
+    {
+        eprintln!("{hint}");
+    }
+    if result.is_err() {
         std::process::exit(1);
     }
 }

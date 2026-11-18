@@ -1,4 +1,4 @@
-const COMMANDS: [(&str, &str, &str); 12] = [
+const COMMANDS: [(&str, &str, &str); 14] = [
     (
         "init",
         "[--label KEY=VALUE] [--trust-domain DOMAIN]",
@@ -35,6 +35,12 @@ const COMMANDS: [(&str, &str, &str); 12] = [
         "unregister --store /tmp/conduit Resource/directory",
     ),
     ("inspect", "", "inspect --store /tmp/conduit"),
+    ("pending", "", "pending --store /tmp/conduit"),
+    (
+        "answer",
+        "ACTION ANSWER",
+        "answer --store /tmp/conduit 00000000-0000-4000-8000-000000000001 dismissed",
+    ),
     ("records", "", "records --store /tmp/conduit"),
     ("serve", "", "serve --store /tmp/conduit"),
     (
@@ -48,7 +54,7 @@ const COMMANDS: [(&str, &str, &str); 12] = [
         "call --store /tmp/conduit management.inspect.v1 '{\"object\":{\"kind\":\"Interface\",\"name\":\"root\"}}'",
     ),
 ];
-const DESCRIPTIONS: [&str; 12] = [
+const DESCRIPTIONS: [&str; 14] = [
     "Initialize a private store and root identity; repeat is safe.",
     "Register a local project, open root's submitted Conduits and set up instances. Owns runs until exit; stop serve first. --package explicitly installs an archive before registration.",
     "Submit a project to serve, open root's submitted Conduits and set up instances. Prints each attempted step after its results; completed steps persist on failure. Relative fetch/program values must be made absolute.",
@@ -57,6 +63,8 @@ const DESCRIPTIONS: [&str; 12] = [
     "Retire an instance through serve, routing Resources through their owning Pool.",
     "Unregister an object through serve using its current revision; retire live instances first.",
     "Inspect every object as root, one JSON line each. Uses serve if the store is active. Refused inspections also cause a nonzero exit.",
+    "List the pending actions raised at root through serve, one JSON line each as list.v1 gives them; prints nothing when none is raised.",
+    "Answer a setup action raised at root through serve, through root's Conduit to the target that authorizes inspection of its subject; a setup takes dismissed. Sends nothing for an action not raised at root or of another kind.",
     "Export ordered CloudEvents as JSON lines; stop serve first. Gaps cause a nonzero exit.",
     "Hold the store, set up registered instances and serve MCP on its fixed loopback URL. SIGTERM or Ctrl-C ends runs.",
     "List tools presented to root or a named instance. Set up the instance first and open its Conduits if its list is empty.",

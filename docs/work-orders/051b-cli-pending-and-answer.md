@@ -434,3 +434,101 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 merge does not wait for it. A fresh Codex verifier and a fresh read-only Opus reader read the
 result before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes
 this order's Record at the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 18:59 to 20:17 UTC, on the Mac from `main` `d891543f` (the order texts
+of #366), in two rounds: the worker (2831 s) and a fresh Codex verifier (242 s), then the worker
+again (1280 s) and a second fresh Codex verifier (299 s). The change is the seven files of Scope.
+`conduit pending` and `conduit answer` join the command line's usage, its lists, the help's 14
+entries and `author::run`; `author.rs` gains `answer_subject`, `unanswered_count`, `note_unanswered`
+and `unanswered_hint`; `server::client` calls `note_unanswered` right before its final `map_err`;
+`main` writes the hint after any error line; decision 7's two unit tests, decision 8's test through
+`serve` and decision 9's paragraph of `engine/README.md` are as ordered. `engine/STANDING.md` is
+unchanged: PND-009 is the only promise ID the new text names. The worker's findings: the failed
+setup ended `failed` under OPS-022 (`Required part run ended failed.`); root's `list.v1` gave one
+setup action and no notice; step 7's invalid answer wrote no `invocation-dispatched` record;
+`init`'s first-start reply, `records`' export, the local `inspect` rows, the local `register`'s
+replies and `submit`'s own step summaries reach standard output without passing through
+`server::client`, and so update no hint; and the action that `list.v1` gives names no Fleet, so a
+notice cannot be routed (decision 3's open point). Its own choices: one helper sends the list for
+both commands, and a `pending` that is not an array is read as empty; a missing `id` or `kind` is
+written `?` in decision 3's errors; and the unit test composes its neutral key from two literals,
+since `set_names.py` flagged it as one.
+
+The first verifier found one must: the global `--help` check and the option parsing caught a
+flag-like ANSWER (`-dismissed`, `--help`) before the engine could judge it, against decision 2's
+"passed as given". It found four shoulds: the dismissal's own hint was not checked; the unlisted
+answers' checks could not tell an answer sent and discarded; the unit test's key outside `_meta`
+lacked the `/unanswered` suffix; and step 7's parse failures dropped its standard output. Round 2
+took the operands after `--store` as given, kept `conduit answer --help` alone as help, ran four
+flag-like answers through `serve` to the engine's invalid under PND-009, checked that the
+dismissal prints no hint, checked that an unlisted answer adds only `management.list.v1`'s access
+decision, added a suffix-matching key inside `structuredContent` that counts 0, and carried all of
+step 7's output into its parse failures. The second verifier found two musts and two shoulds:
+`route` picks root's Conduit to the owner by a suffix match on `#answer.v1`, so where two Conduits
+to one Pool list an `answer.v1` of different packages it can pick the wrong one; a successful
+empty `pending` can write the session's initialization retry line before its own line; the
+dismissal's no-hint check would pass if the list result never stored a count; and the flag-like
+answers' checks would pass if the command line replaced each with `retried`.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) at `8f280bc6`, on a
+scratch copy of the tree that it and `origin/main` `8a393e49` (order 048a-3) merge to cleanly. It
+ran every check of "Done when": `cargo fmt --check` and clippy (clean), the unit tests (4 passed,
+0 failed), the test through `serve` and the help test (1 passed each), the shell suite (98 passed,
+0 failed, 4 ignored) and the engine suite with `RUST_TEST_THREADS=4` (354 passed, 0 failed, 4
+ignored); the management route's mutation, which failed at step 7 with `refused under ACC-033` in
+the printed output and passed after the restore with `cp`; the five tools (Errors: 0 each), the
+scope's `git status` (empty), `git diff --check origin/main...HEAD` (clean), the seven greps (1
+each) and the `STANDING.md` count (0). It compared decisions 1 to 9 with the diff (word for word)
+and the two commits' identity (neutral), scanned the added lines for private detail (none), and
+probed `conduit answer`'s parse on a scratch store. It found no must and two shoulds:
+
+- R1: the round-2 parser took every token after `--store` as an operand until it had two, so an
+  option written between `--store` and ACTION (`--url`, `--call-timeout-seconds` and the others)
+  was read as ACTION or ANSWER and the count check refused the command; and
+  `conduit answer --store DIR --help` gave a count error instead of the help.
+- R2: the second verifier's route must lies in the `route` this order requires and does not
+  change, so it is not this diff's defect.
+
+The fixer rebased the branch onto `origin/main` at `a701c1ee` (orders 204, 205, 050i and 050l)
+with the work-order identity, without conflict, and did as follows:
+
+- R1: `main.rs` takes only ANSWER, the token after ACTION, as given
+  (`if command == "answer" && positional.len() == 1`); ACTION goes through the normal match, so an
+  ACTION that begins with `-` is refused as an unknown argument and nothing is sent, a departure
+  from decision 2's "both passed as given" that the coordinator accepted at the merge, open to the
+  owner's strike (an engine-issued ID never begins with `-`), and `--help` anywhere else in
+  `conduit answer` prints its help. The test drops the unlisted answer whose ACTION was `--help`
+  and keeps the four flag-like ANSWER cases. On the built binary, `answer --store DIR --help`
+  printed the help and exited 0, and `--url` or `--call-timeout-seconds` before ACTION, and `--url`
+  as ANSWER, each passed the parse to `store is not initialized`. An option written between ACTION
+  and ANSWER is read as ANSWER.
+- R2 and the second verifier's first must: no change here. An open point for the coordinator: a
+  later shell order chooses root's Conduit by the fully qualified `{core}#answer.v1` (the core
+  package from `boundary::context`), with a regression test that opens two Conduits to one Pool.
+- The second verifier's second must: no change to the code; this Record notes the exception, as
+  that finding allows. `conduit pending`'s empty case writes its own one line; where
+  `server::client` retries the session's initialization, as for every command through `serve`,
+  its retry line comes before, and ruling 52 keeps that diagnostic visible.
+- The second verifier's first should: the unlisted answer sent while one action is raised now
+  checks the hint `conduit: 1 pending action(s) unanswered at root`, and the already-answered one
+  at the end checks its absence, so a count the command line never stored fails the test.
+- The second verifier's second should, in part: the engine's records carry no request arguments
+  (an `access-decision` record holds the tool and no `arguments`), so the test cannot read the
+  answer at the request boundary. Each flag-like answer now checks that its one access decision
+  after the list is to `workspace.answer.v1`, so the parser did not swallow it; a replacement by
+  another invalid string is still not detected.
+
+The fixer then ran, from `engine/` with `RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`, on
+the files of this commit before it was made: `cargo fmt --check` and
+`cargo clippy --all-targets -- -D warnings` (exit 0 each), the unit tests (4 passed, 0 failed),
+the test through `serve` and the help test (1 passed each), the shell suite (98 passed, 0 failed,
+4 ignored) and the engine suite (354 passed, 0 failed, 4 ignored, exit 0). The mutation's `grep`
+printed 1; the mutated test failed at step 7 with
+`management.answer.v1 is refused under ACC-033` in its message, and after the restore with `cp` it
+passed. From the root: `check_docs.py`, `check_rulings.py`, `set_names.py --check`,
+`check_private_paths.py` and `promise_standing.py --check` (Errors: 0 and exit 0 each), the
+scope's `git status` (empty), the seven greps (1 each), the `STANDING.md` count (0), and
+`git diff --check origin/main...HEAD` (clean). The gate's run on this order's squash, which the
+merge waits on, is the coordinator's at the merge.

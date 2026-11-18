@@ -3,6 +3,30 @@ use crate::{Result, boundary, server, store};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+static UNANSWERED: AtomicU64 = AtomicU64::new(0);
+
+pub fn unanswered_count(reply: &Value) -> u64 {
+    reply["_meta"]
+        .as_object()
+        .and_then(|meta| meta.iter().find(|(key, _)| key.ends_with("/unanswered")))
+        .and_then(|(_, value)| value.as_u64())
+        .unwrap_or(0)
+}
+
+pub fn note_unanswered(reply: &Value) {
+    UNANSWERED.store(unanswered_count(reply), Ordering::SeqCst);
+}
+
+pub fn unanswered_hint() -> Option<String> {
+    let count = UNANSWERED.load(Ordering::SeqCst);
+    (count > 0).then(|| {
+        format!(
+            "conduit: {count} pending action(s) unanswered at root as of the last result; run conduit pending --store DIR to list them"
+        )
+    })
+}
 
 fn state(directory: &Path) -> Result<Value> {
     let bytes = store::private_read(&directory.join("state.json"))?;
@@ -156,6 +180,39 @@ async fn call(directory: &Path, tool: &str, args: Value) -> Result<Value> {
     ensure_success(&reply, &format!("request to {tool}"))?;
     Ok(reply)
 }
+async fn list_pending(directory: &Path) -> Result<Vec<Value>> {
+    let mut reply = server::client(directory, None, Some("management.list.v1"), json!({})).await?;
+    if !succeeded(&reply) {
+        println!("{reply}");
+        return Err("listing root's pending actions through management.list.v1 did not succeed; see the printed result".into());
+    }
+    match reply
+        .get_mut("structuredContent")
+        .and_then(|content| content.get_mut("pending"))
+        .map(Value::take)
+    {
+        Some(Value::Array(actions)) => Ok(actions),
+        _ => Ok(Vec::new()),
+    }
+}
+
+fn answer_subject(action: &Value) -> Result<Value> {
+    let id = action["id"].as_str().unwrap_or("?");
+    let kind = action["kind"].as_str().unwrap_or("?");
+    if kind != "setup" {
+        return Err(format!(
+            "action {id} is of kind {kind}, and conduit answer routes only setup actions in this build; nothing was sent. Answer it with conduit call through root's Conduit to the target that PND-009 names for its kind, or with its kind's own command"
+        ));
+    }
+    if let Some(subject) = action["subject"].as_array().and_then(|items| items.first())
+        && let (Some(kind), Some(name)) = (subject["kind"].as_str(), subject["name"].as_str())
+    {
+        Ok(json!({"kind":kind,"name":name}))
+    } else {
+        Err(format!("action {id} names no subject; nothing was sent"))
+    }
+}
+
 async fn revision(directory: &Path, object: &Value) -> Result<Value> {
     let tool = route(directory, object, "inspect.v1")?;
     let reply = call(directory, &tool, json!({"object":object})).await?;
@@ -172,8 +229,8 @@ pub async fn run(
     repository: &Path,
 ) -> Result<()> {
     let expected = match command {
-        "inspect" => 0,
-        "replace" => 2,
+        "inspect" | "pending" => 0,
+        "replace" | "answer" => 2,
         _ => 1,
     };
     if args.len() != expected {
@@ -207,6 +264,27 @@ pub async fn run(
         .await
         .map_err(|e| format!("conduit serve must hold this store: {e}"))?;
     match command {
+        "pending" => {
+            let actions = list_pending(directory).await?;
+            if actions.is_empty() {
+                eprintln!("conduit pending: no pending action is raised at root");
+            }
+            for action in actions {
+                println!("{action}");
+            }
+        }
+        "answer" => {
+            let id = &args[0];
+            let actions = list_pending(directory).await?;
+            let action = actions.iter().find(|action| action["id"] == id.as_str()).ok_or_else(|| {
+                format!(
+                    "no action {id} is raised at root now: it is unknown, already answered or expired; nothing was sent. Run conduit pending to list the raised actions, or conduit call to ask the engine itself"
+                )
+            })?;
+            let subject = answer_subject(action)?;
+            let tool = route(directory, &subject, "answer.v1")?;
+            call(directory, &tool, json!({"action":id,"answer":args[1]})).await?;
+        }
         "inspect" => {
             let current = state(directory)?;
             let objects = current["objects"].as_array().ok_or("missing objects")?;
@@ -384,6 +462,42 @@ async fn submit_step(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn unanswered_count_reads_only_its_meta_key() {
+        let key = concat!("example.invalid", "/unanswered");
+        assert_eq!(unanswered_count(&json!({"_meta":{key:2}})), 2);
+        for reply in [
+            json!({}),
+            json!({"_meta":{}}),
+            json!({"structuredContent":{"unanswered":3}}),
+            json!({"structuredContent":{key:3}}),
+            json!({"_meta":{key:-1}}),
+            json!({"_meta":{key:"2"}}),
+        ] {
+            assert_eq!(unanswered_count(&reply), 0, "{reply}");
+        }
+    }
+
+    #[test]
+    fn answer_routes_setup_actions_only() {
+        let mut action =
+            json!({"id":"a","kind":"setup","subject":[{"kind":"Resource","name":"r","id":"x"}]});
+        assert_eq!(
+            answer_subject(&action).unwrap(),
+            json!({"kind":"Resource","name":"r"})
+        );
+        action["kind"] = json!("notice");
+        let error = answer_subject(&action).unwrap_err();
+        assert!(error.contains("of kind notice") && error.contains("nothing was sent"));
+        action["kind"] = json!("setup");
+        action["subject"] = json!([]);
+        assert!(
+            answer_subject(&action)
+                .unwrap_err()
+                .contains("names no subject")
+        );
+    }
+
     #[test]
     fn inspection_history_is_separate_and_requires_successful_inspection() {
         let object = json!({"kind":"Agent","name":"a","id":"a","past_conditions":[{"condition":{"reason":"RunStopped"},"endedAt":"2026-11-10T00:00:01Z"}]});

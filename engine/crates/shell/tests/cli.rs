@@ -411,6 +411,8 @@ fn help_describes_every_command_without_store_access() {
         "retire",
         "unregister",
         "inspect",
+        "pending",
+        "answer",
         "records",
         "serve",
         "tools",

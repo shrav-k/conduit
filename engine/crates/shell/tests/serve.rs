@@ -686,3 +686,217 @@ fn author_commands_require_serve_and_make_recorded_requests() {
     }
     stop_server(&mut server, &store, &[]);
 }
+
+#[test]
+fn pending_and_answer_list_and_dismiss_a_failed_setup() {
+    let temp = tempfile::tempdir().unwrap();
+    let store = temp.path().join("store");
+    let run = |verb: &str, args: &[&str]| {
+        Command::new(env!("CARGO_BIN_EXE_conduit"))
+            .arg(verb)
+            .arg("--store")
+            .arg(&store)
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    let replies = |stdout: &[u8], stderr: &str| -> Vec<Value> {
+        let stdout = std::str::from_utf8(stdout)
+            .unwrap_or_else(|error| panic!("{error}\n{stderr}\n{}", stdout.escape_ascii()));
+        stdout
+            .lines()
+            .map(|line| {
+                serde_json::from_str(line)
+                    .unwrap_or_else(|error| panic!("{error}\n{stderr}\n{stdout}"))
+            })
+            .collect()
+    };
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    let output = run("init", &["--url", &format!("http://127.0.0.1:{port}/mcp")]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let mut server = start_server(&store, port);
+
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let spec = conduit_loader::Specification::read(&repo.join("spec")).unwrap();
+    let api = &spec.names().api_version;
+    let core = boundary::context(&repo).unwrap().core_package;
+    let hook = format!("{core}#setup-hook.v1");
+    let project = temp.path().join("project");
+    fs::create_dir(&project).unwrap();
+    let manifest = json!({
+        "apiVersion":api,"address":"example.org/test/pending-answer",
+        "implementations":{"local":{"implements":[hook],"command":["/test/program"]}}
+    });
+    let documents = json!([
+        {"apiVersion":api,"kind":"Type","metadata":{"name":"empty.v1"},"spec":{"family":"Resource","schema":{"type":"object"},"offers":[],"requires":[]}},
+        {"apiVersion":api,"kind":"Pool","metadata":{"name":"test-pool"},"spec":{"type":format!("{core}#pool.v1")}},
+        {"apiVersion":api,"kind":"Pool","metadata":{"name":"workspace"},"from":"test-pool"},
+        {"apiVersion":api,"kind":"Resource","metadata":{"name":"failing-template"},"spec":{"type":"#empty.v1","config":{},"implementation":{hook:"#local"}}},
+        {"apiVersion":api,"kind":"Resource","metadata":{"name":"failing"},"from":"failing-template","owner":"workspace"}
+    ]);
+    fs::write(project.join("conduit.json"), manifest.to_string()).unwrap();
+    fs::write(project.join("documents.json"), documents.to_string()).unwrap();
+    let output = run("submit", &[project.to_str().unwrap()]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(!output.status.success(), "{stderr}");
+    assert!(
+        replies(&output.stdout, &stderr).iter().any(|step| {
+            step["step"] == "setup Resource/failing"
+                && matches!(step["outcome"].as_str(), Some("failed" | "unknown"))
+        }),
+        "{stderr}"
+    );
+
+    let output = run("pending", &[]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "{stderr}");
+    let actions = replies(&output.stdout, &stderr);
+    assert_eq!(actions.len(), 1, "{stderr}");
+    assert_eq!(actions[0]["kind"], "setup", "{stderr}");
+    assert_eq!(actions[0]["subject"][0]["kind"], "Resource", "{stderr}");
+    assert_eq!(actions[0]["subject"][0]["name"], "failing", "{stderr}");
+    let id = actions[0]["id"]
+        .as_str()
+        .unwrap_or_else(|| panic!("action ID must be a string\n{stderr}"));
+    assert!(!stderr.contains("unanswered"), "{stderr}");
+
+    let inspect_root = [
+        "management.inspect.v1",
+        r#"{"object":{"kind":"Interface","name":"root"}}"#,
+    ];
+    let output = run("call", &inspect_root);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "{stderr}");
+    assert!(
+        stderr.contains("conduit: 1 pending action(s) unanswered at root"),
+        "{stderr}"
+    );
+
+    let assert_unlisted_answer = |id: &str| {
+        let before = state(&store)["records"].as_array().unwrap().len();
+        let output = run("answer", &[id, "dismissed"]);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(!output.status.success(), "{stderr}");
+        assert!(output.stdout.is_empty(), "{stderr}");
+        assert!(stderr.contains("nothing was sent"), "{stderr}");
+        assert!(
+            stderr.contains(&format!("no action {id} is raised at root now")),
+            "{stderr}"
+        );
+        let current = state(&store);
+        let tools: Vec<_> = current["records"]
+            .as_array()
+            .unwrap_or_else(|| panic!("records are missing\n{stderr}"))
+            .iter()
+            .skip(before)
+            .filter(|record| record["type"] == "access-decision")
+            .map(|record| &record["data"]["tool"])
+            .collect();
+        assert_eq!(tools, [&json!("management.list.v1")], "{stderr}");
+        stderr.into_owned()
+    };
+    let stderr = assert_unlisted_answer("00000000-0000-4000-8000-0000000000ff");
+    assert!(
+        stderr.contains("conduit: 1 pending action(s) unanswered at root"),
+        "{stderr}"
+    );
+
+    for answer in ["retried", "-dismissed", "--help", "--store"] {
+        let before = state(&store)["records"].as_array().unwrap().len();
+        let output = run("answer", &[id, answer]);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            !output.status.success(),
+            "answer {answer:?}\n{stderr}\n{stdout}"
+        );
+        let result = replies(&output.stdout, &stderr);
+        assert_eq!(result.len(), 1, "answer {answer:?}\n{stderr}\n{stdout}");
+        assert_eq!(
+            result[0]["isError"], true,
+            "answer {answer:?}\n{stderr}\n{stdout}"
+        );
+        assert!(
+            result[0]["content"][0]["text"]
+                .as_str()
+                .is_some_and(|text| text.contains("reports invalid under PND-009")),
+            "answer {answer:?}\n{stderr}\n{stdout}"
+        );
+        let current = state(&store);
+        let sent: Vec<_> = current["records"]
+            .as_array()
+            .unwrap_or_else(|| panic!("records are missing\n{stderr}\n{stdout}"))
+            .iter()
+            .skip(before)
+            .filter(|record| {
+                record["type"] == "access-decision"
+                    && record["data"]["tool"] != "management.list.v1"
+            })
+            .map(|record| &record["data"]["tool"])
+            .collect();
+        assert_eq!(
+            sent,
+            [&json!("workspace.answer.v1")],
+            "answer {answer:?}\n{stderr}\n{stdout}"
+        );
+    }
+
+    let output = run("answer", &[id, "dismissed"]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "{stderr}");
+    assert!(!stderr.contains("unanswered"), "{stderr}");
+    let result = replies(&output.stdout, &stderr);
+    assert_eq!(result.len(), 1, "{stderr}");
+    assert_eq!(result[0]["isError"], false, "{stderr}");
+    let current = state(&store);
+    let pool = current["objects"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .find(|object| object["kind"] == "Pool" && object["name"] == "workspace")
+        .unwrap_or_else(|| panic!("workspace Pool is missing\n{stderr}"));
+    let records = current["records"]
+        .as_array()
+        .unwrap_or_else(|| panic!("records are missing\n{stderr}"));
+    let answer_operation = format!("{core}#answer.v1");
+    let dispatch = records
+        .iter()
+        .rev()
+        .find(|r| {
+            r["type"] == "invocation-dispatched" && r["data"]["operation"] == answer_operation
+        })
+        .unwrap_or_else(|| panic!("answer dispatch is missing\n{stderr}"));
+    assert_eq!(dispatch["data"]["target"], pool["id"], "{stderr}");
+    assert!(
+        records
+            .iter()
+            .any(|r| r["type"] == "pending-action-answered"
+                && r["data"]["pendingAction"] == json!([id])
+                && r["data"]["answer"]["answer"]["value"] == "dismissed"),
+        "{stderr}"
+    );
+
+    let output = run("pending", &[]);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "{stderr}");
+    assert!(output.stdout.is_empty(), "{stderr}");
+    assert!(
+        stderr.contains("no pending action is raised at root"),
+        "{stderr}"
+    );
+
+    let output = run("call", &inspect_root);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "{stderr}");
+    assert!(!stderr.contains("unanswered"), "{stderr}");
+
+    let stderr = assert_unlisted_answer(id);
+    assert!(!stderr.contains("unanswered"), "{stderr}");
+    stop_server(&mut server, &store, &[]);
+}

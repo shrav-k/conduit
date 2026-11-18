@@ -328,6 +328,26 @@ fn own_tools(o: &Value, c: &Context) -> Result<Value> {
     }
     Ok(own)
 }
+pub(crate) fn is_scope_conduit(
+    holder: &Value,
+    conduit: &Value,
+    state: &State,
+    context: &Context,
+) -> bool {
+    access::open(conduit)
+        && access::id(&conduit["consumer"]) == &holder["id"]
+        && access::object(state, &conduit["target"]).is_some_and(|target| {
+            (holder["kind"] == "Interface"
+                || holder["kind"] == "Agent" && access::id(&holder["owner"]) == &target["id"])
+                && matches!(target["kind"].as_str(), Some("Pool" | "Fleet"))
+                && target["name"] != "system"
+        })
+        && conduit["operations"].as_array().is_some_and(|ops| {
+            let inspect = context.qualified("inspect.v1");
+            ops.iter().any(|op| op == &inspect)
+        })
+}
+
 /// Compute each view from current Conduits; no independently mutable scope or administrator set.
 pub(crate) fn read(s: &State, o: &Value, c: &Context) -> Result<Value> {
     let mut consumes = vec![];
@@ -373,15 +393,8 @@ pub(crate) fn read(s: &State, o: &Value, c: &Context) -> Result<Value> {
         if !access::open(p) {
             continue;
         }
-        if consumed
+        if is_scope_conduit(o, p, s, c)
             && let Some(target) = access::object(s, &p["target"])
-            && (o["kind"] == "Interface"
-                || o["kind"] == "Agent" && access::id(&o["owner"]) == &target["id"])
-            && ["Pool", "Fleet"].iter().any(|k| target["kind"] == *k)
-            && target["name"] != "system"
-            && p["operations"]
-                .as_array()
-                .is_some_and(|ops| ops.contains(&json!(c.qualified("inspect.v1"))))
         {
             let e = scope
                 .entry(format!("{}:{}", target["kind"], target["name"]))

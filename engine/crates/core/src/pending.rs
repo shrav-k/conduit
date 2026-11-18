@@ -1,5 +1,5 @@
 //! Pending actions computed from invocation history, without storing an action.
-use crate::State;
+use crate::{Context, Result, State, access, inventory};
 use chrono::{DateTime, SecondsFormat, TimeDelta};
 use serde_json::{Value, json};
 
@@ -117,6 +117,135 @@ pub(crate) fn is_raised_at(action: &Value, time: &str) -> bool {
     )
 }
 
+fn is_interface(holder: &Value) -> bool {
+    holder["kind"] == "Interface" && holder.get("spec").is_none()
+}
+
+fn is_root(holder: &Value, state: &State, context: &Context) -> bool {
+    access::management(state, "root", context).is_ok_and(|root| root["id"] == holder["id"])
+}
+
+pub(crate) fn own_interface<'a>(
+    state: &'a State,
+    caller: &Value,
+    sender: &Value,
+) -> Option<&'a Value> {
+    if !caller.is_string() || caller != sender {
+        return None;
+    }
+    access::object_by_id(state, caller).filter(|holder| is_interface(holder))
+}
+
+/// PND-002: a subject can qualify by its own scope membership or through an owner.
+fn is_raised_for(
+    action: &Value,
+    holder: &Value,
+    state: &State,
+    time: &str,
+    context: &Context,
+) -> bool {
+    if !is_interface(holder) || !is_raised_at(action, time) {
+        return false;
+    }
+    is_root(holder, state, context) || scope_contains_subject(action, holder, state, context)
+}
+
+fn scope_contains_subject(
+    action: &Value,
+    holder: &Value,
+    state: &State,
+    context: &Context,
+) -> bool {
+    let subjects: Vec<_> = action["subject"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|subject| access::object_by_id(state, &subject["id"]))
+        .collect();
+    state
+        .objects
+        .iter()
+        .filter(|conduit| inventory::is_scope_conduit(holder, conduit, state, context))
+        .filter_map(|conduit| access::object(state, &conduit["target"]))
+        .any(|target| {
+            let id = &target["id"];
+            subjects.iter().any(|subject| {
+                &subject["id"] == id
+                    || access::id(&subject["owner"]) == id
+                    || subject["kind"] == "Conduit"
+                        && ["consumer", "target"].iter().any(|end| {
+                            access::object_by_id(state, &subject[*end])
+                                .is_some_and(|object| access::id(&object["owner"]) == id)
+                        })
+            })
+        })
+}
+
+/// PND-004: disclose evidence only when its subjects are all visible.
+fn action_view(
+    action: &Value,
+    holder: &Value,
+    state: &State,
+    context: &Context,
+) -> Result<Option<Value>> {
+    let mut view = action.clone();
+    let mut all_visible = true;
+    if !is_root(holder, state, context) {
+        let subjects = view["subject"]
+            .as_array_mut()
+            .ok_or("action lacks subjects")?;
+        let mut visible = Vec::new();
+        for subject in subjects.iter() {
+            if let Some(object) = access::object_by_id(state, &subject["id"])
+                && access::may_inspect(state, &holder["id"], object, context)?
+            {
+                visible.push(subject.clone());
+            }
+        }
+        if visible.is_empty() {
+            return Ok(None);
+        }
+        all_visible = visible.len() == subjects.len();
+        *subjects = visible;
+    }
+    let evidence = view["evidence"]
+        .as_array_mut()
+        .ok_or("action lacks evidence")?;
+    evidence.retain(|item| {
+        all_visible && !matches!(item["kind"].as_str(), Some("code" | "fingerprint"))
+    });
+    Ok(Some(view))
+}
+
+fn held_actions(state: &State, context: &Context) -> Vec<Value> {
+    let setup_operation = context.qualified("set-up.v1");
+    let mut actions: Vec<_> = state
+        .objects
+        .iter()
+        .filter(|object| object.get("spec").is_none())
+        .filter_map(|object| setup_action(state, object, &setup_operation))
+        .collect();
+    actions.sort_by(|a, b| a["id"].as_str().cmp(&b["id"].as_str()));
+    actions
+}
+
+pub(crate) fn raised_views(
+    holder: &Value,
+    state: &State,
+    time: &str,
+    context: &Context,
+) -> Result<Vec<Value>> {
+    let mut views = Vec::new();
+    for action in held_actions(state, context) {
+        if is_raised_for(&action, holder, state, time, context)
+            && let Some(view) = action_view(&action, holder, state, context)?
+        {
+            views.push(view);
+        }
+    }
+    Ok(views)
+}
+
 fn fact(value: Value, place: &str, proves: &str) -> Value {
     json!({"kind":"fact", "value":value, "where":place, "proves":proves})
 }
@@ -229,5 +358,124 @@ mod tests {
         assert_eq!(action(&state), Some(legacy));
         state.records.clear();
         assert_eq!(action(&state), None);
+    }
+
+    #[test]
+    fn actions_raised_by_scope() {
+        let (_, context) = crate::explain::tests::fixture();
+        let ended = "2026-11-09T12:30:00Z";
+        let time = "2026-11-09T12:30:01Z";
+        let expiry = "2026-11-16T12:30:00Z";
+        let operation = context.qualified("set-up.v1");
+        let inspect = context.qualified("inspect.v1");
+        let list = context.qualified("list.v1");
+        let root = json!({"id":"r","kind":"Interface","from":context.qualified("root")});
+        let viewer = json!({"id":"v","kind":"Interface"});
+        let unscoped = json!({"id":"u","kind":"Interface"});
+        let agent = json!({"id":"a2","kind":"Agent","owner":"f"});
+        let a1 = json!({"id":"a1","name":"a1","kind":"Agent","owner":"f"});
+        let resource = json!({"id":"x","name":"x","kind":"Resource","owner":"p"});
+        let conduit = |id, consumer, target, open, op: &str| {
+            json!({"id":id,"name":id,"kind":"Conduit","consumer":consumer,"target":target,
+                "open":open,"state":"ready","operations":[op]})
+        };
+        let failed_setup = |id, object| {
+            json!({"id":id,"operation":operation,"object":object,"state":"failed",
+                "ended":{"time":ended,"outcome":"failed"}})
+        };
+        let mut state = State {
+            objects: vec![
+                root.clone(),
+                json!({"id":"management","kind":"Resource","from":context.qualified("management")}),
+                json!({"id":"f","name":"f","kind":"Fleet"}),
+                json!({"id":"p","name":"p","kind":"Pool"}),
+                viewer.clone(),
+                unscoped.clone(),
+                resource.clone(),
+                a1.clone(),
+                agent.clone(),
+                conduit("c1", "v", "f", true, &inspect),
+                conduit("c2", "a2", "f", true, &inspect),
+                conduit("c3", "v", "p", false, &inspect),
+                conduit("c4", "v", "p", true, &list),
+            ],
+            invocations: vec![failed_setup("s2", "x"), failed_setup("s1", "a1")],
+            ..State::default()
+        };
+        let a1_action = setup_action(&state, &a1, &operation).unwrap();
+        let x_action = setup_action(&state, &resource, &operation).unwrap();
+        let both = vec![a1_action.clone(), x_action];
+        let views = |state, holder, at| raised_views(holder, state, at, &context).unwrap();
+        assert_eq!(views(&state, &root, time), both);
+        let scoped = views(&state, &viewer, time);
+        assert_eq!(scoped, vec![a1_action]);
+        assert_eq!(scoped.len(), 1);
+        assert_eq!(views(&state, &agent, time).len(), 0);
+        assert_eq!(views(&state, &unscoped, time).len(), 0);
+
+        let mut open_scope = state.clone();
+        for path in &mut open_scope.objects {
+            if path["id"] == "c3" {
+                path["open"] = json!(true);
+            }
+        }
+        let scoped = views(&open_scope, &viewer, time);
+        assert_eq!(scoped, both);
+        assert_eq!(scoped.len(), 2);
+        assert_eq!(views(&open_scope, &root, expiry).len(), 0);
+        assert_eq!(views(&open_scope, &viewer, expiry).len(), 0);
+
+        let observed = fact(json!("observed"), "status", "a fact");
+        let notice = json!({"id":"n1","kind":"notice",
+            "subject":[inventory::object(&a1),inventory::object(&resource)],
+            "evidence":[
+                {"kind":"code","value":"example-code","where":"panel","proves":"a code"},
+                {"kind":"fingerprint","value":"123456","where":"panel","proves":"a fingerprint"},
+                observed
+            ],
+            "expiry":expiry
+        });
+        let mut full_view = notice.clone();
+        full_view["evidence"] = json!([observed]);
+        let mut partial_view = notice.clone();
+        partial_view["subject"] = json!([inventory::object(&a1)]);
+        partial_view["evidence"] = json!([]);
+        let raised = |state: &State, holder: &Value, action: &Value| {
+            is_raised_for(action, holder, state, time, &context)
+        };
+        let view = |state: &State, holder: &Value, action: &Value| {
+            action_view(action, holder, state, &context).unwrap()
+        };
+        assert_eq!(
+            (raised(&state, &root, &notice), view(&state, &root, &notice)),
+            (true, Some(full_view.clone()))
+        );
+        assert_eq!(
+            (
+                raised(&state, &viewer, &notice),
+                view(&state, &viewer, &notice)
+            ),
+            (true, Some(partial_view))
+        );
+        assert_eq!(
+            (
+                raised(&open_scope, &viewer, &notice),
+                view(&open_scope, &viewer, &notice)
+            ),
+            (true, Some(full_view))
+        );
+
+        let endpoint_conduit = conduit("c5", "a2", "x", true, &inspect);
+        let conduit_notice = json!({"id":"n2","kind":"notice",
+            "subject":[inventory::object(&endpoint_conduit)],"evidence":[observed],"expiry":expiry});
+        state.objects.push(endpoint_conduit);
+        assert_eq!(
+            (
+                raised(&state, &viewer, &conduit_notice),
+                view(&state, &viewer, &conduit_notice)
+            ),
+            (true, None)
+        );
+        assert_eq!(view(&state, &root, &conduit_notice), Some(conduit_notice));
     }
 }

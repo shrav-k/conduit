@@ -46,7 +46,7 @@ Each number counts promises. The last row counts those whose Engine source is no
 | reason, no case | 57 | 15 | 2 | 74 |
 | no case, no reason | 40 | 83 | 22 | 145 |
 | all | 226 | 246 | 48 | 520 |
-| named in engine source | 141 | 160 | 23 | 324 |
+| named in engine source | 141 | 160 | 24 | 325 |
 
 ## The promises
 
@@ -409,9 +409,9 @@ Each number counts promises. The last row counts those whose Engine source is no
 | PLC-027 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PLC-028 | language | must | 0 | 0 | outside | none | no case, no reason |
 | PND-001 | convention | must | 1 | 0 | outside | core | case passes |
-| PND-002 | convention | must | 1 | 0 | outside | core | case passes |
+| PND-002 | convention | must | 2 | 0 | outside | core | case passes |
 | PND-003 | convention | must | 2 | 0 | outside | core | case passes |
-| PND-004 | interface | must | 0 | 0 | outside | none | no case, no reason |
+| PND-004 | interface | must | 0 | 0 | outside | core | no case, no reason |
 | PND-005 | convention | must | 0 | 0 | outside | none | no case, no reason |
 | PND-006 | convention | must | 2 | 0 | outside | core | case passes |
 | PND-007 | convention | must | 0 | 0 | outside | none | no case, no reason |

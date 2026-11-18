@@ -454,7 +454,7 @@ impl Verdict {
         v
     }
 }
-fn management<'a>(state: &'a State, name: &str, context: &Context) -> Result<&'a Value> {
+pub(crate) fn management<'a>(state: &'a State, name: &str, context: &Context) -> Result<&'a Value> {
     state
         .objects
         .iter()

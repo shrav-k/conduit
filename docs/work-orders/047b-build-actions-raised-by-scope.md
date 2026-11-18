@@ -540,3 +540,125 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 09:12 to 10:22 UTC, on the Mac from `main` `3aafbd93` (order 047's
+merge), in two rounds: the worker (1952 s) and a fresh Codex verifier (498 s), then the worker again
+(1389 s) and a second fresh Codex verifier (363 s). The change is ten files of Scope. `pending.rs`
+gains `is_raised_for`, `scope_contains_subject`, `action_view(action: &Value, holder: &Value, state:
+&State, context: &Context) -> Result<Option<Value>>`, `held_actions(state: &State, context:
+&Context) -> Vec<Value>`, `pub(crate) fn raised_views(holder: &Value, state: &State, time: &str,
+context: &Context) -> Result<Vec<Value>>` and `pub(crate) fn own_interface`, with the test
+`actions_raised_by_scope`; `inventory.rs` gains `pub(crate) fn is_scope_conduit(holder: &Value,
+conduit: &Value, state: &State, context: &Context) -> bool`, which `read` calls; `access.rs` exposes
+its `management` lookup; `records.rs` sets `status.pending` at each Interface's own inspection and
+`list.v1`'s `pending` output with the decision `list-pending-actions`; `requests.rs` removes
+`pending` from `list.v1`'s recorded outputs; `lib.rs`'s `step_owned` marks the `unanswered` key
+after `step_body` and before `explain::first_text`. The case `setup-action-by-scope` has 16 steps
+and 798 unique allocation IDs; with it come its index entry, the DL19 sentence as the order gives it
+and `STANDING.md`, where PND-002's row counts 2 cases and PND-004's is named in the core, 325
+promises named in engine source. The worker's own choices: the exposed `access::management` lookup
+for root, and `own_interface` shared by the list, the inspection and the marking. It reported
+decision 11's three findings for the coordinator: list.v1's description does not say which actions a
+list through a Pool or a Fleet shows, nor whether `kind` narrows `pending`; `evidence-item.v1` names
+no object an item is about, which 047d's notice needs; and PND-002's scope can raise an action about
+a Conduit that the Interface may not inspect, which the build neither lists nor counts. The first
+round's release suite failed one test, order 047's expiry repeat test, which compared whole replies.
+The first verifier found four musts: that test (decision 6's live count breaks its whole-reply
+equality); a retained `list.v1` reply that shows pending subjects and evidence after the Interface
+loses inspection scope; a first-attempt filter refusal of an Interface's own request, which got no
+key since the refusal removes the invocation; and PND-012's record gap. The coordinator's round-2
+prompt forwarded the four fixes as the verifier wrote them. Round 2 compared the expiry test's
+`structuredContent` and checked the key on each reply; added a rewrite of retained `list.v1` replies
+on the repeat path in `requests.rs`, with `restrict_retained_list` in `pending.rs` and a test;
+captured the caller from the pre-step state for a completion (`completion_caller` and
+`primary_caller` in `lib.rs`), with a test in `requests.rs`; and left PND-012's record to the
+coordinator. The release suite then passed. The second verifier found five musts and a should: that
+the replay rewrite checks no expiry, that retained inspections still replay `status.pending`, that
+the replay goes beyond the Scope and OPS-009, that decision 6's text conflicts with the build, and
+PND-012's gap; its should asked for a replay test that checks inspection authority apart from scope.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on a scratch copy at the
+branch with `HEAD` reset to `3aafbd93` and `RUST_TEST_THREADS=4`. Every check of "Done when" passed
+as worded: `pending::tests` 2 passed, `Nothing to move.`, the runner's 1, 2, 2 and 41 cases, the
+shell test, the vectors and the full release suite; both negative controls failed as worded, at step
+12 and at step 9, and the restored run passed; the spike reported 9 passed; each Python check ended
+`Errors: 0`; the tool tests ran 129, OK; and `vector_delta.py` reported 1 shapes, 1 changes, 0
+flips, 0 undeclared and 0 errors. The case matched decision 8 step by step and the DL19 sentence was
+exact. It found one must and three shoulds:
+
+- R1: round 2's rewrite of retained `list.v1` replies on the OPS-009 repeat path lies outside the
+  Scope, which admits `requests.rs` only for decision 5's removal; no decision asks for it; it
+  contradicts 047's repeat rule in DL19; it leaves list and inspection repeats inconsistent; and it
+  checks no expiry.
+- R2: decision 6 says a result whose invocation the state no longer holds gets no key, but the build
+  captures the caller from the pre-step state (`completion_caller` and `primary_caller`) and sets
+  the key on a first-attempt filter refusal; the coordinator's round-2 prompt directed this, the
+  order's text still says otherwise, and the new test sits in `requests.rs`, outside the Scope.
+- R3: the edit of order 047's expiry repeat test in `requests.rs` is sound but not authorized by the
+  order, whose stop clause does not name core unit tests.
+- R4: two conditions decision 1 does not state, unreported as own choices: `is_raised_for` returned
+  false for an action with an `answer` member, and `is_scope_conduit` required the Conduit to have
+  no `spec`. Neither changed a result.
+
+The fixer rebased the branch onto `origin/main` at `f72c2bc3` (orders 046b and 047c, documents only)
+with the work-order identity, without conflict, and applied each finding:
+
+- R1: reverted the repeat-path block in `requests.rs`, `restrict_retained_list` in `pending.rs`, the
+  test `retained_list_withholds_pending_after_inspection_scope_closes` and the then-unused `pending`
+  import. A retained list again returns its original outputs, as an inspection repeat does under
+  DL19. Finding for the owner: OPS-009 has a repeat return the outputs the invocation returned,
+  while PND-002 and PND-004 limit pending subjects and evidence to what the Interface may inspect
+  and to actions still raised, so a keyed repeat of `list.v1` or `inspect.v1` can show an action and
+  its evidence after the Interface's inspection scope has closed or the action has expired. Which
+  rule wins for retained pending outputs is the owner's question.
+- R2: kept. Decision 6's sentence on a missing invocation is replaced: a first-attempt filter
+  refusal of an Interface's own request is attributed through the pre-step invocation, matched by ID
+  and attempt. The Scope was widened for the `requests.rs` test
+  `first_filter_refusal_counts_actions_for_the_waiting_interface`, which keeps the delegated-refusal
+  assertion.
+- R3: kept, as a Scope widening by the coordinator, made because decision 6's live count breaks
+  whole-reply equality in the expiry repeat test: the test now compares `structuredContent`, checks
+  `unanswered` 1 on the original and no key on the repeat at expiry.
+- R4: dropped `action.get("answer").is_some() ||` from `is_raised_for`, leaving stored answers to
+  047c, and `&& conduit.get("spec").is_none()` from `is_scope_conduit`, since `read` already skips
+  Conduits with a `spec`.
+
+PND-012's record gap, that the record of an inspection that raises an action does not name the
+action's ID, was in place after 047 and stays with the coordinator. The fixer then ran, from
+`engine/` with `RUST_TEST_THREADS=4`, each check of "Done when" on the files of this commit before
+it was made: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` (exit 0),
+`pending::tests` (2 passed, 0 failed), the pieces tool (`Nothing to move.`), the runner (`1 cases
+passed`, `2 cases passed`, `2 cases passed`, `41 cases passed`), the shell test (1 passed), the
+vectors (2 passed) and the full release suite (exit 0: 322 passed, 0 failed, 4 ignored). The
+negative controls, with `origin/main`'s `records.rs` and then its `lib.rs`, each printed `FAIL 0
+cases passed; 1 failed`, the first at step 12 with `/reply/structuredContent/status/pending: missing
+required field` and the second at step 9 with an error naming the `unanswered` key; after both
+restores the case ended `1 cases passed`. The spike reported `test result: ok. 9 passed; 0 failed`.
+From the root, each Python check ended `Errors: 0`, `/usr/bin/python3 -m unittest discover -s
+tools/tests` ran 129, OK, and `vector_delta.py origin/main WORKTREE --declared
+docs/work-orders/047b-declared.yaml` printed `1 shapes.` and `Vector delta: 1 changes; 0 flips; 0
+undeclared; 0 errors.`, exit 0 (against `HEAD`, which holds the case, 0 changes). The order's greps
+printed seven 1s and two 0s, the protected paths' `git status` printed nothing, and `git diff
+--check`, `git diff --check origin/main...HEAD`, `check_docs` and `check_private_paths` were clean.
+
+A second fresh read-only Opus reader read the branch at `5d2596d3`, with `HEAD` soft-reset to
+`f72c2bc3`; every check of "Done when" passed as worded and each fix held. It found no must and
+three shoulds, applied at the merge: the round durations and the second verifier's counts above,
+decision 11's three findings above, and DL19's repeat sentence, which after R1's revert named
+inspections alone although a keyed repeat of `list.v1` returns its retained `pending` output. As the
+coordinator's amendment, open to the owner's strike, DL19 now reads "returns its original
+inspection or `list.v1` outputs while retained, including any `status.pending` or `pending`,", so
+the row declares the limit the engine has; R1's question for the owner stands. As the
+coordinator's acceptance, open to the owner's strike, the coordinator also accepts the fixer's R2,
+decision 6's sentence on a missing invocation replaced as written above, and R3, the Scope widened
+for the expiry repeat test. After the DL19 change, the order's checks that read `CONFORMANCE.md`
+were run again: the `tr` grep for the `unanswered` key printed 1 and the one for `come with order
+047b` printed 0, and `promise_standing.py --check`, `check_docs.py` and `check_private_paths.py`
+each ended `Errors: 0`. The gate's run on this order's squash, which this merge waits on, is the
+coordinator's at the merge.
+
+At the merge the coordinator applied the last reader's should, if any remained, and added a check
+line to 047b-declared.yaml, which reached main with this order's text, so that the gate's vector
+check reads it. The gate runs on the squash, and the merge waits on its PASS.

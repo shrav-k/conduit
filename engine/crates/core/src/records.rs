@@ -312,6 +312,20 @@ pub(crate) fn execute(
             json!({"kind":args.get("kind")}),
             vec![],
         ));
+        if let Some(holder) = pending::own_interface(view, &v["caller"], &v["sender"]) {
+            let actions = pending::raised_views(holder, view, &a.evidence.time, c)?;
+            if !actions.is_empty() {
+                let ids: Vec<_> = actions.iter().map(|action| &action["id"]).collect();
+                t.decisions.push(decision(
+                    "list-pending-actions",
+                    &["PND-001", "PND-002", "PND-003", "PND-004"],
+                    &["DL19"],
+                    json!({"actions":ids}),
+                    vec![],
+                ));
+                outputs["pending"] = json!(actions);
+            }
+        }
     } else if v["operation"] == c.qualified("inspect.v1") {
         let o = access::object(&t.state, &args["object"])
             .ok_or("inspection object absent")?
@@ -398,19 +412,28 @@ pub(crate) fn execute(
                 .collect::<Vec<_>>()
         );
         if o.get("spec").is_none()
-            && v["caller"] == v["sender"]
-            && let Some(action) = pending::setup_action(&t.state, &o, &c.qualified("set-up.v1"))
-            && pending::is_raised_at(&action, &a.evidence.time)
-            && v["caller"] == access::PublicationView::new(&t.state, c).management("root")?["id"]
+            && let Some(holder) = pending::own_interface(&t.state, &v["caller"], &v["sender"])
         {
-            t.decisions.push(decision(
-                "raise-setup-action",
-                &["PND-001", "PND-002", "PND-003", "PND-006"],
-                &["DL19"],
-                json!({"action":action["id"]}),
-                vec![],
-            ));
-            status["pending"] = json!([action]);
+            let actions: Vec<_> = pending::raised_views(holder, &t.state, &a.evidence.time, c)?
+                .into_iter()
+                .filter(|action| {
+                    action["subject"].as_array().is_some_and(|subjects| {
+                        subjects.iter().any(|subject| subject["id"] == o["id"])
+                    })
+                })
+                .collect();
+            for action in &actions {
+                t.decisions.push(decision(
+                    "raise-setup-action",
+                    &["PND-001", "PND-002", "PND-003", "PND-004", "PND-006"],
+                    &["DL19"],
+                    json!({"action":action["id"]}),
+                    vec![],
+                ));
+            }
+            if !actions.is_empty() {
+                status["pending"] = json!(actions);
+            }
         }
         let records: Vec<_> = t
             .state

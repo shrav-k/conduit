@@ -1,6 +1,6 @@
 # Ruling 75: retries fenced, the folder as the grant, browser logins settled, S2 to S10 accepted, G5's scope
 
-Status: in force; amended by 78 (A1: no fence; D1: S2, S3, S5 and S7; E1: what model checking shows; its later answer: calls that change nothing); amended by 80 (C3 amended: Conduit manages the connection a Claude sign-in is completed over, and never carries the credential; D1: S10's file store whenever A73 has not reported) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed) (spec pending except where a promise is cited). This record says why.
+Status: in force; amended by 78 (A1: no fence; D1: S2, S3, S5 and S7; E1: what model checking shows; its later answer: calls that change nothing); amended by 80 (C3 amended: Conduit manages the connection a Claude sign-in is completed over, and never carries the credential; D1: S10's file store whenever A73 has not reported); amended by 84 (B3: the planned wall is a sandbox method, Docker first, not a dedicated macOS user; its later answer "B3's timing" falls; that B3's timing is not carried over, and that the branch-protection guard stands until a sandbox method is in place, are the coordinator's reading) (ruled by the owner on 2026-11-11). Holds now: [IN_FORCE.md: 7. Operations, outcomes, revisions, records and observation](../../../IN_FORCE.md#7-operations-outcomes-revisions-records-and-observation), [IN_FORCE.md: 9. Fleets, Interfaces, pending actions, sign-in, and what Agents reach](../../../IN_FORCE.md#9-fleets-interfaces-pending-actions-sign-in-and-what-agents-reach), [IN_FORCE.md: 13. Proof, the build, experiments and measurement](../../../IN_FORCE.md#13-proof-the-build-experiments-and-measurement), [IN_FORCE.md: 15. How the work is governed](../../../IN_FORCE.md#15-how-the-work-is-governed) (spec pending except where a promise is cited). This record says why.
 
 The coordinator gathered the questions that waited for the owner on 2026-11-11, each with a
 recommendation:
@@ -130,4 +130,6 @@ owner accepted leaving them as they are.
 2026-11-16: on the second accounts of D2 and D4, against the vendors' terms that order 190 read,
 the owner: "Proceed as ruled". No decision changes; the answer is in
 [ruling 72's later answers](../ruling-72/README.md#later-answers). C3 and S10's answer under D1
-are amended by [ruling 80](../ruling-80/README.md).
+are amended by [ruling 80](../ruling-80/README.md). B3, and its later answer "B3's timing" above,
+are amended by [ruling 84](../ruling-84/README.md); by the coordinator's reading, the
+branch-protection guard stands until a sandbox method is in place.

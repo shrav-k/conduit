@@ -466,3 +466,124 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 `docs` job reads `047-declared.yaml` through `--declared-changed`, and the merge does not wait
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-18, from about 06:15 to 07:18 UTC, on the Mac from `main` `1ddb5678` (order 046c's
+merge), in two rounds: the worker (1590 s) and a fresh Codex verifier (426 s), then the worker again
+(1312 s) and a second fresh Codex verifier (494 s). The change is the eleven files of Scope,
+`conformance/manifest.yaml` unchanged. Decision 2's functions are
+`pub(crate) fn setup_action(state: &State, object: &Value, setup_operation: &str) -> Option<Value>`
+and `pub(crate) fn is_raised_at(action: &Value, time: &str) -> bool`; decision 3 reuses
+`PublicationView::management`, exposed within the core crate. A set-up.v1 invocation leaves
+`in-progress` through `lifecycle::settle` (a setup, a nested setup and a lifecycle cancellation),
+`requests::recover`, and the generic completion and direct cancellation, each through
+`requests::finish`; a reconciliation starts from `unknown` and keeps `ended`. The worker's own
+choices: overflow checks on the dispatch number and the expiry, and an unreadable time read as no
+action; and two edits beyond decision 7's "Nothing else in either changes", each needed for "Done
+when": the stub tuple's order is unused, so the reply's text comes from `reject_diagnostics` in
+`requests.rs`, which now reads `not built yet, order 047c.`, and the shell test's
+`if order == "047"`, which compares the diagnostic's rule, became `if order == "047c"`, split over
+lines by rustfmt; without it `answer.v1`'s `ruleId` would be expected as PND-010. It reported that
+serde_json's maps, without `preserve_order`, write an object's members in sorted order, so decision
+2's order of members holds in the source and the case only, and, for 047c, that a redispatched
+setup's new action takes the ID of the old, answered or expired, one (PND-001, decision 10).
+
+The first verifier found two musts and a should. A root inspection's whole action reached the shared
+records where the Type records outputs, and an Agent's later inspection could read it through
+`records`; a reconciliation removed `cause`, and with it the action's diagnostics; and DL19's row
+did not say whether a keyed repeat rechecks expiry. Round 2's choices, the worker's own and left to
+the coordinator to accept or strike: the record writer in `requests.rs` removes `status.pending`
+from an `inspect.v1` invocation's recorded outputs; a new invocation member `setup_cause`, set by
+`finish` at a failed or unknown setup's first ending and moved there from `cause` by a
+reconciliation, which `pending.rs` reads ahead of `cause` for evidence item 3; two unit tests in
+`requests.rs`, `setup_action_is_private_to_root_inspection_and_its_retained_reply` and
+`setup_action_preserves_first_ending_diagnostics_after_reconciliation`; and DL19's row rewritten to
+separate a fresh inspection from a retained repeat. The second verifier raised three musts: a
+raising inspection's record does not name the action's ID (PND-012); a pre-047 setup whose last
+ending record a purge removed loses its action; and the action's members are written in sorted
+order. The reader held the second to be decision 2's stated fallback and the third unobservable
+through serde_json's sorted maps, not findings against this work, and carried the first as R4.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), in a scratch clone of
+the branch at `1ce0ab7a`, before its rebase. It ran every check of "Done when": fmt, clippy, the
+unit test (1 passed), the pieces tool (`Nothing to move.`), the runner (1, 2 with no expected
+failure, and 40 cases passed), the shell test, the vectors and the full release suite with
+`RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4` (exit 0), the negative control with
+`records.rs` from `1ddb5678` (failing at step 9 and step 6 with the stated error, then passing once
+restored), the spike (9 passed), the Python checks (`Errors: 0` each, 129 unit tests OK), the
+order's greps, `git diff --check`, and `vector_delta.py` from `1ddb5678` to `WORKTREE` with the
+declaration (1 changes; 0 flips; 0 undeclared; 0 errors; exit 0). A trial rebase onto `facb4ff4`
+conflicted only in `engine/STANDING.md`, which the tool wrote again cleanly. It found one must and
+five shoulds:
+
+- R1: DL19's row departed from decision 8's text, and split the sentence that order 047b's decision
+  9 replaces, so 047b's replacement could no longer find it; the order's grep checks only the row's
+  start.
+- R2: round 2's strip, `setup_cause` and two tests are behavior no decision states, which order 047b
+  does not assume: its list of 047's members omits `setup_cause`, and its decision 5 would let
+  `list.v1`'s `pending` reach the shared records where a Type records outputs.
+- R3: `finish` wrote `"setup_cause": null` on a failed or unknown setup with no diagnostics, so
+  evidence item 3 kept the first ending's diagnostics, or none, when a later `finish` of the same
+  dispatch set `cause`.
+- R4: PND-012, "Its record names the action's ID", is not met for root's inspection that raises a
+  setup action, and neither DL19's row nor an unfinished list said so.
+- R5: the two edits beyond decision 7, both needed for "Done when", were missing from the report.
+- R6: the branch, based on `1ddb5678`, conflicts with order 048a-1's `engine/STANDING.md` on `main`.
+
+The fixer rebased the branch onto `origin/main` at `facb4ff4` (order 048a-1) with the work-order
+identity. The first commit conflicted only in `engine/STANDING.md`; the fixer took `main`'s side and
+ran `python3 tools/promise_standing.py --write`, and `--check` then gave `Errors: 0`. It applied
+each finding:
+
+- R1: DL19's row is decision 8's text, with the link to `requests.rs` kept, and 047b's sentence is
+  whole. Round 2's clarifications are kept as the reader's one sentence, directly after "and not
+  from then on.": "A successful repeat under OPS-009 returns its original inspection outputs while
+  retained, including any `status.pending`, and the inspection's shared records omit
+  `status.pending`." The coordinator may strike it with round 2's choices.
+- R2: this Record lists the strip, `setup_cause` and the two tests as the worker's choices, above.
+  Order 047b is amended: its list of 047's members names `setup_cause`, its account of 047's
+  inspection names the strip, its decision 5 has the record writer in `requests.rs` remove `pending`
+  from `list.v1`'s recorded outputs as 047 removes `status.pending` from `inspect.v1`'s, and its
+  Scope admits `requests.rs` for that removal alone.
+- R3: `finish` writes `setup_cause` only where the first ending has diagnostics (`&& let Some(cause)
+  = &cause`, the form clippy's `collapsible_if` asks for). Evidence item 3 reads `setup_cause` where
+  it is present and `cause` otherwise: it pairs with item 2's first ending wherever that ending had
+  diagnostics, and where it had none, it shows the `cause` a later `finish` of the same dispatch
+  sets. Which of the reader's two readings holds is the coordinator's.
+- R4: DL19's row gains, after R1's sentence, "The record of an inspection that raises it does not
+  yet name the action's ID (PND-012)." Assigning `data.pendingAction` on the inspection's
+  request-ended record to order 047b or 047c is the coordinator's.
+- R5: named in the first paragraph of this Record as consequences of decision 7; no code changed.
+- R6: done at this rebase. The rows of PND-001, PND-002, PND-003 and PND-006 are `case passes` with
+  the source `core` (1, 1, 2 and 2 cases, no expected failure); the totals are 129/146/24/299 case
+  passes, 0/2/0/2 expected failure, 40/83/22/145 with no case and no reason, and 141/160/23/324
+  named in engine source.
+
+The fixer then ran, on the files of this commit before it was made, from `engine/`: `cargo fmt
+--check` and `cargo clippy --offline --all-targets -- -D warnings` (exit 0 each), the unit test (1
+passed), `requests::`'s unit tests (28 passed, the two of round 2 among them), the pieces tool
+(`Nothing to move.`), the runner (`1 cases passed`, `2 cases passed` with no expected failure, `40
+cases passed`), the shell test (ok), and, with `RUST_TEST_THREADS=4` and `CONDUIT_VECTOR_THREADS=4`,
+the vectors (2 passed) and `cargo test --offline --release` (exit 0). The negative control, with
+`records.rs` from `origin/main`, since `HEAD` holds decision 3, failed each case with `FAIL 0 cases
+passed; 1 failed`, at step 9 and step 6, each beginning `/reply/structuredContent/status/pending:
+missing required field`, and after the restore with `cp` each ended `1 cases passed`. From
+experiment 011, `tests/spike.rs` gave `test result: ok. 9 passed; 0 failed`. From the root:
+`check_schemas.py`, `set_names.py --check`, `check_rulings.py`, `check_docs.py`, `check_roadmap.py`,
+`check_model_account.py`, `check_private_paths.py` and `promise_standing.py --check` (`Errors: 0`
+each), the tool tests under `/usr/bin/python3` (129, OK), `vector_delta.py origin/main WORKTREE`
+with the declaration (1 changes; 0 flips; 0 undeclared; 0 errors; exit 0), the order's nine greps
+that print 1 and four that print 0 (as required), the order's `git status` command (nothing), and
+`git diff --check` and `git diff --check origin/main...HEAD` (clean). `git log --format='%ae%n%ce'
+origin/main..HEAD | sort -u` printed only the work-order address.
+
+The gate's run on this order's squash, which this merge waits on, is the coordinator's at the merge.
+
+At the merge the coordinator applied the second reader's three shoulds: two in order 047b's text,
+which this order's fixer amended because 047 removes `status.pending` from `inspect.v1`'s recorded
+outputs (047b's decision 6 now admits `requests.rs` only for its decision 5's removal, and its "Who
+decided what" names that removal), and the Record's first two durations, now the log's. The
+optional test of a first ending with no diagnostics was left. The coordinator added a check line to
+047-declared.yaml, which reached main with this order's text. The gate runs on the squash, and the
+merge waits on its PASS.

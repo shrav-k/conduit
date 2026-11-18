@@ -68,7 +68,7 @@ prints these measurements; they are not a persistence format or compaction polic
 | DL16 | Platforms beyond Unix process groups and lifetime sockets; qualification beyond the npm filesystem server and local scripted servers. |
 | DL17 | Multi-machine restart/partition/fencing. No distributed configuration or guarantee is demonstrated by this core. |
 | DL18 | Not built: `sign-in.v1` answers unavailable under PND-010, with the text "not built yet, order 048a" ([requests.rs](crates/core/src/requests.rs)), so no URL action waits and no wait is chosen. |
-| DL19 | Not built: `answer.v1` answers unavailable under PND-009, with the text "not built yet, order 047" ([requests.rs](crates/core/src/requests.rs)), and the core holds no pending action, so no expiry is chosen. |
+| DL19 | Partly built. A setup action (PND-006) expires seven days after its set-up.v1 invocation first ended, counted from the time of the step that ended it, and is raised while a step's time is before its expiry and not from then on. A successful repeat under OPS-009 returns its original inspection outputs while retained, including any `status.pending`, and the inspection's shared records omit `status.pending`. The record of an inspection that raises it does not yet name the action's ID (PND-012). A setup that ended before order 047 kept no end time: its expiry counts from the last `invocation-ended` record of that invocation that no reconciliation wrote, and where none remains, as after a purge, it is not raised. It is raised only at root's own inspection of its instance, in `status.pending`; an Interface's scope, `list.v1`'s `pending` output and the `unanswered` key come with order 047b. `answer.v1` answers unavailable under PND-009, with the text "not built yet, order 047c" ([requests.rs](crates/core/src/requests.rs)), and no other kind is held, so no other duration is chosen. |
 
 DL11 and DL14 are removed identifiers, not unanswered choices. The
 [increment 3 handoff](README.md#the-cores-boundary) assigns the next
@@ -135,7 +135,7 @@ close.v1, register-replacement.v1, register.v1, replace.v1, inspect.v1, purge.v1
 reconcile.v1, install.v1, retire.v1, unregister.v1, retire-with-resources.v1,
 retire-with-agents.v1, list.v1 and lift.v1, subject to the core's preflights.
 The shell also passes answer.v1 and sign-in.v1 to the core, which answers each
-unavailable, naming the order that builds it (047 and 048a; OPS-005).
+unavailable, naming the order that builds it (047c and 048a; OPS-005).
 Declare-lost.v1 and control dispatch remain unfinished public invocation paths.
 Control reconciliation applies the held input values to the current revision (REV-010);
 Agent reconciliation uses the owning Fleet, with management as the retired-owner fallback
@@ -431,7 +431,7 @@ what a statement says changes the statement ([order 183][wo183]).
   and working directory"). It calls no runtime provider, makes no remote connection and serves no
   secret (row "DL16: executor coverage"; I4-01, "Secrets are unserved too: the engine reads no
   secret through a secret store").
-- `sign-in.v1` and `answer.v1` answer unavailable, naming orders 048a and 047 respectively (rows
+- `sign-in.v1` and `answer.v1` answer unavailable, naming orders 048a and 047c respectively (rows
   DL18 and DL19 in "Choices still required").
 - The Agent packages on `main` are 0.1.1: their Types, `claude-code.v1` and `codex.v1`, keep the
   client's own tools off apart from the remaining tools and reach inputs stated below; neither
@@ -704,7 +704,7 @@ Still unfinished:
   with the reason in `data`; order 046e changes it. `records-expected-id` step 10 pins
   the current tool result.
 - The unavailable stubs of `answer.v1` and `sign-in.v1` now carry diagnostics but remain
-  unbuilt: orders 047 and 048a-2.
+  unbuilt: orders 047c and 048a-2.
 
 ## Outcomes the engine decides (order 046c)
 

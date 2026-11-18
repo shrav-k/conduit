@@ -1,7 +1,7 @@
 //! Record reads, retention and explicit repair. No I/O or automatic effects.
 use crate::{
-    Allocation, Context, Result, State, Transition, access, decision, packages, registration,
-    requests,
+    Allocation, Context, Result, State, Transition, access, decision, packages, pending,
+    registration, requests,
 };
 use serde_json::{Value, json};
 
@@ -397,6 +397,21 @@ pub(crate) fn execute(
                 .map(|v| &v["id"])
                 .collect::<Vec<_>>()
         );
+        if o.get("spec").is_none()
+            && v["caller"] == v["sender"]
+            && let Some(action) = pending::setup_action(&t.state, &o, &c.qualified("set-up.v1"))
+            && pending::is_raised_at(&action, &a.evidence.time)
+            && v["caller"] == access::PublicationView::new(&t.state, c).management("root")?["id"]
+        {
+            t.decisions.push(decision(
+                "raise-setup-action",
+                &["PND-001", "PND-002", "PND-003", "PND-006"],
+                &["DL19"],
+                json!({"action":action["id"]}),
+                vec![],
+            ));
+            status["pending"] = json!([action]);
+        }
         let records: Vec<_> = t
             .state
             .records

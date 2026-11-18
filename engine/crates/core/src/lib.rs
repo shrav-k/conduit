@@ -20,6 +20,7 @@ pub mod explain;
 mod inventory;
 pub mod lifecycle;
 pub mod packages;
+mod pending;
 pub mod records;
 pub mod registration;
 pub mod requests;

@@ -1619,7 +1619,7 @@ fn first_start_presents_final_lists_and_unbuilt_operations_name_their_orders() {
         (
             "management.answer.v1",
             json!({"action":"00000000-0000-4000-8000-000000009999","answer":"dismissed"}),
-            "047",
+            "047c",
         ),
         (
             "system.sign-in.v1",
@@ -1634,7 +1634,11 @@ fn first_start_presents_final_lists_and_unbuilt_operations_name_their_orders() {
         );
         assert_eq!(
             reply["structuredContent"]["diagnostics"][0]["ruleId"],
-            if order == "047" { "PND-009" } else { "PND-010" }
+            if order == "047c" {
+                "PND-009"
+            } else {
+                "PND-010"
+            }
         );
         assert!(
             reply["content"][0]["text"]

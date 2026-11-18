@@ -264,7 +264,7 @@ impl<'a> PublicationView<'a> {
             self.object(reference)
         }
     }
-    fn management(&self, name: &str) -> Result<&Value> {
+    pub(crate) fn management(&self, name: &str) -> Result<&Value> {
         // ACC-033: management/root reads use the same normalized objects as publication.
         self.find(|o| o["from"] == self.context.qualified(name))?
             .ok_or_else(|| format!("missing built-in {name}"))

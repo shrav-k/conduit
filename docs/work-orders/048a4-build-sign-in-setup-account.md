@@ -728,3 +728,143 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 18:49 to 20:00 UTC, on the Mac, by the stacked dispatch the owner
+approved that day: from order 048a-3's verified branch at `58ffd5d5`, before 048a-3 merged, in two
+rounds: the worker (2029 s) and a fresh Codex verifier (393 s), then the worker again (1458 s) and a
+second fresh Codex verifier (352 s). The change is ten files of Scope: `lifecycle.rs`,
+`requests.rs`, `pending.rs` and `sign_in.rs` in the core, `engine/CONFORMANCE.md`,
+`engine/STANDING.md`, the requests index, the new case `requests-sign-in-setup-account` and the two
+cases of decision 9; `conformance/manifest.yaml` ends unchanged. Where phase `work` ends, `advance`
+sets the phase `account` and begins the account check; `setup_sign_in_hook` dispatches the
+`account-hook.v1` and `sign-out-hook.v1` parts afresh, through no Conduit; `child_answered` handles
+the phases `account-pending` and `undo-pending`; the raise takes a third form, the setup, and
+`record_setup_sign_in` names the action in the setup's ending records, through `settle` and
+`recover`; `report_sign_in_undone`, `set_sign_in_undone_false` and `clear_sign_in_undone` keep the
+condition SignInUndone; and `request_is_held_for_sign_in_undone` beside `request_is_held` decides
+PND-011's hold in `invoke_inner`, with both diagnostics in the order PND-005, PND-011 where both
+holds meet. The unit tests `sign_in_undone_condition_and_hold` and `sign_in_action_raised_by_setup`
+pin the rules. The new case has 30 steps and 2974 unique evidence IDs; the hold case now has 17
+steps (1674) and the lapse-and-conflict case 32 (3174). DL19 takes the order's sentence, and
+`STANDING.md` gives PND-001 4 cases, PND-005 3, PND-011 1 and TPL-012 27, each `case passes`. The
+worker's own choices in round 1: the shared dispatch `dispatch_hook` with `HookKey`; the shared
+`record_setup_sign_in` and the unit tests' `sign_in_hold_fixture`; a guard on a hook with a null key
+that kept either fresh part from raising a sign-in action on its own; and a cancelled account check
+recorded as `cancelled-hook` with no effect. Its findings, for the coordinator: setup finding the
+expected account does not lift PND-005's hold (row 45 of the owner's review list), and step 26 pins
+that reading; MC9a has no witness for a setup's undo or its failure; a successful undo leaves an
+earlier SignInUndone=False in place until a later check clears it; the setup's sign-in action does
+not name the account found; the setup's reply carries no `pendingAction`, though IFC-025 names
+raised actions, and no order holds it; and cancelling the sign-out child directly, by the ID in the
+setup's reply, leaves the setup pending and the condition unset. It also found that the setup ends
+unknown, not failed, when its undo fails after a run with an effect, as OPS-022 asks; that no check
+of this order tests the setup's ending record naming the action, a failed or unknown account check,
+a retirement during the check or the undo, or SignInUndone set by a cancel or by `recover`, with
+`recover`'s `pendingAction`; and that no valid registration reaches decision 2's part with no
+resolved implementation (CTR-013, TPL-004), and no path it found reaches decision 3's expected
+account that is no longer a string.
+
+The first verifier found four musts and one should. The musts: the start check of 048a-3's Record
+printed 0, since 048a-3 had not merged, as the stacked dispatch foresaw; an account check resent
+after protocol error -32020 (IFC-046) carried a null Conduit key; where the instance was retired and
+the check found another account, a setup with no setup hook selected could end succeeded with its
+required undo never run; and the null-key guard also suppressed PND-005's own triggers from
+sign-out. The should: the case reaches neither an outstanding remote connection after the run report
+nor a selected setup hook. Round 2 moved the omission of the Conduit key into `intent`, so that a
+hook's first send and its resend both leave it out; recorded the skipped undo of a retired instance
+as a part `sign-out`, outcome failed, with no invocation; removed the guard, so that a keyed lapse
+diagnostic or a URL elicitation from either part raises as PND-005 and IFC-016 say; and verified the
+two ordering edges in temporary cases only. The second verifier found two musts, two shoulds and two
+nits. The musts: the setup connects only to remote items that declare `headers` (`lifecycle.rs`,
+line 802), so the account check need not wait for a selected remote without them, against TPL-012;
+and the replay on a merged 048a-3. The shoulds: no tracked case selects a setup hook; and step 22
+does not assert `"external_intents": []`, so an extra sign-out there would pass. The nits: the
+order's count of one expected failure for `requests-` is stale, and the report gave no count for the
+Python unit tests. Order 048a-3 then merged (#367), and the coordinator rebased the branch onto
+`main` at `8a393e49`, where `main` had changed none of this order's files: under `engine/` it
+changed only `make_archives.rs`, which this order does not touch.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the rebased branch
+`e80e81fd`. It ran the start checks against a copy of `origin/main` (as the order expects, 048a-3's
+Record now on `main`, settling the replay); a range-diff (both commits unchanged); the commits'
+identities (the work-order identity's alone); `cargo fmt --check` and clippy (exit 0); the `sign_in`
+filter (8 passed: the order's 6 and `sign_in_login_faults_name_duplicates_and_overlaps` and
+`inspection_withholds_sign_in_answer_evidence_from_agents`), `pending::tests` (7, with 047d's
+`notices_follow_their_fleet`) and `lifecycle` (9); the pieces tool (`Nothing to move.`); the
+runner's three sign-in cases (`1 cases passed` each), `setup-` (43, as on `main`) and `requests-`
+(66 cases passed; 3 expected failures, one more case than `main`'s 65); the shell test (1 passed),
+the vectors (2 passed) and the whole suite (353 passed, 0 failed, 4 ignored); the negative control,
+which failed at step 5 on a missing account-check dispatch and passed after the restore with `cp`;
+the Python checks (Errors: 0 each), the tool tests (129, OK) and `vector_delta.py` from
+`origin/main` (5405 changes, 0 flips, 0 undeclared, exit 0, every change outside the added case in
+the two cases of decision 9); the protected paths' status, the ten checks that print 1 and the one
+that prints 0; the spike's `tests/spike.rs` (9 passed; 0 failed); and scratch scripts comparing
+DL19's sentence, the new case's steps and decision 9's changes with the order's text (all true). It
+found the code true to decisions 1 to 11, no privacy issue, no must and six shoulds:
+
+- 048a4-R1: where the instance is retired and the check finds another account, the setup records a
+  part `sign-out`, failed, with no invocation, where decision 3 says only to raise nothing and begin
+  no undo; sound under OPS-022, but no case or test reaches it.
+- 048a4-R2: an account check or sign-out that ends with a keyed PND-005 lapse diagnostic or a URL
+  elicitation raises a sign-in action, raised by the hook part, where decision 3 reads that a failed
+  or unknown account check raises nothing; no portable case covers it.
+- 048a4-R3: `intent`, which Scope does not name, now leaves out the Conduit key for every invocation
+  with `hook: true`, so the resend of the existing setup and retire hooks changed with it, mending a
+  null Conduit key against IFC-006; no case observed it.
+- 048a4-R4: a setup cancelled in `account-pending` records `cancelled-hook` with no effect, where
+  the hook's cancelled part has an effect, so a cancelled setup whose run part had no effect ends
+  failed rather than unknown; `account-hook.v1` states no effect.
+- 048a4-R5: the second verifier's first must, the setup connecting only to remote items that declare
+  `headers`, is `main`'s code, outside this order's Scope.
+- 048a4-R6: two counts of "Done when" are stale, the `sign_in` filter's 6 and the one expected
+  failure of `requests-`, both from other merged work.
+
+The fixer rebased the branch onto `origin/main` at `a701c1ee` (the order texts 206, #368, and 204,
+205, 050i and 050l, #369), which changed only `docs/work-orders/`, with the work-order identity and
+without conflict, and applied each finding as it asked, changing no code:
+
+- 048a4-R1: kept, as the worker's departure from decision 3, which mends a gap in the order: without
+  it a retired instance's setup with no setup hook selected ended succeeded with its required undo
+  never run. The coordinator accepts it at the merge as an amendment of decision 3, open to the
+  owner's strike: a retired instance's setup whose account check finds another account records its
+  sign-out part failed, so that the required undo is never silently skipped. It is row 47 of the
+  [owner's review list](../proposals/first-build/to-review-with-the-owner.md).
+- 048a4-R2: kept as the worker built it, following PND-005's trigger and IFC-016. The coordinator
+  rules at the merge that PND-005's trigger wins over decision 3's reading, since the specification
+  alone binds behavior (ruling 67): an account check or sign-out that ends with a keyed PND-005
+  lapse diagnostic or a URL elicitation raises the sign-in action. Finding, for a follow-up case in
+  048a-5 or 048a-6: a case that shows it, such as an account check that ends failed with a PND-005
+  diagnostic.
+- 048a4-R3: kept; the scope widened to `intent`, and the setup and retire hooks' resend changed with
+  it. A later order can add a case that resends a hook after -32020.
+- 048a4-R4: accepted as the worker's choice, since it reads the contract's effect, as decision 3 has
+  the answered parts do; both readings pass every check.
+- 048a4-R5: not changed here; filed as a finding for an order on the connection phase, under TPL-012
+  and IFC-041, which can add a case with a remote that declares no `headers` still outstanding when
+  the account check would begin. The second verifier's other must, the replay, is settled by the
+  reader's start checks.
+- 048a4-R6: the counts on this branch are 8 for `sign_in` (the order's 6 and the two named above), 7
+  for `pending::tests`, 9 for `lifecycle`, 43 for `setup-`, 66 cases passed and 3 expected failures
+  for `requests-`, and 353 passed and 4 ignored for the whole suite.
+
+The second verifier's two shoulds, a tracked case with a selected setup hook and
+`"external_intents": []` at step 22, stay open for a follow-up case; the worker verified the setup
+hook's edge in a temporary case only. The fixer then ran, on the rebased branch at `16c847cc` with
+this Record not yet written, from `engine/` with 4 test and vector threads: `cargo fmt --check` and
+clippy (exit 0); `sign_in` (8 passed), `pending::tests` (7) and `lifecycle` (9); the pieces tool
+(`Nothing to move.`); the three sign-in cases (`1 cases passed` each), `setup-` (43 cases passed)
+and `requests-` (66 cases passed; 3 expected failures); the shell test (1 passed); the vectors (2
+passed) and the whole suite (353 passed, 0 failed, 4 ignored); and the negative control, line 857 of
+`lifecycle.rs` set back to `json!("hook")`, which printed `FAIL 0 cases passed; 1 failed` at step 5,
+`/external_intents: expected 1 items, found 0`, its reply the setup's success, then after the
+restore with `cp` `1 cases passed`, the file unchanged. From the root: `check_schemas`, `set_names
+--check`, `check_rulings`, `check_docs`, `check_roadmap`, `check_model_account`,
+`check_private_paths` and `promise_standing --check` (Errors: 0 each); the tool tests (129, OK);
+`vector_delta.py` from `origin/main` (`Vector delta: 5405 changes; 0 flips; 0 undeclared; 0
+errors.`, exit 0) and from `HEAD` to the worktree (0 changes); the ten checks that print 1 and the
+one that prints 0; the spike's `tests/spike.rs` (9 passed; 0 failed); and `git diff --check
+origin/main...HEAD` (clean). With this Record, `check_docs`, `check_private_paths` and `git diff
+--check origin/main...HEAD` were run again: Errors: 0 each, and clean. The gate's run on this
+order's squash, which this merge waits on, is the coordinator's at the merge.

@@ -291,6 +291,10 @@ pub(crate) enum SignInRequest<'a> {
         access_record_id: &'a str,
         operation: &'a str,
     },
+    Setup {
+        invocation: &'a Value,
+        trigger: &'a str,
+    },
 }
 
 pub(crate) fn raise_sign_in(
@@ -332,6 +336,17 @@ pub(crate) fn raise_sign_in(
             "held-request",
             "the request that found the instance held",
             "how the instance was found awaiting sign-in",
+        ),
+        SignInRequest::Setup {
+            invocation,
+            trigger,
+        } => (
+            invocation["id"].clone(),
+            invocation["id"].clone(),
+            invocation["operation"].clone(),
+            trigger,
+            "the setup whose account check found the instance not signed in to its expected account",
+            "what the setup's account check reported",
         ),
     };
     let action = json!({
@@ -1099,14 +1114,10 @@ mod tests {
         assert_eq!(lookup(&before_expiry, expiry)["answer"], void_answer);
     }
 
-    #[test]
-    fn hold_outlasts_expiry() {
-        let (_, context) = crate::explain::tests::fixture();
-        let time = "2026-11-12T12:00:00Z";
-        let expiry = "2026-11-19T12:00:00Z";
+    fn sign_in_hold_fixture(context: &Context) -> (State, Value) {
         let agent = json!({"id":"s1","name":"s1","kind":"Agent","owner":"f",
             "config":{"account":"primary-account"}});
-        let mut state = State {
+        let state = State {
             objects: vec![
                 json!({"id":"r","kind":"Interface","from":context.qualified("root")}),
                 json!({"id":"v","kind":"Interface"}),
@@ -1124,6 +1135,100 @@ mod tests {
             records: vec![json!({"type":"invocation-ended","data":{"invocation":"c1"}})],
             ..State::default()
         };
+        (state, agent)
+    }
+
+    #[test]
+    fn sign_in_action_raised_by_setup() {
+        let (_, context) = crate::explain::tests::fixture();
+        let (mut state, agent) = sign_in_hold_fixture(&context);
+        let time = "2026-11-12T12:00:00Z";
+        let expiry = "2026-11-19T12:00:00Z";
+        let operation = context.qualified("set-up.v1");
+        let setup = json!({"id":"u1","operation":operation});
+        let next = json!({"id":"u2","operation":operation});
+        let raise = |state: &mut State, at, id, invocation, trigger| {
+            let evidence = serde_json::from_value(json!({"time":at,"ids":[id]})).unwrap();
+            let mut a = Allocation {
+                evidence: &evidence,
+                cursor: 0,
+            };
+            let action = raise_sign_in(
+                state,
+                &agent,
+                "primary-account",
+                "/account",
+                SignInRequest::Setup {
+                    invocation,
+                    trigger,
+                },
+                &mut a,
+            )
+            .unwrap();
+            assert_eq!(a.cursor, usize::from(action.is_some()));
+            action
+        };
+        let action = raise(
+            &mut state,
+            time,
+            "first-action",
+            &setup,
+            "setup-other-account",
+        )
+        .unwrap();
+        assert_eq!(
+            action,
+            json!({
+                "id":"first-action","kind":"sign-in","subject":[{"kind":"Agent","name":"s1","id":"s1"}],
+                "expiry":expiry,
+                "evidence":[
+                    {"kind":"fact","value":"primary-account","where":"config/account",
+                        "proves":"the account this instance is configured for"},
+                    {"kind":"fact","value":"u1","where":"records",
+                        "proves":"the setup whose account check found the instance not signed in to its expected account"},
+                    {"kind":"fact","value":operation,"where":"records","proves":"the operation of that request"},
+                    {"kind":"fact","value":"setup-other-account","where":"records",
+                        "proves":"what the setup's account check reported"}
+                ]
+            })
+        );
+        let hold = json!({"since":time});
+        assert_eq!(
+            state.pending_actions["first-action"],
+            json!({"action":action,"dispatched":null,"raisedBy":"u1"})
+        );
+        assert_eq!(state.sign_in_holds["s1"], hold);
+        let stored = state.pending_actions.clone();
+        assert_eq!(
+            raise(
+                &mut state,
+                "2026-11-12T12:00:01Z",
+                "unused",
+                &setup,
+                "setup-no-account"
+            ),
+            None
+        );
+        assert_eq!(state.pending_actions, stored);
+        let expired = action_named(&state, "first-action", Some(expiry), &context).unwrap();
+        assert_eq!(expired["answer"], json!({"value":"expired","at":expiry}));
+        let replacement =
+            raise(&mut state, expiry, "next-action", &next, "setup-no-account").unwrap();
+        assert_eq!(replacement["id"], "next-action");
+        assert_eq!(replacement["expiry"], "2026-11-26T12:00:00Z");
+        assert_eq!(
+            state.pending_actions["next-action"],
+            json!({"action":replacement,"dispatched":null,"raisedBy":"u2"})
+        );
+        assert_eq!(state.sign_in_holds["s1"], hold);
+    }
+
+    #[test]
+    fn hold_outlasts_expiry() {
+        let (_, context) = crate::explain::tests::fixture();
+        let time = "2026-11-12T12:00:00Z";
+        let expiry = "2026-11-19T12:00:00Z";
+        let (mut state, agent) = sign_in_hold_fixture(&context);
         let raise = |state: &mut State, at, id, request| {
             let evidence = serde_json::from_value(json!({"time":at,"ids":[id]})).unwrap();
             let mut allocation = Allocation {

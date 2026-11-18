@@ -789,12 +789,14 @@ fn intent(v: &Value, c: &Context) -> Value {
             ("operation", &v["operation"]),
             ("invocation", &v["id"]),
             ("caller", &v["caller"]),
-            ("conduit", &v["conduit"]),
             ("filters", &v["filters"]),
             ("config", &v["config"]),
             ("revision", &v["revision"]),
         ] {
             meta[mark(c, key)] = value.clone();
+        }
+        if v["hook"] != true {
+            meta[mark(c, "conduit")] = v["conduit"].clone();
         }
         if !v["key"].is_null() {
             meta[mark(c, "idempotencyKey")] = v["key"].clone();
@@ -1201,60 +1203,88 @@ fn invoke_inner(
         ));
         return end(t, a, c, &route, Some(outcome), None, Some(&old["id"]));
     }
-    if sign_in::request_is_held(&t.state, &target, &contract) {
-        let mut facts = json!({"instance":target["id"]});
-        if let sign_in::ExpectedAccount::Set { pointer, account } =
-            sign_in::expected_account(&target, c)?
-        {
-            if let Some(action) = pending::raise_sign_in(
-                &mut t.state,
-                &target,
-                account,
-                &pointer,
-                pending::SignInRequest::Held {
-                    access_record_id: &access_record_id,
-                    operation: op,
-                },
-                a,
-            )? {
-                t.decisions.push(decision(
-                    "raise-sign-in-action",
-                    &["PND-001", "PND-005", "PND-012"],
-                    &["DL19"],
-                    json!({"action":action["id"], "instance":target["id"]}),
-                    vec![],
-                ));
+    let held_for_sign_in = sign_in::request_is_held(&t.state, &target, &contract);
+    let held_for_undo = sign_in::request_is_held_for_sign_in_undone(&t.state, &target["id"]);
+    if held_for_sign_in || held_for_undo {
+        let tool = route["tool"]
+            .as_str()
+            .ok_or("held request has no tool")?
+            .to_owned();
+        let mut diagnostics = Vec::new();
+        if held_for_sign_in {
+            let mut facts = json!({"instance":target["id"]});
+            if let sign_in::ExpectedAccount::Set { pointer, account } =
+                sign_in::expected_account(&target, c)?
+            {
+                if let Some(action) = pending::raise_sign_in(
+                    &mut t.state,
+                    &target,
+                    account,
+                    &pointer,
+                    pending::SignInRequest::Held {
+                        access_record_id: &access_record_id,
+                        operation: op,
+                    },
+                    a,
+                )? {
+                    t.decisions.push(decision(
+                        "raise-sign-in-action",
+                        &["PND-001", "PND-005", "PND-012"],
+                        &["DL19"],
+                        json!({"action":action["id"], "instance":target["id"]}),
+                        vec![],
+                    ));
+                }
+                if let Some(action) =
+                    pending::unanswered_sign_in(&t.state, &target, &a.evidence.time)
+                {
+                    facts["action"] = action["id"].clone();
+                    route["pendingAction"] = json!([action["id"]]);
+                }
             }
-            if let Some(action) = pending::unanswered_sign_in(&t.state, &target, &a.evidence.time) {
-                facts["action"] = action["id"].clone();
-                route["pendingAction"] = json!([action["id"]]);
-            }
-        }
-        t.decisions.push(decision(
-            "hold-for-sign-in",
-            &["PND-005", "IFC-025", "OPS-023"],
-            &[],
-            facts,
-            vec![],
-        ));
-        let tool = route["tool"].as_str().ok_or("held request has no tool")?;
-        let diagnostics = json!([{
+            t.decisions.push(decision(
+                "hold-for-sign-in",
+                &["PND-005", "IFC-025", "OPS-023"],
+                &[],
+                facts,
+                vec![],
+            ));
+            diagnostics.push(json!({
             "ruleId": "PND-005",
             "level": "error",
             "message": {"text": format!(
                 "{tool} reports unavailable under PND-005: the instance awaits sign-in to its expected account, so the request was not dispatched; send it again once sign-in.v1 has signed the instance in."
             )}
-        }]);
+        }));
+        }
+        if held_for_undo {
+            t.decisions.push(decision(
+                "hold-for-sign-in-undone",
+                &["PND-011", "OPS-023"],
+                &[],
+                json!({"instance":target["id"]}),
+                vec![],
+            ));
+            diagnostics.push(json!({
+                "ruleId":"PND-011","level":"error","message":{"text":format!(
+                    "{tool} reports unavailable under PND-011: SignInUndone is False for the instance, since a sign-out after an account check did not succeed, so the request was not dispatched; send it again once an account check within sign-in.v1 or setup finds the expected account or none."
+                )}
+            }));
+        }
         reject_diagnostics(
             t,
             a,
             c,
             &route,
             "unavailable",
-            "PND-005",
+            if held_for_sign_in {
+                "PND-005"
+            } else {
+                "PND-011"
+            },
             None,
             None,
-            Some(diagnostics),
+            Some(json!(diagnostics)),
         )?;
         if let Some(ids) = route.get("pendingAction") {
             t.reply["_meta"][mark(c, "pendingAction")] = ids.clone();
@@ -2215,6 +2245,23 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
                 json!([]),
                 Some(vec![cause]),
             )?;
+            let v = &t.state.invocations[i];
+            if v["hook"] == true
+                && v["operation"] == c.qualified("sign-out-hook.v1")
+                && let Some(parent) = v.get("setup_parent")
+                && let Some(setup) = t.state.invocations.iter().find(|s| s["id"] == *parent)
+                && setup["setup"]["phase"] == "undo-pending"
+            {
+                let (instance, hook) = (setup["object"].clone(), v["id"].clone());
+                crate::lifecycle::report_sign_in_undone(
+                    t,
+                    &instance,
+                    "unknown",
+                    &hook,
+                    &evidence.time,
+                )?;
+            }
+            crate::lifecycle::record_setup_sign_in(t, i)?;
         }
     }
     t.decisions.push(decision(
@@ -2278,6 +2325,92 @@ pub(crate) fn hook(
         ));
         return crate::lifecycle::child_ended(t, a, c, i);
     }
+    t.state.invocations[parent]["setup"]["phase"] = json!("hook-pending");
+    let id = dispatch_hook(
+        t,
+        a,
+        c,
+        parent,
+        object,
+        (op, implementation),
+        HookKey::Stable(previous),
+    )?;
+    t.decisions.push(decision(
+        "dispatch-setup-hook",
+        &[
+            "TPL-012", "TPL-017", "OPS-021", "OPS-028", "ACC-018", "IMP-002",
+        ],
+        &[],
+        json!({"hook":id}),
+        vec![],
+    ));
+    Ok(())
+}
+
+pub(crate) fn setup_sign_in_hook(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    parent: usize,
+    object: &Value,
+    name: &str,
+) -> Result<bool> {
+    let op = c.qualified(name);
+    let Some(implementation) = object["resolved_implementations"].get(&op) else {
+        return Ok(false);
+    };
+    let id = dispatch_hook(
+        t,
+        a,
+        c,
+        parent,
+        object,
+        (op, implementation),
+        HookKey::Fresh,
+    )?;
+    let (decision_name, promises): (_, &[_]) = if name == "account-hook.v1" {
+        (
+            "dispatch-account-check",
+            &["TPL-012", "PND-011", "CTR-013", "ACC-018", "IMP-002"],
+        )
+    } else {
+        (
+            "dispatch-sign-out",
+            &["TPL-012", "PND-011", "ACC-018", "IMP-002"],
+        )
+    };
+    t.decisions.push(decision(
+        decision_name,
+        promises,
+        &[],
+        json!({"hook":id}),
+        vec![],
+    ));
+    Ok(true)
+}
+
+enum HookKey {
+    Stable(Option<usize>),
+    Fresh,
+}
+
+fn dispatch_hook(
+    t: &mut Transition,
+    a: &mut Allocation<'_>,
+    c: &Context,
+    parent: usize,
+    object: &Value,
+    (op, implementation): (String, &Value),
+    key: HookKey,
+) -> Result<Value> {
+    let p = t.state.invocations[parent].clone();
+    let (key, previous) = match key {
+        HookKey::Stable(previous) => (
+            json!(format!("{}:{op}", object["id"].as_str().unwrap())),
+            previous,
+        ),
+        HookKey::Fresh => (Value::Null, None),
+    };
     let target = crate::registration::publication_object(object, c)?;
     let (_, _, contract) = schemas::operation(&target, &op, &c.core_package)?;
     let id = if let Some(i) = previous {
@@ -2289,7 +2422,7 @@ pub(crate) fn hook(
         .and_then(|i| t.state.invocations[i]["attempt"].as_u64())
         .unwrap_or(0)
         + 1;
-    let mut v = json!({"id":id,"key":format!("{}:{op}",object["id"].as_str().unwrap()),"hook":true,"setup_parent":p["id"],"serving":p["id"],"sender":p["sender"],"caller":p["caller"],"target":object["id"],"operation":op,"arguments":{},"filters":p["filters"],"state":"in-progress","plain":implementation["item"]["plain"] == true,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":false,"attempt":attempt,"config":object["config"],"revision":object["revision"]});
+    let mut v = json!({"id":id,"key":key,"hook":true,"setup_parent":p["id"],"serving":p["id"],"sender":p["sender"],"caller":p["caller"],"target":object["id"],"operation":op,"arguments":{},"filters":p["filters"],"state":"in-progress","plain":implementation["item"]["plain"] == true,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":false,"attempt":attempt,"config":object["config"],"revision":object["revision"]});
     start_attempt(&mut v, previous.map(|i| &t.state.invocations[i]));
     if let Some(id) = p.get("retirement_of") {
         v["retirement_of"] = id.clone();
@@ -2299,7 +2432,6 @@ pub(crate) fn hook(
     } else {
         t.state.invocations.push(v.clone());
     }
-    t.state.invocations[parent]["setup"]["phase"] = json!("hook-pending");
     record(
         t,
         a,
@@ -2307,22 +2439,9 @@ pub(crate) fn hook(
         "invocation-dispatched",
         json!({"target":object["id"],"invocation":id,"caller":p["caller"],"consumer":p["sender"],"serving":p["id"],"operation":op,"attempt":attempt}),
     )?;
-    let mut call = intent(&v, c);
-    if let Some(meta) = call["call"]["params"]["_meta"].as_object_mut() {
-        meta.remove(&mark(c, "conduit"));
-    }
-    t.external_intents.push(call);
+    t.external_intents.push(intent(&v, c));
     t.reply = json!({"pending":true,"invocation":p["id"],"hook":id});
-    t.decisions.push(decision(
-        "dispatch-setup-hook",
-        &[
-            "TPL-012", "TPL-017", "OPS-021", "OPS-028", "ACC-018", "IMP-002",
-        ],
-        &[],
-        json!({"hook":id}),
-        vec![],
-    ));
-    Ok(())
+    Ok(id)
 }
 
 #[cfg(test)]

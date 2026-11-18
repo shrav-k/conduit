@@ -718,6 +718,17 @@
       "safety_rows": []
     },
     {
+      "id": "requests-sign-in-setup-account",
+      "case": "conventions/requests/sign-in-setup-account/case.yaml",
+      "promises": [
+        "PND-011",
+        "PND-005",
+        "TPL-012",
+        "PND-001"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-unknown-write",
       "case": "conventions/requests/unknown-write/case.yaml",
       "promises": [

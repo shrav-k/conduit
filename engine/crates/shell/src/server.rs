@@ -8,6 +8,7 @@ use axum::{
     middleware::{self, Next},
     response::{IntoResponse, Response},
 };
+use chrono::Utc;
 use conduit_core::access::Identity;
 use futures_util::StreamExt;
 use rmcp::{
@@ -227,6 +228,7 @@ struct Handler {
     shutdown: CancellationToken,
     sessions: Arc<Mutex<BTreeMap<String, String>>>,
     session_manager: Arc<LocalSessionManager>,
+    relay: Arc<Mutex<relay::States>>,
 }
 impl Handler {
     fn identity(
@@ -447,7 +449,47 @@ impl ServerHandler for Handler {
                 ));
             }
         }
-        let input = json!({"kind":"invoke","request":{"identity":instance(&identity),"tool":request.name,"arguments":request.arguments.unwrap_or_default(),"serving":serving},"key":key});
+        let retry = match (request.request_state.as_deref(), request.input_responses) {
+            (None, None) => Ok(None),
+            (Some(state), Some(responses)) => {
+                let taken = self
+                    .relay
+                    .lock()
+                    .map_err(|_| internal("relay lock poisoned"))?
+                    .take(state, &identity, &request.name, Utc::now());
+                taken.into_result().map(|(invocation, attempt)| {
+                    Some(json!({
+                        "kind":"respond","invocation":invocation,"attempt":attempt,
+                        "identity":instance(&identity),"responses":responses,"meta":meta
+                    }))
+                })
+            }
+            _ => Err("a retry carries both requestState and inputResponses"),
+        };
+        let input = match retry {
+            Ok(Some(input)) => input,
+            Ok(None) => {
+                json!({"kind":"invoke","request":{"identity":instance(&identity),"tool":request.name,"arguments":request.arguments.unwrap_or_default(),"serving":serving},"key":key})
+            }
+            Err(text) => {
+                record_rejection(
+                    self,
+                    Some(&identity),
+                    &json!({"params":{"name":request.name,"arguments":request.arguments,"_meta":meta}}),
+                    false,
+                )
+                .await
+                .map_err(internal)?;
+                self.handled(&context);
+                return Err(ErrorData::invalid_params(
+                    text,
+                    Some(json!({
+                        format!("{prefix}reason"): "invalid",
+                        "diagnostics": [{"ruleId":"IFC-049","level":"error","message":{"text":text}}]
+                    })),
+                ));
+            }
+        };
         let shell = self.shell.clone();
         let executor = self.executor.clone();
         let pending = tokio::task::spawn_blocking(move || {
@@ -464,6 +506,37 @@ impl ServerHandler for Handler {
         self.handled(&context);
         loop {
             if let Some(reply) = pending.ticket.try_reply().map_err(internal)? {
+                if let Some(value) = reply.get("inputRequired") {
+                    let result = match self.relay.lock() {
+                        Ok(mut states) => {
+                            relay::relay(value, &mut states, &identity, &request.name, Utc::now())
+                        }
+                        Err(_) => Err("relay lock poisoned".into()),
+                    };
+                    return match result {
+                        Ok(result) => Ok(CallToolResponse::InputRequired(result)),
+                        Err(mut text) => {
+                            if let Some(invocation) = pending.ticket.invocation() {
+                                let shell = self.shell.clone();
+                                let executor = self.executor.clone();
+                                let input = json!({"kind":"cancel","invocation":invocation});
+                                let cancelled = tokio::task::spawn_blocking(move || {
+                                    shell.begin(input, executor.as_ref())
+                                })
+                                .await
+                                .unwrap_or_else(|error| {
+                                    Err(format!("cancel task failed: {error}"))
+                                });
+                                if let Err(error) = cancelled {
+                                    text.push_str(&format!(
+                                        "; cancelling invocation {invocation} failed too: {error}"
+                                    ));
+                                }
+                            }
+                            Err(internal(text))
+                        }
+                    };
+                }
                 if let Some(error) = reply.get("error") {
                     return Err(serde_json::from_value(error.clone())
                         .map_err(|_| internal("invalid core protocol error"))?);
@@ -780,6 +853,7 @@ pub async fn serve(
         shutdown: shutdown.clone(),
         sessions: Arc::default(),
         session_manager: Arc::new(session_manager(&shell.config)),
+        relay: Arc::default(),
     };
     let mut config = StreamableHttpServerConfig::default();
     config.cancellation_token = shutdown.clone();
@@ -804,6 +878,7 @@ pub async fn serve(
     Ok(())
 }
 
+mod relay;
 #[cfg(test)]
 mod session_tests;
 

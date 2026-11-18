@@ -380,6 +380,7 @@ impl Shell {
                 | "register-project"
                 | "invoke"
                 | "complete"
+                | "respond"
                 | "cancel"
                 | "setup-report"
                 | "recover"
@@ -623,6 +624,18 @@ impl Shell {
             *cell.value.lock().map_err(|_| "reply lock poisoned")? = Some(t.reply.clone());
             None
         };
+        for input in std::mem::take(&mut t.input_required) {
+            let attempt = input.attempt;
+            if let Some(cells) = writer.waiters.remove(&(input.invocation.clone(), attempt)) {
+                let value = serde_json::to_value(input).map_err(|e| e.to_string())?;
+                let reply = json!({"inputRequired": value});
+                for cell in cells.iter().filter_map(Weak::upgrade) {
+                    let mut value = cell.value.lock().map_err(|_| "reply lock poisoned")?;
+                    *value = Some(reply.clone());
+                    cell.changed.notify_all();
+                }
+            }
+        }
         // DL10/IFC-038: keep the second retention check before notices. Expiry
         // changes only retained outputs, so the committed objects are still t's.
         stored.state = Arc::new(std::mem::take(&mut t.state));

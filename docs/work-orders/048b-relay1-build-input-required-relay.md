@@ -585,3 +585,121 @@ point 10, has each merge wait on, `tools/gate.py`. CI runs on the pull request a
 merge does not wait for it. A fresh Codex verifier and a fresh read-only Opus reader read the
 result before it merges ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes
 this order's Record at the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 18:59 to 20:05 UTC, on the Mac from `main` `d891543f` (the thirteen
+work-order texts of #366), in two rounds: the worker (1848 s) and a fresh Codex verifier (244 s),
+then the worker again (1550 s) and a second fresh Codex verifier (264 s). The worker found IFC-049's
+row as `main` had it before order 048a-5 (`0 | 0 | outside | none`). Round 1 made the change the
+order sets out, in its eleven files: `InputRequired` and `Transition.input_required`, with the
+member added empty to the nine full literals of `Transition` (in `lib.rs`, `explain.rs`,
+`records.rs`, `requests.rs` and `retirement.rs`); `Input::Respond` and `requests::respond`, with no
+field marked `#[allow(dead_code)]`; `commit` giving each entry to its waiters after the block that
+registers the new ticket's waiter, and `"respond"` in `needs_evidence`; `server/relay.rs` with
+`States`, `Taken`, `issue`, `take`, `relay` and the two unit tests; `call_tool` taking a retry
+before the `invoke` input and relaying an output in its loop; the server test; IFC-049's row
+`| IFC-049 | interface | must | 0 | 0 | outside | core, shell | no case, no reason |` and the
+totals' last row `| named in engine source | 141 | 163 | 26 | 330 |`; and the section of
+`engine/CONFORMANCE.md`. The negative control failed with `HEAD`'s `server.rs` and passed once
+restored, and the S1 spike passed 9. The worker's own choices: one helper maps each `Taken` to its
+binding or text, one sweep clears both maps, each output is serialized once per group of waiters,
+and the malformed outputs and the two retries are tables. Its findings were decision 8's list.
+
+The first verifier found four musts: a retry naming an unfinished tool met the unfinished-operation
+guard first and ended with an internal error and no record; a `null` `requestState` or
+`inputResponses` reads as absent, so the call ran as a new request; a refused retry is recorded
+under OPS-023, where REC-001 asks for the deciding promise's ID; and the relay keeps rmcp's empty
+`elicitationId`, where IFC-049 says there is none. Its shoulds: the malformed-output test should
+assert the prevalidation error, and the worker's report held a private path (the report lies
+outside the repository, and none of it is committed). Round 2 acted on all four musts by changing
+the design: it skipped the unfinished guard for a call with retry fields, refused a `null` retry
+field under IFC-036 (before authentication too, as HTTP 200), recorded a refused retry through a
+new core input `RejectRetry` naming IFC-049, removed `elicitationId` from the wire reply in
+`authenticate`, rewrote the section of `engine/CONFORMANCE.md` to say so, and asserted the
+prevalidation error. The second verifier found two musts, the unauthenticated `null` reply that
+comes before the SDK's own checks and a poisoned relay lock that returned without cancelling the
+invocation, and two shoulds: a producer will need the negotiated revision checked before the core
+asks for input, and the wire test called the removal helper itself, not the production path. Its
+nit: the worker gave the Python unit tests' result without their count (129).
+
+A fresh read-only Opus reader then verified round 2 (ruling 79, point 2). It ran `cargo fmt
+--check`, clippy, the four named tests (1, 2, 1 and 1 passed), the vectors and the full release
+suite with 4 threads, the negative control (failed at the forged retry, then passed), the S1 spike
+(9 passed), the Python checks (Errors: 0 each; unit tests 129, OK), the vector delta (0 changes),
+the order's greps, a privacy grep and a trial merge onto `main`. It found the design changes of
+round 2 outside the order, as four musts and three shoulds:
+
+- M1: the section of `engine/CONFORMANCE.md` was not the order's paragraph, and the grep
+  `which is how this build reads IFC-049` printed 0.
+- M2: removing `elicitationId` went against "keeping rmcp's empty `elicitationId`", and the test
+  did not exercise the production path that removed it.
+- M3: `Input::RejectRetry` and `requests::reject_retry` lay outside the Scope and against decision
+  5's `record_rejection`, with no core unit test.
+- M4: an unauthenticated `tools/call` with a `null` retry field got HTTP 200 and a parameter error
+  before authentication, with no record and no 401; decision 5 says to go on as today where both
+  fields are absent.
+- S1: a call with retry fields skipped the unfinished-operation guard, which decision 5 leaves as
+  it was.
+- S2: a poisoned relay lock on the output path returned before the cancel branch.
+- S3: the new code and test named IFC-036, where decision 5 allows no promise ID but IFC-049.
+
+The fixer rebased the branch onto `origin/main` at `a701c1ee` (#367 to #369: orders 048a-3, 206,
+204, 205, 050i and 050l) with the work-order identity, without conflict; `engine/STANDING.md` was
+current. It then brought the branch back to the order, the least change for each finding:
+
+- M1, M2: `engine/CONFORMANCE.md` holds the order's paragraph again; `remove_url_elicitation_id`,
+  `reply_frame` and their call in `authenticate` are gone, and `relay_passes_only_a_url_elicitation`
+  asserts the result with `"elicitationId": ""`, as decision 6 has it.
+- M3: `Input::RejectRetry`, `requests::reject_retry` and `"reject-retry"` in `needs_evidence` are
+  gone; a refused retry calls `record_rejection(..., false)`, and the server test no longer asserts
+  the record's `ruleId`.
+- M4, S1, S3: `NullRetryField`, `invalid_tool_params` and the raw-HTTP `null` half of the server
+  test are gone, the unfinished-operation guard runs for every call as before, and the server test
+  is round 1's. The added lines of `server.rs` and `server_tests.rs` name IFC-036 nowhere.
+- S2: the output path takes the lock with `match self.relay.lock()`, and a poisoned lock gives the
+  error `relay lock poisoned` through the existing cancel branch.
+- The prevalidation assertions of round 2, the first verifier's should, are kept: each malformed
+  output gives decision 4's error text.
+
+The first verifier's musts on the unfinished guard, the `null` retry fields, the record's deciding
+ID and `elicitationId`, and the second verifier's should on the revision check, stay findings for
+the coordinator: decisions 5 and 8 settle each as written, and only the coordinator can amend them.
+
+The fixer ran, from `engine/` with `RUST_TEST_THREADS=4 CONDUIT_VECTOR_THREADS=4`: `cargo fmt
+--check` and `cargo clippy --all-targets -- -D warnings` (clean); the four named tests (1, 2, 1 and
+1 passed); the vectors (2 passed); the full release suite (exit 0, no test failed); and the negative
+control with `origin/main`'s `server.rs`, which failed at the forged retry, "retry succeeded as a
+new request", and passed 1 once restored with `cp`. From the repository root: `check_schemas`,
+`set_names --check`, `check_rulings`, `check_docs`, `check_roadmap`, `check_model_account`,
+`check_private_paths` and `promise_standing --check` (Errors: 0 each); `/usr/bin/python3 -m unittest
+discover -s tools/tests` (Ran 129 tests, OK); `vector_delta.py`, from both `HEAD` and `origin/main`
+to `WORKTREE` (0 changes; 0 flips; 0 undeclared; 0 errors, exit 0 each); the order's `git status`
+(empty); its greps (sixteen print 1, `t.input_required` prints 1, the three that must print 0 print
+0, with `origin/main` for `HEAD`); and `git diff --check origin/main...HEAD` (clean). The S1 spike's
+`tests/spike.rs` gave `test result: ok. 9 passed; 0 failed`. The gate's run on this order's squash
+is the coordinator's at the merge. After orders 048a-4 (#371) and 051b (#372) merged, the branch
+was rebased onto `origin/main` at `6be93b30` with the work-order identity; its one conflict, in the
+totals' last row of `engine/STANDING.md`, was resolved by regenerating the file with
+`promise_standing.py --write`, which keeps 048a-4's convention count and this order's IFC-049 row
+together as `| named in engine source | 141 | 164 | 26 | 331 |`, and `requests.rs`,
+`engine/CONFORMANCE.md` and 051b's `server.rs` merged without conflict.
+
+A fresh read-only Opus reader then read the rebased branch at `e6a99545` on `origin/main`
+`6be93b30` (ruling 79, point 2). It checked the `engine/STANDING.md` conflict's resolution against
+both sides (IFC-049's row as decision 7 has it; `promise_standing --check` Errors: 0), that
+`engine/CONFORMANCE.md`'s section is still the file's last and the order's paragraph, that the nine
+`Transition` literals each carry `input_required: vec![]`, that 048a-4 touched neither `server.rs`
+nor the shell's `lib.rs` and 051b's one change to `server.rs` is untouched by the relay, and that
+the shell alone issues, keeps and checks the `requestState`. It reran every check of Done when in
+a scratch clone, with the negative control, the S1 spike, the vector delta from `HEAD` and from
+`origin/main`, the authors and committers and a privacy grep of the added lines, and each passed.
+It found nothing. The first verifier's four musts and the second verifier's should on the revision
+check stay findings for the coordinator, as above; no Codex must is open against the order as
+written. The fixer changed no code and reran, with 4 threads, `cargo fmt --check` and clippy
+(clean), the four named tests (1, 2, 1 and 1 passed), the vectors (2 passed), the full release
+suite (exit 0, no test failed), the negative control with `origin/main`'s `server.rs` (failed at
+the forged retry; 1 passed once restored with `cp`), the S1 spike (`tests/spike.rs` 9 passed), the
+Python checks (Errors: 0 each; unit tests Ran 129, OK), `vector_delta.py` from `HEAD` and from
+`origin/main` (0 changes, exit 0), the order's `git status` (empty), its greps (each 1, 1 and 0 as
+the order says) and `git diff --check origin/main...HEAD` (clean).

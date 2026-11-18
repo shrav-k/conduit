@@ -1687,3 +1687,76 @@ async fn shell_rejection_carries_diagnostic() {
         .unwrap()
         .unwrap();
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn forged_retry_state_is_refused_and_recorded() {
+    let temp = temporary();
+    let shell = Arc::new(fixed_shell(temp.path()));
+    server::preflight(&shell).unwrap();
+    let root = actor(&shell, "root");
+    shell.issue_client_token(&root).unwrap();
+    let token = token(&shell, "root");
+    let executor = Arc::new(ServingExecutor::new(Arc::new(crate::MissingExecutor)));
+    let stop = CancellationToken::new();
+    let task = tokio::spawn(server::serve(shell.clone(), executor, stop.clone()));
+    ready(&shell.config.engine_url).await;
+    let client = modern(&shell.config.engine_url, &token).await;
+    let prefix = &shell.context.meta_prefix;
+    let ending_reasons = || {
+        let state = shell.writer.lock().unwrap().store.read().unwrap().state;
+        state
+            .records
+            .iter()
+            .filter(|record| record["type"] == "request-ended")
+            .map(|record| record["data"]["reason"].clone())
+            .collect::<Vec<_>>()
+    };
+    let before = ending_reasons().len();
+    for (with_responses, text, added) in [
+        (
+            true,
+            "requestState is not one this engine issued to this Interface: it was altered, issued to another Interface, or forgotten at a restart",
+            1,
+        ),
+        (
+            false,
+            "a retry carries both requestState and inputResponses",
+            2,
+        ),
+    ] {
+        let mut request = serde_json::to_value(call("management.list.v1", json!({}))).unwrap();
+        request["requestState"] = json!("forged");
+        if with_responses {
+            request["inputResponses"] = json!({"url":{"action":"accept"}});
+        }
+        let error = match client
+            .call_tool_once(serde_json::from_value(request).unwrap())
+            .await
+        {
+            Err(rmcp::ServiceError::McpError(error)) => error,
+            Ok(_) => panic!("retry succeeded as a new request; expected an IFC-049 error"),
+            Err(_) => panic!("expected an IFC-049 protocol error"),
+        };
+        assert_eq!(error.code, ErrorCode::INVALID_PARAMS);
+        assert_eq!(error.message, text);
+        let data = error.data.unwrap();
+        assert_eq!(data[format!("{prefix}reason")], "invalid");
+        assert_eq!(data["diagnostics"][0]["ruleId"], "IFC-049");
+        assert_eq!(data["diagnostics"][0]["message"]["text"], text);
+        let reasons = ending_reasons();
+        assert_eq!(reasons.len(), before + added);
+        assert_eq!(reasons.last().unwrap(), "invalid");
+    }
+    let result = client
+        .call_tool(call("management.list.v1", json!({})))
+        .await
+        .unwrap();
+    assert_eq!(result.is_error, Some(false));
+    client.cancel().await.unwrap();
+    stop.cancel();
+    tokio::time::timeout(Duration::from_secs(60), task)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+}

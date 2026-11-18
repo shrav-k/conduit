@@ -53,25 +53,19 @@ fn release_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, V
     let mut manifest = documents(&packages.join("agents/conduit.yaml")).remove(0);
     manifest["version"] = json!("0.2.0");
     let mut docs = documents(&packages.join("agents/contracts.yaml"));
-    let names = conduit_loader::read_file(&root.join("spec/names.yaml")).unwrap();
-    let core = conduit_loader::Names::from_node(&names[0].root)
-        .unwrap()
-        .core_package;
     // C12: registration-only fixtures, no signIn or hooks. PKG-031: turn template.
-    // Ruling 82 point 2: account and apiKey are both required; apiKey defaults to null.
+    // Ruling 83: subscription only. No apiKey; account is required, a string or null, no default.
     for name in ["claude-code.v2", "codex.v2"] {
         let mut properties = json!({
             "accountServices":{"type":"boolean","default":false},
             "model":{"type":"string","default":""},
-            "account":{"type":["string","null"]},
-            "apiKey":{"anyOf":[{"$ref":format!("{}#secret-reference.v1", core)},{"type":"null"}],"default":null}
+            "account":{"type":["string","null"]}
         });
         if name == "claude-code.v2" {
             properties["peerMessaging"] = json!({"type":"boolean","default":false});
         }
         docs.push(json!({"apiVersion":manifest["apiVersion"],"kind":"Type","metadata":{"name":name},"spec":{
-            "family":"Agent","schema":{"type":"object","properties":properties,"required":["account","apiKey"],"additionalProperties":false,
-                "oneOf":[{"properties":{"account":{"type":"string"},"apiKey":{"type":"null"}}},{"properties":{"account":{"type":"null"},"apiKey":{"type":"object"}},"required":["apiKey"]}]},
+            "family":"Agent","schema":{"type":"object","properties":properties,"required":["account"],"additionalProperties":false},
             "offers":["#conversation.v1"],"requires":[],"records":{"inputs":false,"outputs":false}
         }}));
         manifest["exports"]

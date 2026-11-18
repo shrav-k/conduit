@@ -1,6 +1,6 @@
 {
   "id": "agents-v2-defaults",
-  "title": "Installed Agent v2 defaults and exclusive account or API key configurations",
+  "title": "Installed Agent v2 defaults, a required account of string or null, and no API key",
   "layers": [
     "language",
     "convention"
@@ -81,12 +81,44 @@
                   "kind": "Type",
                   "metadata": {
                     "name": "claude-code.v2"
+                  },
+                  "spec": {
+                    "schema": {
+                      "properties": {
+                        "account": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "account"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 },
                 {
                   "kind": "Type",
                   "metadata": {
                     "name": "codex.v2"
+                  },
+                  "spec": {
+                    "schema": {
+                      "properties": {
+                        "account": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "account"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 },
                 {
@@ -117,6 +149,14 @@
             }
           }
         },
+        "absent": [
+          "/reply/package/project/documents/2/spec/schema/properties/apiKey",
+          "/reply/package/project/documents/2/spec/schema/oneOf",
+          "/reply/package/project/documents/2/spec/schema/properties/account/default",
+          "/reply/package/project/documents/3/spec/schema/properties/apiKey",
+          "/reply/package/project/documents/3/spec/schema/oneOf",
+          "/reply/package/project/documents/3/spec/schema/properties/account/default"
+        ],
         "records": [],
         "external_intents": [],
         "required_promises": [
@@ -154,13 +194,12 @@
               "value": {
                 "accountServices": false,
                 "model": "",
-                "apiKey": null,
                 "peerMessaging": false,
                 "account": "agent@example.org"
               }
             },
             {
-              "valid": true,
+              "valid": false,
               "value": {
                 "accountServices": false,
                 "model": "",
@@ -177,16 +216,14 @@
               "value": {
                 "accountServices": false,
                 "model": "",
-                "apiKey": null,
                 "peerMessaging": false
               }
             },
             {
-              "valid": false,
+              "valid": true,
               "value": {
                 "accountServices": false,
                 "model": "",
-                "apiKey": null,
                 "peerMessaging": false,
                 "account": null
               }
@@ -209,7 +246,6 @@
               "value": {
                 "accountServices": true,
                 "model": "chosen",
-                "apiKey": null,
                 "peerMessaging": false,
                 "account": "agent@example.org"
               }
@@ -219,7 +255,6 @@
               "value": {
                 "accountServices": false,
                 "model": "",
-                "apiKey": null,
                 "peerMessaging": true,
                 "account": "agent@example.org"
               }
@@ -245,12 +280,11 @@
               "value": {
                 "accountServices": false,
                 "model": "",
-                "apiKey": null,
                 "account": "agent@example.org"
               }
             },
             {
-              "valid": true,
+              "valid": false,
               "value": {
                 "accountServices": false,
                 "model": "",
@@ -265,16 +299,14 @@
               "valid": false,
               "value": {
                 "accountServices": false,
-                "model": "",
-                "apiKey": null
+                "model": ""
               }
             },
             {
-              "valid": false,
+              "valid": true,
               "value": {
                 "accountServices": false,
                 "model": "",
-                "apiKey": null,
                 "account": null
               }
             },
@@ -295,7 +327,6 @@
               "value": {
                 "accountServices": true,
                 "model": "chosen",
-                "apiKey": null,
                 "account": "agent@example.org"
               }
             },
@@ -304,7 +335,6 @@
               "value": {
                 "accountServices": false,
                 "model": "",
-                "apiKey": null,
                 "account": "agent@example.org",
                 "peerMessaging": true
               }

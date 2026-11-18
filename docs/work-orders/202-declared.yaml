@@ -1,3 +1,4 @@
+# Checked at the merge of order 202, against main at 1e38ff92: the work's vector delta matches these shapes.
 - name: the .v2 Types hold no apiKey, so no sample's value gains a null apiKey
   kind: expectation
   cases: [agents-v2-defaults]
@@ -32,3 +33,16 @@
   - conformance/language/packages/agents-v2-defaults/install.json
   - conformance/language/packages/agents-v2-defaults/claude-code.v2-values.json
   - conformance/language/packages/agents-v2-defaults/codex.v2-values.json
+- name: the installed .v2 schemas require a string or null account and refuse additional properties
+  kind: expectation
+  cases: [agents-v2-defaults]
+  paths:
+  - '/steps/1/expect/reply/package/project/documents/[23]/spec/schema/properties/account/type/[01]'
+  - '/steps/1/expect/reply/package/project/documents/[23]/spec/schema/required/0'
+  - '/steps/1/expect/reply/package/project/documents/[23]/spec/schema/additionalProperties'
+  operation: add
+- name: the install reply has no apiKey property, oneOf, or account default in either .v2 schema
+  kind: expectation
+  cases: [agents-v2-defaults]
+  paths: ['/steps/1/expect/absent/[0-5]']
+  operation: add

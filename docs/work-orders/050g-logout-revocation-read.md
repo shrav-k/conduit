@@ -435,3 +435,87 @@ The coordinator then does the following:
    fail branch's local removal open to the owner's strike. It also reads C2's answer on whether
    anything the logout removes is shared with another home, and under which setting. Where
    something is, it says so before 050h, 050i and 050l are written, open to the owner's strike.
+
+## Record
+
+Run on 2026-11-17, from about 11:27 to 11:56 UTC, on the Mac from `main` `5eb71667` (the merge that
+added this order), in two rounds: the worker (1047 s) and a fresh Codex verifier (215 s), then the
+worker again (248 s) and a second fresh Codex verifier (216 s). The change is the one file of Scope,
+`experiments/027-a5-sign-in/results-2026-11-17-logout-source.md`, new: its opening paragraph,
+Sources (CX1 cloned at the tag, `0a94398fa60c`, and the six required pages, each read once with
+status 200, no optional page), the two outcome lines, L1 to L3 and C1 to C4 with their quotations
+and "Not found" searches, and Not shown. `target/wo050g/literals.txt` holds the three required
+values and ten distinct address literals, none of them in the file. The worker's own choices: no
+optional Claude page; standard-library helpers under `target/wo050g/` for the HTML's text, redaction
+and checks; C2 traces the managed-configuration, enterprise-credential and Bedrock cleanup paths;
+and the address literals are counted once each. The sandbox refused the intent-add and the reset of
+the real index, so the worker ran that block on a temporary index. The worker's first report says
+that an exploratory search printed one public request address into its own log before it redacted
+its output; no committed file holds it.
+
+The two outcome lines:
+
+- `claude auth logout`: pass, a revocation scoped to that home's token alone, quoted under L2.
+- `codex logout`: pass, a revocation scoped to that home's token alone, quoted under C3.
+
+Neither line fails, so item 8's fail branch is recorded for neither client. The Claude wording of
+that branch, naming the keychain item or waiting on A22, is still the coordinator's to choose should
+the coordinator read the Claude line as a fail (R2 below).
+
+The first verifier found one must: L3 said the pages gave no statement that several
+`CLAUDE_CONFIG_DIR` homes stay signed in at once, where CC1 and CC3 say so ("To stay signed in to
+multiple accounts at once ..."). Round 2 quoted that statement and its limit for keyless Console
+sign-ins at the head of L3 and narrowed "Not found" to the logout's effects and to profile sharing.
+The second verifier found one must: C2's inventory of the enterprise cleanup left out two lock files
+that the logout can create. The run ended after round 2 without fixing it.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2), on the branch before its
+rebase. In a scratch clone with the file untracked it ran the first block of "Done when"
+(`check_docs`, `check_roadmap` and `check_private_paths` Errors: 0 each, `git diff --check` and
+`git diff --name-only` clean, the results file the only untracked path, CX1's HEAD at the tag) and
+the second block in order (each line as the order expects, 13 lines in `literals.txt`, none in the
+file, and 0 files on `main`). With scratch scripts it compared the 18 fenced source quotations with
+their cited lines at the tag (all match but the intended cut of one literal at `revoke.rs:149`) and
+the 32 page and README quotations with the saved page text (32 match); it checked `literals.txt` by
+booleans only, the callers of `logout_with_revoke`, the store-lock call sites in `rmcp-client`, the
+prose widths, the Not shown bullets, the absence of an at sign, a home path and a private name, and
+that CC1 and CC3 are the same bytes. It found one must and one should:
+
+- R1: C2 leaves out `file-store.lock` and `secrets-store.lock`, which the enterprise cleanup creates
+  or opens under the home (the second verifier's must).
+- R2: the Claude line rests on a statement about the keyless Console sign-in, whose credential the
+  pages quoted under L3 place outside the configuration directory, and L2 neither connects the two
+  nor says that the pages state no revocation for a claude.ai login. The line stands under decision
+  2; the coordinator weighs it before 050h, 050i and 050l.
+
+The fixer fetched; the branch was already on `origin/main` at `5eb71667`, and the rebase with the
+work-order identity changed nothing. It applied each finding in the reader's words:
+
+- R1: C2's enterprise-cleanup paragraph gains, after the citation of `refresh_lock.rs` and
+  `enterprise_generation.rs`, "It also creates or opens file-store.lock in that directory when it
+  rewrites the fallback file (rmcp-client/src/oauth.rs:993-994), and secrets-store.lock there when
+  the Secrets backend is selected (oauth.rs:729-734); oauth/store_lock.rs:32-35 names them, :114
+  creates them and :206-207 places them under the home." The fixer read those lines at the tag
+  first. The coordinator then widened its condition: the lock is taken before the fallback file is
+  read (oauth.rs:994-998).
+- R2: L2's "In this reading" paragraph ends "In this reading, the credential that statement names is
+  the keyless Console sign-in's profile, which the pages quoted under L3 place outside the
+  configuration directory and say separate directories do not keep apart; for a claude.ai login the
+  pages read state no revocation." The fixer read CC1's lines first. The outcome line is unchanged;
+  its reading is the coordinator's.
+
+Both paragraphs are rewrapped at 100 columns. The fixer then ran, from the worktree's root, the
+order's checks on the file as tracked: `check_docs`, `check_roadmap` and `check_private_paths`
+(Errors: 0 each), `git diff --check` and `git diff --check origin/main...HEAD` (clean), CX1's HEAD
+(`0a94398fa60c4fac0e7659e4213a0a36e613dd46`), and the second block, each line as the order expects
+(1, 0, 4, 7, 1 for each of the 11 paragraph lines, 1, 1, 1, 2, 7, 2, nothing, the four hosts
+`code.claude.com`, `developers.openai.com`, `github.com` and `learn.chatgpt.com`, nothing four
+times, 13, 0, 0, nothing twice). The block's intent-add, reset and untracked-path lines do not apply
+to a file the branch already tracks; the reader ran them in its scratch clone. The gate's run on
+this order's squash, which the merge waits on, is the coordinator's at the merge.
+
+At the merge the coordinator applied the second reader's two shoulds: the results file's lock
+sentence now says the lock is taken each time the cleanup deletes from the fallback file, before it
+reads it, and this Record says that neither outcome line fails, so item 8's fail branch is recorded
+for neither client. Both lines pass, so the step's sign-out may run once order 050's report names
+this read. The gate runs on the squash, and the merge waits on its PASS.

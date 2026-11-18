@@ -98,6 +98,18 @@ fn event(
         .extend(extra.as_object().unwrap().clone());
     requests::record(t, a, c, "object-change", data)
 }
+pub(crate) fn closing_conduits<'a>(
+    state: &'a State,
+    id: &'a Value,
+    consumer: bool,
+) -> impl Iterator<Item = &'a Value> {
+    state.objects.iter().filter(move |p| {
+        p["kind"] == "Conduit"
+            && p.get("spec").is_none()
+            && (access::id(&p["target"]) == id || consumer && access::id(&p["consumer"]) == id)
+    })
+}
+
 fn close_ends(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -106,17 +118,7 @@ fn close_ends(
     id: &Value,
     consumer: bool,
 ) -> Result<()> {
-    let paths: Vec<_> = t
-        .state
-        .objects
-        .iter()
-        .filter(|p| {
-            p["kind"] == "Conduit"
-                && p.get("spec").is_none()
-                && (access::id(&p["target"]) == id || consumer && access::id(&p["consumer"]) == id)
-        })
-        .cloned()
-        .collect();
+    let paths: Vec<_> = closing_conduits(&t.state, id, consumer).cloned().collect();
     for p in paths {
         let v = t.state.invocations[i].clone();
         let cause = t
@@ -215,6 +217,11 @@ pub(crate) fn execute(
     t.state.invocations[i]["retirement_of"] = o["id"].clone();
     let retired =
         pending::answer_before_change(&mut t.state, o, &a.evidence.time, "retired", &v, c);
+    let notices = if o["kind"] == "Resource" && o["state"] != "retired" {
+        pending::raise_notices(&mut t.state, o, &v, &a.evidence.time, a, c)?
+    } else {
+        vec![]
+    };
     let object = t
         .state
         .objects
@@ -229,8 +236,39 @@ pub(crate) fn execute(
         object["retirement_tombstone"] = tombstone;
     }
     let mut extra = json!({"state":"retired","shutdown":shutdown});
-    if let Some(action) = &retired {
-        extra["pendingAction"] = json!([action["id"]]);
+    let mut pending_ids: Vec<_> = retired.iter().map(|action| action["id"].clone()).collect();
+    pending_ids.extend(notices.iter().map(|id| json!(id)));
+    if !pending_ids.is_empty() {
+        extra["pendingAction"] = json!(pending_ids);
+    }
+    if !notices.is_empty() {
+        let append_notices = |invocation: &mut Value| {
+            invocation
+                .as_object_mut()
+                .unwrap()
+                .entry("notices")
+                .or_insert_with(|| json!([]))
+                .as_array_mut()
+                .unwrap()
+                .extend(notices.iter().map(|id| json!(id)));
+        };
+        append_notices(&mut t.state.invocations[i]);
+        if let Some(parent_id) = v.get("cascade_parent") {
+            let parent = t
+                .state
+                .invocations
+                .iter_mut()
+                .find(|v| v["id"] == *parent_id)
+                .ok_or("cascade parent missing")?;
+            append_notices(parent);
+        }
+        t.decisions.push(decision(
+            "raise-notice",
+            &["PND-001", "PND-007", "PND-012"],
+            &["DL19"],
+            json!({"actions":notices,"resource":o["id"]}),
+            vec![],
+        ));
     }
     event(t, a, c, i, &o["id"], "retired", extra)?;
     if let Some(action) = retired {
@@ -551,6 +589,62 @@ mod tests {
     fn assert_only_stop(t: &Transition, c: &Context) {
         assert_eq!(t.external_intents.len(), 1, "{:?}", t.external_intents);
         assert_eq!(t.external_intents[0]["operation"], c.qualified("stop.v1"));
+    }
+
+    #[test]
+    fn retirement_names_its_notices() {
+        for in_cascade in [false, true] {
+            let (mut t, c, evidence) = fixture(false, None);
+            let resource =
+                json!({"id":"x","kind":"Resource","name":"x","owner":"p","state":"ready"});
+            t.state.objects = vec![
+                resource.clone(),
+                json!({"id":"root","kind":"Interface","from":c.qualified("root")}),
+                json!({"id":"u","kind":"Interface"}),
+                json!({"id":"p","kind":"Pool","name":"p"}),
+                json!({"id":"f","kind":"Fleet","name":"f"}),
+                json!({"id":"agent","kind":"Agent","name":"agent","owner":"f"}),
+                json!({"id":"path","kind":"Conduit","name":"path","consumer":"agent","target":"x","open":true}),
+            ];
+            let mut retirement = json!({"id":"retire","attempt":1,"object":"x",
+                "state":"in-progress","sender":"u","caller":"u","target":"p",
+                "operation":c.qualified("retire.v1"),"contract":{"spec":{"effect":"retire"}}});
+            if in_cascade {
+                retirement["cascade_parent"] = json!("parent");
+            }
+            t.state.invocations = vec![
+                retirement,
+                json!({
+                    "id":"parent","state":"in-progress","cascade":{"advancing":true},
+                    "notices":["previous"]
+                }),
+            ];
+            let mut a = Allocation {
+                evidence: &evidence,
+                cursor: 0,
+            };
+            execute(&mut t, &mut a, &c, 0, &resource).unwrap();
+            let ids = json!(["record-0"]);
+            let record = t
+                .records
+                .iter()
+                .find(|r| r["type"] == "object-change" && r["data"]["action"] == "retired")
+                .unwrap();
+            assert_eq!(record["data"]["pendingAction"], ids);
+            assert_eq!(t.state.invocations[0]["notices"], ids);
+            let raised = t
+                .decisions
+                .iter()
+                .find(|d| d.action == "raise-notice")
+                .unwrap();
+            assert_eq!(raised.facts, json!({"actions":ids,"resource":"x"}));
+            if in_cascade {
+                assert_eq!(
+                    t.state.invocations[1]["notices"],
+                    json!(["previous", "record-0"])
+                );
+            }
+        }
     }
 
     #[test]

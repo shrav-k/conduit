@@ -1423,6 +1423,9 @@ fn invoke_inner(
         invocation["opening_provenance"] = crate::inventory::provenance(&t.state, &invocation, c)?;
     }
     if let Some(old) = previous {
+        if let Some(notices) = old.get("notices") {
+            invocation["notices"] = notices.clone();
+        }
         invocation["previous"] = old;
     }
     let retried = if op == c.qualified("set-up.v1") {
@@ -1688,6 +1691,9 @@ pub(crate) fn finish(
         content,
         None,
     );
+    if v["notices"].as_array().is_some_and(|ids| !ids.is_empty()) {
+        t.reply["_meta"][mark(c, "pendingAction")] = v["notices"].clone();
+    }
     t.request_replies.push(crate::RequestReply {
         invocation: v["id"].as_str().ok_or("invocation has no ID")?.into(),
         attempt: v["attempt"].as_u64().ok_or("invocation has no attempt")?,

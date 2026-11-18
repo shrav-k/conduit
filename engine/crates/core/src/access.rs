@@ -533,6 +533,16 @@ pub(crate) fn action_inspection_target<'a>(
     action: &Value,
     context: &Context,
 ) -> Result<&'a Value> {
+    if action["kind"] == "notice" {
+        let fleet = pending::notice_fleet(state, action)
+            .and_then(|id| object_by_id(state, id))
+            .filter(|fleet| fleet["state"] != "retired");
+        let target = match fleet {
+            Some(fleet) => fleet,
+            None => management(state, "management", context)?,
+        };
+        return Ok(&target["id"]);
+    }
     let subject_id = &action["subject"][0]["id"];
     let subject = subject_id
         .as_str()

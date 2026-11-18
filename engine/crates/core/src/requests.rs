@@ -1,7 +1,8 @@
 //! Invocation state is durable core state, separate from records. Intents are only plans:
 //! the embedding shell persists the transition before carrying out any call (DL2).
 use crate::{
-    Allocation, Context, Evidence, Result, State, Transition, access, decision, packages, schemas,
+    Allocation, Context, Evidence, Result, State, Transition, access, decision, explain, packages,
+    schemas,
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -114,7 +115,7 @@ fn envelope(
     outcome: Option<&str>,
     reason: Option<&str>,
     invocation: Option<&Value>,
-    _rule: &str,
+    cause: Option<&[Value]>,
     outputs: Option<Value>,
     content: Value,
     restriction: Option<&Value>,
@@ -142,10 +143,31 @@ fn envelope(
     }
     blocks.extend(content.as_array().into_iter().flatten().cloned());
     let mut reply = json!({"_meta":meta,"isError":error,"content":blocks});
-    if !error && let Some(outputs) = outputs {
+    if let Some(cause) = cause {
+        reply["structuredContent"] = json!({"diagnostics":cause});
+    } else if !error && let Some(outputs) = outputs {
         reply["structuredContent"] = outputs;
     }
     reply
+}
+
+pub(crate) fn ended_reply(c: &Context, old: &Value, contract: &Value, outcome: &str) -> Value {
+    let cause = match outcome {
+        "failed" | "unknown" => old["cause"].as_array().map(Vec::as_slice),
+        _ => None,
+    };
+    envelope(
+        c,
+        Some(outcome),
+        None,
+        Some(&old["id"]),
+        cause,
+        contract["spec"]
+            .get("outputSchema")
+            .map(|_| old["retained"].get("outputs").cloned().unwrap_or(json!({}))),
+        old["retained"].get("content").cloned().unwrap_or(json!([])),
+        None,
+    )
 }
 
 // Record content follows the held Type, rather than the retention of the repeat
@@ -581,7 +603,7 @@ fn reject_diagnostics(
         None,
         Some(reason),
         id,
-        rule,
+        None,
         None,
         json!([]),
         restriction,
@@ -634,7 +656,7 @@ fn reject_diagnostics(
     t.reply["structuredContent"] =
         json!({"diagnostics":diagnostics.unwrap_or_else(|| json!([diagnostic]))});
     if rule == "OPS-029"
-        && let Some(named) = missing_reference(route, c)
+        && let Some(named) = named_reference(&route["operation"], &route["arguments"], c)
     {
         t.reply["structuredContent"]["diagnostics"][0]["message"]["text"] = json!(format!(
             "{named} does not exist. A closed Conduit and a removed instance no longer exist."
@@ -679,8 +701,8 @@ fn reject_diagnostics(
     end(t, a, c, &ending, None, Some(reason), id)
 }
 
-fn missing_reference(route: &Value, c: &Context) -> Option<String> {
-    let operation = route["operation"].as_str()?;
+fn named_reference(operation: &Value, arguments: &Value, c: &Context) -> Option<String> {
+    let operation = operation.as_str()?;
     let core_op = operation.strip_prefix(&format!("{}#", c.core_package))?;
     let (key, fixed_kind) = match core_op {
         "inspect.v1" | "unregister.v1" => ("object", "Object"),
@@ -691,7 +713,7 @@ fn missing_reference(route: &Value, c: &Context) -> Option<String> {
         "reconcile.v1" => ("invocation", "Invocation"),
         _ => return None,
     };
-    let reference = &route["arguments"][key];
+    let reference = &arguments[key];
     let kind = reference["kind"].as_str().unwrap_or(fixed_kind);
     let name = reference
         .as_str()
@@ -797,16 +819,7 @@ fn invoke_inner(
         return Err("empty idempotency key at boundary".into());
     }
     if !request.readable && access::established(&t.state, &request.identity).is_err() {
-        t.reply = envelope(
-            c,
-            None,
-            Some("invalid"),
-            None,
-            "IFC-036",
-            None,
-            json!([]),
-            None,
-        );
+        t.reply = envelope(c, None, Some("invalid"), None, None, None, json!([]), None);
         t.reply["structuredContent"] = json!({"diagnostics":[crate::explain::diagnostic(&t.state, &crate::explain::access_route(&t.state, request, c), c, "invalid", "IFC-036")?]});
         t.decisions.push(decision(
             "unreadable-unidentified-request",
@@ -1122,18 +1135,7 @@ fn invoke_inner(
         && !redispatch
     {
         let outcome = old["state"].as_str().ok_or("invalid invocation state")?;
-        t.reply = envelope(
-            c,
-            Some(outcome),
-            None,
-            Some(&old["id"]),
-            "",
-            contract["spec"]
-                .get("outputSchema")
-                .map(|_| old["retained"].get("outputs").cloned().unwrap_or(json!({}))),
-            old["retained"].get("content").cloned().unwrap_or(json!([])),
-            None,
-        );
+        t.reply = ended_reply(c, old, &contract, outcome);
         t.decisions.push(decision(
             "answer-repeat",
             &[
@@ -1338,6 +1340,18 @@ fn invoke_inner(
     }
     let plain = implementation["item"]["plain"] == true;
     let mut invocation = json!({"id":id,"key":key,"sender":route["consumer"],"caller":route["caller"],"target":route["target"],"conduit":route["conduit"],"operation":op,"arguments":route["arguments"],"digest":digest,"filters":route["filters"],"state":"in-progress","plain":plain,"contract":contract,"held_target":target,"implementation":implementation,"needs_result":plain || contract["spec"].get("outputSchema").is_some(),"attempt":previous.as_ref().and_then(|v|v["attempt"].as_u64()).unwrap_or(0)+1,"wire_retried":false,"config":target["config"],"revision":target["revision"]});
+    // Keep the caller's spelling for outcome diagnostics. A cascade names its container
+    // through the tool. Resolved target metadata and arguments stay private.
+    let tool = &request.tool;
+    let subject =
+        if let Some(reference) = named_reference(&route["operation"], &request.arguments, c) {
+            format!("{reference} via tool {tool}")
+        } else if crate::cascade::handles(op, c) {
+            format!("the container named by tool {tool}")
+        } else {
+            format!("tool {tool}")
+        };
+    invocation["named_subject"] = json!(subject);
     start_attempt(&mut invocation, previous.as_ref());
     if ["open.v1", "close.v1"]
         .iter()
@@ -1410,10 +1424,9 @@ fn invoke_inner(
             "failed"
         };
         t.state.invocations[reconciled]["state"] = json!(outcome);
-        t.state.invocations[reconciled]
-            .as_object_mut()
-            .unwrap()
-            .remove("retained");
+        let previous_end = t.state.invocations[reconciled].as_object_mut().unwrap();
+        previous_end.remove("retained");
+        previous_end.remove("cause");
         record(
             t,
             a,
@@ -1469,7 +1482,7 @@ fn invoke_inner(
                 crate::retirement::remove(t, a, c, i, &object)?;
             }
         }
-        finish(t, a, c, i, "succeeded", json!({}), json!([]))?;
+        finish(t, a, c, i, "succeeded", json!({}), json!([]), None)?;
     } else if let Some(mut trial) = installation {
         // DL2: restore untouched existing file contents by move, preserving format version 1.
         for (existing, checked) in t
@@ -1499,6 +1512,7 @@ fn invoke_inner(
             "succeeded",
             json!({"diagnostics":trial.reply["diagnostics"]}),
             json!([]),
+            None,
         )?;
     } else if crate::records::handles(op, c) {
         crate::records::execute(t, a, c, i)?;
@@ -1546,6 +1560,7 @@ fn link_access(t: &mut Transition, id: &Value) {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn finish(
     t: &mut Transition,
     a: &mut Allocation<'_>,
@@ -1554,10 +1569,17 @@ pub(crate) fn finish(
     outcome: &str,
     outputs: Value,
     content: Value,
+    cause: Option<Vec<Value>>,
 ) -> Result<()> {
     let v = &mut t.state.invocations[i];
     v["state"] = json!(outcome);
     v.as_object_mut().unwrap().remove("previous");
+    let cause = cause.filter(|_| outcome != "succeeded");
+    if let Some(cause) = &cause {
+        v["cause"] = json!(cause);
+    } else {
+        v.as_object_mut().unwrap().remove("cause");
+    }
     if outcome == "succeeded" {
         v["retained"] = json!({"outputs":outputs,"content":content});
     } else {
@@ -1569,7 +1591,7 @@ pub(crate) fn finish(
         Some(outcome),
         None,
         Some(&v["id"]),
-        "",
+        cause.as_deref(),
         v["contract"]["spec"]
             .get("outputSchema")
             .map(|_| outputs.clone()),
@@ -1664,6 +1686,7 @@ pub(crate) fn complete(
     let mut content = json!([]);
     let mut outputs = json!({});
     let mut outcome = "unknown";
+    let mut rule = Some(if plain { "IFC-010" } else { "OPS-007" });
     match completion {
         Completion::ProtocolError { code: -32020, .. } if v["wire_retried"] != true && readonly => {
             t.state.invocations[i]["wire_retried"] = json!(true);
@@ -1690,18 +1713,26 @@ pub(crate) fn complete(
             if extension {
                 t.state.invocations[i]["extensionRevision"] = json!("v0");
             }
+            let deciding_rule = if extension { "IFC-008" } else { "IFC-047" };
             t.decisions.push(decision(
                 "capability-error-performed-nothing",
-                &["OPS-007", if extension { "IFC-008" } else { "IFC-047" }],
+                &["OPS-007", deciding_rule],
                 &[],
                 data,
                 vec![],
             ));
             outcome = "failed";
+            rule = Some(deciding_rule);
+        }
+        Completion::ProtocolError { code: -32020, .. }
+            if v["wire_retried"] != true && !readonly =>
+        {
+            rule = Some("IFC-046");
         }
         Completion::ProtocolError { .. } if plain => {
             if readonly {
                 outcome = "failed";
+                rule = None;
             }
         }
         Completion::Result { result } => {
@@ -1713,6 +1744,9 @@ pub(crate) fn complete(
                     } else {
                         "succeeded"
                     };
+                    if outcome != "unknown" {
+                        rule = None;
+                    }
                 }
             } else {
                 let meta = &result["_meta"];
@@ -1732,6 +1766,14 @@ pub(crate) fn complete(
                             t.state.invocations[i]["state"] = previous["state"].clone();
                             if let Some(retained) = previous.get("retained") {
                                 t.state.invocations[i]["retained"] = retained.clone();
+                            }
+                            if let Some(cause) = previous.get("cause") {
+                                t.state.invocations[i]["cause"] = cause.clone();
+                            } else {
+                                t.state.invocations[i]
+                                    .as_object_mut()
+                                    .unwrap()
+                                    .remove("cause");
                             }
                             t.state.invocations[i]
                                 .as_object_mut()
@@ -1768,6 +1810,7 @@ pub(crate) fn complete(
                         "failed" => "failed",
                         _ => "unknown",
                     };
+                    rule = None;
                 }
             }
             if outcome == "succeeded" {
@@ -1783,6 +1826,7 @@ pub(crate) fn complete(
                     )?;
                     if !env.valid(&scope, schema, &outputs, &c.core_package)? {
                         outcome = "unknown";
+                        rule = Some("OPS-007");
                         outputs = json!({});
                     }
                 } else {
@@ -1795,7 +1839,10 @@ pub(crate) fn complete(
     if outcome != "succeeded" {
         outputs = json!({});
     }
-    finish(t, &mut a, c, i, outcome, outputs, content)?;
+    let cause = rule
+        .map(|rule| explain::outcome_cause(&v, outcome, rule).map(|d| vec![d]))
+        .transpose()?;
+    finish(t, &mut a, c, i, outcome, outputs, content, cause)?;
     crate::lifecycle::child_ended(t, &mut a, c, i)
 }
 pub(crate) fn cancel(
@@ -1850,6 +1897,15 @@ pub(crate) fn cancel(
             vec![],
         ));
     }
+    let cause = if failed {
+        None
+    } else {
+        Some(vec![explain::outcome_cause(
+            &t.state.invocations[i],
+            "unknown",
+            "OPS-027",
+        )?])
+    };
     finish(
         t,
         &mut a,
@@ -1858,6 +1914,7 @@ pub(crate) fn cancel(
         if failed { "failed" } else { "unknown" },
         json!({}),
         json!([]),
+        cause,
     )
 }
 pub(crate) fn expire(t: &mut Transition, id: &str) -> Result<()> {
@@ -1901,7 +1958,17 @@ pub(crate) fn recover(t: &mut Transition, evidence: &Evidence, c: &Context) -> R
             {
                 o["shutdown"] = json!("unknown");
             }
-            finish(t, &mut a, c, i, "unknown", json!({}), json!([]))?;
+            let cause = explain::outcome_cause(&t.state.invocations[i], "unknown", "IMP-007")?;
+            finish(
+                t,
+                &mut a,
+                c,
+                i,
+                "unknown",
+                json!({}),
+                json!([]),
+                Some(vec![cause]),
+            )?;
         }
     }
     t.decisions.push(decision(
@@ -2015,7 +2082,421 @@ pub(crate) fn hook(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        Input,
+        access::{AccessRequest, Identity},
+        explain::tests::{assert_cause, evidence, fixture, transition},
+        step,
+    };
     use std::collections::BTreeMap;
+
+    fn call_fixture(plain: bool, spec: Value) -> (Transition, Context) {
+        let (mut state, c, _) = repeat_fixture(false);
+        state.invocations.push(json!({
+            "id":"invocation-id","plain":plain,"contract":{"spec":spec},"state":"in-progress",
+            "attempt":1,"operation":c.qualified("reserved.v1"),"target":"management",
+            "held_target":state.objects[3],"sender":"root","caller":"root"
+        }));
+        (transition(state), c)
+    }
+
+    fn unused_evidence(state: &State) -> Evidence {
+        let mut next = evidence();
+        next.ids.retain(|id| !state.allocated_ids.contains(id));
+        next
+    }
+
+    fn answer(t: &Transition, c: &Context, completion: Completion) -> Transition {
+        let invocation = &t.state.invocations[0];
+        step(
+            &t.state,
+            Input::Complete {
+                evidence: unused_evidence(&t.state),
+                invocation: invocation["id"].as_str().unwrap().into(),
+                attempt: invocation["attempt"].as_u64().unwrap(),
+                completion,
+            },
+            c,
+        )
+        .unwrap()
+    }
+
+    fn assert_ending(t: &Transition, c: &Context, outcome: &str, rule: Option<&str>) {
+        let reply = &t.request_replies.last().unwrap().reply;
+        assert_eq!(reply["_meta"][mark(c, "outcome")], outcome);
+        if let Some(rule) = rule {
+            let invocation = &t.state.invocations[0];
+            let operation = invocation["operation"].as_str().unwrap();
+            assert_cause(reply, rule, &format!(" ended {outcome} under {rule}: "));
+            assert_eq!(
+                reply["structuredContent"]["diagnostics"],
+                invocation["cause"]
+            );
+            let message = reply["structuredContent"]["diagnostics"][0]["message"]["text"]
+                .as_str()
+                .unwrap();
+            assert!(message.starts_with(operation), "{message}");
+            assert_eq!(reply["content"][0]["text"], format!("{outcome}: {message}"));
+        } else {
+            assert!(reply.get("structuredContent").is_none(), "{reply}");
+            assert!(t.state.invocations[0].get("cause").is_none());
+            assert_eq!(reply["content"][0]["text"], outcome);
+        }
+    }
+
+    fn rpc(code: i64, data: Value) -> Completion {
+        Completion::ProtocolError { code, data }
+    }
+
+    fn plain_unknown(completion: Completion, spec: Value) {
+        let (t, c) = call_fixture(true, spec);
+        assert_ending(&answer(&t, &c, completion), &c, "unknown", Some("IFC-010"));
+    }
+
+    #[test]
+    fn plain_effectful_protocol_error_names_ifc010() {
+        plain_unknown(rpc(-32602, Value::Null), json!({"effect":"write"}));
+    }
+
+    #[test]
+    fn plain_effectful_error_result_names_ifc010() {
+        plain_unknown(
+            Completion::Result {
+                result: json!({"isError":true}),
+            },
+            json!({"effect":"write"}),
+        );
+    }
+
+    #[test]
+    fn plain_file_write_outcome_names_the_tool_and_omits_the_arguments() {
+        let (mut state, c, mut request) = repeat_fixture(false);
+        let operation = "example.org/files#file.write.v1";
+        let target = &mut state.objects[3];
+        target["schema_environment"]["scopes"]["files"] = json!({
+            "address":"example.org/files","manifest":{},"contracts":{
+                "file.write.v1":{"kind":"Operation","metadata":{"name":"file.write.v1"},"spec":{
+                    "effect":"Writes content at path",
+                    "inputSchema":{"type":"object","properties":{
+                        "path":{"type":"string"},"content":{"type":"string"}
+                    },"required":["path","content"]}
+                }},
+                "directory.v1":{"kind":"Capability","spec":{"operations":[operation]}}
+            }
+        });
+        target["contract_scope"] = json!("files");
+        target["schema_environment"]["scopes"]["files"]["manifest"][&c.core_package] =
+            json!("core");
+        target["resolved_implementations"][operation] =
+            json!({"source":"project","item":{"remote":"http://localhost","plain":true}});
+        let path = state
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == "root-management")
+            .unwrap();
+        path["local_name"] = json!("project");
+        path["capability"] = json!("example.org/files#directory.v1");
+        path["operations"] = json!([operation]);
+        request.tool = "project.file.write.v1".into();
+        request.arguments = json!({"path":"./hello.txt","content":"caller-supplied file body"});
+
+        let pending = invoke_repeat(&state, &c, &request);
+        assert_eq!(pending.reply["pending"], true, "{}", pending.reply);
+        let ended = answer(
+            &pending,
+            &c,
+            Completion::Result {
+                result: json!({"isError":true}),
+            },
+        );
+        assert_ending(&ended, &c, "unknown", Some("IFC-010"));
+        assert_cause(
+            &ended.reply,
+            "IFC-010",
+            "example.org/files#file.write.v1 for tool project.file.write.v1 ended unknown",
+        );
+        let reply = ended.reply.to_string();
+        assert!(!reply.contains("caller-supplied file body"));
+        assert!(!reply.contains("hello.txt"));
+    }
+
+    #[test]
+    fn plain_input_required_names_ifc010() {
+        plain_unknown(
+            Completion::Result {
+                result: json!({"resultType":"input_required"}),
+            },
+            json!({}),
+        );
+    }
+
+    #[test]
+    fn plain_unrecognized_result_type_names_ifc010() {
+        plain_unknown(
+            Completion::Result {
+                result: json!({"resultType":"unrecognized"}),
+            },
+            json!({}),
+        );
+    }
+
+    #[test]
+    fn plain_missing_result_names_ifc010() {
+        plain_unknown(Completion::Missing, json!({}));
+    }
+
+    #[test]
+    fn aware_missing_and_malformed_results_name_ops007() {
+        let (t, c) = call_fixture(
+            false,
+            json!({"outputSchema":{"type":"object","required":["value"]}}),
+        );
+        for completion in [
+            Completion::Missing,
+            rpc(-32602, Value::Null),
+            Completion::Result { result: json!({}) },
+            Completion::Result {
+                result: json!({"_meta":{"test/outcome":"failed","test/reason":"unavailable"},"isError":true}),
+            },
+            Completion::Result {
+                result: json!({"_meta":{"test/outcome":"failed"},"isError":false}),
+            },
+            Completion::Result {
+                result: json!({"_meta":{"test/outcome":"succeeded"},"structuredContent":{}}),
+            },
+        ] {
+            assert_ending(&answer(&t, &c, completion), &c, "unknown", Some("OPS-007"));
+        }
+    }
+
+    #[test]
+    fn aware_capability_errors_name_their_deciding_promise() {
+        let (t, c) = call_fixture(false, json!({}));
+        for (required, rule) in [
+            (
+                json!({"extensions":{"test/implementation-interface":{}}}),
+                "IFC-008",
+            ),
+            (json!({"sampling":{}}), "IFC-047"),
+        ] {
+            let ended = answer(
+                &t,
+                &c,
+                rpc(-32021, json!({"requiredCapabilities":required})),
+            );
+            assert_ending(&ended, &c, "failed", Some(rule));
+        }
+    }
+
+    #[test]
+    fn unsafe_parameter_header_errors_name_ifc046() {
+        for spec in [
+            json!({"effect":"write"}),
+            json!({"changes":{}}),
+            json!({"startsModelWork":true}),
+        ] {
+            for plain in [true, false] {
+                let (t, c) = call_fixture(plain, spec.clone());
+                assert_ending(
+                    &answer(&t, &c, rpc(-32020, Value::Null)),
+                    &c,
+                    "unknown",
+                    Some("IFC-046"),
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn plain_read_failures_have_no_diagnostic() {
+        let (t, c) = call_fixture(true, json!({}));
+        for completion in [
+            rpc(-32602, Value::Null),
+            rpc(-32021, json!({"requiredCapabilities":{"sampling":{}}})),
+            Completion::Result {
+                result: json!({"isError":true}),
+            },
+        ] {
+            assert_ending(&answer(&t, &c, completion), &c, "failed", None);
+        }
+    }
+
+    #[test]
+    fn second_parameter_header_error_on_a_plain_read_has_no_diagnostic() {
+        let (t, c) = call_fixture(true, json!({}));
+        let resent = answer(&t, &c, rpc(-32020, Value::Null));
+        assert_eq!(resent.external_intents[0]["kind"], "refresh-tools-and-call");
+        assert_ending(
+            &answer(&resent, &c, rpc(-32020, Value::Null)),
+            &c,
+            "failed",
+            None,
+        );
+    }
+
+    #[test]
+    fn aware_stated_failure_has_no_diagnostic() {
+        let (t, c) = call_fixture(false, json!({}));
+        let ended = answer(
+            &t,
+            &c,
+            Completion::Result {
+                result: json!({"_meta":{"test/outcome":"failed"},"isError":true}),
+            },
+        );
+        assert_ending(&ended, &c, "failed", None);
+    }
+
+    #[test]
+    fn only_unconfirmed_cancellation_names_ops027() {
+        let (t, c) = call_fixture(false, json!({}));
+        for (confirmation, outcome, rule) in [
+            (None, "unknown", Some("OPS-027")),
+            (
+                Some(json!({"_meta":{"test/outcome":"failed"},"isError":true})),
+                "failed",
+                None,
+            ),
+        ] {
+            let ended = step(
+                &t.state,
+                Input::Cancel {
+                    evidence: evidence(),
+                    invocation: "invocation-id".into(),
+                    confirmation,
+                },
+                &c,
+            )
+            .unwrap();
+            assert_ending(&ended, &c, outcome, rule);
+        }
+    }
+
+    #[test]
+    fn interrupted_invocation_names_imp007_even_if_cancelled() {
+        let (mut t, c) = call_fixture(false, json!({}));
+        for cancelled in [false, true] {
+            t.state.invocations[0]["cancelled"] = json!(cancelled);
+            let ended = step(
+                &t.state,
+                Input::Recover {
+                    evidence: evidence(),
+                },
+                &c,
+            )
+            .unwrap();
+            assert_ending(&ended, &c, "unknown", Some("IMP-007"));
+        }
+    }
+
+    fn repeat_fixture(filtered: bool) -> (State, Context, AccessRequest) {
+        let (mut state, c) = fixture();
+        let operation = c.qualified("reserved.v1");
+        let target = &mut state.objects[3];
+        target["schema_environment"]["scopes"]["core"]["contracts"]["capability.v1"] =
+            json!({"kind":"Capability","spec":{"operations":[operation]}});
+        target["resolved_implementations"][&operation] =
+            json!({"source":"project","item":{"command":["test"]}});
+        let path = state
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == "root-management")
+            .unwrap();
+        path["capability"] = json!(c.qualified("capability.v1"));
+        if filtered {
+            path["requirements"] =
+                json!({"limit":{"requirement":"example.org/filter#limit.v1","arguments":{}}});
+        }
+        let request = AccessRequest {
+            identity: Identity::Instance { id: "root".into() },
+            tool: "management.reserved.v1".into(),
+            arguments: json!({}),
+            serving: None,
+            readable: true,
+            authority_readable: true,
+        };
+        (state, c, request)
+    }
+
+    fn invoke_repeat(state: &State, c: &Context, request: &AccessRequest) -> Transition {
+        step(
+            state,
+            Input::Invoke {
+                evidence: unused_evidence(state),
+                request: request.clone(),
+                key: Some("key".into()),
+                archive: None,
+            },
+            c,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn unknown_repeat_replays_engine_cause_and_keeps_stated_or_legacy_unknown_bare() {
+        let (state, c, request) = repeat_fixture(false);
+        let pending = invoke_repeat(&state, &c, &request);
+        assert_eq!(pending.reply["pending"], true, "{}", pending.reply);
+        let engine = answer(&pending, &c, Completion::Missing);
+        let stated = answer(
+            &pending,
+            &c,
+            Completion::Result {
+                result: json!({"_meta":{"test/outcome":"unknown"},"isError":true}),
+            },
+        );
+        for ended in [&engine, &stated] {
+            let repeated = invoke_repeat(&ended.state, &c, &request);
+            assert_eq!(repeated.reply, ended.reply);
+            assert!(repeated.external_intents.is_empty());
+        }
+        assert_ending(&engine, &c, "unknown", Some("OPS-007"));
+        assert_cause(
+            &engine.reply,
+            "OPS-007",
+            "test.core#reserved.v1 for tool management.reserved.v1 ended unknown",
+        );
+        assert_ending(&stated, &c, "unknown", None);
+        let mut legacy = engine.state;
+        legacy.invocations[0]
+            .as_object_mut()
+            .unwrap()
+            .remove("cause");
+        assert_eq!(invoke_repeat(&legacy, &c, &request).reply, stated.reply);
+    }
+
+    #[test]
+    fn filtered_redispatch_restores_failed_outcome_diagnostic() {
+        let (state, c, request) = repeat_fixture(true);
+        let pending = invoke_repeat(&state, &c, &request);
+        assert_eq!(pending.reply["pending"], true, "{}", pending.reply);
+        let ended = answer(
+            &pending,
+            &c,
+            rpc(-32021, json!({"requiredCapabilities":{"sampling":{}}})),
+        );
+        assert_ending(&ended, &c, "failed", Some("IFC-047"));
+        let redispatched = invoke_repeat(&ended.state, &c, &request);
+        assert_eq!(redispatched.reply["attempt"], 2, "{}", redispatched.reply);
+        let restriction = redispatched.state.invocations[0]["filters"][0].clone();
+        assert!(restriction.is_object());
+        let filtered = answer(
+            &redispatched,
+            &c,
+            Completion::Result {
+                result: json!({"_meta":{"test/reason":"unavailable","test/restriction":restriction},"isError":true}),
+            },
+        );
+        assert_eq!(filtered.reply["_meta"]["test/reason"], "unavailable");
+        let restored = &filtered.state.invocations[0];
+        assert_eq!(restored["state"], "failed");
+        assert_eq!(restored["cause"], ended.state.invocations[0]["cause"]);
+        // Under OPS-024 a matching failed request dispatches again. Exercise the
+        // stored reply path directly for the restored outcome.
+        let mut reply = ended_reply(&c, restored, &restored["contract"], "failed");
+        explain::first_text(&mut reply, &c);
+        assert_eq!(reply, ended.reply);
+    }
 
     fn fence_fixture() -> (Transition, Context, Evidence) {
         let (mut t, c) = recording_fixture("write.v1", json!({"type":"object"}), json!({}));

@@ -593,6 +593,92 @@ pub(crate) fn diagnostic(
     )
 }
 
+pub const OUTCOME_CAUSES: &[(&str, &str)] = &[
+    (
+        "IFC-008",
+        "The implementation rejected the declared Conduit extension revision and performed nothing.",
+    ),
+    (
+        "IFC-010",
+        "The plain implementation's answer does not establish whether the operation acted.",
+    ),
+    (
+        "IFC-046",
+        "The implementation rejected the parameter headers and the operation does not permit a resend.",
+    ),
+    (
+        "IFC-047",
+        "The implementation required an undeclared capability and performed nothing.",
+    ),
+    (
+        "IMP-007",
+        "The invocation was in progress when the engine restarted.",
+    ),
+    (
+        "LIF-021",
+        "The cascade was cancelled and dispatched no further retirement.",
+    ),
+    (
+        "OPS-007",
+        "The implementation gave no valid result establishing the outcome.",
+    ),
+    (
+        "OPS-027",
+        "The invocation was cancelled without confirmation that nothing was done.",
+    ),
+];
+
+pub(crate) fn outcome_cause(invocation: &Value, outcome: &str, rule: &str) -> Result<Value> {
+    let cause = OUTCOME_CAUSES
+        .iter()
+        .find_map(|(id, cause)| (*id == rule).then_some(*cause))
+        .ok_or_else(|| format!("no outcome cause for {rule}"))?;
+    outcome_diagnostic(invocation, outcome, rule, cause)
+}
+
+pub(crate) fn outcome_diagnostic(
+    invocation: &Value,
+    outcome: &str,
+    rule: &str,
+    cause: &str,
+) -> Result<Value> {
+    let operation = invocation["operation"]
+        .as_str()
+        .ok_or("outcome explanation lacks operation")?;
+    let subject = invocation["named_subject"]
+        .as_str()
+        .map_or_else(String::new, |subject| format!(" for {subject}"));
+    Ok(json!({
+        "ruleId":rule,"level":"error",
+        "message":{"text":format!("{operation}{subject} ended {outcome} under {rule}: {cause}")}
+    }))
+}
+
+pub(crate) fn settle_cause(
+    invocation: &Value,
+    outcome: &str,
+    parts: &[Value],
+) -> Result<Option<Vec<Value>>> {
+    if outcome == "succeeded" {
+        return Ok(None);
+    }
+    let part = parts
+        .iter()
+        .find(|p| p["optional"] != true && p["outcome"] != "succeeded")
+        .ok_or("unsucceeded invocation lacks an unsucceeded required part")?;
+    let name = part["name"].as_str().ok_or("part lacks name")?;
+    let status = part["outcome"].as_str().ok_or("part lacks outcome")?;
+    let prefix = if invocation["cancelled"] == true {
+        "The invocation was cancelled. "
+    } else {
+        ""
+    };
+    let cause = format!("{prefix}Required part {name} ended {status}.");
+    Ok(Some(vec![outcome_diagnostic(
+        invocation, outcome, "OPS-022", &cause,
+    )?]))
+}
+
 /// IFC-025: run after all diagnostics are final, once per returned or stored reply.
 pub fn first_text(reply: &mut Value, c: &Context) {
     if reply["isError"] != true {
@@ -635,6 +721,33 @@ pub(crate) mod tests {
         access::{AccessRequest, Identity},
     };
     use std::collections::BTreeMap;
+
+    #[test]
+    fn outcome_causes_are_sentences_and_unknown_rules_are_errors() {
+        for (rule, cause) in OUTCOME_CAUSES {
+            let body = cause
+                .strip_suffix('.')
+                .unwrap_or_else(|| panic!("{rule}: {cause}"));
+            assert!(
+                !body.trim().is_empty() && !body.contains(['.', '?', '!']),
+                "{rule}: {cause}"
+            );
+        }
+        let error =
+            outcome_cause(&json!({"operation":"test#work.v1"}), "unknown", "ZZZ-999").unwrap_err();
+        assert!(error.contains("ZZZ-999"), "{error}");
+    }
+
+    pub(crate) fn assert_cause(reply: &Value, rule: &str, text: &str) {
+        let diagnostics = reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .unwrap();
+        assert_eq!(diagnostics.len(), 1, "{reply}");
+        assert_eq!(diagnostics[0]["ruleId"], rule);
+        assert_eq!(diagnostics[0]["level"], "error");
+        let message = diagnostics[0]["message"]["text"].as_str().unwrap();
+        assert!(message.contains(text), "{message}");
+    }
 
     pub(crate) fn fixture() -> (State, Context) {
         let core = "test.core";

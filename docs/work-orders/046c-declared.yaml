@@ -1,3 +1,4 @@
+# Checked at the merge of order 046c, against main at 408d5f17: the work's vector delta matches these shapes.
 - name: an outcome the engine decides names its deciding rule, in one portable case
   kind: added
   cases: [explain-outcome-causes]

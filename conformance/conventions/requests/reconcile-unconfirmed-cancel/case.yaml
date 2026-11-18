@@ -1548,8 +1548,7 @@
           "isError": true,
           "content": [
             {
-              "type": "text",
-              "text": "unknown"
+              "type": "text"
             }
           ]
         },
@@ -1586,8 +1585,7 @@
           "OPS-027"
         ],
         "absent": [
-          "/reply/_meta/io.github.shrav-k.conduit~1reason",
-          "/reply/structuredContent"
+          "/reply/_meta/io.github.shrav-k.conduit~1reason"
         ],
         "state": {
           "invocations": [

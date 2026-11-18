@@ -1,6 +1,8 @@
 //! Ordered setup parts and Conduit lifecycle. All runner work is an intent; reports are
 //! explicit inputs. Pending plans live with their invocation and survive serialization.
-use crate::{Allocation, Context, Evidence, Result, State, Transition, access, decision, requests};
+use crate::{
+    Allocation, Context, Evidence, Result, State, Transition, access, decision, explain, requests,
+};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
@@ -220,7 +222,7 @@ pub(crate) fn execute(
         t.state.invocations[i]["management"] = json!(true);
         t.state.invocations[i]["lifted_tombstone"] = stone;
         let outputs = crate::inventory::lift(t, &path, &v["caller"], &v["arguments"]["id"], c);
-        return requests::finish(t, a, c, i, "succeeded", outputs, json!([]));
+        return requests::finish(t, a, c, i, "succeeded", outputs, json!([]), None);
     }
     let o = named(&t.state, &route, c)
         .ok_or("lifecycle object missing")?
@@ -256,7 +258,7 @@ pub(crate) fn execute(
             ],
             &o["id"],
         );
-        return requests::finish(t, a, c, i, "succeeded", json!({}), json!([]));
+        return requests::finish(t, a, c, i, "succeeded", json!({}), json!([]), None);
     }
     if op == c.qualified("close.v1") {
         let stone = crate::inventory::make(
@@ -300,7 +302,7 @@ pub(crate) fn execute(
             ],
             &o["id"],
         );
-        return requests::finish(t, a, c, i, "succeeded", json!({}), json!([]));
+        return requests::finish(t, a, c, i, "succeeded", json!({}), json!([]), None);
     }
     if op == c.qualified("register-replacement.v1") {
         let outputs = crate::registration::replacement(t, a, c, &o, &v["arguments"]["nested"])?;
@@ -325,7 +327,7 @@ pub(crate) fn execute(
             ],
             &outputs["object"]["id"],
         );
-        return requests::finish(t, a, c, i, "succeeded", outputs, json!([]));
+        return requests::finish(t, a, c, i, "succeeded", outputs, json!([]), None);
     }
     t.state.invocations[i]["setup"] = json!({"phase":"declarations","parts":[],"cursor":0});
     cite(
@@ -387,7 +389,8 @@ fn settle(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) -> 
         ],
         &v["object"],
     );
-    requests::finish(t, a, c, i, outcome, json!({}), json!([]))
+    let cause = explain::settle_cause(&v, outcome, parts)?;
+    requests::finish(t, a, c, i, outcome, json!({}), json!([]), cause)
 }
 fn request_for(
     t: &Transition,
@@ -591,18 +594,26 @@ fn advance(t: &mut Transition, a: &mut Allocation<'_>, c: &Context, i: usize) ->
             let mut part_diagnostics = Value::Null;
             let mut outcome = "conflict".to_owned();
             let mut id = Value::Null;
-            let dependencies_succeeded = slot != "entries"
-                || entry_dependencies(&t.state, &o, &name, &d)
-                    .iter()
-                    .all(|dependency| {
-                        t.state.invocations[i]["setup"]["parts"]
-                            .as_array()
-                            .unwrap()
-                            .iter()
-                            .any(|p| p["name"] == *dependency && p["outcome"] == "succeeded")
-                    });
-            if !dependencies_succeeded {
+            let mut waiting_for = Vec::new();
+            if slot == "entries" {
+                let parts = t.state.invocations[i]["setup"]["parts"].as_array().unwrap();
+                waiting_for.extend(
+                    entry_dependencies(&t.state, &o, &name, &d)
+                        .into_iter()
+                        .filter(|dependency| {
+                            !parts
+                                .iter()
+                                .any(|p| p["name"] == *dependency && p["outcome"] == "succeeded")
+                        }),
+                );
+            }
+            if !waiting_for.is_empty() {
                 outcome = "unavailable".into();
+                let entries = waiting_for.join(", ");
+                part_diagnostics = json!([{
+                    "ruleId":"POOL-013","level":"error",
+                    "message":{"text":format!("Setup part {name} was held back pending successful setup of {entries}.")}
+                }]);
             } else if let Some(child) = child {
                 if child["state"] == "ready" {
                     outcome = "succeeded".into();
@@ -1170,7 +1181,17 @@ pub(crate) fn cancel(
             );
         } else {
             t.external_intents.push(json!({"kind":"cancel","invocation":t.state.invocations[child]["id"],"attempt":t.state.invocations[child]["attempt"]}));
-            requests::finish(t, a, c, child, "unknown", json!({}), json!([]))?;
+            let cause = explain::outcome_cause(&t.state.invocations[child], "unknown", "OPS-027")?;
+            requests::finish(
+                t,
+                a,
+                c,
+                child,
+                "unknown",
+                json!({}),
+                json!([]),
+                Some(vec![cause]),
+            )?;
             part(
                 t,
                 i,
@@ -1295,7 +1316,186 @@ mod observation_tests {
 #[cfg(test)]
 mod explanation_tests {
     use super::*;
-    use crate::explain::tests::{evidence, fixture, transition};
+    use crate::{
+        Input,
+        explain::tests::{assert_cause, evidence, fixture, transition},
+        step,
+    };
+
+    fn setup_fixture(phase: &str) -> (State, Context) {
+        let (mut state, c) = fixture();
+        state.invocations.push(json!({
+            "id":"setup","state":"in-progress","target":"management","object":"owners",
+            "caller":"root","sender":"root","operation":c.qualified("set-up.v1"),"attempt":1,
+            "setup":{"phase":phase,"run_phase":"run","cursor":0,"parts":[]}
+        }));
+        (state, c)
+    }
+
+    fn cancel_setup(state: &State, c: &Context) -> Transition {
+        step(
+            state,
+            Input::Cancel {
+                evidence: evidence(),
+                invocation: "setup".into(),
+                confirmation: None,
+            },
+            c,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn setup_cancellation_names_ops022_in_work_and_before_work() {
+        for (phase, part, outcome) in [
+            ("work", "cancelled-work", "unknown"),
+            ("declarations", "cancelled", "failed"),
+        ] {
+            let (state, c) = setup_fixture(phase);
+            let ended = cancel_setup(&state, &c);
+            assert_eq!(ended.reply["_meta"]["test/outcome"], outcome);
+            assert_cause(
+                &ended.reply,
+                "OPS-022",
+                &format!("The invocation was cancelled. Required part {part} ended {outcome}."),
+            );
+        }
+    }
+
+    #[test]
+    fn setup_failure_names_first_required_part_without_cancellation() {
+        let (mut state, c) = setup_fixture("work");
+        let parts = &mut state.invocations[0]["setup"]["parts"];
+        *parts = json!([
+            {"name":"optional","outcome":"failed","optional":true},
+            {"name":"required","outcome":"unavailable"},
+            {"name":"later","outcome":"failed"}
+        ]);
+        let mut t = transition(state);
+        let evidence = evidence();
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        settle(&mut t, &mut a, &c, 0).unwrap();
+        assert_cause(
+            &t.reply,
+            "OPS-022",
+            "Required part required ended unavailable.",
+        );
+        assert!(
+            !t.reply["structuredContent"]
+                .to_string()
+                .contains("cancelled")
+        );
+    }
+
+    #[test]
+    fn setup_outcome_names_the_requested_reference_without_resolving_it() {
+        let (mut state, c) = fixture();
+        let operation = c.qualified("set-up.v1");
+        let management = &mut state.objects[3];
+        management["schema_environment"]["scopes"]["core"]["contracts"]["capability.v1"] =
+            json!({"kind":"Capability","spec":{"operations":[operation]}});
+        management["resolved_implementations"][&operation] = json!({"source":"engine","item":{}});
+        let path = state
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == "agent-management")
+            .unwrap();
+        path["capability"] = json!(c.qualified("capability.v1"));
+        state.objects[5]["name"] = json!("resolved-pool");
+        state.objects[5]["entries"] = json!({"missing":{}});
+        state.objects[1]["config"]["pool"] = json!({"kind":"Pool","id":"owners"});
+        state.invocations.push(json!({
+            "id":"serving-hook","state":"in-progress","target":"agent",
+            "caller":"root","hook":true
+        }));
+
+        let ended = step(
+            &state,
+            Input::Invoke {
+                evidence: evidence(),
+                request: access::AccessRequest {
+                    identity: access::Identity::Instance { id: "agent".into() },
+                    tool: "management.set-up.v1".into(),
+                    arguments: json!({"instance":state.objects[1]["config"]["pool"]}),
+                    serving: Some("serving-hook".into()),
+                    readable: true,
+                    authority_readable: true,
+                },
+                key: None,
+                archive: None,
+            },
+            &c,
+        )
+        .unwrap();
+        assert_cause(
+            &ended.reply,
+            "OPS-022",
+            "test.core#set-up.v1 for Pool/owners via tool management.set-up.v1 ended failed under OPS-022: Required part missing ended conflict.",
+        );
+        assert!(!ended.reply.to_string().contains("resolved-pool"));
+    }
+
+    #[test]
+    fn cancelling_setup_ends_hook_under_ops027() {
+        let (mut state, c) = setup_fixture("hook-pending");
+        state.invocations.push(json!({
+            "id":"hook","state":"in-progress","setup_parent":"setup","attempt":1,
+            "sender":"root","caller":"root","target":"owners","operation":c.qualified("set-up-hook.v1")
+        }));
+        let t = cancel_setup(&state, &c);
+        let hook = &t
+            .request_replies
+            .iter()
+            .find(|r| r.invocation == "hook")
+            .unwrap()
+            .reply;
+        assert_eq!(hook["_meta"]["test/outcome"], "unknown");
+        assert_cause(hook, "OPS-027", "The invocation was cancelled");
+        assert_cause(
+            &t.reply,
+            "OPS-022",
+            "The invocation was cancelled. Required part cancelled-hook ended unknown.",
+        );
+    }
+
+    #[test]
+    fn held_back_pool_part_names_only_its_unmet_dependencies() {
+        let (mut state, c) = setup_fixture("declarations");
+        let pool = &mut state.objects[5];
+        pool["entries"] = json!({
+            "base-a":{"optional":true},
+            "base-b":{"optional":true},
+            "dependent":{"references":[{"kind":"Resource","id":"a"},{"kind":"Resource","id":"b"}]}
+        });
+        pool["slots"]["entries"] = json!({"base-a":{"id":"a"},"base-b":{"id":"b"}});
+        state.objects.push(json!({
+            "kind":"Resource","id":"a","name":"base-a","state":"ready",
+            "nested":{"parent":"owners","slot":"entries","name":"base-a"}
+        }));
+        let mut t = transition(state);
+        let evidence = evidence();
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        advance(&mut t, &mut a, &c, 0).unwrap();
+        let parts = &t.state.invocations[0]["setup"]["parts"];
+        assert_eq!(parts[0]["outcome"], "succeeded");
+        assert_eq!(parts[1]["diagnostics"][0]["ruleId"], "CON-004");
+        assert_eq!(parts[2]["outcome"], "unavailable");
+        assert_eq!(
+            parts[2]["diagnostics"],
+            json!([{
+                "ruleId":"POOL-013","level":"error",
+                "message":{"text":"Setup part dependent was held back pending successful setup of base-b."}
+            }])
+        );
+        assert_eq!(*parts, t.state.objects[5]["status"]["setup"]["parts"]);
+        assert!(t.reply["structuredContent"].get("parts").is_none());
+    }
 
     fn refused_part(child_request: bool) -> Transition {
         let (mut state, mut c) = fixture();
@@ -1327,8 +1527,13 @@ mod explanation_tests {
         assert_eq!(part["outcome"], "refused");
         assert_eq!(part["diagnostics"][0]["ruleId"], "ACC-001");
         assert_eq!(t.state.objects[0]["status"]["setup"]["parts"][0], *part);
-        assert!(t.reply.get("structuredContent").is_none());
-        assert_eq!(t.reply["content"][0]["text"], "failed");
+        assert_cause(&t.reply, "OPS-022", "Required part child ended refused.");
+        assert!(
+            t.reply["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .starts_with("failed: ")
+        );
         t
     }
     #[test]

@@ -1,6 +1,6 @@
 //! Explicit retirement/removal plans. Shutdown work is reported by the boundary.
 use crate::{
-    Allocation, Context, Result, State, Transition, access, decision, lifecycle, requests,
+    Allocation, Context, Result, State, Transition, access, decision, explain, lifecycle, requests,
 };
 use serde_json::{Value, json};
 
@@ -352,7 +352,8 @@ fn settle(
         json!({"outcome":outcome,"parts":parts}),
     )?;
     t.state.invocations[i]["retirement"]["phase"] = json!("ended");
-    requests::finish(t, a, c, i, outcome, json!({}), json!([]))?;
+    let cause = explain::settle_cause(&v, outcome, parts)?;
+    requests::finish(t, a, c, i, outcome, json!({}), json!([]), cause)?;
     crate::cascade::child_ended(t, a, c, i)
 }
 pub(crate) fn hook_ended(
@@ -466,7 +467,17 @@ pub(crate) fn cancel(
         .collect();
     for child in children {
         t.external_intents.push(json!({"kind":"cancel","invocation":t.state.invocations[child]["id"],"attempt":t.state.invocations[child]["attempt"]}));
-        requests::finish(t, a, c, child, "unknown", json!({}), json!([]))?;
+        let cause = explain::outcome_cause(&t.state.invocations[child], "unknown", "OPS-027")?;
+        requests::finish(
+            t,
+            a,
+            c,
+            child,
+            "unknown",
+            json!({}),
+            json!([]),
+            Some(vec![cause]),
+        )?;
     }
     if v["retirement"]["phase"] == "stop" {
         t.reply = json!({"pending":true,"invocation":v["id"]});
@@ -481,6 +492,7 @@ pub(crate) fn cancel(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::explain::tests::assert_cause;
     use crate::{Evidence, schemas::Environment};
     use std::collections::BTreeMap;
 
@@ -530,6 +542,64 @@ mod tests {
     fn assert_only_stop(t: &Transition, c: &Context) {
         assert_eq!(t.external_intents.len(), 1, "{:?}", t.external_intents);
         assert_eq!(t.external_intents[0]["operation"], c.qualified("stop.v1"));
+    }
+
+    #[test]
+    fn cancellation_during_stop_settles_under_ops022_on_later_report() {
+        let (mut t, c, _) = fixture(false, None);
+        t.state.invocations[1]["retirement"] = json!({"phase":"stop","parts":[]});
+        let pending = crate::step(
+            &t.state,
+            crate::Input::Cancel {
+                evidence: explain::tests::evidence(),
+                invocation: "parent".into(),
+                confirmation: None,
+            },
+            &c,
+        )
+        .unwrap();
+        assert_eq!(pending.reply["pending"], true);
+        assert!(pending.request_replies.is_empty());
+        let ended = crate::step(
+            &pending.state,
+            crate::Input::SetupReport {
+                evidence: explain::tests::evidence(),
+                invocation: "parent".into(),
+                report: lifecycle::Report::Stop {
+                    outcome: "succeeded".into(),
+                },
+            },
+            &c,
+        )
+        .unwrap();
+        assert_cause(
+            &ended.reply,
+            "OPS-022",
+            "The invocation was cancelled. Required part cancelled ended unknown.",
+        );
+    }
+
+    #[test]
+    fn cancelling_retirement_ends_hook_under_ops027() {
+        let (mut t, c, _) = fixture(false, None);
+        t.state.invocations[1]["retirement"] = json!({"phase":"hook","parts":[]});
+        t.state.invocations.push(json!({
+            "id":"hook","state":"in-progress","setup_parent":"parent","attempt":1,
+            "sender":"root","caller":"root","target":"subject","operation":c.qualified("retire-hook.v1")
+        }));
+        let ended = crate::step(
+            &t.state,
+            crate::Input::Cancel {
+                evidence: explain::tests::evidence(),
+                invocation: "parent".into(),
+                confirmation: None,
+            },
+            &c,
+        )
+        .unwrap();
+        let hook = &ended.request_replies[0].reply;
+        assert_eq!(hook["_meta"]["test/outcome"], "unknown");
+        assert_cause(hook, "OPS-027", "The invocation was cancelled");
     }
 
     #[test]

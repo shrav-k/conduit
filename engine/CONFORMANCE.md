@@ -695,8 +695,6 @@ cases. Three cases exercise refusal tiers, other reasons and an Agent's tier-1 r
 Still unfinished:
 
 - Tier 2 for callers other than root, and closed Conduits from tombstones: order 046b.
-- An outcome the engine decides as failed or unknown carries no diagnostic naming its
-  cause yet, except diagnostics already supplied by the cascade: order 046c.
 - A bounded holder's request naming no Conduit remains invalid under OPS-029. Its F2
   vectors and F3's other public-boundary vectors belong to an admin order not yet numbered.
 - An https fetch still cites PKG-023. Order 046d makes it answer as unbuilt under D37,
@@ -707,3 +705,29 @@ Still unfinished:
   the current tool result.
 - The unavailable stubs of `answer.v1` and `sign-in.v1` now carry diagnostics but remain
   unbuilt: orders 047 and 048a-2.
+
+## Outcomes the engine decides (order 046c)
+
+Engine-decided failed and unknown outcomes carry the qualified operation, the caller's
+named subject, the deciding promise and its cause in `structuredContent.diagnostics`
+and the first text block (IFC-050, IFC-025). The invocation keeps the diagnostics for
+replies from its ended outcome, including when a filtered attempt
+restores the previous outcome. Setups and retirements cite OPS-022 and name the first required
+part that did not succeed. Cascades cite LIF-021 and name every member whose shutdown is
+unconfirmed. When a dispatched container retirement ends failed or unknown, its recorded
+diagnostic explains the cascade's outcome. If it is held before dispatch, the cascade
+reports the preflight reason and its cause. Setups, retirements and cascades that settle after
+cancellation say so in the cause. A Pool entry held back for its dependencies reports
+POOL-013 in its setup part status. The portable `explain-outcome-causes` case checks
+IFC-010 for a missing result and an effectful error result.
+
+Still unfinished:
+
+- OPS-012's unknown when a new attempt answers failed and an earlier attempt has no answer
+  or answered succeeded. Full review order 22 builds this outcome and its diagnostic.
+- IFC-046 already handles the MCP parameter-header error (`-32020`). Handling the MCP
+  unsupported protocol revision error (`-32022`) on outgoing calls and resending at a
+  mutually supported revision remain unbuilt.
+- The runner validates reason diagnostics against `diagnostic.v1`. A follow-up order
+  needs to apply that validation to outcome diagnostics and test rejection of a missing
+  `message`. This lets portable cases keep their wording-independent projections.

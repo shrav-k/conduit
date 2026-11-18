@@ -1,6 +1,6 @@
 //! LIF-021: durable, explicit container retirement; no actor retire permission is borrowed.
 use crate::{
-    Allocation, Context, Result, State, Transition, access, decision, lifecycle, requests,
+    Allocation, Context, Result, State, Transition, access, decision, explain, lifecycle, requests,
 };
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
@@ -132,13 +132,22 @@ pub(crate) fn begin(
 fn confirmed(s: &State, id: &Value) -> bool {
     access::object(s, id).is_none_or(|o| o["shutdown"] == "confirmed")
 }
+
+enum RetirementDispatch {
+    Dispatched(usize),
+    Held {
+        reason: &'static str,
+        rule: &'static str,
+    },
+}
+
 fn retire_part(
     t: &mut Transition,
     a: &mut Allocation<'_>,
     c: &Context,
     parent: usize,
     object: &Value,
-) -> Result<Option<usize>> {
+) -> Result<RetirementDispatch> {
     let p = t.state.invocations[parent].clone();
     let route = json!({"operation":c.qualified("retire.v1"),"target":p["target"],"arguments":{"instance":{"kind":object["kind"],"id":object["id"]}},"cascade_parent":p["id"]});
     if let Some((reason, rule)) = lifecycle::preflight(&t.state, &route, c)? {
@@ -158,7 +167,7 @@ fn retire_part(
                 json!({"target":p["target"],"object":object["id"],"caller":p["caller"],"consumer":p["sender"],"operation":route["operation"],"serving":p["id"],"reason":reason,"ruleId":rule,"dispatched":false}),
             )?;
         }
-        return Ok(None);
+        return Ok(RetirementDispatch::Held { reason, rule });
     }
     let target = &p["held_target"];
     let (_, _, contract) =
@@ -191,7 +200,7 @@ fn retire_part(
         vec![],
     ));
     crate::retirement::execute(t, a, c, index, object)?;
-    Ok(Some(index))
+    Ok(RetirementDispatch::Dispatched(index))
 }
 pub(crate) fn advance(
     t: &mut Transition,
@@ -225,7 +234,7 @@ pub(crate) fn advance(
         t.state.invocations[i]["cascade"]["parts"][n]["status"] = json!("attempted");
         if let Some(object) = access::object(&t.state, &id).cloned()
             && object["shutdown"] != "confirmed"
-            && let Some(child) = retire_part(t, a, c, i, &object)?
+            && let RetirementDispatch::Dispatched(child) = retire_part(t, a, c, i, &object)?
         {
             t.state.invocations[i]["cascade"]["parts"][n]["invocation"] =
                 t.state.invocations[child]["id"].clone();
@@ -249,7 +258,19 @@ pub(crate) fn advance(
             .find(|v| v["id"] == parent["cascade"]["container_invocation"])
             .ok_or("container retirement missing")?;
         let outcome = child["state"].as_str().unwrap().to_owned();
-        return requests::finish(t, a, c, i, &outcome, json!({}), json!([]));
+        let cause = if outcome == "succeeded" {
+            None
+        } else {
+            let mut detail = format!("The container retirement ended {outcome}.");
+            for diagnostic in child["cause"].as_array().into_iter().flatten() {
+                if let Some(message) = diagnostic["message"]["text"].as_str() {
+                    detail.push(' ');
+                    detail.push_str(message);
+                }
+            }
+            Some(vec![container_diagnostic(&parent, &outcome, &detail)?])
+        };
+        return requests::finish(t, a, c, i, &outcome, json!({}), json!([]), cause);
     }
     // LIF-020/021: a member registered during this invocation was not in its
     // initial plan, but still prevents container retirement and must be named.
@@ -271,28 +292,61 @@ pub(crate) fn advance(
         .map(|o| json!({"id":o["id"],"kind":o["kind"],"name":o["name"]}))
         .collect();
     if !remaining.is_empty() || parent["cancelled"] == true {
-        requests::finish(t, a, c, i, "failed", json!({}), json!([]))?;
-        let diagnostics: Vec<_> = remaining.iter().map(|p| json!({"ruleId":"LIF-021","level":"error","message":{"text":format!("Shutdown is unconfirmed for {}/{} ({}).",p["kind"].as_str().unwrap(),p["name"].as_str().unwrap(),p["id"].as_str().unwrap())}})).collect();
-        t.reply["structuredContent"] = json!({"diagnostics":diagnostics});
-        if let Some(reply) = t.request_replies.last_mut() {
-            reply.reply = t.reply.clone();
+        let mut cause = Vec::new();
+        if parent["cancelled"] == true {
+            cause.push(explain::outcome_cause(&parent, "failed", "LIF-021")?);
         }
-        return Ok(());
+        for p in &remaining {
+            let kind = p["kind"].as_str().unwrap();
+            let name = p["name"].as_str().unwrap();
+            let id = p["id"].as_str().unwrap();
+            cause.push(json!({"ruleId":"LIF-021","level":"error","message":{"text":format!("Shutdown is unconfirmed for {kind}/{name} ({id}).")}}));
+        }
+        return requests::finish(t, a, c, i, "failed", json!({}), json!([]), Some(cause));
     }
     t.state.invocations[i]["cascade"]["phase"] = json!("container");
     t.state.invocations[i]["cascade"]["advancing"] = json!(true);
     let container = access::object(&t.state, &parent["object"])
         .ok_or("container disappeared")?
         .clone();
-    let child = retire_part(t, a, c, i, &container)?;
+    let dispatch = retire_part(t, a, c, i, &container)?;
     t.state.invocations[i]["cascade"]["advancing"] = json!(false);
-    if let Some(child) = child {
-        t.state.invocations[i]["cascade"]["container_invocation"] =
-            t.state.invocations[child]["id"].clone();
-        advance(t, a, c, i)
-    } else {
-        requests::finish(t, a, c, i, "failed", json!({}), json!([]))
+    match dispatch {
+        RetirementDispatch::Dispatched(child) => {
+            t.state.invocations[i]["cascade"]["container_invocation"] =
+                t.state.invocations[child]["id"].clone();
+            advance(t, a, c, i)
+        }
+        RetirementDispatch::Held { reason, rule } => {
+            let detail = explain::cause(reason, rule)?;
+            let cause = container_diagnostic(
+                &parent,
+                "failed",
+                &format!(
+                    "The container retirement reported {reason} under {rule} before dispatch. {detail}"
+                ),
+            )?;
+            requests::finish(
+                t,
+                a,
+                c,
+                i,
+                "failed",
+                json!({}),
+                json!([]),
+                Some(vec![cause]),
+            )
+        }
     }
+}
+
+fn container_diagnostic(parent: &Value, outcome: &str, detail: &str) -> Result<Value> {
+    let prefix = if parent["cancelled"] == true {
+        "The cascade was cancelled. "
+    } else {
+        ""
+    };
+    explain::outcome_diagnostic(parent, outcome, "LIF-021", &format!("{prefix}{detail}"))
 }
 pub(crate) fn child_ended(
     t: &mut Transition,
@@ -354,7 +408,162 @@ pub(crate) fn cancel(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::explain::tests::{evidence, fixture, transition};
+    use crate::{
+        Input,
+        explain::tests::{assert_cause, evidence, fixture, transition},
+        step,
+    };
+
+    fn cascade_fixture(members: &[&str]) -> (State, Context) {
+        let (mut state, c) = fixture();
+        state.objects[5]["kind"] = json!("Fleet");
+        for member in members {
+            state.objects.push(json!({
+                "kind":"Agent","id":member,"name":member,"owner":"owners","shutdown":"pending"
+            }));
+        }
+        state.invocations.push(json!({
+            "id":"cascade","state":"in-progress","attempt":1,"target":"owners","object":"owners",
+            "caller":"root","sender":"root","held_target":{"kind":"Fleet"},
+            "operation":c.qualified("retire-with-agents.v1"),
+            "named_subject":"the container named by tool workspace.retire-with-agents.v1",
+            "cascade":{"phase":"members","parts":[]}
+        }));
+        (state, c)
+    }
+
+    fn cancel_cascade(state: &State, c: &Context) -> Transition {
+        step(
+            state,
+            Input::Cancel {
+                evidence: evidence(),
+                invocation: "cascade".into(),
+                confirmation: None,
+            },
+            c,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn cascade_cancel_lists_cancellation_before_any_remaining_member() {
+        for members in [&[][..], &["member"][..]] {
+            let (state, c) = cascade_fixture(members);
+            let ended = cancel_cascade(&state, &c);
+            let diagnostics = ended.reply["structuredContent"]["diagnostics"]
+                .as_array()
+                .unwrap();
+            assert_eq!(diagnostics.len(), 1 + members.len());
+            assert!(diagnostics.iter().all(|d| d["ruleId"] == "LIF-021"));
+            assert!(
+                diagnostics[0]["message"]["text"]
+                    .as_str()
+                    .unwrap()
+                    .ends_with("The cascade was cancelled and dispatched no further retirement.")
+            );
+            if !members.is_empty() {
+                assert_eq!(
+                    diagnostics[1]["message"]["text"],
+                    "Shutdown is unconfirmed for Agent/member (member)."
+                );
+            }
+            assert_eq!(ended.reply["_meta"]["test/outcome"], "failed");
+            assert!(ended.external_intents.is_empty());
+        }
+    }
+
+    #[test]
+    fn cascade_in_container_phase_reports_why_retirement_did_not_succeed() {
+        let (mut state, c) = cascade_fixture(&[]);
+        state.invocations[0]["cascade"]["phase"] = json!("container");
+        state.invocations[0]["cascade"]["container_invocation"] = json!("retirement");
+        state.invocations.push(json!({
+            "id":"retirement","state":"in-progress","attempt":1,"target":"owners","object":"owners",
+            "caller":"root","sender":"root","cascade_parent":"cascade","operation":c.qualified("retire.v1"),
+            "retirement":{"phase":"stop","parts":[]}
+        }));
+        let pending = cancel_cascade(&state, &c);
+        assert_eq!(pending.reply["pending"], true);
+        for (state, stop_outcome, outcome, detail) in [
+            (
+                &pending.state,
+                "succeeded",
+                "unknown",
+                "The cascade was cancelled. The container retirement ended unknown. test.core#retire.v1 ended unknown under OPS-022: The invocation was cancelled. Required part cancelled ended unknown.",
+            ),
+            (
+                &state,
+                "failed",
+                "failed",
+                "The container retirement ended failed. test.core#retire.v1 ended failed under OPS-022: Required part stop ended failed.",
+            ),
+        ] {
+            let ended = step(
+                state,
+                Input::SetupReport {
+                    evidence: evidence(),
+                    invocation: "retirement".into(),
+                    report: lifecycle::Report::Stop {
+                        outcome: stop_outcome.into(),
+                    },
+                },
+                &c,
+            )
+            .unwrap();
+            assert_eq!(ended.reply["_meta"]["test/outcome"], outcome);
+            assert_cause(&ended.reply, "LIF-021", detail);
+        }
+    }
+
+    #[test]
+    fn cascade_repeat_replays_diagnostics_for_all_remaining_members() {
+        let (state, c) = cascade_fixture(&["first", "second"]);
+        let mut t = transition(state);
+        let evidence = evidence();
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        advance(&mut t, &mut a, &c, 0).unwrap();
+        explain::first_text(&mut t.reply, &c);
+        let diagnostics = t.reply["structuredContent"]["diagnostics"]
+            .as_array()
+            .unwrap();
+        assert_eq!(diagnostics.len(), 2);
+        for (diagnostic, name) in diagnostics.iter().zip(["first", "second"]) {
+            assert_eq!(diagnostic["ruleId"], "LIF-021");
+            assert_eq!(
+                diagnostic["message"]["text"],
+                format!("Shutdown is unconfirmed for Agent/{name} ({name}).")
+            );
+        }
+        // Exercise the ended reply path. OPS-024 redispatches a normal failed repeat.
+        let invocation = &t.state.invocations[0];
+        let mut repeated = requests::ended_reply(&c, invocation, &invocation["contract"], "failed");
+        explain::first_text(&mut repeated, &c);
+        assert_eq!(repeated, t.reply);
+    }
+
+    #[test]
+    fn cascade_with_undispatched_container_retirement_names_lif021() {
+        let (mut state, c) = cascade_fixture(&[]);
+        state.invocations.push(json!({
+            "id":"busy","state":"in-progress","object":"owners","management":true
+        }));
+        let mut t = transition(state);
+        let evidence = evidence();
+        let mut a = Allocation {
+            evidence: &evidence,
+            cursor: 0,
+        };
+        advance(&mut t, &mut a, &c, 0).unwrap();
+        assert_eq!(t.reply["_meta"]["test/outcome"], "failed");
+        assert_cause(
+            &t.reply,
+            "LIF-021",
+            "The container retirement reported conflict under REV-014 before dispatch. Setup, retirement and change must wait for any dispatched setup, retirement or change to end.",
+        );
+    }
 
     /// Decision 5 of order 046a: a held member's records name the deciding rule beside the
     /// reason, and the hold is unchanged.
@@ -376,7 +585,10 @@ mod tests {
             cursor: 0,
         };
         let member = t.state.objects.last().unwrap().clone();
-        assert_eq!(retire_part(&mut t, &mut a, &c, 0, &member).unwrap(), None);
+        assert!(matches!(
+            retire_part(&mut t, &mut a, &c, 0, &member).unwrap(),
+            RetirementDispatch::Held { .. }
+        ));
         assert_eq!(t.state.invocations.len(), 2);
         let decision = t.decisions.last().unwrap();
         assert_eq!(decision.action, "hold-cascade-member");

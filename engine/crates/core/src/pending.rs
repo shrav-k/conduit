@@ -1,7 +1,20 @@
-//! Setup actions computed from invocation history and retained once answered.
-use crate::{Allocation, Context, Result, State, Transition, access, inventory, requests};
+//! Computed setup actions and stored pending actions.
+use crate::{
+    Allocation, Context, Result, State, Transition, access, inventory, requests, retirement,
+};
 use chrono::{DateTime, SecondsFormat, TimeDelta};
 use serde_json::{Value, json};
+use std::collections::BTreeMap;
+
+fn week_after(time: &str) -> Option<String> {
+    Some(
+        DateTime::parse_from_rfc3339(time)
+            .ok()?
+            .checked_add_signed(TimeDelta::days(7))?
+            .to_utc()
+            .to_rfc3339_opts(SecondsFormat::AutoSi, true),
+    )
+}
 
 pub(crate) fn setup_action(state: &State, object: &Value, setup_operation: &str) -> Option<Value> {
     if object["state"] == "retired" {
@@ -27,11 +40,7 @@ pub(crate) fn setup_action(state: &State, object: &Value, setup_operation: &str)
     if !matches!(outcome.as_str(), Some("failed" | "unknown")) {
         return None;
     }
-    let expiry = DateTime::parse_from_rfc3339(time.as_str()?)
-        .ok()?
-        .checked_add_signed(TimeDelta::days(7))?
-        .to_utc()
-        .to_rfc3339_opts(SecondsFormat::AutoSi, true);
+    let expiry = week_after(time.as_str()?)?;
 
     let mut evidence = vec![
         fact(
@@ -111,6 +120,110 @@ fn legacy_ending<'a>(records: &'a [Value], id: &Value) -> Option<&'a Value> {
     })
 }
 
+fn agent_fleet<'a>(state: &'a State, id: &Value) -> Option<&'a str> {
+    let agent = access::object_by_id(state, id)
+        .filter(|object| object["kind"] == "Agent" && object.get("spec").is_none())?;
+    let owner = access::object_by_id(state, &agent["owner"]).filter(|o| o["kind"] == "Fleet")?;
+    owner["id"].as_str()
+}
+
+pub(crate) fn raise_notices(
+    state: &mut State,
+    resource: &Value,
+    invocation: &Value,
+    time: &str,
+    allocation: &mut Allocation<'_>,
+    context: &Context,
+) -> Result<Vec<String>> {
+    if resource.get("spec").is_some()
+        || access::management(state, "root", context)
+            .is_ok_and(|root| root["id"] == invocation["sender"])
+    {
+        return Ok(vec![]);
+    }
+    let sender_fleet = agent_fleet(state, &invocation["sender"]);
+    let mut indices = BTreeMap::new();
+    let mut fleets: Vec<(String, Vec<Value>)> = Vec::new();
+    for conduit in retirement::closing_conduits(state, &resource["id"], false) {
+        let Some(fleet) =
+            agent_fleet(state, &conduit["consumer"]).filter(|f| Some(*f) != sender_fleet)
+        else {
+            continue;
+        };
+        let index = *indices.entry(fleet).or_insert_with(|| {
+            fleets.push((fleet.to_owned(), Vec::new()));
+            fleets.len() - 1
+        });
+        fleets[index].1.push(conduit.clone());
+    }
+    if fleets.is_empty() {
+        return Ok(vec![]);
+    }
+
+    let expiry = week_after(time).ok_or("notice expiry is out of range")?;
+    let resource_id = &resource["id"];
+    let mut evidence = vec![fact(
+        resource_id.clone(),
+        "records",
+        "the Resource whose retirement closed these Conduits",
+    )];
+    if let Some(owner) = resource.get("owner") {
+        evidence.push(fact(
+            access::id(owner).clone(),
+            "declared",
+            "the Pool that owns that Resource",
+        ));
+    }
+    evidence.extend([
+        fact(
+            invocation["sender"].clone(),
+            "records",
+            "the instance that sent the retirement",
+        ),
+        fact(
+            invocation["caller"].clone(),
+            "records",
+            "the caller on whose behalf the retirement was sent",
+        ),
+        fact(
+            invocation["id"].clone(),
+            "records",
+            "the retirement invocation that closed these Conduits",
+        ),
+    ]);
+
+    let mut notices = Vec::with_capacity(fleets.len());
+    for (fleet, conduits) in fleets {
+        let id = allocation.next(state)?;
+        let mut subjects = vec![inventory::object(resource)];
+        let mut items = evidence.clone();
+        let mut subject_about = vec![resource_id];
+        let mut evidence_about = vec![resource_id; items.len()];
+        for conduit in &conduits {
+            let consumer = access::id(&conduit["consumer"]);
+            subjects.push(inventory::object(conduit));
+            items.push(fact(
+                json!({"id":conduit["id"],"name":conduit["name"],"consumer":consumer}),
+                "status.closedConduits",
+                "a Conduit of an Agent of this Fleet that the retirement closed",
+            ));
+            subject_about.push(consumer);
+            evidence_about.push(consumer);
+        }
+        let action =
+            json!({"id":id,"kind":"notice","subject":subjects,"evidence":items,"expiry":expiry});
+        state.pending_actions.insert(
+            id.clone(),
+            json!({
+                "action":action,"dispatched":null,"raisedBy":invocation["id"],"fleet":fleet,
+                "about":{"subject":subject_about,"evidence":evidence_about}
+            }),
+        );
+        notices.push(id);
+    }
+    Ok(notices)
+}
+
 pub(crate) fn is_raised_at(action: &Value, time: &str) -> bool {
     let Some(expiry) = action["expiry"].as_str() else {
         return false;
@@ -143,10 +256,16 @@ pub(crate) fn action_named(
         }
         return Some(action);
     }
-    stored.map(|entry| entry["action"].clone())
+    stored.map(|entry| {
+        let mut action = entry["action"].clone();
+        if action.get("answer").is_none() && time.is_some_and(|time| !is_raised_at(&action, time)) {
+            action["answer"] = expired_answer(&action);
+        }
+        action
+    })
 }
 
-const ACCEPTED_ANSWERS: &[(&str, &str)] = &[("setup", "dismissed")];
+const ACCEPTED_ANSWERS: &[(&str, &str)] = &[("setup", "dismissed"), ("notice", "acknowledged")];
 
 pub(crate) fn accepts_answer(kind: &Value, answer: &Value) -> bool {
     ACCEPTED_ANSWERS
@@ -176,8 +295,14 @@ pub(crate) fn store_answer(state: &mut State, mut action: Value, answer: Value) 
         .expect("pending action has an ID")
         .to_owned();
     action["answer"] = answer;
-    let entry = json!({"action":action,"dispatched":setup_dispatch(state, &id)});
-    state.pending_actions.insert(id, entry);
+    if action["kind"] != "setup"
+        && let Some(entry) = state.pending_actions.get_mut(&id)
+    {
+        entry["action"]["answer"] = action["answer"].clone();
+    } else {
+        let entry = json!({"action":action,"dispatched":setup_dispatch(state, &id)});
+        state.pending_actions.insert(id, entry);
+    }
     action
 }
 
@@ -299,6 +424,7 @@ fn scope_contains_subject(
     state: &State,
     context: &Context,
 ) -> bool {
+    let fleet = notice_fleet(state, action);
     let subjects: Vec<_> = action["subject"]
         .as_array()
         .into_iter()
@@ -312,19 +438,52 @@ fn scope_contains_subject(
         .filter_map(|conduit| access::object(state, &conduit["target"]))
         .any(|target| {
             let id = &target["id"];
-            subjects.iter().any(|subject| {
-                &subject["id"] == id
-                    || access::id(&subject["owner"]) == id
-                    || subject["kind"] == "Conduit"
-                        && ["consumer", "target"].iter().any(|end| {
-                            access::object_by_id(state, &subject[*end])
-                                .is_some_and(|object| access::id(&object["owner"]) == id)
-                        })
-            })
+            fleet == Some(id)
+                || subjects.iter().any(|subject| {
+                    &subject["id"] == id
+                        || access::id(&subject["owner"]) == id
+                        || subject["kind"] == "Conduit"
+                            && ["consumer", "target"].iter().any(|end| {
+                                access::object_by_id(state, &subject[*end])
+                                    .is_some_and(|object| access::id(&object["owner"]) == id)
+                            })
+                })
         })
 }
 
-/// PND-004: disclose evidence only when its subjects are all visible.
+pub(crate) fn notice_fleet<'a>(state: &'a State, action: &Value) -> Option<&'a Value> {
+    if action["kind"] != "notice" {
+        return None;
+    }
+    state
+        .pending_actions
+        .get(action["id"].as_str()?)?
+        .get("fleet")
+}
+
+fn visible_items(
+    items: &[Value],
+    about: Option<&[Value]>,
+    holder: &Value,
+    state: &State,
+    context: &Context,
+) -> Result<Vec<Value>> {
+    let mut visible = Vec::new();
+    for (index, item) in items.iter().enumerate() {
+        let id = match about {
+            Some(ids) => ids.get(index),
+            None => item.get("id"),
+        };
+        if let Some(object) = id.and_then(|id| access::object_by_id(state, id))
+            && access::may_inspect(state, &holder["id"], object, context)?
+        {
+            visible.push(item.clone());
+        }
+    }
+    Ok(visible)
+}
+
+/// PND-004: disclose evidence with its inspection authority.
 fn action_view(
     action: &Value,
     holder: &Value,
@@ -334,22 +493,50 @@ fn action_view(
     let mut view = action.clone();
     let mut all_visible = true;
     if !is_root(holder, state, context) {
+        let about = action["id"]
+            .as_str()
+            .and_then(|id| state.pending_actions.get(id))
+            .and_then(|entry| entry.get("about"));
         let subjects = view["subject"]
             .as_array_mut()
             .ok_or("action lacks subjects")?;
-        let mut visible = Vec::new();
-        for subject in subjects.iter() {
-            if let Some(object) = access::object_by_id(state, &subject["id"])
-                && access::may_inspect(state, &holder["id"], object, context)?
-            {
-                visible.push(subject.clone());
-            }
-        }
+        let subject_ids = about
+            .map(|about| {
+                about["subject"]
+                    .as_array()
+                    .ok_or("action lacks subject attribution")
+            })
+            .transpose()?;
+        let visible = visible_items(
+            subjects,
+            subject_ids.map(Vec::as_slice),
+            holder,
+            state,
+            context,
+        )?;
         if visible.is_empty() {
             return Ok(None);
         }
-        all_visible = visible.len() == subjects.len();
+        if about.is_none() {
+            all_visible = visible.len() == subjects.len();
+        }
         *subjects = visible;
+        if let Some(about) = about {
+            view["evidence"] = json!(visible_items(
+                action["evidence"]
+                    .as_array()
+                    .ok_or("action lacks evidence")?,
+                Some(
+                    about["evidence"]
+                        .as_array()
+                        .ok_or("action lacks evidence attribution")?
+                        .as_slice()
+                ),
+                holder,
+                state,
+                context,
+            )?);
+        }
     }
     let evidence = view["evidence"]
         .as_array_mut()
@@ -368,6 +555,14 @@ fn held_actions(state: &State, context: &Context) -> Vec<Value> {
         .filter(|object| object.get("spec").is_none())
         .filter_map(|object| setup_action(state, object, &setup_operation))
         .collect();
+    actions.extend(
+        state
+            .pending_actions
+            .values()
+            .map(|entry| &entry["action"])
+            .filter(|action| action["kind"] != "setup")
+            .cloned(),
+    );
     actions.sort_by(|a, b| a["id"].as_str().cmp(&b["id"].as_str()));
     actions
 }
@@ -396,6 +591,262 @@ fn fact(value: Value, place: &str, proves: &str) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn notices_follow_their_fleet() {
+        let (_, context) = crate::explain::tests::fixture();
+        let time = "2026-11-12T12:00:00Z";
+        let later = "2026-11-12T12:00:01Z";
+        let expiry = "2026-11-19T12:00:00Z";
+        let root = json!({"id":"r","kind":"Interface","from":context.qualified("root")});
+        let viewer = json!({"id":"v","kind":"Interface"});
+        let pool_viewer = json!({"id":"w","kind":"Interface"});
+        let unscoped = json!({"id":"u","kind":"Interface"});
+        let resource = json!({"id":"x","name":"x","kind":"Resource","owner":"p"});
+        let conduit = |id, consumer, target, open| {
+            json!({"id":id,"name":id,"kind":"Conduit","consumer":consumer,"target":target,
+                "open":open,"state":"ready","operations":[context.qualified("inspect.v1")]})
+        };
+        let initial = State {
+            objects: vec![
+                root.clone(),
+                json!({"id":"management","kind":"Resource","from":context.qualified("management")}),
+                json!({"id":"f","kind":"Fleet"}),
+                json!({"id":"g","kind":"Fleet"}),
+                json!({"id":"p","kind":"Pool"}),
+                resource.clone(),
+                json!({"id":"a1","kind":"Agent","owner":"f"}),
+                json!({"id":"a2","kind":"Agent","owner":"f"}),
+                json!({"id":"b1","kind":"Agent","owner":"g"}),
+                viewer.clone(),
+                pool_viewer.clone(),
+                unscoped.clone(),
+                conduit("vf", "v", "f", true),
+                conduit("wp", "w", "p", true),
+                conduit("k1", "a1", "x", true),
+                conduit("k2", "a2", "x", false),
+                conduit("k3", "b1", "x", true),
+                conduit("k4", "v", "x", true),
+            ],
+            records: vec![json!({"type":"object-change","data":{"target":"x"}})],
+            ..State::default()
+        };
+        let evidence = crate::Evidence {
+            time: time.into(),
+            ids: (1..=9).map(|n| format!("n{n}")).collect(),
+            revisions: vec![],
+            suffixes: vec![],
+        };
+        let raise = |state: &mut State, resource: &Value, sender: &str| {
+            let mut allocation = Allocation {
+                evidence: &evidence,
+                cursor: 0,
+            };
+            let invocation = json!({"id":"t1","sender":sender,"caller":"u",
+                "operation":context.qualified("retire.v1")});
+            let ids = raise_notices(
+                state,
+                resource,
+                &invocation,
+                time,
+                &mut allocation,
+                &context,
+            )
+            .unwrap();
+            (ids, allocation.cursor)
+        };
+        let named = |state: &State, id, time| action_named(state, id, time, &context).unwrap();
+        let mut state = initial.clone();
+        assert_eq!(
+            raise(&mut state, &resource, "u"),
+            (vec!["n1".into(), "n2".into()], 2)
+        );
+        let expected = json!({
+            "id":"n1","kind":"notice",
+            "subject":[
+                {"kind":"Resource","name":"x","id":"x"},
+                {"kind":"Conduit","name":"k1","id":"k1"},
+                {"kind":"Conduit","name":"k2","id":"k2"}
+            ],
+            "evidence":[
+                {"kind":"fact","value":"x","where":"records","proves":"the Resource whose retirement closed these Conduits"},
+                {"kind":"fact","value":"p","where":"declared","proves":"the Pool that owns that Resource"},
+                {"kind":"fact","value":"u","where":"records","proves":"the instance that sent the retirement"},
+                {"kind":"fact","value":"u","where":"records","proves":"the caller on whose behalf the retirement was sent"},
+                {"kind":"fact","value":"t1","where":"records","proves":"the retirement invocation that closed these Conduits"},
+                {"kind":"fact","value":{"id":"k1","name":"k1","consumer":"a1"},"where":"status.closedConduits",
+                    "proves":"a Conduit of an Agent of this Fleet that the retirement closed"},
+                {"kind":"fact","value":{"id":"k2","name":"k2","consumer":"a2"},"where":"status.closedConduits",
+                    "proves":"a Conduit of an Agent of this Fleet that the retirement closed"}
+            ],
+            "expiry":expiry
+        });
+        let about = json!({"subject":["x","a1","a2"],"evidence":["x","x","x","x","x","a1","a2"]});
+        assert_eq!(named(&state, "n1", Some(later)), expected);
+        assert_eq!(
+            state.pending_actions["n1"],
+            json!({
+                "action":expected,"dispatched":null,"raisedBy":"t1","fleet":"f","about":about
+            })
+        );
+        let second = named(&state, "n2", Some(later));
+        assert_eq!(state.pending_actions["n2"]["fleet"], "g");
+        assert_eq!(
+            second["subject"],
+            json!([
+                {"kind":"Resource","name":"x","id":"x"},
+                {"kind":"Conduit","name":"k3","id":"k3"}
+            ])
+        );
+
+        let mut reordered = initial.clone();
+        let k3 = reordered
+            .objects
+            .iter()
+            .position(|o| o["id"] == "k3")
+            .unwrap();
+        let k1 = reordered
+            .objects
+            .iter()
+            .position(|o| o["id"] == "k1")
+            .unwrap();
+        let first_conduit = reordered.objects.remove(k3);
+        reordered.objects.insert(k1, first_conduit);
+        assert_eq!(
+            raise(&mut reordered, &resource, "u"),
+            (vec!["n1".into(), "n2".into()], 2)
+        );
+        assert_eq!(reordered.pending_actions["n1"]["fleet"], "g");
+        assert_eq!(reordered.pending_actions["n2"]["fleet"], "f");
+
+        let mut agent_retirement = initial.clone();
+        assert_eq!(
+            raise(&mut agent_retirement, &resource, "a1"),
+            (vec!["n1".into()], 1)
+        );
+        assert_eq!(agent_retirement.pending_actions["n1"]["fleet"], "g");
+        assert_eq!(raise(&mut initial.clone(), &resource, "r"), (vec![], 0));
+        let mut template = resource.clone();
+        template["spec"] = json!({});
+        assert_eq!(raise(&mut initial.clone(), &template, "u"), (vec![], 0));
+
+        // Retirement removes the Conduits, but the notice keeps their resolved identities.
+        state
+            .objects
+            .retain(|o| !matches!(o["id"].as_str(), Some("k1" | "k2" | "k3" | "k4")));
+        let raised = |state: &State, holder: &Value, time| {
+            is_raised_for(&expected, holder, state, time, &context)
+        };
+        let views = |state: &State, holder: &Value, time| {
+            raised_views(holder, state, time, &context).unwrap()
+        };
+        let mut fleet_view = expected.clone();
+        fleet_view["subject"] = json!(&expected["subject"].as_array().unwrap()[1..]);
+        fleet_view["evidence"] = json!(&expected["evidence"].as_array().unwrap()[5..]);
+        let mut pool_view = expected.clone();
+        pool_view["subject"] = json!([expected["subject"][0]]);
+        pool_view["evidence"] = json!(&expected["evidence"].as_array().unwrap()[..5]);
+        let mut second_pool_view = pool_view.clone();
+        second_pool_view["id"] = json!("n2");
+        assert_eq!(views(&state, &root, later), vec![expected.clone(), second]);
+        assert_eq!(views(&state, &viewer, later), vec![fleet_view.clone()]);
+        assert_eq!(
+            views(&state, &pool_viewer, later),
+            vec![pool_view, second_pool_view]
+        );
+        assert_eq!(
+            (
+                raised(&state, &unscoped, later),
+                views(&state, &unscoped, later)
+            ),
+            (false, vec![])
+        );
+        state.objects.push(conduit("vp", "v", "p", true));
+        assert_eq!(views(&state, &viewer, later)[0], expected);
+
+        let expired = named(&state, "n1", Some(expiry));
+        assert_eq!(expired["answer"], json!({"value":"expired","at":expiry}));
+        for holder in [&root, &viewer, &pool_viewer, &unscoped] {
+            assert_eq!(
+                (
+                    raised(&state, holder, expiry),
+                    views(&state, holder, expiry).len()
+                ),
+                (false, 0)
+            );
+            assert_eq!(
+                may_answer(&state, holder, None, &json!("n1"), &context),
+                holder != &unscoped
+            );
+            assert_eq!(
+                is_raised_at_holder(&expired, holder, &state, &context),
+                holder != &unscoped
+            );
+        }
+        state.objects.retain(|o| o["id"] != "x");
+        assert_eq!(
+            (
+                raised(&state, &pool_viewer, later),
+                may_answer(&state, &pool_viewer, None, &json!("n1"), &context)
+            ),
+            (false, false)
+        );
+        assert!(may_answer(&state, &viewer, None, &json!("n1"), &context));
+        assert_eq!(views(&state, &viewer, later)[0], fleet_view);
+        assert_eq!(
+            access::action_inspection_target(&state, &expected, &context).unwrap(),
+            "f"
+        );
+        let mut with_retired_fleet = state.clone();
+        with_retired_fleet
+            .objects
+            .iter_mut()
+            .find(|o| o["id"] == "f")
+            .unwrap()["state"] = json!("retired");
+        assert_eq!(
+            access::action_inspection_target(&with_retired_fleet, &expected, &context).unwrap(),
+            "management"
+        );
+        with_retired_fleet.objects.retain(|o| o["id"] != "f");
+        assert_eq!(
+            access::action_inspection_target(&with_retired_fleet, &expected, &context).unwrap(),
+            "management"
+        );
+
+        let answered = "2026-11-12T13:00:00Z";
+        let answer = json!({"value":"acknowledged","actor":"r","invocation":"d1","at":answered});
+        let stored = store_answer(&mut state, expected.clone(), answer.clone());
+        let after_expiry = "2026-11-20T12:00:00Z";
+        assert_eq!(named(&state, "n1", Some(after_expiry))["answer"], answer);
+        assert_eq!(
+            state.pending_actions["n1"],
+            json!({
+                "action":stored,"dispatched":null,"raisedBy":"t1","fleet":"f","about":about
+            })
+        );
+        for holder in [&root, &viewer] {
+            assert_eq!(
+                (
+                    raised(&state, holder, answered),
+                    may_answer(&state, holder, None, &json!("n1"), &context)
+                ),
+                (false, true)
+            );
+        }
+        state.records.clear();
+        assert_eq!(named(&state, "n1", Some(after_expiry)), stored);
+
+        for (kind, answer, accepted) in [
+            ("notice", "acknowledged", true),
+            ("notice", "dismissed", false),
+            ("notice", "expired", false),
+            ("setup", "dismissed", true),
+            ("setup", "acknowledged", false),
+            ("setup", "expired", false),
+        ] {
+            assert_eq!(accepts_answer(&json!(kind), &json!(answer)), accepted);
+        }
+    }
 
     #[test]
     fn setup_action_follows_the_latest_setup() {

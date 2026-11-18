@@ -45,9 +45,15 @@ pub(crate) fn preflight(
             (
                 "invalid",
                 "PND-009",
-                format!(
-                    "{tool} reports invalid under PND-009: answer.v1 answers a setup action only dismissed; a further set-up.v1 answers it retried, and retire.v1 or a cascade's retirement answers it retired."
-                ),
+                if action["kind"] == "notice" {
+                    format!(
+                        "{tool} reports invalid under PND-009: answer.v1 answers a notice only acknowledged."
+                    )
+                } else {
+                    format!(
+                        "{tool} reports invalid under PND-009: answer.v1 answers a setup action only dismissed; a further set-up.v1 answers it retried, and retire.v1 or a cascade's retirement answers it retired."
+                    )
+                },
             )
         } else if let Some(value) = action["answer"]["value"].as_str() {
             (
@@ -496,9 +502,17 @@ pub(crate) fn execute(
                 })
                 .collect();
             for action in &actions {
+                let (name, promises): (&str, &[&str]) = if action["kind"] == "notice" {
+                    ("show-notice", &["PND-001", "PND-002", "PND-004", "PND-007"])
+                } else {
+                    (
+                        "raise-setup-action",
+                        &["PND-001", "PND-002", "PND-003", "PND-004", "PND-006"],
+                    )
+                };
                 t.decisions.push(decision(
-                    "raise-setup-action",
-                    &["PND-001", "PND-002", "PND-003", "PND-004", "PND-006"],
+                    name,
+                    promises,
                     &["DL19"],
                     json!({"action":action["id"]}),
                     vec![],
@@ -714,7 +728,14 @@ mod answer_tests {
 
     fn setup_fixture() -> (State, Context) {
         let (mut s, mut c) = fixture();
-        let names = ["answer.v1", "inspect.v1", "purge.v1", "set-up.v1"];
+        let names = [
+            "answer.v1",
+            "inspect.v1",
+            "purge.v1",
+            "retire.v1",
+            "retire-with-resources.v1",
+            "set-up.v1",
+        ];
         let operations: Vec<_> = names.iter().map(|name| c.qualified(name)).collect();
         let capability = c.qualified("capability.v1");
         let contracts = &mut c.core_environment.scopes.get_mut("core").unwrap().contracts;
@@ -753,6 +774,17 @@ mod answer_tests {
         (s, c)
     }
 
+    fn evidence(step: u32, time: &str) -> Evidence {
+        Evidence {
+            time: time.into(),
+            ids: (0..20)
+                .map(|i| format!("00000000-0000-4000-8000-{step:08}{i:04}"))
+                .collect(),
+            revisions: vec![],
+            suffixes: vec![],
+        }
+    }
+
     fn invoke(
         state: &State,
         c: &Context,
@@ -765,14 +797,7 @@ mod answer_tests {
         crate::step(
             state,
             Input::Invoke {
-                evidence: Evidence {
-                    time: time.into(),
-                    ids: (0..20)
-                        .map(|i| format!("00000000-0000-4000-8000-{step:08}{i:04}"))
-                        .collect(),
-                    revisions: vec![],
-                    suffixes: vec![],
-                },
+                evidence: evidence(step, time),
                 request: AccessRequest {
                     identity: Identity::Instance { id: route.0.into() },
                     tool: route.1.into(),
@@ -796,6 +821,162 @@ mod answer_tests {
             .iter()
             .find(|r| r["type"] == "pending-action-answered")
             .unwrap()
+    }
+
+    fn notice_fixture() -> (State, Context) {
+        let (mut state, c) = setup_fixture();
+        let capability = c.qualified("capability.v1");
+        let operations = [
+            c.qualified("inspect.v1"),
+            c.qualified("retire.v1"),
+            c.qualified("retire-with-resources.v1"),
+        ];
+        state.objects.extend([
+            json!({"id":"shared","kind":"Resource","name":"shared","state":"ready","owner":"owners",
+                "type":c.qualified("type.v1"),"config":{},"placement":"node",
+                "resolved_implementations":{"example.org/fixture#run.v1":{"item":{"command":["test"]}}}}),
+            json!({"id":"node","kind":"Resource","name":"node","state":"ready","status":{}}),
+            json!({"id":"to-shared","kind":"Conduit","name":"to-shared","state":"ready",
+                "open":true,"consumer":"agent","target":"shared"}),
+            json!({"id":"other-pool","kind":"Conduit","name":"other-pool","local_name":"pool",
+                "state":"ready","open":true,"consumer":"other","target":"owners",
+                "capability":capability,"operations":operations}),
+            json!({"id":"root-pool","kind":"Conduit","name":"root-pool","local_name":"pool",
+                "state":"ready","open":true,"consumer":"root","target":"owners",
+                "capability":capability,"operations":operations}),
+        ]);
+        state.invocations = vec![json!({
+            "id":SETUP,"operation":c.qualified("set-up.v1"),"object":"shared","state":"succeeded"
+        })];
+        (state, c)
+    }
+
+    #[test]
+    fn keyed_retirement_retries_keep_their_notices() {
+        for (tool, arguments) in [
+            (
+                "pool.retire.v1",
+                json!({"instance":{"kind":"Resource","name":"shared"}}),
+            ),
+            ("pool.retire-with-resources.v1", json!({})),
+        ] {
+            let (state, c) = notice_fixture();
+            let retire = |state, step| {
+                invoke(
+                    state,
+                    &c,
+                    step,
+                    NOW,
+                    ("other", tool),
+                    arguments.clone(),
+                    Some("retirement-key"),
+                )
+            };
+            let stop = |pending: &Transition, report_step: u32, outcome: &str| {
+                assert_eq!(pending.reply["pending"], true, "{}", pending.reply);
+                assert_eq!(pending.external_intents.len(), 1);
+                assert_eq!(
+                    pending.external_intents[0]["operation"],
+                    c.qualified("stop.v1")
+                );
+                crate::step(
+                    &pending.state,
+                    Input::SetupReport {
+                        evidence: evidence(report_step, NOW),
+                        invocation: pending.external_intents[0]["invocation"]
+                            .as_str()
+                            .unwrap()
+                            .into(),
+                        report: crate::lifecycle::Report::Stop {
+                            outcome: outcome.into(),
+                        },
+                    },
+                    &c,
+                )
+                .unwrap()
+            };
+
+            let first = retire(&state, 1);
+            let failed = stop(&first, 2, "failed");
+            assert_eq!(failed.reply["_meta"]["test/outcome"], "failed");
+            let notice = failed.state.pending_actions.keys().next().unwrap();
+            let notices = json!([notice]);
+            assert_eq!(failed.reply["_meta"]["test/pendingAction"], notices);
+
+            let retry = retire(&failed.state, 3);
+            assert_eq!(retry.reply["invocation"], first.reply["invocation"]);
+            let ended = stop(&retry, 4, "succeeded");
+            assert_eq!(ended.reply["_meta"]["test/outcome"], "succeeded");
+            assert_eq!(
+                ended.reply["_meta"]["test/invocation"],
+                first.reply["invocation"]
+            );
+            assert_eq!(ended.reply["_meta"]["test/pendingAction"], notices);
+            assert_eq!(ended.state.pending_actions, failed.state.pending_actions);
+            assert!(!retry.decisions.iter().any(|d| d.action == "raise-notice"));
+        }
+    }
+
+    #[test]
+    fn inspection_returns_the_stored_notice_answer() {
+        let (state, c) = notice_fixture();
+        let retired = invoke(
+            &state,
+            &c,
+            1,
+            NOW,
+            ("other", "pool.retire.v1"),
+            json!({"instance":{"kind":"Resource","name":"shared"}}),
+            None,
+        );
+        assert_eq!(retired.reply["pending"], true, "{}", retired.reply);
+        let notice = retired.state.pending_actions.keys().next().unwrap();
+        let inspect = |state, step, caller| {
+            invoke(
+                state,
+                &c,
+                step,
+                NOW,
+                (caller, "pool.inspect.v1"),
+                json!({"object":{"kind":"Resource","name":"shared"}}),
+                None,
+            )
+        };
+        let live = inspect(&retired.state, 2, "other");
+        let pool_view = &live.reply["structuredContent"]["status"]["pending"][0];
+        assert_eq!(
+            pool_view["subject"],
+            json!([{"kind":"Resource","name":"shared","id":"shared"}])
+        );
+        assert_eq!(pool_view["evidence"].as_array().unwrap().len(), 5);
+
+        let answered = invoke(
+            &live.state,
+            &c,
+            3,
+            NOW,
+            ("root", "group.answer.v1"),
+            json!({"action":notice,"answer":"acknowledged"}),
+            None,
+        );
+        assert_eq!(answered.reply["_meta"]["test/outcome"], "succeeded");
+        let stored_records = json!(answered.state.records);
+        let stored = answer_record(&stored_records);
+        let full = &stored["data"]["answer"];
+        assert_eq!(full["subject"][1]["id"], "to-shared");
+        assert_eq!(full["evidence"][5]["value"]["consumer"], "agent");
+
+        // LIF-013 and REC-005 return the records that name the instance as stored; PND-004's
+        // disclosure of this answer's evidence to a Pool-only Interface waits for a later order.
+        let inspection = inspect(&answered.state, 4, "other");
+        let inspected = answer_record(&inspection.reply["structuredContent"]["records"]);
+        assert_eq!(inspected, stored);
+        assert_eq!(answer_record(&json!(inspection.state.records)), stored);
+        let root = inspect(&inspection.state, 5, "root");
+        assert_eq!(
+            answer_record(&root.reply["structuredContent"]["records"]),
+            stored
+        );
     }
 
     #[test]

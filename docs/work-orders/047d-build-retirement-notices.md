@@ -664,3 +664,114 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2). The admin writes this order's Record at
 the foot of this file when it merges.
+
+## Record
+
+Run on 2026-11-18, from about 15:03 to 16:03 UTC, on the Mac from `main` `e4ceb4c8` (order 047c's
+merge), in two rounds: the worker (1550 s) and a fresh Codex verifier (447 s), then the worker again
+(1083 s) and a second fresh Codex verifier (505 s). The change is nine files in Scope, and this
+file. `pending.rs` raises one notice per Fleet a retirement's closing Conduits reach
+(`raise_notices`, with `agent_fleet` and `week_after`), keeps `raisedBy`, `fleet` and `about` in the
+entry, joins the Fleet to 047b's holder test (`is_raised_at_holder`, `notice_fleet`), filters each
+subject and evidence item by the inspection it is about (`action_view`, `visible_items`), and holds,
+expires and stores the notice's answer through 047c's `store_answer`; `retirement.rs` shares
+`closing_conduits` with `close_ends`, calls `raise_notices` at a Resource's first retirement, puts
+the IDs after any setup answer's in the `retired` record's `pendingAction`, sets `notices` on the
+invocation and appends them to a cascade parent's, and pushes `raise-notice`; `requests.rs` sets the
+qualified `pendingAction` key in `finish`; `records.rs` gives the notice its own PND-009 invalid's
+text and pushes `show-notice` at inspection; `access.rs` routes a notice's inspection to its Fleet,
+or to `management` once the Fleet is retired or gone; `engine/CONFORMANCE.md` gains DL19's notice
+paragraph; `engine/STANDING.md` was written by the tool (PND-007 now
+`1 | 0 | outside | core | case passes`); and the 18-step case `setup-retirement-notice` joins the
+setup index, through the pieces tool. The worker's own choices: the engine's sorted keys where
+decision 2 gives a member order (its nearest sound reading); an ordered collection for the Fleet
+groups; 047c's `store_answer` signature kept; and, since `HEAD`'s `retirement.rs` lacks
+`closing_conduits`, a control that removed only the notice raising in a copy. The first round passed
+341 tests, 4 ignored.
+
+The first verifier found two musts and two shoulds: a keyed retry of a failed retirement or cascade
+finished under the same invocation without the notice IDs it had raised; a Pool-only Interface
+inspecting the Resource after root's acknowledgement received the answer record whole, with the
+closed Conduit and its consumer that its live view withheld; a keyed Pool list could replay a
+notice's Fleet evidence after the Fleet scope closed (OPS-009, as 047b left open); and decision 6's
+test could not tell Fleet ID order from first-Conduit order. Round 2 carried `notices` across a
+keyed redispatch in `invoke_inner` and appended to it in `retirement.rs`, with the test
+`keyed_retirement_retries_keep_their_notices`; projected each notice answer record at inspection to
+the caller's view through a new `pending::notice_answer_view`, with the test
+`inspection_limits_acknowledged_notice_evidence`; added a reordered variant, `k3` before `k1`, to
+`notices_follow_their_fleet`; and reported the replay case under the OPS-009 question. It passed 343
+tests, 4 ignored. The second verifier found three musts and a should: the projection omits the
+answer record from an inspector that is not a holder, where LIF-013 returns the records that name
+the instance; the conformance runner compares inspection's records with the stored ones and would
+reject the projection; an OPS-009 or OPS-012 repeat of a retirement that ended `unknown` replays
+through `ended_reply` without `pendingAction`, which the report did not name; and a retained
+inspection result can replay projected answer evidence after the scope changes.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2). It ran every command of
+"Done when" as worded: fmt and clippy clean, `pending::tests` 4 passed, `retirement::tests` 7
+passed, `records::answer_tests` 4 passed, the pieces tool `Nothing to move.`, the runner 1, 3, 1 and
+43 cases passed (047c's 42 and one), the shell test 1 passed, the vectors 2 passed, the release
+suite 343 passed, 0 failed, 4 ignored with 4 threads, the spike 9 passed, each Python check `Errors:
+0`, the tool tests 129 OK, the eight counts 1 and the two zeros 0, the out-of-scope status empty,
+`git diff --check` clean and the privacy scan clean, and `vector_delta.py` against the base `1
+changes; 0 flips; 0 undeclared; 0 errors`, exit 0. In a scratch copy with the `raise_notices` call
+replaced by an empty list, the case failed with `FAIL 0 cases passed; 1 failed` and `capture pointer
+missing`. With a script it compared the case with decision 7: 1704 unique IDs, the evidence
+formulas, steps 1 to 3 equal to `setup-action-by-scope`, and a byte for byte round trip. It found
+one must and three shoulds:
+
+- R1 (must): round 2's projection of notice answer records at inspection (`records.rs`) is outside
+  Scope, omits the record from every inspector that is not its own holder, and is wrong under
+  LIF-013 and REC-005, which the runner checks; the case passes only because it never inspects after
+  step 16. Revert it and report the conflict.
+- R2 (should): the three lines in `invoke_inner` that carry `notices` across a keyed redispatch are
+  beyond Scope's `finish` and sound; keep them and say so here.
+- R3 (should): decision 3's report named only successful OPS-009 replays through `ended_reply`; a
+  keyed repeat of a retirement that ended `unknown` reaches it too, since `retire.v1` does not
+  deduplicate, and omits `pendingAction` as well.
+- R4 (should): decision 6's check that A3's test holds for `v` runs only after `vp` is pushed, so it
+  holds through the Pool's half and the Fleet's half is never isolated.
+
+The fixer found `origin/main` still at `e4ceb4c8`, so the rebase with the work-order identity
+changed nothing, and applied each finding:
+
+- R1: the records hunk is back to `main`'s filter and `.cloned()`, with the `holder` hoist undone,
+  and `pending::notice_answer_view` is removed. The test is renamed
+  `inspection_returns_the_stored_notice_answer` and now asserts that the Pool-only inspection
+  returns the stored answer record unchanged, after checking that the live view withheld the Conduit
+  and that the stored record holds it. Finding for the coordinator: PND-004 ("Evidence with an
+  answer follows its disclosure") conflicts with LIF-013 and REC-005, which return the records that
+  name the instance as stored and which the runner checks, for a notice answer record shown to a
+  Pool-only Interface while shutdown is unconfirmed; settling it needs a change to the specification
+  or the runner that a later order makes. The second verifier's two musts on the projection end with
+  the revert, and its should folds into this finding: fresh and retained inspections now return the
+  same stored records.
+- R2: kept. `requests.rs` gained three lines in `invoke_inner` beyond `finish`, so that a keyed
+  retry of a failed retirement or cascade keeps its notice IDs (the first verifier's must); the
+  reader advised keeping them, and the coordinator accepts them at the merge.
+- R3: added to the finding 047d-retirement-result-replay, beside OPS-009's question on the notice
+  key in a replayed result: an OPS-009 or OPS-012 repeat of a retirement that ended `unknown`
+  replays through `ended_reply` without `pendingAction`, as the successful replay does. The code is
+  unchanged.
+- R4: after the `retain` that removes `x`, where `v` still holds `vf`, `notices_follow_their_fleet`
+  asserts `may_answer` for `v`.
+
+The worker's other findings stand for the coordinator: decision 10's stand on what each subject and
+evidence item is about (PND-002, PND-004, PND-007, LIF-040), as a question for the owner; and the
+keyed Pool list that replays a notice's Fleet evidence after the Fleet scope closes, under 047b's
+OPS-009 disclosure question.
+
+The fixer then ran, from `engine/` with 4 test threads: `cargo fmt --check` and `cargo clippy
+--all-targets -- -D warnings` (exit 0), `pending::tests` (4 passed), `retirement::tests` (7 passed),
+`records::answer_tests` (4 passed), the pieces tool (`Nothing to move.`), the runner (`1 cases
+passed`, `3 cases passed`, `1 cases passed` and `43 cases passed`), the shell test (1 passed), the
+vectors (2 passed) and the release suite (343 passed, 0 failed, 4 ignored across 28 binaries). With
+the `raise_notices` call replaced by an empty list in place, the case failed with `FAIL 0 cases
+passed; 1 failed` and `capture pointer missing`; after the restore with `cp` it ended `1 cases
+passed`. The spike's `tests/spike.rs` reported 9 passed. From the root, each of `check_schemas`,
+`set_names --check`, `check_rulings`, `check_docs`, `check_roadmap`, `check_model_account`,
+`check_private_paths` and `promise_standing --check` ended `Errors: 0`; the tool tests ran 129, OK;
+`vector_delta.py` against `origin/main` printed `1 shapes` and `Vector delta: 1 changes; 0 flips; 0
+undeclared; 0 errors.`, exit 0; the eight counts printed 1 and the two zeros 0; the out-of-scope
+diff was empty; and `git diff --check origin/main...HEAD` was clean. The gate's run on this order's
+squash, which this merge waits on, is the coordinator's.

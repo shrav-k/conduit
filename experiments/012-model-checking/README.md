@@ -1,6 +1,6 @@
 # 012 — model-checking harness
 
-Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b), 111 and 114 (MC6), 112 (MC7a), and 113 and 115 (MC7b), ruling 71's proof lane; MC2 rerun 2026-11-15 under work order 160.
+Status: executed 2026-11-11 under work orders 104 (MC1), 105 (MC2), 107 (MC3), 108 (MC4), 109 (MC5a), 110 (MC5b), 111 and 114 (MC6), 112 (MC7a), and 113 and 115 (MC7b), ruling 71's proof lane; MC2 rerun 2026-11-15 under work order 160; MC9a registered 2026-11-18 under work order 201, not run.
 The expected verdicts below were registered before execution; later orders extend this harness.
 [G5’s account of all 232 convention-layer safety promises](G5.md) records their standings and remaining work.
 
@@ -6972,3 +6972,644 @@ The regression separately exercises the same omission for a plain unknown invoca
 
 Only this README's MC7b sections and `src/records.rs` changed. No vector was written,
 and no file outside this work order's scope needs a change for these two fixes.
+
+## MC9a — pending actions and sign-in as written: pre-registration
+
+Registered 2026-11-18 by work order 201, before any MC9a code exists and before any run. Nothing
+here is a result. The reference model will be `src/pending.rs`, two protocols on the existing
+harness, importing no engine code; a later work order writes it and runs it. The expected tables
+are immutable: an observation that differs is recorded beside them, and a bound or model change
+found necessary before the first run is registered as a dated revision before that run, as
+MC7a's were.
+
+Revised 2026-11-18 after the reviews of work order 201, by its two verifiers and its readers,
+before any MC9a run. The scripts, predicates, witnesses and expected verdicts below incorporate
+them.
+
+MC9a is row 2 of
+[FR-446](../../docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-446),
+as its verifier corrected it, with PND-008 and PND-013 from
+[FR-448](../../docs/proposals/full-review/findings/G1a-model-checking-register.md#fr-448)
+and the two sign-ins of one instance at once of
+[FR-433](../../docs/proposals/full-review/findings/E04-signin-isolation.md#fr-433).
+It registers order 048a-2's `conflict` for a second `sign-in.v1` of one instance, as
+[the targeted review's section 6](../../docs/proposals/review-signin-2026-11-16/README.md#048a-2),
+048a-2 item 1, and [ruling 82](../../docs/proposals/ruling-82/README.md), point 6, o4, ask,
+before 048a-2 is dispatched. Its accounting is the thirteen rows that G5 leaves to MC9: the ten
+pending-action rows, PND-008, PND-013 and PND-014. MC9b, for grants, keep, withhold and
+appointment, waits for batch 2's text.
+
+### MC9a: the texts it reads, and their commits
+
+- `spec/` at `f72c2bc3`: every promise slice quoted below, from `spec/promises/pending.yaml`,
+  `spec/conventions/operations.yaml` and `spec/interface/implementation.yaml`. The scripts also
+  read `spec/conventions/access.yaml` for opening the candidate Conduit,
+  `spec/conventions/lifecycle.yaml` for retirement and removal, and
+  `spec/implementation-defined.yaml` for DL18.
+- [Order 048a-2](../../docs/work-orders/048a2-build-sign-in-lapse-and-conflict.md)
+  at `f414e438`, as PND-010 and PND-005 will read once it merges: its decision 2, the sentence it
+  adds to PND-010's `then`; its decision 1, F84's two halves in PND-005's `observable`; its
+  decision 4, a sign-in action stored with the invocation that raised it and its expiry, and
+  answered by no `answer.v1`; its decision 6, a conflict's diagnostic naming the instance's
+  unanswered sign-in action only where the caller's view of it is not none; and its decision 7,
+  retirement answering that action void.
+- Orders 047, 047b and 047c as written at `f72c2bc3` (047 merged at `3aafbd93`; 047b and 047c
+  written and not yet built): 047's setup action, computed and never stored, its ID the setup
+  invocation's, raised while a step's time is before its expiry and not at it; 047b's scope, from
+  the Interface's open inspection Conduits, `list.v1`'s `pending`, the `unanswered` key on an
+  Interface's own results only when nonzero, and nothing raised at an Agent; 047c's `answer.v1`
+  on an Interface's own behalf, its raised-at test without the time test, refused before invalid,
+  conflict after access for an answered or expired action, `retried` by a further setup, a
+  dismissal or expiry that stays answered, and answered state that survives a purge.
+
+A promise whose text changes after these commits makes its row "text changed, not rerun" until
+MC9a is registered again against the new text (D29).
+
+### MC9a nodes, scripts and bounds
+
+Each part has three nodes. Q sends the requests of the Interfaces and of the Agent, each labelled
+with its caller; E is the engine; H implements the part's instance: its hooks, its turn and its
+run's stop, and, for sign-in, the login program and the account in the instance's home. E saves
+instances, lifecycle, Conduits, invocations with their dispatch and end, stored actions and their
+answers, the hold, `SignInUndone`, consumed requestStates and records. Only a return's value is
+volatile, from the retry that carries it to the `sign-in-hook.v1` retry that passes it on. Crash
+erases volatile state; recovery restores saved state, dispatches nothing again, and ends unknown
+every invocation in progress at the crash, sending its caller that result (IMP-007). H saves its
+account and its login programs; the person's acts at the login page are H's local choices. Q
+answers each requestState it receives at most once, and sends a stage only once the answers of
+the stage before have come. Q sends a bracket's requests one at a time, in either order, a local
+choice of Q; ReorderQ's fault reorders them once they are on the link. Each request in the
+scripts carries its own idempotency key; only CopyQ's duplicate repeats a request. A copy
+delivered after its invocation has ended is answered as OPS-009 says: from the retained outcome
+where it succeeded, by OPS-034's conflict where nothing is retained, by OPS-012 where it is
+unknown, and as a new attempt under OPS-024 where it failed. A new attempt is a dispatch for X10
+and U06. A computed setup action's ledger identity is the failed or unknown setup ending that
+computed it, identified by the invocation ID and its attempt's dispatch. Its public ID is the
+invocation ID. An `answer.v1` request resolves the public ID to the latest computed ending with
+that ID at the decision, including an answered ending while a redispatch is in progress. The
+ledger uses the ending identity for each action's computation, expiry, listing and answer, so
+a redispatch that ends unsuccessfully makes a distinct action under the same public ID (047c).
+
+Expiry is time-based: an action with no answer at or past its expiry reads expired. The external
+ledger records the scripted stimuli, including when a login program starts or the person
+completes it. It records each request's decision, reason, diagnostic rule IDs and any action
+ID it names; each dispatch and end with its outcome and any interruption; each part dispatch and
+result, including whether a late result arrived after its invocation ended; each `sign-in-hook.v1`
+retry, naming the part it retries; each action raised or answered; each pass of E's clock past
+an action's expiry, naming the action, whether or not the action has an answer; an `expired` answer
+is recorded only for an action with no answer at that moment; each `list.v1` result with its actions
+and its `unanswered` count; each requestState issued, accepted or rejected; each return passed on or
+refused; each emission's content, as symbols; each Conduit opened or closed; each retirement and
+removal; each purge; and each crash and recovery. An action that an ending raises or computes is
+logged before that ending's result. Safety and the protocol's reach predicates read only the ledger
+and recompute what the text requires from the stimuli and earlier entries there. They use no node
+data, queues, fault counters or values written for a property's own use, as the full review's
+[step for experiment 012](../../docs/proposals/full-review/experiments.md#experiment-012-the-runs-each-registered-before-it-runs)
+forbids. The test replays every first refutation after erasing every node and queue. Quiescence
+is a harness-only reach check of script completion and empty queues.
+
+**Sign-in.** Agent A of Fleet F. Its Type states `signIn` with the expected account `E` at
+`/account`, and one login L: `redirect`, `ports: any`, `carried: true`. Its `sign-in-hook.v1`
+implementation carries Conduit's keys. R is root's Interface; root's Conduit to F, from
+`root-fleet`, lists `set-up.v1`, `retire.v1`, `sign-in.v1`, `list.v1` and `answer.v1`.
+Interface X holds an open inspection Conduit to F, an open Conduit to F listing `list.v1` and
+`sign-in.v1`, and an open Conduit to A listing A's turn, an operation that starts model work; its
+scope holds F and A.
+Interface Y holds an open Conduit to F listing `list.v1` and `sign-in.v1`, and no inspection
+Conduit. A's home starts with no account. H reports an account as the home stores it: `e`, the
+expected account in another ASCII case, or `O`, another account. Each stage waits for the
+answers to the stage before; requests in brackets are sent together:
+
+1. R sets A up. Its `account-hook.v1` part reports no account, so sign-in action s1 is raised;
+   its setup hook succeeds, and A is ready. If setup ends unknown, A stays registered and the
+   script goes on; a turn to A then reports unavailable under CON-024.
+2. X asks for A's turn; then Y asks `sign-in.v1` for A.
+3. [R: `sign-in.v1` for A; X: `sign-in.v1` for A]. The one dispatched, W, runs
+   `account-hook.v1`, which reports no account, and then `sign-in-hook.v1`: H starts L and
+   answers with its URL, which E relays to W's caller with requestState rs1. A second
+   invocation's URL, where one is dispatched here, is never completed, so Q sends no retry for it.
+4. If W has ended, Q skips this stage and ignores any input request for it that arrives later;
+   otherwise the person completes L as `e` or as `O`, a local choice. W's caller retries with return
+   v1 and rs1; E checks rs1, then PND-013's checks, and passes v1 on in a `sign-in-hook.v1` retry.
+   H's program takes it, and the home's account becomes the choice. Before the account appears, E
+   may answer with a further input request and rs2, at most once in a run, in any invocation, so
+   that requestStates are at most four in a Correct run; the caller then retries with v2, a second
+   paste. E issues no further requestState for v2. Its result comes at the invocation's end. On
+   ordinary completion, polling `e` succeeds and answers any unanswered sign-in action signed-in.
+   Polling `O` dispatches `sign-out-hook.v1`, which succeeds or, at most once in a run, fails. W
+   then ends failed. Recovery or DL18 can instead end W unknown while it is open.
+5. If W did not succeed, R asks `sign-in.v1` for A again, W2, which runs as W does with return v3
+   in place of v1 if its initial check requires a login. That check reads the preserved account.
+   It succeeds immediately on `e`. For a login, the person completes L as `e`, and polling counts
+   an initial `O` as no account yet.
+6. X asks for A's turn. This is also the fresh turn that tests release after an expired action
+   and successful sign-in. If dispatched, H ends it succeeded or, at most once in a run, failed
+   with an error diagnostic naming PND-005. That keyed lapse leaves the home with no account
+   and raises s2.
+7. [R: `retire.v1` for A; X: `sign-in.v1` for A]. A sign-in dispatched here reads the actual
+   account in the home. It succeeds at once on `e`. With no account, it relays a URL that no one
+   completes. With `O`, the initial check raises a sign-in action under PND-005 if none is
+   unanswered and A's retirement has not been dispatched (MC9a-002), leaves `O` in place and
+   proceeds to the same URL under PND-010. If retirement is in progress when X's fresh sign-in is
+   decided, X10 checks PND-010's conflict. Once retirement succeeds, shutdown is confirmed and A is
+   removed (LIF-024, LIF-035). X then reports refused through its Fleet-only route (OPS-023,
+   OPS-029), since removed A has no owner. An ended retirement with shutdown pending or unknown
+   leaves A present and retired. LIF-015 precludes dispatching that sign-in, and this projection
+   assigns no reason for that case. H's stop succeeds on ordinary completion. Recovery can end the
+   retirement unknown.
+
+E's clock passes at most one expiry in a run, of any sign-in action raised, as a local choice of
+E at any point from that action's raising to the end of the script. A replacement raised after
+expiry by a held request or by a sign-in's initial check finding `O` is s3. At most three sign-in
+actions exist.
+
+**Actions.** Agent B of Fleet F, whose Type states no `signIn`, and the machine provider M,
+owned by `system`, with the machine action m1 raised in the initial state. R, X and Y are as in
+sign-in, without X's Conduit to A, with root's Conduit to M as the core gives it, and `answer.v1`
+in place of `sign-in.v1` in X's and Y's Conduits to F. Agent G of F holds an open Conduit to F
+listing `inspect.v1` and `list.v1`. G also consumes an open Conduit to `access` listing
+`open.v1`, with a `bound.v1` that names F in `targets` and the core's qualified `answer.v1` in
+`operations` (ACC-001, ACC-006, ACC-029). The candidate Conduit is registered, valid apart from
+PND-009's restriction on opening it, names G as consumer and F as target, and lists
+`answer.v1` alone. Stages:
+
+1. R sets B up; its setup hook fails with no effect, so setup action u1 is computed.
+2. G asks `list.v1`; then G asks to open the candidate through its `access` Conduit. The route
+   and bound permit the request up to PND-009's open restriction.
+3. [X: `list.v1`; Y: `list.v1`]; then R asks `list.v1`.
+4. Y answers u1 `dismissed`; then X answers u1 `acknowledged`.
+5. R closes X's inspection Conduit; then X asks `list.v1`; then X answers u1 `dismissed`.
+6. R sets B up again: its dispatch answers u1 `retried`, and its hook fails again, so setup
+   action u2 is computed.
+7. R answers u2 `dismissed`.
+8. R purges the records made before this stage; then R answers u2 `dismissed`; then R asks
+   `list.v1`.
+
+E's clock passes u2's expiry at most once in a run, as a local choice of E that may not happen,
+at any point from u2's computing to the end of the script, and passes no other expiry in this
+part.
+
+Each run is bounded by at most 8 messages on each directed link, 400,000 unique states and 15
+seconds, with two checker threads for a full run and one for a first refutation. Sign-in has one
+Agent, one Fleet, three Interfaces, at most three sign-in actions, three returns (v1, v2 and v3),
+at most four requestStates, three accounts (none, `e` and `O`) and at most two login programs
+waiting at once. The program and requestState bounds count what the Correct script reaches; a
+mutant may exceed them, and the model puts no cap on them. Actions has two
+instances and an Agent, one Fleet, three Interfaces, three public action IDs, at most four
+action identities and one purge. Scripts and local choices are finite; no retry, wire copy or
+clock is unbounded.
+
+### MC9a configurations and fault windows
+
+| Configuration | Parts | Enabled fault |
+| --- | --- | --- |
+| Base | both | none; the clock, the person's choices, a failed sign-out and a lapse are local choices, not faults |
+| LossQ | both | one loss, on Q to E or E to Q |
+| ReorderQ | both | one reorder, on Q to E, among a stage's bracketed requests |
+| CopyQ | both | one duplication, on Q to E or E to Q |
+| Crash | both | one crash of E and its recovery |
+| Wait | sign-in | one timer of E: DL18's end, which ends unknown the oldest `sign-in.v1` that has relayed its URL and whose polling has found no account yet |
+
+Every enabled harness fault has its harness witness in its own full run. All other budgets are
+zero: faults on the links between E and H are MC2's and MC6's questions of dispatch; a cut, its
+repair and a lost node are MC4's; a crash of H is not modelled, since no slice here names an
+implementation's restart; and no timer runs outside Wait, since DL18's end is the only timer
+these slices give. Nothing retries a lost request or answer of its own accord; a lossy branch can
+stop, and safety applies to its prefix. Base is the configuration “with every fault switched off”
+of the full review's step for experiment 012.
+
+### MC9a catalogue accounting (13 promises)
+
+Each target promise occurs once. "Modelled" means the stated bounded projection and property,
+not every clause of the promise.
+
+| Promise | Account | Property / reason |
+| --- | --- | --- |
+| PND-001 | modelled | P01, for the sign-in action; U06 carries the setup action |
+| PND-002 | modelled | S02 |
+| PND-003 | modelled | A03 |
+| PND-009 | modelled | A09 |
+| PND-012 | modelled | D12: answered state survives a purge. That a record names the action's ID and holds no prompt or return is a static decision, to be shown by vectors |
+| PND-005 | modelled | H05 (the hold) and P01 (raising) |
+| PND-010 | modelled | X10, with the sentence of order 048a-2's decision 2 |
+| PND-011 | modelled | K11 |
+| PND-013 | modelled | R13 |
+| PND-014 | modelled | V14, what is emitted. What stays in the engine's memory is not in the ledger and is not modelled; the case `requests-sign-in-return-kept-nowhere` names it |
+| PND-006 | modelled | U06 |
+| PND-007 | not modelled | A static decision, to be shown by vectors: a notice is raised within one retirement step, by order 047d, not yet written, and its answer by `answer.v1` follows A09 and A03 as the setup action's does |
+| PND-008 | modelled | S02: machine actions are raised at root alone. Their answers by `admit-machine.v1` and `refuse-machine.v1` are the enrollment model's |
+
+Totals: **12 modelled; 1 not modelled, a static decision to be shown by vectors**. Supporting,
+outside the count: PND-004 (interface layer: evidence and withheld codes), IFC-016, IFC-049 (the
+requestState), IMP-007 (an invocation in progress across a restart ends unknown), OPS-009,
+OPS-012, OPS-024, OPS-032 and OPS-034 (repeats), OPS-023 and OPS-029 (reasons and missing
+objects), REV-014, REC-004 (purge), ACC-001, ACC-006 and ACC-029 (opening a Conduit), ACC-033
+(the target that authorizes inspection), LIF-015, LIF-024 and LIF-035 (retirement), DL18 and
+DL19.
+
+### MC9a property text and preconditions
+
+Each property reads the slices quoted with it, from the commit named before them; `must not` is
+stated where the level gives the negation. Each applies to the stated finite script.
+
+**X10 (PND-010, must).** At `f72c2bc3`, PND-010's `then`: “The engine implements it only for the
+Interface acting on its own behalf, authorized through the Agent's owning Fleet or the Resource's
+owning Pool (ACC-033). A caller other than root signs in only an Agent of a Fleet in its scope;
+Resources remain root's.” At `f414e438`, order 048a-2's decision 2, the sentence PND-010's `then`
+will hold: “A sign-in.v1 for an instance whose earlier sign-in.v1, setup or retirement has been
+dispatched and has not ended is not dispatched and reports conflict, with a diagnostic naming
+PND-010 and, where the caller may see it (PND-002), the other invocation's pending action.” Its
+decision 6 reads “the other invocation's pending action” as the instance's unanswered sign-in
+action. Supporting, at `f72c2bc3`, OPS-032's `then`: “It is a repeat. Nothing is dispatched, and
+it reports conflict.” Predicate, over requests for `sign-in.v1` of A:
+
+- Access is checked first. A request from Y reports refused under OPS-023 and dispatches
+  nothing. A request from X reports refused and dispatches nothing after A is removed. For
+  existing A, only R or an Interface whose scope holds F may dispatch. Scope is computed from
+  the inspection Conduits the ledger shows open at the decision.
+- For a permitted, valid fresh request or a repeat eligible for a new attempt under its OPS
+  rule, a dispatch of `sign-in.v1`, `set-up.v1` or `retire.v1` of A with no end before the
+  decision requires conflict under PND-010 and no new dispatch. Its PND-010 diagnostic names
+  A's sign-in action exactly where one is unanswered at the decision and the caller is R or
+  its scope holds A, and it names no invocation ID. Conflict under PND-010 requires such an open
+  dispatch. After retirement ends with A still present and retired, LIF-015 precludes a sign-in
+  dispatch.
+- R13 checks retries that continue the same invocation through requestState. For a permitted
+  copy of an open invocation's original request, OPS-032 requires conflict, no dispatch and
+  the invocation ID, with a diagnostic naming OPS-032 and no action ID. For a permitted copy
+  of an ended invocation that is ineligible for a new attempt, apply OPS-009, OPS-012 or
+  OPS-034 as appropriate, even when a different invocation is open.
+
+A setup or retirement asked for while a `sign-in.v1` of A is in progress is outside X10
+(MC9a-002).
+
+**K11 (PND-011, must).** At `f72c2bc3`, PND-011's `then`: “Only the expected account, compared
+ignoring ASCII case, completes sign-in.” and “During polling after its URL elicitation, the
+expected account succeeds with output account and answers the action signed-in; the account that
+the check before sign-in-hook.v1 found counts as no account yet; any other account is undone by
+a sign-out-hook.v1 part, sign-in.v1 ends failed naming both accounts, and the action stays
+pending with the attempt as evidence.” Its `observable`: “If sign-out does not succeed, the
+engine reports SignInUndone=False with its cause”. Predicate: (a) every `sign-in.v1` of A that
+ends succeeded, and every answer signed-in, comes after an `account-hook.v1` result within that
+invocation whose account equals `E` ignoring ASCII case; and an uninterrupted `sign-in.v1` of A
+whose check or polling finds an account equal to `E` ignoring ASCII case ends succeeded with that
+account as output and answers signed-in the sign-in action of A unanswered at its end, where there
+is one; (b) within a `sign-in.v1`, a polling result naming an account that is neither `E` ignoring
+case nor the account that its check before `sign-in-hook.v1` found requires a `sign-out-hook.v1`
+part on ordinary completion, followed by a failed ending that names both accounts and answers no
+sign-in action of A. No sign-out part is dispatched for `e` or for the initial check's account; (c)
+if E incorporates a sign-out result that did not succeed while the invocation is open, it reports
+`SignInUndone=False` with its cause before the invocation ends; (d) recovery may interrupt before
+dispatch or while the sign-out result is outstanding. The interrupted invocation ends unknown and
+answers no sign-in action. No further hook is dispatched for that attempt, and an already dispatched
+part's late result cannot complete the invocation or change its outcome. A part H has already
+received may still change the account H preserves; a part still on the link to H when DL18 ends does
+not run. After recovery, a part already on the link may still run; no promise here forbids it, and,
+like MC9a-001's waiting program, it can change the account H preserves.
+
+**R13 (PND-013, must).** At `f72c2bc3`, PND-013's `then`: “IFC-049's requestState checks come
+first: a retry they reject carries no return anywhere.” and “second, no return has been passed on
+for this invocation, else already-returned;” Its `observable`: “After DL18 no return is passed on
+and no hook runs; IFC-049 rejects the expired requestState before these checks.” Supporting,
+IFC-049's `observable`: “rejects tampering, replay of a consumed state or another principal. Each
+retry consumes its state;” and PND-014's `observable`: “a restart loses the value.” Predicate:
+(a) a retry is accepted by requestState's checks only where the ledger shows its requestState
+issued for that invocation to that caller and not consumed by an earlier accepted retry, and the
+invocation has not ended; (b) a return is passed on only in an accepted retry, at most once for
+each invocation, and only in a `sign-in-hook.v1` retry of the part that started that invocation's
+login; a later return in a retry of it that requestState's checks accept is refused
+`already-returned`; (c) no return is passed on after its
+invocation's end, whether DL18's end or a restart ended it; (d) a retry that requestState's checks
+reject passes nothing on and reports no PND-013 reason.
+
+**V14 (PND-014, must not).** At `f72c2bc3`, PND-014's `then`: “The value appears in a result,
+structuredContent, response _meta, notification, diagnostic, log or record, is among the values
+REC-002 keeps, reaches an Agent”. Predicate: no emission of E carries v1, v2 or v3 other than the
+`_meta` of E's `sign-in-hook.v1` retry to H: no result or diagnostic to Q, no record, and nothing
+delivered to an Agent.
+
+**H05 (PND-005, must).** At `f72c2bc3`, PND-005's `then`: “The instance is then held until
+sign-in.v1 answers that it is signed in (PND-010, PND-011): an operation that starts model work
+on an Agent, and any request to a Resource other than the parts of sign-in.v1, of a setup and of
+its retirement, is not dispatched and reports unavailable with the ID of the instance's
+unanswered sign-in action in” the `pendingAction` key, “with a diagnostic naming PND-005 and that
+the instance awaits sign-in to its expected account, without naming that account (PND-004). The
+hold is the instance's, not the action's: an expiry lifts nothing.” Predicate: from the raising
+of a sign-in action of A to the next `sign-in.v1` of A that ends succeeded, no turn of A is
+dispatched; each turn decided in that span while the ledger shows A ready reports unavailable,
+naming in `pendingAction` a sign-in action of A unanswered at its decision, with a diagnostic naming
+PND-005 among its diagnostics and naming neither `E` nor `e`; an expiry in the span ends nothing of
+it (the reading of MC9a-003). A turn held under both PND-005 and PND-011's `SignInUndone=False`
+reports unavailable with both diagnostics, PND-005's (with `pendingAction`) and PND-011's. When the
+next sign-in succeeds after A's action expired, with no replacement raised and no unanswered action
+to answer, the next turn in stage 6, decided while A is ready and access permits it, is dispatched.
+The oracle uses the earlier raising, expiry, successful ending, readiness and access to test this
+release.
+
+**P01 (PND-001 and PND-005, must).** At `f72c2bc3`, PND-001's `observable`: “An instance has at
+most one unanswered sign-in and one unanswered setup action.” PND-005's `then`: “A sign-in action
+is raised for the instance, with expiry, unless one is unanswered (PND-001).” Its `observable`:
+“After expiry a new sign-in is raised on the next held request or setup, never by expiry alone.”
+At `f414e438`, order 048a-2's decision 1: “A contract reports a missing or lapsed login in one of
+two forms: an implementation that carries Conduit's keys ends the call failed or unknown, as it
+can tell, with an error diagnostic naming PND-005; a plain one reports it only by a URL request,
+under IFC-016.” Predicate: the ledger never holds two sign-in actions of A that are raised and
+neither answered nor expired; each is raised by setup's account check reporting no account or
+another, by an `account-hook.v1` part within `sign-in.v1` reporting another account, by a held
+request after an expiry, or by a keyed call of A ending failed or unknown with an error
+diagnostic naming PND-005, and never by an expiry alone; and the keyed lapse of stage 6 raises
+one where none is unanswered; and a sign-in's initial check finding another account, or a turn of A
+decided while the ledger shows A ready, held, after an expiry, raises one where none is unanswered,
+unless A's retirement has been dispatched; and no sign-in action of A is unanswered after A's
+retirement is dispatched.
+
+**S02 (PND-002 and PND-008, must).** At `f72c2bc3`, PND-002's `then`: “It is raised at root and
+every Interface whose scope contains a subject: the Pool or Fleet itself, the owner of an
+instance, or an owner of either end of a Conduit. Scope is computed from the Interface's open
+inspection Conduits (definitions.md). It is never raised at an Agent.” Its `observable`:
+“Agents' list and inspect results carry no pending actions.” and, of the `unanswered` key, “the
+number raised there, only when nonzero.” PND-008's `then`: “These actions are raised at root
+alone: system belongs to no scope (PND-001, PND-002).” Predicate: each `list.v1` result lists
+exactly the actions that are unanswered and unexpired at its decision and raised at its caller:
+at R, every one; at an Interface, each whose subject its scope holds, the scope computed from the
+inspection Conduits that the ledger shows open at that decision; at G, none; and m1 at R alone.
+Each result of an Interface's own request carries `unanswered`, equal to the number of actions
+unanswered and unexpired at, and raised at the caller when, the result is emitted, the ledger
+entry that carries the result (for a dispatched request, its end), counting each action that this
+ending or decision raises or computes, as order 047b counts over the state after the step, and
+carries none where that number is zero; no result to G carries it.
+
+**A09 (PND-009, must).** At `f72c2bc3`, PND-009's `then`: “It is dispatched only on the
+Interface's own behalf, through an open Conduit listing it to the target that authorizes
+inspection of the subject (ACC-033)” and “A Conduit whose consumer is not an Interface cannot be
+opened listing answer.v1; that open reports refused.” Its `observable`: “An action not raised at
+the caller reports refused before invalid, revealing nothing of whether it exists.” Predicate: an
+`answer.v1` is dispatched only for a caller at which its action is raised, by the raised-at test
+without the time test (047c), through an open Conduit to F listing `answer.v1`; one whose action
+is not raised at its caller reports refused, with no diagnostic naming the action, whatever else
+is wrong with it; and G's open of the candidate through its permitted `access` route and bound
+reports refused with a diagnostic naming PND-009 and opens nothing.
+
+**A03 (PND-003, must).** At `f72c2bc3`, PND-003's `then`: “The answer is decided under ordinary
+access using the Conduits the actor holds.” Its `observable`: “Once it passes the answer is
+expired, with no actor, and nothing is dispatched. An operation answering an answered, expired or
+void action reports conflict after the access decision.” Supporting, OPS-009: a copy of an ended
+`answer.v1` request is a repeat, answered with no dispatch. Predicate: each action identity
+has at most one answer in the ledger, `expired` counting as one. For a setup action that
+identity is its computed ending, and the public ID is checked separately against the setup
+invocation's ID. An `answer.v1` permitted by access and otherwise valid reports conflict if
+the ending its public ID resolves to at the decision already has an answer, except where a
+repeat is answered under OPS-009. That repeat records no action answer. An expiry dispatches
+nothing.
+
+**D12 (PND-012, must).** At `f72c2bc3`, PND-012's `observable`: “Pending state and answered state
+used to prevent repeated answers survive a purge of records under REC-004”. Predicate: a
+permitted, valid `answer.v1` decided after a purge reports conflict if the ending its public
+ID resolves to was answered or expired before the purge, except where OPS-009 answers the
+repeat. The ledger holds no new answer for an action identity already answered before the
+purge. A later unsuccessful setup ending under the same public ID is a distinct action.
+
+**U06 (PND-006, must).** At `f72c2bc3`, PND-006's `when`: “An instance is not retired and its
+latest set-up.v1 invocation ended failed or unknown, including one whose outcome a reconciliation
+has since set under LIF-028.” Its `then`: “One setup action is computed, with that invocation's
+ID, the instance as subject”. Its `observable`: “Dispatch of a further set-up.v1 answers retried”
+and “A dismissal or expiry for that invocation stays answered and is not recomputed as
+unanswered. A later unsuccessful setup makes a new action.” Predicate: each `list.v1` result at R
+lists a setup action of B exactly where B's latest `set-up.v1` in the ledger ended failed or
+unknown and the action computed by that ending has no answer. The public ID is that
+invocation's and the subject is B. The dispatch of a further `set-up.v1` answers `retried` the
+setup action unanswered at that dispatch. After the ending for u2 is dismissed or expires,
+no result lists that ending's action.
+
+### MC9a reach predicates
+
+Sign-in, numbered in source order:
+
+0 `setup-raises`: stage 1 raises s1. 1 `held`: a turn reports unavailable naming a sign-in action.
+2 `caller-refused`: Y's `sign-in.v1` reports refused and dispatches nothing.
+3 `conflict-sign-in`: a `sign-in.v1` reports conflict under PND-010 while another is in
+progress. 4 `conflict-retirement`: a
+`sign-in.v1` reports conflict under PND-010 while A's retirement is in progress.
+5 `retire-during-sign-in`: A's retirement is dispatched while a `sign-in.v1` of A is in progress
+(MC9a-002). 6 `return-passed`. 7 `already-returned`. 8 `wrong-account-undone`: `O` found by
+polling is undone, and the invocation ends failed. 9 `undo-failed`: `SignInUndone=False` is
+reported. 10 `first-account-kept`: W2's polling finds the account its first check found and
+dispatches no sign-out. 11 `signed-in`: a `sign-in.v1` succeeds on `e` and answers an action
+signed-in. 12 `expiry-then-signed-in`: a sign-in action of held A expires and no replacement is
+raised before the next successful sign-in. That sign-in has no unanswered action to answer
+and answers none signed-in. The otherwise permitted stage 6 turn, with A ready, is dispatched.
+13 `signed-in-then-expiry`: an action answered signed-in reaches its expiry, which changes
+nothing. 14 `new-after-expiry`: a held request after an expiry raises s3.
+15 `lapse-raises`: the keyed lapse raises s2. 16 `void`: the retirement answers an unanswered
+sign-in action void. 17 `restart-ends-sign-in`: a `sign-in.v1` in progress at a crash ends
+unknown at recovery. 18 `restart-overlap`: after a restart ended a `sign-in.v1`, another is
+dispatched while H's login program from the first still waits (MC9a-001). 19 `repeat-conflict`:
+a copy of a `sign-in.v1` request in progress reports conflict under OPS-032.
+20 `replay-rejected`: a copied retry is rejected by requestState's checks for a consumed state
+while its invocation is still open. 21 `wait-ended`: DL18's end ends a `sign-in.v1` unknown.
+22 `quiescent`: the harness observes script completion and empty queues. A `sign-in.v1` whose
+URL no one completes may remain in progress.
+23 `removed-refused`: after successful retirement removes A, X's sign-in reports refused and
+dispatches nothing. 24 `wrong-account-preserved`: W2 ends unknown, and the final sign-in's
+initial check finds `O` and proceeds to URL elicitation, and raises a sign-in action where none
+is unanswered.
+25 `shutdown-unknown`: retirement ends unknown and X's next sign-in decision dispatches
+nothing while A remains retired. 26 `undo-interrupted`: after a wrong polling result dispatches
+sign-out, recovery ends the sign-in unknown with the sign-out result still outstanding.
+
+Actions, numbered in source order:
+
+0 `setup-action`: R's `list.v1` lists u1. 1 `agent-sees-none`: G's `list.v1` lists nothing and
+carries no `unanswered`. 2 `agent-open-refused`: G's open through the authorized `access` route
+reports refused with a PND-009 diagnostic and opens nothing. 3 `scoped-listed`: X's `list.v1`
+lists u1, with `unanswered` 1. 4 `unscoped-empty`: Y's `list.v1` lists nothing and carries no
+`unanswered`.
+5 `machine-at-root`: R's `list.v1` lists m1, and X's does not. 6 `unscoped-refused`: Y's
+answer reports refused. 7 `invalid-answer`: X's `acknowledged` reports invalid.
+8 `scope-closed`: after the close, X's `list.v1` lists nothing, and its answer reports refused.
+9 `retried`: the further setup answers u1 `retried`. 10 `answer-then-expiry`: u2 is dismissed and
+then reaches its expiry, which changes nothing. 11 `expiry-then-answer`: the ending named by
+u2 expires before the stage 7 answer, and that first answer attempt for the ending reports
+conflict with no intervening dismissal. 12 `purge-then-conflict`: R's answer after the purge
+reports conflict. 13 `repeat-answered`: a copy of an `answer.v1` request that was dispatched and
+succeeded is answered from its retained outcome under OPS-009, with no dispatch and no new answer.
+14 `quiescent`: the harness observes script completion and empty queues.
+
+### MC9a mutants
+
+Each changes one rule of the correct model:
+
+- NoConflict: the preflight lets a new `sign-in.v1` attempt pass while another, a setup or a
+  retirement of A is in progress.
+- Unavailable: that `sign-in.v1` reports unavailable naming PND-010, in place of conflict.
+- CopyAsNew: a copy of a `sign-in.v1` request in progress is dispatched as a new invocation.
+- ConflictForever: recovery ends a `sign-in.v1` in progress unknown, as IMP-007 says, but keeps it
+  as in progress for PND-010's test.
+- WrongAccountKept: an `O` found by polling ends the `sign-in.v1` succeeded and answers the action
+  signed-in, with no sign-out.
+- UndoInitial: polling undoes the account that the check before `sign-in-hook.v1` found.
+- ReturnTwice: PND-013's second check is skipped.
+- ReplayState: a retry does not consume its requestState.
+- SavedReturn: a return's value is saved, and recovery passes it on in a `sign-in-hook.v1` retry.
+- LeakDiagnostic: a refused return's diagnostic holds its value.
+- ExpiryLifts: the expiry of A's sign-in action lifts A's hold.
+- RetainHold: after a successful sign-in with an expired action and no unanswered replacement,
+  A stays held.
+- VolatileHold: the hold is volatile, so recovery forgets it.
+- RaiseTwice: a held request raises a new sign-in action while one is unanswered.
+- WrongScope: `list.v1` computes an Interface's scope from the Conduits open when the action was
+  raised.
+- AgentSees: an Agent's `list.v1` lists the actions that its scope would hold.
+- VolatileScope: `list.v1`'s scope index is volatile and empty after recovery, for every
+  Interface other than R.
+- SkipRaisedAt: `answer.v1` skips the raised-at test.
+- AnswerTwice: a copy of an `answer.v1` request that was dispatched and succeeded (OPS-009's
+  case) is dispatched again and records its answer with no answered test.
+- AnswerExpired: `answer.v1` skips the expiry test.
+- VolatileAnswers: every stored answer other than an expiry is volatile.
+- ForgetOnPurge: a purge erases every stored answer other than an expiry.
+- RecomputeDismissed: `list.v1` lists a dismissed setup action as unanswered while its invocation
+  is still B's latest failed setup.
+
+### MC9a expected verdicts, fixed before execution
+
+H means holds; F means refuted. The safety order for sign-in is X10 K11 R13 V14 H05 P01, and for
+actions S02 A09 A03 D12 U06; only a part's own properties are registered for it. A Correct row
+expects exactly its configuration's reach below, and a witness absent there is expected not
+reached; every enabled harness witness is expected reached.
+
+| Part / configuration | Expected reach |
+| --- | --- |
+| Sign-in / Base | 0 to 16, 22 and 23 |
+| Sign-in / LossQ | as Base |
+| Sign-in / ReorderQ | as Base |
+| Sign-in / CopyQ | as Base, with 19 and 20 |
+| Sign-in / Crash | as Base, with 17, 18, 24, 25 and 26 |
+| Sign-in / Wait | as Base, with 21 and 24 |
+| Actions / Base | 0 to 12, 14 |
+| Actions / LossQ | as Base |
+| Actions / ReorderQ | as Base |
+| Actions / CopyQ | as Base, with 13 |
+| Actions / Crash | as Base |
+
+Each mutant runs in its configuration and, where that is not Base, in Base too: Base is the
+configuration with every fault switched off. A mutant's reach is its configuration's row with the
+changes listed.
+
+Correct Crash and Wait both keep K11 at H. Under Crash, an interruption after a wrong polling result
+can end sign-in unknown with sign-out outstanding (witness 26); under Crash or Wait, an interrupted
+W2 can leave the wrong account for the final sign-in's initial check (witness 24).
+
+| Variant / configuration | Expected safety | Expected in Base | Reach changes |
+| --- | --- | --- | --- |
+| Correct / every sign-in configuration | HHHHHH | HHHHHH | none |
+| Correct / every actions configuration | HHHHH | HHHHH | none |
+| NoConflict / Base | FHHHHH | the same run | remove 3 4 |
+| Unavailable / Base | FHHHHH | the same run | remove 3 4 |
+| CopyAsNew / CopyQ | FHHHHH | HHHHHH | remove 19 |
+| ConflictForever / Crash | FHHHHH | HHHHHH | remove 18 24 |
+| WrongAccountKept / Base | HFHHHH | the same run | remove 8 9 10 |
+| UndoInitial / Base | HFHHHH | the same run | remove 10 |
+| ReturnTwice / Base | HHFHHH | the same run | remove 7 |
+| ReplayState / CopyQ | HHFHHH | HHHHHH | remove 20 |
+| SavedReturn / Crash | HHFHHH | HHHHHH | none |
+| LeakDiagnostic / Base | HHHFHH | the same run | none |
+| ExpiryLifts / Base | HHHHFH | the same run | remove 14 |
+| RetainHold / Base | HHHHFH | the same run | remove 12 |
+| VolatileHold / Crash | HHHHFH | HHHHHH | none |
+| RaiseTwice / Base | HHHHHF | the same run | none |
+| WrongScope / Base | FHHHH | the same run | remove 8 |
+| AgentSees / Base | FHHHH | the same run | remove 1 |
+| VolatileScope / Crash | FHHHH | HHHHH | none |
+| SkipRaisedAt / Base | HFHHH | the same run | remove 6 8 9 |
+| AnswerTwice / CopyQ | HHFHH | HHHHH | remove 13 |
+| AnswerExpired / Base | HHFHH | the same run | remove 11 |
+| VolatileAnswers / Crash | FHFFF | HHHHH | none |
+| ForgetOnPurge / Base | FHFFH | the same run | none |
+| RecomputeDismissed / Base | FHHHF | the same run | none |
+
+Six refutations beyond a mutant's own property are registered here. VolatileAnswers and
+ForgetOnPurge each refute D12 and A03 when the post-purge answer is dispatched again.
+VolatileAnswers also refutes S02 and U06 when a crash before stage 8's `list.v1` loses u2's
+dismissal and the list includes u2. ForgetOnPurge refutes S02 on the purge reply itself, which
+counts m1 and the re-exposed u2, while the ledger still counts only m1. RecomputeDismissed
+refutes S02 and U06 on the same `list.v1` result. Any other difference is recorded beside
+these tables and explained, as MC6's and MC7a's
+were. Every full run is tested against these tables, and one more single-thread breadth-first
+search for each mutant prints its first target refutation, replayed after erasing node data.
+
+### MC9a: what holds, and what is one step
+
+A clause that its mutant refutes in Base needs no fault: it is reported "one step", to be shown by
+a vector, and not as holds. A clause that its mutant refutes only with a fault on is reported as
+holds where every Correct row holds. So the registered expectation is:
+
+| Property | One step, to a vector | Holds, with a fault |
+| --- | --- | --- |
+| X10 | conflict during sign-in and conflict during retirement (NoConflict, Unavailable): the two future vectors below | a copy of a request in progress (CopyAsNew); a restart (ConflictForever) |
+| K11 | WrongAccountKept, UndoInitial | none |
+| R13 | ReturnTwice | a replayed requestState (ReplayState); a restart (SavedReturn) |
+| V14 | LeakDiagnostic | none |
+| H05 | ExpiryLifts, RetainHold | a restart (VolatileHold) |
+| P01 | RaiseTwice | none |
+| S02 | WrongScope, AgentSees; ForgetOnPurge also refutes it on the purge reply | a restart (VolatileScope); VolatileAnswers refutes it only beside A03 |
+| A09 | SkipRaisedAt | none |
+| A03 | AnswerExpired | a copy (AnswerTwice); a restart (VolatileAnswers, which refutes D12, S02 and U06 beside it) |
+| D12 | ForgetOnPurge | none; VolatileAnswers refutes it only beside A03 |
+| U06 | RecomputeDismissed | none; VolatileAnswers refutes it only beside A03 |
+
+Order 048a-2's portable `requests-sign-in-lapse-and-conflict` vector covers sign-in during
+setup. Its unit helper tests cover live sign-in and retirement states.
+The two future portable vectors are `requests-sign-in-during-sign-in-conflict` for a second
+sign-in of one instance and `requests-sign-in-during-retirement-conflict` for sign-in during
+retirement of the instance. When MC9a's results merge under
+[full review order 24](../../docs/proposals/full-review/orders.md), the account
+names the vector or its writing order for each "one step" clause.
+
+### MC9a findings registered before execution
+
+**MC9a-001 — possible gap, PND-010 as order 048a-2 writes it, with IMP-007.** A `sign-in.v1` in
+progress when the engine restarts ends unknown, so PND-010's conflict no longer refuses a new
+`sign-in.v1` of that instance, while the implementation's login program from the ended invocation
+may still wait: two logins can then run in one home, the case FR-433 names, after a restart. No
+promise stops the first program. `restart-overlap` searches for it in Crash. No property is
+invented for it: PND-011's account check alone decides completion, and K11 checks it there.
+
+**MC9a-002 — one-sided exclusion, PND-010 as order 048a-2 writes it, and REV-014.** The new
+sentence refuses a `sign-in.v1` while a setup or retirement of the instance is in progress, but
+REV-014's `when` names a request to set up, retire or change an instance while another setup,
+retirement or change of it is in progress, and a `sign-in.v1` is none of these. So a retirement
+or a setup asked for while a `sign-in.v1` is in progress is dispatched, and the setup's account
+check and sign-out (PND-011) may run while that `sign-in.v1` polls. The model applies the text as
+written: stage 7 dispatches the retirement, and `retire-during-sign-in` searches for it. In
+stage 7, X's sign-in can be dispatched first and its initial check can find `O` after the
+retirement is dispatched. The model reads that an `O` found by a sign-in dispatched before a
+retirement that has since been dispatched raises no action, since a retired subject's sign-in
+answers void (PND-003). The finding is reported, not resolved by an added refusal.
+
+**MC9a-003 — ambiguity, PND-005 and PND-010.** PND-005 holds the instance until `sign-in.v1`
+answers that it is signed in, and says that an expiry lifts nothing; PND-010's success answers
+any sign-in action signed-in. Where the action expired before a `sign-in.v1` succeeds, no action
+is left for that success to answer, and the words do not say whether the success lifts the hold.
+The model reads the hold as lifted by the next `sign-in.v1` of the instance that ends succeeded,
+whatever its action's state, since the hold is the instance's, not the action's.
+`expiry-then-signed-in` requires success with no replacement raised and no answer signed-in,
+then observes the next permitted turn dispatch. RetainHold tests this reading by keeping the
+hold after that success. The reading is reported, not settled.
+
+### MC9a limits
+
+These are bounded projections of the quoted slices: they say nothing of the engine, a client, a
+browser, a real login, cryptography or unbounded executions. One fault at a time: a wire fault on
+Q's links alone, one crash of E, or DL18's end; faults between E and H, cuts, lost nodes and a crash
+of H are outside. No fairness, eventual completion or eventual delivery is asserted, and a
+`sign-in.v1` whose URL no one completes may stay in progress. X10's setup clause, a `sign-in.v1`
+while a setup is in progress, has no witness in this script and is not credited. A09's refusal ahead
+of invalid and conflict has no witness in this script. PND-011's hold under `SignInUndone=False`
+coincides in this script with PND-005's hold, which the still unanswered action keeps, so the script
+cannot tell them apart and K11 credits only the report. Evidence items and the codes PND-004
+withholds, the URL and IFC-049's checks and message, the requestState of H's `sign-in-hook.v1`
+call, `signInLogin`, fixed ports and the device
+login, a Resource's sign-in, peer delivery, notices (PND-007), enrollment's answers, reconciliation,
+`inspect.v1`'s `status.pending`, and DL18's and DL19's durations are outside it. An expiry is a
+local choice of E's clock, not elapsed time.

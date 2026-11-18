@@ -984,6 +984,12 @@ fn invoke_inner(
             json!(crate::explain::tier(&t.state, &rejection_route(&route), c)?);
     }
     record(t, a, c, "access-decision", access_data)?;
+    let access_record_id = t
+        .records
+        .last()
+        .and_then(|record| record["id"].as_str())
+        .ok_or("access record has no ID")?
+        .to_owned();
     let mut access_rules = v.rules.clone();
     access_rules.extend(["REC-001", "REC-002", "SEC-004"]);
     t.decisions.push(decision(
@@ -1194,6 +1200,66 @@ fn invoke_inner(
             vec![],
         ));
         return end(t, a, c, &route, Some(outcome), None, Some(&old["id"]));
+    }
+    if sign_in::request_is_held(&t.state, &target, &contract) {
+        let mut facts = json!({"instance":target["id"]});
+        if let sign_in::ExpectedAccount::Set { pointer, account } =
+            sign_in::expected_account(&target, c)?
+        {
+            if let Some(action) = pending::raise_sign_in(
+                &mut t.state,
+                &target,
+                account,
+                &pointer,
+                pending::SignInRequest::Held {
+                    access_record_id: &access_record_id,
+                    operation: op,
+                },
+                a,
+            )? {
+                t.decisions.push(decision(
+                    "raise-sign-in-action",
+                    &["PND-001", "PND-005", "PND-012"],
+                    &["DL19"],
+                    json!({"action":action["id"], "instance":target["id"]}),
+                    vec![],
+                ));
+            }
+            if let Some(action) = pending::unanswered_sign_in(&t.state, &target, &a.evidence.time) {
+                facts["action"] = action["id"].clone();
+                route["pendingAction"] = json!([action["id"]]);
+            }
+        }
+        t.decisions.push(decision(
+            "hold-for-sign-in",
+            &["PND-005", "IFC-025", "OPS-023"],
+            &[],
+            facts,
+            vec![],
+        ));
+        let tool = route["tool"].as_str().ok_or("held request has no tool")?;
+        let diagnostics = json!([{
+            "ruleId": "PND-005",
+            "level": "error",
+            "message": {"text": format!(
+                "{tool} reports unavailable under PND-005: the instance awaits sign-in to its expected account, so the request was not dispatched; send it again once sign-in.v1 has signed the instance in."
+            )}
+        }]);
+        reject_diagnostics(
+            t,
+            a,
+            c,
+            &route,
+            "unavailable",
+            "PND-005",
+            None,
+            None,
+            Some(diagnostics),
+        )?;
+        if let Some(ids) = route.get("pendingAction") {
+            t.reply["_meta"][mark(c, "pendingAction")] = ids.clone();
+        }
+        return Ok(());
     }
     // C11's temporary stubs: authority and arguments have already been checked.
     // OPS-005: unavailable ends before dispatch; its message names the build order.
@@ -1988,8 +2054,10 @@ fn finish_login_lapse(
             &instance,
             account,
             &pointer,
-            v,
-            trigger.label(),
+            pending::SignInRequest::Invocation {
+                invocation: v,
+                trigger: trigger.label(),
+            },
             a,
         )?
     {

@@ -689,6 +689,15 @@
       ]
     },
     {
+      "id": "requests-sign-in-hold",
+      "case": "conventions/requests/sign-in-hold/case.yaml",
+      "promises": [
+        "PND-005",
+        "PND-001"
+      ],
+      "safety_rows": []
+    },
+    {
       "id": "requests-sign-in-lapse-and-conflict",
       "case": "conventions/requests/sign-in-lapse-and-conflict/case.yaml",
       "promises": [

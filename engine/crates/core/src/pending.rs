@@ -282,37 +282,78 @@ pub(crate) fn unanswered_sign_in<'a>(
         })
 }
 
+pub(crate) enum SignInRequest<'a> {
+    Invocation {
+        invocation: &'a Value,
+        trigger: &'a str,
+    },
+    Held {
+        access_record_id: &'a str,
+        operation: &'a str,
+    },
+}
+
 pub(crate) fn raise_sign_in(
     state: &mut State,
     instance: &Value,
     account: &str,
     pointer: &str,
-    invocation: &Value,
-    trigger: &str,
+    request: SignInRequest<'_>,
     a: &mut Allocation<'_>,
 ) -> Result<Option<Value>> {
     let time = &a.evidence.time;
     if instance["state"] == "retired" || unanswered_sign_in(state, instance, time).is_some() {
         return Ok(None);
     }
+    let instance_id = instance["id"]
+        .as_str()
+        .ok_or("sign-in instance has no ID")?;
     let expiry = week_after(time).ok_or("cannot compute sign-in action expiry")?;
     let id = a.next(state)?;
+    let (raised_by, request_id, operation, trigger, request_fact, trigger_fact) = match request {
+        SignInRequest::Invocation {
+            invocation,
+            trigger,
+        } => (
+            invocation["id"].clone(),
+            invocation["id"].clone(),
+            invocation["operation"].clone(),
+            trigger,
+            "the request whose call reported a missing or lapsed login",
+            "how the implementation reported it",
+        ),
+        SignInRequest::Held {
+            access_record_id,
+            operation,
+        } => (
+            Value::Null,
+            json!(access_record_id),
+            json!(operation),
+            "held-request",
+            "the request that found the instance held",
+            "how the instance was found awaiting sign-in",
+        ),
+    };
     let action = json!({
         "id": id,
         "kind": "sign-in",
         "subject": [{"kind":instance["kind"], "name":instance["name"], "id":instance["id"]}],
         "evidence": [
             fact(json!(account), &format!("config{pointer}"), "the account this instance is configured for"),
-            fact(invocation["id"].clone(), "records", "the request whose call reported a missing or lapsed login"),
-            fact(invocation["operation"].clone(), "records", "the operation of that request"),
-            fact(json!(trigger), "records", "how the implementation reported it")
+            fact(request_id, "records", request_fact),
+            fact(operation, "records", "the operation of that request"),
+            fact(json!(trigger), "records", trigger_fact)
         ],
         "expiry": expiry
     });
     state.pending_actions.insert(
         id,
-        json!({"action":action, "dispatched":null, "raisedBy":invocation["id"]}),
+        json!({"action":action, "dispatched":null, "raisedBy":raised_by}),
     );
+    state
+        .sign_in_holds
+        .entry(instance_id.to_owned())
+        .or_insert_with(|| json!({"since":time}));
     Ok(Some(action))
 }
 
@@ -982,8 +1023,10 @@ mod tests {
                 &agent,
                 "primary-account",
                 "/account",
-                &json!({"id":invocation,"operation":"example.org/agent#ping.v1"}),
-                trigger,
+                SignInRequest::Invocation {
+                    invocation: &json!({"id":invocation,"operation":"example.org/agent#ping.v1"}),
+                    trigger,
+                },
                 &mut allocation,
             )
             .unwrap();
@@ -1054,6 +1097,139 @@ mod tests {
         before_expiry.records.clear();
         assert_eq!(lookup(&state, expiry)["answer"], expired_answer);
         assert_eq!(lookup(&before_expiry, expiry)["answer"], void_answer);
+    }
+
+    #[test]
+    fn hold_outlasts_expiry() {
+        let (_, context) = crate::explain::tests::fixture();
+        let time = "2026-11-12T12:00:00Z";
+        let expiry = "2026-11-19T12:00:00Z";
+        let agent = json!({"id":"s1","name":"s1","kind":"Agent","owner":"f",
+            "config":{"account":"primary-account"}});
+        let mut state = State {
+            objects: vec![
+                json!({"id":"r","kind":"Interface","from":context.qualified("root")}),
+                json!({"id":"v","kind":"Interface"}),
+                agent.clone(),
+                json!({"id":"u","kind":"Interface"}),
+                json!({"id":"f","name":"f","kind":"Fleet"}),
+                json!({"id":"p","name":"p","kind":"Pool"}),
+                json!({"id":"x","name":"x","kind":"Resource","owner":"p"}),
+                json!({"id":"a1","name":"a1","kind":"Agent","owner":"f"}),
+                json!({"id":"a2","kind":"Agent","owner":"f"}),
+                json!({"id":"management","kind":"Resource","from":context.qualified("management")}),
+                json!({"id":"scope","kind":"Conduit","consumer":"v","target":"f",
+                    "open":true,"state":"ready","operations":[context.qualified("inspect.v1")]}),
+            ],
+            records: vec![json!({"type":"invocation-ended","data":{"invocation":"c1"}})],
+            ..State::default()
+        };
+        let raise = |state: &mut State, at, id, request| {
+            let evidence = serde_json::from_value(json!({"time":at,"ids":[id]})).unwrap();
+            let mut allocation = Allocation {
+                evidence: &evidence,
+                cursor: 0,
+            };
+            let action = raise_sign_in(
+                state,
+                &agent,
+                "primary-account",
+                "/account",
+                request,
+                &mut allocation,
+            )
+            .unwrap();
+            assert_eq!(allocation.cursor, usize::from(action.is_some()));
+            action
+        };
+        let operation = "example.org/sign-in-hold#work.v1";
+        let invocation = json!({"id":"c1","operation":operation});
+        let first = raise(
+            &mut state,
+            time,
+            "first-action",
+            SignInRequest::Invocation {
+                invocation: &invocation,
+                trigger: "lapsed-login",
+            },
+        )
+        .unwrap();
+        let hold = json!({"since":time});
+        assert_eq!(state.sign_in_holds["s1"], hold);
+        let expired = action_named(&state, "first-action", Some(expiry), &context).unwrap();
+        assert_eq!(expired["id"], first["id"]);
+        assert_eq!(expired["answer"], json!({"value":"expired","at":expiry}));
+        assert_eq!(unanswered_sign_in(&state, &agent, expiry), None);
+        assert_eq!(state.sign_in_holds["s1"], hold);
+
+        let replacement = raise(
+            &mut state,
+            expiry,
+            "replacement-action",
+            SignInRequest::Held {
+                access_record_id: "h1",
+                operation,
+            },
+        )
+        .unwrap();
+        assert_ne!(replacement["id"], first["id"]);
+        assert_eq!(replacement["expiry"], "2026-11-26T12:00:00Z");
+        assert_eq!(
+            replacement["evidence"],
+            json!([
+                {"kind":"fact","value":"primary-account","where":"config/account",
+                    "proves":"the account this instance is configured for"},
+                {"kind":"fact","value":"h1","where":"records",
+                    "proves":"the request that found the instance held"},
+                {"kind":"fact","value":operation,"where":"records",
+                    "proves":"the operation of that request"},
+                {"kind":"fact","value":"held-request","where":"records",
+                    "proves":"how the instance was found awaiting sign-in"}
+            ])
+        );
+        assert_eq!(
+            state.pending_actions["replacement-action"],
+            json!({"action":replacement,"dispatched":null,"raisedBy":null})
+        );
+        assert_eq!(state.sign_in_holds["s1"], hold);
+        let actions = state.pending_actions.clone();
+        assert_eq!(actions.len(), 2);
+        assert_eq!(
+            raise(
+                &mut state,
+                expiry,
+                "unused-action",
+                SignInRequest::Held {
+                    access_record_id: "h2",
+                    operation,
+                },
+            ),
+            None
+        );
+        assert_eq!(state.pending_actions, actions);
+        assert_eq!(
+            unanswered_sign_in(&state, &agent, expiry),
+            Some(&replacement)
+        );
+
+        state.records.clear();
+        assert_eq!(state.sign_in_holds["s1"], hold);
+        assert_eq!(state.pending_actions, actions);
+        let mut retired = state.clone();
+        let at = "2026-11-19T13:00:00Z";
+        let voided = void_sign_in(
+            &mut retired,
+            &agent,
+            at,
+            &json!({"id":"retirement","caller":"r"}),
+        )
+        .unwrap();
+        assert_eq!(voided["id"], replacement["id"]);
+        assert_eq!(
+            retired.pending_actions["replacement-action"]["action"]["answer"],
+            json!({"value":"void","actor":"r","invocation":"retirement","at":at})
+        );
+        assert_eq!(retired.sign_in_holds["s1"], hold);
     }
 
     #[test]

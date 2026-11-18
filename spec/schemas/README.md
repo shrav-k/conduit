@@ -201,7 +201,7 @@ documents in front of it show, in its step 6; an example under
 | That a plain implementation implements no operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` | PKG-020 | The profile could state it with `if` and `contains`; `implementation-item.v1` leaves the core package's operations to this tool's rule | Yes, for the manifests of the valid examples and those in `examples/invalid-by-rule` |
 | That an item reached by `remote` implements no operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` | PKG-030 | As for PKG-020 | Yes, for the manifests of the valid examples and those in `examples/invalid-by-rule` |
 | That a Type that offers `secret-provider.v1` lists no control, and that one that offers `package-source.v1` requires `schemes` and lists no control whose `changes` holds `/schemes`, a pointer inside it or the empty pointer | SEC-005, PRV-016 | The profile could state the first two with `if` and `contains`, and `type-spec.v1` does not yet; the third needs the contracts of the controls | For a control of a package-source provider's Type whose `changes` reaches `/schemes`, where the tool has the control's contract, compared as reference tokens |
-| That the place each pointer of `signIn` and `toolsDirectory` names and every member on its path are required by the Type's `schema`, and the place is confined to string or null; and that no control of a Type stating `toolsDirectory` has `changes` reaching its place | CTR-013, CTR-014 | The first two relate values in one document, the pointer and the Type's own `schema`; the third needs the contracts of the controls | — |
+| That the place each pointer of `signIn` and `toolsDirectory` names and every member on its path are required by the Type's `schema`, and the place is confined to string or null; and that no control of a Type stating `signIn` or `toolsDirectory` has `changes` reaching the place its pointer names | CTR-013, CTR-014 | The first two relate values in one document, the pointer and the Type's own `schema`; the third needs the contracts of the controls | — |
 | That no Conduit lists an operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, and that one that lists `get-secret.v1` has no Interface as its consumer | PRV-004, SEC-009 | Which capability is a provider capability is in the core package, and the consumer is in another document | PRV-004, for a Conduit template |
 | That a runtime provider, the machine provider and a package-source provider are given no placement but `local` and no `runtime`, and that `runtime` names a runtime provider that is not retired | PRV-002, PRV-006 | It needs the template's type and the object that `runtime` resolves to | — |
 | Placement, ownership and state | POOL-001 (the owner is a Pool instance), PLC-001, PLC-002, PLC-007, PLC-018, PRV-015, CON-006, CON-025 | They need the objects that exist, and the labels that the machine provider reported | — |
@@ -297,9 +297,10 @@ login states its clientId too, though its relayed verification URL carries none 
 section 3.1).
 
 CTR-013 adds cross-document checks: the required configuration path confined to string or
-null, the three required hook selections, distinct login names, no URL matching two logins
-under IFC-049, and client IDs shared across addresses, including held submissions. The account
-must be attested by the service; configuration or a person's account claim does not suffice.
+null, no control whose `changes` reaches the account place, distinct login names, no URL
+matching two logins under IFC-049, and client IDs shared across addresses, including held
+submissions. The schema type-spec.v1 requires the three hook selections. The account must
+be attested by the service; configuration or a person's account claim does not suffice.
 
 The optional `toolsDirectory` member holds exactly a required `directory` pointer and is
 allowed only for family Agent (CTR-014); the schema checks both rules. The engine checks the

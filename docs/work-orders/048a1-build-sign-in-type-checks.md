@@ -574,3 +574,95 @@ point 10, has each merge wait on, `tools/gate.py`; CI runs on the pull request a
 `docs` job reads `048a1-declared.yaml` through `--declared-changed`, and the merge does not wait
 for it. A fresh Codex verifier and a fresh read-only Opus reader read the result before it merges
 ([ruling 79](../proposals/ruling-79/README.md), point 2).
+
+## Record
+
+Run on 2026-11-18, from about 04:08 to 05:00 UTC, on the Mac from `main` `408d5f17` (order 048a-1's
+amendment), in two rounds: the worker (1610 s) and a fresh Codex verifier (372 s), then the worker
+again (820 s) and a second fresh Codex verifier (310 s). The change is the files of Scope. CTR-013's
+`then` gains F97's sentence. `packages.rs` checks, when a Type that states `signIn` is resolved,
+that its account path is required and confined to string or null and that no control's `changes`
+reaches it, resolving each control once for CTR-006, CTR-014 and CTR-013; that login names are
+distinct, citing the first; and that no two logins could pass IFC-049's checks for one URL, in pair
+order; with decision 4's unit test. The case `contracts-sign-in-resolution` starts empty, rejects
+five projects with decision 5's five messages and registers the signed agent. The `.v2` schemas of
+the 0.2.0 fixture require `apiKey` beside `account`, whose archive's digest becomes
+`sha256:12eca5b0c8e74fa0054af053691fe9560d037c161727f71fbc5cf6dcd5699fb7`; the schema documents,
+IN_FORCE.md's F97 bullet and `engine/STANDING.md` (CTR-013 at 3 cases, in `core`) follow. The
+worker's own choices: a parsed view of the logins that keeps their positions; ports compared as
+numbers, so 8401.0 matches 8401; the citation of IFC-049 built with `concat!`, so that the
+standing changes only for CTR-013; and the negative control run against `408d5f17`, since the
+worker's HEAD held the change, with its failure placed at step 2 by one-step and two-step scratch
+copies, since the runner prints no step number.
+
+The first verifier found three shoulds: a redirect `path` such as `/callback?x` passes the schema's
+`^/` and can be reported as overlapping, though IFC-049 compares the path without query; the
+documents of decision 8 named the three hooks among what the schema does not check, though its
+`dependentSchemas` requires them; and the header presented client IDs shared across addresses as
+checked. Round 2 rewrote both texts of decision 8, crediting the schema with the hooks and calling
+the client-ID checks pending in the engine, and left the redirect path open, since it needs a
+coordinator's decision and a change to the schema's body, outside Scope. The second verifier found
+two musts outside Scope: the redirect path above, and a page URL with user information, which the
+page pattern admits.
+
+A fresh read-only Opus reader then verified the order (ruling 79, point 2) on the branch based on
+`408d5f17`. It ran every check of "Done when", with scratch copies for the commands that write:
+fmt, clippy, the five unit tests, `Nothing to move.`, 41 archives, the runner's 6, 1, 1 and 3 cases,
+the vectors (2 passed) and the full suite (28 `ok` lines, no failure), all with 4 threads; the
+negative control against `408d5f17` (`FAIL 0 cases passed; 1 failed`, uncited `CTR-013`, reply
+accepted; `1 cases passed` after the restore); the Python checks (Errors: 0 each; 129 tests, OK);
+the vector delta (5 changes, 0 flips, 0 undeclared, exit 0); the spike (9 passed); the `.v2` probe,
+the twelve greps that print 1 and the three that print 0, the `1 1` numstat and the 151 count; and
+it compared the case and the IN_FORCE.md bullet with decision 5 and the order, and found both
+commits' author and committer to be the work-order identity. It found no must and three shoulds:
+
+- S1: round 2 did not apply decision 8's texts as written, and its `pending in the engine`
+  sentences in both files reverse decision 9, which keeps client IDs shared across addresses among
+  the cross-document checks until the follow-up order lands; only the hooks correction was sound.
+- S2: the `concat!` that hides IFC-049 from `promise_standing.py` had no comment saying why.
+- S3: the second verifier's two musts, the redirect path with `?` or `#` and the page URL with
+  user information, need a home outside this order.
+
+The fixer rebased the branch onto `origin/main` at `9472f5d4` (orders 050d and 047b, after order
+046c) with the work-order identity, without conflict; `engine/STANDING.md`, which order 046c also
+wrote, keeps both changes and agrees with the tool. It then applied each finding:
+
+- S1: the reader's second option. In `spec/schemas/contracts.yaml` the header's last two lines of
+  that sentence read `... and CTR-013's other rules: distinct login names,` and `# no URL matching
+  two logins, and client IDs shared across addresses.`, decision 8's text without the hooks, and
+  round 2's added paragraph is gone. In `spec/schemas/README.md` the paragraph is the reader's five
+  lines, which begin `CTR-013 adds cross-document checks:` and say that the Type schema requires
+  the three hook selections.
+- S2: the comment explains the split, in the reader's words, except that it says "the interface
+  rule" where the reader wrote the rule's ID: `promise_standing.py` counts an ID in a comment, so
+  the reader's text moved IFC-049's row to `core` and the source total to 321
+  (`promise_standing.py --check` gave Errors: 1). The comment now reads
+  `// Split so tools/promise_standing.py does not count the interface rule as built:` and
+  `// the engine only cites it in this text; CTR-013 makes the decision.`
+- S3: recorded here as open items for the CTR-013 follow-up order, or a schema order: a redirect
+  `path` forbids `?` and `#`, and a page URL forbids user information. 048a1 is not held for them.
+
+After the rebase, from the worktree, the fixer ran: in `engine/`, `cargo fmt --check` and `cargo
+clippy --all-targets -- -D warnings` (exit 0 each), the five unit tests (`5 passed; 0 failed`),
+`pieces` (`Nothing to move.`), `make_archives -- --check` (`41 reproducible archive fixtures
+verified`), the runner on `contracts-`, `loader-own-tools`, `agents-v2-defaults` and
+`inventory-own-tools-` (6, 1, 1 and 3 cases passed), the vectors (`2 passed; 0 failed`), the full
+suite (28 `ok` lines, none failed, exit 0), each with 4 threads, and the negative control with
+`origin/main`'s `packages.rs` (`FAIL 0 cases passed; 1 failed`, uncited `CTR-013`, reply accepted;
+`1 cases passed` after the `cp` restore); in the spike, `cargo test --release` (`9 passed; 0
+failed`, then the doc-tests' `0 passed`); from the root, `check_schemas.py`, `set_names.py --check`,
+`check_rulings.py`, `check_docs.py`, `check_roadmap.py`, `check_private_paths.py` and
+`promise_standing.py --check` (Errors: 0 each), the tool tests (129, OK), `vector_delta.py
+origin/main WORKTREE` with the declaration (`2 shapes`, `5 changes; 0 flips; 0 undeclared; 0
+errors`, exit 0, on the main it starts from), the order's `git status` (empty), the twelve greps (1
+each), the three (0 each), the numstat (`1 1`), the 151 count, the `.v2` probe (as the order prints
+it), and `git diff --check origin/main...HEAD` and `git diff --check` (clean). The gate's run on
+this order's squash, which this merge waits on, is the coordinator's at the merge.
+
+At the merge the coordinator applied the second reader's one should in spec/schemas/README.md: the
+sentence on the hooks names the schema type-spec.v1, which requires them, not the Type's own
+configuration schema. It added a check line to 048a1-declared.yaml, which reached main with this
+order's text, so that the gate's vector check reads it. The two schema musts of the second
+verifier (a redirect path that forbids `?` and `#`, and a page URL that forbids user information)
+stay open for the follow-up order on CTR-013's comparisons across Types, or a schema order. The gate
+runs on the squash, and the merge waits on its PASS.

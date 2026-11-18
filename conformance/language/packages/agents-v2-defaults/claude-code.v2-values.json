@@ -120,7 +120,8 @@
       }
     },
     "required": [
-      "account"
+      "account",
+      "apiKey"
     ],
     "type": "object"
   },

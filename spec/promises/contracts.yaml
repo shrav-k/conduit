@@ -294,8 +294,10 @@
     loopback host, ports and path, and page and service the HTTPS page used as redirect_uri.
     Only redirect and page state carried, required for both; only redirect may state issuer.
     No other member is allowed. The account place and every member on its path are required,
-    and the place is confined to string or null by MAN-017's test. The Type requires the three
-    core operations sign-in-hook.v1, account-hook.v1 and sign-out-hook.v1. No URL may pass
+    and the place is confined to string or null by MAN-017's test. The Type lists no control
+    whose changes holds the account pointer, a pointer inside it or a pointer over it, compared
+    as CTR-006 compares pointers. The Type requires the three core operations sign-in-hook.v1,
+    account-hook.v1 and sign-out-hook.v1. No URL may pass
     IFC-049's checks for two of its logins, including overlapping fixed ports and ports: any
     on the same host and path. A contract failing these rules is rejected at install or
     submission. The logins are part of the Type contract: PKG-004's package digest and

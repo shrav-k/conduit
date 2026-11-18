@@ -1,0 +1,121 @@
+[
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "set-limit.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "$ref": "github.com/shrav-k/conduit/core#revision.v1"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "changes": {
+        "limit": "/limit"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Operation",
+    "metadata": {
+      "name": "set-account.v1"
+    },
+    "spec": {
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "$ref": "github.com/shrav-k/conduit/core#revision.v1"
+          },
+          "account": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "changes": {
+        "account": "/account"
+      }
+    }
+  },
+  {
+    "apiVersion": "github.com/shrav-k/conduit/v0",
+    "kind": "Type",
+    "metadata": {
+      "name": "signed-agent.v1"
+    },
+    "spec": {
+      "family": "Agent",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "limit": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "account"
+        ]
+      },
+      "requires": [
+        "github.com/shrav-k/conduit/core#sign-in-hook.v1",
+        "github.com/shrav-k/conduit/core#account-hook.v1",
+        "github.com/shrav-k/conduit/core#sign-out-hook.v1"
+      ],
+      "signIn": {
+        "account": "/account",
+        "logins": [
+          {
+            "name": "browser",
+            "return": "redirect",
+            "authorization": "https://example.org/authorize",
+            "clientId": "placeholder-signed-agent",
+            "redirect": {
+              "host": "127.0.0.1",
+              "ports": [
+                8400,
+                8401
+              ],
+              "path": "/callback"
+            },
+            "carried": true
+          },
+          {
+            "name": "device",
+            "return": "device",
+            "authorization": "https://example.org/device",
+            "clientId": "placeholder-signed-agent"
+          }
+        ]
+      },
+      "controls": [
+        "#set-limit.v1",
+        "#set-account.v1"
+      ]
+    }
+  }
+]

@@ -58,6 +58,7 @@ fn release_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, V
         .unwrap()
         .core_package;
     // C12: registration-only fixtures, no signIn or hooks. PKG-031: turn template.
+    // Ruling 82 point 2: account and apiKey are both required; apiKey defaults to null.
     for name in ["claude-code.v2", "codex.v2"] {
         let mut properties = json!({
             "accountServices":{"type":"boolean","default":false},
@@ -69,7 +70,7 @@ fn release_fixtures(root: &Path, check: bool, generated: &mut BTreeMap<String, V
             properties["peerMessaging"] = json!({"type":"boolean","default":false});
         }
         docs.push(json!({"apiVersion":manifest["apiVersion"],"kind":"Type","metadata":{"name":name},"spec":{
-            "family":"Agent","schema":{"type":"object","properties":properties,"required":["account"],"additionalProperties":false,
+            "family":"Agent","schema":{"type":"object","properties":properties,"required":["account","apiKey"],"additionalProperties":false,
                 "oneOf":[{"properties":{"account":{"type":"string"},"apiKey":{"type":"null"}}},{"properties":{"account":{"type":"null"},"apiKey":{"type":"object"}},"required":["apiKey"]}]},
             "offers":["#conversation.v1"],"requires":[],"records":{"inputs":false,"outputs":false}
         }}));
